@@ -1,0 +1,29 @@
+﻿<div class="panel-container-inner" folder-edit>
+    <fieldset>
+        <label for="folder_name">{{folderTitle}}:</label>
+        <input type="text" id="folder_name" name="Name" placeholder="Name your folder" ng-model="currentFolder.Name" ng-disabled="isSavingInProgress" auto-focus key-up key-up-enter="saveFolderDetails()" key-up-esc="cancelPanel()" />
+    </fieldset>
+
+    <fieldset class="icons">
+        <label>Select icon:</label>
+
+        <ul ng-class="{expanded: currentFolder.showMoreIcons}">
+            <li ng-repeat="icon in icons" class="icon{{::icon}}" ng-class="{'active': icon === currentFolder.Icon}" ng-click="currentFolder.Icon = icon"></li>
+        </ul>
+
+        <i class="icon icon-expand dark" ng-class="{expanded: currentFolder.showMoreIcons}" ng-click="currentFolder.showMoreIcons=!currentFolder.showMoreIcons" prevent-click></i>
+    </fieldset>
+
+    <div class="clearfix"></div>
+
+    <div class="controls">
+        <button class="blue rounded" ng-click="saveFolderDetails()" ng-class="{loading: isSavingInProgress}">Save</button>
+        <a href="#" class="button cancel" ng-click="cancelPanel()" prevent-click>Cancel</a>
+        <button class="icon icon-delete" ng-click="deleteFolder()" ng-show="currentFolder.ID">Remove</button>
+
+        <div class="clearfix"></div>
+    </div>
+
+    <span class="arrow-box" ng-class="{'pos-1': currentFolder.Type, newFolder: currentFolder.newChild}"></span>
+    <scroll-helper type="folder"></scroll-helper>
+</div>

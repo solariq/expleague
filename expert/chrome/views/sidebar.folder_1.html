@@ -1,0 +1,20 @@
+﻿<div class="folder-title"
+     ng-class="{hover: folder.showActionsBlock || folder.actionPanelTemplate || folder.isActive, isNewFolder: folder.isNewFolder,
+     actionsBlocksActive: folder.showActionsBlock,
+     'drag-upload': folder.dragStatus > 0, uploading: folder.dragStatus==1, success: folder.dragStatus >=2, movedSuccess: folder.dragStatus==3}"
+     ng-switch on="folder.dragStatus"
+     folder-droppable="{{::folder.ID}}">
+
+    <a class="name icon{{folder.Icon}}" ng-switch-default ng-click="openFolder()" ng-href="{{::folderUrl}}" prevent-click>{{folder.Name}}</a>
+
+    <a class="name" ng-switch-when="1" prevent-click>Uploading...</a>
+    <a class="name" ng-switch-when="2" ng-click="openLastItem()" prevent-click>Saved!</a>
+    <a class="name" ng-switch-when="3" ng-click="openFolder()" ng-href="{{::folderUrl}}" prevent-click>Moved successfully!</a>
+
+    <i class="icon icon-more" ng-class="{active: folder.showActionsBlock}" ng-switch-default ng-hide="!folder.ID" ng-click="toggleActionsBlock()" ng-if="folder.loadControls" tooltip-hover stop-propagation><span class="tooltip right-bottom">More actions</span></i>
+
+    <i class="icon icon-edit white" ng-switch-when="2" ng-click="activateItemPanel()" tooltip-hover stop-propagation><span class="tooltip right-bottom">Edit item</span></i>
+    <i class="icon icon-shortUrl white" ng-switch-when="2" copying-to-clipboard="Copy short url of last drag" tooltip-hover stop-propagation><span class="tooltip right-bottom">Copy short url of last drag</span></i>
+</div>
+
+<actions-block ng-if="folder.loadControls"></actions-block>

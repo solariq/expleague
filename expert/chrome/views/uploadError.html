@@ -1,0 +1,9 @@
+<div class="error-box" ng-class="{success: reuploadSuccessfull}">
+	<div class="error-description">
+		<h1 class="fail">Something went wrong</h1>
+		<h1 class="success">Upload succeeded!</h1>
+		<h3>Your upload was unsuccessfull.</h3>
+	</div>
+	<button class="white" ng-class="{loading: retryingUpload}" ng-click="retryItemUpload()">Try again</button>
+	<i class="close" ng-click="hideUploadError()" />
+</div>

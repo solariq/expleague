@@ -1,0 +1,51 @@
+<div class="overlay dialog__overlay"></div>
+
+<div class="wrapper">
+    <div class="content dialog__content collaboration" folder-collaboration>
+
+        <i class="close" ng-click="closeDialog()"></i>
+
+        <div class="dialog-title">
+
+            <div class="header">
+                <h2>Collaboration</h2>
+            </div>
+
+            <!-- <div class="clearfix">
+                <div class="short-url share">
+                    <div class="copy-controls clearfix">
+                        <input type="text" readonly="readonly" ng-model="shareFolderLink" select-on-click />
+                        <button class="green ng-cloak" data-clipboard-text="{{shareFolderLink}}" title="Click to copy me." copy-to-clipboard="Read only folder link" new-style="true">Copy</button>
+                    </div> -->
+            <!--<div class="copy-success">Copied!</div>-->
+            <!-- </div>
+            </div> -->
+
+            <div class="description">A collaborative folder is a folder that you - and others you invite- can all drag&drop to. To invite people generate the link below and pass it to them.</div>
+
+        </div>
+
+        <div class="controls clearfix" ng-hide="folderAlredyLinked">
+
+            <div class="short-url">
+                <div class="folder icon{{folder.Icon}}">{{folder.Name}}</div>
+                <div ng-hide="collaborativeFolderLink">
+                    <button class="ghost blue rounded" ng-click="generateLink()">Turn on collaboration</button>
+                </div>
+                <div ng-show="collaborativeFolderLink">
+                    <button class="ghost copy blue rounded" ng-class="{success: copySuccess}" data-clipboard-collaboration="true" copying-to-clipboard="{{collaborativeFolderLink}}">Copy</button>
+                    <input type="text" readonly="readonly" ng-model="collaborativeFolderLink" select-on-click>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="linked-users" ng-show="collaborativeFolderLink">
+            <span>{{collaboratorsCount}} users added this folder</span>
+            <a href="#" class="red" ng-click="revokeFolderAccess()" ng-show="collaboratorsCount" prevent-click>revoke access for them</a>
+            <a href="#" class="destroy-link" ng-click="destroyLink()" prevent-click>Disable link</a>
+        </div>
+
+    </div>
+</div>
+

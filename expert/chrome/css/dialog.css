@@ -1,0 +1,199 @@
+﻿/* ==========================================================================
+Dialog
+========================================================================== */
+.dialog {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  /*background: green;*/
+}
+/* ==========================================================================
+Site dialog global style
+========================================================================== */
+.dialog-container {
+  display: table;
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  *display: inline-block;
+  *top: 0;
+}
+.dialog-container.open .overlay {
+  opacity: 0.7;
+  pointer-events: auto;
+}
+.dialog-container.open .content {
+  -webkit-animation-duration: 0.4s;
+  animation-duration: 0.4s;
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
+  -webkit-animation-name: anim-open;
+  animation-name: anim-open;
+  -webkit-animation-timing-function: cubic-bezier(0.7, 0, 0.3, 1);
+  animation-timing-function: cubic-bezier(0.7, 0, 0.3, 1);
+}
+.dialog-container.open .dialog-title,
+.dialog-container.open .controls,
+.dialog-container.open .linked-users {
+  -webkit-animation: anim-elem 0.4s both;
+  animation: anim-elem 0.4s both;
+}
+.dialog-container.open .dialog-title {
+  -webkit-animation-delay: 0.35s;
+  animation-delay: 0.35s;
+}
+.dialog-container.open .controls {
+  -webkit-animation-delay: 0.25s;
+  animation-delay: 0.25s;
+}
+.dialog-container.open .linked-users {
+  -webkit-animation-delay: 0.15s;
+  animation-delay: 0.15s;
+}
+.dialog-container.close .content {
+  -webkit-animation-duration: 0.4s;
+  animation-duration: 0.4s;
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
+  -webkit-animation-name: anim-close;
+  animation-name: anim-close;
+}
+.dialog-container .wrapper {
+  z-index: 10;
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  *display: inline-block;
+  *top: 50%;
+  *position: relative;
+}
+.dialog-container .wrapper .content {
+  background: #fff;
+  box-shadow: 0 0 15px 0px rgba(0, 0, 0, 0.2);
+  margin: 0 auto;
+  text-align: left;
+  display: block;
+  width: 520px;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  *display: inline-block;
+  *top: -50%;
+}
+.dialog-container .overlay {
+  content: "";
+  background: none repeat scroll 0 0 #fff;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s;
+  transition-duration: 0.4s;
+  -webkit-transition-duration: 0.4s;
+  -webkit-transition: opacity 0.3s;
+  -webkit-backface-visibility: hidden;
+}
+.dialog-container .close {
+  cursor: pointer;
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-image: url("../images/close.png");
+  background-repeat: no-repeat;
+  opacity: 0.85;
+  background-position: center center;
+  position: absolute;
+  top: 24px;
+  right: 26px;
+  z-index: 5;
+}
+.dialog-container .close:hover {
+  opacity: 1;
+}
+.dialog-container.collaboration .dialog-title {
+  padding: 30px;
+}
+.dialog-container.collaboration .dialog-title h2 {
+  font-size: 22px;
+  padding: 0 0 20px 0;
+  margin: -5px 0 20px 0;
+  line-height: 22px;
+  color: #101010;
+  border-bottom: 1px solid #F0F0F0;
+}
+.dialog-container.collaboration .dialog-title .description {
+  color: #9B9FA3;
+}
+.dialog-container.collaboration .controls {
+  box-sizing: border-box;
+  background: #27AE61;
+  padding: 25px 30px;
+  width: 100%;
+  display: block;
+  position: relative;
+}
+.dialog-container.collaboration .controls .folder {
+  float: left;
+  color: #FFF;
+  font-size: 14px;
+  line-height: 30px;
+  padding: 0 0 0 30px;
+  white-space: nowrap;
+  position: relative;
+  max-width: 160px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.dialog-container.collaboration .controls .folder:before {
+  background-image: url("../images/sprite_2.png");
+  background-repeat: no-repeat;
+  background-size: 20px 1125px;
+  content: "";
+  position: absolute;
+  height: 44px;
+  width: 20px;
+  left: 0;
+  top: -7px;
+  z-index: 1;
+}
+.dialog-container.collaboration .controls input {
+  background: none;
+  border: none;
+  height: 30px;
+  float: right;
+  color: #FFF;
+  margin: 0;
+}
+.dialog-container.collaboration .controls button {
+  float: right;
+}
+.dialog-container.collaboration .controls button.copy {
+  width: 70px;
+}
+.dialog-container.collaboration .linked-users {
+  height: 55px;
+  box-sizing: border-box;
+  padding: 17px 30px 0;
+}
+.dialog-container.collaboration .linked-users span {
+  color: #9B9FA3;
+}
+.dialog-container.collaboration .linked-users a {
+  text-decoration: none;
+  color: #4F4F4F;
+}
+.dialog-container.collaboration .linked-users a:hover {
+  color: #000;
+}
+.dialog-container.collaboration .linked-users a.destroy-link {
+  float: right;
+}

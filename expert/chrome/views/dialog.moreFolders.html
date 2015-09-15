@@ -1,0 +1,59 @@
+<div class="overlay dialog__overlay"></div>
+
+<div class="wrapper">
+    <div class="content dialog__content get-more-folders" more-folders-dialog>
+        <div ng-class="{'upgrade_tab': tab=='upgrade'}">
+            <i class="close" ng-click="closeDialog()"></i>
+
+            <div class="dialog-title">
+
+                <ul class="tabs">
+                    <li ng-class="{active : tab == 'invite'}" ng-click="openTab('invite')">GET FREE FOLDERS</li>
+                    <li ng-class="{active : tab == 'upgrade'}" ng-click="openTab('upgrade')">GET DRAGDIS UNLIMITED!</li>
+                </ul>
+
+                <div class="header">
+                    <div ng-if="tab == 'invite'">
+                        <h2>Get up 20 free folders by inviting your friends!</h2>
+
+                        <div class="description">
+                            For every friend who joins Dragdis using your referral link, we'll give you both 1 folder (up to 20 folders)!<br />
+                            If you need even more folders you can <a href="#" ng-click="openTab('upgrade')" prevent-click>get "Dragdis Unlimited"</a> just for $5/month.
+                        </div>
+                    </div>
+                    <div ng-if="tab == 'upgrade'">
+                        <span class="star"></span>
+                        <h2>Get Dragdis Unlimited for <span class="sub">$</span>5<span class="small">/mo</span></h2>
+
+                        <div class="description">
+                            No more limits how many folders you can create and how many things you can collect to them! Be limitless!
+                            <br />Want folders for free? <a href="#" ng-click="openTab('invite')" prevent-click>Get them here!</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dialog-folders-meter" ng-if="tab == 'invite'">
+                <div class="storage-bar">
+                    <div class="used" ng-style="{width: referalBarWidth+'%' }">
+                        <span class="small-bubble">{{foldersEarnedByRefCount}} folders</span>
+                    </div>
+                    <span class="small-bubble total" ng-if="foldersEarnedByRefCount < 20">20</span>
+                </div>
+            </div>
+
+            <div class="controls clearfix">
+                <div ng-if="tab == 'invite'">
+                    <div class="short-url">
+                        <h4>Share this link with friends!</h4>
+                        <input type="text" readonly="readonly" ng-model="invitationUrl" select-on-click>
+                    </div>
+                    <button class="blueLight copy rounded" ng-class="{success: copySuccess}" data-clipboard-morefolders="true" copying-to-clipboard="{{invitationUrl}}">Copy link</button>
+                </div>
+                <div ng-if="tab == 'upgrade'">
+                    <button class="blueLight copy rounded subscribe-button" ng-click="openPayment()">UPGRADE NOW</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
