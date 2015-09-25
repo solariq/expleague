@@ -34,7 +34,7 @@ public class TrackExpertsComponent extends SessionManager {
       final Map<String, String> attrs = packet.getElement().getAttributes();
       if ("available".equals(attrs.get("type"))
               || (!attrs.containsKey("type") && show == null)
-              || ("chat".equals(show.childrenToString()))) {
+              || (show != null && "chat".equalsIgnoreCase(show.childrenToString()))) {
         ExpertManager.instance().changeStatus(bareJID, ExpertManager.Status.AVAILABLE);
         return;
       }
