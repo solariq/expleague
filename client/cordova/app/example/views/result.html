@@ -1,0 +1,217 @@
+<super-navbar>
+  <super-navbar-title>Результаты поиска</super-navbar-title>
+  <super-navbar-button side="left" onclick="supersonic.ui.modal.hide()">‹ История</super-navbar-button>
+</super-navbar>
+
+<style>
+body  {
+  background-color: #efefef;
+}
+
+.chat {
+  padding-bottom: 50px;
+}
+
+.baloon {
+  background-color: #fff;
+  box-shadow: 0px 1px 1px 0px rgba(50, 50, 50, 0.1);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.baloon-client {
+  margin-left: 10px;
+  margin-right: 25%;
+}
+
+.baloon-client::after {
+  content: "";
+  position: absolute;
+  top: 0px;
+  left: -16px;
+  border-width: 22px 0 0 16px;
+  border-style: solid;
+  border-color: #fff transparent;
+  display: block;
+}
+
+.baloon-server {
+  margin-left: 25%;
+  margin-right: 10px;
+}
+
+.baloon-server::after {
+  content: "";
+  position: absolute;
+  top: 0px;
+  right: -16px;
+  border-width: 0 0 22px 16px;
+  border-style: solid;
+  border-color: transparent #fff;
+  display: block;
+}
+
+.baloon-title {
+  font-weight: bold;
+  background: #fff;
+  padding: 2px 10px 2px;
+}
+
+.baloon-client .baloon-title {
+  border-top-right-radius: 10px;
+}
+
+.baloon-server .baloon-title {
+  border-top-left-radius: 10px;
+}
+
+.baloon-text {
+  padding: 2px 8px 5px;
+}
+
+@-webkit-keyframes progress-bar-stripes {
+  from {
+    background-position: 40px 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+.progress {
+  height: 20px;
+  overflow: hidden;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+.progress-bar {
+  float: left;
+  width: 100%;
+  height: 100%;
+  font-size: 12px;
+  line-height: 20px;
+  color: #fff;
+  text-align: center;
+  background-color: #347AFA;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+  background-size: 40px 40px;
+  -webkit-animation: progress-bar-stripes 2s linear infinite;
+}
+
+.baloon-question {
+  margin-top: 10px;
+  background-color: #bbb;
+  color: #fff;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.baloon-question-yes {
+  width: 49%;
+  display: inline-block;
+  text-align: center;
+  line-height: 2.4;
+  border-right: 1px solid #fff;
+  border-bottom-left-radius: 10px;
+}
+
+.baloon-question-no {
+  width: 49%;
+  display: inline-block;
+  text-align: center;
+  line-height: 3;
+  border-bottom-right-radius: 10px;
+}
+
+.baloon-simple {
+  border-top-left-radius: 0;
+}
+
+.baloon-simple .baloon-text {
+  line-height: 3;
+}
+
+.message {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  background: #347afa;
+}
+</style>
+
+<div class="padding chat">
+  <div class="baloon baloon-client">
+    <div class="baloon-title">Необходимо найти</div>
+    <div class="baloon-text">круглосуточная аптека<br> рядом с адресом: Москва, ул. Большая Декабрьская 10</div>
+  </div>
+
+  <div class="baloon baloon-server">
+    <div class="baloon-title">Поиск исполнителя</div>
+    <div class="baloon-text">
+      <!-- div class="progress">
+        <div class="progress-bar"></div>
+      </div -->
+      Исполнитель найден.
+      Вы получите уведомление, когда исполнитель найдет необходимую информацию. Также Вы можете дополнить задание, для этого используете форму внизу экрана.
+    </div>
+  </div>
+
+  <div class="baloon baloon-server">
+    <div class="baloon-title">Результаты поиска</div>
+    <div class="baloon-text">
+      Ближайшая круглосуточная аптека «Старый лекарь» находится по адресу:<br><a href="http://maps.google.com/?q=123022, Москва, ул. 1905 года, 19" target="_system">123022, Москва, ул. 1905 года, 19</a><br> Тел.: <a href="tel:84992535261">8 (499) 253-52-61</a>
+    </div>
+  </div>
+
+  <div class="baloon baloon-server">
+    <div class="baloon-title">Вас устроил данный ответ?</div>
+    <div class="baloon-question">
+      <div class="baloon-question-yes">Да</div>
+      <div class="baloon-question-no">Нет</div>
+    </div>
+  </div>
+</div>
+
+<div class="message">
+  <div class="item item-input-inset">
+    <label class="item-input-wrapper">
+      <input type="text" class="input-message" name="message" value="" placeholder="Введите сообщение">
+    </label>
+    <button class="button button-small button-outline button-positive icon super-paper-airplane"></button>
+  </div>
+</div>
+
+<script>
+$('.baloon-question-yes, .baloon-question-no').click(function() {
+  navigator.notification.vibrate(50);
+  var answer = $(this).hasClass('baloon-question-yes') ? 'Да' : 'Нет';
+  $('.chat').append('<div class="baloon baloon-client baloon-simple"><div class="baloon-text">' + answer + '</div></div>');
+  $(this).parent().css('visibility','hidden');
+  $(window).scrollTop(document.body.clientHeight);
+});
+
+$('.baloon-question-yes, .baloon-question-no').on('touchstart', function() {
+  $(this).css('background','#555');
+});
+
+$('.baloon-question-yes, .baloon-question-no').on('touchend', function() {
+  $(this).css('background','#bbb');
+});
+
+$('.message button').click(function() {
+  var message = $('.input-message').val().trim();
+  if (message != '') {
+    $('.chat').append('<div class="baloon baloon-client baloon-simple"><div class="baloon-text">' + message + '</div></div>');
+    $('.input-message').val('');
+    $('.input-message').focus();
+    $(window).scrollTop(document.body.clientHeight);
+  }
+});
+
+$(window).resize(function(){
+  $(window).scrollTop(document.body.clientHeight);
+});
+</script>

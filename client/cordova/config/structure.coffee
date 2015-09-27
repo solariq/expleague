@@ -30,8 +30,8 @@ module.exports =
       location: "example#options"
     }
     {
-      id: "using-the-scanner"
-      location: "example#using-the-scanner"
+      id: "result"
+      location: "example#result"
     }
   ]
 

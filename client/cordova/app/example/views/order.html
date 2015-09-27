@@ -6,7 +6,7 @@
   <div class="list">
     <label class="item item-input item-floating-label">
       <span class="input-label">Что необходимо найти?</span>
-      <input type="text" placeholder="Что необходимо найти?">
+      <input type="text" class="input-text" name="text" placeholder="Что необходимо найти?">
     </label>
     <div class="item item-checkbox">
       <label class="checkbox">
@@ -35,7 +35,7 @@
     <div class="account-total">У вас на счете: <span>1000 единиц</span></div>
   </div>
 
-  <button class="button button-block button-positive">Начать поиск</button>
+  <button class="button button-block button-positive button-start-search">Начать поиск</button>
 </div>
 
 <script>
@@ -65,4 +65,17 @@ $('.checkbox-expert').change(function() {
   }
   $('.order-price span b').text(getTotalPrice());
 });
+
+$('.button-start-search').click(function() {
+  localStorage.setItem('show-result-from-order-tab', true);
+  steroids.tabBar.selectTab(1);
+});
+
+// $('.input-text').focus(function() {
+//   supersonic.ui.tabs.hide();
+// });
+//
+// $('.input-text').blur(function() {
+//   supersonic.ui.tabs.show();
+// });
 </script>
