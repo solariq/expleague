@@ -1,0 +1,50 @@
+<component name="libraryTable">
+  <library name="tigase">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/derby.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/derbytools.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/groovy-all.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/hamcrest-core.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/jstun.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/jtds.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/jul-to-slf4j.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/junit.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/licence-lib.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/logback-classic.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/logback-core.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/mongo-java-driver.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/mysql-connector-java.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/org.apache.felix.bundlerepository.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/org.apache.felix.configadmin.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/org.apache.felix.http.bundle.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/org.apache.felix.main.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/org.apache.felix.shell.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/org.apache.felix.shell.remote.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/org.osgi.core.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/postgresql.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/slf4j-api.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-acs-muc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-acs-pubsub.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-acs.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-extras.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-http-api-jetty.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-http-api.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-message-archiving.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-mongodb.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-muc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-pubsub.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-server.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-socks5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-stats-collector-library.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-stats-collector-provider.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-stun.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-unified-archive.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/tigase/tigase-web-ui.war!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$USER_HOME$/tools/tigase/tigase-server/src/main/java" />
+      <root url="file://$USER_HOME$/tools/tigase/tigase-server/src/main/java" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="tigase-components">
+    <output-path>$PROJECT_DIR$/output/artifacts/tigase_components</output-path>
+    <root id="archive" name="tigase-components.jar">
+      <element id="module-output" name="tigase-component" />
+    </root>
+  </artifact>
+</component>
