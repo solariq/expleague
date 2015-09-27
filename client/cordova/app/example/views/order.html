@@ -68,6 +68,7 @@ $('.checkbox-expert').change(function() {
 
 $('.button-start-search').click(function() {
   localStorage.setItem('show-result-from-order-tab', true);
+  localStorage.setItem('speed', speedNames[$('.range-speed').val()]);
   steroids.tabBar.selectTab(1);
 });
 

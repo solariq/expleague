@@ -137,36 +137,45 @@ body  {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 50px;
-  background: #347afa;
+  height: 54px;
+}
+
+#show1, #show2, #show3, #show4 {
+  display: none;
 }
 </style>
 
 <div class="padding chat">
-  <div class="baloon baloon-client">
+  <div class="baloon baloon-client" id="show1">
     <div class="baloon-title">Необходимо найти</div>
-    <div class="baloon-text">круглосуточная аптека<br> рядом с адресом: Москва, ул. Большая Декабрьская 10</div>
-  </div>
-
-  <div class="baloon baloon-server">
-    <div class="baloon-title">Поиск исполнителя</div>
     <div class="baloon-text">
-      <!-- div class="progress">
-        <div class="progress-bar"></div>
-      </div -->
-      Исполнитель найден.
-      Вы получите уведомление, когда исполнитель найдет необходимую информацию. Также Вы можете дополнить задание, для этого используете форму внизу экрана.
+      круглосуточная аптека<br>
+      рядом с адресом: Москва, ул. Большая Декабрьская 10<br>
+      срочность поиска: <span class="speed"></span>
     </div>
   </div>
 
-  <div class="baloon baloon-server">
+  <div class="baloon baloon-server" id="show2">
+    <div class="baloon-title">Поиск исполнителя</div>
+    <div class="baloon-text">
+      <div class="progress">
+        <div class="progress-bar"></div>
+      </div>
+      <!--
+      Исполнитель найден.
+      Вы получите уведомление, когда исполнитель найдет необходимую информацию. Также Вы можете дополнить задание, для этого используете форму внизу экрана.
+      -->
+    </div>
+  </div>
+
+  <div class="baloon baloon-server" id="show3">
     <div class="baloon-title">Результаты поиска</div>
     <div class="baloon-text">
       Ближайшая круглосуточная аптека «Старый лекарь» находится по адресу:<br><a href="http://maps.google.com/?q=123022, Москва, ул. 1905 года, 19" target="_system">123022, Москва, ул. 1905 года, 19</a><br> Тел.: <a href="tel:84992535261">8 (499) 253-52-61</a>
     </div>
   </div>
 
-  <div class="baloon baloon-server">
+  <div class="baloon baloon-server" id="show4">
     <div class="baloon-title">Вас устроил данный ответ?</div>
     <div class="baloon-question">
       <div class="baloon-question-yes">Да</div>
@@ -185,6 +194,8 @@ body  {
 </div>
 
 <script>
+var startShow = true;
+
 $('.baloon-question-yes, .baloon-question-no').click(function() {
   navigator.notification.vibrate(50);
   var answer = $(this).hasClass('baloon-question-yes') ? 'Да' : 'Нет';
@@ -213,5 +224,45 @@ $('.message button').click(function() {
 
 $(window).resize(function(){
   $(window).scrollTop(document.body.clientHeight);
+  // Какой-то баг AppGyver, иначе неправильно позиционируется message
+  $('.chat').css('min-height', $(window).height() + 'px');
+  if (startShow) {
+    showTime();
+    startShow = false;
+  }
 });
+
+function showTime() {
+  setTimeout(function() {
+    $('.speed').text(localStorage.getItem('speed'));
+    $('#show1').show();
+    navigator.notification.vibrate(50);
+    $(window).scrollTop(document.body.clientHeight);
+  }, 200);
+
+  setTimeout(function() {
+    $('#show2').show();
+    navigator.notification.vibrate(50);
+    $(window).scrollTop(document.body.clientHeight);
+  }, 2500);
+
+  setTimeout(function() {
+    $('#show2 .progress').hide();
+    $('#show2 .baloon-text').text('Исполнитель найден. Вы получите уведомление, когда исполнитель найдет необходимую информацию. Также Вы можете дополнить задание, для этого используете форму внизу экрана.');
+    navigator.notification.vibrate(50);
+    $(window).scrollTop(document.body.clientHeight);
+  }, 6500);
+
+  setTimeout(function() {
+    $('#show3').show();
+    navigator.notification.vibrate(50);
+    $(window).scrollTop(document.body.clientHeight);
+  }, 13500);
+
+  setTimeout(function() {
+    $('#show4').show();
+    navigator.notification.vibrate(50);
+    $(window).scrollTop(document.body.clientHeight);
+  }, 14500);
+}
 </script>
