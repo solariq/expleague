@@ -22,7 +22,8 @@ import java.util.logging.Logger;
  */
 public class AllocateRoomModule extends GroupchatMessageModule {
   private static final Logger log = Logger.getLogger(AllocateRoomModule.class.getName());
-  Criteria CRIT = ElementCriteria.name("message").add(ElementCriteria.name("subject"));
+  private static final String SUBJECT = "subject";
+  Criteria CRIT = ElementCriteria.name("message").add(ElementCriteria.name(SUBJECT));
 
   @Override
   public void process(Packet packet) throws MUCException {
@@ -34,6 +35,8 @@ public class AllocateRoomModule extends GroupchatMessageModule {
         x.setXMLNS("http://jabber.org/protocol/muc#user");
         x.addChild(new Element("invite", new String[]{"from"}, new String[]{packet.getStanzaFrom().toString()}));
         invite.addChild(x);
+        final String subj= packet.getElement().getChild(SUBJECT).getCData();
+        x.addChild(new Element("subj", subj));
         write(Packet.packetInstance(invite, packet.getStanzaTo(), JID.jidInstance(expert, "expert")));
       } catch (TigaseStringprepException e) {
         log.log(Level.WARNING, "Error constructing invte", e);
