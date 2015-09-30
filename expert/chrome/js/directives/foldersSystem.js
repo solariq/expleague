@@ -42,12 +42,13 @@
             this.folder = $scope.folder;
 
             $scope.openFolder = function () {
-
-                new TrackEvent("Sidebar", "Folder opened", DRAGDIS.serviceEnum($scope.folder.ServiceTypeId)).send();
-
-                var url = DRAGDIS.config.domain + '#/folder/' + $scope.folder.ID;
-                DRAGDIS.sidebarController.hide(true);
-                $window.open(url);
+                alert('click on folder!')
+                //
+                //new TrackEvent("Sidebar", "Folder opened", DRAGDIS.serviceEnum($scope.folder.ServiceTypeId)).send();
+                //
+                //var url = DRAGDIS.config.domain + '#/folder/' + $scope.folder.ID;
+                //DRAGDIS.sidebarController.hide(true);
+                //$window.open(url);
             };
 
 
@@ -701,6 +702,107 @@ dragdisSidebarDirectives.directive("moreFolders", ['dialogService', '$state', fu
                     $state.go("get-more-folders");
                 }
             };
+        }]
+    };
+}]);
+
+
+
+dragdisSidebarDirectives.directive("chatWindow", ['$sce', '$timeout', '$rootScope', function ($sce, $timeout, $rootScope) {
+    var defaultFoldersTopSpace = 60;
+    var chatWindowHeight = 500;
+
+    return {
+        restrict: "A",
+        link: function (scope, element, attrs) {
+
+            var dragdisFoldersBlock = $rootScope.foldersBlockElement;
+
+            function realFolderListHeight() {
+                var lastGroup = dragdisFoldersBlock.children("ul").children("li").last();
+
+                if (lastGroup.length) {
+                    var height = lastGroup.height() + lastGroup.position().top;
+                } else {
+                    height = 0;
+                }
+                return height;
+            }
+
+            scope.chatWindow.movefoldersBlock = function () {
+                var foldersBlockHeight = dragdisFoldersBlock.height() + dragdisFoldersBlock.position().top - defaultFoldersTopSpace;
+                var foldersListHeight = realFolderListHeight();
+
+                var space = foldersBlockHeight - foldersListHeight + defaultFoldersTopSpace;
+                var needToMove = 0;
+
+                space = space < 0 ? defaultFoldersTopSpace : space;
+
+                if (this.active) {
+                    if (space < chatWindowHeight) {
+                        needToMove = chatWindowHeight - space;//chatWindowHeight - space;
+                    }
+                    scope.$emit("block-move-up", { level: needToMove }); //move up #DRAGDIS_folders
+                } else {
+                    scope.$emit("block-move-up", { level: 0 }); //move down #DRAGDIS_folders
+                }
+            };
+
+            element.mouseenter(function () {
+                scope.left = "folders left";
+
+                if (!scope.$$phase) {
+                    scope.$digest();
+                }
+            }).mouseleave(function () {
+                scope.left = "left";
+
+                if (!scope.$$phase) {
+                    scope.$digest();
+                }
+            });
+        },
+        controller: ['$scope', function ($scope) {
+
+            $scope.chatWindow = {
+                Text: "",
+            };
+            var chatWindow = $scope.chatWindow;
+
+            $scope.left = "left";
+
+            chatWindow.open = function () {
+                this.active = true;
+                this.movefoldersBlock();
+            };
+
+            chatWindow.actionPanelTemplate = function () {
+                if (this.active) {
+                    return DRAGDIS.config.sidebarTemplatesRoot + "panel_chatWindow";
+                }
+                return null;
+            };
+
+            //Folder Edit
+            chatWindow.send = function () {
+                alert('sending msg ' + $scope.chatWindow.Text);
+                $scope.chatWindow.Text = '';
+            };
+
+            chatWindow.cancel = function () {
+                var $this = this;
+                $timeout(function () {
+                    $this.Name = "";
+                    $this.Icon = 0;
+                    $this.active = false;
+                    $this.movefoldersBlock();
+                }, 10);
+
+            };
+
+            $scope.$on("resetSidebar", function () {
+                chatWindow.cancel();
+            });
         }]
     };
 }]);

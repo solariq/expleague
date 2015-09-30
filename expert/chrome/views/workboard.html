@@ -1,0 +1,53 @@
+<!--dragover-on-sidebar dragover-on-sidebar-->
+
+<!--<div class="drop-zone" custom-scrollbar folder-droppable="1">-->
+<!--<li ng-repeat="answer in board track by $index">-->
+<!--<div> {{answer}}}</div>-->
+<!--</li>-->
+<!--</div>-->
+
+
+<!--&lt;!&ndash; FOLDER TREE &ndash;&gt;-->
+<!--<div id="DRAGDIS_folders" class="folders antiscroll-wrap" ng-class="{tutorial: tutorialStep, blockMoveUp: blockMoveUp, sortingFolders: sortingFolders}" block-move dragover-on-sidebar custom-scrollbar>-->
+<!--<ul class="folders-list antiscroll-inner ng-cloak" ng-cloak ng-show="folders.list.length" ng-model="folders.list" ui-sortable="groupsSortableOptions" sortable-list="scope" folder-template>-->
+<!--<li class="group folder"-->
+<!--ng-class="{open: folder.Status, empty: !folder.Childs.length && !tutorialStep, isCollab: folder.IsLink || folder.HasLinks, isNewFolder: folder.isNewFolder, isActive: folder.isActive, dragUploading: folder.dragStatus > 0, isDisabled: folder.Disabled}"-->
+<!--ng-repeat="(key, folder) in folders.list | orderBy:['Order','ID']"-->
+<!--folder>-->
+<!--<div ng-include="folderTemplate"></div>-->
+<!--</li>-->
+<!--</ul>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; SCROLL HANDLERS &ndash;&gt;-->
+<!--<div class="dragScroll top" dragover-scroll></div>-->
+<!--<div class="dragScroll bottom" dragover-scroll></div>-->
+
+
+
+<div folder-droppable="1" class="chatboard" id="chatboard">
+    <div ng-repeat="answer in board track by $index" ng-class="getBubbleClass(answer.owner)">
+        {{printableAnswer(answer)}}
+    </div>
+</div>
+<!--<div class="container">-->
+
+
+<!--</div>-->
+<div style="height: 100px; display: block">
+    <div class="clearfix"></div>
+    <fieldset>
+        <textarea type="text" id="chat_text" name="ChatText" wrap="soft" placeholder="Enter your text here" class="chat-input" ng-model="chatWindow.Text" auto-focus key-up key-up-esc="chatWindow.cancel()" />
+    </fieldset>
+
+    <div class="controls">
+        <button class="blue rounded" ng-click="chatWindow.send()">Send</button>
+        <div class="clearfix"></div>
+    </div>
+</div>
+<!--<scroll-helper type="folder"></scroll-helper>-->
+
+<!--<div class="new-folder" chat-window>-->
+<!--&lt;!&ndash;<div class="title" ng-click="chatWindow.open()">Open chat<i class="icon icon-chat"></i></div>&ndash;&gt;-->
+<!--<div class="panel-container" ng-include="chatWindow.actionPanelTemplate()"></div>-->
+<!--</div>-->

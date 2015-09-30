@@ -1,7 +1,5 @@
-﻿dragdisSidebar.controller('DRAGDIS_SIDEBAR_CTRL', ['$window', '$scope', '$controller', '$timeout', '$rootScope', 'dataService', 'dialogService', function ($window, $scope, $controller, $timeout, $rootScope, dataService, dialogService) {
-
+﻿﻿dragdisSidebar.controller('DRAGDIS_SIDEBAR_CTRL', ['$window', '$scope', '$controller', '$timeout', '$rootScope', 'dataService', 'dialogService', function ($window, $scope, $controller, $timeout, $rootScope, dataService, dialogService) {
     $scope.domain = DRAGDIS.config.domain;
-
     $scope.dialogIsActive = false;
     $scope.renderComplete = false;
 
@@ -23,6 +21,8 @@
     $scope.uploadError = 0;
     $scope.expandedView = 0;
 
+    //$scope.activeRequest = null;
+
     $scope.msg = {
         default: "",
         loading: "Loading folders...",
@@ -34,6 +34,140 @@
         $scope.$on('$locationChangeStart', function (ev) {
             ev.preventDefault();
         });
+    }
+
+
+    $scope.send = function() {
+        DRAGDIS.api('SendResponse', {request: $scope.activeRequest.value}, function (response) {
+            if (response.status == 200) {
+                //$scope.activeRequest = request;
+                DRAGDIS.api('Finish', {request: $scope.activeRequest.value}, function(responce){});
+                $scope.clear();
+            } else {
+                alert('Не удалось отправить ответ, повторите попытку');
+            }
+        });
+    };
+
+    $scope.clear = function() {
+        $scope.board.clear();
+        $scope.requests.clear();
+        $scope.activeRequest.set(null);
+    };
+
+
+    $scope.findRequest = function(allRequests, req) {
+        var index = -1;
+        allRequests.forEach(function(el, i) {
+            if (req.id == el.id)
+                index = i;
+        });
+        return index;
+    }
+
+    $scope.activateRequest = function(request) {
+        $scope.board.clear();
+        DRAGDIS.api('Activate', {request: request}, function (response) {
+            if (response.status == 200) {
+                $scope.activeRequest.set(request);
+            } else {
+                alert('Ваша заявка отклонена сервисом, выберите другой вопрос');
+            }
+        });
+        $timeout(function () {
+            if (!$scope.$$phase) {
+                //alert('apply');
+                $scope.$apply();
+            }
+        }, 100);
+    };
+
+    $scope.rejectRequest = function(request) {
+        DRAGDIS.api('Reject', {request: request}, function (response) {});
+        if ($scope.activeRequest.value == request) {
+            $scope.activeRequest.set(null);
+        }
+        if (!$scope.$$phase) {
+            $scope.$apply();
+        }
+    };
+
+    $scope.truncateTitle = function(title) {
+        if (title.indexOf('Результат поиска Google') === 0) {
+            return 'Результат поиска Google';
+        }
+        return title;
+    }
+
+
+    $scope.getImgPrefix = function(base64Image) {
+        return base64Image.split(',', 1)[0];//.slice(1).join(',')
+    }
+
+    $scope.getImgData = function(base64Image) {
+        return base64Image.split(',').slice(1).join(',');
+    }
+
+    $scope.removeFromBorder = function(index) {
+        DRAGDIS.api('Remove', {index : index}, function (response) {});
+        if (!$scope.$$phase) {
+            $scope.$apply();
+        }
+    };
+
+    $scope.printableAnswer = function(answer) {
+        if (answer.Base64Image) {
+            return answer.Base64Image;
+        }
+        text = jQuery('<div>' + answer.Text + '</div>').text();;
+        maxLetters = 200;
+        if (text.length > maxLetters) {
+            text = text.substring(0, maxLetters) + '...';
+        }
+        return jQuery('<div>' + text + '</div>').text();
+    };
+
+    $scope.getBubbleClass = function(owner) {
+        return 'triangle-isosceles' + (owner == 'self' ? '' : '-alt');
+    };
+
+    $scope.addAnswer = function(callback) {
+        this.getCollection(function () {
+            DRAGDIS.Drag.Data.Status = 1;
+            answer = JSON.stringify(DRAGDIS.Drag.Data);
+            DRAGDIS.api('addToBoard', {answer : answer}, function (response) {});
+            if (typeof (callback) == "function") {
+                callback();
+            }
+        });
+    };
+
+    $scope.moveChatScroll = function(direction, speed) {
+        div = $('#chatboard')[0];
+        if (direction > 0) {
+            direction = div.scrollHeight
+        } else {
+            direction = 0;
+        }
+        if (speed > 0) {
+            $('#chatboard').animate({scrollTop: direction}, speed)
+        } else {
+            $('#chatboard').scrollTop = direction;
+        }
+    }
+
+
+    $scope.sidebarContent = function () {
+        var templatesRoot = DRAGDIS.config.sidebarTemplatesRoot;
+
+        if ($scope.activeRequest.value)
+            return templatesRoot + 'dragArea';
+        //
+        if ($scope.requests.list.length)
+            return templatesRoot + 'requestList';
+
+        //alert('waiting');
+        return templatesRoot + 'waiting';
     }
 
     $scope.sidebarTemplate = function () {
@@ -56,6 +190,7 @@
 
         //console.log(template + " " + ($scope.newTime - $scope.oldTime));
 
+        //return 'views/sidebar';
         return template;
     };
 
@@ -63,146 +198,144 @@
     if (window.chrome && window.chrome.storage) {
         window.chrome.storage.onChanged.addListener(function (data) {
 
-            //console.log("storage updated", data);
+            console.log("storage updated", data);
 
-            if (data.FoldersList) {
-                DRAGDIS.storage.get("CurrentSender", function (currentSender) {
-                    // Skip folder updates if sender is the same tab
-                    if (currentSender == DRAGDIS.browserInstanceId) {
-                        return;
-                    } else {
-                        $scope.folders.update(data.FoldersList.newValue);
-                    }
-                });
-
-            } else if (data.UserActive) {
-                //console.log("UserActive", data.UserActive.newValue);
-                //console.log("storage UserActive");
+            if (data.UserActive) {
+                console.log("UserActive", data.UserActive.newValue);
+                console.log("storage UserActive");
                 $scope.user.update();
             } else if (data.ConnectionFail) {
-                //console.log("storage ConnectionFail");
+                console.log("storage ConnectionFail");
                 $scope.user.update();
             } else if (data.IsConnected) {
-
                 $scope.isConnected = data.IsConnected.newValue;
-
                 if ($scope.isConnected) {
-                    //console.log("storage isConnected");
+                    console.log("storage isConnected");
                     $scope.user.update();
-                    $scope.folders.update();
                 } else {
                     if (!$scope.$$phase) {
                         $scope.$digest();
                     }
                 }
-
-            } else if (data.IsReconnecting) {
-                $scope.isReconnecting = data.IsReconnecting.newValue;
-
+            } else if(data.Board) {
+                $scope.board.update();
+                //$scope.moveChatScroll(1, 1500);
                 if (!$scope.$$phase) {
-                    $scope.$digest();
+                    //alert('apply');
+                    $scope.$apply();
+                }
+            } else if(data.Requests) {
+                $scope.requests.update();
+                if (data.Requests.oldValue) {
+                    oldVal = JSON.parse(data.Requests.oldValue);
+                    newVal = JSON.parse(data.Requests.newValue);
+                    newVal.forEach(function(request) {
+                        index = $scope.findRequest(oldVal, request);
+                        if (index < 0) {
+                           DRAGDIS.api("Notify", {owner: request.owner, tag: "new-request",body : request.question}, function (resp){
+                               if (resp.status == 200) {
+                                   $scope.activateRequest(request);
+                               } else if (resp.status == 501){
+                                   alert('reject');
+                                   $scope.rejectRequest(request);
+                               }
+                           });
+                       }
+                    });
+
+                }
+                //$scope.moveChatScroll(1, 1500);
+                if (!$scope.$$phase) {
+                    //alert('apply');
+                    $scope.$apply();
                 }
             }
+
+            $timeout(function () {
+                if (!$scope.$$phase) {
+                    //alert('apply');
+                    $scope.$apply();
+                }
+            }, 100);
         });
     }
 
-    // DATA OBJECTS
-    $scope.folders = {
-        list: undefined,
-        update: function (foldersList) {
-            if (foldersList && foldersList.length) {
-                this.goToProcessResults(foldersList);
-            } else {
-                this.updateFromStorage();
-            }
-        },
-        updateFromStorage: function () {
-            DRAGDIS.storage.get("FoldersList", function (foldersList) {
-                $scope.folders.goToProcessResults(foldersList);
+
+    $scope.requests = {
+        list: [],
+
+        update: function() {
+            DRAGDIS.storage.get('Requests', function(value) {
+                $scope.requests.list = $scope.requests.getRequests(value);
             });
         },
-        goToProcessResults: function (foldersList) {
-            //console.log("goToProcessResults");
 
-            if (!foldersList || !foldersList.length) {
-                $scope.msg.default = foldersList.timeout ? $scope.msg.timeout : $scope.msg.noFolders;
-            } else {
-                $scope.msg.default = $scope.msg.loading;
-            }
-
-            $scope.folders.list = foldersList;
-
-            this.getUserInfo();
-
-        },
-        getByID: function (folderId) {
-            for (var i = 0; i < this.list.length; i++) {
-                //Return group if it's ID matches
-                if (this.list[i].ID == folderId) return this.list[i];
-
-                //Search for folder ID in group
-                if (this.list[i].Childs) {
-                    var folder = $.grep(this.list[i].Childs, function (e) {
-                        return e.ID == folderId;
-                    })[0];
-
-                    if (folder) {
-                        return folder;
-                    }
-                }
-            };
-            //If nothing found, return false
-            return false;
-        },
-        getUserInfo: function () {
-            DRAGDIS.api("getUserInfo", {}).then(function (response) {
-
-                dataService.updateReferralSystemValues(response);
-
-                $scope.folders.usedFoldersCount = parseInt(response.UsedFoldersCount);
-                $scope.folders.freeFoldersCount = parseInt(response.FreeFoldersCount);
-
-                $scope.folders.subscriptionActive = response.SubscriptionActive;
-                $scope.folders.subscriptionSoonToExpire = response.SubscriptionSoonToExpire;
-
-                dataService.updateFoldersCounters();
-
-                if (!$scope.$$phase) {
-                    $scope.$apply();
-                }
-
-            }).fail(function (error) {
-                new TrackException("Failed to get userInfo on getUserInfo").send();
-                console.error(error);
+        getRequests: function(data) {
+            var result = [];
+            (data ? JSON.parse(data) : []).forEach(function (el) {
+                result.push(el);
             });
-        },
-        calculateFolders: function () {
-            var count = 0;
-
-            for (var key in this.list) {
-                var folder = this.list[key];
-
-                //parent
-                count = count + 1;
-
-                //childs
-                if (folder.Childs && folder.Childs.length > 0) {
-                    count = count + folder.Childs.length;
-                }
-            }
-
-            console.log("total folders:", count);
-            return count;
+            return result;
         },
 
-        usedFoldersCount: 1,
-        freeFoldersCount: 1,
-        totalAvailableFolders: 4,
-        subscriptionActive: false,
-        subscriptionSoonToExpire: false,
-        barWidthForMenu: 0,
+        removeRequest: function(request) {
+            result = [];
+            $scope.requests.list.forEach(function(el) {
+               if (request.id != el.id) {
+                   result.push(el);
+               }
+            });
+            $scope.requests.list = result;
+            DRAGDIS.storage.set('Requests', JSON.stringify(result));
+        },
+
+        clear: function() {
+            $scope.requests.list = [];
+            DRAGDIS.storage.set('Requests', JSON.stringify([]));
+        }
     };
 
+    $scope.board = {
+        list: [],
+
+        update: function() {
+            DRAGDIS.storage.get('Board', function(value) {
+                $scope.board.list = $scope.board.getBoard(value);
+                //alert('newlwn: ' + $scope.board.list.length);
+            });
+        },
+
+        clear: function() {
+            $scope.board.list = [];
+            DRAGDIS.storage.set('Board',JSON.stringify([]));
+        },
+
+        getBoard: function(data) {
+            var result = [];
+            (data ? JSON.parse(data) : []).forEach(function (el) {
+                result.push(JSON.parse(el));
+            });
+            return result;
+        }
+
+    };
+
+
+    $scope.activeRequest = {
+        value: null,
+
+        get: function(callback) {
+            DRAGDIS.storage.get('ActiveRequest', function(value) {
+                value = value ? value : null
+                $scope.activeRequest.value = value;
+                callback(value);
+            });
+        },
+        set: function(activeRequest) {
+            $scope.activeRequest.value = activeRequest;
+            DRAGDIS.storage.set('ActiveRequest', activeRequest);
+        }
+    };
     $scope.user = {
         username: "",
         avatar: "",
@@ -251,7 +384,7 @@
 
     $scope.show = function (needReset, isOpenedManually) {
 
-        //console.log("SHOW", needReset + " " + isOpenedManually);
+        console.log("SHOW", needReset + " " + isOpenedManually);
 
         $timeout.cancel($scope.timeoutHide);
         $timeout.cancel($scope.timeoutShow);
@@ -310,6 +443,8 @@
             }
 
         }, isOpenedManually ? 0 : DRAGDIS.config.timing.dragDelay);
+
+        //$scope.moveChatScroll(1, 0);
     };
 
     $scope.hide = function (closeFast, isClosedManually) {
@@ -387,7 +522,6 @@
     $scope.getCollection = function (callback) {
 
         var dragElement = DRAGDIS.Drag.Target;
-
         dragElement.dragdisCollection(function (data) {
             DRAGDIS.Drag.Data = data;
             callback();
@@ -395,21 +529,6 @@
 
     };
 
-    $scope.upload = function (folderId, callback) {
-
-        this.getCollection(function () {
-
-            DRAGDIS.Drag.Data.FolderId = folderId;
-            DRAGDIS.Drag.Data.Status = 1;
-
-            DRAGDIS.api("Upload", DRAGDIS.Drag.Data, function (response) {
-                if (typeof (callback) == "function") {
-                    callback(response);
-                }
-            });
-        });
-
-    };
 
     $scope.hideUploadError = function () {
 
@@ -422,56 +541,15 @@
         $scope.uploadError = false;
     };
 
-    $scope.retryItemUpload = function () {
 
-        if (!$scope.retryingUpload) {
-
-            //Set retryingUpload flag to show loader and prevent rapid requests 
-            $scope.retryingUpload = true;
-
-            DRAGDIS.api("retryItemUpload", {}, function (response) {
-
-                //If reupload succeeded, display success message and close error block after some time
-                if (response.status == 200) {
-                    $scope.reuploadSuccessfull = true;
-                    $scope.retryingUpload = false;
-
-                    if (!$scope.$$phase) {
-                        $scope.$apply();
-                    }
-
-                    $timeout(function () {
-                        $scope.reuploadSuccessfull = 0;
-                        $scope.hideUploadError();
-                    }, 1500);
-
-                    //Else display loader for 1s.
-                } else {
-                    $timeout(function () {
-                        $scope.retryingUpload = false;
-
-                        if (!$scope.$$phase) {
-                            $scope.$apply();
-                        }
-                    }, 1000);
-                }
-            });
-        }
+    $scope.finishRequest = function() {
+        $scope.activeRequest.get(function(request) {
+            DRAGDIS.api("Finish", {request: request}, function () { });
+            $scope.board.clear();
+            $scope.requests.removeRequest(request);
+            $scope.activeRequest.set(null);
+        });
     };
-
-    $scope.reconnect = function () {
-
-        DRAGDIS.sendMessage({
-            Type: "RECONNECT"
-        }, function () { });
-
-        $scope.isReconnecting = true;
-
-        $timeout(function () {
-            $scope.isReconnecting = false;
-        }, 1500);
-    };
-
 
     $scope.logout = function ($event) {
 
@@ -487,9 +565,12 @@
 
         DRAGDIS.sidebarController = $scope;
 
+        $scope.board.update();
+
+        $scope.activeRequest.get(function(){});
+
         DRAGDIS.storage.get("IsConnected", function (userConnected) {
             if (userConnected) {
-                $scope.folders.update();
                 $scope.user.update();
             }
 

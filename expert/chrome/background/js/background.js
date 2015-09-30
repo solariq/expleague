@@ -1,5 +1,9 @@
 'use strict';
 
+
+DRAGDIS.storage.set("Requests",JSON.stringify([]));
+DRAGDIS.storage.set("Board",JSON.stringify([]));
+DRAGDIS.storage.set("ActiveRequest", null);
 // REGISTER API COMMAND LISTENER
 chrome.runtime.onConnect.addListener(function(port) {
 
@@ -18,11 +22,9 @@ chrome.runtime.onConnect.addListener(function(port) {
 
             //Dinamically call API method
             DRAGDIS.api[request.method](request, senderId).then(function(response) {
-
                 port.postMessage(response);
 
             }, function(error) {
-
                 //If sharing item is forbidden
                 if (error.status === 403 && error.data.ShareResult) {
 
@@ -294,13 +296,13 @@ DRAGDIS.getMessage = function(request, sender, sendResponse) {
             }
             break;
 
-        case "RECONNECT":
-            startHubConnection();
-            break;
-
-        case "REFRESH_CONNECTION":
-            refreshHubConnection();
-            break;
+        //case "RECONNECT":
+        //    startHubConnection();
+        //    break;
+        //
+        //case "REFRESH_CONNECTION":
+        //    refreshHubConnection();
+        //    break;
 
         case "INJECTION":
             DRAGDIS.injector.add(sender.tab.id, sender.tab.url);

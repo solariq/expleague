@@ -26,6 +26,7 @@
                     if (!exist) {
                         element.attr("src", DRAGDIS.extensionFileUrl("images/default_avatar.gif"));
                         if (DRAGDIS.config.isExtension) {
+                            alert('inside UserActive');
                             DRAGDIS.storage.set("UserActive", {
                                 Active: $rootScope.$$childHead.user.active,
                                 Username: $rootScope.$$childHead.user.username,
@@ -58,7 +59,6 @@ dragdisSidebarDirectives.directive('preventClick', function () {
         }
     };
 });
-
 dragdisSidebarDirectives.directive('autoFocus', function () {
     return {
         restrict: 'A',
@@ -67,7 +67,6 @@ dragdisSidebarDirectives.directive('autoFocus', function () {
         }
     };
 });
-
 dragdisSidebarDirectives.directive('selectOnClick', function () {
     return {
         restrict: 'A',
@@ -78,8 +77,6 @@ dragdisSidebarDirectives.directive('selectOnClick', function () {
         }
     };
 });
-
-
 dragdisSidebarDirectives.directive('toggleMenu', function () {
     return {
         restrict: 'A',
@@ -112,7 +109,6 @@ dragdisSidebarDirectives.directive('toggleMenu', function () {
         }
     };
 });
-
 dragdisSidebarDirectives.directive('copyingToClipboard', ['$timeout', '$compile', 'dataService', 'copyingToClipboardFactory', function ($timeout, $compile, dataService, copyingToClipboardFactory) {
     var clipboardSuccessBlock = "<div class='clipboard-success'>Link copied</div>";
     var clipboardWithoutExtensionBlock = "<div class='folder-share variant'><h3>Share this folder?</h3><div class='form-controls'><input type='text' value='" + DRAGDIS.config.domain + "' readonly='readonly' select-on-click /><a href='#' class='cancel' ng-click='removeShareBlock($event)' stop-propagation>Cancel</a></div><scroll-helper type='shareBlock'></scroll-helper></div>";
@@ -311,8 +307,6 @@ dragdisSidebarDirectives.directive('copyingToClipboard', ['$timeout', '$compile'
         }]
     };
 }]);
-
-
 dragdisSidebarDirectives.directive('customScrollbar', ['dataService', '$timeout', '$rootScope', function (dataService, $timeout, $rootScope) {
     return {
         restrict: 'A',
@@ -500,7 +494,6 @@ dragdisSidebarDirectives.directive('dragoverScroll', ['$rootScope', function ($r
         }
     };
 }]);
-
 dragdisSidebarDirectives.directive('sortableList', ['sortableListFactory', '$timeout', '$rootScope', function (sortableListFactory, $timeout, $rootScope) {
 
     //#region Options
@@ -513,7 +506,7 @@ dragdisSidebarDirectives.directive('sortableList', ['sortableListFactory', '$tim
         scroll: true,
         scrollSensitivity: 10,
         refreshPositions: true,
-        handle: ".folder-title"
+        //handle: ".folder-title"
     };
     //#endregion
 
@@ -534,10 +527,14 @@ dragdisSidebarDirectives.directive('sortableList', ['sortableListFactory', '$tim
                     var itemSortable = ui.item.sortable;
                     var groupModel = itemSortable.model;
                     var toPos = itemSortable.dropindex;
+                    var fromPos = itemSortable.index;
 
-                    scope.sortFolder(groupModel, toPos);
-
-                    scope.scroll.hideScrollHandles();
+                    DRAGDIS.api("Move", {fromPos: fromPos, toPos: toPos}, function () { });
+                    //
+                    //if (!$scope.$$phase) {
+                    //    $scope.$apply();
+                    //}
+                    //scope.scroll.hideScrollHandles();
 
                     $timeout(function () {
                         scope.sortablePreventClick = false;
@@ -547,133 +544,11 @@ dragdisSidebarDirectives.directive('sortableList', ['sortableListFactory', '$tim
             scope.groupsSortableOptions = $.extend({}, defaultOptions, groupsSortableOptions);
             //#endregion
 
-            var emptyGroups;
-
-            //#region folderSortableOptions
-            var folderSortableOptions = {
-                connectWith: ".folder-childs, .icon-expand",
-                start: function (e, ui) {
-                    scope.resetSidebar();
-                    scope.sortablePreventClick = true;
-
-                    //over for expand empty groups 
-
-                    //find empty groups
-                    emptyGroups = $rootScope.foldersListElement.find("li.group.empty");
-                    if (emptyGroups.length) {
-                        emptyGroups.droppable({
-                            tolerance: "pointer",
-                            accept: ".folder",
-                            over: function (ev, uie) {
-                                $(this).addClass("droppingToEmptyGroup");
-                                $(ev.toElement).closest("ul").sortable("refreshPositions");
-                            },
-                            out: function () {
-                                $(this).removeClass("droppingToEmptyGroup");
-                            }
-                        });
-                    }
-                },
-                update: function (e, ui) {
-                    //disable folder animation after drop to another group
-                    ui.item.addClass("ui-sortable-update");
-                    $timeout(function () {
-                        ui.item.removeClass("ui-sortable-update");
-                    }, 300);
-                },
-                stop: function (e, ui) {
-
-                    //$rootScope.sortingFolders = false;
-                    if (emptyGroups.length) {
-                        emptyGroups.removeClass("droppingToEmptyGroup");
-                        emptyGroups.droppable("destroy");
-                    }
-
-                    scope.sortablePreventClick = false;
-
-                    var itemSortable = ui.item.sortable;
-                    var folderModel = itemSortable.model;
-                    var toPos = itemSortable.dropindex;
-                    var parentFolder = itemSortable.droptarget.scope().$parent.folder;
-
-                    //dissalow rearrange linked subfolder to linked group
-                    if (folderModel.IsLink && parentFolder.IsLink && folderModel.Parent !== parentFolder.ID) {
-                        $(this).sortable('cancel');
-                        return true;
-                    }
-
-                    if (itemSortable && itemSortable.droptarget) {
-                        if (parentFolder.ID > 0 && ui.item.index() >= 0) {
-                            if (!itemSortable.moved && !itemSortable.received) {
-                                scope.sortFolder(folderModel, toPos, parentFolder);
-                            } else if (itemSortable.moved && itemSortable.received) { //moved to another group
-                                scope.sortFolder(itemSortable.moved, toPos, parentFolder);
-                            }
-                        }
-                    }
-
-                    scope.scroll.hideScrollHandles();
-                }
-            };
-            scope.folderSortableOptions = $.extend({}, defaultOptions, folderSortableOptions);
-            //#endregion
         },
         controller: ['$scope', function ($scope) {
-            $scope.sortablePreventClick = false;
-
-            $scope.sortFolder = function (folderScope, orderIndex, parent) {
-
-                var parentId = parent && parent.ID > 0 ? parent.ID : 0;
-
-                folderScope.Parent = parentId;
-                folderScope.Order = orderIndex;
-                folderScope.Index = orderIndex;
-
-                if (!$scope.$$phase) {
-                    $scope.$apply();
-                }
-
-                $scope.updateFolderOrder(folderScope, orderIndex, parentId);
-                $scope.updateAllFoldersOrder();
-            };
-
-            $scope.updateFolderOrder = function (folderScope, orderIndex, parentId) {
-                DRAGDIS.api("FolderSort", {
-                    id: folderScope.ID,
-                    order: orderIndex,
-                    parent: parentId
-                }, function (response) {
-                });
-            };
-
-            $scope.updateAllFoldersOrder = function () {
-
-                angular.forEach($scope.folders.list, function (folder, key) {
-                    folder.Order = key;
-
-                    if (folder.Childs && folder.Childs.length > 0) {
-                        angular.forEach(folder.Childs, function (child, childKey) {
-                            child.Order = childKey;
-                        });
-                    }
-
-                    if (!$scope.$$phase) {
-                        $scope.$apply();
-                    }
-                });
-            };
-
-            var factory = new sortableListFactory($scope);
-            angular.extend($scope, factory);
-
-            $scope.$on("updateAllFoldersOrder", function () {
-                $scope.updateAllFoldersOrder();
-            });
         }]
     };
 }]);
-
-
 dragdisSidebarDirectives.directive('scrollHelper', ['$timeout', '$rootScope', function ($timeout, $rootScope) {
 
     var parent = $rootScope.foldersListElement;
@@ -759,7 +634,6 @@ dragdisSidebarDirectives.directive('scrollHelper', ['$timeout', '$rootScope', fu
         }
     };
 }]);
-
 dragdisSidebarDirectives.directive('tooltipHover', ['$rootScope', function ($rootScope) {
     var foldersBlockElement;
     return {
@@ -783,7 +657,6 @@ dragdisSidebarDirectives.directive('tooltipHover', ['$rootScope', function ($roo
         }
     };
 }]);
-
 dragdisSidebarDirectives.directive('blockMove', ['$timeout', function ($timeout) {
     return {
         restrict: 'A',
@@ -805,8 +678,6 @@ dragdisSidebarDirectives.directive('blockMove', ['$timeout', function ($timeout)
         }
     };
 }]);
-
-
 //prevent outside scroll
 dragdisSidebarDirectives.directive('scrollPreventer', ['$timeout', function ($timeout) {
     return {
@@ -841,7 +712,6 @@ dragdisSidebarDirectives.directive('scrollPreventer', ['$timeout', function ($ti
         }
     };
 }]);
-
 dragdisSidebarDirectives.directive('keyUp', function () {
     return {
         restrict: "A",
@@ -867,7 +737,6 @@ dragdisSidebarDirectives.directive('keyUp', function () {
         }
     };
 });
-
 dragdisSidebarDirectives.directive('noAnimate', ['$animate', function ($animate) {
     return {
         restrict: "A",
@@ -879,7 +748,6 @@ dragdisSidebarDirectives.directive('noAnimate', ['$animate', function ($animate)
         }
     };
 }]);
-
 dragdisSidebarDirectives.directive('renderComplete', ['$timeout', function ($timeout) {
     return {
         restrict: "A",
@@ -900,4 +768,56 @@ dragdisSidebarDirectives.directive('renderComplete', ['$timeout', function ($tim
             });
         }
     };
+}]);
+
+dragdisSidebarDirectives.directive('timeAgo', ['$timeout', function($timeout) {
+    return {
+        restrinct: "A",
+        link: function(scope, element) {
+            element = element[0];
+            var templates = {
+                prefix: "",
+                suffix: " назад",
+                seconds: "менее минуты",
+                minute: "около минуты",
+                minutes: "%d минут",
+                hour: "около часа",
+                hours: "около %d часов",
+                day: "день",
+                days: "%d дней",
+                month: "около месяца",
+                months: "%d месяцев",
+                year: "около года",
+                years: "%d года"
+            };
+            var template = function (t, n) {
+                return templates[t] && templates[t].replace(/%d/i, Math.abs(Math.round(n)));
+            };
+
+            var timer = function (time) {
+                if (!time) return;
+                time = parseInt(time);
+
+                time = new Date(time);
+
+                var now = new Date();
+                var seconds = ((now.getTime() - time) * .001) >> 0;
+                var minutes = seconds / 60;
+                var hours = minutes / 60;
+                var days = hours / 24;
+                var years = days / 365;
+
+                return templates.prefix + (
+                    seconds < 45 && template('seconds', seconds) || seconds < 90 && template('minute', 1) || minutes < 45 && template('minutes', minutes) || minutes < 90 && template('hour', 1) || hours < 24 && template('hours', hours) || hours < 42 && template('day', 1) || days < 30 && template('days', days) || days < 45 && template('month', 1) || days < 365 && template('months', days / 30) || years < 1.5 && template('year', 1) || template('years', years)) + templates.suffix;
+            };
+
+            //element.innerHTML = timer(element.getAttribute('title') || element.getAttribute('datetime'));
+
+            $timeout(function() {
+                element.innerHTML = timer(element.getAttribute('title') || element.getAttribute('datetime'));
+            }, 300);
+
+
+        }
+    }
 }]);

@@ -5,8 +5,8 @@ DRAGDIS.config = DRAGDIS.config || {};
 
 var sidebarConfig = {
     prefix: "",
-    domain: "dragdis.com",
-    shortUrlDomain: "dragdis.com/s",
+    domain: "toobusytosearch.net",
+    shortUrlDomain: "toobusytosearch.net",
     timing: {
         dragDelay: 300,
         snapshotTimeout: 7000,
@@ -27,12 +27,12 @@ var sidebarConfig = {
 
     $.extend(true, config, sidebarConfig);
 
-    config.shortUrlDomain = "https://" + config.shortUrlDomain + "/";
+    config.shortUrlDomain = "http://" + config.shortUrlDomain + "/";
 
     if (config.prefix) {
         config.prefix += ".";
     }
 
-    config.domain = "https://" + config.prefix + config.domain + "/";
+    config.domain = "http://" + config.prefix + config.domain + "/";
 
 })();

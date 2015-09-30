@@ -14,8 +14,8 @@ dragdisSidebar.value('$anchorScroll', angular.noop);
 dragdisSidebar.config(['$httpProvider', '$compileProvider', '$sceDelegateProvider', function ($httpProvider, $compileProvider, $sceDelegateProvider) {
 
     // Whitelis local resource url as valid image locations
-    $compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|ftp|mailto|chrome-extension):/);
-
+    //$compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|ftp|mailto|chrome-extension):/);
+    $compileProvider.imgSrcSanitizationWhitelist(/^\s*((https?|ftp|mailto|chrome-extension):|data:image\/)/);
     $sceDelegateProvider.resourceUrlWhitelist([
          'self',
          'chrome-extension://**'

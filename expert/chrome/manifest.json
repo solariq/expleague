@@ -8,7 +8,7 @@
    },
    "content_scripts": [ {
       "all_frames": false,
-      "css": [ "css/main.css" ],
+      "css": [ "css/main.css", "css/chat.css"],
       "exclude_globs": [ "https://*bank*" ],
       "exclude_matches": [ "http://*/*", "https://*/*" ],
       "js": [ "js/lib/jquery/jquery-2.1.1.min.js", "js/lib/jquery/jquery-ui-1.10.3.custom.min.js", "js/lib/jquery/jquery.mousewheel.js", "js/lib/jquery/jquery.nearest.js", "js/lib/jquery/jquery.scrollTo.js", "js/lib/angular/angular_mod.js", "js/lib/angular/angular.sortable.js", "js/lib/angular/angular-animate.js", "js/lib/ng-tags-input.min.js", "js/lib/antiscroll.min.js", "js/lib/dragster.min.js", "config/sidebar-config.js", "js/utils/tracker.js", "js/utils/utils.js", "js/utils/dragdisPlugins.js", "js/sidebar.js", "config/sidebar-app.js", "js/angular.js", "js/extension.js", "js/events.js", "js/factories/foldersSystem.js", "js/factories/utils.js", "js/factories/collaboration.js", "js/factories/moreFoldersDialog.js", "js/factories/dialog.js", "js/factories/fakemodules.js", "js/services/services.js", "js/directives/dragdrop.js", "js/directives/loginRegister.js", "js/directives/foldersSystem.js", "js/directives/dialog.js", "js/directives/collaboration.js", "js/directives/moreFolders.js", "js/directives/onboarding.js", "js/directives/utils.js" ],
