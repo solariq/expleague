@@ -17,19 +17,20 @@
 
                 DRAGDIS.api("loginUser", $scope.loginForm, function (response) {
 
+                    console.log('login register callback');
                     $scope.isLoginInProgress = false;
 
                     //If no errors returned - registration were successfull
-                    if (!response.data.error) {
+                    if (response.status == 200) {
 
                         //Clear registration error list
                         $scope.loginErrors = [];
-
-                        //Connect extension to server
-                        DRAGDIS.sendMessage({ Type: "RECONNECT" }, function () { });
+                        //
+                        ////Connect extension to server
+                        //DRAGDIS.sendMessage({ Type: "RECONNECT" }, function () { });
 
                     } else {
-                        $scope.loginErrors = response.data.messages;
+                        $scope.loginErrors = response.messages;
                     }
 
                     if (!$scope.$$phase) {

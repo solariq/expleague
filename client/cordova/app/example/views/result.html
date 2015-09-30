@@ -8,144 +8,12 @@ body  {
   background-color: #efefef;
 }
 
-.chat {
-  padding-bottom: 50px;
-}
-
-.baloon {
-  background-color: #fff;
-  box-shadow: 0px 1px 1px 0px rgba(50, 50, 50, 0.1);
-  border-radius: 10px;
-  margin-bottom: 10px;
-  position: relative;
-}
-
-.baloon-client {
-  margin-left: 10px;
-  margin-right: 25%;
-}
-
-.baloon-client::after {
-  content: "";
-  position: absolute;
-  top: 0px;
-  left: -16px;
-  border-width: 22px 0 0 16px;
-  border-style: solid;
-  border-color: #fff transparent;
-  display: block;
-}
-
-.baloon-server {
-  margin-left: 25%;
-  margin-right: 10px;
-}
-
-.baloon-server::after {
-  content: "";
-  position: absolute;
-  top: 0px;
-  right: -16px;
-  border-width: 0 0 22px 16px;
-  border-style: solid;
-  border-color: transparent #fff;
-  display: block;
-}
-
-.baloon-title {
-  font-weight: bold;
-  background: #fff;
-  padding: 2px 10px 2px;
-}
-
-.baloon-client .baloon-title {
-  border-top-right-radius: 10px;
-}
-
-.baloon-server .baloon-title {
-  border-top-left-radius: 10px;
-}
-
-.baloon-text {
-  padding: 2px 8px 5px;
-}
-
-@-webkit-keyframes progress-bar-stripes {
-  from {
-    background-position: 40px 0;
-  }
-  to {
-    background-position: 0 0;
-  }
-}
-.progress {
-  height: 20px;
-  overflow: hidden;
-  background-color: #f5f5f5;
-  border-radius: 4px;
-}
-.progress-bar {
-  float: left;
-  width: 100%;
-  height: 100%;
-  font-size: 12px;
-  line-height: 20px;
-  color: #fff;
-  text-align: center;
-  background-color: #347AFA;
-  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
-  background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
-  background-size: 40px 40px;
-  -webkit-animation: progress-bar-stripes 2s linear infinite;
-}
-
-.baloon-question {
-  margin-top: 10px;
-  background-color: #bbb;
-  color: #fff;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-}
-
-.baloon-question-yes {
-  width: 49%;
-  display: inline-block;
-  text-align: center;
-  line-height: 2.4;
-  border-right: 1px solid #fff;
-  border-bottom-left-radius: 10px;
-}
-
-.baloon-question-no {
-  width: 49%;
-  display: inline-block;
-  text-align: center;
-  line-height: 3;
-  border-bottom-right-radius: 10px;
-}
-
-.baloon-simple {
-  border-top-left-radius: 0;
-}
-
-.baloon-simple .baloon-text {
-  line-height: 3;
-}
-
-.message {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 54px;
-}
-
 #show1, #show2, #show3, #show4 {
   display: none;
 }
 </style>
 
-<div class="padding chat">
+<div class="padding result">
   <div class="baloon baloon-client" id="show1">
     <div class="baloon-title">Необходимо найти</div>
     <div class="baloon-text">
@@ -199,7 +67,14 @@ var startShow = true;
 $('.baloon-question-yes, .baloon-question-no').click(function() {
   navigator.notification.vibrate(50);
   var answer = $(this).hasClass('baloon-question-yes') ? 'Да' : 'Нет';
-  $('.chat').append('<div class="baloon baloon-client baloon-simple"><div class="baloon-text">' + answer + '</div></div>');
+  $('.result').append('<div class="baloon baloon-client baloon-simple"><div class="baloon-text">' + answer + '</div></div>');
+  if ($(this).hasClass('baloon-question-no')) {
+    $('.result').addClass('result-chat');
+    setTimeout(function() {
+      $(window).scrollTop(document.body.clientHeight);
+      $('.message').css('bottom', '0');
+    }, 1500);
+  }
   $(this).parent().css('visibility','hidden');
   $(window).scrollTop(document.body.clientHeight);
 });
