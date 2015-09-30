@@ -1,0 +1,143 @@
+.result {
+  padding-bottom: 50px;
+}
+
+.result-chat {
+  padding-bottom: 50px;
+}
+
+.result .baloon {
+  background-color: #fff;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  position: relative;
+  -webkit-transition-property: margin;
+  -webkit-transition-duration: 1300ms;
+}
+
+.result-chat .baloon {
+  box-shadow: 0px 1px 1px 0px rgba(50, 50, 50, 0.1);
+}
+
+.result .baloon-client {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.result-chat .baloon-client {
+  margin-left: 10px;
+  margin-right: 25%;
+}
+
+.result .baloon-client::after {
+  display: none;
+}
+
+.result-chat .baloon-client::after {
+  content: "";
+  position: absolute;
+  top: 0px;
+  left: -16px;
+  border-width: 22px 0 0 16px;
+  border-style: solid;
+  border-color: #fff transparent;
+  display: block;
+}
+
+.result .baloon-server {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.result-chat .baloon-server {
+  margin-left: 25%;
+  margin-right: 10px;
+}
+
+.result .baloon-server::after {
+  display: none;
+}
+
+.result-chat .baloon-server::after {
+  content: "";
+  position: absolute;
+  top: 0px;
+  right: -16px;
+  border-width: 0 0 22px 16px;
+  border-style: solid;
+  border-color: transparent #fff;
+  display: block;
+}
+
+.baloon-title {
+  font-weight: bold;
+  background: #fff;
+  padding: 2px 10px 2px;
+}
+
+.result .baloon-client .baloon-title {
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+}
+
+.result-chat .baloon-client .baloon-title {
+  border-top-right-radius: 10px;
+  border-top-left-radius: 0;
+}
+
+.result .baloon-server .baloon-title {
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+}
+
+.result-chat .baloon-server .baloon-title {
+  border-top-right-radius: 0;
+  border-top-left-radius: 10px;
+}
+
+.baloon-text {
+  padding: 2px 8px 5px;
+}
+
+.baloon-question {
+  margin-top: 10px;
+  background-color: #bbb;
+  color: #fff;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.baloon-question-yes {
+  width: 49%;
+  display: inline-block;
+  text-align: center;
+  line-height: 2.4;
+  border-right: 1px solid #fff;
+  border-bottom-left-radius: 10px;
+}
+
+.baloon-question-no {
+  width: 49%;
+  display: inline-block;
+  text-align: center;
+  line-height: 3;
+  border-bottom-right-radius: 10px;
+}
+
+.result-chat .baloon-simple {
+  border-top-left-radius: 0;
+}
+
+.baloon-simple .baloon-text {
+  line-height: 3;
+}
+
+.message {
+  position: fixed;
+  bottom: -54px;
+  left: 0;
+  width: 100%;
+  height: 54px;
+  -webkit-transition-property: bottom;
+  -webkit-transition-duration: 300ms;
+}
