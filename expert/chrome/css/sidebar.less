@@ -139,7 +139,7 @@ textarea {
         cursor: pointer;
         display: block;
         height: 56px;
-        margin-right: 40px;
+        margin-right: 80px;
         line-height: 56px;
         white-space: nowrap;
         padding: 0 0 0 20px;
@@ -162,7 +162,7 @@ textarea {
 
         span {
             width: auto;
-            max-width: 150px;
+            max-width: 110px;
             display: block;
             float: left;
             text-overflow: ellipsis;
@@ -412,6 +412,19 @@ textarea {
         position: absolute;
         top: 13px;
         right: 14px;
+
+        &:hover {
+            .tooltip {
+                .tooltipHover
+            }
+        }
+    }
+
+    .icon-chat {
+        display: block;
+        position: absolute;
+        top: 13px;
+        right: 34px;
 
         &:hover {
             .tooltip {
@@ -1128,7 +1141,7 @@ textarea {
 
 .new-folder, .more-folders {
     display: block;
-    height: 60px;
+    height: 100px;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
@@ -1754,6 +1767,7 @@ Expanded sidebar styles
     *display: inline-block;
 
     .container {
+        height: 100%;
         display: table-cell;
         text-align: center;
         vertical-align: middle;

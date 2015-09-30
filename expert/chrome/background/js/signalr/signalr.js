@@ -145,11 +145,11 @@ function signalRInit() {
     });
 
     $.connection.hub.connectionSlow(function () {
-        DRAGDIS.storage.set("IsReconnecting", true);
+        DRAGDIS.storage.set("IsReconnecting", false);
     });
 
     $.connection.hub.reconnecting(function () {
-        DRAGDIS.storage.set("IsReconnecting", true);
+        DRAGDIS.storage.set("IsReconnecting", false);
     });
 
 
@@ -173,7 +173,7 @@ function startHubConnection() {
     }
 
     //Set reconnecting flag to true, to indiicate connecting operation
-    DRAGDIS.storage.set("IsReconnecting", true);
+    DRAGDIS.storage.set("IsReconnecting", false);
 
     // Create new connection
     $.connection.hub.start().done(function () {
@@ -242,23 +242,23 @@ function startHubConnection() {
     });
 }
 
-function refreshHubConnection() {
-
-    if (apiHub.connection.state == 4) {
-
-        $.connection.hub.start().done(function () {
-
-            DRAGDIS.storage.set("ConnectionFail", false);
-            DRAGDIS.storage.set("IsReconnecting", false);
-            $.connection.hub.connectionRetryDelay = 1000;
-
-        }).fail(function () {
-
-            DRAGDIS.storage.get("IsConnected", function (value) {
-                if (value && apiHub.connection.state != 4) {
-                    $.connection.hub.throwDisconnectError("hub.start() failed on refreshHubConnection");
-                }
-            });
-        });
-    }
-}
+//function refreshHubConnection() {
+//
+//    if (apiHub.connection.state == 4) {
+//
+//        $.connection.hub.start().done(function () {
+//
+//            DRAGDIS.storage.set("ConnectionFail", false);
+//            DRAGDIS.storage.set("IsReconnecting", false);
+//            $.connection.hub.connectionRetryDelay = 1000;
+//
+//        }).fail(function () {
+//
+//            DRAGDIS.storage.get("IsConnected", function (value) {
+//                if (value && apiHub.connection.state != 4) {
+//                    $.connection.hub.throwDisconnectError("hub.start() failed on refreshHubConnection");
+//                }
+//            });
+//        });
+//    }
+//}

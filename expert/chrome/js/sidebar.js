@@ -18,7 +18,7 @@ var DRAGDIS_SIDEBAR = {
         }
 
         document.dispatchEvent(new CustomEvent('sidebarLoaded'));
-    
+        console.log('callbask')
         callback();
     },
 
@@ -31,7 +31,6 @@ var DRAGDIS_SIDEBAR = {
 
         if (!sidebar.length) {
             this.loadRootElement(function () {
-
                 DRAGDIS.config.firstTimeLoad = true;
 
                 angular.bootstrap(document.getElementById(DRAGDIS_SIDEBAR_NAME), ['dragdisSidebar']);

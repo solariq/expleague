@@ -1,0 +1,33 @@
+<div folder-droppable="1" class="workboard" id="workboard">
+    <!--<div id="sortable">-->
+    <!--sortable-list="scope"-->
+    <i class="icon-send" ng-click="send()"></i>
+
+    <div ui-sortable="groupsSortableOptions"  ng-model="board.list" sortable-list>
+        <div ng-repeat="answer in board.list track by $index" class="answer-block">
+            <!--{{$index}} &#45;&#45; {{printableAnswer(answer)}}-->
+            <i class="close" ng-click="removeFromBorder($index)"></i>
+            <!--<a class="link" href="{{answer.Referer}}"></a>-->
+            <div>
+                <a ng-href="answer.Href">{{truncateTitle(answer.Title)}}</a>
+                <div ng-if="answer.Base64Image != undefined">
+                    <img src="{{answer.Base64Image}}">
+                </div>
+                <div ng-if="answer.Image != undefined && answer.Base64Image == undefined">
+                    <img src="{{answer.Image}}">
+                </div>
+                <div ng-if="answer.Type == 'text'">
+                    {{printableAnswer(answer)}}
+                </div>
+                <!--<div ng-if="answer.Type == 'link' && answer.Image == undefined && answer.Base64Image == undefined">-->
+                <!--<a ng-href="answer.Href">{{answer.Title}}</a>-->
+                <!--</div>-->
+            </div>
+            <!--<div ng-switch on=\"itemColumn.highlight\">-->
+            <!--<span ng-switch-when=\"true\"><div ng-bind-html-unsafe=\"getValueToBind(item,itemColumn.field) | highlight: getFieldToFilter()\" ></div>-->
+            <!--</span>-->
+            <!--<span ng-switch-when=\"false\">{{item[itemColumn.field]}}</span>-->
+            <!--</div>-->
+        </div>
+    </div>
+</div>

@@ -1,73 +1,30 @@
-﻿<div class="sidebar-container first-time" scroll-preventer render-complete>
+﻿<!--<div class="sidebar-container first-time" scroll-preventer render-complete>-->
+<div class="sidebar-container first-time" render-complete>
 
     <!-- MENU AND USER AVATAR -->
     <div class="menu" ng-class="{active: menu.active, overTop: blockMoveUp}">
-        <a class="user" ng-class="{reconnecting: isReconnecting}" toggle-menu>
+        <!--<a class="user" ng-class="{reconnecting: isReconnecting}" toggle-menu>-->
+        <a class="user" toggle-menu>
             <img avatar image="user.avatar" ng-src="{{user.avatar}}" />
             <span>{{user.username}}</span>
         </a>
 
-        <i class="icon icon-closeSidebar" ng-click="closeSidebar()" tooltip-hover>
+        <!--<span class="icon icon-chat" ng-click="chatWindow.open()"></span>-->
+        <span class="icon icon-closeSidebar" ng-click="closeSidebar()" tooltip-hover>
             <span class="tooltip repositioned right-bottom">Close sidebar</span>
-        </i>
+        </span>
 
-        <ul ng-class="{subscriptionIsActive : folders.subscriptionActive}">
 
-            <li ng-if="!folders.subscriptionActive">
-                <span><i class="usedFolders" ng-class="{brokeLimit: (folders.usedFoldersCount > folders.freeFoldersCount) }">{{folders.usedFoldersCount}}</i> folders of {{folders.freeFoldersCount}} used</span>
-            </li>
-            <li class="storage-bar" ng-if="!folders.subscriptionActive">
-                <div class="used" ng-style="{width: folders.barWidthForMenu+'%' }"></div></>
-            </li>
 
-            <li ng-if="folders.subscriptionActive" style="height: 90px">
-                <div class="blueLine"></div>
-                <div class="star"></div>
-                <div class="unlimited">
-                    Dragdis Unlimited<br />
-                    <span>{{folders.usedFoldersCount}} folders of</span>
-                </div>
-            </li>
-            
-            <li ng-if="!folders.subscriptionActive"><a class=" red" target="_blank" href="{{domain}}account/billing" ng-click="menu.openMoreFoldersDialog()" prevent-click>Get more folders</a></li>
-            <li ng-if="folders.subscriptionActive"><a target="_blank" href="{{domain}}account/billing" ng-click="hide(true)">Subscription details</a></li>
-
-            <li><a target="_blank" href="{{::domain}}account/settings" ng-click="hide(true)">Settings</a></li>
-            <li><a target="_blank" href="{{::domain}}donate" ng-click="hide(true)">Donate</a></li>
-            <li><a href="{{::domain}}extension" ng-click="hide(true)">Browser extension</a></li>
-            <li><a class="IntercomSupport" target="_blank" href="{{::domain}}contact" ng-click="hide(true)">Support</a></li>
+        <ul>
+            <li><a ng-click="finishRequest()">Завершить заказ</a></li>
             <li class="seperator"></li>
-            <li><a href="{{::domain}}account/logout" ng-click="logout($event)">Logout</a></li>
+            <li><a ng-click="logout($event)">Выйти</a></li>
         </ul>
     </div>
 
-    <!-- FOLDER TREE -->
-    <div id="DRAGDIS_folders" class="folders antiscroll-wrap" ng-class="{tutorial: tutorialStep, blockMoveUp: blockMoveUp, sortingFolders: sortingFolders}" block-move dragover-on-sidebar custom-scrollbar>
-        <ul class="folders-list antiscroll-inner ng-cloak" ng-cloak ng-show="folders.list.length" ng-model="folders.list" ui-sortable="groupsSortableOptions" sortable-list="scope" folder-template>
-            <li class="group folder"
-                ng-class="{open: folder.Status, empty: !folder.Childs.length && !tutorialStep, isCollab: folder.IsLink || folder.HasLinks, isNewFolder: folder.isNewFolder, isActive: folder.isActive, dragUploading: folder.dragStatus > 0, isDisabled: folder.Disabled}"
-                ng-repeat="(key, folder) in folders.list | orderBy:['Order','ID']"
-                folder>
-                <div ng-include="folderTemplate"></div>
-            </li>
-        </ul>
-    </div>
 
-    <!-- SCROLL HANDLERS -->
-    <div class="dragScroll top" dragover-scroll></div>
-    <div class="dragScroll bottom" dragover-scroll></div>
 
-    <div class="new-folder" ng-class="{limited: folders.totalAvailableFolders <= 3 && !folders.subscriptionActive}" ng-if="folders.totalAvailableFolders > 0 ||  folders.subscriptionActive" new-folder>
-        <div class="title" ng-click="newFolder.openNewFolderPanel()">New folder<i class="icon icon-add"></i><i class="bubble bubble-limit" ng-if="folders.totalAvailableFolders <= 3 && !folders.subscriptionActive">{{folders.totalAvailableFolders}} {{left}}</i></div>
-        <div class="panel-container" ng-include="newFolder.actionPanelTemplate()"></div>
-    </div>
+    <span ng-include="sidebarContent()"></span>
 
-    <div class="more-folders" more-folders ng-if="folders.totalAvailableFolders == 0 && !folders.subscriptionActive">
-        <div class="title" ng-click="getMoreFoldersPanel()">Get more folders<i class="bubble bubble-alert">!</i></div>
-    </div>
-
-    <div class="dialog" dialog>
-        <div class="dialog-container" ui-view="sidebar_dialog"></div>
-        <div class="dialog-container" ng-include="dialogTemplate()"></div>
-    </div>
 </div>

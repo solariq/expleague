@@ -2,34 +2,10 @@
      ng-class="{'hover': isHovered || isPlusHovered || folder.showActionsBlock || folder.actionPanelTemplate || folder.isActive,
      actionsBlocksActive: folder.showActionsBlock,
      'drag-upload': folder.dragStatus > 0, uploading: folder.dragStatus==1, success: folder.dragStatus >=2, movedSuccess: folder.dragStatus==3}"
-     ng-switch on="folder.dragStatus"
+     ng-switch on="0"
      dragover-group folder-droppable="{{::folder.ID}}">
 
     <a class="name icon{{folder.Icon}}" ng-switch-default ng-click="openFolder()" ng-href="{{::folderUrl}}" prevent-click>{{folder.Name}}</a>
-
-    <a class="name" ng-switch-when="1" prevent-click>Uploading...</a>
-    <a class="name" ng-switch-when="2" ng-click="openLastItem()" prevent-click>Saved!</a>
-    <a class="name" ng-switch-when="3" ng-click="openFolder()" ng-href="{{::folderUrl}}" prevent-click>Moved successfully!</a>
-
-    <i class="icon icon-more"
-       ng-class="{active: folder.showActionsBlock, right: !folder.Childs.length}"
-       ng-hide="!folder.ID"
-       ng-click="toggleActionsBlock()"
-       ng-if="folder.loadControls"
-       ng-switch-default
-       tooltip-hover stop-propagation>
-        <span class="tooltip right-bottom">More actions</span>
-    </i>
-
-    <i class="icon icon-expand"
-       ng-class="{expanded: folder.Status}"
-       ng-show="folder.Childs.length"
-       ng-click="expandChilds()"
-       ng-switch-default
-       drag-open-childs tooltip-hover stop-propagation>
-        <span class="tooltip right-bottom" ng-show="folder.Status==0">Show subfolders</span>
-        <span class="tooltip right-bottom" ng-show="folder.Status==1">Hide subfolders</span>
-    </i>
 
     <i class="icon icon-edit white" ng-switch-when="2" ng-click="activateItemPanel()" tooltip-hover stop-propagation>
         <span class="tooltip right-bottom">Edit item</span>
@@ -38,18 +14,9 @@
         <span class="tooltip right-bottom">Copy short url of last drag</span>
     </i>
 
-    <scroll-helper ng-if="::folder.isNewFolder"></scroll-helper>
 </div>
 
-<actions-block ng-if="folder.loadControls"></actions-block>
 
-<ul class="folder-childs" ui-sortable="folderSortableOptions" ng-model="folder.Childs">
-    <li class="folder"
-        ng-class="{'hover': folder.showActionsBlock || folder.dragStatus > 0, isNewFolder: folder.isNewFolder, isCollab: folder.IsLink || folder.HasLinks, dragUploading: folder.dragStatus > 0, isDisabled: folder.Disabled}"
-        ng-repeat=" (key, folder) in folder.Childs | orderBy:['Order','ID']"
-        folder>
-        <div ng-include="folderTemplate"></div>
-    </li>
 </ul>
 
 <div class="clearfix"></div>

@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+﻿﻿/* ==========================================================================
 Storage
 ========================================================================== */
 DRAGDIS.storage = {
@@ -553,8 +553,12 @@ DRAGDIS.templates = {
             "views/dialog.moreFolders.html",
             "views/empty.html",
             "views/error.html",
+            "views/requestList.html",
+            "views/dragArea.html",
+            "views/waiting.html",
             "views/login.html",
             "views/onboarding.html",
+            "views/panel_chatWindow.html",
             "views/panel_folder.html",
             "views/panel_item.html",
             "views/panel_newFolder.html",
@@ -563,7 +567,8 @@ DRAGDIS.templates = {
             "views/sidebar.folder_1.html",
              "views/sidebar.html",
              "views/uploadError.html",
-             "views/image_icon.html"
+             "views/image_icon.html",
+             "views/tbtsboard.html"
         ];
 
         var promises = [];
