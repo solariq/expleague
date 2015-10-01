@@ -29,6 +29,10 @@
   font-size: 34px;
 }
 
+.range-custom {
+  padding: 2px 0;
+}
+
 .icon-custom-turtle {
   background-image: url(/icons/turtle.svg);
 }
