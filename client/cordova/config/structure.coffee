@@ -24,12 +24,12 @@ module.exports =
   # rootView:
   #   location: "example#getting-started"
 
-  preloads: [
-    {
-      id: "result"
-      location: "history#result"
-    }
-  ]
+  # preloads: [
+  #   {
+  #     id: "result"
+  #     location: "history#result"
+  #   }
+  # ]
 
   # drawers:
   #   left:
