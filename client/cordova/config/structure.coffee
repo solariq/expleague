@@ -7,7 +7,7 @@ module.exports =
     {
       title: "Заказ"
       id: "order"
-      location: "example#order" # Supersonic module#view type navigation
+      location: "order#index" # Supersonic module#view type navigation
     }
     {
       title: "История"
