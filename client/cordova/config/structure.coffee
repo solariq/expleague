@@ -26,12 +26,8 @@ module.exports =
 
   preloads: [
     {
-      id: "options"
-      location: "example#options"
-    }
-    {
       id: "result"
-      location: "example#result"
+      location: "history#result"
     }
   ]
 
