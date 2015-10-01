@@ -12,7 +12,7 @@ module.exports =
     {
       title: "История"
       id: "history"
-      location: "example#history"
+      location: "history#index"
     }
     {
       title: "О приложение"
