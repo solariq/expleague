@@ -4,7 +4,7 @@
 </super-navbar>
 
 <style>
-body  {
+body {
   background-color: #efefef;
 }
 
@@ -64,8 +64,13 @@ body  {
 <script>
 var startShow = true;
 
+function playSound() {
+  var sound = new Media('http://localhost/bb2.mp3');
+  sound.play();
+}
+
 $('.baloon-question-yes, .baloon-question-no').click(function() {
-  navigator.notification.vibrate(50);
+  playSound();
   var answer = $(this).hasClass('baloon-question-yes') ? 'Да' : 'Нет';
   $('.result').append('<div class="baloon baloon-client baloon-simple"><div class="baloon-text">' + answer + '</div></div>');
   if ($(this).hasClass('baloon-question-no')) {
@@ -111,32 +116,32 @@ function showTime() {
   setTimeout(function() {
     $('.speed').text(localStorage.getItem('speed'));
     $('#show1').show();
-    navigator.notification.vibrate(50);
+    playSound();
     $(window).scrollTop(document.body.clientHeight);
   }, 200);
 
   setTimeout(function() {
     $('#show2').show();
-    navigator.notification.vibrate(50);
+    playSound();
     $(window).scrollTop(document.body.clientHeight);
   }, 2500);
 
   setTimeout(function() {
     $('#show2 .progress').hide();
     $('#show2 .baloon-text').text('Исполнитель найден. Вы получите уведомление, когда исполнитель найдет необходимую информацию. Также Вы можете дополнить задание, для этого используете форму внизу экрана.');
-    navigator.notification.vibrate(50);
+    playSound();
     $(window).scrollTop(document.body.clientHeight);
   }, 6500);
 
   setTimeout(function() {
     $('#show3').show();
-    navigator.notification.vibrate(50);
+    playSound();
     $(window).scrollTop(document.body.clientHeight);
   }, 13500);
 
   setTimeout(function() {
     $('#show4').show();
-    navigator.notification.vibrate(50);
+    playSound();
     $(window).scrollTop(document.body.clientHeight);
   }, 14500);
 }
