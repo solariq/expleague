@@ -17,7 +17,7 @@ module.exports =
     {
       title: "О приложение"
       id: "about"
-      location: "example#about"
+      location: "about#index"
     }
   ]
 
