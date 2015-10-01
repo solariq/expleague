@@ -18,10 +18,15 @@
   margin: 10px 0;
 }
 
-.icon-custom {
-  background-size: 24px 24px;
-  width: 24px;
-  height: 24px;
+.icon-custom-34 {
+  background-size: 34px 34px;
+  width: 34px;
+  height: 34px;
+}
+
+.range .icon-custom-34 {
+  min-width: 34px;
+  font-size: 34px;
 }
 
 .icon-custom-turtle {
