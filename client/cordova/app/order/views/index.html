@@ -22,10 +22,10 @@
         подключить к поиску эксперта
       </div>
       <div class="item">
-        Срочность заказа: <span class="speed-name">в течение дня</span>
+        Срочность заказа: <span class="speed-name">2 часа</span>
         <div class="range range-positive range-custom">
           <i class="icon icon-custom-34 icon-custom-turtle"></i>
-          <input class="range-speed" type="range" name="speed" min="0" max="5" step="1" value="0">
+          <input class="range-speed" type="range" name="speed" min="0" max="5" step="1" value="2">
           <i class="icon icon-custom-34 icon-custom-rocket"></i>
         </div>
       </div>
@@ -42,7 +42,7 @@ var speedNames = ['в течение дня', '4 часа', '2 часа', '1 ч�
 var speedQuotes = [0, 50, 100, 150, 200, 250];
 
 var priceDefault = 100;
-var priceSpeed = speedQuotes[0];
+var priceSpeed = speedQuotes[2];
 var priceExpert = 0;
 
 function getTotalPrice() {
@@ -66,6 +66,7 @@ $('.checkbox-expert').change(function() {
 });
 
 $('.button-start-search').click(function() {
+  localStorage.setItem('speed', speedNames[$('.range-speed').val()]);
   steroids.tabBar.selectTab(1);
   var modalView = new supersonic.ui.View('history#result');
   var options = {
