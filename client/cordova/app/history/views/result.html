@@ -90,7 +90,7 @@ $('.baloon-question-yes, .baloon-question-no').on('touchend', function() {
 $('.message button').click(function() {
   var message = $('.input-message').val().trim();
   if (message != '') {
-    $('.chat').append('<div class="baloon baloon-client baloon-simple"><div class="baloon-text">' + message + '</div></div>');
+    $('.result').append('<div class="baloon baloon-client baloon-simple"><div class="baloon-text">' + message + '</div></div>');
     $('.input-message').val('');
     $('.input-message').focus();
     $(window).scrollTop(document.body.clientHeight);
@@ -100,7 +100,7 @@ $('.message button').click(function() {
 $(window).resize(function(){
   $(window).scrollTop(document.body.clientHeight);
   // Какой-то баг AppGyver, иначе неправильно позиционируется message
-  $('.chat').css('min-height', $(window).height() + 'px');
+  $('.result').css('min-height', $(window).height() + 'px');
   if (startShow) {
     showTime();
     startShow = false;
