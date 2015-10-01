@@ -7,11 +7,11 @@
     <div class="list">
       <label class="item item-input item-floating-label">
         <span class="input-label">Что необходимо найти?</span>
-        <input type="text" class="input-text" name="text" placeholder="Что необходимо найти?">
+        <input type="text" class="input-text" name="text" placeholder="Что необходимо найти?" value="">
       </label>
       <div class="item item-checkbox">
         <label class="checkbox">
-          <input type="checkbox">
+          <input type="checkbox" class="checkbox-near">
         </label>
         рядом с моими местоположением
       </div>
@@ -22,7 +22,7 @@
         подключить к поиску эксперта
       </div>
       <div class="item">
-        Срочность заказа: <span class="speed-name">2 часа</span>
+        Срочность заказа: <span class="speed-name"></span>
         <div class="range range-positive range-custom">
           <i class="icon icon-custom-34 icon-custom-turtle"></i>
           <input class="range-speed" type="range" name="speed" min="0" max="5" step="1" value="2">
@@ -31,7 +31,7 @@
       </div>
     </div>
     <div class="list">
-      <div class="order-price">Цена услуги: <span><b>100</b> единиц</span></div>
+      <div class="order-price">Цена услуги: <span><b></b> единиц</span></div>
       <div class="account-total">У вас на счете: <span>1000 единиц</span></div>
     </div>
     <button class="button button-block button-positive button-start-search">Начать поиск</button>
@@ -42,12 +42,27 @@ var speedNames = ['в течение дня', '4 часа', '2 часа', '1 ч�
 var speedQuotes = [0, 50, 100, 150, 200, 250];
 
 var priceDefault = 100;
-var priceSpeed = speedQuotes[2];
+var priceSpeed = speedQuotes[0];
 var priceExpert = 0;
 
 function getTotalPrice() {
   return priceDefault + priceSpeed + priceExpert;
 }
+
+function defaultFormState() {
+  priceDefault = 100;
+  priceExpert = 0;
+  var defaulRangeValue = 2;
+  $('.input-text').val('');
+  $('.checkbox-near').attr('checked', false);
+  $('.checkbox-expert').attr('checked', false);
+  $('.range-speed').val(defaulRangeValue);
+  priceSpeed = speedQuotes[defaulRangeValue];
+  $('.speed-name').text(speedNames[defaulRangeValue]);
+  $('.order-price span b').text(getTotalPrice());
+}
+
+defaultFormState();
 
 $('.range-speed').on('input', function() {
   var speed = $(this).val();
@@ -73,6 +88,7 @@ $('.button-start-search').click(function() {
     animate: false
   }
   supersonic.ui.modal.show(modalView, options);
+  defaultFormState();
 });
 
 // $('.input-text').focus(function() {
