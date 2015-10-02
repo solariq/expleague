@@ -14,8 +14,8 @@ angular
       return day + ' ' + monthNames[month] + ' ' + year + ', ' + hours + ':' + minutes;
     };
 
-    $scope.showResults = function() {
-      var modalView = new supersonic.ui.View('history#result');
+    $scope.showResults = function(id) {
+      var modalView = new supersonic.ui.View('history#result?id=' + id);
       var options = {
         animate: false
       }
@@ -24,28 +24,31 @@ angular
 
     $scope.history = [
       {
-        id: 3,
+        id: 2,
         text: 'Самый большой по площади парк Питера',
         near: false,
         expert: false,
         urgency: 0, // От 0 до 5
-        timestamp: 1443710220000
+        started: 1443710220000,
+        ended: 1443710220001
       },
       {
-        id: 2,
+        id: 1,
         text: 'Правила парковки в Финляндии',
         near: false,
         expert: false,
         urgency: 0, // От 0 до 5
-        timestamp: 1443565680000
+        started: 1443565680000,
+        ended: 1443565680001
       },
       {
-        id: 1,
+        id: 0,
         text: 'круглосуточная аптека',
         near: 'рядом с адресом: Москва, ул. Большая Декабрьская 10',
         expert: false,
         urgency: 0, // От 0 до 5
-        timestamp: 1443356040000
+        started: 1443356040000,
+        ended: 1443356040001
       }
     ];
 

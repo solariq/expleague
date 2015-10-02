@@ -1,148 +1,41 @@
-<super-navbar>
-  <super-navbar-title>Результаты поиска</super-navbar-title>
-  <super-navbar-button side="left" onclick="supersonic.ui.modal.hide()">‹ История</super-navbar-button>
-</super-navbar>
+<div ng-controller="ResultController">
+  <super-navbar>
+    <super-navbar-title>Результаты поиска</super-navbar-title>
+    <super-navbar-button side="left" ng-click="backToHistory()">‹ История</super-navbar-button>
+  </super-navbar>
 
-<style>
-body {
-  background-color: #efefef;
-}
+  <style>
+  body {
+    background-color: #efefef;
+  }
 
-#show1, #show2, #show3, #show4 {
-  display: none;
-}
-</style>
+  .search-status-message {
+    margin: 10px;
+    text-align: center;
+    color: #bbb;
+    text-shadow: 0px 1px 0px #fff;
+    text-transform: uppercase;
+  }
+  </style>
 
-<div class="padding result">
-  <div class="baloon baloon-client" id="show1">
-    <div class="baloon-title">Необходимо найти</div>
-    <div class="baloon-text">
-      круглосуточная аптека<br>
-      рядом с адресом: Москва, ул. Большая Декабрьская 10<br>
-      срочность поиска: <span class="speed"></span>
-    </div>
-  </div>
-
-  <div class="baloon baloon-server" id="show2">
-    <div class="baloon-title">Поиск исполнителя</div>
-    <div class="baloon-text">
-      <div class="progress">
-        <div class="progress-bar"></div>
+  <div class="padding result result-{{currentHistoryItem.answerMode}}">
+    <div ng-repeat="message in currentHistoryItem.messages" class="baloon baloon-{{message.type}}">
+      <div class="baloon-title">{{message.title}}</div>
+      <div class="baloon-text">
+        <div ng-bind-html="message.text">{{message.text}}</div>
+        <div ng-if="message.extra.address">Адрес: {{message.extra.address}}</div>
+        <div ng-if="message.extra.tel">Телефон: {{message.extra.tel}}</div>
       </div>
-      <!--
-      Исполнитель найден.
-      Вы получите уведомление, когда исполнитель найдет необходимую информацию. Также Вы можете дополнить задание, для этого используете форму внизу экрана.
-      -->
     </div>
+    <div ng-if="currentHistoryItem.ended" class="search-status-message">Поиск завершен</div>
   </div>
 
-  <div class="baloon baloon-server" id="show3">
-    <div class="baloon-title">Результаты поиска</div>
-    <div class="baloon-text">
-      Ближайшая круглосуточная аптека «Старый лекарь» находится по адресу:<br><a href="http://maps.google.com/?q=123022, Москва, ул. 1905 года, 19" target="_system">123022, Москва, ул. 1905 года, 19</a><br> Тел.: <a href="tel:84992535261">8 (499) 253-52-61</a>
-    </div>
-  </div>
-
-  <div class="baloon baloon-server" id="show4">
-    <div class="baloon-title">Вас устроил данный ответ?</div>
-    <div class="baloon-question">
-      <div class="baloon-question-yes">Да</div>
-      <div class="baloon-question-no">Нет</div>
+  <div class="message">
+    <div class="item item-input-inset">
+      <label class="item-input-wrapper">
+        <input type="text" class="input-message" name="message" value="" placeholder="Введите сообщение">
+      </label>
+      <button class="button button-small button-positive icon super-paper-airplane"></button>
     </div>
   </div>
 </div>
-
-<div class="message">
-  <div class="item item-input-inset">
-    <label class="item-input-wrapper">
-      <input type="text" class="input-message" name="message" value="" placeholder="Введите сообщение">
-    </label>
-    <button class="button button-small button-positive icon super-paper-airplane"></button>
-  </div>
-</div>
-
-<script>
-var startShow = true;
-
-function playSound() {
-  var sound = new Media('http://localhost/bb2.mp3');
-  sound.play();
-}
-
-$('.baloon-question-yes, .baloon-question-no').click(function() {
-  playSound();
-  var answer = $(this).hasClass('baloon-question-yes') ? 'Да' : 'Нет';
-  $('.result').append('<div class="baloon baloon-client baloon-simple"><div class="baloon-text">' + answer + '</div></div>');
-  if ($(this).hasClass('baloon-question-no')) {
-    $('.result').addClass('result-chat');
-    setTimeout(function() {
-      $(window).scrollTop(document.body.clientHeight);
-      $('.message').css('bottom', '0');
-    }, 1500);
-  }
-  $(this).parent().css('visibility','hidden');
-  $(window).scrollTop(document.body.clientHeight);
-});
-
-$('.baloon-question-yes, .baloon-question-no').on('touchstart', function() {
-  $(this).css('background','#555');
-});
-
-$('.baloon-question-yes, .baloon-question-no').on('touchend', function() {
-  $(this).css('background','#bbb');
-});
-
-$('.message button').click(function() {
-  var message = $('.input-message').val().trim();
-  if (message != '') {
-    $('.result').append('<div class="baloon baloon-client baloon-simple"><div class="baloon-text">' + message + '</div></div>');
-    $('.input-message').val('');
-    $('.input-message').focus();
-    $(window).scrollTop(document.body.clientHeight);
-  }
-});
-
-$(window).resize(function(){
-  $(window).scrollTop(document.body.clientHeight);
-  // Какой-то баг AppGyver, иначе неправильно позиционируется message
-  $('.result').css('min-height', $(window).height() + 'px');
-  if (startShow) {
-    showTime();
-    startShow = false;
-  }
-});
-
-function showTime() {
-  setTimeout(function() {
-    $('.speed').text(localStorage.getItem('speed'));
-    $('#show1').show();
-    playSound();
-    $(window).scrollTop(document.body.clientHeight);
-  }, 200);
-
-  setTimeout(function() {
-    $('#show2').show();
-    playSound();
-    $(window).scrollTop(document.body.clientHeight);
-  }, 2500);
-
-  setTimeout(function() {
-    $('#show2 .progress').hide();
-    $('#show2 .baloon-text').text('Исполнитель найден. Вы получите уведомление, когда исполнитель найдет необходимую информацию. Также Вы можете дополнить задание, для этого используете форму внизу экрана.');
-    playSound();
-    $(window).scrollTop(document.body.clientHeight);
-  }, 6500);
-
-  setTimeout(function() {
-    $('#show3').show();
-    playSound();
-    $(window).scrollTop(document.body.clientHeight);
-  }, 13500);
-
-  setTimeout(function() {
-    $('#show4').show();
-    playSound();
-    $(window).scrollTop(document.body.clientHeight);
-  }, 14500);
-}
-</script>
