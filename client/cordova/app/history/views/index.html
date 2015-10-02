@@ -4,20 +4,55 @@
   </super-navbar>
 
   <div class="list">
-    <div class="item item-icon-right" ng-click="showResults()">
-      Самый большой по площади парк Питера
-      <span class="item-note">1 октября 2015, 14:37</span>
-      <i class="icon super-ios-arrow-right"></i>
-    </div>
-    <div class="item item-icon-right" ng-click="showResults()">
-      Правила парковки в Финляндии
-      <span class="item-note">29 сентября 2015, 22:28</span>
-      <i class="icon super-ios-arrow-right"></i>
-    </div>
-    <div class="item item-icon-right" ng-click="showResults()">
-      круглосуточная аптека рядом с адресом: Москва, ул. Большая Декабрьская 10
-      <span class="item-note">27 сентября 2015, 12:14</span>
-      <i class="icon super-ios-arrow-right"></i>
-    </div>
   </div>
 </div>
+
+<script>
+var history = [
+  {
+    id: 3,
+    text: 'Самый большой по площади парк Питера',
+    near: false,
+    expert: false,
+    urgency: 0, // От 0 до 5
+    timestamp: 1443710220000
+  },
+  {
+    id: 2,
+    text: 'Правила парковки в Финляндии',
+    near: false,
+    expert: false,
+    urgency: 0, // От 0 до 5
+    timestamp: 1443565680000
+  },
+  {
+    id: 1,
+    text: 'круглосуточная аптека',
+    near: 'рядом с адресом: Москва, ул. Большая Декабрьская 10',
+    expert: false,
+    urgency: 0, // От 0 до 5
+    timestamp: 1443356040000
+  }
+];
+
+function showDateTime(timestamp) {
+  var monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+  var date = new Date();
+  date.setTime(timestamp);
+  var day = date.getDate();
+  var month = date.getMonth();
+  var year = date.getFullYear();
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  return day + ' ' + monthNames[month] + ' ' + year + ', ' + hours + ':' + minutes;
+}
+
+$.each(history, function(index, item) {
+  var template = '<div class="item item-icon-right" ng-click="showResults()">' +
+                   item.text + ' ' + (item.near ? item.near : '') +
+                   '<span class="item-note">' + showDateTime(item.timestamp) + '</span>' +
+                   '<i class="icon super-ios-arrow-right"></i>' +
+                 '</div>';
+  $('.list').append(template);
+});
+</script>
