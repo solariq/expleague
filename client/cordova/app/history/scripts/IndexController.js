@@ -2,18 +2,6 @@ angular
   .module('history')
   .controller('IndexController', function($scope, supersonic) {
 
-    $scope.showDateTime = function(timestamp) {
-      var monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-      var date = new Date();
-      date.setTime(timestamp);
-      var day = date.getDate();
-      var month = date.getMonth();
-      var year = date.getFullYear();
-      var hours = date.getHours();
-      var minutes = date.getMinutes();
-      return day + ' ' + monthNames[month] + ' ' + year + ', ' + hours + ':' + minutes;
-    };
-
     $scope.showResults = function(id) {
       var modalView = new supersonic.ui.View('history#result?id=' + id);
       var options = {

@@ -6,7 +6,7 @@
   <div class="list">
     <div ng-repeat="item in history" class="item item-icon-right" ng-click="showResults(item.id)">
       {{item.text}} {{item.near ? item.near : ''}}
-      <span class="item-note">{{showDateTime(item.started)}}</span>
+      <span class="item-note">{{item.started | date:'dd MMMM yyyy, HH:mm' | lowercase}}</span>
       <i class="icon super-ios-arrow-right"></i>
     </div>
   </div>
