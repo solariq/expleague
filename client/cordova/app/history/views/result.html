@@ -15,8 +15,8 @@
       <div class="baloon-title">{{message.title}}</div>
       <div class="baloon-text">
         <div ng-bind-html="message.text">{{message.text}}</div>
-        <div ng-if="message.extra.address">Адрес: {{message.extra.address}}</div>
-        <div ng-if="message.extra.tel">Телефон: {{message.extra.tel}}</div>
+        <div ng-if="message.extra.address">Адрес: <a ng-href="comgooglemaps://?q={{message.extra.address}}">{{message.extra.address}}</a></div>
+        <div ng-if="message.extra.tel">Телефон: <a ng-href="tel:{{message.extra.tel}}">{{message.extra.tel}}</a></div>
       </div>
     </div>
     <div ng-if="currentHistoryItem.ended" class="search-status-message">Поиск завершен</div>
