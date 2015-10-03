@@ -12,7 +12,7 @@ angular
         text: 'Самый большой по площади парк Питера',
         near: false,
         expert: false,
-        urgency: 0, // От 0 до 5
+        urgency: 5, // От 0 до 5
         started: 1443710220000,
         ended: 1443710220001,
         answerMode: 'chat',
@@ -20,7 +20,7 @@ angular
           {
             type: 'client',
             title: 'Необходимо найти',
-            text: 'Самый большой по площади парк Питера',
+            text: 'Самый большой по площади парк Питера<br> срочность поиска: 15 минут',
             timestamp: null
           },
           {
@@ -57,7 +57,7 @@ angular
       },
       {
         id: 1,
-        text: 'Правила парковки в Финляндии',
+        text: 'Правила парковки в Финляндии<br> срочность поиска: в течение дня',
         near: false,
         expert: false,
         urgency: 0, // От 0 до 5
@@ -84,7 +84,7 @@ angular
         text: 'круглосуточная аптека',
         near: 'рядом с адресом: Москва, ул. Большая Декабрьская 10',
         expert: false,
-        urgency: 0, // От 0 до 5
+        urgency: 2, // От 0 до 5
         started: 1443356040000,
         ended: 1443356040001,
         answerMode: 'plain',
