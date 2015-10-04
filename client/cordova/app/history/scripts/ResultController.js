@@ -6,7 +6,8 @@ angular
       supersonic.ui.modal.hide();
     };
 
-    $scope.history = [
+    // Временно положил в глобальный window.ordersHistory чтобы сделать демо-режим на jQuery
+    window.ordersHistory = [
       {
         id: 2,
         text: 'Самый большой по площади парк Питера',
@@ -114,6 +115,7 @@ angular
         ]
       }
     ];
+    $scope.history = window.ordersHistory;
 
     // Ищем конкретную запись в массиве history по id, переданному в качестве параметра view
     $scope.currentHistoryItemId = steroids.view.params.id;
