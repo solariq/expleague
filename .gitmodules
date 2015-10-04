@@ -1,0 +1,6 @@
+[submodule "commons"]
+	path = commons
+	url = https://github.com/spbsu-ml-community/commons.git
+[submodule "server/commons"]
+	path = server/commons
+	url = https://github.com/spbsu-ml-community/commons.git

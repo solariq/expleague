@@ -1,6 +1,6 @@
 package com.tbts.tigase.component;
 
-import com.tbts.tigase.component.com.tbts.experts.ExpertManager;
+import com.tbts.experts.ExpertManager;
 import tigase.criteria.Criteria;
 import tigase.criteria.ElementCriteria;
 import tigase.muc.exceptions.MUCException;
@@ -28,7 +28,7 @@ public class AllocateRoomModule extends GroupchatMessageModule {
   @Override
   public void process(Packet packet) throws MUCException {
     if (CRIT.match(packet.getElement())) {
-      final BareJID expert = ExpertManager.instance().nextAvailable();
+      final BareJID expert = ExpertManager.instance().available(null).next().id();
       if (expert == null)
         return;
       try {
