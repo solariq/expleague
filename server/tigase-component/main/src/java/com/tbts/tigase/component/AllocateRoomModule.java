@@ -1,6 +1,6 @@
 package com.tbts.tigase.component;
 
-import com.tbts.tigase.component.com.tbts.experts.ExpertManager;
+import com.tbts.experts.ExpertManager;
 import tigase.criteria.Criteria;
 import tigase.criteria.ElementCriteria;
 import tigase.muc.exceptions.MUCException;
@@ -23,12 +23,14 @@ import java.util.logging.Logger;
 public class AllocateRoomModule extends GroupchatMessageModule {
   private static final Logger log = Logger.getLogger(AllocateRoomModule.class.getName());
   private static final String SUBJECT = "subject";
-  Criteria CRIT = ElementCriteria.name("message").add(ElementCriteria.name(SUBJECT));
+  private static final Criteria CRIT = ElementCriteria.name("message").add(ElementCriteria.name("subject"));
 
   @Override
   public void process(Packet packet) throws MUCException {
     if (CRIT.match(packet.getElement())) {
-      final BareJID expert = ExpertManager.instance().nextAvailable();
+      final BareJID expert = ExpertManager.instance().available(null).next().id();
+      if (expert == null)
+        return;
       try {
         final Element invite = new Element(Message.ELEM_NAME);
         final Element x = new Element("x");
@@ -37,6 +39,7 @@ public class AllocateRoomModule extends GroupchatMessageModule {
         invite.addChild(x);
         final String subj= packet.getElement().getChild(SUBJECT).getCData();
         x.addChild(new Element("subj", subj));
+
         write(Packet.packetInstance(invite, packet.getStanzaTo(), JID.jidInstance(expert, "expert")));
       } catch (TigaseStringprepException e) {
         log.log(Level.WARNING, "Error constructing invte", e);

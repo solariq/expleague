@@ -1,6 +1,6 @@
 package com.tbts.tigase.component;
 
-import com.tbts.tigase.component.com.tbts.experts.ExpertManager;
+import com.tbts.experts.ExpertManager;
 import tigase.criteria.Criteria;
 import tigase.criteria.ElementCriteria;
 import tigase.server.Packet;
@@ -35,10 +35,10 @@ public class TrackExpertsComponent extends SessionManager {
       if ("available".equals(attrs.get("type"))
               || (!attrs.containsKey("type") && show == null)
               || (show != null && "chat".equalsIgnoreCase(show.childrenToString()))) {
-        ExpertManager.instance().changeStatus(bareJID, ExpertManager.Status.AVAILABLE);
+        ExpertManager.instance().get(bareJID).online(true);
         return;
       }
     }
-    ExpertManager.instance().changeStatus(bareJID, ExpertManager.Status.BUSY);
+    ExpertManager.instance().get(bareJID).online(false);
   }
 }
