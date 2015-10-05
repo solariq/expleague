@@ -27,10 +27,9 @@ public class RoomImpl extends WeakListenerHolderImpl<Room.State> implements Room
     state = State.CLEAN;
     client.addListener(clientLst = state -> {
       switch (state) {
+        case CHAT:
         case COMMITED:
           commit();
-          break;
-        case CHAT:
           break;
         case FEEDBACK:
           fix();
@@ -45,7 +44,7 @@ public class RoomImpl extends WeakListenerHolderImpl<Room.State> implements Room
   }
 
   protected void commit() {
-    if (state != State.CLEAN)
+    if (state != State.CLEAN && state != State.COMPLETE)
       throw new IllegalStateException();
     state(State.DEPLOYED);
     challenge();
@@ -59,21 +58,31 @@ public class RoomImpl extends WeakListenerHolderImpl<Room.State> implements Room
   @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   private final List<Action<Expert.State>> challenge = new ArrayList<>();
   protected void challenge() {
+    if (!challenge.isEmpty())
+      throw new IllegalStateException("Previous challenge has not finished!");
     final Iterator<Expert> available = ExpertManager.instance().available(this);
     final Holder<Expert> winner = new Holder<>();
     while (available.hasNext()) {
       final Expert next = available.next();
-      final Action<Expert.State> check = state -> {
-        if (state == Expert.State.STEADY) {
-          synchronized (winner) {
-            if (winner.filled()) {
-              next.free();
-              return;
-            } else winner.setValue(next);
+      final Action<Expert.State> check = new Action<Expert.State>() {
+        boolean once = false;
+        @Override
+        public void invoke(Expert.State state) {
+          if (once)
+            return;
+          once = true;
+          if (state == Expert.State.STEADY) {
+            synchronized (winner) {
+              if (winner.filled()) {
+                next.free();
+                return;
+              }
+              winner.setValue(next);
+            }
+            RoomImpl.this.state(State.LOCKED);
+            challenge.clear();
+            next.ask(RoomImpl.this);
           }
-          state(State.LOCKED);
-          next.ask(this);
-          challenge.clear();
         }
       };
       next.addListener(check);

@@ -20,7 +20,7 @@ import java.util.List;
 public class BasicTest {
 
   @Test
-  public void testShort() throws TigaseStringprepException {
+  public void testShortSuccess() throws TigaseStringprepException {
     final StringBuffer track = new StringBuffer();
     final StatusTracker tracker = new StatusTracker(track);
     final ObedientExpert expert = new ObedientExpert();
@@ -50,6 +50,91 @@ public class BasicTest {
             "Expert expert@localhost GO -> READY\n", track.toString());
   }
 
+  @Test
+  public void testChatSuccess() throws TigaseStringprepException {
+    final StringBuffer track = new StringBuffer();
+    final StatusTracker tracker = new StatusTracker(track);
+    final ObedientExpert expert = new ObedientExpert();
+    expert.addListener(tracker.new ExpertListener(expert));
+    final ObedientClient client = new ObedientClient(1);
+    client.addListener(tracker.new ClientListener(client));
+    Reception.instance().addListener(tracker.new KeeperListener());
+
+    ExpertManager.instance().register(expert);
+    expert.online(true);
+
+    client.presence(true);
+    client.dialogue();
+    client.query();
+
+    Assert.assertEquals("Expert expert@localhost AWAY -> READY\n" +
+            "Client client@localhost OFFLINE -> ONLINE\n" +
+            "Client client@localhost ONLINE -> FORMULATING\n" +
+            "Client client@localhost FORMULATING -> COMMITED\n" +
+            "Room 0 CLEAN -> DEPLOYED\n" +
+            "Expert expert@localhost READY -> STEADY\n" +
+            "Room 0 DEPLOYED -> LOCKED\n" +
+            "Expert expert@localhost STEADY -> GO\n" +
+            "Expert expert@localhost GO -> READY\n" +
+            "Room 0 LOCKED -> COMPLETE\n" +
+            "Client client@localhost COMMITED -> FEEDBACK\n" +
+            "Client client@localhost FEEDBACK -> CHAT\n" +
+            "Room 0 COMPLETE -> DEPLOYED\n" +
+            "Expert expert@localhost READY -> STEADY\n" +
+            "Room 0 DEPLOYED -> LOCKED\n" +
+            "Expert expert@localhost STEADY -> GO\n" +
+            "Expert expert@localhost GO -> READY\n" +
+            "Room 0 LOCKED -> COMPLETE\n" +
+            "Client client@localhost CHAT -> FEEDBACK\n" +
+            "Client client@localhost FEEDBACK -> ONLINE\n", track.toString());
+  }
+
+  @Test
+  public void testChat2Success() throws TigaseStringprepException {
+    final StringBuffer track = new StringBuffer();
+    final StatusTracker tracker = new StatusTracker(track);
+    final ObedientExpert expert = new ObedientExpert();
+    expert.addListener(tracker.new ExpertListener(expert));
+    final ObedientClient client = new ObedientClient(2);
+    client.addListener(tracker.new ClientListener(client));
+    Reception.instance().addListener(tracker.new KeeperListener());
+
+    ExpertManager.instance().register(expert);
+    expert.online(true);
+
+    client.presence(true);
+    client.dialogue();
+    client.query();
+
+    Assert.assertEquals("Expert expert@localhost AWAY -> READY\n" +
+            "Client client@localhost OFFLINE -> ONLINE\n" +
+            "Client client@localhost ONLINE -> FORMULATING\n" +
+            "Client client@localhost FORMULATING -> COMMITED\n" +
+            "Room 0 CLEAN -> DEPLOYED\n" +
+            "Expert expert@localhost READY -> STEADY\n" +
+            "Room 0 DEPLOYED -> LOCKED\n" +
+            "Expert expert@localhost STEADY -> GO\n" +
+            "Expert expert@localhost GO -> READY\n" +
+            "Room 0 LOCKED -> COMPLETE\n" +
+            "Client client@localhost COMMITED -> FEEDBACK\n" +
+            "Client client@localhost FEEDBACK -> CHAT\n" +
+            "Room 0 COMPLETE -> DEPLOYED\n" +
+            "Expert expert@localhost READY -> STEADY\n" +
+            "Room 0 DEPLOYED -> LOCKED\n" +
+            "Expert expert@localhost STEADY -> GO\n" +
+            "Expert expert@localhost GO -> READY\n" +
+            "Room 0 LOCKED -> COMPLETE\n" +
+            "Client client@localhost CHAT -> FEEDBACK\n" +
+            "Client client@localhost FEEDBACK -> CHAT\n" +
+            "Room 0 COMPLETE -> DEPLOYED\n" +
+            "Expert expert@localhost READY -> STEADY\n" +
+            "Room 0 DEPLOYED -> LOCKED\n" +
+            "Expert expert@localhost STEADY -> GO\n" +
+            "Expert expert@localhost GO -> READY\n" +
+            "Room 0 LOCKED -> COMPLETE\n" +
+            "Client client@localhost CHAT -> FEEDBACK\n" +
+            "Client client@localhost FEEDBACK -> ONLINE\n", track.toString());
+  }
 
   @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
   public static class StatusTracker {

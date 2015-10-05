@@ -58,7 +58,7 @@ public abstract class ClientImpl extends WeakListenerHolderImpl<Client.State> im
 
   protected final List<Action<Room.State>> pending = new ArrayList<>();
   public void feedback() {
-    if (state != State.COMMITED)
+    if (state != State.COMMITED && state != State.CHAT)
       throw new IllegalStateException();
     state(State.FEEDBACK);
   }

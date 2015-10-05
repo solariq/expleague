@@ -11,8 +11,15 @@ import tigase.xmpp.BareJID;
  * Time: 19:47
  */
 public class ObedientClient extends ClientImpl {
-  public ObedientClient() throws TigaseStringprepException {
+  private int chatLength;
+
+  public ObedientClient(int chatLength) throws TigaseStringprepException {
     super(BareJID.bareJIDInstance("client@localhost"));
+    this.chatLength = chatLength;
+  }
+
+  public ObedientClient() throws TigaseStringprepException {
+    this(0);
   }
 
   public void query(Query query) {
@@ -23,6 +30,9 @@ public class ObedientClient extends ClientImpl {
   @Override
   public void feedback() {
     super.feedback();
-    state(State.ONLINE);
+    if (chatLength-- > 0)
+      state(State.CHAT);
+    else
+      state(State.ONLINE);
   }
 }
