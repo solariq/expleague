@@ -22,6 +22,8 @@ public interface Expert extends WeakListenerHolder<Expert> {
   Room active();
   void free();
 
+  void steady();
+
 
   enum State {
     READY,
@@ -30,7 +32,8 @@ public interface Expert extends WeakListenerHolder<Expert> {
     STEADY,
     INVITE,
     DENIED,
-    CANCELED, GO
+    CANCELED,
+    GO
   }
 
   State state();

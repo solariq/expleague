@@ -3,11 +3,12 @@ package com.tbts.model.impl;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.tbts.model.Client;
-import com.tbts.model.Reception;
 import com.tbts.model.Room;
 import tigase.xmpp.BareJID;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -17,18 +18,16 @@ import java.util.Set;
  */
 public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client {
   private final BareJID id;
-  private State state;
-  private State savedState;
+  private final Map<Room, State> states = new HashMap<>();
+  boolean online = false;
 
   public ClientImpl(BareJID id) {
     this.id = id;
-    this.savedState = State.ONLINE;
-    this.state = State.OFFLINE;
   }
 
   @Override
   public State state() {
-    return state;
+    return (active != null && states.get(active) != null) ? states.get(active) : online ? State.ONLINE : State.OFFLINE;
   }
 
   @Override
@@ -36,33 +35,21 @@ public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client
     return id;
   }
 
+  @Override
+  public Room active() {
+    return active;
+  }
+
+
   protected Room active = null;
-  public Room activate(BareJID roomId) {
-    final Room room = active = Reception.instance().room(this, roomId);
-    switch (room.state()) {
-      case CLEAN:
-        state(State.FORMULATING);
-        break;
-      case DEPLOYED:
-      case LOCKED:
-        state(State.COMMITED);
-        break;
-      case TIMEOUT:
-        state(State.TIMEOUT);
-        break;
-      case COMPLETE:
-        state(State.FEEDBACK);
-        break;
-      case CANCELED:
-      case FIXED:
-        state(State.ONLINE);
-        break;
-    }
-    return room;
+  public void activate(Room room) {
+    if (active == room)
+      return;
+    active = room;
   }
 
   public void formulating() {
-    if (state != State.ONLINE)
+    if (state() != State.ONLINE)
       throw new IllegalStateException();
     state(State.FORMULATING);
   }
@@ -85,21 +72,33 @@ public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client
 
   protected final Set<Action<Room>> pending = new HashSet<>();
   public void feedback() {
-    if (state != State.COMMITED && state != State.CHAT)
+    if (state() != State.COMMITED && state() != State.CHAT)
       throw new IllegalStateException();
     state(State.FEEDBACK);
   }
 
   public void presence(boolean val) {
-    if (!val) {
-      savedState = state;
-      state(State.OFFLINE);
-    }
-    else state(savedState);
+    state(val ? State.ONLINE : State.OFFLINE);
   }
 
   protected void state(State state) {
-    this.state = state;
+    if (state() == state)
+      return;
+
+    if (state == State.ONLINE) {
+      online = true;
+      activate(null);
+    }
+    else if (state == State.OFFLINE) {
+      online = false;
+      activate(null);
+    }
+    else if (active == null) {
+      throw new IllegalStateException();
+    }
+    else {
+      states.put(active, state);
+    }
     invoke(this);
   }
 }

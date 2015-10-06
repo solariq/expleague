@@ -11,7 +11,8 @@ import tigase.xmpp.BareJID;
 public interface Client extends WeakListenerHolder<Client> {
   BareJID id();
 
-  Room activate(BareJID roomId);
+  Room active();
+  void activate(Room room);
   void formulating();
   void query();
   void presence(boolean val);

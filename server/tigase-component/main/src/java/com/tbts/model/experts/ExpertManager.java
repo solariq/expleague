@@ -65,10 +65,10 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
   public synchronized void challenge(final Room room) {
     final Iterator<Expert> available = available(room);
     final Action<Expert> challenge = expert -> {
-      if (!room.equals(expert.active()))
+      if (!room.equals(expert.active()) || expert.state() != Expert.State.STEADY)
         return;
 
-      if (expert.state() == Expert.State.STEADY && room.state() == Room.State.DEPLOYED) {
+      if (room.state() == Room.State.DEPLOYED) {
         room.enterExpert(expert);
         challenges.remove(room);
       }

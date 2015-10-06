@@ -35,21 +35,24 @@ public class BasicTest {
     expert.online(true);
 
     client.presence(true);
-    client.activate(BareJID.bareJIDInstance("room@muc.localhost"));
+    client.activate(Reception.instance().room(client, BareJID.bareJIDInstance("room@muc.localhost")));
+    client.formulating();
     client.query();
 
-    Assert.assertEquals("Expert expert@localhost AWAY -> READY\n" +
-            "Client client@localhost OFFLINE -> ONLINE\n" +
-            "Client client@localhost ONLINE -> FORMULATING\n" +
-            "Client client@localhost FORMULATING -> COMMITED\n" +
-            "Room 0 CLEAN -> DEPLOYED\n" +
-            "Expert expert@localhost READY -> STEADY\n" +
-            "Room 0 DEPLOYED -> LOCKED\n" +
-            "Expert expert@localhost STEADY -> GO\n" +
-            "Room 0 LOCKED -> COMPLETE\n" +
-            "Client client@localhost COMMITED -> FEEDBACK\n" +
-            "Client client@localhost FEEDBACK -> ONLINE\n" +
-            "Expert expert@localhost GO -> READY\n", track.toString());
+    Assert.assertEquals("Expert expert@localhost -> READY\n" +
+            "Client client@localhost -> ONLINE\n" +
+            "Room room@muc.localhost -> CLEAN\n" +
+            "Client client@localhost -> FORMULATING\n" +
+            "Client client@localhost -> COMMITED\n" +
+            "Room room@muc.localhost -> DEPLOYED\n" +
+            "Expert expert@localhost -> STEADY\n" +
+            "Room room@muc.localhost -> LOCKED\n" +
+            "Expert expert@localhost -> INVITE\n" +
+            "Expert expert@localhost -> GO\n" +
+            "Expert expert@localhost -> READY\n" +
+            "Room room@muc.localhost -> COMPLETE\n" +
+            "Client client@localhost -> FEEDBACK\n" +
+            "Client client@localhost -> ONLINE\n", track.toString());
   }
 
   @Test
@@ -67,7 +70,8 @@ public class BasicTest {
     expert.online(true);
 
     client.presence(true);
-    client.activate(BareJID.bareJIDInstance("room@muc.localhost"));
+    client.activate(Reception.instance().room(client, BareJID.bareJIDInstance("room@muc.localhost")));
+    client.formulating();
     client.query();
 
     Assert.assertEquals("Expert expert@localhost -> READY\n" +
@@ -78,6 +82,16 @@ public class BasicTest {
             "Room room@muc.localhost -> DEPLOYED\n" +
             "Expert expert@localhost -> STEADY\n" +
             "Room room@muc.localhost -> LOCKED\n" +
+            "Expert expert@localhost -> INVITE\n" +
+            "Expert expert@localhost -> GO\n" +
+            "Expert expert@localhost -> READY\n" +
+            "Room room@muc.localhost -> COMPLETE\n" +
+            "Client client@localhost -> FEEDBACK\n" +
+            "Client client@localhost -> CHAT\n" +
+            "Room room@muc.localhost -> DEPLOYED\n" +
+            "Expert expert@localhost -> STEADY\n" +
+            "Room room@muc.localhost -> LOCKED\n" +
+            "Expert expert@localhost -> INVITE\n" +
             "Expert expert@localhost -> GO\n" +
             "Expert expert@localhost -> READY\n" +
             "Room room@muc.localhost -> COMPLETE\n" +
@@ -100,7 +114,8 @@ public class BasicTest {
     expert.online(true);
 
     client.presence(true);
-    client.activate(BareJID.bareJIDInstance("room@muc.localhost"));
+    client.activate(Reception.instance().room(client, BareJID.bareJIDInstance("room@muc.localhost")));
+    client.formulating();
     client.query();
 
     Assert.assertEquals("Expert expert@localhost -> READY\n" +
@@ -111,6 +126,7 @@ public class BasicTest {
             "Room room@muc.localhost -> DEPLOYED\n" +
             "Expert expert@localhost -> STEADY\n" +
             "Room room@muc.localhost -> LOCKED\n" +
+            "Expert expert@localhost -> INVITE\n" +
             "Expert expert@localhost -> GO\n" +
             "Expert expert@localhost -> READY\n" +
             "Room room@muc.localhost -> COMPLETE\n" +
@@ -119,6 +135,16 @@ public class BasicTest {
             "Room room@muc.localhost -> DEPLOYED\n" +
             "Expert expert@localhost -> STEADY\n" +
             "Room room@muc.localhost -> LOCKED\n" +
+            "Expert expert@localhost -> INVITE\n" +
+            "Expert expert@localhost -> GO\n" +
+            "Expert expert@localhost -> READY\n" +
+            "Room room@muc.localhost -> COMPLETE\n" +
+            "Client client@localhost -> FEEDBACK\n" +
+            "Client client@localhost -> CHAT\n" +
+            "Room room@muc.localhost -> DEPLOYED\n" +
+            "Expert expert@localhost -> STEADY\n" +
+            "Room room@muc.localhost -> LOCKED\n" +
+            "Expert expert@localhost -> INVITE\n" +
             "Expert expert@localhost -> GO\n" +
             "Expert expert@localhost -> READY\n" +
             "Room room@muc.localhost -> COMPLETE\n" +

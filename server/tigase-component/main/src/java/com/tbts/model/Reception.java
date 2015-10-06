@@ -49,4 +49,8 @@ public class Reception extends WeakListenerHolderImpl<Room> implements Action<Ro
   public void clear() {
     rooms.clear();
   }
+
+  public Room room(BareJID jid) {
+    return rooms.get(jid);
+  }
 }

@@ -1,9 +1,7 @@
 package com.tbts.tigase.component;
 
 import com.spbsu.commons.func.Action;
-import com.tbts.model.Client;
-import com.tbts.model.Expert;
-import com.tbts.model.Room;
+import com.tbts.model.*;
 import com.tbts.model.clients.ClientManager;
 import com.tbts.model.experts.ExpertManager;
 import tigase.criteria.Criteria;
@@ -14,7 +12,6 @@ import tigase.server.Message;
 import tigase.server.Packet;
 import tigase.util.TigaseStringprepException;
 import tigase.xml.Element;
-import tigase.xmpp.BareJID;
 import tigase.xmpp.JID;
 
 import java.util.logging.Level;
@@ -30,6 +27,7 @@ public class AllocateRoomModule extends GroupchatMessageModule {
   private static final String SUBJECT = "subject";
   private static final Criteria CRIT = ElementCriteria.name("message").add(ElementCriteria.name("subject"));
   private final Action<Expert> expertCommunication;
+  private final static StatusTracker tracker = new StatusTracker(System.out);
 
   public AllocateRoomModule() {
     expertCommunication = new Action<Expert>() {
@@ -62,13 +60,10 @@ public class AllocateRoomModule extends GroupchatMessageModule {
     if (CRIT.match(packet.getElement())) {
       final Client client = ClientManager.instance().byJID(packet.getStanzaFrom().getBareJID());
       final String subject = packet.getElement().getChild(SUBJECT).childrenToString();
-      final Room room = client.activate(packet.getStanzaTo().getBareJID());
+      Room room = Reception.instance().room(client, packet.getStanzaTo().getBareJID());
+      client.activate(room);
       room.text(subject);
       client.query();
-
-      final BareJID expert = ExpertManager.instance().available(null).next().id();
-      if (expert == null)
-        return;
     }
     super.process(packet);
   }

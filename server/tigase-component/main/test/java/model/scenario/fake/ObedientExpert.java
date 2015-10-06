@@ -22,4 +22,19 @@ public class ObedientExpert extends ExpertImpl {
     answer();
     room.answer(new Answer());
   }
+
+  @Override
+  public boolean reserve(Room room) {
+    boolean reserve = super.reserve(room);
+    if (reserve) {
+      steady();
+    }
+    return reserve;
+  }
+
+  @Override
+  public void invite() {
+    super.invite();
+    ask(active());
+  }
 }

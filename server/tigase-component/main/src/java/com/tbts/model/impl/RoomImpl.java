@@ -54,7 +54,7 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
 
   @Override
   public void text(String text) {
-    if (state != State.DEPLOYED)
+    if (state != State.CLEAN)
       throw new IllegalStateException();
     qBuilder.addText(text);
   }
@@ -76,7 +76,7 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
   @Override
   public void enterExpert(Expert winner) {
     state(State.LOCKED);
-    winner.ask(this);
+    winner.invite();
   }
 
   @Override

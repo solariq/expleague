@@ -26,6 +26,8 @@ public class ClientManager extends WeakListenerHolderImpl<Client> implements Act
   public Client byJID(BareJID jid) {
     Client client = clients.get(jid);
     if (client == null) {
+      if (jid.getDomain().startsWith("muc."))
+        return null;
       final Client newClient = new ClientImpl(jid);
       clients.put(jid, newClient);
       newClient.addListener(this);
