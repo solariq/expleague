@@ -5,17 +5,17 @@
                 <h2>Welcome back</h2>
             </div>
 
-            <ul class="socials">
-                <li>
-                    <a class="facebook" value="facebook" target="_blank" ng-href="{{domain}}Account/ExternalLogin?returnUrl=%2Faccount%2FCloseWindow&currentPage=extension&provider=facebook">Login with Facebook</a>
-                </li>
-                <li>
-                    <a class="twitter" value="twitter" target="_blank" ng-href="{{domain}}Account/ExternalLogin?returnUrl=%2Faccount%2FCloseWindow&currentPage=extension&provider=twitter">Login with Twitter</a>
-                </li>
-                <li>
-                    <a class="google" value="google" target="_blank" ng-href="{{domain}}Account/ExternalLogin?returnUrl=%2Faccount%2FCloseWindow&currentPage=extension&provider=google">Login with Google</a>
-                </li>
-            </ul>
+            <!--<ul class="socials">-->
+                <!--<li>-->
+                    <!--<a class="facebook" value="facebook" target="_blank" ng-href="{{domain}}Account/ExternalLogin?returnUrl=%2Faccount%2FCloseWindow&currentPage=extension&provider=facebook">Login with Facebook</a>-->
+                <!--</li>-->
+                <!--<li>-->
+                    <!--<a class="twitter" value="twitter" target="_blank" ng-href="{{domain}}Account/ExternalLogin?returnUrl=%2Faccount%2FCloseWindow&currentPage=extension&provider=twitter">Login with Twitter</a>-->
+                <!--</li>-->
+                <!--<li>-->
+                    <!--<a class="google" value="google" target="_blank" ng-href="{{domain}}Account/ExternalLogin?returnUrl=%2Faccount%2FCloseWindow&currentPage=extension&provider=google">Login with Google</a>-->
+                <!--</li>-->
+            <!--</ul>-->
 
             <form class="email" ng-submit="loginUser(event)" ng-class="{disabled: isLoginInProgress}">
                 <fieldset>
@@ -23,7 +23,7 @@
                     <input type="password" id="Password" name="Password" placeholder="Password" ng-model="loginForm.Password" ng-disabled="isLoginInProgress">
                 </fieldset>
 
-                <fieldset class="forgot_password"><a href="{{domain}}Account/PasswordRecovery" target="_blank">Forgot password?</a></fieldset>
+                <!--<fieldset class="forgot_password"><a href="{{domain}}Account/PasswordRecovery" target="_blank">Forgot password?</a></fieldset>-->
 
                 <fieldset ng-repeat="(key, error) in loginErrors">
                     <span style="color:red;">{{error.ErrorMessage}}</span>
@@ -31,7 +31,7 @@
 
                 <div class="controls">
                     <button class="blue" ng-class="{loading: isLoginInProgress}">Log in</button>
-                    <span class="link_to_register">Don't have an account? <a ng-href="{{domain}}" target="_blank" class="white">Create here</a></span>
+                    <!--<span class="link_to_register">Don't have an account? <a ng-href="{{domain}}" target="_blank" class="white">Create here</a></span>-->
                 </div>
             </form>
         </div>

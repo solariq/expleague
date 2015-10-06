@@ -40,11 +40,21 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
                 return true;
             }, null, 'message', null, null, null);
         };
-
+        
+        this.addPresenceListener = function(listener, from) {
+            this.connection.addHandler(function(presence) {
+                var from = presence.getAttribute('from');
+                var type = presence.getAttribute('type');
+                if (!type) {
+                    type = 'available';
+                }
+                listener({from: from, type: type});
+                return true;
+            }, null, 'presence', null, null, from)
+        };
 
         this.addInviteListener = function(listener) {
             this.connection.addHandler(function(msg) {
-                alert('addInviteListener');
                 var to = msg.getAttribute('to');
                 var room = msg.getAttribute('from');
                 var elems = msg.getElementsByTagName('invite');
@@ -60,32 +70,131 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
                         }
                     }
                     listener(obj);
-                    //listener({room: room, from: fromroom: room, from: from, subj: 'Здесь мог бы быть Ваш вопрос!', time: new Date().getTime()});
                 }
                 return true;
             }, null, 'message', null, null, null);
         };
 
         this.leaveRoom = function(room, nick) {
-            var pres = $pres({to: room + '/' + nick, type: 'unavailable'});
-            this.connection.send(pres.tree());
+            this.sendPres({to: room + '/' + nick, type: 'unavailable'});
+            //var pres = $pres({to: room + '/' + nick, type: 'unavailable'});
+            //this.connection.send(pres.tree());
         };
 
         this.enterRoom = function(room, nick) {
-            var pres = $pres({to: room + '/' + nick})
-                .c('priority')
-                .t(5);
-            this.connection.send(pres.tree());
+            this.sendPres({to: room + '/' + nick});
+            //var pres = $pres({to: room + '/' + nick})
+            //    .c('priority')
+            //    .t(5);
+            //this.connection.send(pres.tree());
             //callback();
         };
 
-        this.sendPres = function() {
-            this.connection.send($pres().tree());
+        this.sendPres = function(presence) {
+            var pres = $pres(presence);
+            this.connection.send(pres.tree());
         }
+    }
+
+    var ExpertState = {
+        READY: {
+            value: 'ready',
+            onSet: function() {
+                jabberClient.sendPres({type: 'available'});
+            }
+        },
+        AWAY: {
+            value: 'away',
+            onSet: function() {
+                jabberClient.sendPres({type: 'unavailable'});
+            }
+        },
+        CHECK: {
+            value: 'check',
+            validate: function(prevState) {
+                return prevState == ExpertState.READY;
+            },
+            onSet: function(presence) {
+                stateController.setState(ExpertState.STEADY, presence);
+            }
+        },
+        STEADY: {
+            value: 'steady',
+            validate: function(prevState) {
+                return prevState == ExpertState.CHECK;
+            },
+            onSet: function(presence) {
+                jabberClient.sendPres({to: presence.from, type: ExpertState.STEADY.value});
+                //todo handle timeout
+            }
+        },
+        INVITE: {
+            value: 'invite',
+            validate: function(prevSate) {
+                return prevSate == ExpertState.STEADY;
+            },
+            onSet: function(invite) {
+                //todo remove this
+                if (!invite.subj) {
+                    invite.subj = 'Question stub!';
+                }
+                question = {question: invite.subj, owner: invite.from, time: invite.time, id: invite.time, room: invite.room};
+                addQuestion(question, function(){});
+            }
+        },
+        ACCEPT: {
+            value: 'accept',
+            validate : function(prevSrate) {
+                return prevSrate == ExpertState.INVITE
+            },
+            onSet: function(data) {
+                jabberClient.sendPres(data.request.room, 'expert');
+            }
+        },
+        DENIED: {
+            value: 'denied',
+            validate: function(prevState) {
+                return prevState == ExpertState.ACCEPT;
+            },
+            onSet: function(ctx) {
+                //todododododo
+            }
+        },
+        GO: {
+            value: 'go',
+            validate: function(prevState) {
+                return prevState == ExpertState.ACCEPT;
+            },
+            onSet: function(ctx) {
+                allowToShow(true);
+            }
+        }
+    };
+
+
+    function StateController() {
+        this.state = ExpertState.AWAY;
+
+        this.setState = function(newState,  context) {
+            alert('new state');
+            //validation is disabled
+            if (true || newState.validate(this.state)) {
+                this.state = newState;
+                allowToShow(false);
+                newState.onSet(context);
+                return true;
+            }
+            return false;
+        };
+
+        this.rejectToEnterListener = function() {
+            //todo
+        };
     }
 
 
     var jabberClient = null;
+    var stateController = null;
 
     //var connection = new Strophe.Connection('http://localhost:5280/http-bind');
     //var connection = new Strophe.Connection('http://toobusytosearch.net:5280/http-bind');
@@ -118,6 +227,10 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
             DRAGDIS.storage.set("Requests", JSON.stringify(value));
             callback();
         });
+    };
+
+    allowToShow = function(isAllowed) {
+        DRAGDIS.storage.set("AllowToShow", isAllowed);
     };
 
     removeRequest = function(request, callback) {
@@ -169,8 +282,7 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
 
         Activate: function(data) {
             var defer = $q.defer();
-            jabberClient.enterRoom(data.request.room, 'expert');
-            //connection.send($pres().tree());
+            stateController.setState(ExpertState.ACCEPT, data);
             defer.resolve({status: 200});
             return defer.promise;
         },
@@ -181,7 +293,7 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
             removeRequest(data.request, function() {
                 defer.resolve({status: 200});
             });
-            jabberClient.leaveRoom(data.request.room, 'expert');
+            jabberClient.setState(ExpertState.READY, null);
             return defer.promise;
         },
 
@@ -197,7 +309,6 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
             };
             message.onclose = function(){
                 if (promise.$$state.status == 0) {
-                    alert('close11');
                     defer.resolve({status: 501});
                 }
             };
@@ -271,6 +382,7 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
                 jabberClient.logout();
             }
             jabberClient = new JabberClient(data.Username, data.Password, 'expert');
+            stateController = new StateController();
             jabberClient.loginUser('expert', function(status) {
                 if (status == Strophe.Status.CONNECTING) {
                 }
@@ -306,9 +418,13 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
             });
 
             jabberClient.addInviteListener(function(invite) {
-                //question = {question: invite.subj, owner: invite.from, time: invite.time, id: invite.time, room: invite.from};
-                question = {question: invite.subj, owner: invite.from, time: invite.time, id: invite.time, room: invite.room};
-                addQuestion(question, function(){});
+                stateController.setState(ExpertState.INVITE, invite);
+            });
+            jabberClient.addPresenceListener(function(presence) {
+                ptype = presence.type.toUpperCase();
+                if (ptype in ExpertState) {
+                    this.setState(ptype, presence);
+                }
             });
 
             return future.promise;

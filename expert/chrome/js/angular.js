@@ -71,7 +71,7 @@
             if (response.status == 200) {
                 $scope.activeRequest.set(request);
             } else {
-                alert('Ваша заявка отклонена сервисом, выберите другой вопрос');
+                alert('Ваша заявка отклонена сервисом');
             }
         });
         $timeout(function () {
@@ -160,7 +160,7 @@
     $scope.sidebarContent = function () {
         var templatesRoot = DRAGDIS.config.sidebarTemplatesRoot;
 
-        if ($scope.activeRequest.value)
+        if ($scope.activeRequest.value && $scope.allowToShow.value)
             return templatesRoot + 'dragArea';
         //
         if ($scope.requests.list.length)
@@ -224,6 +224,8 @@
                     //alert('apply');
                     $scope.$apply();
                 }
+            } else if (data.AllowToShow) {
+                $scope.allowToShow.set(data.AllowToShow)
             } else if(data.Requests) {
                 $scope.requests.update();
                 if (data.Requests.oldValue) {
@@ -235,7 +237,7 @@
                            DRAGDIS.api("Notify", {owner: request.owner, tag: "new-request",body : request.question}, function (resp){
                                if (resp.status == 200) {
                                    $scope.activateRequest(request);
-                               } else if (resp.status == 501){
+                               } else if (resp.status == 501) {
                                    alert('reject');
                                    $scope.rejectRequest(request);
                                }
@@ -320,6 +322,21 @@
 
     };
 
+
+    $scope.allowToShow = {
+        value: null,
+
+        get: function(callback) {
+            DRAGDIS.storage.get('allowToShow', function(value) {
+                $scope.allowToShow.value = value;
+                callback(value);
+            });
+        },
+        set: function(activeValue) {
+            $scope.allowToShow.value = activeValue;
+            DRAGDIS.storage.set('allowToShow', activeValue);
+        }
+    };
 
     $scope.activeRequest = {
         value: null,

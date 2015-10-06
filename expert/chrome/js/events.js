@@ -338,7 +338,7 @@ window.addEventListener("focus", function () {
     DRAGDIS.storage.get("IsConnected", function (userConnected) {
         if (userConnected) {
             setTimeout(function () {
-                DRAGDIS.sendMessage({ Type: "REFRESH_CONNECTION" }, function () { });
+                //todo
             }, 1000);
         }
     });
