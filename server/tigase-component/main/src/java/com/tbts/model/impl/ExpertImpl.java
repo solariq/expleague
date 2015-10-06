@@ -45,6 +45,7 @@ public class ExpertImpl extends WeakListenerHolderImpl<Expert> implements Expert
     if (state != State.READY || active != null)
       return false;
     join(room);
+    state(State.CHECK);
     return true;
   }
 
@@ -75,6 +76,8 @@ public class ExpertImpl extends WeakListenerHolderImpl<Expert> implements Expert
 
   @Override
   public void steady() {
+    if (state != State.CHECK)
+      throw new IllegalStateException();
     state(State.STEADY);
   }
 

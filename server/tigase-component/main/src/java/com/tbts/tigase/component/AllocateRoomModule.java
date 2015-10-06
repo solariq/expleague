@@ -48,7 +48,7 @@ public class AllocateRoomModule extends GroupchatMessageModule {
             log.log(Level.WARNING, "Error constructing invte", e);
           }
         } else if (expert.state() == Expert.State.CHECK) { // skip check phase
-          expert.invite();
+          expert.steady();
         }
       }
     };

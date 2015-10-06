@@ -48,18 +48,26 @@ public class TrackPresenceComponent extends SessionManager {
     final Room room = to != null ? Reception.instance().room(client, to.getBareJID()) : null;
     if (room != null)
       client.activate(room);
-    if (status == Status.UNAVAILABLE && to != null)
-      client.presence(false);
     switch (status) {
-      case TYPING:
-        if (client.state() == Client.State.ONLINE)
-          client.formulating();
-        break;
       case WAITING:
         if (client.state() == Client.State.FORMULATING)
           client.query();
         break;
       case UNKNOWN:
+        break;
+      case TYPING:
+        break;
+      case AVAILABLE:
+        if (room == null)
+          client.presence(true);
+        else if (client.state() == Client.State.ONLINE)
+          client.formulating();
+        break;
+      case UNAVAILABLE:
+        if (to == null)
+          client.presence(false);
+        else
+          client.activate(null);
         break;
     }
   }
@@ -74,9 +82,6 @@ public class TrackPresenceComponent extends SessionManager {
     if (status == Status.UNAVAILABLE)
       expert.online(false);
     switch (expert.state()) {
-      case AWAY:
-        expert.online(true);
-        break;
       case CHECK:
         if (room != null && room.equals(expert.active()))
           expert.steady();
@@ -91,6 +96,10 @@ public class TrackPresenceComponent extends SessionManager {
         expert.online(true);
         break;
       case GO:
+        break;
+      case AWAY:
+        if (status != Status.UNAVAILABLE)
+          expert.online(true);
         break;
     }
     return expert;

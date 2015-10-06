@@ -45,6 +45,7 @@ public class BasicTest {
             "Client client@localhost -> FORMULATING\n" +
             "Client client@localhost -> COMMITED\n" +
             "Room room@muc.localhost -> DEPLOYED\n" +
+            "Expert expert@localhost -> CHECK\n" +
             "Expert expert@localhost -> STEADY\n" +
             "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> INVITE\n" +
@@ -80,6 +81,7 @@ public class BasicTest {
             "Client client@localhost -> FORMULATING\n" +
             "Client client@localhost -> COMMITED\n" +
             "Room room@muc.localhost -> DEPLOYED\n" +
+            "Expert expert@localhost -> CHECK\n" +
             "Expert expert@localhost -> STEADY\n" +
             "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> INVITE\n" +
@@ -89,6 +91,7 @@ public class BasicTest {
             "Client client@localhost -> FEEDBACK\n" +
             "Client client@localhost -> CHAT\n" +
             "Room room@muc.localhost -> DEPLOYED\n" +
+            "Expert expert@localhost -> CHECK\n" +
             "Expert expert@localhost -> STEADY\n" +
             "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> INVITE\n" +
@@ -124,6 +127,7 @@ public class BasicTest {
             "Client client@localhost -> FORMULATING\n" +
             "Client client@localhost -> COMMITED\n" +
             "Room room@muc.localhost -> DEPLOYED\n" +
+            "Expert expert@localhost -> CHECK\n" +
             "Expert expert@localhost -> STEADY\n" +
             "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> INVITE\n" +
@@ -133,6 +137,7 @@ public class BasicTest {
             "Client client@localhost -> FEEDBACK\n" +
             "Client client@localhost -> CHAT\n" +
             "Room room@muc.localhost -> DEPLOYED\n" +
+            "Expert expert@localhost -> CHECK\n" +
             "Expert expert@localhost -> STEADY\n" +
             "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> INVITE\n" +
@@ -142,6 +147,7 @@ public class BasicTest {
             "Client client@localhost -> FEEDBACK\n" +
             "Client client@localhost -> CHAT\n" +
             "Room room@muc.localhost -> DEPLOYED\n" +
+            "Expert expert@localhost -> CHECK\n" +
             "Expert expert@localhost -> STEADY\n" +
             "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> INVITE\n" +
