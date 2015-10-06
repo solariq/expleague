@@ -81,6 +81,7 @@ $('.checkbox-expert').change(function() {
 });
 
 $('.button-start-search').click(function() {
+  localStorage.setItem('text', $('.input-text').val());
   localStorage.setItem('speed', speedNames[$('.range-speed').val()]);
   steroids.tabBar.selectTab(1);
   var modalView = new supersonic.ui.View('history#result');

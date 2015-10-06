@@ -132,6 +132,23 @@
   line-height: 3;
 }
 
+.baloon h1 {
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.baloon ul {
+  text-align: left;
+  margin: 10px 0px 10px 30px;
+  list-style-type: disc;
+}
+
+.baloon img {
+  max-width: 350px;
+  display: block;
+  margin: 10px auto;
+}
+
 .message {
   position: fixed;
   bottom: -54px;
@@ -141,3 +158,4 @@
   -webkit-transition-property: bottom;
   -webkit-transition-duration: 300ms;
 }
+
