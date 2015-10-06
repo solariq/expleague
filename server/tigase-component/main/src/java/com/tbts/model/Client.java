@@ -8,10 +8,11 @@ import tigase.xmpp.BareJID;
  * Date: 04.10.15
  * Time: 18:46
  */
-public interface Client extends WeakListenerHolder<Client.State> {
+public interface Client extends WeakListenerHolder<Client> {
   BareJID id();
 
-  void dialogue();
+  Room activate(BareJID roomId);
+  void formulating();
   void query();
   void presence(boolean val);
 

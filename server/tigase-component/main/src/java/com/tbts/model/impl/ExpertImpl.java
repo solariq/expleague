@@ -11,10 +11,8 @@ import tigase.xmpp.BareJID;
  * Date: 04.10.15
  * Time: 19:13
  */
-public abstract class ExpertImpl extends WeakListenerHolderImpl<Expert.State> implements Expert {
+public class ExpertImpl extends WeakListenerHolderImpl<Expert> implements Expert {
   private final BareJID id;
-
-  private Action<Room.State> roomLst;
   private State state;
 
   public ExpertImpl(BareJID id) {
@@ -33,68 +31,77 @@ public abstract class ExpertImpl extends WeakListenerHolderImpl<Expert.State> im
       if (state == State.AWAY)
         state(State.READY);
     }
-    else state(State.AWAY);
+    else {
+      active.answer(null);
+      join(null);
+      state(State.AWAY);
+    }
   }
 
+  private volatile Room active;
   @Override
-  public void reserve(Room room) {
-    if (state != State.READY)
-      throw new IllegalStateException();
+  public boolean reserve(Room room) {
+    if (state != State.READY || active != null)
+      return false;
+    join(room);
     state(State.STEADY);
+    return true;
+  }
+
+  private final Action<Room> activeRoomListener = new Action<Room>() {
+    @Override
+    public void invoke(Room room) {
+      if (active == room && room.state() == Room.State.CANCELED) {
+        state(State.CANCELED);
+        join(null);
+      }
+    }
+  };
+
+  private void join(Room room) {
+    if (active != null)
+      active.removeListener(activeRoomListener);
+    if (room != null)
+      room.addListener(activeRoomListener);
+    active = room;
   }
 
   @Override
   public void free() {
     if (state == State.STEADY)
       state(State.READY);
+    join(null);
+  }
+
+  @Override
+  public void invite() {
+    if (state != State.STEADY)
+      throw new IllegalStateException();
+    state(State.INVITE);
   }
 
   @Override
   public void ask(Room room) {
-    if (state != State.STEADY)
+    if (state != State.STEADY || active == null)
       throw new IllegalStateException();
     state(State.GO);
+  }
+
+  @Override
+  public Room active() {
+    return active;
   }
 
   public void answer() {
     if (state != State.GO)
       throw new IllegalStateException();
     state(State.READY);
-  }
-
-  public void attach(Room room) {
-    if (roomLst != null)
-      throw new IllegalStateException("Expert must be in detached state before receiving new requests!");
-    room.addListener(roomLst = state -> {
-      switch (state) {
-        case CLEAN:
-          break;
-        case DEPLOYED:
-          break;
-        case CHALLENGE:
-          break;
-        case LOCKED:
-          break;
-        case TIMEOUT:
-          break;
-        case COMPLETE:
-          break;
-        case FIXED:
-          break;
-      }
-    });
-    state = State.CHECK;
-  }
-
-  public boolean detach() {
-    boolean result = roomLst != null;
-    roomLst = null;
-    return result;
+    join(null);
   }
 
   protected void state(State state) {
     this.state = state;
-    invoke(state);
+    invoke(this);
   }
 
   @Override

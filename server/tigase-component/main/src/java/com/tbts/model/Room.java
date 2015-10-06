@@ -7,19 +7,21 @@ import com.spbsu.commons.func.WeakListenerHolder;
  * Date: 04.10.15
  * Time: 18:50
  */
-public interface Room extends WeakListenerHolder<Room.State> {
+public interface Room extends WeakListenerHolder<Room> {
   String id();
 
-  void query(Query text);
+  void text(String text);
+  Query query();
   void answer(Answer answer);
+  void enterExpert(Expert winner);
 
   enum State {
     CLEAN,
     DEPLOYED,
-    CHALLENGE,
     LOCKED,
     TIMEOUT,
     COMPLETE,
+    CANCELED,
     FIXED
   }
 

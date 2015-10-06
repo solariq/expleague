@@ -7,15 +7,15 @@ import com.tbts.model.Reception;
 import com.tbts.model.Room;
 import tigase.xmpp.BareJID;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * User: solar
  * Date: 04.10.15
  * Time: 19:31
  */
-public abstract class ClientImpl extends WeakListenerHolderImpl<Client.State> implements Client {
+public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client {
   private final BareJID id;
   private State state;
   private State savedState;
@@ -36,27 +36,54 @@ public abstract class ClientImpl extends WeakListenerHolderImpl<Client.State> im
     return id;
   }
 
-  protected Room allocated = null;
-  public void dialogue() {
+  protected Room active = null;
+  public Room activate(BareJID roomId) {
+    final Room room = active = Reception.instance().room(this, roomId);
+    switch (room.state()) {
+      case CLEAN:
+        state(State.FORMULATING);
+        break;
+      case DEPLOYED:
+      case LOCKED:
+        state(State.COMMITED);
+        break;
+      case TIMEOUT:
+        state(State.TIMEOUT);
+        break;
+      case COMPLETE:
+        state(State.FEEDBACK);
+        break;
+      case CANCELED:
+      case FIXED:
+        state(State.ONLINE);
+        break;
+    }
+    return room;
+  }
+
+  public void formulating() {
     if (state != State.ONLINE)
       throw new IllegalStateException();
-    allocated = Reception.instance().create(this);
     state(State.FORMULATING);
   }
 
   public void query() {
-    if (state() != State.FORMULATING)
+    if (state() != State.FORMULATING && state() != State.CHAT)
       throw new IllegalStateException();
-    final Action<Room.State> lst = state -> {
-      if (state == Room.State.COMPLETE)
-        feedback();
+    final Action<Room> lst = new Action<Room>() {
+      @Override
+      public void invoke(Room room) {
+        if (room.state() == Room.State.COMPLETE)
+          ClientImpl.this.feedback();
+        pending.remove(this);
+      }
     };
-    allocated.addListener(lst);
+    active.addListener(lst);
     pending.add(lst);
     state(State.COMMITED);
   }
 
-  protected final List<Action<Room.State>> pending = new ArrayList<>();
+  protected final Set<Action<Room>> pending = new HashSet<>();
   public void feedback() {
     if (state != State.COMMITED && state != State.CHAT)
       throw new IllegalStateException();
@@ -73,6 +100,6 @@ public abstract class ClientImpl extends WeakListenerHolderImpl<Client.State> im
 
   protected void state(State state) {
     this.state = state;
-    invoke(state);
+    invoke(this);
   }
 }

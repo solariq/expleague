@@ -6,7 +6,7 @@ package com.tbts.model;
  * Time: 20:16
  */
 public class Query {
-  private final String text;
+  private String text;
 
   public Query(String text) {
     this.text = text;
@@ -14,5 +14,16 @@ public class Query {
 
   public String text() {
     return text;
+  }
+
+  public static class Builder {
+    final StringBuilder textBuilder = new StringBuilder();
+    public void addText(String text) {
+      textBuilder.append(text);
+    }
+
+    public Query build() {
+      return new Query(textBuilder.toString());
+    }
   }
 }

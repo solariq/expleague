@@ -1,6 +1,5 @@
 package model.scenario.fake;
 
-import com.tbts.model.Query;
 import com.tbts.model.impl.ClientImpl;
 import tigase.util.TigaseStringprepException;
 import tigase.xmpp.BareJID;
@@ -20,11 +19,6 @@ public class ObedientClient extends ClientImpl {
 
   public ObedientClient() throws TigaseStringprepException {
     this(0);
-  }
-
-  public void query(Query query) {
-    allocated.query(query);
-    query();
   }
 
   @Override

@@ -8,14 +8,19 @@ import tigase.xmpp.BareJID;
  * Date: 04.10.15
  * Time: 18:49
  */
-public interface Expert extends WeakListenerHolder<Expert.State> {
+public interface Expert extends WeakListenerHolder<Expert> {
   BareJID id();
 
   void online(boolean val);
 
-  void reserve(Room room);
-  void free();
+  boolean reserve(Room room);
+
+  void invite();
+
   void ask(Room room);
+
+  Room active();
+  void free();
 
 
   enum State {
@@ -25,7 +30,7 @@ public interface Expert extends WeakListenerHolder<Expert.State> {
     STEADY,
     INVITE,
     DENIED,
-    GO
+    CANCELED, GO
   }
 
   State state();
