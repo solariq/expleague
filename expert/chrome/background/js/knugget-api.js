@@ -182,7 +182,6 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         this.state = ExpertState.AWAY;
 
         this.setState = function(newState,  context) {
-            alert('new state');
             //validation is disabled
             if (true || newState.validate(this.state)) {
                 this.state = newState;

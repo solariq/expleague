@@ -26,7 +26,6 @@
                     if (!exist) {
                         element.attr("src", KNUGGET.extensionFileUrl("images/default_avatar.gif"));
                         if (KNUGGET.config.isExtension) {
-                            alert('inside UserActive');
                             KNUGGET.storage.set("UserActive", {
                                 Active: $rootScope.$$childHead.user.active,
                                 Username: $rootScope.$$childHead.user.username,

@@ -40,7 +40,7 @@
       "16": "images/icons/icon_16.png",
       "48": "images/icons/icon_48.png"
    },
-   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC+q5NhPQDD2mPfL11cF/rrMCiUaQX4HwJif4J++msWJTr9DGlYRBuj4xzLCtwm/7Wy56738LYMGYqeskeMsb8+fZjGN94Y2bDsfvWk+fA/6lfdk8NbH6Ksr+qHBL5Yej9TYoF+heMkM3/nl1CkqsIBu0Ajt0NJX0ABwCepCWbMjQIDAQAB",
+//   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC+q5NhPQDD2mPfL11cF/rrMCiUaQX4HwJif4J++msWJTr9DGlYRBuj4xzLCtwm/7Wy56738LYMGYqeskeMsb8+fZjGN94Y2bDsfvWk+fA/6lfdk8NbH6Ksr+qHBL5Yej9TYoF+heMkM3/nl1CkqsIBu0Ajt0NJX0ABwCepCWbMjQIDAQAB",
    "manifest_version": 2,
    "minimum_chrome_version": "20.0",
    "name": "Knugget Expert",
