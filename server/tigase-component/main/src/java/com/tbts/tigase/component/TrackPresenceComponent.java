@@ -8,12 +8,15 @@ import com.tbts.model.clients.ClientManager;
 import com.tbts.model.experts.ExpertManager;
 import tigase.criteria.Criteria;
 import tigase.criteria.ElementCriteria;
+import tigase.server.Iq;
 import tigase.server.Packet;
 import tigase.server.xmppsession.SessionManager;
+import tigase.util.TigaseStringprepException;
 import tigase.xml.Element;
 import tigase.xmpp.JID;
 
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -46,6 +49,23 @@ public class TrackPresenceComponent extends SessionManager {
     if (client == null)
       return;
     final Room room = to != null ? Reception.instance().room(client, to.getBareJID()) : null;
+    if (room != null && room.state() == Room.State.INIT) {
+      try {
+        final Element unlock = new Element(Iq.ELEM_NAME);
+        final Element query = new Element("query");
+        query.setXMLNS("http://jabber.org/protocol/muc#owner");
+        final Element x = new Element("x");
+        x.setAttribute("type", "submit");
+        query.addChild(x);
+        unlock.addChild(query);
+        addPacket(Packet.packetInstance(unlock));
+      }
+      catch (TigaseStringprepException e) {
+        log.log(Level.WARNING, "Exception during room open", e);
+      }
+      room.open();
+    }
+
     if (room != null)
       client.activate(room);
     switch (status) {
@@ -110,7 +130,7 @@ public class TrackPresenceComponent extends SessionManager {
     UNAVAILABLE,
     TYPING,
     WAITING,
-    UNKNOWN
+    STEADY, UNKNOWN
   }
 
   public Status statusFromPacket(Packet packet) {
@@ -123,6 +143,8 @@ public class TrackPresenceComponent extends SessionManager {
     if (show != null) {
       if ("chat".equalsIgnoreCase(show.childrenToString()))
         return Status.AVAILABLE;
+      if ("steady".equalsIgnoreCase(show.childrenToString()))
+        return Status.STEADY;
       if ("away".equalsIgnoreCase(show.childrenToString()))
         return Status.UNAVAILABLE;
       if ("typing".equalsIgnoreCase(show.childrenToString()))

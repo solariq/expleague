@@ -19,8 +19,10 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
 
   public RoomImpl(String id, Client client) {
     this.id = id;
-    state = State.CLEAN;
+    state = State.INIT;
     client.addListener(clientLst = cl -> {
+      if (cl.active() != this)
+        return;
       switch (cl.state()) {
         case CHAT:
         case COMMITED:
@@ -77,6 +79,11 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
   public void enterExpert(Expert winner) {
     state(State.LOCKED);
     winner.invite();
+  }
+
+  @Override
+  public void open() {
+    state(State.CLEAN);
   }
 
   @Override

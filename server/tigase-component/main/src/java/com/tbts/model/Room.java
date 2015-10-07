@@ -15,6 +15,8 @@ public interface Room extends WeakListenerHolder<Room> {
   void answer(Answer answer);
   void enterExpert(Expert winner);
 
+  void open();
+
   enum State {
     CLEAN,
     DEPLOYED,
@@ -22,7 +24,7 @@ public interface Room extends WeakListenerHolder<Room> {
     TIMEOUT,
     COMPLETE,
     CANCELED,
-    FIXED
+    INIT, FIXED
   }
 
   State state();

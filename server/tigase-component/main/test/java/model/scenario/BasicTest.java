@@ -35,12 +35,16 @@ public class BasicTest {
     expert.online(true);
 
     client.presence(true);
-    client.activate(Reception.instance().room(client, BareJID.bareJIDInstance("room@muc.localhost")));
+    final Room room = Reception.instance().room(client, BareJID.bareJIDInstance("room@muc.localhost"));
+    room.open();
+    client.activate(room);
     client.formulating();
     client.query();
 
-    Assert.assertEquals("Expert expert@localhost -> READY\n" +
+    Assert.assertEquals(
+            "Expert expert@localhost -> READY\n" +
             "Client client@localhost -> ONLINE\n" +
+            "Room room@muc.localhost -> INIT\n" +
             "Room room@muc.localhost -> CLEAN\n" +
             "Client client@localhost -> FORMULATING\n" +
             "Client client@localhost -> COMMITED\n" +
@@ -71,12 +75,16 @@ public class BasicTest {
     expert.online(true);
 
     client.presence(true);
-    client.activate(Reception.instance().room(client, BareJID.bareJIDInstance("room@muc.localhost")));
+    final Room room = Reception.instance().room(client, BareJID.bareJIDInstance("room@muc.localhost"));
+    client.activate(room);
+    room.open();
     client.formulating();
     client.query();
 
-    Assert.assertEquals("Expert expert@localhost -> READY\n" +
+    Assert.assertEquals(
+            "Expert expert@localhost -> READY\n" +
             "Client client@localhost -> ONLINE\n" +
+            "Room room@muc.localhost -> INIT\n" +
             "Room room@muc.localhost -> CLEAN\n" +
             "Client client@localhost -> FORMULATING\n" +
             "Client client@localhost -> COMMITED\n" +
@@ -117,12 +125,16 @@ public class BasicTest {
     expert.online(true);
 
     client.presence(true);
-    client.activate(Reception.instance().room(client, BareJID.bareJIDInstance("room@muc.localhost")));
+    final Room room = Reception.instance().room(client, BareJID.bareJIDInstance("room@muc.localhost"));
+    client.activate(room);
+    room.open();
     client.formulating();
     client.query();
 
-    Assert.assertEquals("Expert expert@localhost -> READY\n" +
+    Assert.assertEquals(
+            "Expert expert@localhost -> READY\n" +
             "Client client@localhost -> ONLINE\n" +
+            "Room room@muc.localhost -> INIT\n" +
             "Room room@muc.localhost -> CLEAN\n" +
             "Client client@localhost -> FORMULATING\n" +
             "Client client@localhost -> COMMITED\n" +
