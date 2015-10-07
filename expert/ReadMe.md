@@ -23,7 +23,7 @@
     A: Пока не проработаем сценарии - нет
     ---
     *Q: Хочу выбирать jaber-сервер*
-    A: Адрес захардкожен в dragdis-api.js: this.connection = new Strophe.Connection('http://localhost:5280/http-bind'); После изменений - обновляем расширение и вкладки
+    A: Адрес захардкожен в knugget-api.js: this.connection = new Strophe.Connection('http://localhost:5280/http-bind'); После изменений - обновляем расширение и вкладки
     ---
     *Q: Плагин не работает на странице chrome://extensions*
     A: Так задумано

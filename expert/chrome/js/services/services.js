@@ -1,4 +1,4 @@
-﻿dragdisSidebarDirectives.factory('dataService', ['$q', '$rootScope', '$timeout', function ($q, $rootScope, $timeout) {
+﻿knuggetSidebarDirectives.factory('dataService', ['$q', '$rootScope', '$timeout', function ($q, $rootScope, $timeout) {
 
     var referralSysValues = {
         InvitationUrl: "...",

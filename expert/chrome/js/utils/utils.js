@@ -1,4 +1,4 @@
-﻿DRAGDIS.serviceEnum = function (serviceId) {
+﻿KNUGGET.serviceEnum = function (serviceId) {
     switch (serviceId) {
         case 2:
             return "Facebook";
@@ -9,16 +9,16 @@
         case 9:
             return "Facebook chat";
         default:
-            return "Dragdis";
+            return "Knugget";
     }
 };
 
-DRAGDIS.extensionFileUrl = function (file) {
+KNUGGET.extensionFileUrl = function (file) {
     return window.chrome.extension.getURL(file);
 };
 
 //:>> Repair url if is without http*
-DRAGDIS.urlParam = function (param, text) {
+KNUGGET.urlParam = function (param, text) {
     param = param.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
     var regexS = "[\\?&]" + param + "=([^&#]*)";
     var regex = new RegExp(regexS);

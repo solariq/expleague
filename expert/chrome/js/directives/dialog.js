@@ -1,9 +1,9 @@
-﻿dragdisSidebarDirectives.service('dialogService', function () {
+﻿knuggetSidebarDirectives.service('dialogService', function () {
     this.template = "";
     this.folder = [];
 });
 
-dragdisSidebarDirectives.directive('dialog', ['dialogService', 'dialogFactory', '$rootScope', function (dialogService, dialogFactory, $rootScope) {
+knuggetSidebarDirectives.directive('dialog', ['dialogService', 'dialogFactory', '$rootScope', function (dialogService, dialogFactory, $rootScope) {
     return {
         restrict: 'A',
         controller: ['$scope', function ($scope) {

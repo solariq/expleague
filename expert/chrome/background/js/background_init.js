@@ -1,7 +1,7 @@
 ﻿﻿/* ==========================================================================
 Storage
 ========================================================================== */
-DRAGDIS.storage = {
+KNUGGET.storage = {
     get: function (key, callback) {
         window.chrome.storage.local.get(key, function (outObj) {
             callback(outObj[key] || "");
@@ -14,7 +14,7 @@ DRAGDIS.storage = {
         window.chrome.storage.local.set(obj);
 
         if (key == "UserActive" && value.Username) {
-            DRAGDIS.config.Username = value.Username;
+            KNUGGET.config.Username = value.Username;
         }
     }
 };
@@ -24,12 +24,12 @@ DRAGDIS.storage = {
 /* ==========================================================================
 Content script injection
 ========================================================================== */
-DRAGDIS.disabledDomains = {
+KNUGGET.disabledDomains = {
     storageName: "DisabledDomains",
     list: [],
     add: function (domain) {
         var $this = this;
-        DRAGDIS.storage.get($this.storageName, function (list) {
+        KNUGGET.storage.get($this.storageName, function (list) {
             var disabledDomains = !list ? [] : JSON.parse(list);
             var domainIndex = list.indexOf(domain);
 
@@ -37,7 +37,7 @@ DRAGDIS.disabledDomains = {
                 disabledDomains.push(domain);
             }
 
-            DRAGDIS.storage.set($this.storageName, JSON.stringify(disabledDomains));
+            KNUGGET.storage.set($this.storageName, JSON.stringify(disabledDomains));
             $this.list = disabledDomains;
 
             window.chrome.tabs.query({
@@ -59,7 +59,7 @@ DRAGDIS.disabledDomains = {
                 this.list.splice(domainIndex, 1);
             }
 
-            DRAGDIS.storage.set(this.storageName, JSON.stringify(this.list));
+            KNUGGET.storage.set(this.storageName, JSON.stringify(this.list));
 
             window.chrome.tabs.query({
                 highlighted: true,
@@ -78,9 +78,9 @@ DRAGDIS.disabledDomains = {
             if (!tab.url) {
                 return;
             }
-            var domain = DRAGDIS.getHostName(tab.url);
+            var domain = KNUGGET.getHostName(tab.url);
 
-            DRAGDIS.storage.get($this.storageName, function (list) {
+            KNUGGET.storage.get($this.storageName, function (list) {
                 var disabledDomains = !list ? [] : JSON.parse(list);
                 $this.list = disabledDomains;
 
@@ -104,7 +104,7 @@ DRAGDIS.disabledDomains = {
     }
 };
 
-DRAGDIS.imageIcon = {
+KNUGGET.imageIcon = {
     whiteList: [
         /facebook\.com/,
         /9gag\.com/,
@@ -141,7 +141,7 @@ DRAGDIS.imageIcon = {
         var isViable = false;
 
         //Check domain whitelist
-        $.each(DRAGDIS.imageIcon.whiteList, function (key, regex) {
+        $.each(KNUGGET.imageIcon.whiteList, function (key, regex) {
             if (regex.test(url)) {
                 isViable = true;
                 return true;
@@ -152,17 +152,12 @@ DRAGDIS.imageIcon = {
     }
 }
 
-DRAGDIS.injector = {
+KNUGGET.injector = {
     matches: [
         "^http*.://.+/*"
     ],
     exclude_matches: [
         "^https://.+(bank).+",
-        "^http(s|)://dragdis.com(/#.*|)$",
-        "^http(s|)://*.dragdis.com(/#.*|)$",
-        "^http(s|)://dev.dragdis.com(/#.*|)$",
-        "^http(s|)://local.dragdis.com(/#.*|)$",
-        "^http(s|)://dragdis.offline.lt(/#.*|)$",
         "^http*.://(maps.google.com|www.google.com/maps).+",
         "^http*.://www.bing.com/maps.+",
         "^http*.://drive.google.com.+"
@@ -191,8 +186,8 @@ DRAGDIS.injector = {
         }
 
         //disabled Domains
-        for (var dd = 0; dd < DRAGDIS.disabledDomains.list.length; dd++) {
-            var pattForDisabledDomains = new RegExp("^http*.://(.+)?(" + DRAGDIS.disabledDomains.list[dd] + ").+", "i");
+        for (var dd = 0; dd < KNUGGET.disabledDomains.list.length; dd++) {
+            var pattForDisabledDomains = new RegExp("^http*.://(.+)?(" + KNUGGET.disabledDomains.list[dd] + ").+", "i");
 
             if (pattForDisabledDomains.test(url)) {
                 return false;
@@ -219,7 +214,7 @@ DRAGDIS.injector = {
             console.info("Inject at " + tabId, tabUrl);
 
             //Add image icon
-            DRAGDIS.storage.get("userSettings", function(userSettings) {
+            KNUGGET.storage.get("userSettings", function(userSettings) {
 
                 var currentTime = new Date().getTime();
                 var inactivityPeriod = (24*60*60*1000) * 7;
@@ -229,7 +224,7 @@ DRAGDIS.injector = {
                     isUserInactive = true;
                 }
 
-                if (DRAGDIS.imageIcon.isViableHost(tabUrl) && isUserInactive) {
+                if (KNUGGET.imageIcon.isViableHost(tabUrl) && isUserInactive) {
                     window.chrome.tabs.executeScript(tabId, {
                         file: chrome.runtime.getManifest().content_scripts[3].js[0],
                         allFrames: false,
@@ -274,15 +269,13 @@ DRAGDIS.injector = {
                     }
                 });
             }
-
-            DRAGDIS.tracker.send(tabId);
         }
     },
     reInject: function () {
         //Load sidebar in already opened tabs of current Window
         chrome.tabs.getAllInWindow(null, function (tabs) {
             for (var i = 0; i < tabs.length; i++) {
-                DRAGDIS.injector.add(tabs[i].id, tabs[i].url);
+                KNUGGET.injector.add(tabs[i].id, tabs[i].url);
             }
         });
     }
@@ -290,78 +283,26 @@ DRAGDIS.injector = {
 
 chrome.tabs.onUpdated.addListener(function (tabId, tabInfo, tab) {
 
-    setTimeout(DRAGDIS.disabledDomains.updateTabContextMenu(tabId));
+    setTimeout(KNUGGET.disabledDomains.updateTabContextMenu(tabId));
 
     if (tab.url.toLowerCase().indexOf("http") !== 0) return;
 
     if (tabInfo.status === "loading") {
-        DRAGDIS.injector.inject(tabId);
+        KNUGGET.injector.inject(tabId);
     }
 });
 
 chrome.tabs.onReplaced.addListener(function (tabId) {
     window.chrome.tabs.get(tabId, function (tab) {
-        setTimeout(DRAGDIS.disabledDomains.updateTabContextMenu(tabId));
+        setTimeout(KNUGGET.disabledDomains.updateTabContextMenu(tabId));
 
         //prevent files injection to same tab with hash changes, below link show the solution
         if (tab.url.toLowerCase().indexOf("http") !== 0) return;
 
-        DRAGDIS.injector.inject(tabId);
+        KNUGGET.injector.inject(tabId);
     });
 });
 
-
-
-/* ==========================================================================
-Tracker
-========================================================================== */
-DRAGDIS.tracker = {
-    tabsUrls: [],
-    data: [],
-    add: function (object, tabId) {
-        var $this = this;
-
-        if (tabId > 0) {
-            chrome.tabs.get(tabId, function (tab) {
-                $this.tabsUrls[tab.id] = tab.url;
-            });
-        }
-
-        if (!this.data[tabId]) {
-            this.data[tabId] = [];
-        }
-
-        this.data[tabId].push(object);
-    },
-    send: function (tabId) {
-
-        if (this.data[tabId] && this.data[tabId].length > 0) {
-
-            var tabUrl = this.tabsUrls[tabId] || "";
-            var data = JSON.parse(JSON.stringify(this.data[tabId]));
-
-            delete this.data[tabId];
-            delete this.tabsUrls[tabId];
-
-            DRAGDIS.api["Tracker"]({
-                data: data,
-                sourceLink: tabUrl
-            }).then(function (response) {
-                if (response.status !== 200) {
-                    //if tracking data not uploaded successfully, do something
-                }
-            });
-        }
-    }
-};
-
-chrome.tabs.onRemoved.addListener(function (tabId) {
-    DRAGDIS.tracker.send(tabId);
-});
-
-chrome.windows.onRemoved.addListener(function (windowId) {
-    DRAGDIS.tracker.send(windowId);
-});
 
 
 
@@ -370,13 +311,12 @@ Context menu
 ========================================================================== */
 
 window.chrome.contextMenus.create({
-    'title': 'Open dragdis.com',
+    'title': 'Open knugget.com',
     'contexts': ['all'],
     'onclick': function () {
         window.chrome.tabs.create({
-            url: DRAGDIS.config.domain
+            url: KNUGGET.config.domain
         });
-        new TrackEvent("Sidebar offsite", "Click on context 'open dragdis.com'").send(true);
     }
 });
 
@@ -389,7 +329,7 @@ var DisabledDomains_Disable = window.chrome.contextMenus.create({
     'title': 'Disable on this page',
     'contexts': ['page'],
     'onclick': function (info) {
-        DRAGDIS.disabledDomains.add(DRAGDIS.getHostName(info.pageUrl));
+        KNUGGET.disabledDomains.add(KNUGGET.getHostName(info.pageUrl));
     }
 });
 
@@ -397,7 +337,7 @@ var DisabledDomains_Enable = window.chrome.contextMenus.create({
     'title': 'Enable on this page',
     'contexts': ['page'],
     'onclick': function (info) {
-        DRAGDIS.disabledDomains.remove(DRAGDIS.getHostName(info.pageUrl));
+        KNUGGET.disabledDomains.remove(KNUGGET.getHostName(info.pageUrl));
     }
 });
 
@@ -414,16 +354,14 @@ Toolbar icon
 ========================================================================== */
 
 window.chrome.browserAction.onClicked.addListener(function (activeTab) {
-    new TrackEvent("Sidebar offsite", "Click on toolbar icon").send(true);
-
     if (activeTab.url == "chrome://newtab/") {
         window.chrome.tabs.update(activeTab.id, {
-            url: DRAGDIS.config.domain
+            url: KNUGGET.config.domain
         });
     } else {
         if (activeTab.url.indexOf("chrome://") == -1) {
             //Show Sidebar 
-            DRAGDIS.sendMessage({
+            KNUGGET.sendMessage({
                 Type: "SIDEBAR_SHOW"
             });
         }
@@ -437,7 +375,7 @@ Helper functions
 ========================================================================== */
 
 //Extension browser details
-DRAGDIS.browserDetails = function () {
+KNUGGET.browserDetails = function () {
 
     //var nVer = navigator.appVersion;
     var nAgt = navigator.userAgent;
@@ -506,7 +444,7 @@ DRAGDIS.browserDetails = function () {
     if (navigator.appVersion.indexOf("X11") != -1) osName = "UNIX";
     if (navigator.appVersion.indexOf("Linux") != -1) osName = "Linux";
 
-    DRAGDIS.config.browser = {
+    KNUGGET.config.browser = {
         OS: osName,
         name: browserName,
         version: majorVersion,
@@ -514,17 +452,17 @@ DRAGDIS.browserDetails = function () {
     };
 };
 
-DRAGDIS.browserDetails();
+KNUGGET.browserDetails();
 
 //Snapshot Canvas support
-DRAGDIS.isCanvasSupported = function () {
+KNUGGET.isCanvasSupported = function () {
     var elem = document.createElement('canvas');
     return !!(elem.getContext && elem.getContext('2d'));
 };
 
-DRAGDIS.config.CanvasEnabled = DRAGDIS.isCanvasSupported();
+KNUGGET.config.CanvasEnabled = KNUGGET.isCanvasSupported();
 
-DRAGDIS.getHostName = function (url) {
+KNUGGET.getHostName = function (url) {
     var match = url.match(/:\/\/(www[0-9]?\.)?(.[^/:]+)/i);
     if (match !== null && match.length > 2 &&
         typeof match[2] === 'string' && match[2].length > 0) {
@@ -534,7 +472,7 @@ DRAGDIS.getHostName = function (url) {
     }
 };
 
-DRAGDIS.bookmarks = {
+KNUGGET.bookmarks = {
     get: function (callback) {
         chrome.bookmarks.getTree(function (tree) {
             var json = JSON.stringify(tree);
@@ -543,13 +481,12 @@ DRAGDIS.bookmarks = {
     }
 };
 
-DRAGDIS.templates = {
+KNUGGET.templates = {
     list: {},
     init: function () {
         var templates = [
             "views/actionsBlock.html",
             "views/connectionLoading.html",
-            "views/dialog.collaborate.html",
             "views/dialog.moreFolders.html",
             "views/empty.html",
             "views/error.html",
@@ -557,7 +494,6 @@ DRAGDIS.templates = {
             "views/dragArea.html",
             "views/waiting.html",
             "views/login.html",
-            "views/onboarding.html",
             "views/panel_chatWindow.html",
             "views/panel_folder.html",
             "views/panel_item.html",
@@ -574,16 +510,16 @@ DRAGDIS.templates = {
         var promises = [];
         $.each(templates, function (index, value) {
             var promise = $.get(chrome.extension.getURL(value), function (data) {
-                DRAGDIS.templates.list[value.replace(".html", "")] = data;
+                KNUGGET.templates.list[value.replace(".html", "")] = data;
             });
 
             promises.push(promise);
         });
 
         $.when.apply($, promises).then(function () {
-            DRAGDIS.storage.set("templates", JSON.stringify(DRAGDIS.templates.list));
+            KNUGGET.storage.set("templates", JSON.stringify(KNUGGET.templates.list));
         });
     }
 };
 
-DRAGDIS.templates.init();
+KNUGGET.templates.init();

@@ -1341,7 +1341,7 @@
 
         // The element `element` has priority over any other element
         forEach(ngAttrPrefixes, function (prefix) {
-            var name = 'dragdis-app';
+            var name = 'knugget-app';
 
             if (!appElement && element.hasAttribute && element.hasAttribute(name)) {
                 appElement = element;
@@ -1349,7 +1349,7 @@
             }
         });
         forEach(ngAttrPrefixes, function (prefix) {
-            var name = 'dragdis-app';
+            var name = 'knugget-app';
             var candidate;
 
             if (!appElement && (candidate = element.querySelector('[' + name.replace(':', '\\:') + ']'))) {

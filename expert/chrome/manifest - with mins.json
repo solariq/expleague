@@ -5,7 +5,7 @@
     },
     "browser_action": {
         "default_icon": "images/icons/icon_16.png",
-        "default_title": "Dragdis Test"
+        "default_title": "Knugget"
     },
     "content_scripts": [
         {
@@ -25,7 +25,7 @@
                 "js/lib/dragster.min.js",
                 "js/utils/tracker.min.js",
                 "js/utils/utils.min.js",
-                "js/utils/dragdisPlugins.min.js",
+                "js/utils/knuggetPlugins.min.js",
                 "js/sidebar.min.js",
 
                 "config/sidebar-app.min.js",
@@ -68,7 +68,7 @@
         },
         {
             "matches": [
-                "https://*.dragdis.com/*"
+                "https://*.knugget.com/*"
             ],
             "js": [
                 "js/lib/jquery/jquery-2.1.1.min.js",
@@ -89,22 +89,18 @@
             "all_frames": true
         }
     ],
-    "content_security_policy": "script-src 'self' 'unsafe-eval' https://dragdis.com https://www.google-analytics.com; object-src 'self'",
-    "description": "Drag & drop anything anywhere.",
+    "content_security_policy": "script-src 'self' 'unsafe-eval' https://www.google-analytics.com; object-src 'self'",
+    "description": "Станьте экспертом! Начните помогать людям сегодня",
     "icons": {
         "16": "images/icons/icon_16.png",
         "48": "images/icons/icon_48.png",
         "128": "images/icons/icon_128.png"
     },
     "manifest_version": 2,
-    "homepage_url": "https://dragdis.com",
-    "name": "Dragdis Test",
+    "homepage_url": "https://toobusytosearch.net",
+    "name": "Knugget Expert",
     "permissions": [
-        "https://dragdis.com/*",
-        "http://dragd.is/*",
-        "http://dev.dragdis.com/*",
-        "https://local.dragdis.com/*",
-        "https://dragdisdev.blob.core.windows.net/*",
+        "https://toobusytosearch.net/*",
         "http://*/*",
         "https://*/*",
         "<all_urls>",
@@ -130,11 +126,9 @@
         "fonts/*.ttf"
     ],
     "minimum_chrome_version": "20.0",
-    "omnibox": { "keyword": "dragdis.com" },
+    "omnibox": { "keyword": "knugget.com" },
     "externally_connectable": {
         "matches": [
-            "*://*.dragdis.com/*",
-            "*://f34960410b604a42bc49c6daa75ab6ae.cloudapp.net/*"
         ]
     }
 }

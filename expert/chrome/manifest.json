@@ -4,19 +4,19 @@
    },
    "browser_action": {
       "default_icon": "images/icons/icon_16.png",
-      "default_title": "Dragdis"
+      "default_title": "Knugget Expert"
    },
    "content_scripts": [ {
       "all_frames": false,
       "css": [ "css/main.css", "css/chat.css"],
       "exclude_globs": [ "https://*bank*" ],
       "exclude_matches": [ "http://*/*", "https://*/*" ],
-      "js": [ "js/lib/jquery/jquery-2.1.1.min.js", "js/lib/jquery/jquery-ui-1.10.3.custom.min.js", "js/lib/jquery/jquery.mousewheel.js", "js/lib/jquery/jquery.nearest.js", "js/lib/jquery/jquery.scrollTo.js", "js/lib/angular/angular_mod.js", "js/lib/angular/angular.sortable.js", "js/lib/angular/angular-animate.js", "js/lib/ng-tags-input.min.js", "js/lib/antiscroll.min.js", "js/lib/dragster.min.js", "config/sidebar-config.js", "js/utils/tracker.js", "js/utils/utils.js", "js/utils/dragdisPlugins.js", "js/sidebar.js", "config/sidebar-app.js", "js/angular.js", "js/extension.js", "js/events.js", "js/factories/foldersSystem.js", "js/factories/utils.js", "js/factories/collaboration.js", "js/factories/moreFoldersDialog.js", "js/factories/dialog.js", "js/factories/fakemodules.js", "js/services/services.js", "js/directives/dragdrop.js", "js/directives/loginRegister.js", "js/directives/foldersSystem.js", "js/directives/dialog.js", "js/directives/collaboration.js", "js/directives/moreFolders.js", "js/directives/onboarding.js", "js/directives/utils.js" ],
+      "js": [ "js/lib/jquery/jquery-2.1.1.min.js", "js/lib/jquery/jquery-ui-1.10.3.custom.min.js", "js/lib/jquery/jquery.mousewheel.js", "js/lib/jquery/jquery.nearest.js", "js/lib/jquery/jquery.scrollTo.js", "js/lib/angular/angular_mod.js", "js/lib/angular/angular.sortable.js", "js/lib/angular/angular-animate.js", "js/lib/ng-tags-input.min.js", "js/lib/antiscroll.min.js", "js/lib/dragster.min.js", "config/sidebar-config.js", "js/utils/utils.js", "js/utils/knuggetPlugins.js", "js/sidebar.js", "config/sidebar-app.js", "js/angular.js", "js/extension.js", "js/events.js", "js/factories/utils.js", "js/factories/dialog.js", "js/factories/fakemodules.js", "js/services/services.js", "js/directives/dragdrop.js", "js/directives/loginRegister.js", "js/directives/dialog.js", "js/directives/utils.js" ],
       "matches": [ "http://*/*", "https://*/*" ],
       "run_at": "document_start"
    }, {
       "js": [ "js/lib/jquery/jquery-2.1.1.min.js", "config/sidebar-config.js", "js/extensionIsInstalled.js" ],
-      "matches": [ "https://*.dragdis.com/*", "https://dragdis.offline.lt/" ],
+      "matches": [ "https://*.knugget.com/*"],
       "run_at": "document_start"
    }, {
       "all_frames": true,
@@ -29,12 +29,12 @@
       "matches": [ "http://*/*", "https://*/*" ],
       "run_at": "document_start"
    } ],
-   "content_security_policy": "script-src 'self' 'unsafe-eval' https://dragdis.com https://www.google-analytics.com; object-src 'self'",
-   "description": "Drag & drop anything anywhere.",
+   "content_security_policy": "script-src 'self' 'unsafe-eval' https://www.google-analytics.com; object-src 'self'",
+   "description": "Станьте экспертом прямо сейчас!",
    "externally_connectable": {
-      "matches": [ "*://*.dragdis.com/*", "*://f34960410b604a42bc49c6daa75ab6ae.cloudapp.net/*" ]
+      "matches": [ "*://*.knugget.com/*", "*://f34960410b604a42bc49c6daa75ab6ae.cloudapp.net/*" ]
    },
-   "homepage_url": "https://dragdis.com",
+   "homepage_url": "https://toobusytosearch.net",
    "icons": {
       "128": "images/icons/icon_128.png",
       "16": "images/icons/icon_16.png",
@@ -43,9 +43,9 @@
    "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC+q5NhPQDD2mPfL11cF/rrMCiUaQX4HwJif4J++msWJTr9DGlYRBuj4xzLCtwm/7Wy56738LYMGYqeskeMsb8+fZjGN94Y2bDsfvWk+fA/6lfdk8NbH6Ksr+qHBL5Yej9TYoF+heMkM3/nl1CkqsIBu0Ajt0NJX0ABwCepCWbMjQIDAQAB",
    "manifest_version": 2,
    "minimum_chrome_version": "20.0",
-   "name": "Dragdis",
-   "permissions": [ "https://dragdis.com/*", "http://dragd.is/*", "http://dev.dragdis.com/*", "https://local.dragdis.com/*", "https://dragdisdev.blob.core.windows.net/*", "http://*/*", "https://*/*", "\u003Call_urls>", "clipboardWrite", "tabs", "cookies", "notifications", "storage", "contextMenus", "webNavigation", "webRequest", "webRequestBlocking", "unlimitedStorage", "bookmarks" ],
-   "update_url": "https://clients2.google.com/service/update2/crx",
+   "name": "Knugget Expert",
+   "permissions": [ "https://toobusytosearch.net/*", "http://*/*", "https://*/*", "\u003Call_urls>", "clipboardWrite", "tabs", "cookies", "notifications", "storage", "contextMenus", "webNavigation", "webRequest", "webRequestBlocking", "unlimitedStorage", "bookmarks" ],
+//   "update_url": "https://clients2.google.com/service/update2/crx",
    "version": "3.1.1.7",
    "web_accessible_resources": [ "views/*.html", "images/*.png", "images/*.gif", "images/*.jpg", "images/icons@2x.png", "fonts/*.ttf" ]
 }

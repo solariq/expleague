@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-var DRAGDIS_SIDEBAR_NAME = "dragdis-root";
+var DRAGDIS_SIDEBAR_NAME = "knugget-root";
 
 var DRAGDIS_SIDEBAR = {
 
@@ -8,7 +8,7 @@ var DRAGDIS_SIDEBAR = {
 
     loadRootElement: function (callback) {
 
-        var rootTemplate = DRAGDIS.templates["views/root"];
+        var rootTemplate = KNUGGET.templates["views/root"];
         
         //Create root element for sidebar
         if ($("body").length) {
@@ -31,20 +31,20 @@ var DRAGDIS_SIDEBAR = {
 
         if (!sidebar.length) {
             this.loadRootElement(function () {
-                DRAGDIS.config.firstTimeLoad = true;
+                KNUGGET.config.firstTimeLoad = true;
 
-                angular.bootstrap(document.getElementById(DRAGDIS_SIDEBAR_NAME), ['dragdisSidebar']);
+                angular.bootstrap(document.getElementById(DRAGDIS_SIDEBAR_NAME), ['knuggetSidebar']);
 
                 //Reset hidden initialization and manual initialization flags
-                delete DRAGDIS.config.initHidden;
-                delete DRAGDIS.config.isInitializedManually;
+                delete KNUGGET.config.initHidden;
+                delete KNUGGET.config.isInitializedManually;
 
                 //If aditional parameters are set, execute them
                 if (params) {
 
                     if (params.showUploadError) {
-                        DRAGDIS.sidebarController.uploadError = true;
-                        DRAGDIS.sidebarController.show(true);
+                        KNUGGET.sidebarController.uploadError = true;
+                        KNUGGET.sidebarController.show(true);
                     }
 
                     if (params.callback) {
@@ -59,10 +59,10 @@ var DRAGDIS_SIDEBAR = {
             //If aditional parameters are set, execute them
             if (params) {
 
-                DRAGDIS.sidebarController.show(true, params.isOpenedManually);
+                KNUGGET.sidebarController.show(true, params.isOpenedManually);
 
                 if (params.showUploadError) {
-                    DRAGDIS.sidebarController.uploadError = true;
+                    KNUGGET.sidebarController.uploadError = true;
                 }
 
                 if (params.callback) {
@@ -70,7 +70,7 @@ var DRAGDIS_SIDEBAR = {
                 }
 
             } else {
-                DRAGDIS.sidebarController.show(true);
+                KNUGGET.sidebarController.show(true);
             }
         }
     }

@@ -1,27 +1,27 @@
 'use strict';
 
 
-DRAGDIS.storage.set("Requests",JSON.stringify([]));
-DRAGDIS.storage.set("Board",JSON.stringify([]));
-DRAGDIS.storage.set("ActiveRequest", null);
+KNUGGET.storage.set("Requests",JSON.stringify([]));
+KNUGGET.storage.set("Board",JSON.stringify([]));
+KNUGGET.storage.set("ActiveRequest", null);
 // REGISTER API COMMAND LISTENER
 chrome.runtime.onConnect.addListener(function(port) {
 
     port.onMessage.addListener(function(request, portInfo) {
 
         // Globally accessible function to execure API calls
-        DRAGDIS.executeApiCall = function(request, senderId) {
+        KNUGGET.executeApiCall = function(request, senderId) {
 
             var originalRequestMethod = request.method;
 
             //If API method is retryItemUpload, convert it to upload 
-            if (request.method == "retryItemUpload" && DRAGDIS.failedItemUpload) {
-                request = DRAGDIS.failedItemUpload.request;
-                senderId = DRAGDIS.failedItemUpload.sender;
+            if (request.method == "retryItemUpload" && KNUGGET.failedItemUpload) {
+                request = KNUGGET.failedItemUpload.request;
+                senderId = KNUGGET.failedItemUpload.sender;
             }
 
             //Dinamically call API method
-            DRAGDIS.api[request.method](request, senderId).then(function(response) {
+            KNUGGET.api[request.method](request, senderId).then(function(response) {
                 port.postMessage(response);
 
             }, function(error) {
@@ -33,13 +33,13 @@ chrome.runtime.onConnect.addListener(function(port) {
                 } else if (request.method == "Upload" && originalRequestMethod != "retryItemUpload") {
 
                     //Save failed item data if user chose to retry an upload
-                    DRAGDIS.failedItemUpload = {
+                    KNUGGET.failedItemUpload = {
                         request: request,
                         sender: senderId
                     };
 
                     //Send message to active tab to display user failed upload notification
-                    DRAGDIS.sendMessage({
+                    KNUGGET.sendMessage({
                         Type: "DISPLAY_UPLOAD_ERROR"
                     });
                 }
@@ -49,30 +49,30 @@ chrome.runtime.onConnect.addListener(function(port) {
             });
         };
 
-        DRAGDIS.executeApiCall(request, request.sender);
+        KNUGGET.executeApiCall(request, request.sender);
     });
 });
 
 //Reset localstorage
-DRAGDIS.storage.set("Domain", DRAGDIS.config.domain);
-DRAGDIS.storage.set("ConnectionFail", false);
-DRAGDIS.storage.set("IsConnected", false);
-DRAGDIS.storage.set("FoldersList", {});
-DRAGDIS.storage.set("UserActive", {
+KNUGGET.storage.set("Domain", KNUGGET.config.domain);
+KNUGGET.storage.set("ConnectionFail", false);
+KNUGGET.storage.set("IsConnected", false);
+KNUGGET.storage.set("FoldersList", {});
+KNUGGET.storage.set("UserActive", {
     Active: false
 });
-DRAGDIS.storage.set("CurrentSender", 'empty');
-DRAGDIS.storage.set("AppConfig", 'empty');
-DRAGDIS.storage.set("ScrollPosition", null);
+KNUGGET.storage.set("CurrentSender", 'empty');
+KNUGGET.storage.set("AppConfig", 'empty');
+KNUGGET.storage.set("ScrollPosition", null);
 
-DRAGDIS.screenSnapshotValue = "";
+KNUGGET.screenSnapshotValue = "";
 
-DRAGDIS.imageProcessor = {
+KNUGGET.imageProcessor = {
     makeSnapshot: function(callback) {
         var $this = this;
         var snapshotStart = new Date().getTime();
 
-        var params = DRAGDIS.config.browser.version < 34 ? {
+        var params = KNUGGET.config.browser.version < 34 ? {
             "format": "png"
         } : {
             format: "jpeg",
@@ -80,9 +80,9 @@ DRAGDIS.imageProcessor = {
         };
 
         window.chrome.tabs.captureVisibleTab(null, params, function(base64String) {
-            if (snapshotStart + DRAGDIS.config.timing.snapshotTimeout > new Date().getTime()) {
+            if (snapshotStart + KNUGGET.config.timing.snapshotTimeout > new Date().getTime()) {
 
-                if (DRAGDIS.config.browser.OS === "Windows") {
+                if (KNUGGET.config.browser.OS === "Windows") {
                     $this.crop(base64String, function(result) {
                         callback(result);
                     });
@@ -97,7 +97,7 @@ DRAGDIS.imageProcessor = {
         });
     },
     crop: function(base64String, callback) {
-        if (DRAGDIS.config.canvasEnabled) {
+        if (KNUGGET.config.canvasEnabled) {
             //crop top from snapshot
             this.getBase64String(base64String, function(croppedBase64String) {
                 callback(croppedBase64String);
@@ -177,7 +177,7 @@ DRAGDIS.imageProcessor = {
 
                 if (imageUrl.indexOf("safe_image.php") >= 0) {
 
-                    var imageParsedUrl = DRAGDIS.urlParam("url", imageUrl);
+                    var imageParsedUrl = KNUGGET.urlParam("url", imageUrl);
                     
                     if (!imageParsedUrl) {
                         imageUrl.push(imageParsedUrl);
@@ -269,12 +269,12 @@ DRAGDIS.imageProcessor = {
     }
 };
 
-DRAGDIS.getMessage = function(request, sender, sendResponse) {
+KNUGGET.getMessage = function(request, sender, sendResponse) {
     request = window.chrome ? request : request.message;
 
     switch (request.Type) {
         case "GetValue":
-            DRAGDIS.storage.get(request.Key, function(value) {
+            KNUGGET.storage.get(request.Key, function(value) {
                 if (window.chrome) {
                     sendResponse(value);
                 }
@@ -290,7 +290,7 @@ DRAGDIS.getMessage = function(request, sender, sendResponse) {
             if (snapshotEnable) {
                 this.imageProcessor.makeSnapshot(function(snapshot) {
                     if (snapshot) {
-                        DRAGDIS.screenSnapshotValue = snapshot;
+                        KNUGGET.screenSnapshotValue = snapshot;
                     }
                 });
             }
@@ -305,12 +305,12 @@ DRAGDIS.getMessage = function(request, sender, sendResponse) {
         //    break;
 
         case "INJECTION":
-            DRAGDIS.injector.add(sender.tab.id, sender.tab.url);
+            KNUGGET.injector.add(sender.tab.id, sender.tab.url);
             break;
 
         case "GET_BOOKMARKS":
-            DRAGDIS.bookmarks.get(function(tree) {
-                DRAGDIS.sendMessage({
+            KNUGGET.bookmarks.get(function(tree) {
+                KNUGGET.sendMessage({
                     Type: "SET_BOOKMARKS",
                     Value: tree
                 });
@@ -335,20 +335,12 @@ DRAGDIS.getMessage = function(request, sender, sendResponse) {
 
 
             break;
-
-        case "Tracker":
-            DRAGDIS.tracker.add(request.Value, sender.tab.id);
-            break;
-        case "SendTrackData":
-            DRAGDIS.tracker.send(sender.tab.id);
-            break;
-
         default:
 
             var senderId = String(sender.tab.windowId) + String(sender.tab.id);
 
             if (request.Type) {
-                DRAGDIS.api[request.Type](request, senderId).then(function(response) {
+                KNUGGET.api[request.Type](request, senderId).then(function(response) {
                     sendResponse('response');
                 });
             }
@@ -358,11 +350,11 @@ DRAGDIS.getMessage = function(request, sender, sendResponse) {
 // Check whether new version is installed
 window.chrome.runtime.onInstalled.addListener(function (details) {
     if (details.reason === "install") {
-        DRAGDIS.injector.reInject();
+        KNUGGET.injector.reInject();
     }
 });
 
-DRAGDIS.urlParam = function(param, text) {
+KNUGGET.urlParam = function(param, text) {
     param = param.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
     var regexS = "[\\?&]" + param + "=([^&#]*)";
     var regex = new RegExp(regexS);
@@ -376,7 +368,7 @@ DRAGDIS.urlParam = function(param, text) {
 
 };
 
-DRAGDIS.sendMessage = function(data) {
+KNUGGET.sendMessage = function(data) {
     window.chrome.tabs.query({
         active: true,
         lastFocusedWindow: true,
@@ -386,28 +378,6 @@ DRAGDIS.sendMessage = function(data) {
             window.chrome.tabs.sendMessage(tab.id, data);
         });
     });
-};
-
-DRAGDIS.loadUserSettings = function() {
-
-    DRAGDIS.api["getUserSettings"]({}).then(function(response) {
-
-        DRAGDIS.storage.set("userSettings", response.data);
-
-    }, function(error) {
-        new TrackException("Failed to fetch user settings").send();
-        console.error(error);
-    });
-
-    DRAGDIS.api["getUserNotifications"]({}).then(function(response) {
-
-        DRAGDIS.storage.set("userNotifications", response.data);
-
-    }, function(error) {
-        new TrackException("Failed to fetch user settings").send();
-        console.error(error);
-    });
-
 };
 
 //:>> MESSAGING
@@ -426,11 +396,11 @@ window.chrome.runtime.onMessage.addListener(function(request, sender, sendRespon
         }
 
         multiFirePrevent[sender.tab.id] = setTimeout(function(tabId, tabUrl) {
-            DRAGDIS.injector.add(tabId, tabUrl);
+            KNUGGET.injector.add(tabId, tabUrl);
         }, 500, sender.tab.id, sender.tab.url);
 
         return;
     }
 
-    DRAGDIS.getMessage(request, sender, sendResponse);
+    KNUGGET.getMessage(request, sender, sendResponse);
 });

@@ -56,15 +56,15 @@
         return arr;
     };
 
-    $.fn.dragdisScrapping = function (action) {
+    $.fn.knuggetScrapping = function (action) {
 
         if (action === 'destroy') {
             destroy();
             return true;
         }
 
-        var catchedDom = "dragdisCatched";
-        var checkedDomName = "dragdis_dragdis_dragdis";
+        var catchedDom = "knuggetCatched";
+        var checkedDomName = "knugget_knugget_knugget";
         var wordsLimit = 200;
 
         var el = $(this); //MAIN OBJECT !!!!
@@ -295,10 +295,10 @@
     };
 
     //@@ Get data about $("ELEMENET") like url, src, title, sitepage, ...
-    $.fn.dragdisCollection = function (callback) {
+    $.fn.knuggetCollection = function (callback) {
 
         var dragElmnt = this;
-        var collection = DRAGDIS.Drag.Data;
+        var collection = KNUGGET.Drag.Data;
 
         var maker = {
 
@@ -432,11 +432,11 @@
 
                     var ghref = dragElmnt.parent().attr('href');
                     //Check if exist file
-                    var imgurl = DRAGDIS.urlParam('imgurl', ghref);
+                    var imgurl = KNUGGET.urlParam('imgurl', ghref);
 
                     collection.Image = imgurl;
 
-                    collection.Referer = DRAGDIS.urlParam('imgrefurl', ghref);
+                    collection.Referer = KNUGGET.urlParam('imgrefurl', ghref);
 
                     var meta = $.parseJSON(dragElmnt.nearest(".rg_meta").text());
                     if (meta["pt"] != null) {
@@ -781,7 +781,7 @@
                 var sel;
                 var container;
                 var i;
-                var eventWindow = DRAGDIS.Drag.Context;
+                var eventWindow = KNUGGET.Drag.Context;
 
                 if (typeof eventWindow.getSelection != "undefined") {
                     sel = eventWindow.getSelection();
@@ -882,12 +882,12 @@
                 }
 
                 if (scrapEnable) {
-                    collection.Keywords = dragElmnt.dragdisScrapping();
+                    collection.Keywords = dragElmnt.knuggetScrapping();
                     if (collection.Keywords.length > 1000) {
                         collection.Keywords = collection.Keywords.substring(0, 1000);
                     }
 
-                    dragElmnt.dragdisScrapping("destroy");
+                    dragElmnt.knuggetScrapping("destroy");
                 }
             }
         };
@@ -1113,7 +1113,7 @@
         INIT
         ========================================================================== */
 
-        collection = $.extend({}, DRAGDIS.DragDATA, collection);
+        collection = $.extend({}, KNUGGET.DragDATA, collection);
 
         // Get drag type and website to construct maker function
         getDragType();
@@ -1184,9 +1184,9 @@
 
             //Parse video ID from youtube URL
             if (window.location.host === "www.youtube.com") {
-                var dragdisVideoId = $("#" + DRAGDIS_EVENTS.selectors.VideoIcon).attr("data-src");
-                if (dragdisVideoId && dragdisVideoId.length) {
-                    dragdisVideoId = dragdisVideoId.replace("http://www.youtube.com/watch?v=", "").replace("https://www.youtube.com/watch?v=", "");
+                var knuggetVideoId = $("#" + DRAGDIS_EVENTS.selectors.VideoIcon).attr("data-src");
+                if (knuggetVideoId && knuggetVideoId.length) {
+                    knuggetVideoId = knuggetVideoId.replace("http://www.youtube.com/watch?v=", "").replace("https://www.youtube.com/watch?v=", "");
                 }
                 isYoutubePage = 1;
             }
@@ -1223,9 +1223,9 @@
                     if (src === "") {
                         if (video.is("embed")) {
                             if (video.attr("flashvars") && video.attr("flashvars").indexOf("&vid=") != -1) {
-                                videoId = DRAGDIS.urlParam("vid", video.attr("flashvars"));
+                                videoId = KNUGGET.urlParam("vid", video.attr("flashvars"));
                             } else if (video.attr("flashvars") && video.attr("flashvars").indexOf("&video_id=") != -1) {
-                                videoId = DRAGDIS.urlParam("video_id", video.attr("flashvars"));
+                                videoId = KNUGGET.urlParam("video_id", video.attr("flashvars"));
                             } else if (video.attr("src")) {
                                 src = video.attr("src");
                             }
@@ -1235,8 +1235,8 @@
                             videoId = video.attr("data-youtube-id");
                             if (videoId)
                                 src = "https://www.youtube.com/watch?v=" + videoId;
-                        } else if (video.attr("src").indexOf("https://attachment.fbsbx.com/external_iframe.php") > -1 && video.parents(".dragdis_video_player")) {
-                            src = video.parents(".dragdis_video_player").attr("data-dragdisVideoHref");
+                        } else if (video.attr("src").indexOf("https://attachment.fbsbx.com/external_iframe.php") > -1 && video.parents(".knugget_video_player")) {
+                            src = video.parents(".knugget_video_player").attr("data-knuggetVideoHref");
                         } else {
                             src = video.attr("src") || video.attr("data");
 
@@ -1257,7 +1257,7 @@
                         var flashvars = video.find("param[name=flashvars]");
 
                         if (flashvars && flashvars.val().indexOf("&clip_id=") != -1) {
-                            videoId = DRAGDIS.urlParam("clip_id", flashvars.val());
+                            videoId = KNUGGET.urlParam("clip_id", flashvars.val());
                         }
 
                         if (videoId)
@@ -1277,8 +1277,8 @@
                         }
                     } else if (video.hasClass("player") && video.find("video,object").length && video.attr("data-fallback-url")) {
                         src = video.attr("data-fallback-url");
-                    } else if (video.attr("src").indexOf("https://attachment.fbsbx.com/external_iframe.php") > -1 && video.parents(".dragdis_video_player")) {
-                        src = video.parents(".dragdis_video_player").attr("data-dragdisVideoHref");
+                    } else if (video.attr("src").indexOf("https://attachment.fbsbx.com/external_iframe.php") > -1 && video.parents(".knugget_video_player")) {
+                        src = video.parents(".knugget_video_player").attr("data-knuggetVideoHref");
                     } else {
                         src = video.attr("src");
                     }
@@ -1288,15 +1288,15 @@
 
             if (src) {
 
-                var dragdisVideo = document.createElement('img');
-                dragdisVideo.id = DRAGDIS_EVENTS.selectors.VideoIcon;
-                dragdisVideo.setAttribute('data-provider', provider);
-                dragdisVideo.setAttribute('data-src', src);
-                dragdisVideo.setAttribute('draggable', true);
-                dragdisVideo.setAttribute('src', DRAGDIS.extensionFileUrl("images/drag_icon.gif"));
-                dragdisVideo.setAttribute('style', 'width:30px !important;height:30px !important;');
+                var knuggetVideo = document.createElement('img');
+                knuggetVideo.id = DRAGDIS_EVENTS.selectors.VideoIcon;
+                knuggetVideo.setAttribute('data-provider', provider);
+                knuggetVideo.setAttribute('data-src', src);
+                knuggetVideo.setAttribute('draggable', true);
+                knuggetVideo.setAttribute('src', KNUGGET.extensionFileUrl("images/drag_icon.gif"));
+                knuggetVideo.setAttribute('style', 'width:30px !important;height:30px !important;');
 
-                $(dragdisVideo).appendTo("body").css({
+                $(knuggetVideo).appendTo("body").css({
                     'top': vTop,
                     'left': vLeft
                 });

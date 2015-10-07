@@ -1,5 +1,5 @@
-﻿﻿dragdisSidebar.controller('DRAGDIS_SIDEBAR_CTRL', ['$window', '$scope', '$controller', '$timeout', '$rootScope', 'dataService', 'dialogService', function ($window, $scope, $controller, $timeout, $rootScope, dataService, dialogService) {
-    $scope.domain = DRAGDIS.config.domain;
+﻿﻿knuggetSidebar.controller('DRAGDIS_SIDEBAR_CTRL', ['$window', '$scope', '$controller', '$timeout', '$rootScope', 'dataService', 'dialogService', function ($window, $scope, $controller, $timeout, $rootScope, dataService, dialogService) {
+    $scope.domain = KNUGGET.config.domain;
     $scope.dialogIsActive = false;
     $scope.renderComplete = false;
 
@@ -10,7 +10,7 @@
         active: false,
         openMoreFoldersDialog: function () {
             $scope.hide(true);
-            dialogService.template = DRAGDIS.config.sidebarTemplatesRoot + "dialog.moreFolders";
+            dialogService.template = KNUGGET.config.sidebarTemplatesRoot + "dialog.moreFolders";
         }
     };
     $scope.active = false;
@@ -30,7 +30,7 @@
         timeout: "Cannot connect to server. Please try again later."
     };
 
-    if (DRAGDIS.config.isExtension) {
+    if (KNUGGET.config.isExtension) {
         $scope.$on('$locationChangeStart', function (ev) {
             ev.preventDefault();
         });
@@ -38,10 +38,10 @@
 
 
     $scope.send = function() {
-        DRAGDIS.api('SendResponse', {request: $scope.activeRequest.value}, function (response) {
+        KNUGGET.api('SendResponse', {request: $scope.activeRequest.value}, function (response) {
             if (response.status == 200) {
                 //$scope.activeRequest = request;
-                DRAGDIS.api('Finish', {request: $scope.activeRequest.value}, function(responce){});
+                KNUGGET.api('Finish', {request: $scope.activeRequest.value}, function(responce){});
                 $scope.clear();
             } else {
                 alert('Не удалось отправить ответ, повторите попытку');
@@ -67,7 +67,7 @@
 
     $scope.activateRequest = function(request) {
         $scope.board.clear();
-        DRAGDIS.api('Activate', {request: request}, function (response) {
+        KNUGGET.api('Activate', {request: request}, function (response) {
             if (response.status == 200) {
                 $scope.activeRequest.set(request);
             } else {
@@ -83,7 +83,7 @@
     };
 
     $scope.rejectRequest = function(request) {
-        DRAGDIS.api('Reject', {request: request}, function (response) {});
+        KNUGGET.api('Reject', {request: request}, function (response) {});
         if ($scope.activeRequest.value == request) {
             $scope.activeRequest.set(null);
         }
@@ -109,7 +109,7 @@
     }
 
     $scope.removeFromBorder = function(index) {
-        DRAGDIS.api('Remove', {index : index}, function (response) {});
+        KNUGGET.api('Remove', {index : index}, function (response) {});
         if (!$scope.$$phase) {
             $scope.$apply();
         }
@@ -133,9 +133,9 @@
 
     $scope.addAnswer = function(callback) {
         this.getCollection(function () {
-            DRAGDIS.Drag.Data.Status = 1;
-            answer = JSON.stringify(DRAGDIS.Drag.Data);
-            DRAGDIS.api('addToBoard', {answer : answer}, function (response) {});
+            KNUGGET.Drag.Data.Status = 1;
+            answer = JSON.stringify(KNUGGET.Drag.Data);
+            KNUGGET.api('addToBoard', {answer : answer}, function (response) {});
             if (typeof (callback) == "function") {
                 callback();
             }
@@ -158,7 +158,7 @@
 
 
     $scope.sidebarContent = function () {
-        var templatesRoot = DRAGDIS.config.sidebarTemplatesRoot;
+        var templatesRoot = KNUGGET.config.sidebarTemplatesRoot;
 
         if ($scope.activeRequest.value && $scope.allowToShow.value)
             return templatesRoot + 'dragArea';
@@ -172,7 +172,7 @@
 
     $scope.sidebarTemplate = function () {
 
-        var templatesRoot = DRAGDIS.config.sidebarTemplatesRoot;
+        var templatesRoot = KNUGGET.config.sidebarTemplatesRoot;
 
         //If uppload error is flagged show error-box instead of sidebar
         if ($scope.uploadError)
@@ -234,7 +234,7 @@
                     newVal.forEach(function(request) {
                         index = $scope.findRequest(oldVal, request);
                         if (index < 0) {
-                           DRAGDIS.api("Notify", {owner: request.owner, tag: "new-request",body : request.question}, function (resp){
+                           KNUGGET.api("Notify", {owner: request.owner, tag: "new-request",body : request.question}, function (resp){
                                if (resp.status == 200) {
                                    $scope.activateRequest(request);
                                } else if (resp.status == 501) {
@@ -267,7 +267,7 @@
         list: [],
 
         update: function() {
-            DRAGDIS.storage.get('Requests', function(value) {
+            KNUGGET.storage.get('Requests', function(value) {
                 $scope.requests.list = $scope.requests.getRequests(value);
             });
         },
@@ -288,12 +288,12 @@
                }
             });
             $scope.requests.list = result;
-            DRAGDIS.storage.set('Requests', JSON.stringify(result));
+            KNUGGET.storage.set('Requests', JSON.stringify(result));
         },
 
         clear: function() {
             $scope.requests.list = [];
-            DRAGDIS.storage.set('Requests', JSON.stringify([]));
+            KNUGGET.storage.set('Requests', JSON.stringify([]));
         }
     };
 
@@ -301,7 +301,7 @@
         list: [],
 
         update: function() {
-            DRAGDIS.storage.get('Board', function(value) {
+            KNUGGET.storage.get('Board', function(value) {
                 $scope.board.list = $scope.board.getBoard(value);
                 //alert('newlwn: ' + $scope.board.list.length);
             });
@@ -309,7 +309,7 @@
 
         clear: function() {
             $scope.board.list = [];
-            DRAGDIS.storage.set('Board',JSON.stringify([]));
+            KNUGGET.storage.set('Board',JSON.stringify([]));
         },
 
         getBoard: function(data) {
@@ -327,14 +327,14 @@
         value: null,
 
         get: function(callback) {
-            DRAGDIS.storage.get('allowToShow', function(value) {
+            KNUGGET.storage.get('allowToShow', function(value) {
                 $scope.allowToShow.value = value;
                 callback(value);
             });
         },
         set: function(activeValue) {
             $scope.allowToShow.value = activeValue;
-            DRAGDIS.storage.set('allowToShow', activeValue);
+            KNUGGET.storage.set('allowToShow', activeValue);
         }
     };
 
@@ -342,15 +342,15 @@
         value: null,
 
         get: function(callback) {
-            DRAGDIS.storage.get('ActiveRequest', function(value) {
-                value = value ? value : null
+            KNUGGET.storage.get('ActiveRequest', function(value) {
+                value = value ? value : null;
                 $scope.activeRequest.value = value;
                 callback(value);
             });
         },
         set: function(activeRequest) {
             $scope.activeRequest.value = activeRequest;
-            DRAGDIS.storage.set('ActiveRequest', activeRequest);
+            KNUGGET.storage.set('ActiveRequest', activeRequest);
         }
     };
     $scope.user = {
@@ -363,7 +363,7 @@
             var currentUser = this;
             //var laikas = new Date().getTime();
 
-            DRAGDIS.storage.get(["UserActive", "IsConnected", "ConnectionFail"], function (values) {
+            KNUGGET.storage.get(["UserActive", "IsConnected", "ConnectionFail"], function (values) {
 
                 //console.log("storage", new Date().getTime() - laikas);
 
@@ -374,7 +374,7 @@
                     if (values.UserActive.Avatar) {
                         currentUser.avatar = values.UserActive.Avatar;
                     } else {
-                        currentUser.avatar = DRAGDIS.extensionFileUrl("images/default_avatar.gif");
+                        currentUser.avatar = KNUGGET.extensionFileUrl("images/default_avatar.gif");
                     }
                 }
 
@@ -406,7 +406,7 @@
         $timeout.cancel($scope.timeoutHide);
         $timeout.cancel($scope.timeoutShow);
 
-        DRAGDIS.storage.get("IsConnected", function (value) {
+        KNUGGET.storage.get("IsConnected", function (value) {
             if (!value) {
                 $scope.user.active = 0;
 
@@ -422,14 +422,7 @@
 
             $timeout.cancel($scope.timeoutHide);
 
-            if (isOpenedManually) {
-                new TrackEvent("Sidebar", "Sidebar opened manually").send();
-            } else {
-                new TrackEvent("Sidebar", "Sidebar opened").send();
-            }
-
-
-            if (DRAGDIS.config.firstTimeLoad) {
+            if (KNUGGET.config.firstTimeLoad) {
                 $timeout(function () {
 
                     //var lastTime = new Date().getTime();
@@ -437,7 +430,7 @@
 
                     $scope.active = true;
 
-                    delete DRAGDIS.config.firstTimeLoad;
+                    delete KNUGGET.config.firstTimeLoad;
 
                     //if (!$scope.$$phase) {
                     //    $scope.$apply();
@@ -459,7 +452,7 @@
                 $scope.$apply();
             }
 
-        }, isOpenedManually ? 0 : DRAGDIS.config.timing.dragDelay);
+        }, isOpenedManually ? 0 : KNUGGET.config.timing.dragDelay);
 
         //$scope.moveChatScroll(1, 0);
     };
@@ -484,7 +477,7 @@
             }
 
             // Check if mouse is on sidebar. If true, register eve;nt to close sidebar after mouse leave
-            if (!closeFast && DRAGDIS.mouseIsOnSidebar) {
+            if (!closeFast && KNUGGET.mouseIsOnSidebar) {
                 $("#" + DRAGDIS_SIDEBAR_NAME).one("mouseleave", function () {
                     $scope.hide();
                 });
@@ -493,13 +486,7 @@
 
             $timeout.cancel($scope.timeoutShow);
 
-            if (isClosedManually) {
-                new TrackEvent("Sidebar", "Sidebar closed manually").send();
-            } else {
-                new TrackEvent("Sidebar", "Sidebar closed").send();
-            }
-
-            DRAGDIS.sendMessage({
+            KNUGGET.sendMessage({
                 Type: "SendTrackData"
             });
 
@@ -513,7 +500,7 @@
                 $scope.$apply();
             }
 
-        }, closeFast ? 0 : DRAGDIS.config.timing.sidebarClose);
+        }, closeFast ? 0 : KNUGGET.config.timing.sidebarClose);
     };
 
     $scope.resetSidebar = function () {
@@ -538,9 +525,9 @@
 
     $scope.getCollection = function (callback) {
 
-        var dragElement = DRAGDIS.Drag.Target;
-        dragElement.dragdisCollection(function (data) {
-            DRAGDIS.Drag.Data = data;
+        var dragElement = KNUGGET.Drag.Target;
+        dragElement.knuggetCollection(function (data) {
+            KNUGGET.Drag.Data = data;
             callback();
         });
 
@@ -561,7 +548,7 @@
 
     $scope.finishRequest = function() {
         $scope.activeRequest.get(function(request) {
-            DRAGDIS.api("Finish", {request: request}, function () { });
+            KNUGGET.api("Finish", {request: request}, function () { });
             $scope.board.clear();
             $scope.requests.removeRequest(request);
             $scope.activeRequest.set(null);
@@ -573,20 +560,18 @@
         $event.preventDefault();
         $scope.resetSidebar();
 
-        new TrackPageView("Sidebar", "User logged out").send();
-
-        DRAGDIS.api("Logout", {}, function () { });
+        KNUGGET.api("Logout", {}, function () { });
     };
 
     $scope.init = function () {
 
-        DRAGDIS.sidebarController = $scope;
+        KNUGGET.sidebarController = $scope;
 
         $scope.board.update();
 
         $scope.activeRequest.get(function(){});
 
-        DRAGDIS.storage.get("IsConnected", function (userConnected) {
+        KNUGGET.storage.get("IsConnected", function (userConnected) {
             if (userConnected) {
                 $scope.user.update();
             }
@@ -595,11 +580,11 @@
         });
 
         //Instantly show sidebar if it is not set to initialize in hidden mode
-        if (!DRAGDIS.config.initHidden) {
-            if (DRAGDIS.config.firstTimeLoad) {
+        if (!KNUGGET.config.initHidden) {
+            if (KNUGGET.config.firstTimeLoad) {
                 $scope.show(null, true);
             } else {
-                $scope.show(null, DRAGDIS.config.isInitializedManually);
+                $scope.show(null, KNUGGET.config.isInitializedManually);
             }
         }
     };

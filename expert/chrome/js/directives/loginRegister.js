@@ -1,4 +1,4 @@
-﻿dragdisSidebarDirectives.directive('login', function () {
+﻿knuggetSidebarDirectives.directive('login', function () {
     return {
         restrict: 'A',
         controller: ['$scope', function ($scope) {
@@ -15,7 +15,7 @@
 
                 $scope.isLoginInProgress = true;
 
-                DRAGDIS.api("loginUser", $scope.loginForm, function (response) {
+                KNUGGET.api("loginUser", $scope.loginForm, function (response) {
 
                     console.log('login register callback');
                     $scope.isLoginInProgress = false;
@@ -27,7 +27,7 @@
                         $scope.loginErrors = [];
                         //
                         ////Connect extension to server
-                        //DRAGDIS.sendMessage({ Type: "RECONNECT" }, function () { });
+                        //KNUGGET.sendMessage({ Type: "RECONNECT" }, function () { });
 
                     } else {
                         $scope.loginErrors = response.messages;

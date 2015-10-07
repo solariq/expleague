@@ -1,9 +1,9 @@
-﻿#dragdis-sidebar .antiscroll-wrap {
+﻿#knugget-sidebar .antiscroll-wrap {
   display: inline-block;
   position: relative;
   overflow: hidden;
 }
-#dragdis-sidebar .antiscroll-scrollbar {
+#knugget-sidebar .antiscroll-scrollbar {
   background: gray;
   background: rgba(0, 0, 0, 0.5);
   -webkit-border-radius: 7px;
@@ -19,25 +19,25 @@
   -moz-transition: linear 300ms opacity;
   -o-transition: linear 300ms opacity;
 }
-#dragdis-sidebar .antiscroll-scrollbar-shown {
+#knugget-sidebar .antiscroll-scrollbar-shown {
   opacity: 1;
   filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
 }
-#dragdis-sidebar .antiscroll-scrollbar-horizontal {
+#knugget-sidebar .antiscroll-scrollbar-horizontal {
   height: 7px;
   margin-left: 2px;
   bottom: 2px;
   left: 0;
   z-index: 99999;
 }
-#dragdis-sidebar .antiscroll-scrollbar-vertical {
+#knugget-sidebar .antiscroll-scrollbar-vertical {
   width: 7px;
   margin-top: 2px;
   right: 2px;
   top: 0;
   z-index: 99999;
 }
-#dragdis-sidebar .antiscroll-inner {
+#knugget-sidebar .antiscroll-inner {
   overflow: scroll;
 }
 /** A bug in Chrome 25 on Lion requires each selector to have their own

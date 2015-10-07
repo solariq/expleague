@@ -1,4 +1,4 @@
-DRAGDIS.Storage = {
+KNUGGET.Storage = {
     Get: function (key, callback) {
         if (window.chrome) {
             window.chrome.storage.local.get(key, function (outObj) {
@@ -24,7 +24,7 @@ DRAGDIS.Storage = {
 function save_options() {
     var select = document.getElementById("mode");
     var url = select.children[select.selectedIndex].value;
-    DRAGDIS.storage.set("Domain", url);
+    KNUGGET.storage.set("Domain", url);
 
     // Update status to let user know options were saved.
     var status = document.getElementById("status");
@@ -36,7 +36,7 @@ function save_options() {
 
 // Restores select box state to saved value from localStorage.
 function restore_options() {
-    DRAGDIS.storage.get("Domain", function (value) {
+    KNUGGET.storage.get("Domain", function (value) {
         var mode = value;
 
         if (!mode) {

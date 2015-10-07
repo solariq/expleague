@@ -1,12 +1,12 @@
-﻿dragdisSidebarDirectives.factory('$state', function () {
+﻿knuggetSidebarDirectives.factory('$state', function () {
     return function () {
     };
 });
-dragdisSidebarDirectives.factory('dragdisApi', function () {
+knuggetSidebarDirectives.factory('knuggetApi', function () {
     return function () {
     };
 });
-dragdisSidebarDirectives.factory('Basics', function () {
+knuggetSidebarDirectives.factory('Basics', function () {
     return function () {
     };
 });

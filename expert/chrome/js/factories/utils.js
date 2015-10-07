@@ -1,9 +1,9 @@
-﻿dragdisSidebarDirectives.factory('sortableListFactory', function () {
+﻿knuggetSidebarDirectives.factory('sortableListFactory', function () {
     return function () {
     };
 });
 
-dragdisSidebarDirectives.factory('copyingToClipboardFactory', function () {
+knuggetSidebarDirectives.factory('copyingToClipboardFactory', function () {
     return function () {
     };
 });

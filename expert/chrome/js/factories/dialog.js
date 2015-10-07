@@ -1,4 +1,4 @@
-﻿dragdisSidebarDirectives.factory('dialogFactory',  function () {
+﻿knuggetSidebarDirectives.factory('dialogFactory',  function () {
     return function () {  
     };
 });

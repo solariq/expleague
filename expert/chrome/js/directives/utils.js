@@ -1,4 +1,4 @@
-﻿dragdisSidebarDirectives.directive('avatar', ['$q', '$timeout', '$rootScope', function ($q, $timeout, $rootScope) {
+﻿knuggetSidebarDirectives.directive('avatar', ['$q', '$timeout', '$rootScope', function ($q, $timeout, $rootScope) {
     function isImage(src) {
 
         var deferred = $q.defer();
@@ -24,13 +24,13 @@
             $timeout(function () {
                 isImage(scope.avatar()).then(function (exist) {
                     if (!exist) {
-                        element.attr("src", DRAGDIS.extensionFileUrl("images/default_avatar.gif"));
-                        if (DRAGDIS.config.isExtension) {
+                        element.attr("src", KNUGGET.extensionFileUrl("images/default_avatar.gif"));
+                        if (KNUGGET.config.isExtension) {
                             alert('inside UserActive');
-                            DRAGDIS.storage.set("UserActive", {
+                            KNUGGET.storage.set("UserActive", {
                                 Active: $rootScope.$$childHead.user.active,
                                 Username: $rootScope.$$childHead.user.username,
-                                Avatar: DRAGDIS.extensionFileUrl("images/default_avatar.gif")
+                                Avatar: KNUGGET.extensionFileUrl("images/default_avatar.gif")
                             });
                         }
                     }
@@ -39,7 +39,7 @@
         }
     };
 }]);
-dragdisSidebarDirectives.directive('stopPropagation', function () {
+knuggetSidebarDirectives.directive('stopPropagation', function () {
     return {
         restrict: 'A',
         link: function (scope, element) {
@@ -49,7 +49,7 @@ dragdisSidebarDirectives.directive('stopPropagation', function () {
         }
     };
 });
-dragdisSidebarDirectives.directive('preventClick', function () {
+knuggetSidebarDirectives.directive('preventClick', function () {
     return {
         restrict: 'A',
         link: function (scope, element) {
@@ -59,7 +59,7 @@ dragdisSidebarDirectives.directive('preventClick', function () {
         }
     };
 });
-dragdisSidebarDirectives.directive('autoFocus', function () {
+knuggetSidebarDirectives.directive('autoFocus', function () {
     return {
         restrict: 'A',
         link: function (scope, element) {
@@ -67,7 +67,7 @@ dragdisSidebarDirectives.directive('autoFocus', function () {
         }
     };
 });
-dragdisSidebarDirectives.directive('selectOnClick', function () {
+knuggetSidebarDirectives.directive('selectOnClick', function () {
     return {
         restrict: 'A',
         link: function (scope, element) {
@@ -77,7 +77,7 @@ dragdisSidebarDirectives.directive('selectOnClick', function () {
         }
     };
 });
-dragdisSidebarDirectives.directive('toggleMenu', function () {
+knuggetSidebarDirectives.directive('toggleMenu', function () {
     return {
         restrict: 'A',
         link: function (scope, element) {
@@ -109,9 +109,9 @@ dragdisSidebarDirectives.directive('toggleMenu', function () {
         }
     };
 });
-dragdisSidebarDirectives.directive('copyingToClipboard', ['$timeout', '$compile', 'dataService', 'copyingToClipboardFactory', function ($timeout, $compile, dataService, copyingToClipboardFactory) {
+knuggetSidebarDirectives.directive('copyingToClipboard', ['$timeout', '$compile', 'dataService', 'copyingToClipboardFactory', function ($timeout, $compile, dataService, copyingToClipboardFactory) {
     var clipboardSuccessBlock = "<div class='clipboard-success'>Link copied</div>";
-    var clipboardWithoutExtensionBlock = "<div class='folder-share variant'><h3>Share this folder?</h3><div class='form-controls'><input type='text' value='" + DRAGDIS.config.domain + "' readonly='readonly' select-on-click /><a href='#' class='cancel' ng-click='removeShareBlock($event)' stop-propagation>Cancel</a></div><scroll-helper type='shareBlock'></scroll-helper></div>";
+    var clipboardWithoutExtensionBlock = "<div class='folder-share variant'><h3>Share this folder?</h3><div class='form-controls'><input type='text' value='" + KNUGGET.config.domain + "' readonly='readonly' select-on-click /><a href='#' class='cancel' ng-click='removeShareBlock($event)' stop-propagation>Cancel</a></div><scroll-helper type='shareBlock'></scroll-helper></div>";
 
     return {
         restrict: 'A',
@@ -133,7 +133,7 @@ dragdisSidebarDirectives.directive('copyingToClipboard', ['$timeout', '$compile'
                 }
 
                 shareScope = scope.$new();
-                var compiledDirective = $compile(clipboardWithoutExtensionBlock.replace(DRAGDIS.config.domain, shortUrl).replace("variant", blockPosition));
+                var compiledDirective = $compile(clipboardWithoutExtensionBlock.replace(KNUGGET.config.domain, shortUrl).replace("variant", blockPosition));
                 var directiveElement = compiledDirective(shareScope);
 
                 element.append(directiveElement);
@@ -189,10 +189,8 @@ dragdisSidebarDirectives.directive('copyingToClipboard', ['$timeout', '$compile'
 
 
             scope.copyUrl = function (shortUrl, isItem) {
-                new TrackEvent("Sidebar", "Copy URL to clipboard", attr.copyingToClipboard).send();
-
-                if (DRAGDIS.config.isExtension) {
-                    DRAGDIS.sendMessage({
+                if (KNUGGET.config.isExtension) {
+                    KNUGGET.sendMessage({
                         Type: "CLIPBOARD_COPY",
                         Value: shortUrl,
                     });
@@ -272,9 +270,9 @@ dragdisSidebarDirectives.directive('copyingToClipboard', ['$timeout', '$compile'
             $scope.clipboardIsBusy = false;
 
             $scope.folder_GetSharingLinks = function (folder) {
-                DRAGDIS.api("FolderGetSharingLinks", folder).then(function (response) {
+                KNUGGET.api("FolderGetSharingLinks", folder).then(function (response) {
 
-                    $scope.elementShortUrl = DRAGDIS.config.shortUrlDomain + response.ShareUrl;
+                    $scope.elementShortUrl = KNUGGET.config.shortUrlDomain + response.ShareUrl;
 
                     $scope.copyUrl($scope.elementShortUrl, false);
 
@@ -287,7 +285,7 @@ dragdisSidebarDirectives.directive('copyingToClipboard', ['$timeout', '$compile'
 
             $scope.getLastItemUrl = function (folder) {
 
-                DRAGDIS.api("GetLastItemUrl", folder).then(function (response) {
+                KNUGGET.api("GetLastItemUrl", folder).then(function (response) {
 
                     console.log(response);
 
@@ -307,7 +305,7 @@ dragdisSidebarDirectives.directive('copyingToClipboard', ['$timeout', '$compile'
         }]
     };
 }]);
-dragdisSidebarDirectives.directive('customScrollbar', ['dataService', '$timeout', '$rootScope', function (dataService, $timeout, $rootScope) {
+knuggetSidebarDirectives.directive('customScrollbar', ['dataService', '$timeout', '$rootScope', function (dataService, $timeout, $rootScope) {
     return {
         restrict: 'A',
         link: function (scope, element) {
@@ -327,7 +325,7 @@ dragdisSidebarDirectives.directive('customScrollbar', ['dataService', '$timeout'
             dataService.updateScroll = scope.scroll.update;
 
             scope.scroll.updatePosition = function () {
-                DRAGDIS.storage.get("ScrollPosition", function (position) {
+                KNUGGET.storage.get("ScrollPosition", function (position) {
                     if (position >= 0) {
                         scope.$evalAsync(function () {
                             $timeout(function () {
@@ -344,7 +342,7 @@ dragdisSidebarDirectives.directive('customScrollbar', ['dataService', '$timeout'
             scope.scroll.element.inner.on("scroll", function () {
                 $timeout.cancel(scrollPosTimeout);
                 scrollPosTimeout = $timeout(function () {
-                    DRAGDIS.storage.set("ScrollPosition", this.scrollTop);
+                    KNUGGET.storage.set("ScrollPosition", this.scrollTop);
                 }, 500);
             });
 
@@ -357,7 +355,7 @@ dragdisSidebarDirectives.directive('customScrollbar', ['dataService', '$timeout'
 
     };
 }]);
-dragdisSidebarDirectives.directive('dragoverScroll', ['$rootScope', function ($rootScope) {
+knuggetSidebarDirectives.directive('dragoverScroll', ['$rootScope', function ($rootScope) {
     return {
         restrict: 'A',
         link: function (scope, element) {
@@ -494,7 +492,7 @@ dragdisSidebarDirectives.directive('dragoverScroll', ['$rootScope', function ($r
         }
     };
 }]);
-dragdisSidebarDirectives.directive('sortableList', ['sortableListFactory', '$timeout', '$rootScope', function (sortableListFactory, $timeout, $rootScope) {
+knuggetSidebarDirectives.directive('sortableList', ['sortableListFactory', '$timeout', '$rootScope', function (sortableListFactory, $timeout, $rootScope) {
 
     //#region Options
     var defaultOptions = {
@@ -529,7 +527,7 @@ dragdisSidebarDirectives.directive('sortableList', ['sortableListFactory', '$tim
                     var toPos = itemSortable.dropindex;
                     var fromPos = itemSortable.index;
 
-                    DRAGDIS.api("Move", {fromPos: fromPos, toPos: toPos}, function () { });
+                    KNUGGET.api("Move", {fromPos: fromPos, toPos: toPos}, function () { });
                     //
                     //if (!$scope.$$phase) {
                     //    $scope.$apply();
@@ -549,7 +547,7 @@ dragdisSidebarDirectives.directive('sortableList', ['sortableListFactory', '$tim
         }]
     };
 }]);
-dragdisSidebarDirectives.directive('scrollHelper', ['$timeout', '$rootScope', function ($timeout, $rootScope) {
+knuggetSidebarDirectives.directive('scrollHelper', ['$timeout', '$rootScope', function ($timeout, $rootScope) {
 
     var parent = $rootScope.foldersListElement;
 
@@ -634,7 +632,7 @@ dragdisSidebarDirectives.directive('scrollHelper', ['$timeout', '$rootScope', fu
         }
     };
 }]);
-dragdisSidebarDirectives.directive('tooltipHover', ['$rootScope', function ($rootScope) {
+knuggetSidebarDirectives.directive('tooltipHover', ['$rootScope', function ($rootScope) {
     var foldersBlockElement;
     return {
         restrict: 'A',
@@ -657,7 +655,7 @@ dragdisSidebarDirectives.directive('tooltipHover', ['$rootScope', function ($roo
         }
     };
 }]);
-dragdisSidebarDirectives.directive('blockMove', ['$timeout', function ($timeout) {
+knuggetSidebarDirectives.directive('blockMove', ['$timeout', function ($timeout) {
     return {
         restrict: 'A',
         link: function (scope, element) {
@@ -679,12 +677,12 @@ dragdisSidebarDirectives.directive('blockMove', ['$timeout', function ($timeout)
     };
 }]);
 //prevent outside scroll
-dragdisSidebarDirectives.directive('scrollPreventer', ['$timeout', function ($timeout) {
+knuggetSidebarDirectives.directive('scrollPreventer', ['$timeout', function ($timeout) {
     return {
         restrict: 'A',
         link: function (scope, element) {
             //prevent window scroll
-            DRAGDIS.scrollPreventer = [];
+            KNUGGET.scrollPreventer = [];
 
             $timeout(function () {
                 element.bind('mousewheel', function (e, direction) {
@@ -704,15 +702,15 @@ dragdisSidebarDirectives.directive('scrollPreventer', ['$timeout', function ($ti
                 });
 
                 $(window).scroll(function () {
-                    if (DRAGDIS.Drag.IsOnSidebar && DRAGDIS.scrollPreventer.position) {
-                        $(window).scrollTop(DRAGDIS.scrollPreventer.position);
+                    if (KNUGGET.Drag.IsOnSidebar && KNUGGET.scrollPreventer.position) {
+                        $(window).scrollTop(KNUGGET.scrollPreventer.position);
                     }
                 });
             }, 2000);
         }
     };
 }]);
-dragdisSidebarDirectives.directive('keyUp', function () {
+knuggetSidebarDirectives.directive('keyUp', function () {
     return {
         restrict: "A",
         link: function (scope, element, attr) {
@@ -737,7 +735,7 @@ dragdisSidebarDirectives.directive('keyUp', function () {
         }
     };
 });
-dragdisSidebarDirectives.directive('noAnimate', ['$animate', function ($animate) {
+knuggetSidebarDirectives.directive('noAnimate', ['$animate', function ($animate) {
     return {
         restrict: "A",
         link: function (scope, element, attr) {
@@ -748,7 +746,7 @@ dragdisSidebarDirectives.directive('noAnimate', ['$animate', function ($animate)
         }
     };
 }]);
-dragdisSidebarDirectives.directive('renderComplete', ['$timeout', function ($timeout) {
+knuggetSidebarDirectives.directive('renderComplete', ['$timeout', function ($timeout) {
     return {
         restrict: "A",
         link: function (scope, element) {
@@ -770,7 +768,7 @@ dragdisSidebarDirectives.directive('renderComplete', ['$timeout', function ($tim
     };
 }]);
 
-dragdisSidebarDirectives.directive('timeAgo', ['$timeout', function($timeout) {
+knuggetSidebarDirectives.directive('timeAgo', ['$timeout', function($timeout) {
     return {
         restrinct: "A",
         link: function(scope, element) {

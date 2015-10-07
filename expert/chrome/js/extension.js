@@ -1,13 +1,13 @@
 'use strict';
 
-DRAGDIS.CurrentPage = window.location.href;
-DRAGDIS.browserInstanceId = Math.floor((1 + Math.random()) * 0x10000000000).toString(16).substring(1);
+KNUGGET.CurrentPage = window.location.href;
+KNUGGET.browserInstanceId = Math.floor((1 + Math.random()) * 0x10000000000).toString(16).substring(1);
 
 
 /* ==========================================================================
 Global getters / setters
 ========================================================================== */
-DRAGDIS.storage = {
+KNUGGET.storage = {
     get: function (key, callback) {
 
         window.chrome.storage.local.get(key, function (outObj) {
@@ -28,7 +28,7 @@ DRAGDIS.storage = {
     }
 };
 
-DRAGDIS.bookmarks = {
+KNUGGET.bookmarks = {
     set: function (tree) {
 
         var jsonBookmarks = $(".browser_bookmarks");
@@ -39,7 +39,7 @@ DRAGDIS.bookmarks = {
 
     },
     get: function () {
-        DRAGDIS.sendMessage({
+        KNUGGET.sendMessage({
             Type: "GET_BOOKMARKS"
         });
     }
@@ -49,7 +49,7 @@ DRAGDIS.bookmarks = {
 /* ==========================================================================
 Global functions
 ========================================================================== */
-DRAGDIS.backgroundListener = function (request) {
+KNUGGET.backgroundListener = function (request) {
 
     //REVIEW: find better solution to skip iframes
     if (window.safari && window.top !== window) {
@@ -57,22 +57,22 @@ DRAGDIS.backgroundListener = function (request) {
     }
     if (window.safari && request.name !== "DRAGDIS_MESSAGING") {
         return;
-    } //kill message if is not from dragdis extension
+    } //kill message if is not from knugget extension
 
-    if (DRAGDIS.sidebarController == null) {
-        DRAGDIS.sidebarController = {};
+    if (KNUGGET.sidebarController == null) {
+        KNUGGET.sidebarController = {};
     }
 
     switch (request.Type) {
         case "SIDEBAR_SHOW":
-            if (DRAGDIS.sidebarController.active) {
+            if (KNUGGET.sidebarController.active) {
                 DRAGDIS_SIDEBAR.openedByIcon = 0;
-                DRAGDIS.sidebarController.hide(true, true); //closeFast , isCloseManually
+                KNUGGET.sidebarController.hide(true, true); //closeFast , isCloseManually
             } else {
 
                 //Set flag for manual initialization (required for user stats)
-                if (!DRAGDIS.sidebarController.folders) {
-                    DRAGDIS.config.isInitializedManually = true;
+                if (!KNUGGET.sidebarController.folders) {
+                    KNUGGET.config.isInitializedManually = true;
                 }
 
                 DRAGDIS_SIDEBAR.openedByIcon = 1;
@@ -85,36 +85,36 @@ DRAGDIS.backgroundListener = function (request) {
             });
             break;
         case "DRAGDIS_UPDATE_ACTIVE":
-            if (DRAGDIS.sidebarController != null) {
-                DRAGDIS.sidebarController.user.set(request.Value);
+            if (KNUGGET.sidebarController != null) {
+                KNUGGET.sidebarController.user.set(request.Value);
             }
             break;
         case "DRAGDIS_UPDATE_FOLDERS":
-            if (DRAGDIS.sidebarController != null && DRAGDIS.sidebarController.folders) {
-                DRAGDIS.sidebarController.folders.update(request.Value);
+            if (KNUGGET.sidebarController != null && KNUGGET.sidebarController.folders) {
+                KNUGGET.sidebarController.folders.update(request.Value);
             }
             break;
         case "SIDEBAR_UPDATE_SCROLLPOSITION":
-            if (DRAGDIS.sidebarController != null && typeof DRAGDIS.sidebarController.$broadcast == "function") {
-                DRAGDIS.sidebarController.$broadcast("Update_scrollPosition");
+            if (KNUGGET.sidebarController != null && typeof KNUGGET.sidebarController.$broadcast == "function") {
+                KNUGGET.sidebarController.$broadcast("Update_scrollPosition");
             }
             break;
         case "SET_BOOKMARKS":
-            DRAGDIS.bookmarks.set(request.Value);
+            KNUGGET.bookmarks.set(request.Value);
 
             break;
     }
 };
 
-DRAGDIS.api = function (method, data, callback) {
+KNUGGET.api = function (method, data, callback) {
 
     var deferred = $.Deferred();
     var port = window.chrome.runtime.connect({
-        name: "dragdis"
+        name: "knugget"
     });
 
     data.method = method;
-    data.sender = DRAGDIS.browserInstanceId;
+    data.sender = KNUGGET.browserInstanceId;
 
     port.postMessage(data);
 
@@ -136,19 +136,19 @@ DRAGDIS.api = function (method, data, callback) {
     return deferred.promise();
 };
 
-DRAGDIS.sendMessage = function (data, callback) {
+KNUGGET.sendMessage = function (data, callback) {
     window.chrome.runtime.sendMessage(data, callback);
 };
 
-DRAGDIS.screenSnapshot = function () {
-    DRAGDIS.sendMessage({
+KNUGGET.screenSnapshot = function () {
+    KNUGGET.sendMessage({
         Type: "ScreenSnapshot"
     });
 };
 
 
 /* ==========================================================================
-Sync between dragdis iframe<-->extension
+Sync between knugget iframe<-->extension
 ========================================================================== */
 window.addEventListener('message', function (e) {
 
@@ -160,7 +160,7 @@ window.addEventListener('message', function (e) {
         data = {};
     }
 
-    if (e.origin.toLowerCase().indexOf(DRAGDIS.config.domain.toLowerCase().slice(0, -1)) > -1) {
+    if (e.origin.toLowerCase().indexOf(KNUGGET.config.domain.toLowerCase().slice(0, -1)) > -1) {
 
         if (data.type == 'DRAGDIS_ExtensionIframeSync' && data.action == 'FORCE_REFRESH') {
 
@@ -170,7 +170,7 @@ window.addEventListener('message', function (e) {
             }), '*');
 
             // Initialize reconnect
-            DRAGDIS.sendMessage({
+            KNUGGET.sendMessage({
                 Type: "RECONNECT"
             });
         }
@@ -181,7 +181,7 @@ window.addEventListener('message', function (e) {
 /* ==========================================================================
 Extension background message listener
 ========================================================================== */
-window.chrome.extension.onMessage.addListener(DRAGDIS.backgroundListener);
+window.chrome.extension.onMessage.addListener(KNUGGET.backgroundListener);
 
 
 //TODO: move to extension native page mod
@@ -189,15 +189,15 @@ window.chrome.extension.onMessage.addListener(DRAGDIS.backgroundListener);
 Static page mod for bookmarks
 ========================================================================== */
 $(document).on("ready", function () {
-
-    if (window.location.href.toLowerCase().indexOf("dragdis.com/account/settings/import") > -1) {
-        DRAGDIS.bookmarks.get();
-    }
+    //
+    //if (window.location.href.toLowerCase().indexOf("knugget.com/account/settings/import") > -1) {
+    //    KNUGGET.bookmarks.get();
+    //}
 
 });
 
-DRAGDIS.storage.get("templates", function (templates) {
-    DRAGDIS.templates = JSON.parse(templates);
+KNUGGET.storage.get("templates", function (templates) {
+    KNUGGET.templates = JSON.parse(templates);
 });
 
 

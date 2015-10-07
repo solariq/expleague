@@ -1,6 +1,6 @@
 angular.module('fileBlobsFactory', []).factory('fileBlob', ["$http", '$q', function($http, $q) {
 
-    var apiUrl = DRAGDIS.config.domain + "api";
+    var apiUrl = KNUGGET.config.domain + "api";
     var blockIDPrefix = "block-";
 
     var ALLOW_FILE_TYPES = [
@@ -83,7 +83,7 @@ angular.module('fileBlobsFactory', []).factory('fileBlob', ["$http", '$q', funct
             //screen snapshot or base64string img
             if (data.Base64Image || data.MakeSnapshot) {
 
-                var image = data.Base64Image ? JSON.parse(JSON.stringify(data.Base64Image)) : JSON.parse(JSON.stringify(DRAGDIS.screenSnapshotValue));
+                var image = data.Base64Image ? JSON.parse(JSON.stringify(data.Base64Image)) : JSON.parse(JSON.stringify(KNUGGET.screenSnapshotValue));
 
                 if (!image.length) {
 
@@ -97,7 +97,7 @@ angular.module('fileBlobsFactory', []).factory('fileBlob', ["$http", '$q', funct
                 } else {
 
                     var imageRaw = image.replace("data:image/jpeg;base64,", "").replace("data:image/gif;base64,", "").replace("data:image/png;base64,", "");
-                    arrayBuffer = DRAGDIS.imageProcessor.convertBase64toAb(imageRaw);
+                    arrayBuffer = KNUGGET.imageProcessor.convertBase64toAb(imageRaw);
 
                     if (data.MakeSnapshot) {
 
@@ -127,7 +127,7 @@ angular.module('fileBlobsFactory', []).factory('fileBlob', ["$http", '$q', funct
                         delete data.Base64Image;
 
                         // Clear screenshot value
-                        DRAGDIS.screenSnapshotValue = "";
+                        KNUGGET.screenSnapshotValue = "";
 
                         if (result && result.filename) {
 
@@ -161,7 +161,7 @@ angular.module('fileBlobsFactory', []).factory('fileBlob', ["$http", '$q', funct
                     }
 
                     data.Files[0].binary = data.Files[0].binary.split(";base64,")[1];
-                    arrayBuffer = DRAGDIS.imageProcessor.convertBase64toAb(data.Files[0].binary);
+                    arrayBuffer = KNUGGET.imageProcessor.convertBase64toAb(data.Files[0].binary);
                     data.Files[0].size = arrayBuffer.size;
                     data.Files[0].binary = arrayBuffer.binary;
 
@@ -197,9 +197,9 @@ angular.module('fileBlobsFactory', []).factory('fileBlob', ["$http", '$q', funct
 
                     console.log("aaa");
 
-                    DRAGDIS.imageProcessor.getBiggerImage(data.Image, data.Sitepage, function (image) {
+                    KNUGGET.imageProcessor.getBiggerImage(data.Image, data.Sitepage, function (image) {
 
-                        DRAGDIS.imageProcessor.getRemoteImageStream(image, function (stream) {
+                        KNUGGET.imageProcessor.getRemoteImageStream(image, function (stream) {
 
                             if (stream && $.inArray(stream.type.toLowerCase(), ALLOW_FILE_TYPES) == -1) {
 

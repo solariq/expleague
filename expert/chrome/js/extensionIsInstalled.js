@@ -1,16 +1,16 @@
 var script = document.createElement('script');
-script.textContent = '(window.chromeDragdis = "' + chrome.runtime.getManifest().version + '")';
+script.textContent = '(window.chromeKnugget = "' + chrome.runtime.getManifest().version + '")';
 (document.head || document.documentElement).appendChild(script);
 script.parentNode.removeChild(script);
 
-var DRAGDIS = DRAGDIS || {};
+var KNUGGET = KNUGGET || {};
 
-DRAGDIS.sendMessage = function (data, callback) {
+KNUGGET.sendMessage = function (data, callback) {
     window.chrome.runtime.sendMessage(data, callback);
 };
 
 $(document).on("copyToClipboard", function (event) {
-    DRAGDIS.sendMessage({
+    KNUGGET.sendMessage({
         Type: "CLIPBOARD_COPY",
         Value: event.originalEvent.detail.textToCopy,
     }, function (response) {
@@ -30,7 +30,7 @@ window.addEventListener('message', function (e) {
         data = {};
     }
 
-    if (e.origin.toLowerCase().indexOf(DRAGDIS.config.domain.toLowerCase().slice(0, -1)) > -1) {
+    if (e.origin.toLowerCase().indexOf(KNUGGET.config.domain.toLowerCase().slice(0, -1)) > -1) {
 
         if (data.type == 'DRAGDIS_ExtensionIframeSync' && data.action == 'FORCE_REFRESH') {
 
@@ -40,7 +40,7 @@ window.addEventListener('message', function (e) {
             }), '*');
 
             // Initialize reconnect
-            DRAGDIS.sendMessage({
+            KNUGGET.sendMessage({
                 Type: "RECONNECT"
             });
         }

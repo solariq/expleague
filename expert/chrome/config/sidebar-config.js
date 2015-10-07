@@ -1,7 +1,7 @@
 'use strict';
 
-var DRAGDIS = DRAGDIS || {};
-DRAGDIS.config = DRAGDIS.config || {};
+var KNUGGET = KNUGGET || {};
+KNUGGET.config = KNUGGET.config || {};
 
 var sidebarConfig = {
     prefix: "",
@@ -23,7 +23,7 @@ var sidebarConfig = {
 
 (function prefixDomainUrl() {
 
-    var config = DRAGDIS.config;
+    var config = KNUGGET.config;
 
     $.extend(true, config, sidebarConfig);
 

@@ -1,5 +1,5 @@
 /* ==========================================================================
-Dragdis indicator icon for images 
+Knugget indicator icon for images
 ========================================================================== */
 
 $(function() {
@@ -24,21 +24,21 @@ $(function() {
                 
                 event.stopPropagation();
 
-                if (!DRAGDIS.sidebarController) {
-                    DRAGDIS.sidebarController = {};
+                if (!KNUGGET.sidebarController) {
+                    KNUGGET.sidebarController = {};
                 }
 
-                if (DRAGDIS.sidebarController.active) {
+                if (KNUGGET.sidebarController.active) {
                     DRAGDIS_SIDEBAR.openedByIcon = 0;
-                    DRAGDIS.sidebarController.hide(true, true); //closeFast , isCloseManually
+                    KNUGGET.sidebarController.hide(true, true); //closeFast , isCloseManually
 
                     $(icon).removeClass('silence');
 
                 } else {
 
                     //Set flag for manual initialization (required for user stats)
-                    if (!DRAGDIS.sidebarController.folders) {
-                        DRAGDIS.config.isInitializedManually = true;
+                    if (!KNUGGET.sidebarController.folders) {
+                        KNUGGET.config.isInitializedManually = true;
                     }
 
                     DRAGDIS_SIDEBAR.openedByIcon = 1;
@@ -49,8 +49,8 @@ $(function() {
             })
             .on('mouseover', function (event) {
 
-                if (DRAGDIS.sidebarController) {
-                    if (DRAGDIS.sidebarController.active) {
+                if (KNUGGET.sidebarController) {
+                    if (KNUGGET.sidebarController.active) {
                         $(icon).addClass('silence');
                     }
                 }

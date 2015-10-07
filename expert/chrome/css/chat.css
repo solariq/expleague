@@ -1,6 +1,6 @@
 /* Bit of normalisation */
 
-#dragdis-root #dragdis-sidebar .container {
+#knugget-root #knugget-sidebar .container {
     display: block;
     height: 60px;
     -moz-box-sizing: border-box;
@@ -22,7 +22,7 @@
 
 /* .bubble */
 
-#dragdis-root #dragdis-sidebar .bubble {
+#knugget-root #knugget-sidebar .bubble {
     background-image: linear-gradient(bottom, rgb(210,244,254) 25%, rgb(149,194,253) 100%);
     background-image: -o-linear-gradient(bottom, rgb(210,244,254) 25%, rgb(149,194,253) 100%);
     background-image: -moz-linear-gradient(bottom, rgb(210,244,254) 25%, rgb(149,194,253) 100%);
@@ -53,14 +53,14 @@
 }
 
 
-#dragdis-root #dragdis-sidebar .bubble:before, .bubble:after {
+#knugget-root #knugget-sidebar .bubble:before, .bubble:after {
     border-radius: 20px / 10px;
     content: '';
     display: block;
     position: absolute;
 }
 
-#dragdis-root #dragdis-sidebar .bubble:before {
+#knugget-root #knugget-sidebar .bubble:before {
     border: 10px solid transparent;
     border-bottom-color: rgba(0, 0, 0, 0.5);
     bottom: 0;
@@ -68,14 +68,14 @@
     z-index: -2;
 }
 
-#dragdis-root #dragdis-sidebar .bubble:after {
+#knugget-root #knugget-sidebar .bubble:after {
     border: 8px solid transparent;
     border-bottom-color: #d2f4fe;
     bottom: 1px;
     left: -5px;
 }
 
-#dragdis-root #dragdis-sidebar .bubble--alt {
+#knugget-root #knugget-sidebar .bubble--alt {
     background-image: linear-gradient(bottom, rgb(172,228,75) 25%, rgb(122,205,71) 100%);
     background-image: -o-linear-gradient(bottom, rgb(172,228,75) 25%, rgb(122,205,71) 100%);
     background-image: -moz-linear-gradient(bottom, rgb(172,228,75) 25%, rgb(122,205,71) 100%);
@@ -91,14 +91,14 @@
     float: right;
 }
 
-#dragdis-root #dragdis-sidebar .bubble--alt:before {
+#knugget-root #knugget-sidebar .bubble--alt:before {
     border-bottom-color: rgba(0, 0, 0, 0.5);
     border-radius: 20px / 10px;
     left: auto;
     right: -7px;
 }
 
-#dragdis-root #dragdis-sidebar .bubble--alt:after {
+#knugget-root #knugget-sidebar .bubble--alt:after {
     border-bottom-color: #ace44b;
     border-radius: 20px / 10px;
     left: auto;

@@ -1,11 +1,11 @@
-angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'fileBlob', function ($http, $q, $fileBlob) {
+angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'fileBlob', function ($http, $q, $fileBlob) {
 
     function JabberClient(login, password, resource) {
         this.login = login;
         this.password = password;
         this.resource = resource;
-        this.connection = new Strophe.Connection('http://toobusytosearch.net:5280/http-bind');
-        //this.connection = new Strophe.Connection('http://localhost:5280/http-bind');
+        //this.connection = new Strophe.Connection('http://toobusytosearch.net:5280/http-bind');
+        this.connection = new Strophe.Connection('http://localhost:5280/http-bind');
 
         this.loginUser = function(nick, callback) {
             //todo set resource
@@ -18,6 +18,10 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
         };
 
         this.send = function (message, callback) {
+            console.log("sending to " + message.to);
+            console.log("from " + this.connection.jid);
+            console.log("text " + message.text);
+
             var msg = $msg({to: message.to, from: this.connection.jid, type: 'groupchat'})
                 .c('body')
                 .t(message.text);
@@ -148,7 +152,10 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
                 return prevSrate == ExpertState.INVITE
             },
             onSet: function(data) {
-                jabberClient.sendPres(data.request.room, 'expert');
+                //jabberClient.sendPres(data.request.room, 'expert');
+                jabberClient.enterRoom(data.request.room, 'expert');
+                //todo remove this
+                stateController.setState(ExpertState.GO);
             }
         },
         DENIED: {
@@ -171,7 +178,6 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
         }
     };
 
-
     function StateController() {
         this.state = ExpertState.AWAY;
 
@@ -192,7 +198,6 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
         };
     }
 
-
     var jabberClient = null;
     var stateController = null;
 
@@ -200,7 +205,7 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
     //var connection = new Strophe.Connection('http://toobusytosearch.net:5280/http-bind');
 
     // TODO get API url from config
-    var apiUrl = DRAGDIS.config.domain + "api";
+    var apiUrl = KNUGGET.config.domain + "api";
 
     if (Notification.permission !== "granted") {
         alert('Пожалуйста, разрешите доступ к уведомлениям');
@@ -211,37 +216,37 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
     }
 
     addToBoardSync = function (answer, callback) {
-        DRAGDIS.storage.get("Board", function (value) {
+        KNUGGET.storage.get("Board", function (value) {
             value = value ? JSON.parse(value) : [];
             value.push(answer);
-            DRAGDIS.storage.set("Board", JSON.stringify(value));
+            KNUGGET.storage.set("Board", JSON.stringify(value));
             callback();
         });
     };
 
     addQuestion = function(question, callback) {
-        DRAGDIS.storage.get("Requests", function (value) {
+        KNUGGET.storage.get("Requests", function (value) {
             value = value ? JSON.parse(value) : [];
             //value = [];
             value.push(question);
-            DRAGDIS.storage.set("Requests", JSON.stringify(value));
+            KNUGGET.storage.set("Requests", JSON.stringify(value));
             callback();
         });
     };
 
     allowToShow = function(isAllowed) {
-        DRAGDIS.storage.set("AllowToShow", isAllowed);
+        KNUGGET.storage.set("AllowToShow", isAllowed);
     };
 
     removeRequest = function(request, callback) {
-        DRAGDIS.storage.get("Requests", function (value) {
+        KNUGGET.storage.get("Requests", function (value) {
             value = value ? JSON.parse(value) : [];
             result = [];
             value.forEach(function(el, i) {
                 if (request.id != el.id)
                     result.push(el);
             });
-            DRAGDIS.storage.set("Requests", JSON.stringify(result));
+            KNUGGET.storage.set("Requests", JSON.stringify(result));
             callback();
         });
     };
@@ -251,14 +256,14 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
 
         resetBoard: function (data) {
             var defer = $q.defer();
-            DRAGDIS.storage.set("Board", JSON.stringify([]));
+            KNUGGET.storage.set("Board", JSON.stringify([]));
             defer.resolve({status: 200});
             return defer.promise;
         },
 
         SendResponse: function(data) {
             var defer = $q.defer();
-            DRAGDIS.storage.get("Board", function (board) {
+            KNUGGET.storage.get("Board", function (board) {
                 board = board ? JSON.parse(board) : [];
                 jabberClient.send({
                         to: data.request.room,
@@ -324,7 +329,7 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
 
         Remove: function(data) {
             var defer = $q.defer();
-            DRAGDIS.storage.get("Board", function (value) {
+            KNUGGET.storage.get("Board", function (value) {
                 value = value ? JSON.parse(value) : [];
                 if (value.length <= data.index) {
                     defer.resolve({status: 500});
@@ -332,7 +337,7 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
                 }
 
                 value.splice(data.index, 1);
-                DRAGDIS.storage.set("Board", JSON.stringify(value));
+                KNUGGET.storage.set("Board", JSON.stringify(value));
                 defer.resolve({status: 200});
             });
             return defer.promise;
@@ -343,7 +348,7 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
             fromPos = data.fromPos;
             toPos = data.toPos;
             //alert(fromPos + ' -> ' + toPos);
-            DRAGDIS.storage.get("Board", function (value) {
+            KNUGGET.storage.get("Board", function (value) {
                 arr = value ? JSON.parse(value) : [];
                 if (fromPos == toPos || fromPos > arr.length || toPos > arr.length || fromPos < 0 || toPos < 0) {
                     defer.resolve({status: 500});
@@ -358,7 +363,7 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
                     arr[nextIdx] = tmp;
                     cur = nextIdx;
                 }
-                DRAGDIS.storage.set("Board", JSON.stringify(arr));
+                KNUGGET.storage.set("Board", JSON.stringify(arr));
                 defer.resolve({status: 200});
             });
             //defer.resolve({status: 200});
@@ -366,7 +371,7 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
         },
 
         addToBoard: function (data) {
-            //DRAGDIS.storage.set("Board", JSON.stringify([]));
+            //KNUGGET.storage.set("Board", JSON.stringify([]));
             answer = data.answer;
             var defer = $q.defer();
             addToBoardSync(answer, function() {
@@ -392,8 +397,8 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
                 }
                 else if (status == Strophe.Status.CONNECTED) {
                     future.resolve({status : 200});
-                    DRAGDIS.storage.set("UserActive", {Active: true, Username : data.Username});
-                    DRAGDIS.storage.set("IsConnected", true);
+                    KNUGGET.storage.set("UserActive", {Active: true, Username : data.Username});
+                    KNUGGET.storage.set("IsConnected", true);
                     //
 
                     jabberClient.sendPres();
@@ -406,8 +411,8 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
                 ){
                     alert('Strophe failed to connect.');
                     future.reject({status : 500, messages : "Connectiont to server failed"});
-                    DRAGDIS.storage.set("UserActive", {Active: false, Username : data.Username});
-                    DRAGDIS.storage.set("IsConnected", false);
+                    KNUGGET.storage.set("UserActive", {Active: false, Username : data.Username});
+                    KNUGGET.storage.set("IsConnected", false);
                     //jabberClient.logout('going to reconnect');
                     //todo reconnect
                 }
@@ -434,8 +439,8 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
             var defer = $q.defer();
             reason = data.reason ? data.reason : 'unknown';
             jabberClient.logout(reason);
-            DRAGDIS.storage.set("UserActive", {Active: false, Username : ''});
-            DRAGDIS.storage.set("IsConnected", false);
+            KNUGGET.storage.set("UserActive", {Active: false, Username : ''});
+            KNUGGET.storage.set("IsConnected", false);
 
             defer.resolve({status : 200});
 
@@ -474,219 +479,6 @@ angular.module('dragdisApiFactory', []).factory('dragdisApi', ['$http', '$q', 'f
                 return itemCreated;
             }
         },
-
-        UpdateLastUpload: function (data) {
-            return $http.post(apiUrl + '/item/update', data);
-        },
-
-        DeleteLastUpload: function (lastItem) {
-            return $http.post(apiUrl + '/item/delete', { Id: lastItem.ID });
-        },
-
-        GetLastItemUrl: function (folder) {
-            return $http.post(apiUrl + '/item/getitemurl?itemid=' + folder.lastUploadID, { itemId: folder.lastUploadID });
-        },
-
-        // MANUALLY UPDATE FOLDERS IN LOCAL STORAGE
-        FolderList: function (params) {
-
-            return $http.get(apiUrl + '/folder/list?hideSpecial=true&version=2.1').
-            
-            success(function (response, status) {
-                DRAGDIS.storage.set("CurrentSender", 'forceUpdate');
-                DRAGDIS.storage.set("FoldersList", response);
-            });
-        },
-
-        // SEND SORTED FOLDER TO SERVER
-        FolderSort: function (data, senderId) {
-            if (data.parent == 0) {
-                data.parent = null;
-            }
-            return $http.post(apiUrl + '/folder/sort', {
-                Id: data.id,
-                OrderIndex: data.order,
-                Parent: data.parent,
-                Sender: senderId
-            });
-        },
-
-        // ADD NEW FOLDER 
-        FolderCreate: function (data, senderId) {
-            return $http.post(apiUrl + '/folder/add', data);
-        },
-
-        // ADD NEW GROUP 
-        GroupCreate: function (data, senderId) {
-
-            //Modify item fields to ensure it is saved correctly
-            data.Parent = null;
-            data.Type = 0;
-            data.Sender = senderId;
-
-            return $http.post(apiUrl + '/folder/add', data);
-        },
-
-        FolderConvert: function (data, senderId) {
-
-            //Modify item fields to ensure it is saved correctly
-            data.Sender = senderId;
-
-            return $http.post(apiUrl + '/folder/convert', data);
-        },
-
-        FolderUpdate: function (data, senderId) {
-
-            //Modify item fields to ensure it is saved correctly
-            data.Sender = senderId;
-            data.Status = (data.Status) ? 1 : 0;
-
-            return $http.post(apiUrl + '/folder/update', data);
-        },
-
-        FolderDelete: function (data, senderId) {
-
-            //Modify item fields to ensure it is saved correctly
-            data.Sender = senderId;
-            data.Status = (data.Status) ? 1 : 0;
-
-            return $http.post(apiUrl + '/folder/delete', data);
-        },
-
-        FolderShare: function (data, senderId) {
-            return $http.post(apiUrl + "/folder/share", {
-                AppId: data.appId,
-                FolderId: data.folderId,
-                Message: data.msg
-            });
-        },
-
-        FolderGetSharingLinks: function (data, senderId) {
-            return $http.post(apiUrl + "/folder/GetFolderUrls", null, {
-                params: {
-                    folderId: data.ID
-                }
-            });
-        },
-
-        FolderGetCollaborationLink: function (data, senderId) {
-            return $http.post(apiUrl + "/folder/ChangeFolderUrl", {
-                FolderId: data.ID,
-                Collaboration: true
-            });
-        },
-
-        FolderDestroyCollaborationLink: function (data, senderId) {
-            return $http.post(apiUrl + "/folder/ChangeFolderUrl", {
-                FolderId: data.ID,
-                Collaboration: true,
-                Remove: true
-            });
-        },
-
-        FolderRevokeCollaboratorAccess: function (data, senderId) {
-            return $http.post(apiUrl + "/folder/RevokeFolderAccess", {
-                FolderId: data.ID,
-                Collaboration: true
-            });
-        },
-
-        // ADD NEW APP 
-        AppCreate: function (data, senderId) {
-
-            return $http.post(apiUrl + '/app/add', {
-                Name: data.name,
-                Config: data.config,
-                Type: 0,
-                Sender: senderId
-            });
-        },
-
-        // CHANGE GROUP STATUS
-        GroupChangeStatus: function (data, senderId) {
-            return $http.post(apiUrl + '/folder/ChangeStatus', {
-                Id: data.id,
-                Type: data.type,
-                Status: data.status,
-                Sender: senderId
-            });
-        },
-
-        // LOAD APPLICATION CONFIG TEMPLATE
-        AppConfigTemplate: function (data) {
-            return $http.get(DRAGDIS.config.domain + "LinkedServices/Settings?serviceTypeId=" + data.serviceProvider + "&linkedServiceId=" + data.serviceId);
-        },
-
-        // LOAD APPLICATION CONFIG TEMPLATE
-        registerNewUser: function (data) {
-            return $http.post(DRAGDIS.config.domain + '/account/register', data);
-        },
-
-        Tracker: function (data) {
-            return $http.post(apiUrl + "/main/statistics", data);
-        },
-
-
-        /*=====================================
-        =            User settings            =
-        =====================================*/
-
-        getUserSettings: function () {
-            return $http.get(apiUrl + '/main/userSettings');
-        },
-
-        setUserSettings: function (data) {
-
-            var settings = {};
-            var deferred = $q.defer();
-
-            DRAGDIS.storage.get("userSettings", function (userSettings) {
-
-                settings = angular.extend(userSettings, data.params);
-
-                DRAGDIS.storage.set("userSettings", settings);
-
-                $http.post(apiUrl + '/main/userSettings', settings, {
-                    params: {
-                        name: data.namespace
-                    }
-                }).then(function (response) {
-                    deferred.resolve(response);
-                });
-            });
-
-            return deferred.promise;
-
-        },
-
-
-        /*=====================================
-        =            Notifications            =
-        =====================================*/
-        
-        getUserNotifications: function() {
-            return $http.get(apiUrl + '/main/userNotifications');
-        },
-
-        deleteNotification: function(data) {
-            
-            DRAGDIS.storage.get("userNotifications", function (userNotifications) {
-
-                var unshownNotifications = $.grep(userNotifications, function (notification) { 
-                    return notification.Id !== data.Id; 
-                });
-
-                DRAGDIS.storage.set("userNotifications", unshownNotifications);
-
-            });
-
-            return $http.delete(apiUrl + '/main/userNotification', {
-                params: {
-                    id: data.Id
-                }
-            });
-        }
-
 
     };
 }]);

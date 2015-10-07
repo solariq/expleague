@@ -1,37 +1,37 @@
-﻿dragdisSidebarDirectives.directive('dragoverOnSidebar', ['$timeout', function ($timeout) {
+﻿knuggetSidebarDirectives.directive('dragoverOnSidebar', ['$timeout', function ($timeout) {
     return {
         restrict: 'A',
         link: function (scope, element) {
-            if (DRAGDIS.config.isExtension) {
+            if (KNUGGET.config.isExtension) {
 
                 //**********************
                 //** EXTENSION SIDE
                 //**********************
 
                 // NATIVE DROPING
-                var dropzone = document.getElementById("dragdis-sidebar");
+                var dropzone = document.getElementById("knugget-sidebar");
                 new Dragster(dropzone);
 
                 document.addEventListener("dragster:enter", function (e) {
-                    DRAGDIS.scrollPreventer.position = $(window).scrollTop();
+                    KNUGGET.scrollPreventer.position = $(window).scrollTop();
 
                     element.addClass('on-drag');
-                    DRAGDIS.Drag.IsOnSidebar = true;
+                    KNUGGET.Drag.IsOnSidebar = true;
                     scope.scroll.showScrollHandles();
 
                 }, false);
 
                 document.addEventListener("dragster:leave", function (e) {
-                    DRAGDIS.scrollPreventer.position = null;
+                    KNUGGET.scrollPreventer.position = null;
 
                     element.removeClass('on-drag');
-                    DRAGDIS.Drag.IsOnSidebar = false;
+                    KNUGGET.Drag.IsOnSidebar = false;
                     scope.scroll.showScrollHandles();
                 }, false);
             }
 
             scope.$on('dragEnd', function () {
-                DRAGDIS.Drag.IsOnSidebar = false;
+                KNUGGET.Drag.IsOnSidebar = false;
                 element.removeClass('on-drag');
                 scope.scroll.hideScrollHandles();
             });
@@ -39,7 +39,7 @@
     };
 }]);
 
-dragdisSidebarDirectives.directive('folderDroppable', ['$timeout', '$window', '$rootScope', 'dragdisApi', '$injector', function ($timeout, $window, $rootScope, $dragdisApi, $injector) {
+knuggetSidebarDirectives.directive('folderDroppable', ['$timeout', '$window', '$rootScope', 'knuggetApi', '$injector', function ($timeout, $window, $rootScope, $knuggetApi, $injector) {
     return {
         restrict: 'A',
         link: function ($scope, element, attr) {
@@ -58,15 +58,15 @@ dragdisSidebarDirectives.directive('folderDroppable', ['$timeout', '$window', '$
                         console.log(types);
                     var files = e.originalEvent.dataTransfer.files;
 
-                    console.log(DRAGDIS.Drag.Data);
+                    console.log(KNUGGET.Drag.Data);
                     if (files.length && $.inArray("Files", types) !== -1) {
                         console.log(files.length);
                         var reader = new FileReader();
                         reader.readAsDataURL(files[0]),
                             reader.onloadend = function (ev) {
                                 if (ev.target.readyState == 2) {
-                                    DRAGDIS.Drag.Data.Files = {}; //for MVP only one file
-                                    DRAGDIS.Drag.Data.Files[0] = {
+                                    KNUGGET.Drag.Data.Files = {}; //for MVP only one file
+                                    KNUGGET.Drag.Data.Files[0] = {
                                         type: files[0].type,
                                         binary: ev.target.result
                                     };
@@ -76,21 +76,17 @@ dragdisSidebarDirectives.directive('folderDroppable', ['$timeout', '$window', '$
 
                     $timeout(function () {
 
-                        new TrackEvent("Sidebar", "Item dropped on folder", DRAGDIS.Drag.Data.Type).send();
-
                         // Close sidebar on mouseleave only for this time
                         $("#" + DRAGDIS_SIDEBAR_NAME).one("mouseleave", function () {
                             if (!DRAGDIS_SIDEBAR.openedByIcon) {
-                                DRAGDIS.sidebarController.hide();
+                                KNUGGET.sidebarController.hide();
                             }
                         });
 
-                        // Notify onboarding that user dropped item
-                        document.dispatchEvent(new CustomEvent('dragComplete'));
 
                         DRAGDIS_SIDEBAR.dragActive = false;
-                        DRAGDIS.sidebarController.dragEnd();
-                        DRAGDIS.sidebarController.addAnswer(function () {
+                        KNUGGET.sidebarController.dragEnd();
+                        KNUGGET.sidebarController.addAnswer(function () {
                             $scope.$emit("itemDropped", {});
                             if (!$scope.$$phase) {
                                 $scope.$apply();

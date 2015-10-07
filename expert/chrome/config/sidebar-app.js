@@ -1,17 +1,17 @@
 ﻿'use strict';
 
-var dragdisSidebar = angular.module('dragdisSidebar', [
+var knuggetSidebar = angular.module('knuggetSidebar', [
     'ngTagsInput',
     'ui.sortable',
     'ngTagsInput',
     'ngAnimate',
-    'dragdisSidebarDirectives'
+    'knuggetSidebarDirectives'
 ]);
 
 // Prevent angulat from scrolling to top on bootstrap 
-dragdisSidebar.value('$anchorScroll', angular.noop);
+knuggetSidebar.value('$anchorScroll', angular.noop);
 
-dragdisSidebar.config(['$httpProvider', '$compileProvider', '$sceDelegateProvider', function ($httpProvider, $compileProvider, $sceDelegateProvider) {
+knuggetSidebar.config(['$httpProvider', '$compileProvider', '$sceDelegateProvider', function ($httpProvider, $compileProvider, $sceDelegateProvider) {
 
     // Whitelis local resource url as valid image locations
     //$compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|ftp|mailto|chrome-extension):/);
@@ -22,7 +22,7 @@ dragdisSidebar.config(['$httpProvider', '$compileProvider', '$sceDelegateProvide
     ]);
 }]);
 // Config for tags input
-dragdisSidebar.config(['tagsInputConfigProvider', function (tagsInputConfigProvider) {
+knuggetSidebar.config(['tagsInputConfigProvider', function (tagsInputConfigProvider) {
     tagsInputConfigProvider
     .setDefaults('tagsInput', {
         placeholder: false,
@@ -37,11 +37,11 @@ dragdisSidebar.config(['tagsInputConfigProvider', function (tagsInputConfigProvi
     .setActiveInterpolation('tagsInput', {});
 }]);
 
-var dragdisSidebarDirectives = angular.module("dragdisSidebarDirectives", []);
+var knuggetSidebarDirectives = angular.module("knuggetSidebarDirectives", []);
 
-dragdisSidebar.run(['$templateCache', function ($templateCache) {
+knuggetSidebar.run(['$templateCache', function ($templateCache) {
 
-    $.each(DRAGDIS.templates, function (key, value) {
+    $.each(KNUGGET.templates, function (key, value) {
         $templateCache.put(key, value);
     });
 
