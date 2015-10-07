@@ -105,8 +105,9 @@ public class ExpertImpl extends WeakListenerHolderImpl<Expert> implements Expert
     if (state != State.GO)
       throw new IllegalStateException();
     state(State.READY);
-    active.answer(answer);
+    final Room room = this.active;
     join(null);
+    room.answer(answer);
   }
 
   protected void state(State state) {
