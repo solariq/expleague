@@ -19,8 +19,7 @@ public class ObedientExpert extends ExpertImpl {
   @Override
   public void ask(Room room) {
     super.ask(room);
-    answer();
-    room.answer(new Answer());
+    answer(new Answer());
   }
 
   @Override

@@ -2,6 +2,7 @@ package com.tbts.model.impl;
 
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
+import com.tbts.model.Answer;
 import com.tbts.model.Expert;
 import com.tbts.model.Room;
 import tigase.xmpp.BareJID;
@@ -100,10 +101,11 @@ public class ExpertImpl extends WeakListenerHolderImpl<Expert> implements Expert
     return active;
   }
 
-  public void answer() {
+  public void answer(Answer answer) {
     if (state != State.GO)
       throw new IllegalStateException();
     state(State.READY);
+    active.answer(answer);
     join(null);
   }
 

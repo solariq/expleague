@@ -65,6 +65,12 @@ public class AllocateRoomModule extends GroupchatMessageModule {
       room.text(subject);
       client.query();
     }
+    else {
+      final Expert expert = ExpertManager.instance().get(packet.getStanzaFrom().getBareJID());
+      if (expert != null && expert.state() == Expert.State.GO) {
+        expert.answer(new Answer());
+      }
+    }
     super.process(packet);
   }
 }
