@@ -11,12 +11,10 @@ import tigase.criteria.ElementCriteria;
 import tigase.server.Iq;
 import tigase.server.Packet;
 import tigase.server.xmppsession.SessionManager;
-import tigase.util.TigaseStringprepException;
 import tigase.xml.Element;
 import tigase.xmpp.JID;
 
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -50,19 +48,14 @@ public class TrackPresenceComponent extends SessionManager {
       return;
     final Room room = to != null ? Reception.instance().room(client, to.getBareJID()) : null;
     if (room != null && room.state() == Room.State.INIT) {
-      try {
-        final Element unlock = new Element(Iq.ELEM_NAME);
-        final Element query = new Element("query");
-        query.setXMLNS("http://jabber.org/protocol/muc#owner");
-        final Element x = new Element("x");
-        x.setAttribute("type", "submit");
-        query.addChild(x);
-        unlock.addChild(query);
-        addPacket(Packet.packetInstance(unlock));
-      }
-      catch (TigaseStringprepException e) {
-        log.log(Level.WARNING, "Exception during room open", e);
-      }
+      final Element unlock = new Element(Iq.ELEM_NAME);
+      final Element query = new Element("query");
+      query.setXMLNS("http://jabber.org/protocol/muc#owner");
+      final Element x = new Element("x");
+      x.setAttribute("type", "submit");
+      query.addChild(x);
+      unlock.addChild(query);
+      addPacket(Packet.packetInstance(unlock, from, to));
       room.open();
     }
 
@@ -99,7 +92,7 @@ public class TrackPresenceComponent extends SessionManager {
     if (expert == null)
       return null;
     final Room room = to != null ? Reception.instance().room(to.getBareJID()) : null;
-    if (status == Status.UNAVAILABLE)
+    if (status == Status.UNAVAILABLE && room == null)
       expert.online(false);
     switch (expert.state()) {
       case CHECK:
