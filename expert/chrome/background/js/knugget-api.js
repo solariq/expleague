@@ -4,8 +4,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         this.login = login;
         this.password = password;
         this.resource = resource;
-        //this.connection = new Strophe.Connection('http://toobusytosearch.net:5280/http-bind');
-        this.connection = new Strophe.Connection('http://localhost:5280/http-bind');
+        this.connection = new Strophe.Connection('http://toobusytosearch.net:5280/http-bind');
+        //this.connection = new Strophe.Connection('http://localhost:5280/http-bind');
 
         this.loginUser = function(nick, callback) {
             //todo set resource
