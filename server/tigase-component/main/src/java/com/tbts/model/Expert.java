@@ -21,8 +21,8 @@ public interface Expert extends WeakListenerHolder<Expert> {
 
   Room active();
   void free();
-
   void steady();
+  void answer(Answer answer);
 
 
   enum State {
