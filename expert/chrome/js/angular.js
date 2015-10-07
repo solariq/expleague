@@ -160,6 +160,8 @@
     $scope.sidebarContent = function () {
         var templatesRoot = KNUGGET.config.sidebarTemplatesRoot;
 
+        console.log('ar' + $scope.activeRequest.value);
+        console.log('al' + $scope.allowToShow.value);
         if ($scope.activeRequest.value && $scope.allowToShow.value)
             return templatesRoot + 'dragArea';
         //
@@ -564,11 +566,10 @@
     };
 
     $scope.init = function () {
-
         KNUGGET.sidebarController = $scope;
 
         $scope.board.update();
-
+        $scope.allowToShow.get(function(){});
         $scope.activeRequest.get(function(){});
 
         KNUGGET.storage.get("IsConnected", function (userConnected) {
