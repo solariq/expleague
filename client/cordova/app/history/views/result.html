@@ -22,6 +22,8 @@
     <div ng-if="currentHistoryItem.ended" class="search-status-message">Поиск завершен</div>
   </div>
 
+  <div class="log" style="padding:10px"></div>
+
   <div class="message">
     <div class="item item-input-inset">
       <label class="item-input-wrapper">
@@ -118,6 +120,58 @@ $(document).ready(function() {
         playSound();
         addYesNoEvents();
       }, timeouts[3]);
+    } else {
+      // XMPP
+      function log(txt) {
+        $('.log').append('<div>' + txt + '</div>');
+      }
+
+      var bosh = 'http://toobusytosearch.net:5280/';
+      var jid = 'testclient@toobusytosearch.net';
+      var password = 'qwerty';
+      var timestamp = new Date().getTime();
+      var room = 'room' + timestamp + '@muc.toobusytosearch.net';
+      var nick = 'client1';
+
+      log('jid: ' + jid);
+      log('room: ' + room);
+      log('nick: ' + nick);
+
+      var conn = new Strophe.Connection(bosh);
+      conn.connect(jid, password, function (status) {
+        if (status === Strophe.Status.CONNECTED) {
+          log('connected');
+
+          function room_message(message) {
+            var body = $(message).children('body').text();;
+            if (body == 'Room is locked. Please configure.') {
+              conn.muc.saveConfiguration(room, [],
+                function () {
+                  console.log('saveConfiguration success');
+                  conn.muc.setTopic(room, searchText);
+                  log('topic: ' + searchText);
+                },
+                function (err) {
+                  console.log('saveConfiguration error: ', err);
+                }
+              );
+            }
+          }
+
+          function on_presence(data) {
+            console.log('presence', data)
+          }
+
+          function on_roster(data) {
+            console.log('roster', data)
+          }
+
+          conn.muc.join(room, nick, room_message, on_presence, on_roster);
+        } else if (status === Strophe.Status.DISCONNECTED) {
+          log('disconnected');
+        }
+      });
+
     }
   }
 });
