@@ -19,21 +19,21 @@
   box-shadow: 0px 1px 1px 0px rgba(50, 50, 50, 0.1);
 }
 
-.result .baloon-client {
+.result .baloon-server {
   margin-left: 0;
   margin-right: 0;
 }
 
-.result-chat .baloon-client {
+.result-chat .baloon-server {
   margin-left: 10px;
   margin-right: 25%;
 }
 
-.result .baloon-client::after {
+.result .baloon-server::after {
   display: none;
 }
 
-.result-chat .baloon-client::after {
+.result-chat .baloon-server::after {
   content: "";
   position: absolute;
   top: 0px;
@@ -44,21 +44,21 @@
   display: block;
 }
 
-.result .baloon-server {
+.result .baloon-client {
   margin-left: 0;
   margin-right: 0;
 }
 
-.result-chat .baloon-server {
+.result-chat .baloon-client {
   margin-left: 25%;
   margin-right: 10px;
 }
 
-.result .baloon-server::after {
+.result .baloon-client::after {
   display: none;
 }
 
-.result-chat .baloon-server::after {
+.result-chat .baloon-client::after {
   content: "";
   position: absolute;
   top: 0px;
@@ -75,22 +75,22 @@
   padding: 2px 10px 2px;
 }
 
-.result .baloon-client .baloon-title {
-  border-top-right-radius: 10px;
-  border-top-left-radius: 10px;
-}
-
-.result-chat .baloon-client .baloon-title {
-  border-top-right-radius: 10px;
-  border-top-left-radius: 0;
-}
-
 .result .baloon-server .baloon-title {
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
 }
 
 .result-chat .baloon-server .baloon-title {
+  border-top-right-radius: 10px;
+  border-top-left-radius: 0;
+}
+
+.result .baloon-client .baloon-title {
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+}
+
+.result-chat .baloon-client .baloon-title {
   border-top-right-radius: 0;
   border-top-left-radius: 10px;
 }
@@ -158,4 +158,3 @@
   -webkit-transition-property: bottom;
   -webkit-transition-duration: 300ms;
 }
-
