@@ -149,6 +149,33 @@
   margin: 10px auto;
 }
 
+.expert {
+  min-height: 100px;
+  margin: 5px -8px -5px;
+  padding: 12px 8px 5px 100px;
+  background-color: #DFE0E4;
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+  text-align: center;
+  line-height: 2;
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: 96px 96px;
+}
+
+.expert-picture {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 45px;
+  height: 45px;
+  background-color: #DFE0E4;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-size: 45px 45px;
+  border-radius: 50%;
+}
+
 .message {
   position: fixed;
   bottom: -54px;

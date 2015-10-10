@@ -14,7 +14,12 @@
     <div ng-repeat="message in currentHistoryItem.messages" class="baloon baloon-{{message.type}}">
       <div class="baloon-title">{{message.title}}</div>
       <div class="baloon-text">
-        <div ng-bind-html="message.text">{{message.text}}</div>
+        <div ng-if="message.expert_picture" class="expert-picture" style="background-image: url({{message.expert_picture}})"></div>
+        <div ng-bind-html="message.text"></div>
+        <div ng-if="message.expert" class="expert" style="background-image: url({{message.expert.picture}})">
+          <div class="expert-info">{{message.expert.name}}, {{message.expert.description}}</div>
+          <div class="expert-raiting">Рейтинг: <span ng-bind-html="message.expert.raiting | stars"></span></div>
+        </div>
         <div ng-if="message.extra.address">Адрес: <a ng-href="comgooglemaps://?q={{message.extra.address}}">{{message.extra.address}}</a></div>
         <div ng-if="message.extra.tel">Телефон: <a ng-href="tel:{{message.extra.tel}}">{{message.extra.tel}}</a></div>
       </div>
