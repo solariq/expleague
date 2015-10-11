@@ -155,6 +155,7 @@ $(document).ready(function() {
                   console.log('saveConfiguration success');
                   conn.muc.setTopic(room, searchText);
                   log('topic: ' + searchText);
+                  conn.addHandler(on_public_message, null, "message", "groupchat");
                 },
                 function (err) {
                   console.log('saveConfiguration error: ', err);
@@ -172,6 +173,13 @@ $(document).ready(function() {
           }
 
           conn.muc.join(room, nick, room_message, on_presence, on_roster);
+
+          function on_public_message(message) {
+            var body = $(message).children('body').text();
+            log('message: ' + body);
+              return true;
+          }
+
         } else if (status === Strophe.Status.DISCONNECTED) {
           log('disconnected');
         }
