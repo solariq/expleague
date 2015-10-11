@@ -235,7 +235,7 @@ KNUGGET.injector = {
                         }
                     });
                 }
-                
+
             });
 
             //inject js files
@@ -252,7 +252,7 @@ KNUGGET.injector = {
                     if (chrome.runtime.lastError) {
                         return;
                     }
-                    
+
                 });
 
             }
@@ -360,7 +360,7 @@ window.chrome.browserAction.onClicked.addListener(function (activeTab) {
         });
     } else {
         if (activeTab.url.indexOf("chrome://") == -1) {
-            //Show Sidebar 
+            //Show Sidebar
             KNUGGET.sendMessage({
                 Type: "SIDEBAR_SHOW"
             });
@@ -397,12 +397,12 @@ KNUGGET.browserDetails = function () {
         browserName = "Microsoft Internet Explorer";
         fullVersion = nAgt.substring(verOffset + 5);
     }
-        // In Chrome, the true version is after "Chrome" 
+        // In Chrome, the true version is after "Chrome"
     else if ((verOffset = nAgt.indexOf("Chrome")) !== -1) {
         browserName = "Chrome";
         fullVersion = nAgt.substring(verOffset + 7);
     }
-        // In Safari, the true version is after "Safari" or after "Version" 
+        // In Safari, the true version is after "Safari" or after "Version"
     else if ((verOffset = nAgt.indexOf("Safari")) !== -1) {
         browserName = "Safari";
         fullVersion = nAgt.substring(verOffset + 7);
@@ -410,12 +410,12 @@ KNUGGET.browserDetails = function () {
             fullVersion = nAgt.substring(verOffset + 8);
         }
     }
-        // In Firefox, the true version is after "Firefox" 
+        // In Firefox, the true version is after "Firefox"
     else if ((verOffset = nAgt.indexOf("Firefox")) !== -1) {
         browserName = "Firefox";
         fullVersion = nAgt.substring(verOffset + 8);
     }
-        // In most other browsers, "name/version" is at the end of userAgent 
+        // In most other browsers, "name/version" is at the end of userAgent
     else if ((nameOffset = nAgt.lastIndexOf(' ') + 1) <
         (verOffset = nAgt.lastIndexOf('/'))) {
         browserName = nAgt.substring(nameOffset, verOffset);
@@ -494,6 +494,7 @@ KNUGGET.templates = {
             "views/dragArea.html",
             "views/waiting.html",
             "views/login.html",
+            "views/registration.html",
             "views/panel_chatWindow.html",
             "views/panel_folder.html",
             "views/panel_item.html",

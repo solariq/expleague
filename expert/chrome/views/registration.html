@@ -1,0 +1,32 @@
+<div class="email_register" login>
+    <div class="container">
+        <div class="inner">
+            <div class="header">
+                <h2>Регистрация</h2>
+            </div>
+
+            <form class="email" ng-submit="registerUser(event)" ng-class="{disabled: isRegisterInProgress}">
+                <fieldset>
+                    <input type="text" id="Username" name="Username" placeholder="Email address" value="" ng-model="registerForm.Username" ng-disabled="isRegisterInProgress" auto-focus>
+                    <input type="password" id="Password" name="Password" placeholder="Password" ng-model="registerForm.Password" ng-disabled="isRegisterInProgress">
+                </fieldset>
+
+                <!--<fieldset class="forgot_password"><a href="{{domain}}Account/PasswordRecovery" target="_blank">Forgot password?</a></fieldset>-->
+
+                <fieldset ng-repeat="error in regErrors">
+                    <span style="color:red;">{{error}}</span>
+                </fieldset>
+
+                <div class="controls">
+                    <button class="blue" ng-class="{loading: isRegisterInProgress}">Регистрация</button>
+                    <span class="link_to_register"><a class="white" href="#" ng-click="enableLogin()">Вход</a></span>
+                </div>
+            </form>
+            <!--<form class="email" ng-submit="register(event)">-->
+                <!--<div class="controls">-->
+                    <!--<button class="blue">Зарегистрироваться</button>-->
+                <!--</div>-->
+            <!--</form>-->
+        </div>
+    </div>
+</div>

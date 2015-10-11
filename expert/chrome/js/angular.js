@@ -5,6 +5,7 @@
 
     //default auth form
     $scope.isLoginForm = true;
+    $scope.isRegisterForm = false;
 
     $scope.menu = {
         active: false,
@@ -159,9 +160,6 @@
 
     $scope.sidebarContent = function () {
         var templatesRoot = KNUGGET.config.sidebarTemplatesRoot;
-
-        console.log('ar' + $scope.activeRequest.value);
-        console.log('al' + $scope.allowToShow.value);
         if ($scope.activeRequest.value && $scope.allowToShow.value)
             return templatesRoot + 'dragArea';
         //
@@ -185,7 +183,19 @@
             return templatesRoot + "error";
 
         //If user is connected, return sidebar template, else load login template
-        var template = ($scope.isConnected === true) ? templatesRoot + "sidebar" : $scope.isLoginForm ? templatesRoot + "login" : templatesRoot + "registration";
+        var template;
+        if ($scope.isConnected === true) {
+            template = templatesRoot + "sidebar";
+        } else {
+            if ($scope.isRegisterForm) {
+                template = templatesRoot + "registration";
+            } else if ($scope.isLoginForm) {
+                template = templatesRoot + "login";
+            } else {
+                console.log("ERROR: unexpected state!");
+                template = templatesRoot + "login";
+            }
+        }
 
         $scope.oldTime = $scope.newTime;
         $scope.newTime = new Date().getTime();
@@ -396,6 +406,7 @@
         }
     };
 
+
     $scope.closeSidebar = function () {
         DRAGDIS_SIDEBAR.openedByIcon = false;
         $scope.hide(true, true);
@@ -552,7 +563,7 @@
         $scope.activeRequest.get(function(request) {
             KNUGGET.api("Finish", {request: request}, function () { });
             $scope.board.clear();
-            $scope.requests.removeRequest(request);
+            $scope.requests.clear(request);
             $scope.activeRequest.set(null);
         });
     };
@@ -561,6 +572,8 @@
 
         $event.preventDefault();
         $scope.resetSidebar();
+
+        $scope.finishRequest();
 
         KNUGGET.api("Logout", {}, function () { });
     };

@@ -2,7 +2,7 @@
     <div class="container">
         <div class="inner">
             <div class="header">
-                <h2>Welcome back</h2>
+                <h2>Вход</h2>
             </div>
 
             <!--<ul class="socials">-->
@@ -30,10 +30,15 @@
                 </fieldset>
 
                 <div class="controls">
-                    <button class="blue" ng-class="{loading: isLoginInProgress}">Log in</button>
-                    <!--<span class="link_to_register">Don't have an account? <a ng-href="{{domain}}" target="_blank" class="white">Create here</a></span>-->
+                    <button class="blue" ng-class="{loading: isLoginInProgress}">Войти</button>
+                    <span class="link_to_register"><a class="white" href="#" ng-click="enableRegister()">Регистрация</a></span>
                 </div>
             </form>
+            <!--<form class="email" ng-submit="register(event)">-->
+                <!--<div class="controls">-->
+                    <!--<button class="blue">Зарегистрироваться</button>-->
+                <!--</div>-->
+            <!--</form>-->
         </div>
     </div>
 </div>

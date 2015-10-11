@@ -1,11 +1,46 @@
 angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'fileBlob', function ($http, $q, $fileBlob) {
-
     function JabberClient(login, password, resource) {
         this.login = login;
         this.password = password;
         this.resource = resource;
+        this.host = login.split('@')[1];
+
         //this.connection = new Strophe.Connection('http://toobusytosearch.net:5280/http-bind');
-        this.connection = new Strophe.Connection('http://localhost:5280/http-bind');
+        this.connection = new Strophe.Connection('http://' + this.host + ':5280/http-bind/');
+
+        this.register = function(regCallback) {
+            conn = this.connection;
+            pass = this.password;
+            login = this.login;
+            var callback = function (status) {
+                if (status === Strophe.Status.REGISTER) {
+                    // fill out the fields
+                    conn.register.fields.username = login;
+                    conn.register.fields.password = pass;
+                    // calling submit will continue the registration process
+                    conn.register.submit();
+                } else if (status === Strophe.Status.REGISTERED) {
+                    console.log("registered!");
+                    conn.authenticate(); //todo?
+                    regCallback({registrated: true});
+                } else if (status === Strophe.Status.CONFLICT) {
+                    console.log("Contact already existed!");
+                    regCallback({registrated: false, msg: "Такой логин уже существует!"});
+                } else if (status === Strophe.Status.NOTACCEPTABLE) {
+                    console.log("Registration form not properly filled out.")
+                    regCallback({registrated: false, msg: "Отказ в регистрации, обратитесь к администратору!"});
+                } else if (status === Strophe.Status.REGIFAIL) {
+                    console.log("The Server does not support In-Band Registration")
+                    regCallback({registrated: false, msg: "Отказ в регистрации, обратитесь к администратору!"});
+                } else if (status === Strophe.Status.CONNECTED) {
+                    console.log('connected')
+                    // do something after successful authentication
+                } else {
+                    // Do other stuff
+                }
+            };
+            this.connection.register.connect(this.host, callback);
+        };
 
         this.loginUser = function(nick, callback) {
             //todo set resource
@@ -217,6 +252,9 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         });
     }
 
+    setUserData = function(login, password) {
+        KNUGGET.storage.set("UserData", JSON.stringify({userLogin: login, userPassword: password}));
+    };
 
     cleanAll = function() {
         KNUGGET.storage.set("Board", JSON.stringify([]));
@@ -225,7 +263,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         //$scope.board.update();
         //$scope.allowToShow.get(function(){});
         //$scope.activeRequest.get(function(){});
-    }
+    };
 
     addToBoardSync = function (answer, callback) {
         KNUGGET.storage.get("Board", function (value) {
@@ -392,6 +430,24 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             return defer.promise;
         },
 
+        registerUser: function (data) {
+            var future = $q.defer();
+            if (jabberClient) {
+                jabberClient.logout();
+            }
+            jabberClient = new JabberClient(data.Username, data.Password, 'expert');
+            jabberClient.register(function(result) {
+                alert('register callback');
+                if (result.registrated) {
+                    setUserData(data.Username, data.Password);
+                    future.resolve({status:200, msg: ''});
+                } else{
+                    future.resolve({status:500, msg: result.msg});
+                }
+            });
+            return future.promise;
+        },
+
         loginUser: function (data) {
             var future = $q.defer();
 
@@ -411,6 +467,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
                     future.resolve({status : 200});
                     KNUGGET.storage.set("UserActive", {Active: true, Username : data.Username});
                     KNUGGET.storage.set("IsConnected", true);
+                    setUserData(data.Username, data.Password);
                     //
 
                     jabberClient.sendPres();

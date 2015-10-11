@@ -21,6 +21,7 @@ chrome.runtime.onConnect.addListener(function(port) {
             }
 
             //Dinamically call API method
+            console.log('call: ' + request.method)
             KNUGGET.api[request.method](request, senderId).then(function(response) {
                 port.postMessage(response);
 
