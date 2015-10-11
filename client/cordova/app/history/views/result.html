@@ -131,11 +131,16 @@ $(document).ready(function() {
         $('.log').append('<div>' + txt + '</div>');
       }
 
-      var bosh = 'http://toobusytosearch.net:5280/';
-      var jid = 'testclient@toobusytosearch.net';
-      var password = 'qwerty';
+      var bosh = 'http://77.88.2.245:5280/';
+      var jid = 'solar@localhost/client';
+      var password = 'ik30239';
       var timestamp = new Date().getTime();
-      var room = 'room' + timestamp + '@muc.toobusytosearch.net';
+      var room = 'room-' + timestamp + '@muc.localhost';
+//      var bosh = 'http://toobusytosearch.net:5280/';
+//      var jid = 'testclient@toobusytosearch.net';
+//      var password = 'qwerty';
+//      var timestamp = new Date().getTime();
+//      var room = 'room' + timestamp + '@muc.toobusytosearch.net';
       var nick = 'client1';
 
       log('jid: ' + jid);
@@ -148,7 +153,7 @@ $(document).ready(function() {
           log('connected');
 
           function room_message(message) {
-            var body = $(message).children('body').text();;
+            var body = $(message).children('body').text();
             if (body == 'Room is locked. Please configure.') {
               conn.muc.saveConfiguration(room, [],
                 function () {
@@ -161,6 +166,9 @@ $(document).ready(function() {
                   console.log('saveConfiguration error: ', err);
                 }
               );
+            }
+            else {
+              log('message', message);
             }
           }
 
@@ -182,6 +190,23 @@ $(document).ready(function() {
 
         } else if (status === Strophe.Status.DISCONNECTED) {
           log('disconnected');
+        }
+        if (status == Strophe.Status.CONNECTING) {
+          log('Connecting');
+        }
+        else if (status == Strophe.Status.AUTHFAIL) {
+          log('Strophe failed to auth');
+        }
+        else if (
+                status == Strophe.Status.ERROR ||
+                status == Strophe.Status.CONNFAIL ||
+                status == Strophe.Status.DISCONNECTED ||
+                status == Strophe.Status.DISCONNECTING
+        ){
+          log('Strophe failed to connect with status ' + status);
+        }
+        else {
+          log("Unknown status" + status);
         }
       });
 

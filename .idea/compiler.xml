@@ -24,9 +24,17 @@
         <processorPath useClasspath="true" />
         <module name="commons" />
       </profile>
+      <profile default="false" name="Annotation profile for tigase-component" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="tigase-component" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="commons" target="1.8" />
+      <module name="tigase-component" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
