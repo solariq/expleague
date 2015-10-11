@@ -4,8 +4,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         this.login = login;
         this.password = password;
         this.resource = resource;
-        this.connection = new Strophe.Connection('http://toobusytosearch.net:5280/http-bind');
-        //this.connection = new Strophe.Connection('http://localhost:5280/http-bind');
+        //this.connection = new Strophe.Connection('http://toobusytosearch.net:5280/http-bind');
+        this.connection = new Strophe.Connection('http://localhost:5280/http-bind');
 
         this.loginUser = function(nick, callback) {
             //todo set resource
@@ -80,7 +80,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         };
 
         this.leaveRoom = function(room, nick) {
-            this.sendPres({to: room + '/' + nick, type: 'unavailable'});
+            //todo this!
+            //this.sendPres({to: room + '/' + nick, type: 'unavailable'});
             //var pres = $pres({to: room + '/' + nick, type: 'unavailable'});
             //this.connection.send(pres.tree());
         };
@@ -104,12 +105,14 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         READY: {
             value: 'ready',
             onSet: function() {
+                cleanAll();
                 jabberClient.sendPres({type: 'available'});
             }
         },
         AWAY: {
             value: 'away',
             onSet: function() {
+                cleanAll();
                 jabberClient.sendPres({type: 'unavailable'});
             }
         },
@@ -212,6 +215,16 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             if( permission != "granted" ) return false;
             var notify = new Notification("Thanks for letting notify you");
         });
+    }
+
+
+    cleanAll = function() {
+        KNUGGET.storage.set("Board", JSON.stringify([]));
+        KNUGGET.storage.set("Requests", JSON.stringify([]));
+        KNUGGET.storage.set("AllowToShow", false);
+        //$scope.board.update();
+        //$scope.allowToShow.get(function(){});
+        //$scope.activeRequest.get(function(){});
     }
 
     addToBoardSync = function (answer, callback) {
