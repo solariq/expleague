@@ -9,11 +9,67 @@ angular
     // Временно положил в глобальный window.ordersHistory чтобы сделать демо-режим на jQuery
     window.ordersHistory = [
       {
+        id: 3,
+        text: 'Самый большой по площади парк Питера',
+        near: false,
+        expert: false,
+        urgency: 4, // От 0 до 5
+        started: 1443710220000,
+        ended: 1443710220001,
+        answerMode: 'chat',
+        messages: [
+          {
+            type: 'client',
+            title: 'Необходимо найти',
+            text: 'Самый большой по площади парк Питера, срочность поиска: пол часа, необходима помощь эксперта',
+            timestamp: null
+          },
+          {
+            type: 'server',
+            title: 'Поиск исполнителя',
+            text: 'Эксперт найден. Вы получите уведомление, когда исполнитель найдет необходимую информацию.',
+            expert: {
+              name: 'Алексей',
+              picture: '/images/expert-2.png',
+              description: 'Петербургский краевед',
+              raiting: 4
+            },
+            timestamp: null
+          },
+          {
+            type: 'server',
+            expert_picture: '/images/expert-2.png',
+            title: 'Результаты поиска',
+            text: 'Сосновка, площадь 286 га.',
+            timestamp: null
+          },
+          {
+            type: 'client',
+            title: '',
+            text: 'А во сколько раз приморский парк победы больше, чем цпкио?',
+            timestamp: null
+          },
+          {
+            type: 'client',
+            title: '',
+            text: 'В 4 раза есть, хотя б?',
+            timestamp: null
+          },
+          {
+            type: 'server',
+            expert_picture: '/images/expert-2.png',
+            title: 'Дополнительный ответ',
+            text: 'Площадь ЦПКиО 94 га. Площадь Приморского парка Победы 140 га. То есть, примерно в полтора раза. В 4 раза не получается. :(',
+            timestamp: null
+          }
+        ]
+      },
+      {
         id: 2,
         text: 'Самый большой по площади парк Питера',
         near: false,
         expert: false,
-        urgency: 5, // От 0 до 5
+        urgency: 4, // От 0 до 5
         started: 1443710220000,
         ended: 1443710220001,
         answerMode: 'chat',
@@ -78,7 +134,7 @@ angular
             text: 'Эксперт найден. Вы получите уведомление, когда исполнитель найдет необходимую информацию.',
             expert: {
               name: 'Владимир',
-              picture: '/images/expert.png',
+              picture: '/images/expert-1.png',
               description: '4 года живет в Хельсинки',
               raiting: 4
             },
@@ -86,7 +142,7 @@ angular
           },
           {
             type: 'server',
-            expert_picture: '/images/expert.png',
+            expert_picture: '/images/expert-1.png',
             title: 'Результаты поиска',
             text: `
             <h1>Запрещено парковаться</h1>

@@ -157,13 +157,20 @@
   border-bottom-right-radius: 10px;
   border-bottom-left-radius: 10px;
   text-align: center;
-  line-height: 2;
   background-repeat: no-repeat;
   background-position: left bottom;
   background-size: 96px 96px;
 }
 
-.expert-picture {
+.expert-info {
+  margin-top: 5px;
+}
+
+.expert-raiting {
+  margin-top: 10px;
+}
+
+.result .baloon-server .expert-picture {
   position: absolute;
   right: 6px;
   top: 6px;
@@ -174,6 +181,24 @@
   background-position: 50% 50%;
   background-size: 45px 45px;
   border-radius: 50%;
+}
+
+.result-chat .baloon-server .expert-picture {
+  position: absolute;
+  left: -56px;
+  top: -4px;
+  width: 45px;
+  height: 45px;
+  background-color: #DFE0E4;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-size: 45px 45px;
+  border-radius: 50%;
+  z-index: 100;
+}
+
+.result-chat .baloon-server.baloon-picture {
+  margin-left: 50px;
 }
 
 .message {

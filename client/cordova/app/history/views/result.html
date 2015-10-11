@@ -11,7 +11,7 @@
   </style>
 
   <div class="padding result result-{{currentHistoryItem.answerMode}}">
-    <div ng-repeat="message in currentHistoryItem.messages" class="baloon baloon-{{message.type}}">
+    <div ng-repeat="message in currentHistoryItem.messages" class="baloon baloon-{{message.type}} {{message.expert_picture ? 'baloon-picture' : ''}}">
       <div class="baloon-title">{{message.title}}</div>
       <div class="baloon-text">
         <div ng-if="message.expert_picture" class="expert-picture" style="background-image: url({{message.expert_picture}})"></div>
