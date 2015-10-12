@@ -1636,6 +1636,52 @@ Site dialog global style
   -o-animation: none !important;
   animation: none !important;
 }
+#knugget-root #knugget-sidebar .warning,
+#knugget-info-icon #knugget-sidebar .warning {
+  height: 160px !important;
+  position: absolute !important;
+  top: 0 !important;
+  width: 220px !important;
+  bottom: 0 !important;
+  text-align: center !important;
+  margin: auto !important;
+  padding: 60px 20px 0 20px !important;
+}
+#knugget-root #knugget-sidebar .warning:before,
+#knugget-info-icon #knugget-sidebar .warning:before {
+  background: url("chrome-extension://__MSG_@@extension_id__/images/warning.png") no-repeat scroll center top;
+  background-size: 70px;
+  content: "";
+  height: 70px;
+  left: 105px;
+  position: absolute;
+  top: 0;
+  width: 70px;
+}
+#knugget-root #knugget-sidebar .warning.loading:before,
+#knugget-info-icon #knugget-sidebar .warning.loading:before {
+  -webkit-animation: spin 1.5s linear infinite;
+  -moz-animation: spin 1.5s linear infinite;
+  -o-animation: spin 1.5s linear infinite;
+  animation: spin 1.5s linear infinite;
+}
+#knugget-root #knugget-sidebar .warning h2,
+#knugget-info-icon #knugget-sidebar .warning h2 {
+  line-height: 25px;
+  min-height: 50px;
+  font-size: 20px;
+  text-align: center;
+  font-weight: 300;
+  margin: 10px 0 20px 0;
+  color: #5c626e;
+}
+#knugget-root #knugget-sidebar .warning h3,
+#knugget-info-icon #knugget-sidebar .warning h3 {
+  line-height: 18px;
+  color: #aaa;
+  text-align: center;
+  margin: 0 0 20px;
+}
 #knugget-root #knugget-sidebar .error,
 #knugget-info-icon #knugget-sidebar .error {
   height: 160px !important;

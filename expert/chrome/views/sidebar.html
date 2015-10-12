@@ -17,7 +17,13 @@
 
 
         <ul>
-            <li><a ng-click="finishRequest()">Завершить заказ</a></li>
+            <li ng-if="user.available">
+                <a ng-click="user.makeUnavailable()">Перейти в offline</a>
+            </li>
+            <li ng-if="!user.available">
+                <a ng-click="user.makeAvailable()">Перейти в online</a>
+            </li>
+            <!--<li><a ng-click="finishRequest()">Завершить заказ</a></li>-->
             <li class="seperator"></li>
             <li><a ng-click="logout($event)">Выйти</a></li>
         </ul>

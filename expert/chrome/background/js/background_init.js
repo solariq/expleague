@@ -493,6 +493,7 @@ KNUGGET.templates = {
             "views/requestList.html",
             "views/dragArea.html",
             "views/waiting.html",
+            "views/unavailable.html",
             "views/login.html",
             "views/registration.html",
             "views/panel_chatWindow.html",

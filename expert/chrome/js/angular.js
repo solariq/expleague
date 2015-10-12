@@ -167,7 +167,7 @@
             return templatesRoot + 'requestList';
 
         //alert('waiting');
-        return templatesRoot + 'waiting';
+        return templatesRoot + ($scope.user.available ? 'waiting' : 'unavailable');
     }
 
     $scope.sidebarTemplate = function () {
@@ -218,6 +218,8 @@
                 $scope.user.update();
             } else if (data.ConnectionFail) {
                 console.log("storage ConnectionFail");
+                $scope.user.update();
+            } else if (data.UserAvailable) {
                 $scope.user.update();
             } else if (data.IsConnected) {
                 $scope.isConnected = data.IsConnected.newValue;
@@ -369,15 +371,28 @@
         username: "",
         avatar: "",
         active: 0,
-        apps: {},
+        available: true,
+
+        makeUnavailable: function() {
+            $scope.finishRequest();
+            KNUGGET.api("Available", {isAvailable: false}, function () { });
+        },
+        makeAvailable: function() {
+            KNUGGET.api("Available", {isAvailable: true}, function () { });
+        },
         update: function () {
 
             var currentUser = this;
             //var laikas = new Date().getTime();
 
-            KNUGGET.storage.get(["UserActive", "IsConnected", "ConnectionFail"], function (values) {
+            KNUGGET.storage.get(["UserAvailable", "UserActive", "IsConnected", "ConnectionFail"], function (values) {
 
                 //console.log("storage", new Date().getTime() - laikas);
+
+                if (values.hasOwnProperty("UserAvailable")) {
+                    console.log("UserAvailable: " + values.UserAvailable)
+                    currentUser.available = values.UserAvailable;
+                }
 
                 if (values.hasOwnProperty("UserActive")) {
                     currentUser.active = values.UserActive.Active;

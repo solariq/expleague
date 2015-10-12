@@ -133,7 +133,15 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         this.sendPres = function(presence) {
             var pres = $pres(presence);
             this.connection.send(pres.tree());
-        }
+        };
+
+        this.sendUnavailable = function() {
+            this.sendPres({type: 'unavailable'});
+        };
+
+        this.sendAvailable = function() {
+            this.sendPres({type: 'available'});
+        };
     }
 
     var ExpertState = {
@@ -301,6 +309,15 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         });
     };
 
+    setUserAvailable = function(isAvailable) {
+        if (isAvailable) {
+            jabberClient.sendAvailable();
+        } else {
+            jabberClient.sendUnavailable();
+        }
+        KNUGGET.storage.set("UserAvailable", isAvailable);
+    };
+
     // API METHODS
     return {
 
@@ -309,6 +326,10 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             KNUGGET.storage.set("Board", JSON.stringify([]));
             defer.resolve({status: 200});
             return defer.promise;
+        },
+
+        Available: function(data) {
+          setUserAvailable(data.isAvailable);
         },
 
         SendResponse: function(data) {
@@ -330,7 +351,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             var defer = $q.defer();
             //todo data.request
             //connection.send($pres().tree());
-            jabberClient.leaveRoom(data.request.room, 'expert');
+            //jabberClient.leaveRoom(data.request.room, 'expert');
             defer.resolve({status: 200});
             return defer.promise;
         },
@@ -343,7 +364,6 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         },
 
         Reject: function(data) {
-            alert('rejecting');
             var defer = $q.defer();
             removeRequest(data.request, function() {
                 defer.resolve({status: 200});
@@ -437,7 +457,6 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             }
             jabberClient = new JabberClient(data.Username, data.Password, 'expert');
             jabberClient.register(function(result) {
-                alert('register callback');
                 if (result.registrated) {
                     setUserData(data.Username, data.Password);
                     future.resolve({status:200, msg: ''});
@@ -460,7 +479,6 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
                 if (status == Strophe.Status.CONNECTING) {
                 }
                 else if (status == Strophe.Status.AUTHFAIL) {
-                    alert('Strophe failed to auth');
                     future.reject({status : 500, messages : "Wrong password or user name"});
                 }
                 else if (status == Strophe.Status.CONNECTED) {
@@ -478,7 +496,6 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
                     status == Strophe.Status.DISCONNECTED ||
                     status == Strophe.Status.DISCONNECTING
                 ){
-                    alert('Strophe failed to connect.');
                     future.reject({status : 500, messages : "Connectiont to server failed"});
                     KNUGGET.storage.set("UserActive", {Active: false, Username : data.Username});
                     KNUGGET.storage.set("IsConnected", false);
@@ -488,7 +505,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             });
 
             jabberClient.addMessageListener(function(msg) {
-                alert('addMessageListener: ' + msg.text);
+                //
             });
 
             jabberClient.addInviteListener(function(invite) {
@@ -500,7 +517,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
                     this.setState(ptype, presence);
                 }
             });
-
+            setUserAvailable(true);
             return future.promise;
         },
 
