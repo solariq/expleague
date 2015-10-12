@@ -2,7 +2,7 @@
 
 module.exports =
   app:
-    name: "tbts"
+    name: "tbts_prototype"
 
   # steroidsAppId and steroidsApiKey headers are required by Supersonic Data
   # network:
