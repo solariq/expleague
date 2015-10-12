@@ -1,0 +1,102 @@
+<div ng-controller="IndexController">
+  <super-navbar>
+    <super-navbar-title>Заказ</super-navbar-title>
+  </super-navbar>
+
+  <div class="padding">
+    <div class="list">
+      <label class="item item-input item-floating-label">
+        <span class="input-label">Что необходимо найти?</span>
+        <input type="text" class="input-text" name="text" placeholder="Что необходимо найти?" value="">
+      </label>
+      <div class="item item-checkbox">
+        <label class="checkbox">
+          <input type="checkbox" class="checkbox-near">
+        </label>
+        рядом с моими местоположением
+      </div>
+      <div class="item item-checkbox">
+        <label class="checkbox">
+          <input type="checkbox" class="checkbox-expert">
+        </label>
+        подключить к поиску эксперта
+      </div>
+      <div class="item">
+        Срочность заказа: <span class="speed-name"></span>
+        <div class="range range-positive range-custom">
+          <i class="icon icon-custom-34 icon-custom-turtle"></i>
+          <input class="range-speed" type="range" name="speed" min="0" max="5" step="1" value="2">
+          <i class="icon icon-custom-34 icon-custom-rocket"></i>
+        </div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="order-price">Цена услуги: <span><b></b> единиц</span></div>
+      <div class="account-total">У вас на счете: <span>1000 единиц</span></div>
+    </div>
+    <button class="button button-block button-positive button-start-search">Начать поиск</button>
+  </div>
+</div>
+<script>
+var speedNames = ['в течение дня', '4 часа', '2 часа', '1 час', 'пол часа', 'в течение минуты'];
+var speedQuotes = [0, 50, 100, 150, 200, 250];
+
+var priceDefault = 100;
+var priceSpeed = speedQuotes[0];
+var priceExpert = 0;
+
+function getTotalPrice() {
+  return priceDefault + priceSpeed + priceExpert;
+}
+
+function defaultFormState() {
+  priceDefault = 100;
+  priceExpert = 0;
+  var defaulRangeValue = 2;
+  $('.input-text').val('');
+  $('.checkbox-near').attr('checked', false);
+  $('.checkbox-expert').attr('checked', false);
+  $('.range-speed').val(defaulRangeValue);
+  priceSpeed = speedQuotes[defaulRangeValue];
+  $('.speed-name').text(speedNames[defaulRangeValue]);
+  $('.order-price span b').text(getTotalPrice());
+}
+
+defaultFormState();
+
+$('.range-speed').on('input', function() {
+  var speed = $(this).val();
+  priceSpeed = speedQuotes[speed];
+  $('.speed-name').text(speedNames[speed]);
+  $('.order-price span b').text(getTotalPrice());
+});
+
+$('.checkbox-expert').change(function() {
+  if ($(this).is(':checked')) {
+    priceExpert = 100;
+  } else {
+    priceExpert = 0;
+  }
+  $('.order-price span b').text(getTotalPrice());
+});
+
+$('.button-start-search').click(function() {
+  localStorage.setItem('text', $('.input-text').val());
+  localStorage.setItem('speed', speedNames[$('.range-speed').val()]);
+  steroids.tabBar.selectTab(1);
+  var modalView = new supersonic.ui.View('history#result');
+  var options = {
+    animate: false
+  }
+  supersonic.ui.modal.show(modalView, options);
+  defaultFormState();
+});
+
+// $('.input-text').focus(function() {
+//   supersonic.ui.tabs.hide();
+// });
+//
+// $('.input-text').blur(function() {
+//   supersonic.ui.tabs.show();
+// });
+</script>

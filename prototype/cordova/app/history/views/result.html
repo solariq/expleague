@@ -1,0 +1,191 @@
+<div ng-controller="ResultController">
+  <super-navbar>
+    <super-navbar-title>Результаты поиска</super-navbar-title>
+    <super-navbar-button side="left" ng-click="backToHistory()">‹ История</super-navbar-button>
+  </super-navbar>
+
+  <style>
+  body {
+    background-color: #efefef;
+  }
+  </style>
+
+  <div class="padding result result-{{currentHistoryItem.answerMode}}">
+    <div ng-repeat="message in currentHistoryItem.messages" class="baloon baloon-{{message.type}} {{message.expert_picture ? 'baloon-picture' : ''}}">
+      <div class="baloon-title">{{message.title}}</div>
+      <div class="baloon-text">
+        <div ng-if="message.expert_picture" class="expert-picture" style="background-image: url({{message.expert_picture}})"></div>
+        <div ng-bind-html="message.text"></div>
+        <div ng-if="message.expert" class="expert" style="background-image: url({{message.expert.picture}})">
+          <div class="expert-info">{{message.expert.name}}, {{message.expert.description}}</div>
+          <div class="expert-raiting">Рейтинг: <span ng-bind-html="message.expert.raiting | stars"></span></div>
+        </div>
+        <div ng-if="message.extra.address">Адрес: <a ng-href="comgooglemaps://?q={{message.extra.address}}">{{message.extra.address}}</a></div>
+        <div ng-if="message.extra.tel">Телефон: <a ng-href="tel:{{message.extra.tel}}">{{message.extra.tel}}</a></div>
+      </div>
+    </div>
+    <div ng-if="currentHistoryItem.ended" class="search-status-message">Поиск завершен</div>
+  </div>
+
+  <div class="log" style="padding:10px"></div>
+
+  <div class="message">
+    <div class="item item-input-inset">
+      <label class="item-input-wrapper">
+        <input type="text" class="input-message" name="message" value="" placeholder="Введите сообщение">
+      </label>
+      <button class="button button-small button-positive icon super-paper-airplane"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+var timeouts = [200, 2500, 13500, 14500];
+
+function playSound() {
+  var sound = new Media('http://localhost/bb2.mp3');
+  sound.play();
+}
+
+function requestClarification() {
+  setTimeout(function() {
+    $('.result').append('<div class="baloon baloon-server"><div class="baloon-title">Необходимо уточнение</div><div class="baloon-text">Расскажите, что ещё необходимо найти</div></div>');
+    playSound();
+    $('.input-message').focus();
+  }, 500);
+}
+
+function addYesNoEvents() {
+  $('.baloon-question-yes, .baloon-question-no').on('touchstart', function() {
+    $(this).css('background','#555');
+  });
+
+  $('.baloon-question-yes, .baloon-question-no').click(function() {
+    if ($(this).hasClass('baloon-question-yes')) {
+      $('#yesno').hide();
+      $('.result').append('<div class="search-status-message">Поиск завершен</div>');
+    } else {
+      $(this).parent().css('visibility','hidden');
+      $('.result').addClass('result-chat');
+      setTimeout(function() {
+        $('.message').css('bottom', '0');
+        $('.result').append('<div class="baloon baloon-client baloon-simple"><div class="baloon-text">Нет</div></div>');
+        playSound();
+        requestClarification();
+      }, 1500);
+    }
+  });
+}
+
+$('.message button').click(function() {
+  var message = $('.input-message').val().trim();
+  if (message != '') {
+    $('.result').append('<div class="baloon baloon-client baloon-simple"><div class="baloon-text">' + message + '</div></div>');
+    $('.input-message').val('');
+    $('.input-message').focus();
+    $('.message').css('bottom', '0');
+    $(window).scrollTop(document.body.clientHeight);
+    playSound();
+  }
+});
+
+$(document).ready(function() {
+  // Если задан новый поиск
+  if (steroids.view.params.id == undefined) {
+    var searchText = localStorage.getItem('text').toLowerCase();
+    if (/аптека|apteka/.test(searchText)) {
+      var messages = window.ordersHistory[2].messages;
+      $.each(messages, function(i, message) {
+        setTimeout(function() {
+          var tel = ('extra' in message && 'tel' in message.extra) ? '<div>Телефон: <a href="tel:' + message.extra.tel + '">' + message.extra.tel + '</a></div>' : '';
+          var address = ('extra' in message && 'address' in message.extra) ? '<div>Адрес: <a href="comgooglemaps://?q=' + message.extra.address + '">' + message.extra.address + '</a></div>' : '';
+          if (i == 1) {
+            $('.result').append('<div class="baloon baloon-' + message.type + '"><div class="baloon-title">' + message.title + '</div><div class="baloon-text"><div><div class="progress"><div class="progress-bar"></div></div></div></div></div>');
+            setTimeout(function() {
+              playSound();
+              $('.progress').hide();
+              $('.progress').after('<div>' + message.text + '</div>');
+            }, 4000);
+          } else {
+            $('.result').append('<div class="baloon baloon-' + message.type + '"><div class="baloon-title">' + message.title + '</div><div class="baloon-text"><div>' + message.text + '</div>' + tel + address + '</div></div>');
+          }
+          playSound();
+        }, timeouts[i]);
+      });
+
+      setTimeout(function() {
+        var question = '<div class="baloon baloon-server" id="yesno">' +
+                       '  <div class="baloon-title">Вас устроил данный ответ?</div>' +
+                       '  <div class="baloon-question">' +
+                       '    <div class="baloon-question-yes">Да</div>' +
+                       '    <div class="baloon-question-no">Нет</div>' +
+                       '  </div>' +
+                       '</div>';
+        $('.result').append(question);
+        playSound();
+        addYesNoEvents();
+      }, timeouts[3]);
+    } else {
+      // XMPP
+      function log(txt) {
+        $('.log').append('<div>' + txt + '</div>');
+      }
+
+      var bosh = 'http://toobusytosearch.net:5280/';
+      var jid = 'testclient@toobusytosearch.net';
+      var password = 'qwerty';
+      var timestamp = new Date().getTime();
+      var room = 'room' + timestamp + '@muc.toobusytosearch.net';
+      var nick = 'client1';
+
+      log('jid: ' + jid);
+      log('room: ' + room);
+      log('nick: ' + nick);
+
+      var conn = new Strophe.Connection(bosh);
+      conn.connect(jid, password, function (status) {
+        if (status === Strophe.Status.CONNECTED) {
+          log('connected');
+
+          function room_message(message) {
+            var body = $(message).children('body').text();;
+            if (body == 'Room is locked. Please configure.') {
+              conn.muc.saveConfiguration(room, [],
+                function () {
+                  console.log('saveConfiguration success');
+                  conn.muc.setTopic(room, searchText);
+                  log('topic: ' + searchText);
+                  conn.addHandler(on_public_message, null, "message", "groupchat");
+                },
+                function (err) {
+                  console.log('saveConfiguration error: ', err);
+                }
+              );
+            }
+          }
+
+          function on_presence(data) {
+            console.log('presence', data)
+          }
+
+          function on_roster(data) {
+            console.log('roster', data)
+          }
+
+          conn.muc.join(room, nick, room_message, on_presence, on_roster);
+
+          function on_public_message(message) {
+            var body = $(message).children('body').text();
+            log('message: ' + body);
+              return true;
+          }
+
+        } else if (status === Strophe.Status.DISCONNECTED) {
+          log('disconnected');
+        }
+      });
+
+    }
+  }
+});
+</script>

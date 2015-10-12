@@ -1,0 +1,13 @@
+<div ng-controller="IndexController">
+  <super-navbar>
+    <super-navbar-title>История</super-navbar-title>
+  </super-navbar>
+
+  <div class="list">
+    <div ng-repeat="item in history" class="item item-icon-right" ng-click="showResults(item.id)">
+      {{item.text}} {{item.near ? item.near : ''}}
+      <span class="item-note">{{item.started | date:'dd MMMM yyyy, HH:mm' | lowercase}}</span>
+      <i class="icon super-ios-arrow-right"></i>
+    </div>
+  </div>
+</div>
