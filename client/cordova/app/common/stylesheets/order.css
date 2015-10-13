@@ -1,0 +1,4 @@
+form.ng-submitted.ng-invalid .order-text-label,
+form.ng-dirty.ng-invalid .order-text-label {
+  background-color: rgba(255,0,0,0.2);
+}
