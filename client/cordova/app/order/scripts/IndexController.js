@@ -5,7 +5,7 @@ angular
     $scope.userBalance = 1000;
 
     // Массив с названиями интервалов срочности и их ценой
-    $scope.urgencyRange = [
+    var urgencyRange = [
       {
         name: 'в течение дня',
         price: 100
@@ -32,8 +32,8 @@ angular
       }
     ];
 
-    // Цена привлечения к поиску эксперта
-    $scope.expertPrice = 100;
+    // Тариф привлечения к поиску эксперта
+    var expertRate = 100;
 
     // Начальные значения поисковой формы
     $scope.order = {
@@ -43,28 +43,38 @@ angular
       urgency: 2
     }
 
-    // Возвращает имя выбраного пользователем (текущего) значения urgency
+    // Возвращает имя значения urgency выбраного пользователем
     $scope.getCurrentUrgencyName = function(){
-      return $scope.urgencyRange[$scope.order.urgency].name;
+      return urgencyRange[$scope.order.urgency].name;
     }
 
     // Общая цена поиска учитывающая срочность и превлечение эксперта
     $scope.getTotalPrice = function(){
-      var urgencyPrice = $scope.urgencyRange[$scope.order.urgency].price;
-      var expertPrice = $scope.order.expert ? $scope.expertPrice : 0;
+      var urgencyPrice = urgencyRange[$scope.order.urgency].price;
+      var expertPrice = ($scope.order.expert ? expertRate : 0);
       return urgencyPrice + expertPrice;
     }
 
     $scope.submitOrder = function(){
-      // Это всё нужно переделать
-      localStorage.setItem('text', $scope.order.text);
-      localStorage.setItem('speed', $scope.getCurrentUrgencyName());
+      // Сохраняем результат введенный в поисковую форму в localStorage, чтобы получить к нему доступ на странице result
+      localStorage.setItem('order', JSON.stringify($scope.order));
+      // Переключаемся на таб history
       steroids.tabBar.selectTab(1);
+      // Показываем модальный экран result
       var modalView = new supersonic.ui.View('history#result');
       var options = {
         animate: false
       }
       supersonic.ui.modal.show(modalView, options);
-      //defaultFormState();
+      // Очищаем форму, чтобы при возвращение на таб order можно было задавать новый запрос
+      // TODO: избавиться от дублирования кода для очистки формы
+      $scope.order = {
+        text: '',
+        near: false,
+        expert: false,
+        urgency: 2
+      }
+      // Для корректной работы валидации, устанавливаем статус форму pristine
+      $scope.orderForm.$setPristine();
     }
   });
