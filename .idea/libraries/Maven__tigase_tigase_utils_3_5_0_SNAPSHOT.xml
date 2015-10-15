@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: tigase:tigase-utils:3.5.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/tigase/tigase-utils/3.5.0-SNAPSHOT/tigase-utils-3.5.0-20151010.224707-259.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/tigase/tigase-utils/3.5.0-SNAPSHOT/tigase-utils-3.5.0-20151010.224707-259-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/tigase/tigase-utils/3.5.0-SNAPSHOT/tigase-utils-3.5.0-20151010.224707-259-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
