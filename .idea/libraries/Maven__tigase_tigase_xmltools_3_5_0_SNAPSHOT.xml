@@ -1,13 +1,13 @@
 <component name="libraryTable">
   <library name="Maven: tigase:tigase-xmltools:3.5.0-SNAPSHOT">
     <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/tigase/tigase-xmltools/3.5.0-SNAPSHOT/tigase-xmltools-3.5.0-20151010.224649-264.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/tigase/tigase-xmltools/3.5.0-SNAPSHOT/tigase-xmltools-3.5.0-20151015.224642-271.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://$MAVEN_REPOSITORY$/tigase/tigase-xmltools/3.5.0-SNAPSHOT/tigase-xmltools-3.5.0-20151010.224649-264-javadoc.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/tigase/tigase-xmltools/3.5.0-SNAPSHOT/tigase-xmltools-3.5.0-20151015.224642-271-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://$MAVEN_REPOSITORY$/tigase/tigase-xmltools/3.5.0-SNAPSHOT/tigase-xmltools-3.5.0-20151010.224649-264-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/tigase/tigase-xmltools/3.5.0-SNAPSHOT/tigase-xmltools-3.5.0-20151015.224642-271-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

@@ -18,10 +18,10 @@ import tigase.xmpp.BareJID;
  * Date: 04.10.15
  * Time: 19:39
  */
-public class BasicTest {
+public class BasicScenarioTest {
 
   @Test
-  public void testShortSuccess() throws TigaseStringprepException {
+  public void testShortSuccess() throws TigaseStringprepException, InterruptedException {
     Reception.instance().clear();
     final StringBuffer track = new StringBuffer();
     final StatusTracker tracker = new StatusTracker(track);
@@ -40,6 +40,7 @@ public class BasicTest {
     client.activate(room);
     client.formulating();
     client.query();
+    Thread.sleep(200);
 
     Assert.assertEquals(
             "Expert expert@localhost -> READY\n" +
@@ -51,9 +52,9 @@ public class BasicTest {
             "Room room@muc.localhost -> DEPLOYED\n" +
             "Expert expert@localhost -> CHECK\n" +
             "Expert expert@localhost -> STEADY\n" +
-            "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> INVITE\n" +
             "Expert expert@localhost -> GO\n" +
+            "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> READY\n" +
             "Room room@muc.localhost -> COMPLETE\n" +
             "Client client@localhost -> FEEDBACK\n" +
@@ -61,7 +62,49 @@ public class BasicTest {
   }
 
   @Test
-  public void testChatSuccess() throws TigaseStringprepException {
+  public void testExpertAfterClient() throws TigaseStringprepException, InterruptedException {
+    Reception.instance().clear();
+    final StringBuffer track = new StringBuffer();
+    final StatusTracker tracker = new StatusTracker(track);
+    final ObedientExpert expert = new ObedientExpert();
+    expert.addListener(tracker.expertListener());
+    final ObedientClient client = new ObedientClient();
+    client.addListener(tracker.clientListener());
+    Reception.instance().addListener(tracker.roomListener());
+
+    client.presence(true);
+    final Room room = Reception.instance().room(client, BareJID.bareJIDInstance("room@muc.localhost"));
+    room.open();
+    client.activate(room);
+    client.formulating();
+    client.query();
+
+    ExpertManager.instance().register(expert);
+    expert.online(true);
+
+    Thread.sleep(200);
+
+    Assert.assertEquals(
+        "Client client@localhost -> ONLINE\n" +
+        "Room room@muc.localhost -> INIT\n" +
+        "Room room@muc.localhost -> CLEAN\n" +
+        "Client client@localhost -> FORMULATING\n" +
+        "Client client@localhost -> COMMITED\n" +
+        "Room room@muc.localhost -> DEPLOYED\n" +
+        "Expert expert@localhost -> READY\n" +
+        "Expert expert@localhost -> CHECK\n" +
+        "Expert expert@localhost -> STEADY\n" +
+        "Expert expert@localhost -> INVITE\n" +
+        "Expert expert@localhost -> GO\n" +
+        "Room room@muc.localhost -> LOCKED\n" +
+        "Expert expert@localhost -> READY\n" +
+        "Room room@muc.localhost -> COMPLETE\n" +
+        "Client client@localhost -> FEEDBACK\n" +
+        "Client client@localhost -> ONLINE\n", track.toString());
+  }
+
+  @Test
+  public void testChatSuccess() throws TigaseStringprepException, InterruptedException {
     Reception.instance().clear();
     final StringBuffer track = new StringBuffer();
     final StatusTracker tracker = new StatusTracker(track);
@@ -80,6 +123,7 @@ public class BasicTest {
     room.open();
     client.formulating();
     client.query();
+    Thread.sleep(200);
 
     Assert.assertEquals(
             "Expert expert@localhost -> READY\n" +
@@ -91,9 +135,9 @@ public class BasicTest {
             "Room room@muc.localhost -> DEPLOYED\n" +
             "Expert expert@localhost -> CHECK\n" +
             "Expert expert@localhost -> STEADY\n" +
-            "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> INVITE\n" +
             "Expert expert@localhost -> GO\n" +
+            "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> READY\n" +
             "Room room@muc.localhost -> COMPLETE\n" +
             "Client client@localhost -> FEEDBACK\n" +
@@ -101,9 +145,9 @@ public class BasicTest {
             "Room room@muc.localhost -> DEPLOYED\n" +
             "Expert expert@localhost -> CHECK\n" +
             "Expert expert@localhost -> STEADY\n" +
-            "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> INVITE\n" +
             "Expert expert@localhost -> GO\n" +
+            "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> READY\n" +
             "Room room@muc.localhost -> COMPLETE\n" +
             "Client client@localhost -> FEEDBACK\n" +
@@ -111,7 +155,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testChat2Success() throws TigaseStringprepException {
+  public void testChat2Success() throws TigaseStringprepException, InterruptedException {
     Reception.instance().clear();
     final StringBuffer track = new StringBuffer();
     final StatusTracker tracker = new StatusTracker(track);
@@ -130,6 +174,7 @@ public class BasicTest {
     room.open();
     client.formulating();
     client.query();
+    Thread.sleep(200);
 
     Assert.assertEquals(
             "Expert expert@localhost -> READY\n" +
@@ -141,9 +186,9 @@ public class BasicTest {
             "Room room@muc.localhost -> DEPLOYED\n" +
             "Expert expert@localhost -> CHECK\n" +
             "Expert expert@localhost -> STEADY\n" +
-            "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> INVITE\n" +
             "Expert expert@localhost -> GO\n" +
+            "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> READY\n" +
             "Room room@muc.localhost -> COMPLETE\n" +
             "Client client@localhost -> FEEDBACK\n" +
@@ -151,9 +196,9 @@ public class BasicTest {
             "Room room@muc.localhost -> DEPLOYED\n" +
             "Expert expert@localhost -> CHECK\n" +
             "Expert expert@localhost -> STEADY\n" +
-            "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> INVITE\n" +
             "Expert expert@localhost -> GO\n" +
+            "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> READY\n" +
             "Room room@muc.localhost -> COMPLETE\n" +
             "Client client@localhost -> FEEDBACK\n" +
@@ -161,9 +206,9 @@ public class BasicTest {
             "Room room@muc.localhost -> DEPLOYED\n" +
             "Expert expert@localhost -> CHECK\n" +
             "Expert expert@localhost -> STEADY\n" +
-            "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> INVITE\n" +
             "Expert expert@localhost -> GO\n" +
+            "Room room@muc.localhost -> LOCKED\n" +
             "Expert expert@localhost -> READY\n" +
             "Room room@muc.localhost -> COMPLETE\n" +
             "Client client@localhost -> FEEDBACK\n" +

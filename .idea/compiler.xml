@@ -31,10 +31,18 @@
         <processorPath useClasspath="true" />
         <module name="tigase-component" />
       </profile>
+      <profile default="false" name="Annotation profile for xmpp-bots" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="xmpp-bots" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="commons" target="1.8" />
       <module name="tigase-component" target="1.8" />
+      <module name="xmpp-bots" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

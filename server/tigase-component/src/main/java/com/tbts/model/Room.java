@@ -2,6 +2,8 @@ package com.tbts.model;
 
 import com.spbsu.commons.func.WeakListenerHolder;
 
+import java.util.Set;
+
 /**
  * User: solar
  * Date: 04.10.15
@@ -16,6 +18,8 @@ public interface Room extends WeakListenerHolder<Room> {
   void enterExpert(Expert winner);
 
   void open();
+
+  boolean quorum(Set<Expert> reserved);
 
   enum State {
     CLEAN,

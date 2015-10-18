@@ -8,6 +8,8 @@
     </JAVADOC>
     <SOURCES>
       <root url="jar://$MAVEN_REPOSITORY$/tigase/tigase-server/7.1.0-SNAPSHOT/tigase-server-7.1.0-SNAPSHOT-sources.jar!/" />
+      <root url="file://$USER_HOME$/tools/tigase/tigase-server/src/main/java" />
+      <root url="file://$USER_HOME$/tools/tigase/tigase-server/src/test/java" />
     </SOURCES>
   </library>
 </component>

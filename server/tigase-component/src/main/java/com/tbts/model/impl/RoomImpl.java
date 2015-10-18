@@ -5,6 +5,10 @@ import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.tbts.model.*;
 import com.tbts.model.experts.ExpertManager;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 /**
  * User: solar
  * Date: 04.10.15
@@ -43,6 +47,7 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
   protected void commit() {
     if (state != State.CLEAN && state != State.COMPLETE)
       throw new IllegalStateException();
+    answersCountOnDeploy = answers.size();
     state(State.DEPLOYED);
     ExpertManager.instance().challenge(this);
   }
@@ -70,20 +75,28 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
     invoke(this);
   }
 
+  private final List<Answer> answers = new ArrayList<>();
+  private int answersCountOnDeploy;
   @Override
   public void answer(Answer answer) {
-    state(State.COMPLETE);
+    answers.add(answer);
   }
 
   @Override
   public void enterExpert(Expert winner) {
     state(State.LOCKED);
-    winner.invite();
+    if (answers.size() > answersCountOnDeploy)
+      state(State.COMPLETE);
   }
 
   @Override
   public void open() {
     state(State.CLEAN);
+  }
+
+  @Override
+  public boolean quorum(Set<Expert> reserved) {
+    return reserved.size() > 0;
   }
 
   @Override

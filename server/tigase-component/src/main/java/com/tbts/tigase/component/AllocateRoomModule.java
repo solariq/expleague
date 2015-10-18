@@ -27,7 +27,6 @@ public class AllocateRoomModule extends GroupchatMessageModule {
   private static final String SUBJECT = "subject";
   private static final Criteria CRIT = ElementCriteria.name("message").add(ElementCriteria.name("subject"));
   private final Action<Expert> expertCommunication;
-  private final static StatusTracker tracker = new StatusTracker(System.out);
 
   public AllocateRoomModule() {
     expertCommunication = new Action<Expert>() {

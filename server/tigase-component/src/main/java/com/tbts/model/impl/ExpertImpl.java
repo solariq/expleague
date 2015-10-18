@@ -102,7 +102,7 @@ public class ExpertImpl extends WeakListenerHolderImpl<Expert> implements Expert
   }
 
   public void answer(Answer answer) {
-    if (state != State.GO)
+    if (state != State.GO || this.active == null)
       throw new IllegalStateException();
     state(State.READY);
     final Room room = this.active;
