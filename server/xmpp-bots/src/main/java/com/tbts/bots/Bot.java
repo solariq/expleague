@@ -5,12 +5,17 @@ import tigase.jaxmpp.core.client.*;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 import tigase.jaxmpp.core.client.xml.Element;
 import tigase.jaxmpp.core.client.xml.ElementFactory;
+import tigase.jaxmpp.core.client.xmpp.modules.muc.MucModule;
+import tigase.jaxmpp.core.client.xmpp.modules.presence.PresenceModule;
 import tigase.jaxmpp.core.client.xmpp.modules.registration.InBandRegistrationModule;
 import tigase.jaxmpp.core.client.xmpp.stanzas.IQ;
+import tigase.jaxmpp.core.client.xmpp.stanzas.Presence;
 import tigase.jaxmpp.core.client.xmpp.stanzas.Stanza;
 import tigase.jaxmpp.core.client.xmpp.stanzas.StanzaType;
+import tigase.jaxmpp.j2se.J2SEPresenceStore;
 import tigase.jaxmpp.j2se.J2SESessionObject;
 import tigase.jaxmpp.j2se.Jaxmpp;
+import tigase.jaxmpp.j2se.connectors.socket.SocketConnector;
 
 /**
  * User: solar
@@ -28,6 +33,12 @@ public class Bot {
     this.jid = jid;
     this.passwd = passwd;
     this.resource = resource;
+
+    jaxmpp.getProperties().setUserProperty(SessionObject.DOMAIN_NAME, "localhost");
+    jaxmpp.getSessionObject().setProperty(SocketConnector.TLS_DISABLED_KEY, true);
+    jaxmpp.getModulesManager().register(new MucModule());
+    PresenceModule.setPresenceStore(jaxmpp.getSessionObject(), new J2SEPresenceStore());
+    jaxmpp.getModulesManager().register(new PresenceModule());
   }
 
   public void start() throws JaxmppException {
@@ -60,6 +71,12 @@ public class Bot {
     jaxmpp.login();
     latch.state(2, 1);
     jaxmpp.getSessionObject().setProperty(InBandRegistrationModule.IN_BAND_REGISTRATION_MODE_KEY, Boolean.FALSE);
+    jaxmpp.getProperties().setUserProperty(SessionObject.USER_BARE_JID, jid);
+    jaxmpp.getProperties().setUserProperty(SessionObject.PASSWORD, passwd);
+    jaxmpp.getProperties().setUserProperty(SessionObject.RESOURCE, resource);
+    jaxmpp.getEventBus().addHandler(JaxmppCore.ConnectedHandler.ConnectedEvent.class, sessionObject -> latch.advance());
+    jaxmpp.login();
+    latch.state(2, 1);
   }
 
   public void stop() throws JaxmppException {
@@ -83,13 +100,7 @@ public class Bot {
 
   public void online() {
     try {
-      final StateLatch latch = new StateLatch();
-      jaxmpp.getProperties().setUserProperty(SessionObject.USER_BARE_JID, jid);
-      jaxmpp.getProperties().setUserProperty(SessionObject.PASSWORD, passwd);
-      jaxmpp.getProperties().setUserProperty(SessionObject.RESOURCE, resource);
-      jaxmpp.getEventBus().addHandler(JaxmppCore.ConnectedHandler.ConnectedEvent.class, sessionObject -> latch.advance());
-      jaxmpp.login();
-      latch.state(2, 1);
+      jaxmpp.send(Presence.create());
     } catch (JaxmppException e) {
       throw new RuntimeException(e);
     }

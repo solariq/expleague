@@ -5,8 +5,9 @@ import tigase.jaxmpp.core.client.*;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 import tigase.jaxmpp.core.client.xml.Element;
 import tigase.jaxmpp.core.client.xml.ElementFactory;
+import tigase.jaxmpp.core.client.xml.XMLException;
+import tigase.jaxmpp.core.client.xmpp.modules.muc.MucModule;
 import tigase.jaxmpp.core.client.xmpp.stanzas.*;
-import tigase.jaxmpp.j2se.connectors.socket.SocketConnector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +23,6 @@ public class ClientBot extends Bot {
 
   public ClientBot(final BareJID jid, final String passwd) throws JaxmppException {
     super(jid, passwd, "client");
-    jaxmpp.getProperties().setUserProperty(SessionObject.DOMAIN_NAME, "localhost");
-    jaxmpp.getSessionObject().setProperty(SocketConnector.TLS_DISABLED_KEY, true);
   }
 
   public BareJID startRoom() throws JaxmppException {
@@ -32,7 +31,7 @@ public class ClientBot extends Bot {
     presence.setShow(Presence.Show.online);
     final BareJID room = BareJID.bareJIDInstance(jid().getLocalpart() + "-room-" + (int)(System.currentTimeMillis() / 1000), "muc." + jid().getDomain());
     presence.setTo(JID.jidInstance(room, "client"));
-    jaxmpp.getEventBus().addHandler(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, (sessionObject, stanza) -> {
+    Connector.StanzaReceivedHandler handler = (sessionObject, stanza) -> {
       try {
         if (stanza instanceof Message && "groupchat".equals(stanza.getAttribute("type")) && latch.state() == 1) {
           final IQ iq = IQ.create();
@@ -61,9 +60,9 @@ public class ClientBot extends Bot {
             }
           });
           latch.state(2);
-        }
-        else if (stanza instanceof Message && "groupchat".equals(stanza.getAttribute("type")) && latch.state() == 2) {
-          if ("Room is now unlocked".equals(stanza.getWrappedElement().getFirstChild("body").getValue())) {
+        } else if (stanza instanceof Message && "groupchat".equals(stanza.getAttribute("type")) && latch.state() == 2) {
+          Element body = stanza.getWrappedElement().getFirstChild("body");
+          if (body != null && "Room is now unlocked".equals(body.getValue())) {
             System.out.println("Room created & unlocked");
             latch.state(4);
           }
@@ -71,9 +70,11 @@ public class ClientBot extends Bot {
       } catch (JaxmppException e) {
         throw new RuntimeException(e);
       }
-    });
+    };
+    jaxmpp.getEventBus().addHandler(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, handler);
     jaxmpp.send(presence);
     latch.state(4, 1);
+    jaxmpp.getEventBus().remove(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, handler);
     rooms.add(room);
     activeRoom = room;
     return room;
@@ -82,12 +83,6 @@ public class ClientBot extends Bot {
   public void topic(String topic) {
     if (activeRoom == null)
       throw new IllegalStateException();
-    /*
-    <message from="ccc@muc.localhost/solar" type="groupchat" to="solar@localhost/solar-osx" id="aaf6a">
-<subject>Рфрф</subject>
-<delay xmlns="urn:xmpp:delay" stamp="2015-09-24T14:15:16Z"/>
-</message>
-     */
     try {
       final Message message = Message.create();
       message.setType(StanzaType.groupchat);
@@ -107,7 +102,22 @@ public class ClientBot extends Bot {
     client.online();
     client.startRoom();
     client.topic("Hello world");
-    latch.state(8, 1);
+    client.jaxmpp.getEventBus().addHandler(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, (sessionObject, stanza) -> {
+      try {
+        System.out.println("Msg: " + stanza.getAsString());
+      } catch (XMLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+    client.jaxmpp.getEventBus().addHandler(MucModule.MucMessageReceivedHandler.MucMessageReceivedEvent.class, (sessionObject, message, room, s, date) -> {
+      try {
+        System.out.println("Group: " + message.getAsString());
+        latch.advance();
+      } catch (XMLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+    latch.state(2, 1);
     client.stop();
   }
 }

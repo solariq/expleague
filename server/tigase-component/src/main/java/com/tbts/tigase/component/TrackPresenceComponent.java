@@ -12,7 +12,10 @@ import tigase.server.Iq;
 import tigase.server.Packet;
 import tigase.server.xmppsession.SessionManager;
 import tigase.xml.Element;
+import tigase.xmpp.BareJID;
 import tigase.xmpp.JID;
+import tigase.xmpp.NotAuthorizedException;
+import tigase.xmpp.XMPPResourceConnection;
 
 import java.util.Map;
 import java.util.logging.Logger;
@@ -25,6 +28,23 @@ import java.util.logging.Logger;
 public class TrackPresenceComponent extends SessionManager {
   private static final Logger log = Logger.getLogger(TrackPresenceComponent.class.getName());
   private static Criteria CRIT = ElementCriteria.name("presence");
+
+  public TrackPresenceComponent() {
+    super();
+  }
+
+
+  @Override
+  protected void closeSession(XMPPResourceConnection conn, boolean closeOnly) {
+    try {
+      final BareJID bareJID = conn.getBareJID();
+      final Expert expert = ExpertManager.instance().get(bareJID);
+      if (expert != null)
+        expert.online(false);
+    }
+    catch (NotAuthorizedException ignore) {}
+    super.closeSession(conn, closeOnly);
+  }
 
   @Override
   public void processPacket(Packet packet) {
@@ -99,7 +119,8 @@ public class TrackPresenceComponent extends SessionManager {
           expert.steady();
         break;
       case INVITE:
-        expert.ask(room);
+        if (room != null && room.equals(expert.active()))
+          expert.ask(room);
         break;
       case DENIED:
         expert.online(true);

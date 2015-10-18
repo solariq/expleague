@@ -2,14 +2,13 @@ package com.tbts.model.impl;
 
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
+import com.tbts.model.Answer;
 import com.tbts.model.Client;
 import com.tbts.model.Room;
+import com.tbts.model.experts.ExpertManager;
 import tigase.xmpp.BareJID;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * User: solar
@@ -20,6 +19,15 @@ public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client
   private final BareJID id;
   private final Map<Room, State> states = new HashMap<>();
   boolean online = false;
+  private Action<Room> completeRoomListener = new Action<Room>() {
+    @Override
+    public void invoke(Room room) {
+      if (room.state() == Room.State.COMPLETE) {
+        room.removeListener(this);
+        ClientImpl.this.feedback(room);
+      }
+    }
+  };
 
   public ClientImpl(BareJID id) {
     this.id = id;
@@ -49,7 +57,7 @@ public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client
   }
 
   public void formulating() {
-    if (state() != State.ONLINE)
+    if (state() != State.ONLINE && state() == State.CHAT)
       throw new IllegalStateException();
     state(State.FORMULATING);
   }
@@ -57,24 +65,22 @@ public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client
   public void query() {
     if (state() != State.FORMULATING && state() != State.CHAT)
       throw new IllegalStateException();
-    final Action<Room> lst = new Action<Room>() {
-      @Override
-      public void invoke(Room room) {
-        if (room.state() == Room.State.COMPLETE)
-          ClientImpl.this.feedback();
-        pending.remove(this);
-      }
-    };
-    active.addListener(lst);
-    pending.add(lst);
+    active.addListener(completeRoomListener);
     state(State.COMMITED);
   }
 
-  protected final Set<Action<Room>> pending = new HashSet<>();
-  public void feedback() {
+  public void feedback(Room room) {
+    final Room active = active();
+    activate(room);
     if (state() != State.COMMITED && state() != State.CHAT)
       throw new IllegalStateException();
-    state(State.FEEDBACK);
+    final List<Answer> answers = room.answers();
+    if (answers.size() < 1 || answers.get(answers.size() - 1) == Answer.EMPTY)
+      ExpertManager.instance().challenge(room);
+    else
+      state(State.FEEDBACK);
+
+    activate(active);
   }
 
   public void presence(boolean val) {

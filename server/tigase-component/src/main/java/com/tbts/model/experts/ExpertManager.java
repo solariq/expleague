@@ -10,6 +10,7 @@ import tigase.xmpp.BareJID;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -20,6 +21,7 @@ import java.util.logging.Logger;
 public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Action<Expert> {
   private static final Logger log = Logger.getLogger(ExpertManager.class.getName());
   public static final ExpertManager EXPERT_MANAGER = new ExpertManager();
+  public static final long EXPERT_ACCEPT_INVITATION_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
 
   public static synchronized ExpertManager instance() {
     return EXPERT_MANAGER;
@@ -28,10 +30,10 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
   private final Map<BareJID, Expert> experts = new HashMap<>();
   @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 
-  public synchronized Expert nextAvailable(Room req) {
+  public synchronized Expert nextAvailable(Room room) {
     while (true) {
       for (final Expert expert : experts.values()) {
-        if (expert.state() == Expert.State.READY)
+        if (expert.state() == Expert.State.READY && room.relevant(expert))
           return expert;
       }
       try {
@@ -85,7 +87,6 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     final Holder<Expert> winner = new Holder<>();
     final Set<Expert> reserved = Collections.synchronizedSet(new HashSet<>());
     final Set<Expert> steady = Collections.synchronizedSet(new HashSet<>());
-    final Set<Expert> invited = new HashSet<>();
     final Action<Expert> challenge = expert -> {
       if (!reserved.contains(expert) || room.state() != Room.State.DEPLOYED)
         return;
@@ -95,7 +96,7 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
               expert.state() != Expert.State.INVITE &&
               expert.state() != Expert.State.GO)) {
         reserved.remove(expert);
-        if (winner.getValue() == expert)
+        if (winner.getValue() == expert && room.state() != Room.State.COMPLETE)
           winner.setValue(null);
         steady.remove(expert);
       }
@@ -115,7 +116,7 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
 
     //noinspection SynchronizationOnLocalVariableOrMethodParameter
     synchronized (winner) {
-      while (true) {
+      while (room.state() == Room.State.DEPLOYED) {
         while (!room.quorum(reserved)) {
           final Expert next = nextAvailable(room);
           next.addListener(challenge);
@@ -128,26 +129,31 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
           final Expert next = iterator.next();
           iterator.remove();
 
-          if (invited.contains(next))
-            continue;
-          winner.setValue(next);
-          invited.add(next);
-          next.invite();
+          room.invite(next);
+          new Timer(true).schedule(new TimerTask() {
+            @Override
+            public void run() {
+              if (next.state() == Expert.State.INVITE && next.active() == room)
+                next.free();
+            }
+          }, room.invitationTimeout());
         }
         if (winner.filled() && (winner.getValue().state() == Expert.State.GO || winner.getValue().state() == Expert.State.READY))
           break;
-        try {
-          winner.wait(0);
+        if (room.quorum(reserved)) {
+          try {
+            winner.wait(0);
+          }
+          catch (InterruptedException ignore) {}
         }
-        catch (InterruptedException ignore) {}
       }
     }
     for (final Expert expert : reserved) {
       if (expert.state() == Expert.State.STEADY)
         expert.free();
     }
-    room.enterExpert(winner.getValue());
     log.fine("Challenge for room " + room.id() + " finished. Winner: " + winner.getValue().id());
+    room.enter(winner.getValue());
     challenges.remove(room);
   }
 }

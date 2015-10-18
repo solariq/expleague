@@ -6,6 +6,7 @@ import com.tbts.model.*;
 import com.tbts.model.experts.ExpertManager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -17,9 +18,13 @@ import java.util.Set;
 public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
   @SuppressWarnings({"FieldCanBeLocal", "unused"})
   private final Action<Client> clientLst;
+  private final Set<Expert> invited = new HashSet<>();
   private final String id;
+  @SuppressWarnings("FieldCanBeLocal")
+  private final Action<Expert> clearInviteLst;
 
   private State state;
+  private Action<Expert> workerListener;
 
   public RoomImpl(String id, Client client) {
     this.id = id;
@@ -37,6 +42,19 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
           break;
       }
     });
+    workerListener = expert -> {
+      expert.removeListener(workerListener);
+      if (expert.state() != Expert.State.GO && answersCountOnDeploy == answers.size()) {
+        answer(Answer.EMPTY);
+      }
+    };
+
+    clearInviteLst = expert -> {
+      if (expert.state() == Expert.State.AWAY) {
+        invited.remove(expert);
+      }
+    };
+    ExpertManager.instance().addListener(clearInviteLst);
   }
 
   protected void fix() {
@@ -80,13 +98,15 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
   @Override
   public void answer(Answer answer) {
     answers.add(answer);
+    if (state() == State.LOCKED)
+      state(State.COMPLETE);
   }
 
   @Override
-  public void enterExpert(Expert winner) {
+  public void enter(Expert winner) {
+    invited.remove(winner);
+    winner.addListener(workerListener);
     state(State.LOCKED);
-    if (answers.size() > answersCountOnDeploy)
-      state(State.COMPLETE);
   }
 
   @Override
@@ -97,6 +117,33 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
   @Override
   public boolean quorum(Set<Expert> reserved) {
     return reserved.size() > 0;
+  }
+
+  @Override
+  public void invite(Expert next) {
+    if (next.active() != this)
+      throw new IllegalArgumentException();
+    invited.add(next);
+    next.invite();
+  }
+
+  @Override
+  public boolean relevant(Expert expert) {
+    return !invited.contains(expert);
+  }
+
+  @Override
+  public long invitationTimeout() {
+    return ExpertManager.EXPERT_ACCEPT_INVITATION_TIMEOUT;
+  }
+
+  @Override
+  public void exit(Expert expert) {
+  }
+
+  @Override
+  public List<Answer> answers() {
+    return answers;
   }
 
   @Override

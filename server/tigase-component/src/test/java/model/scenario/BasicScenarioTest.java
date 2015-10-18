@@ -55,10 +55,10 @@ public class BasicScenarioTest {
             "Expert expert@localhost -> INVITE\n" +
             "Expert expert@localhost -> GO\n" +
             "Room room@muc.localhost -> LOCKED\n" +
-            "Expert expert@localhost -> READY\n" +
             "Room room@muc.localhost -> COMPLETE\n" +
             "Client client@localhost -> FEEDBACK\n" +
-            "Client client@localhost -> ONLINE\n", track.toString());
+            "Client client@localhost -> ONLINE\n" +
+            "Expert expert@localhost -> READY\n", track.toString());
   }
 
   @Test
@@ -97,10 +97,10 @@ public class BasicScenarioTest {
         "Expert expert@localhost -> INVITE\n" +
         "Expert expert@localhost -> GO\n" +
         "Room room@muc.localhost -> LOCKED\n" +
-        "Expert expert@localhost -> READY\n" +
         "Room room@muc.localhost -> COMPLETE\n" +
         "Client client@localhost -> FEEDBACK\n" +
-        "Client client@localhost -> ONLINE\n", track.toString());
+        "Client client@localhost -> ONLINE\n" +
+        "Expert expert@localhost -> READY\n", track.toString());
   }
 
   @Test
@@ -126,32 +126,33 @@ public class BasicScenarioTest {
     Thread.sleep(200);
 
     Assert.assertEquals(
-            "Expert expert@localhost -> READY\n" +
-            "Client client@localhost -> ONLINE\n" +
-            "Room room@muc.localhost -> INIT\n" +
-            "Room room@muc.localhost -> CLEAN\n" +
-            "Client client@localhost -> FORMULATING\n" +
-            "Client client@localhost -> COMMITED\n" +
-            "Room room@muc.localhost -> DEPLOYED\n" +
-            "Expert expert@localhost -> CHECK\n" +
-            "Expert expert@localhost -> STEADY\n" +
-            "Expert expert@localhost -> INVITE\n" +
-            "Expert expert@localhost -> GO\n" +
-            "Room room@muc.localhost -> LOCKED\n" +
-            "Expert expert@localhost -> READY\n" +
-            "Room room@muc.localhost -> COMPLETE\n" +
-            "Client client@localhost -> FEEDBACK\n" +
-            "Client client@localhost -> CHAT\n" +
-            "Room room@muc.localhost -> DEPLOYED\n" +
-            "Expert expert@localhost -> CHECK\n" +
-            "Expert expert@localhost -> STEADY\n" +
-            "Expert expert@localhost -> INVITE\n" +
-            "Expert expert@localhost -> GO\n" +
-            "Room room@muc.localhost -> LOCKED\n" +
-            "Expert expert@localhost -> READY\n" +
-            "Room room@muc.localhost -> COMPLETE\n" +
-            "Client client@localhost -> FEEDBACK\n" +
-            "Client client@localhost -> ONLINE\n", track.toString());
+        "Expert expert@localhost -> READY\n" +
+        "Client client@localhost -> ONLINE\n" +
+        "Room room@muc.localhost -> INIT\n" +
+        "Room room@muc.localhost -> CLEAN\n" +
+        "Client client@localhost -> FORMULATING\n" +
+        "Client client@localhost -> COMMITED\n" +
+        "Room room@muc.localhost -> DEPLOYED\n" +
+        "Expert expert@localhost -> CHECK\n" +
+        "Expert expert@localhost -> STEADY\n" +
+        "Expert expert@localhost -> INVITE\n" +
+        "Expert expert@localhost -> GO\n" +
+        "Room room@muc.localhost -> LOCKED\n" +
+        "Room room@muc.localhost -> COMPLETE\n" +
+        "Client client@localhost -> FEEDBACK\n" +
+        "Client client@localhost -> FORMULATING\n" +
+        "Client client@localhost -> COMMITED\n" +
+        "Room room@muc.localhost -> DEPLOYED\n" +
+        "Expert expert@localhost -> READY\n" +
+        "Expert expert@localhost -> CHECK\n" +
+        "Expert expert@localhost -> STEADY\n" +
+        "Expert expert@localhost -> INVITE\n" +
+        "Expert expert@localhost -> GO\n" +
+        "Room room@muc.localhost -> LOCKED\n" +
+        "Room room@muc.localhost -> COMPLETE\n" +
+        "Client client@localhost -> FEEDBACK\n" +
+        "Client client@localhost -> ONLINE\n" +
+        "Expert expert@localhost -> READY\n", track.toString());
   }
 
   @Test
@@ -177,42 +178,44 @@ public class BasicScenarioTest {
     Thread.sleep(200);
 
     Assert.assertEquals(
-            "Expert expert@localhost -> READY\n" +
-            "Client client@localhost -> ONLINE\n" +
-            "Room room@muc.localhost -> INIT\n" +
-            "Room room@muc.localhost -> CLEAN\n" +
-            "Client client@localhost -> FORMULATING\n" +
-            "Client client@localhost -> COMMITED\n" +
-            "Room room@muc.localhost -> DEPLOYED\n" +
-            "Expert expert@localhost -> CHECK\n" +
-            "Expert expert@localhost -> STEADY\n" +
-            "Expert expert@localhost -> INVITE\n" +
-            "Expert expert@localhost -> GO\n" +
-            "Room room@muc.localhost -> LOCKED\n" +
-            "Expert expert@localhost -> READY\n" +
-            "Room room@muc.localhost -> COMPLETE\n" +
-            "Client client@localhost -> FEEDBACK\n" +
-            "Client client@localhost -> CHAT\n" +
-            "Room room@muc.localhost -> DEPLOYED\n" +
-            "Expert expert@localhost -> CHECK\n" +
-            "Expert expert@localhost -> STEADY\n" +
-            "Expert expert@localhost -> INVITE\n" +
-            "Expert expert@localhost -> GO\n" +
-            "Room room@muc.localhost -> LOCKED\n" +
-            "Expert expert@localhost -> READY\n" +
-            "Room room@muc.localhost -> COMPLETE\n" +
-            "Client client@localhost -> FEEDBACK\n" +
-            "Client client@localhost -> CHAT\n" +
-            "Room room@muc.localhost -> DEPLOYED\n" +
-            "Expert expert@localhost -> CHECK\n" +
-            "Expert expert@localhost -> STEADY\n" +
-            "Expert expert@localhost -> INVITE\n" +
-            "Expert expert@localhost -> GO\n" +
-            "Room room@muc.localhost -> LOCKED\n" +
-            "Expert expert@localhost -> READY\n" +
-            "Room room@muc.localhost -> COMPLETE\n" +
-            "Client client@localhost -> FEEDBACK\n" +
-            "Client client@localhost -> ONLINE\n", track.toString());
+        "Expert expert@localhost -> READY\n" +
+        "Client client@localhost -> ONLINE\n" +
+        "Room room@muc.localhost -> INIT\n" +
+        "Room room@muc.localhost -> CLEAN\n" +
+        "Client client@localhost -> FORMULATING\n" +
+        "Client client@localhost -> COMMITED\n" +
+        "Room room@muc.localhost -> DEPLOYED\n" +
+        "Expert expert@localhost -> CHECK\n" +
+        "Expert expert@localhost -> STEADY\n" +
+        "Expert expert@localhost -> INVITE\n" +
+        "Expert expert@localhost -> GO\n" +
+        "Room room@muc.localhost -> LOCKED\n" +
+        "Room room@muc.localhost -> COMPLETE\n" +
+        "Client client@localhost -> FEEDBACK\n" +
+        "Client client@localhost -> FORMULATING\n" +
+        "Client client@localhost -> COMMITED\n" +
+        "Room room@muc.localhost -> DEPLOYED\n" +
+        "Expert expert@localhost -> READY\n" +
+        "Expert expert@localhost -> CHECK\n" +
+        "Expert expert@localhost -> STEADY\n" +
+        "Expert expert@localhost -> INVITE\n" +
+        "Expert expert@localhost -> GO\n" +
+        "Room room@muc.localhost -> LOCKED\n" +
+        "Room room@muc.localhost -> COMPLETE\n" +
+        "Client client@localhost -> FEEDBACK\n" +
+        "Client client@localhost -> FORMULATING\n" +
+        "Client client@localhost -> COMMITED\n" +
+        "Room room@muc.localhost -> DEPLOYED\n" +
+        "Expert expert@localhost -> READY\n" +
+        "Expert expert@localhost -> CHECK\n" +
+        "Expert expert@localhost -> STEADY\n" +
+        "Expert expert@localhost -> INVITE\n" +
+        "Expert expert@localhost -> GO\n" +
+        "Room room@muc.localhost -> LOCKED\n" +
+        "Room room@muc.localhost -> COMPLETE\n" +
+        "Client client@localhost -> FEEDBACK\n" +
+        "Client client@localhost -> ONLINE\n" +
+        "Expert expert@localhost -> READY\n", track.toString());
   }
 
   @SuppressWarnings("StringConcatenationInsideStringBufferAppend")

@@ -13,8 +13,16 @@ import tigase.xmpp.BareJID;
  * Time: 20:08
  */
 public class ObedientExpert extends ExpertImpl {
+  private Action<Room> roomAction = new Action<Room>() {
+    @Override
+    public void invoke(Room room) {
+      if (room.state() == Room.State.LOCKED) {
+        answer(new Answer());
+        room.removeListener(this);
+      }
+    }
+  };
 
-  private Action<Room> roomAction;
 
   public ObedientExpert() throws TigaseStringprepException {
     super(BareJID.bareJIDInstance("expert@localhost"));
@@ -32,13 +40,6 @@ public class ObedientExpert extends ExpertImpl {
   @Override
   public void invite() {
     super.invite();
-    roomAction = room -> {
-      if (room.state() == Room.State.LOCKED) {
-        answer(new Answer());
-        room.removeListener(roomAction);
-        roomAction = null;
-      }
-    };
     ask(active());
     active().addListener(roomAction);
   }
