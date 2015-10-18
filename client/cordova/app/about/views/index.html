@@ -4,5 +4,24 @@
   </super-navbar>
 
   <div class="padding">
+    <div class="button-bar">
+      <a class="button" ng-class="{activated: server.profile == 'remote'}" ng-click="setProfile('remote')">Удаленно</a>
+      <a class="button" ng-class="{activated: server.profile == 'local'}" ng-click="setProfile('local')">Локально</a>
+    </div>
+
+    <div class="list">
+      <label class="item item-input item-stacked-label">
+        <span class="input-label">BOSH</span>
+        <input ng-model="server.bosh" ng-change="saveServerParams()" type="text" placeholder="BOSH">
+      </label>
+      <label class="item item-input item-stacked-label">
+        <span class="input-label">Host</span>
+        <input ng-model="server.host" ng-change="saveServerParams()" type="text" placeholder="Host">
+      </label>
+      <label class="item item-input item-stacked-label">
+        <span class="input-label">MUC</span>
+        <input ng-model="server.muc" ng-change="saveServerParams()" type="text" placeholder="MUC">
+      </label>
+    </div>
   </div>
 </div>

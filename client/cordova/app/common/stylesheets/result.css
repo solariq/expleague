@@ -210,3 +210,10 @@
   -webkit-transition-property: bottom;
   -webkit-transition-duration: 300ms;
 }
+
+.debug {
+  background: #DEE9F3;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 5px;
+}
