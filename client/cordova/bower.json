@@ -7,8 +7,8 @@
     "angular-sanitize": "1.3.x",
     "angular-i18n": "1.3.x",
     "supersonic": "1.x",
-    "jquery": "2.1.x",
-    "strophe": "1.1.x",
-    "strophejs-plugins": "0.0.x"
+    "jquery": "1.11.0",
+    "strophejs": "strophe/strophejs#master",
+    "strophejs-plugins": "strophe/strophejs-plugins#master"
   }
 }

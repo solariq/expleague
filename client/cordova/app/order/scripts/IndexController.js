@@ -1,6 +1,41 @@
 angular
   .module('order')
   .controller('IndexController', function($scope, supersonic) {
+
+    // Регистрируем нового пользователя, если он ещё не зарегистрирован
+    document.addEventListener('deviceready', function () {
+      if (localStorage.getItem('user') == undefined) {
+        var connection = new Strophe.Connection("http://toobusytosearch.net:5280/");
+        var registerCallback = function (status) {
+          // Пока логин и пароль равны UUID устройства
+          var username = device.uuid;
+          var password = device.uuid;
+
+          if (status === Strophe.Status.REGISTER) {
+            connection.register.fields.username = username;
+            connection.register.fields.password = password;
+            connection.register.submit();
+          } else if (status === Strophe.Status.REGISTERED || status === Strophe.Status.CONFLICT) {
+            // Если пользователь был зарегистрирован только что (REGISTERED) или ранее (CONFLICT)
+            // записываем в localStorage user.username и user.password
+            var user = {
+              username: username,
+              password: password
+            };
+            localStorage.setItem('user', JSON.stringify(user));
+            connection.disconnect();
+          } else if (status === Strophe.Status.NOTACCEPTABLE || status === Strophe.Status.REGIFAIL) {
+            // Если сервер не поддерñивает регистрацию или произошла ошибка
+            // Сообщаем об ошибке, разъединяемся
+            alert("Не удалось зарегистрировать нового пользователя");
+            connection.disconnect();
+          }
+        };
+        connection.register.connect("toobusytosearch.net", registerCallback, 60, 1);
+      }
+    }, false);
+
+
     // Количество денег у пользователя
     $scope.userBalance = 1000;
 
