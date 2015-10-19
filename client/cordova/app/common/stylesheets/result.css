@@ -1,9 +1,9 @@
 .result {
-  padding-bottom: 50px;
+  padding-bottom: 60px;
 }
 
 .result-chat {
-  padding-bottom: 50px;
+  padding-bottom: 60px;
 }
 
 .result .baloon {
@@ -203,7 +203,7 @@
 
 .message {
   position: fixed;
-  bottom: -54px;
+  bottom: 0px;
   left: 0;
   width: 100%;
   height: 54px;

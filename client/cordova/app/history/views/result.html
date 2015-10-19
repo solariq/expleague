@@ -1,12 +1,51 @@
+<style>
+body {
+  background-color: #efefef;
+}
+</style>
+
 <div ng-controller="ResultController">
   <super-navbar>
     <super-navbar-title>Результаты поиска</super-navbar-title>
     <super-navbar-button side="left" ng-click="backToHistory()">‹ История</super-navbar-button>
   </super-navbar>
   <div class="debug">
+    <div><b>Запрос</b></div>
     <div>text: {{order.text}}</div>
     <div>near: {{order.near}}</div>
     <div>expert: {{order.expert}}</div>
     <div>urgency: {{order.urgency}}</div>
+    <div><b>Сервер</b></div>
+    <div>bosh: {{server.bosh}}</div>
+    <div>host: {{server.host}}</div>
+    <div>muc: {{server.muc}}</div>
+    <div><b>Пользователь</b></div>
+    <div>username: {{user.username}}</div>
+    <div>password: {{user.password}}</div>
+    <div><b>Соединение</b></div>
+    <div>status: {{connection.status}}</div>
+    <div>jid: {{connection.jid}}</div>
+    <div><b>Комната</b></div>
+    <div>status: {{chatroom.status}}</div>
+    <div>name: {{chatroom.name}}</div>
+    <div>topic: {{chatroom.topic}}</div>
+  </div>
+
+  <div class="padding result result-chat">
+    <div ng-repeat="message in messages" class="baloon baloon-{{message.type}}">
+      <div class="baloon-title">{{message.title}}</div>
+      <div class="baloon-text">
+        <div>{{message.text}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="message">
+    <div class="item item-input-inset">
+      <label class="item-input-wrapper">
+        <input type="text" class="input-message" name="message" value="" placeholder="Введите сообщение">
+      </label>
+      <button class="button button-small button-positive icon super-paper-airplane"></button>
+    </div>
   </div>
 </div>
