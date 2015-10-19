@@ -54,12 +54,22 @@ angular
     };
 
     function onGroupchatMessage(message) {
-      var text = $(message).children('body').text();
-      if (text != 'Room is now unlocked' && text != '') {
+      var messageText = $(message).children('body').text();
+      var messageFrom = $(message).attr('from');
+      if (messageText != 'Room is now unlocked' && messageText != '') {
+        var messageType, messageTitle;
+        // Если пришло собственное сообщение от клиента
+        if (messageFrom == $scope.chatroom.name + '/' + $scope.user.username) {
+          messageType = 'client';
+          messageTitle = 'Клиент';
+        } else {
+          messageType = 'server';
+          messageTitle = 'Сервер';
+        }
         var message = {
-          type: 'server',
-          title: 'Сервер',
-          text: text,
+          type: messageType,
+          title: messageTitle,
+          text: messageText
         };
         $scope.$apply(function() {
           $scope.messages.push(message);
@@ -117,4 +127,17 @@ angular
         changeConnectionStatus('unknown');
       }
     });
+
+    // Отправка сообщения с клиента
+    $scope.sendMessage = function() {
+      var text = $('.input-message').val();
+      connection.send(
+        $msg({
+          to: $scope.chatroom.name,
+          type: 'groupchat'
+        }).c('body').t(text)
+      );
+      $('.input-message').val('');
+      $('.input-message').focus();
+    };
   });
