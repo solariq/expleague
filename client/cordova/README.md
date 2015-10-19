@@ -6,7 +6,7 @@
 
 Откроется страница с QR-кодом
 
-Этот код нужно отсканировать в приложение AppGyver Scanner (телефон и компьютер должны быть в одной wifi-сети):
+Этот код нужно отсканировать в приложение AppGyver Scanner:
 * Для iPhone - https://itunes.apple.com/fi/app/appgyver-scanner/id575076515
 * Для Android - https://play.google.com/store/apps/details?id=com.appgyver.freshandroid
 
