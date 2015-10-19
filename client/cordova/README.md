@@ -23,7 +23,7 @@ https://academy.appgyver.com/installwizard/steps#/home
 
 Перейти в директорию `tbts/client/cordova`
 
-Выполнить комманду `steroids update` (нужно только один раз, чтобы в папке появились необходимые компоненты)
+Выполнить комманду `steroids update`
 
 Выполнить комманду `steroids connect`
 
