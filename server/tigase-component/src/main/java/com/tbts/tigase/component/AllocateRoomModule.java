@@ -26,8 +26,10 @@ public class AllocateRoomModule extends GroupchatMessageModule {
   private static final Logger log = Logger.getLogger(AllocateRoomModule.class.getName());
   private static final String SUBJECT = "subject";
   private static final Criteria CRIT = ElementCriteria.name("message").add(ElementCriteria.name("subject"));
+  @SuppressWarnings("unused")
+  private static StatusTracker tracker = new StatusTracker(System.out);
+  @SuppressWarnings("FieldCanBeLocal")
   private final Action<Expert> expertCommunication;
-  private final static StatusTracker tracker = new StatusTracker(System.out);
 
   public AllocateRoomModule() {
     expertCommunication = new Action<Expert>() {

@@ -61,8 +61,12 @@ public class ExpertImpl extends WeakListenerHolderImpl<Expert> implements Expert
   };
 
   private void join(Room room) {
-    if (active != null)
+    if (active == room)
+      return;
+    if (active != null) {
       active.removeListener(activeRoomListener);
+      active.exit(this);
+    }
     if (room != null)
       room.addListener(activeRoomListener);
     active = room;
@@ -70,7 +74,7 @@ public class ExpertImpl extends WeakListenerHolderImpl<Expert> implements Expert
 
   @Override
   public void free() {
-    if (state == State.STEADY)
+    if (state == State.STEADY || state == State.INVITE)
       state(State.READY);
     join(null);
   }
@@ -102,12 +106,12 @@ public class ExpertImpl extends WeakListenerHolderImpl<Expert> implements Expert
   }
 
   public void answer(Answer answer) {
-    if (state != State.GO)
+    if (state != State.GO || this.active == null)
       throw new IllegalStateException();
-    state(State.READY);
     final Room room = this.active;
     join(null);
     room.answer(answer);
+    state(State.READY);
   }
 
   protected void state(State state) {

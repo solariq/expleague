@@ -1,5 +1,6 @@
 package model.scenario.fake;
 
+import com.tbts.model.Room;
 import com.tbts.model.impl.ClientImpl;
 import tigase.util.TigaseStringprepException;
 import tigase.xmpp.BareJID;
@@ -22,10 +23,12 @@ public class ObedientClient extends ClientImpl {
   }
 
   @Override
-  public void feedback() {
-    super.feedback();
-    if (chatLength-- > 0)
-      state(State.CHAT);
+  public void feedback(Room room) {
+    super.feedback(room);
+    if (chatLength-- > 0) {
+      formulating();
+      query();
+    }
     else
       state(State.ONLINE);
   }
