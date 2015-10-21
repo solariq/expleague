@@ -1,7 +1,6 @@
 package com.tbts.model;
 
 import com.spbsu.commons.func.WeakListenerHolder;
-import tigase.xmpp.BareJID;
 
 /**
  * User: solar
@@ -9,7 +8,7 @@ import tigase.xmpp.BareJID;
  * Time: 18:46
  */
 public interface Client extends WeakListenerHolder<Client> {
-  BareJID id();
+  String id();
 
   Room active();
   void activate(Room room);

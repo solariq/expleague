@@ -2,9 +2,8 @@ package com.tbts.model.clients;
 
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
+import com.tbts.com.tbts.db.DAO;
 import com.tbts.model.Client;
-import com.tbts.model.impl.ClientImpl;
-import tigase.xmpp.BareJID;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,14 +22,14 @@ public class ClientManager extends WeakListenerHolderImpl<Client> implements Act
     return CLIENT_MANAGER;
   }
 
-  private Map<BareJID, Client> clients = new HashMap<>();
+  private Map<String, Client> clients = new HashMap<>();
 
-  public synchronized Client byJID(BareJID jid) {
+  public synchronized Client byJID(String jid) {
     Client client = clients.get(jid);
     if (client == null) {
-      if (jid.getDomain().startsWith("muc.") || jid.getLocalpart() == null)
+      if (jid.startsWith("muc.") || jid.contains("@muc.") || !jid.contains("@"))
         return null;
-      final Client newClient = new ClientImpl(jid);
+      final Client newClient = DAO.instance().createClient(jid);
       clients.put(jid, newClient);
       newClient.addListener(this);
       invoke(newClient);
@@ -43,9 +42,9 @@ public class ClientManager extends WeakListenerHolderImpl<Client> implements Act
     super.invoke(c);
   }
 
-  public synchronized List<BareJID> online() {
-    final List<BareJID> result = new ArrayList<>(clients.size());
-    for (final BareJID jid : clients.keySet()) {
+  public synchronized List<String> online() {
+    final List<String> result = new ArrayList<>(clients.size());
+    for (final String jid : clients.keySet()) {
       if (clients.get(jid).state() != Client.State.ONLINE)
         result.add(jid);
     }

@@ -12,7 +12,6 @@ import tigase.server.Message;
 import tigase.server.Packet;
 import tigase.util.TigaseStringprepException;
 import tigase.xml.Element;
-import tigase.xmpp.BareJID;
 import tigase.xmpp.JID;
 
 import java.util.List;
@@ -67,8 +66,8 @@ public class AllocateRoomModule extends GroupchatMessageModule {
               show.setCData(expertsCount + " experts online");
               presence.addChild(show);
 
-              final List<BareJID> online = ClientManager.instance().online();
-              for (final BareJID bareJID : online) {
+              final List<String> online = ClientManager.instance().online();
+              for (final String bareJID : online) {
                 try {
                   write(Packet.packetInstance(presence, JID.jidInstance(context.getServiceName().getDomain()), JID.jidInstance(bareJID)));
                 } catch (TigaseStringprepException e) {
@@ -86,9 +85,9 @@ public class AllocateRoomModule extends GroupchatMessageModule {
   @Override
   public void process(Packet packet) throws MUCException {
     if (CRIT.match(packet.getElement())) {
-      final Client client = ClientManager.instance().byJID(packet.getStanzaFrom().getBareJID());
+      final Client client = ClientManager.instance().byJID(packet.getStanzaFrom().getBareJID().toString());
       final String subject = packet.getElement().getChild(SUBJECT).childrenToString();
-      Room room = Reception.instance().room(client, packet.getStanzaTo().getBareJID());
+      Room room = Reception.instance().room(client, packet.getStanzaTo().getBareJID().toString());
       client.activate(room);
       room.text(subject);
       client.query();
@@ -98,6 +97,10 @@ public class AllocateRoomModule extends GroupchatMessageModule {
       if (expert != null && expert.state() == Expert.State.GO) {
         expert.answer(new Answer());
       }
+    }
+
+    if ("message".equals(packet.getElement().getName())) {
+      Reception.instance().archive().log(packet.getElement());
     }
     super.process(packet);
   }

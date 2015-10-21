@@ -63,10 +63,10 @@ public class TrackPresenceComponent extends SessionManager {
   }
 
   private void updateClientState(JID from, JID to, Status status) {
-    final Client client = ClientManager.instance().byJID(from.getBareJID());
+    final Client client = ClientManager.instance().byJID(from.getBareJID().toString());
     if (client == null)
       return;
-    final Room room = to != null ? Reception.instance().room(client, to.getBareJID()) : null;
+    final Room room = to != null ? Reception.instance().room(client, to.getBareJID().toString()) : null;
     if (room != null && room.state() == Room.State.INIT) {
       final Element unlock = new Element(Iq.ELEM_NAME);
       final Element query = new Element("query");
@@ -107,10 +107,10 @@ public class TrackPresenceComponent extends SessionManager {
   private Expert updateExpertState(JID from, JID to, Status status) {
     Expert expert = ExpertManager.instance().get(from.getBareJID());
     if ("expert".equals(from.getResource()) && !from.getDomain().startsWith("muc.") && expert == null)
-      expert = ExpertManager.instance().register(from.getBareJID());
+      expert = ExpertManager.instance().register(from.getBareJID().toString());
     if (expert == null)
       return null;
-    final Room room = to != null ? Reception.instance().room(to.getBareJID()) : null;
+    final Room room = to != null ? Reception.instance().room(to.getBareJID().toString()) : null;
     if (status == Status.UNAVAILABLE && room == null)
       expert.online(false);
     switch (expert.state()) {

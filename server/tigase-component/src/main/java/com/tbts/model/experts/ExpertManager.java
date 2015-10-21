@@ -27,7 +27,7 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     return EXPERT_MANAGER;
   }
 
-  private final Map<BareJID, Expert> experts = new HashMap<>();
+  private final Map<String, Expert> experts = new HashMap<>();
   @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 
   public synchronized Expert nextAvailable(Room room) {
@@ -43,7 +43,7 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
       }
     }
   }
-  public synchronized Expert register(BareJID expert) {
+  public synchronized Expert register(String expert) {
     return register(new ExpertImpl(expert));
   }
 

@@ -11,7 +11,6 @@ import model.scenario.fake.ObedientExpert;
 import org.junit.Assert;
 import org.junit.Test;
 import tigase.util.TigaseStringprepException;
-import tigase.xmpp.BareJID;
 
 /**
  * User: solar
@@ -35,7 +34,7 @@ public class BasicScenarioTest {
     expert.online(true);
 
     client.presence(true);
-    final Room room = Reception.instance().room(client, BareJID.bareJIDInstance("room@muc.localhost"));
+    final Room room = Reception.instance().room(client, "room@muc.localhost");
     room.open();
     client.activate(room);
     client.formulating();
@@ -73,7 +72,7 @@ public class BasicScenarioTest {
     Reception.instance().addListener(tracker.roomListener());
 
     client.presence(true);
-    final Room room = Reception.instance().room(client, BareJID.bareJIDInstance("room@muc.localhost"));
+    final Room room = Reception.instance().room(client, "room@muc.localhost");
     room.open();
     client.activate(room);
     client.formulating();
@@ -118,7 +117,7 @@ public class BasicScenarioTest {
     expert.online(true);
 
     client.presence(true);
-    final Room room = Reception.instance().room(client, BareJID.bareJIDInstance("room@muc.localhost"));
+    final Room room = Reception.instance().room(client, "room@muc.localhost");
     client.activate(room);
     room.open();
     client.formulating();
@@ -170,7 +169,7 @@ public class BasicScenarioTest {
     expert.online(true);
 
     client.presence(true);
-    final Room room = Reception.instance().room(client, BareJID.bareJIDInstance("room@muc.localhost"));
+    final Room room = Reception.instance().room(client, "room@muc.localhost");
     client.activate(room);
     room.open();
     client.formulating();

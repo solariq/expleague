@@ -5,7 +5,6 @@ import com.tbts.model.Answer;
 import com.tbts.model.Room;
 import com.tbts.model.impl.ExpertImpl;
 import tigase.util.TigaseStringprepException;
-import tigase.xmpp.BareJID;
 
 /**
  * User: solar
@@ -25,7 +24,7 @@ public class ObedientExpert extends ExpertImpl {
 
 
   public ObedientExpert() throws TigaseStringprepException {
-    super(BareJID.bareJIDInstance("expert@localhost"));
+    super("expert@localhost");
   }
 
   @Override
