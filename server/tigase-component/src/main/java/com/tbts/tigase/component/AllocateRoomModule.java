@@ -12,8 +12,10 @@ import tigase.server.Message;
 import tigase.server.Packet;
 import tigase.util.TigaseStringprepException;
 import tigase.xml.Element;
+import tigase.xmpp.BareJID;
 import tigase.xmpp.JID;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,27 +32,51 @@ public class AllocateRoomModule extends GroupchatMessageModule {
   private static StatusTracker tracker = new StatusTracker(System.out);
   @SuppressWarnings("FieldCanBeLocal")
   private final Action<Expert> expertCommunication;
-
+  private int expertsCount = 0;
   public AllocateRoomModule() {
     expertCommunication = new Action<Expert>() {
       @Override
       public void invoke(Expert expert) {
-        if (expert.state() == Expert.State.INVITE) {
-          try {
-            Room active = expert.active();
-            final Element invite = new Element(Message.ELEM_NAME);
-            final Element x = new Element("x");
-            x.setXMLNS("http://jabber.org/protocol/muc#user");
-            x.addChild(new Element("invite", new String[]{"from"}, new String[]{active.id()}));
-            invite.addChild(x);
-            final String subj = active.query().text();
-            x.addChild(new Element("subj", subj));
-            write(Packet.packetInstance(invite, JID.jidInstance(active.id()), JID.jidInstance(expert.id(), "expert")));
-          } catch (TigaseStringprepException e) {
-            log.log(Level.WARNING, "Error constructing invte", e);
-          }
-        } else if (expert.state() == Expert.State.CHECK) { // skip check phase
-          expert.steady();
+        switch (expert.state()) {
+          case INVITE:
+            try {
+              Room active = expert.active();
+              final Element invite = new Element(Message.ELEM_NAME);
+              final Element x = new Element("x");
+              x.setXMLNS("http://jabber.org/protocol/muc#user");
+              x.addChild(new Element("invite", new String[]{"from"}, new String[]{active.id()}));
+              invite.addChild(x);
+              final String subj = active.query().text();
+              x.addChild(new Element("subj", subj));
+              write(Packet.packetInstance(invite, JID.jidInstance(active.id()), JID.jidInstance(expert.id(), "expert")));
+            } catch (TigaseStringprepException e) {
+              log.log(Level.WARNING, "Error constructing invte", e);
+            }
+            break;
+          case CHECK:
+            expert.steady();
+            break;
+          case AWAY:
+          case READY:
+            int expertsCount = ExpertManager.instance().count();
+            if (expertsCount != AllocateRoomModule.this.expertsCount) {
+              AllocateRoomModule.this.expertsCount = expertsCount;
+              final Element presence = new Element("message");
+              presence.setXMLNS("jabber:client");
+              final Element show = new Element("body");
+              show.setCData(expertsCount + " experts online");
+              presence.addChild(show);
+
+              final List<BareJID> online = ClientManager.instance().online();
+              for (final BareJID bareJID : online) {
+                try {
+                  write(Packet.packetInstance(presence, JID.jidInstance(context.getServiceName().getDomain()), JID.jidInstance(bareJID)));
+                } catch (TigaseStringprepException e) {
+                  throw new RuntimeException(e);
+                }
+              }
+            }
+            break;
         }
       }
     };

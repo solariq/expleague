@@ -29,7 +29,7 @@ public class ExpertBot extends Bot {
   }
 
 
-  public static void main(final String[] args) throws JaxmppException {
+  public static void main(final String[] args) throws JaxmppException, InterruptedException {
     final StateLatch latch = new StateLatch();
     final ExpertBot expert = new ExpertBot(BareJID.bareJIDInstance("expert-bot-1", "localhost"), "poassord") {
       @Override
@@ -44,6 +44,8 @@ public class ExpertBot extends Bot {
     expert.onClose(latch::advance);
     latch.state(2, 1);
     expert.answer("Otvali!");
+    Thread.sleep(200);
+    expert.offline();
     expert.stop();
   }
 

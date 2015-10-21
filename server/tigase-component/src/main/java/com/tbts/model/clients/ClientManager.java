@@ -6,7 +6,9 @@ import com.tbts.model.Client;
 import com.tbts.model.impl.ClientImpl;
 import tigase.xmpp.BareJID;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,10 +25,10 @@ public class ClientManager extends WeakListenerHolderImpl<Client> implements Act
 
   private Map<BareJID, Client> clients = new HashMap<>();
 
-  public Client byJID(BareJID jid) {
+  public synchronized Client byJID(BareJID jid) {
     Client client = clients.get(jid);
     if (client == null) {
-      if (jid.getDomain().startsWith("muc."))
+      if (jid.getDomain().startsWith("muc.") || jid.getLocalpart() == null)
         return null;
       final Client newClient = new ClientImpl(jid);
       clients.put(jid, newClient);
@@ -39,5 +41,14 @@ public class ClientManager extends WeakListenerHolderImpl<Client> implements Act
 
   public void invoke(Client c) {
     super.invoke(c);
+  }
+
+  public synchronized List<BareJID> online() {
+    final List<BareJID> result = new ArrayList<>(clients.size());
+    for (final BareJID jid : clients.keySet()) {
+      if (clients.get(jid).state() != Client.State.ONLINE)
+        result.add(jid);
+    }
+    return result;
   }
 }

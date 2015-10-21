@@ -72,6 +72,7 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
   public synchronized void invoke(Expert e) {
     if (e.state() == Expert.State.READY)
       notifyAll();
+
     super.invoke(e);
   }
 
