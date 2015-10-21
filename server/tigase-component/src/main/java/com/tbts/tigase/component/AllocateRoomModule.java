@@ -93,7 +93,7 @@ public class AllocateRoomModule extends GroupchatMessageModule {
       client.query();
     }
     else {
-      final Expert expert = ExpertManager.instance().get(packet.getStanzaFrom().getBareJID());
+      final Expert expert = ExpertManager.instance().get(packet.getStanzaFrom().getBareJID().toString());
       if (expert != null && expert.state() == Expert.State.GO) {
         expert.answer(new Answer());
       }

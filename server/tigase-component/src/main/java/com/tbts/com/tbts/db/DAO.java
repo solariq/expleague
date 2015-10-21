@@ -4,6 +4,10 @@ import com.tbts.model.impl.ClientImpl;
 import com.tbts.model.impl.ExpertImpl;
 import com.tbts.model.impl.RoomImpl;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * User: solar
  * Date: 21.10.15
@@ -17,15 +21,34 @@ public class DAO {
   }
 
   public com.tbts.model.Client createClient(String id) {
-    return new Client(id);
+    final Client client = new Client(id);
+    clientMap.put(id, client);
+    return client;
   }
 
   public com.tbts.model.Expert createExpert(String id) {
-    return new Expert(id);
+    final Expert expert = new Expert(id);
+    expertMap.put(id, expert);
+    return expert;
   }
 
   public com.tbts.model.Room createRoom(String id, com.tbts.model.Client owner) {
     return new Room(id, owner);
+  }
+
+  protected Map<String, com.tbts.model.Expert> expertMap = new ConcurrentHashMap<>();
+  public Map<String, com.tbts.model.Expert> experts() {
+    return Collections.unmodifiableMap(expertMap);
+  }
+
+  protected Map<String, com.tbts.model.Client> clientMap = new ConcurrentHashMap<>();
+  public Map<String, com.tbts.model.Client> clients() {
+    return Collections.unmodifiableMap(clientMap);
+  }
+
+  public Map<String, com.tbts.model.Room> roomMap = new ConcurrentHashMap<>();
+  public Map<String, com.tbts.model.Room> rooms() {
+    return roomMap;
   }
 
   private static class Client extends ClientImpl {

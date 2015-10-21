@@ -38,7 +38,7 @@ public class TrackPresenceComponent extends SessionManager {
   protected void closeSession(XMPPResourceConnection conn, boolean closeOnly) {
     try {
       final BareJID bareJID = conn.getBareJID();
-      final Expert expert = ExpertManager.instance().get(bareJID);
+      final Expert expert = ExpertManager.instance().get(bareJID.toString());
       if (expert != null)
         expert.online(false);
     }
@@ -105,7 +105,7 @@ public class TrackPresenceComponent extends SessionManager {
   }
 
   private Expert updateExpertState(JID from, JID to, Status status) {
-    Expert expert = ExpertManager.instance().get(from.getBareJID());
+    Expert expert = ExpertManager.instance().get(from.getBareJID().toString());
     if ("expert".equals(from.getResource()) && !from.getDomain().startsWith("muc.") && expert == null)
       expert = ExpertManager.instance().register(from.getBareJID().toString());
     if (expert == null)

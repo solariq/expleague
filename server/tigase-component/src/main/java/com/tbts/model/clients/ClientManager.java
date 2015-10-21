@@ -6,7 +6,6 @@ import com.tbts.com.tbts.db.DAO;
 import com.tbts.model.Client;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,15 +21,15 @@ public class ClientManager extends WeakListenerHolderImpl<Client> implements Act
     return CLIENT_MANAGER;
   }
 
-  private Map<String, Client> clients = new HashMap<>();
-
+  public Map<String, Client> clients() {
+    return DAO.instance().clients();
+  }
   public synchronized Client byJID(String jid) {
-    Client client = clients.get(jid);
+    Client client = clients().get(jid);
     if (client == null) {
-      if (jid.startsWith("muc.") || jid.contains("@muc.") || !jid.contains("@"))
+      if (jid.contains("@muc.") || !jid.contains("@"))
         return null;
       final Client newClient = DAO.instance().createClient(jid);
-      clients.put(jid, newClient);
       newClient.addListener(this);
       invoke(newClient);
       client = newClient;
@@ -43,6 +42,7 @@ public class ClientManager extends WeakListenerHolderImpl<Client> implements Act
   }
 
   public synchronized List<String> online() {
+    final Map<String, Client> clients = clients();
     final List<String> result = new ArrayList<>(clients.size());
     for (final String jid : clients.keySet()) {
       if (clients.get(jid).state() != Client.State.ONLINE)

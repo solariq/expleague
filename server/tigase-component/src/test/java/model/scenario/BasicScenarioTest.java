@@ -1,16 +1,20 @@
 package model.scenario;
 
 import com.spbsu.commons.func.Action;
+import com.tbts.com.tbts.db.DAO;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
 import com.tbts.model.Reception;
 import com.tbts.model.Room;
+import com.tbts.model.clients.ClientManager;
 import com.tbts.model.experts.ExpertManager;
 import model.scenario.fake.ObedientClient;
 import model.scenario.fake.ObedientExpert;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.*;
 import tigase.util.TigaseStringprepException;
+
+import java.text.MessageFormat;
+import java.text.ParseException;
 
 /**
  * User: solar
@@ -19,20 +23,36 @@ import tigase.util.TigaseStringprepException;
  */
 public class BasicScenarioTest {
 
+  private static DAO initialDAO;
+  @BeforeClass
+  public static void setUp() {
+    initialDAO = DAO.instance();
+    DAO.instance = new MyDAO();
+  }
+
+  @AfterClass
+  public static void tearDown() {
+    DAO.instance = initialDAO;
+  }
+
+  @After
+  public void clearManagers() {
+    ((MyDAO)DAO.instance()).clear();
+  }
+
   @Test
   public void testShortSuccess() throws TigaseStringprepException, InterruptedException {
-    Reception.instance().clear();
     final StringBuffer track = new StringBuffer();
     final StatusTracker tracker = new StatusTracker(track);
-    final ObedientExpert expert = new ObedientExpert();
-    expert.addListener(tracker.expertListener());
-    final ObedientClient client = new ObedientClient();
+    final Client client = ClientManager.instance().byJID("client@localhost");
     client.addListener(tracker.clientListener());
     Reception.instance().addListener(tracker.roomListener());
 
-    ExpertManager.instance().register(expert);
-    expert.online(true);
+    final Expert expert = ExpertManager.instance().register("expert@localhost");
+    expert.addListener(tracker.expertListener());
 
+
+    expert.online(true);
     client.presence(true);
     final Room room = Reception.instance().room(client, "room@muc.localhost");
     room.open();
@@ -62,14 +82,14 @@ public class BasicScenarioTest {
 
   @Test
   public void testExpertAfterClient() throws TigaseStringprepException, InterruptedException {
-    Reception.instance().clear();
     final StringBuffer track = new StringBuffer();
     final StatusTracker tracker = new StatusTracker(track);
-    final ObedientExpert expert = new ObedientExpert();
-    expert.addListener(tracker.expertListener());
-    final ObedientClient client = new ObedientClient();
+    final Client client = ClientManager.instance().byJID("client@localhost");
     client.addListener(tracker.clientListener());
     Reception.instance().addListener(tracker.roomListener());
+
+    final Expert expert = ExpertManager.instance().register("expert@localhost");
+    expert.addListener(tracker.expertListener());
 
     client.presence(true);
     final Room room = Reception.instance().room(client, "room@muc.localhost");
@@ -78,7 +98,6 @@ public class BasicScenarioTest {
     client.formulating();
     client.query();
 
-    ExpertManager.instance().register(expert);
     expert.online(true);
 
     Thread.sleep(200);
@@ -104,16 +123,15 @@ public class BasicScenarioTest {
 
   @Test
   public void testChatSuccess() throws TigaseStringprepException, InterruptedException {
-    Reception.instance().clear();
     final StringBuffer track = new StringBuffer();
     final StatusTracker tracker = new StatusTracker(track);
-    final ObedientExpert expert = new ObedientExpert();
-    expert.addListener(tracker.expertListener());
-    final ObedientClient client = new ObedientClient(1);
+    final Client client = ClientManager.instance().byJID("client-chat-1@localhost");
     client.addListener(tracker.clientListener());
     Reception.instance().addListener(tracker.roomListener());
 
-    ExpertManager.instance().register(expert);
+    final Expert expert = ExpertManager.instance().register("expert@localhost");
+    expert.addListener(tracker.expertListener());
+
     expert.online(true);
 
     client.presence(true);
@@ -156,16 +174,15 @@ public class BasicScenarioTest {
 
   @Test
   public void testChat2Success() throws TigaseStringprepException, InterruptedException {
-    Reception.instance().clear();
     final StringBuffer track = new StringBuffer();
     final StatusTracker tracker = new StatusTracker(track);
-    final ObedientExpert expert = new ObedientExpert();
-    expert.addListener(tracker.expertListener());
-    final ObedientClient client = new ObedientClient(2);
+    final Client client = ClientManager.instance().byJID("client-chat-2@localhost");
     client.addListener(tracker.clientListener());
     Reception.instance().addListener(tracker.roomListener());
 
-    ExpertManager.instance().register(expert);
+    final Expert expert = ExpertManager.instance().register("expert@localhost");
+    expert.addListener(tracker.expertListener());
+
     expert.online(true);
 
     client.presence(true);
@@ -251,6 +268,37 @@ public class BasicScenarioTest {
 
     public Action<Room> roomListener() {
       return roomListener;
+    }
+  }
+
+  private static class MyDAO extends DAO {
+    @Override
+    public Client createClient(String id) {
+      if (id.contains("chat")) {
+        try {
+          Object[] fields = new MessageFormat("{1}-chat-{0,number,integer}@{2}").parse(id);
+          final long count = (Long) fields[0];
+          return new ObedientClient(fields[1] + "@" + fields[2], (int)count);
+        } catch (ParseException e) {
+          throw new RuntimeException(e);
+        }
+      }
+      final ObedientClient client = new ObedientClient(id);
+      clientMap.put(id, client);
+      return client;
+    }
+
+    @Override
+    public Expert createExpert(String id) {
+      final ObedientExpert expert = new ObedientExpert(id);
+      expertMap.put(id, expert);
+      return expert;
+    }
+
+    public void clear() {
+      clientMap.clear();
+      expertMap.clear();
+      roomMap.clear();
     }
   }
 }
