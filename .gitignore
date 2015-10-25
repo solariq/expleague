@@ -11,3 +11,5 @@
 hs_err_pid*
 
 output/
+server/logs/*
+server/etc/config-dump.properties

@@ -5,7 +5,6 @@ import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.tbts.model.Answer;
 import com.tbts.model.Expert;
 import com.tbts.model.Room;
-import tigase.xmpp.BareJID;
 
 /**
  * User: solar
@@ -13,16 +12,16 @@ import tigase.xmpp.BareJID;
  * Time: 19:13
  */
 public class ExpertImpl extends WeakListenerHolderImpl<Expert> implements Expert {
-  private final BareJID id;
+  private final String id;
   private State state;
 
-  public ExpertImpl(BareJID id) {
+  public ExpertImpl(String id) {
     this.id = id;
     state = State.AWAY;
   }
 
   @Override
-  public BareJID id() {
+  public String id() {
     return id;
   }
 

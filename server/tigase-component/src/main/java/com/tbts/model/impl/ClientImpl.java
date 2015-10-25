@@ -6,9 +6,10 @@ import com.tbts.model.Answer;
 import com.tbts.model.Client;
 import com.tbts.model.Room;
 import com.tbts.model.experts.ExpertManager;
-import tigase.xmpp.BareJID;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * User: solar
@@ -16,7 +17,7 @@ import java.util.*;
  * Time: 19:31
  */
 public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client {
-  private final BareJID id;
+  private final String id;
   private final Map<Room, State> states = new HashMap<>();
   boolean online = false;
   private Action<Room> completeRoomListener = new Action<Room>() {
@@ -29,7 +30,7 @@ public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client
     }
   };
 
-  public ClientImpl(BareJID id) {
+  public ClientImpl(String id) {
     this.id = id;
   }
 
@@ -39,7 +40,7 @@ public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client
   }
 
   @Override
-  public BareJID id() {
+  public String id() {
     return id;
   }
 

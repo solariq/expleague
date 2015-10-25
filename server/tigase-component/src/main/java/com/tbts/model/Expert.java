@@ -9,7 +9,7 @@ import tigase.xmpp.BareJID;
  * Time: 18:49
  */
 public interface Expert extends WeakListenerHolder<Expert> {
-  BareJID id();
+  String id();
 
   void online(boolean val);
 

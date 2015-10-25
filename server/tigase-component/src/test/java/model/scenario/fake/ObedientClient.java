@@ -2,8 +2,6 @@ package model.scenario.fake;
 
 import com.tbts.model.Room;
 import com.tbts.model.impl.ClientImpl;
-import tigase.util.TigaseStringprepException;
-import tigase.xmpp.BareJID;
 
 /**
  * User: solar
@@ -13,13 +11,13 @@ import tigase.xmpp.BareJID;
 public class ObedientClient extends ClientImpl {
   private int chatLength;
 
-  public ObedientClient(int chatLength) throws TigaseStringprepException {
-    super(BareJID.bareJIDInstance("client@localhost"));
+  public ObedientClient(String id, int chatLength) {
+    super(id);
     this.chatLength = chatLength;
   }
 
-  public ObedientClient() throws TigaseStringprepException {
-    this(0);
+  public ObedientClient(String id){
+    this(id, 0);
   }
 
   @Override

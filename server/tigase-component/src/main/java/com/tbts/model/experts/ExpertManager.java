@@ -3,13 +3,11 @@ package com.tbts.model.experts;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.spbsu.commons.util.Holder;
+import com.tbts.com.tbts.db.DAO;
 import com.tbts.model.Expert;
 import com.tbts.model.Room;
-import com.tbts.model.impl.ExpertImpl;
-import tigase.xmpp.BareJID;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -27,12 +25,13 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     return EXPERT_MANAGER;
   }
 
-  private final Map<BareJID, Expert> experts = new HashMap<>();
-  @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+  private Map<String, Expert> experts() {
+    return DAO.instance().experts();
+  }
 
   public synchronized Expert nextAvailable(Room room) {
     while (true) {
-      for (final Expert expert : experts.values()) {
+      for (final Expert expert : experts().values()) {
         if (expert.state() == Expert.State.READY && room.relevant(expert))
           return expert;
       }
@@ -43,25 +42,24 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
       }
     }
   }
-  public synchronized Expert register(BareJID expert) {
-    return register(new ExpertImpl(expert));
-  }
 
-  public synchronized Expert register(final Expert expert) {
-    experts.put(expert.id(), expert);
+  public synchronized Expert register(String id) {
+    if (!id.contains("@") || id.contains("@muc."))
+      return null;
+    final Expert expert = DAO.instance().createExpert(id);
     expert.addListener(this);
     invoke(expert);
     this.notifyAll();
     return expert;
   }
 
-  public synchronized Expert get(BareJID jid) {
-    return experts.get(jid);
+  public synchronized Expert get(String jid) {
+    return experts().get(jid);
   }
 
   public synchronized int count() {
     int result = 0;
-    for (Expert expert : experts.values()) {
+    for (Expert expert : experts().values()) {
       if (expert.state() != Expert.State.AWAY)
         result++;
     }
@@ -72,10 +70,10 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
   public synchronized void invoke(Expert e) {
     if (e.state() == Expert.State.READY)
       notifyAll();
+
     super.invoke(e);
   }
 
-  final Map<Room, Action<Expert>> challenges = new ConcurrentHashMap<>();
   public synchronized void challenge(final Room room) {
     final Thread thread = new Thread(() -> challengeImpl(room));
     thread.setDaemon(true);
@@ -112,7 +110,6 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     };
 
     log.fine("Starting challenge for room: " + room.id());
-    challenges.put(room, challenge);
 
     //noinspection SynchronizationOnLocalVariableOrMethodParameter
     synchronized (winner) {
@@ -154,6 +151,5 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     }
     log.fine("Challenge for room " + room.id() + " finished. Winner: " + winner.getValue().id());
     room.enter(winner.getValue());
-    challenges.remove(room);
   }
 }

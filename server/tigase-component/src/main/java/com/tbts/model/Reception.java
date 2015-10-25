@@ -2,11 +2,8 @@ package com.tbts.model;
 
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
-import com.tbts.model.impl.RoomImpl;
-import tigase.xmpp.BareJID;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.tbts.com.tbts.db.Archive;
+import com.tbts.com.tbts.db.DAO;
 
 /**
  * User: solar
@@ -22,22 +19,25 @@ public class Reception extends WeakListenerHolderImpl<Room> implements Action<Ro
     return keeper;
   }
 
-  private final Map<BareJID, Room> rooms = new HashMap<>();
+  private final Archive archive = new Archive();
 
-  public Room create(Client client, BareJID roomId) {
-    if (!roomId.getDomain().startsWith("muc."))
+  public Archive archive() {
+    return archive;
+  }
+
+  public Room create(Client client, String roomId) {
+    if (!roomId.contains("@muc."))
       return null;
-    final Room result = new RoomImpl(roomId.toString(), client);
+    final Room result = DAO.instance().createRoom(roomId, client);
     result.addListener(this);
-    rooms.put(roomId, result);
     invoke(result);
     return result;
   }
 
-  public Room room(Client client, BareJID to) {
-    Room room = rooms.get(to);
+  public Room room(Client client, String id) {
+    Room room = room(id);
     if (room == null)
-      room = create(client, to);
+      room = create(client, id);
     return room;
   }
 
@@ -46,11 +46,7 @@ public class Reception extends WeakListenerHolderImpl<Room> implements Action<Ro
     super.invoke(e);
   }
 
-  public void clear() {
-    rooms.clear();
-  }
-
-  public Room room(BareJID jid) {
-    return rooms.get(jid);
+  public Room room(String jid) {
+    return DAO.instance().rooms().get(jid);
   }
 }
