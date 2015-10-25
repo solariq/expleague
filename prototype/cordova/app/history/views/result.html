@@ -8,6 +8,15 @@
   body {
     background-color: #efefef;
   }
+
+  .expert-vote {
+    text-align: center;
+    padding: 25px 0;
+  }
+  .expert-vote i {
+    font-size: 24px;
+    margin: 0 9px;
+  }
   </style>
 
   <div class="padding result result-{{currentHistoryItem.answerMode}}">
@@ -27,7 +36,27 @@
     <div ng-if="currentHistoryItem.ended" class="search-status-message">Поиск завершен</div>
   </div>
 
-  <div class="log" style="padding:10px"></div>
+
+  <div class="backdrop"></div>
+  <div class="popup-container">
+    <div class="popup">
+      <div class="popup-head">
+        <h3 class="popup-title">Пожалуйста, оцените работу эксперта</h3>
+        <!-- h5 class="popup-sub-title" style="">Это необходимо для улучшения качества сервиса</h5 -->
+      </div>
+      <div class="popup-body expert-vote">
+        <i class="super-ios-star-outline" data-vote="1"></i>
+        <i class="super-ios-star-outline" data-vote="2"></i>
+        <i class="super-ios-star-outline" data-vote="3"></i>
+        <i class="super-ios-star-outline" data-vote="4"></i>
+        <i class="super-ios-star-outline" data-vote="5"></i>
+      </div>
+      <div class="popup-buttons">
+        <button class="button button-positive" disabled>Оценить</button>
+      </div>
+    </div>
+  </div>
+
 
   <div class="message">
     <div class="item item-input-inset">
@@ -64,6 +93,8 @@ function addYesNoEvents() {
     if ($(this).hasClass('baloon-question-yes')) {
       $('#yesno').hide();
       $('.result').append('<div class="search-status-message">Поиск завершен</div>');
+      $('.backdrop').addClass('visible').addClass('active');
+      $('.popup-container').addClass('popup-showing');
     } else {
       $(this).parent().css('visibility','hidden');
       $('.result').addClass('result-chat');
@@ -76,6 +107,23 @@ function addYesNoEvents() {
     }
   });
 }
+
+
+$('.expert-vote i').on('touchstart', function() {
+  var currentVote = $(this).attr('data-vote');
+  $('.expert-vote i').removeClass('super-ios-star').addClass('super-ios-star-outline');
+  for (var i = 1; i <= currentVote; i++) {
+    $('.expert-vote i[data-vote=' + i + ']').removeClass('super-ios-star-outline').addClass('super-ios-star');
+  }
+  $('.popup-buttons button').removeAttr('disabled');
+});
+
+
+$('.popup-buttons button').click(function() {
+  $('.backdrop').removeClass('visible').removeClass('active');
+  $('.popup-container').removeClass('popup-showing');
+});
+
 
 $('.message button').click(function() {
   var message = $('.input-message').val().trim();
@@ -94,7 +142,7 @@ $(document).ready(function() {
   if (steroids.view.params.id == undefined) {
     var searchText = localStorage.getItem('text').toLowerCase();
     if (/аптека|apteka/.test(searchText)) {
-      var messages = window.ordersHistory[2].messages;
+      var messages = window.ordersHistory[3].messages;
       $.each(messages, function(i, message) {
         setTimeout(function() {
           var tel = ('extra' in message && 'tel' in message.extra) ? '<div>Телефон: <a href="tel:' + message.extra.tel + '">' + message.extra.tel + '</a></div>' : '';
@@ -125,66 +173,6 @@ $(document).ready(function() {
         playSound();
         addYesNoEvents();
       }, timeouts[3]);
-    } else {
-      // XMPP
-      function log(txt) {
-        $('.log').append('<div>' + txt + '</div>');
-      }
-
-      var bosh = 'http://toobusytosearch.net:5280/';
-      var jid = 'testclient@toobusytosearch.net';
-      var password = 'qwerty';
-      var timestamp = new Date().getTime();
-      var room = 'room' + timestamp + '@muc.toobusytosearch.net';
-      var nick = 'client1';
-
-      log('jid: ' + jid);
-      log('room: ' + room);
-      log('nick: ' + nick);
-
-      var conn = new Strophe.Connection(bosh);
-      conn.connect(jid, password, function (status) {
-        if (status === Strophe.Status.CONNECTED) {
-          log('connected');
-
-          function room_message(message) {
-            var body = $(message).children('body').text();;
-            if (body == 'Room is locked. Please configure.') {
-              conn.muc.saveConfiguration(room, [],
-                function () {
-                  console.log('saveConfiguration success');
-                  conn.muc.setTopic(room, searchText);
-                  log('topic: ' + searchText);
-                  conn.addHandler(on_public_message, null, "message", "groupchat");
-                },
-                function (err) {
-                  console.log('saveConfiguration error: ', err);
-                }
-              );
-            }
-          }
-
-          function on_presence(data) {
-            console.log('presence', data)
-          }
-
-          function on_roster(data) {
-            console.log('roster', data)
-          }
-
-          conn.muc.join(room, nick, room_message, on_presence, on_roster);
-
-          function on_public_message(message) {
-            var body = $(message).children('body').text();
-            log('message: ' + body);
-              return true;
-          }
-
-        } else if (status === Strophe.Status.DISCONNECTED) {
-          log('disconnected');
-        }
-      });
-
     }
   }
 });
