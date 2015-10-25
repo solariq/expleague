@@ -1,0 +1,72 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "TBTS JSON API",
+    "type": "array",
+    "items": {
+        "title": "Answer",
+        "type": "object",
+        "properties": {
+            "link": {
+                "description": "Ссылка на веб-страницу",
+                "type": "object",
+                "properties": {
+                    "href": {
+                        "description": "Непосредственно ссылка в формате URI",
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "title": {
+                        "description": "Текст ссылки",
+                        "type": "string"
+                    }
+                },
+                "required": ["href"]
+            },
+            "text": {
+                "description": "Текстовый ответ",
+                "type": "object",
+                "properties": {
+                    "text": {
+                        "description": "Текст с фотматированием, допустимы некоторые html-теги",
+                        "type": "string"
+                    },
+                    "title": {
+                        "description": "Заголовок текста",
+                        "type": "string"
+                    },
+                    "referer": {
+                        "description": "Ссылка на источник текста в формате URI",
+                        "type": "string",
+                        "format": "uri"
+                    }
+                },
+                "required": ["text", "title", "referer"]
+            },
+            "image": {
+                "description": "Картинка",
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "description": "Заголовок картинки",
+                        "type": "string"
+                    },
+                    "referer": {
+                        "description": "Ссылка на страницу, на которой была найдена картинка. В формате URI",
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "base64": {
+                        "description": "Картинка в формате base64",
+                        "type": "string",
+                        "media": {
+                            "binaryEncoding": "base64",
+                            "type": ["image/png", "image/gif", "image/jpeg"]
+                        }
+                    }
+                },
+                "required": ["title", "referer", "base64"]
+            }
+        }
+    },
+    "minItems": 1
+}
