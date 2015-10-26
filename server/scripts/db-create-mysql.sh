@@ -85,3 +85,25 @@ mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME < database/mysql-pubsub-schema
 
 
 echo -e "\n\n\nconfiguration:\n\n--user-db=mysql\n--user-db-uri=jdbc:mysql://$DB_HOST:3306/$DB_NAME?user=${USR_NAME}&password=${USR_PASS}&useUnicode=true&characterEncoding=UTF-8&autoCreateUser=true\n\n"
+
+echo "DROP DATABASE IF EXISTS tbts" | mysql -h $DB_HOST -u $DB_USER -p$DB_PASS
+echo "CREATE DATABASE tbts" | mysql -h $DB_HOST -u $DB_USER -p$DB_PASS
+
+echo "GRANT ALL ON tbts.* TO ${USR_NAME}@'%' IDENTIFIED BY '${USR_PASS}';" | \
+        mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME
+echo "GRANT ALL ON tbts.* TO ${USR_NAME}@'localhost' IDENTIFIED BY '${USR_PASS}';" | \
+        mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME
+echo "GRANT ALL ON tbts.* TO ${USR_NAME} IDENTIFIED BY '${USR_PASS}';" | \
+        mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME
+
+echo "GRANT SELECT, INSERT, UPDATE ON mysql.proc TO ${USR_NAME}@'localhost';" | \
+        mysql -h $DB_HOST -u $DB_USER -p$DB_PASS tbts
+echo "GRANT SELECT, INSERT, UPDATE ON mysql.proc TO ${USR_NAME}@'%';" | mysql -h $DB_HOST -u $DB_USER -p$DB_PASS tbts
+echo "GRANT SELECT, INSERT, UPDATE ON mysql.proc TO ${USR_NAME};" | mysql -h $DB_HOST -u $DB_USER -p$DB_PASS tbts
+
+echo "FLUSH PRIVILEGES;" | mysql -h $DB_HOST -u $DB_USER -p$DB_PASS tbts
+
+echo "Loading tbts schema"
+mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME < database/tbts-schema.sql
+
+
