@@ -1,13 +1,13 @@
 package model.scenario;
 
 import com.spbsu.commons.func.Action;
-import com.tbts.com.tbts.db.DAO;
+import com.tbts.model.handlers.DAO;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
-import com.tbts.model.Reception;
+import com.tbts.model.handlers.Reception;
 import com.tbts.model.Room;
-import com.tbts.model.clients.ClientManager;
-import com.tbts.model.experts.ExpertManager;
+import com.tbts.model.handlers.ClientManager;
+import com.tbts.model.handlers.ExpertManager;
 import model.scenario.fake.ObedientClient;
 import model.scenario.fake.ObedientExpert;
 import org.junit.*;
@@ -24,10 +24,13 @@ import java.text.ParseException;
 public class BasicScenarioTest {
 
   private static DAO initialDAO;
+  private static MyDAO myDAO;
+
   @BeforeClass
   public static void setUp() {
-    initialDAO = DAO.instance();
-    DAO.instance = new MyDAO();
+    initialDAO = DAO.instance;
+    myDAO = new MyDAO();
+    DAO.instance = myDAO;
   }
 
   @AfterClass
@@ -37,7 +40,7 @@ public class BasicScenarioTest {
 
   @After
   public void clearManagers() {
-    ((MyDAO)DAO.instance()).clear();
+    myDAO.clear();
   }
 
   @Test
@@ -64,17 +67,17 @@ public class BasicScenarioTest {
     Assert.assertEquals(
             "Expert expert@localhost -> READY\n" +
             "Client client@localhost -> ONLINE\n" +
-            "Room room@muc.localhost -> INIT\n" +
-            "Room room@muc.localhost -> CLEAN\n" +
+            "MyRoom room@muc.localhost -> INIT\n" +
+            "MyRoom room@muc.localhost -> CLEAN\n" +
             "Client client@localhost -> FORMULATING\n" +
             "Client client@localhost -> COMMITED\n" +
-            "Room room@muc.localhost -> DEPLOYED\n" +
+            "MyRoom room@muc.localhost -> DEPLOYED\n" +
             "Expert expert@localhost -> CHECK\n" +
             "Expert expert@localhost -> STEADY\n" +
             "Expert expert@localhost -> INVITE\n" +
             "Expert expert@localhost -> GO\n" +
-            "Room room@muc.localhost -> LOCKED\n" +
-            "Room room@muc.localhost -> COMPLETE\n" +
+            "MyRoom room@muc.localhost -> LOCKED\n" +
+            "MyRoom room@muc.localhost -> COMPLETE\n" +
             "Client client@localhost -> FEEDBACK\n" +
             "Client client@localhost -> ONLINE\n" +
             "Expert expert@localhost -> READY\n", track.toString());
@@ -104,18 +107,18 @@ public class BasicScenarioTest {
 
     Assert.assertEquals(
         "Client client@localhost -> ONLINE\n" +
-        "Room room@muc.localhost -> INIT\n" +
-        "Room room@muc.localhost -> CLEAN\n" +
+        "MyRoom room@muc.localhost -> INIT\n" +
+        "MyRoom room@muc.localhost -> CLEAN\n" +
         "Client client@localhost -> FORMULATING\n" +
         "Client client@localhost -> COMMITED\n" +
-        "Room room@muc.localhost -> DEPLOYED\n" +
+        "MyRoom room@muc.localhost -> DEPLOYED\n" +
         "Expert expert@localhost -> READY\n" +
         "Expert expert@localhost -> CHECK\n" +
         "Expert expert@localhost -> STEADY\n" +
         "Expert expert@localhost -> INVITE\n" +
         "Expert expert@localhost -> GO\n" +
-        "Room room@muc.localhost -> LOCKED\n" +
-        "Room room@muc.localhost -> COMPLETE\n" +
+        "MyRoom room@muc.localhost -> LOCKED\n" +
+        "MyRoom room@muc.localhost -> COMPLETE\n" +
         "Client client@localhost -> FEEDBACK\n" +
         "Client client@localhost -> ONLINE\n" +
         "Expert expert@localhost -> READY\n", track.toString());
@@ -145,28 +148,28 @@ public class BasicScenarioTest {
     Assert.assertEquals(
         "Expert expert@localhost -> READY\n" +
         "Client client@localhost -> ONLINE\n" +
-        "Room room@muc.localhost -> INIT\n" +
-        "Room room@muc.localhost -> CLEAN\n" +
+        "MyRoom room@muc.localhost -> INIT\n" +
+        "MyRoom room@muc.localhost -> CLEAN\n" +
         "Client client@localhost -> FORMULATING\n" +
         "Client client@localhost -> COMMITED\n" +
-        "Room room@muc.localhost -> DEPLOYED\n" +
+        "MyRoom room@muc.localhost -> DEPLOYED\n" +
         "Expert expert@localhost -> CHECK\n" +
         "Expert expert@localhost -> STEADY\n" +
         "Expert expert@localhost -> INVITE\n" +
         "Expert expert@localhost -> GO\n" +
-        "Room room@muc.localhost -> LOCKED\n" +
-        "Room room@muc.localhost -> COMPLETE\n" +
+        "MyRoom room@muc.localhost -> LOCKED\n" +
+        "MyRoom room@muc.localhost -> COMPLETE\n" +
         "Client client@localhost -> FEEDBACK\n" +
         "Client client@localhost -> FORMULATING\n" +
         "Client client@localhost -> COMMITED\n" +
-        "Room room@muc.localhost -> DEPLOYED\n" +
+        "MyRoom room@muc.localhost -> DEPLOYED\n" +
         "Expert expert@localhost -> READY\n" +
         "Expert expert@localhost -> CHECK\n" +
         "Expert expert@localhost -> STEADY\n" +
         "Expert expert@localhost -> INVITE\n" +
         "Expert expert@localhost -> GO\n" +
-        "Room room@muc.localhost -> LOCKED\n" +
-        "Room room@muc.localhost -> COMPLETE\n" +
+        "MyRoom room@muc.localhost -> LOCKED\n" +
+        "MyRoom room@muc.localhost -> COMPLETE\n" +
         "Client client@localhost -> FEEDBACK\n" +
         "Client client@localhost -> ONLINE\n" +
         "Expert expert@localhost -> READY\n", track.toString());
@@ -196,39 +199,39 @@ public class BasicScenarioTest {
     Assert.assertEquals(
         "Expert expert@localhost -> READY\n" +
         "Client client@localhost -> ONLINE\n" +
-        "Room room@muc.localhost -> INIT\n" +
-        "Room room@muc.localhost -> CLEAN\n" +
+        "MyRoom room@muc.localhost -> INIT\n" +
+        "MyRoom room@muc.localhost -> CLEAN\n" +
         "Client client@localhost -> FORMULATING\n" +
         "Client client@localhost -> COMMITED\n" +
-        "Room room@muc.localhost -> DEPLOYED\n" +
+        "MyRoom room@muc.localhost -> DEPLOYED\n" +
         "Expert expert@localhost -> CHECK\n" +
         "Expert expert@localhost -> STEADY\n" +
         "Expert expert@localhost -> INVITE\n" +
         "Expert expert@localhost -> GO\n" +
-        "Room room@muc.localhost -> LOCKED\n" +
-        "Room room@muc.localhost -> COMPLETE\n" +
+        "MyRoom room@muc.localhost -> LOCKED\n" +
+        "MyRoom room@muc.localhost -> COMPLETE\n" +
         "Client client@localhost -> FEEDBACK\n" +
         "Client client@localhost -> FORMULATING\n" +
         "Client client@localhost -> COMMITED\n" +
-        "Room room@muc.localhost -> DEPLOYED\n" +
+        "MyRoom room@muc.localhost -> DEPLOYED\n" +
         "Expert expert@localhost -> READY\n" +
         "Expert expert@localhost -> CHECK\n" +
         "Expert expert@localhost -> STEADY\n" +
         "Expert expert@localhost -> INVITE\n" +
         "Expert expert@localhost -> GO\n" +
-        "Room room@muc.localhost -> LOCKED\n" +
-        "Room room@muc.localhost -> COMPLETE\n" +
+        "MyRoom room@muc.localhost -> LOCKED\n" +
+        "MyRoom room@muc.localhost -> COMPLETE\n" +
         "Client client@localhost -> FEEDBACK\n" +
         "Client client@localhost -> FORMULATING\n" +
         "Client client@localhost -> COMMITED\n" +
-        "Room room@muc.localhost -> DEPLOYED\n" +
+        "MyRoom room@muc.localhost -> DEPLOYED\n" +
         "Expert expert@localhost -> READY\n" +
         "Expert expert@localhost -> CHECK\n" +
         "Expert expert@localhost -> STEADY\n" +
         "Expert expert@localhost -> INVITE\n" +
         "Expert expert@localhost -> GO\n" +
-        "Room room@muc.localhost -> LOCKED\n" +
-        "Room room@muc.localhost -> COMPLETE\n" +
+        "MyRoom room@muc.localhost -> LOCKED\n" +
+        "MyRoom room@muc.localhost -> COMPLETE\n" +
         "Client client@localhost -> FEEDBACK\n" +
         "Client client@localhost -> ONLINE\n" +
         "Expert expert@localhost -> READY\n", track.toString());
@@ -250,7 +253,7 @@ public class BasicScenarioTest {
 
     private Action<Room> roomListener  = new Action<Room>() {
       public void invoke(Room room) {
-        buffer.append("Room " + room.id() + " -> " + room.state().toString() + "\n");
+        buffer.append("MyRoom " + room.id() + " -> " + room.state().toString() + "\n");
       }
     };
 
@@ -284,21 +287,21 @@ public class BasicScenarioTest {
         }
       }
       final ObedientClient client = new ObedientClient(id);
-      clientMap.put(id, client);
+      clientsMap.put(id, client);
       return client;
     }
 
     @Override
     public Expert createExpert(String id) {
       final ObedientExpert expert = new ObedientExpert(id);
-      expertMap.put(id, expert);
+      expertsMap.put(id, expert);
       return expert;
     }
 
     public void clear() {
-      clientMap.clear();
-      expertMap.clear();
-      roomMap.clear();
+      clientsMap.clear();
+      expertsMap.clear();
+      roomsMap.clear();
     }
   }
 }

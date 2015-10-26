@@ -2,10 +2,10 @@ package com.tbts.tigase.component;
 
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
-import com.tbts.model.Reception;
+import com.tbts.model.handlers.Reception;
 import com.tbts.model.Room;
-import com.tbts.model.clients.ClientManager;
-import com.tbts.model.experts.ExpertManager;
+import com.tbts.model.handlers.ClientManager;
+import com.tbts.model.handlers.ExpertManager;
 import tigase.criteria.Criteria;
 import tigase.criteria.ElementCriteria;
 import tigase.server.Iq;

@@ -1,8 +1,7 @@
-package com.tbts.model.clients;
+package com.tbts.model.handlers;
 
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
-import com.tbts.com.tbts.db.DAO;
 import com.tbts.model.Client;
 
 import java.util.ArrayList;
@@ -21,18 +20,13 @@ public class ClientManager extends WeakListenerHolderImpl<Client> implements Act
     return CLIENT_MANAGER;
   }
 
-  public Map<String, Client> clients() {
-    return DAO.instance().clients();
-  }
   public synchronized Client byJID(String jid) {
-    Client client = clients().get(jid);
+    Client client = DAO.instance().client(jid);
     if (client == null) {
       if (jid.contains("@muc.") || !jid.contains("@"))
         return null;
-      final Client newClient = DAO.instance().createClient(jid);
-      newClient.addListener(this);
-      invoke(newClient);
-      client = newClient;
+      client = DAO.instance().createClient(jid);
+      invoke(client);
     }
     return client;
   }
@@ -42,7 +36,7 @@ public class ClientManager extends WeakListenerHolderImpl<Client> implements Act
   }
 
   public synchronized List<String> online() {
-    final Map<String, Client> clients = clients();
+    final Map<String, Client> clients = DAO.instance().clients();
     final List<String> result = new ArrayList<>(clients.size());
     for (final String jid : clients.keySet()) {
       if (clients.get(jid).state() != Client.State.ONLINE)

@@ -3,7 +3,8 @@ package com.tbts.model.impl;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.tbts.model.*;
-import com.tbts.model.experts.ExpertManager;
+import com.tbts.model.handlers.ExpertManager;
+import com.tbts.model.handlers.Reception;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -55,6 +56,7 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
       }
     };
     ExpertManager.instance().addListener(clearInviteLst);
+    addListener(Reception.instance());
   }
 
   protected void fix() {
@@ -88,7 +90,7 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
     return qBuilder.build();
   }
 
-  private void state(State state) {
+  protected void state(State state) {
     this.state = state;
     invoke(this);
   }
@@ -144,6 +146,11 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
   @Override
   public List<Answer> answers() {
     return answers;
+  }
+
+  @Override
+  public void onMessage(String s, CharSequence element) {
+
   }
 
   @Override

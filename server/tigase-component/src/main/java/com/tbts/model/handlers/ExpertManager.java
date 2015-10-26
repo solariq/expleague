@@ -1,9 +1,8 @@
-package com.tbts.model.experts;
+package com.tbts.model.handlers;
 
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.spbsu.commons.util.Holder;
-import com.tbts.com.tbts.db.DAO;
 import com.tbts.model.Expert;
 import com.tbts.model.Room;
 
@@ -46,10 +45,12 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
   public synchronized Expert register(String id) {
     if (!id.contains("@") || id.contains("@muc."))
       return null;
-    final Expert expert = DAO.instance().createExpert(id);
-    expert.addListener(this);
-    invoke(expert);
-    this.notifyAll();
+
+    Expert expert = DAO.instance().expert(id);
+    if (expert == null) {
+      expert = DAO.instance().createExpert(id);
+      invoke(expert);
+    }
     return expert;
   }
 

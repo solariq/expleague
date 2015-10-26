@@ -17,13 +17,36 @@ public interface Client extends WeakListenerHolder<Client> {
   void presence(boolean val);
 
   enum State {
-    OFFLINE,
-    ONLINE,
-    FORMULATING,
-    COMMITED,
-    TIMEOUT,
-    FEEDBACK,
-    CHAT
+    OFFLINE(0),
+    ONLINE(1),
+    FORMULATING(2),
+    COMMITED(3),
+    TIMEOUT(4),
+    FEEDBACK(5),
+    CHAT(6);
+
+    private final int index;
+
+    State(int index) {
+      this.index = index;
+    }
+
+    public int index() {
+      return index;
+    }
+
+    static State[] states;
+    static {
+      final State[] values = State.values();
+      states = new State[values.length];
+      for (final State value : values) {
+        states[value.index()] = value;
+      }
+    }
+
+    public static State byIndex(int state) {
+      return states[state];
+    }
   }
 
   State state();

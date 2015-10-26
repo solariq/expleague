@@ -5,6 +5,9 @@ import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.tbts.model.Answer;
 import com.tbts.model.Expert;
 import com.tbts.model.Room;
+import com.tbts.model.handlers.ExpertManager;
+import com.tbts.model.handlers.Reception;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * User: solar
@@ -13,11 +16,12 @@ import com.tbts.model.Room;
  */
 public class ExpertImpl extends WeakListenerHolderImpl<Expert> implements Expert {
   private final String id;
-  private State state;
+  protected State state;
 
   public ExpertImpl(String id) {
     this.id = id;
     state = State.AWAY;
+    addListener(ExpertManager.instance());
   }
 
   @Override
@@ -33,13 +37,13 @@ public class ExpertImpl extends WeakListenerHolderImpl<Expert> implements Expert
     }
     else {
       if (active != null)
-        active.answer(null);
+        Reception.instance().room(active).answer(null);
       join(null);
       state(State.AWAY);
     }
   }
 
-  private volatile Room active;
+  protected volatile String active;
   @Override
   public boolean reserve(Room room) {
     if (state != State.READY || active != null)
@@ -52,23 +56,24 @@ public class ExpertImpl extends WeakListenerHolderImpl<Expert> implements Expert
   private final Action<Room> activeRoomListener = new Action<Room>() {
     @Override
     public void invoke(Room room) {
-      if (active == room && room.state() == Room.State.CANCELED) {
+      if (room.id().equals(active) && room.state() == Room.State.CANCELED) {
         state(State.CANCELED);
         join(null);
       }
     }
   };
 
-  private void join(Room room) {
-    if (active == room)
+  private void join(@Nullable Room room) {
+    if ((active == null && room == null) || (room != null && room.id().equals(active)))
       return;
     if (active != null) {
-      active.removeListener(activeRoomListener);
-      active.exit(this);
+      final Room activeRoom = Reception.instance().room(active);
+      activeRoom.removeListener(activeRoomListener);
+      activeRoom.exit(this);
     }
     if (room != null)
       room.addListener(activeRoomListener);
-    active = room;
+    active = room != null ? room.id() : null;
   }
 
   @Override
@@ -100,14 +105,15 @@ public class ExpertImpl extends WeakListenerHolderImpl<Expert> implements Expert
   }
 
   @Override
+  @Nullable
   public Room active() {
-    return active;
+    return active != null ? Reception.instance().room(active) : null;
   }
 
   public void answer(Answer answer) {
-    if (state != State.GO || this.active == null)
+    if (state != State.GO || active == null)
       throw new IllegalStateException();
-    final Room room = this.active;
+    final Room room = Reception.instance().room(active);
     join(null);
     room.answer(answer);
     state(State.READY);

@@ -1,8 +1,12 @@
-package com.tbts.model;
+package com.tbts.tigase.component;
 
 import com.spbsu.commons.func.Action;
-import com.tbts.model.clients.ClientManager;
-import com.tbts.model.experts.ExpertManager;
+import com.tbts.model.Client;
+import com.tbts.model.Expert;
+import com.tbts.model.Room;
+import com.tbts.model.handlers.ClientManager;
+import com.tbts.model.handlers.ExpertManager;
+import com.tbts.model.handlers.Reception;
 
 import java.io.PrintStream;
 

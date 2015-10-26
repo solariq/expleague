@@ -5,8 +5,12 @@ import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.tbts.model.Answer;
 import com.tbts.model.Client;
 import com.tbts.model.Room;
-import com.tbts.model.experts.ExpertManager;
+import com.tbts.model.handlers.ClientManager;
+import com.tbts.model.handlers.ExpertManager;
+import com.tbts.model.handlers.Reception;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +22,7 @@ import java.util.Map;
  */
 public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client {
   private final String id;
-  private final Map<Room, State> states = new HashMap<>();
+  private final Map<String, State> states = new HashMap<>();
   boolean online = false;
   private Action<Room> completeRoomListener = new Action<Room>() {
     @Override
@@ -31,12 +35,20 @@ public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client
   };
 
   public ClientImpl(String id) {
+    this(id, false, Collections.emptyMap(), null);
+  }
+
+  public ClientImpl(String id, boolean online, Map<String, State> states, @Nullable String active) {
     this.id = id;
+    this.states.putAll(states);
+    this.activeId = active;
+    this.online = online;
+    addListener(ClientManager.instance());
   }
 
   @Override
   public State state() {
-    return (active != null && states.get(active) != null) ? states.get(active) : online ? State.ONLINE : State.OFFLINE;
+    return (activeId != null && states.get(activeId) != null) ? states.get(activeId) : online ? State.ONLINE : State.OFFLINE;
   }
 
   @Override
@@ -46,15 +58,15 @@ public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client
 
   @Override
   public Room active() {
-    return active;
+    return Reception.instance().room(activeId);
   }
 
 
-  protected Room active = null;
+  protected String activeId = null;
   public void activate(Room room) {
-    if (active == room)
+    if ((room == null && activeId == null) || (room != null && room.id().equals(activeId)))
       return;
-    active = room;
+    activeId = room != null ? room.id() : null;
   }
 
   public void formulating() {
@@ -66,7 +78,7 @@ public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client
   public void query() {
     if (state() != State.FORMULATING && state() != State.CHAT)
       throw new IllegalStateException();
-    active.addListener(completeRoomListener);
+    Reception.instance().room(activeId).addListener(completeRoomListener);
     state(State.COMMITED);
   }
 
@@ -100,11 +112,11 @@ public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client
       online = false;
       activate(null);
     }
-    else if (active == null) {
+    else if (activeId == null) {
       throw new IllegalStateException();
     }
     else {
-      states.put(active, state);
+      states.put(activeId, state);
     }
     invoke(this);
   }

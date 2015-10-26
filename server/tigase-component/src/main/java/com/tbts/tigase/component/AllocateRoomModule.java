@@ -1,9 +1,12 @@
 package com.tbts.tigase.component;
 
 import com.spbsu.commons.func.Action;
+import com.tbts.com.tbts.db.impl.MySQLDAO;
 import com.tbts.model.*;
-import com.tbts.model.clients.ClientManager;
-import com.tbts.model.experts.ExpertManager;
+import com.tbts.model.handlers.ClientManager;
+import com.tbts.model.handlers.DAO;
+import com.tbts.model.handlers.ExpertManager;
+import com.tbts.model.handlers.Reception;
 import tigase.criteria.Criteria;
 import tigase.criteria.ElementCriteria;
 import tigase.muc.exceptions.MUCException;
@@ -12,6 +15,7 @@ import tigase.server.Message;
 import tigase.server.Packet;
 import tigase.util.TigaseStringprepException;
 import tigase.xml.Element;
+import tigase.xmpp.BareJID;
 import tigase.xmpp.JID;
 
 import java.util.List;
@@ -29,6 +33,10 @@ public class AllocateRoomModule extends GroupchatMessageModule {
   private static final Criteria CRIT = ElementCriteria.name("message").add(ElementCriteria.name("subject"));
   @SuppressWarnings("unused")
   private static StatusTracker tracker = new StatusTracker(System.out);
+
+  static {
+    DAO.instance = new MySQLDAO();
+  }
   @SuppressWarnings("FieldCanBeLocal")
   private final Action<Expert> expertCommunication;
   private int expertsCount = 0;
@@ -47,7 +55,7 @@ public class AllocateRoomModule extends GroupchatMessageModule {
               invite.addChild(x);
               final String subj = active.query().text();
               x.addChild(new Element("subj", subj));
-              write(Packet.packetInstance(invite, JID.jidInstance(active.id()), JID.jidInstance(expert.id(), "expert")));
+              write(Packet.packetInstance(invite, JID.jidInstance(active.id()), JID.jidInstance(BareJID.bareJIDInstance(expert.id()), "expert")));
             } catch (TigaseStringprepException e) {
               log.log(Level.WARNING, "Error constructing invte", e);
             }
@@ -99,8 +107,10 @@ public class AllocateRoomModule extends GroupchatMessageModule {
       }
     }
 
-    if ("message".equals(packet.getElement().getName())) {
-      Reception.instance().archive().log(packet.getElement());
+    final BareJID to = packet.getTo().getBareJID();
+    final Room room = Reception.instance().room(to.toString());
+    if (room != null && "message".equals(packet.getElement().getName())) {
+      room.onMessage(packet.getFrom().getBareJID().toString(), packet.getElement().toStringPretty());
     }
     super.process(packet);
   }

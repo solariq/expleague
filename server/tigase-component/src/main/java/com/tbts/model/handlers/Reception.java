@@ -1,9 +1,9 @@
-package com.tbts.model;
+package com.tbts.model.handlers;
 
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
-import com.tbts.com.tbts.db.Archive;
-import com.tbts.com.tbts.db.DAO;
+import com.tbts.model.Client;
+import com.tbts.model.Room;
 
 /**
  * User: solar
@@ -19,18 +19,14 @@ public class Reception extends WeakListenerHolderImpl<Room> implements Action<Ro
     return keeper;
   }
 
-  private final Archive archive = new Archive();
-
-  public Archive archive() {
-    return archive;
-  }
-
   public Room create(Client client, String roomId) {
     if (!roomId.contains("@muc."))
       return null;
-    final Room result = DAO.instance().createRoom(roomId, client);
-    result.addListener(this);
-    invoke(result);
+    Room result = DAO.instance().room(roomId);
+    if (result == null) {
+      result = DAO.instance().createRoom(roomId, client);
+      invoke(result);
+    }
     return result;
   }
 
@@ -47,6 +43,6 @@ public class Reception extends WeakListenerHolderImpl<Room> implements Action<Ro
   }
 
   public Room room(String jid) {
-    return DAO.instance().rooms().get(jid);
+    return DAO.instance().room(jid);
   }
 }

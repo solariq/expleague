@@ -32,14 +32,40 @@ public interface Room extends WeakListenerHolder<Room> {
 
   List<Answer> answers();
 
+  void onMessage(String s, CharSequence element);
+
   enum State {
-    CLEAN,
-    DEPLOYED,
-    LOCKED,
-    TIMEOUT,
-    COMPLETE,
-    CANCELED,
-    INIT, FIXED
+    CLEAN(0),
+    DEPLOYED(1),
+    LOCKED(2),
+    TIMEOUT(3),
+    COMPLETE(4),
+    CANCELED(5),
+    INIT(6),
+    FIXED(7);
+
+
+    private final int index;
+
+    State(int index) {
+      this.index = index;
+    }
+
+    public int index() {
+      return index;
+    }
+    static State[] states;
+    static {
+      final State[] values = State.values();
+      states = new State[values.length];
+      for (final State value : values) {
+        states[value.index()] = value;
+      }
+    }
+
+    public static State byIndex(int state) {
+      return states[state];
+    }
   }
 
   State state();
