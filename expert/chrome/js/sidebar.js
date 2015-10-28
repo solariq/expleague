@@ -1,8 +1,8 @@
 ﻿'use strict';
 
-var DRAGDIS_SIDEBAR_NAME = "knugget-root";
+var KNUGGET_SIDEBAR_NAME = "knugget-root";
 
-var DRAGDIS_SIDEBAR = {
+var KNUGGET_SIDEBAR = {
 
     dragActive: 0,
 
@@ -23,17 +23,17 @@ var DRAGDIS_SIDEBAR = {
     },
 
     isSidebarElm: function (el) {
-        return el.closest("#" + DRAGDIS_SIDEBAR_NAME).length ? 1 : 0;
+        return el.closest("#" + KNUGGET_SIDEBAR_NAME).length ? 1 : 0;
     },
 
     show: function (params) {
-        var sidebar = $("#" + DRAGDIS_SIDEBAR_NAME);
+        var sidebar = $("#" + KNUGGET_SIDEBAR_NAME);
 
         if (!sidebar.length) {
             this.loadRootElement(function () {
                 KNUGGET.config.firstTimeLoad = true;
 
-                angular.bootstrap(document.getElementById(DRAGDIS_SIDEBAR_NAME), ['knuggetSidebar']);
+                angular.bootstrap(document.getElementById(KNUGGET_SIDEBAR_NAME), ['knuggetSidebar']);
 
                 //Reset hidden initialization and manual initialization flags
                 delete KNUGGET.config.initHidden;

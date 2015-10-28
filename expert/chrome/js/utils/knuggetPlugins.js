@@ -945,10 +945,10 @@
 
         function getDragType() {            
 
-            if (dragElmnt.is("#" + DRAGDIS_EVENTS.selectors.VideoIcon) || dragElmnt.find('#' + DRAGDIS_EVENTS.selectors.VideoIcon).length) {
+            if (dragElmnt.is("#" + KNUGGET_EVENTS.selectors.VideoIcon) || dragElmnt.find('#' + KNUGGET_EVENTS.selectors.VideoIcon).length) {
 
-                if (!dragElmnt.is("#" + DRAGDIS_EVENTS.selectors.VideoIcon)) {
-                    dragElmnt = dragElmnt.find('#' + DRAGDIS_EVENTS.selectors.VideoIcon + ':first');
+                if (!dragElmnt.is("#" + KNUGGET_EVENTS.selectors.VideoIcon)) {
+                    dragElmnt = dragElmnt.find('#' + KNUGGET_EVENTS.selectors.VideoIcon + ':first');
                 }
 
                 collection.Type = 'video';
@@ -1180,18 +1180,18 @@
             }
 
             //Remove video icon
-            $("#" + DRAGDIS_EVENTS.selectors.VideoIcon).remove();
+            $("#" + KNUGGET_EVENTS.selectors.VideoIcon).remove();
 
             //Parse video ID from youtube URL
             if (window.location.host === "www.youtube.com") {
-                var knuggetVideoId = $("#" + DRAGDIS_EVENTS.selectors.VideoIcon).attr("data-src");
+                var knuggetVideoId = $("#" + KNUGGET_EVENTS.selectors.VideoIcon).attr("data-src");
                 if (knuggetVideoId && knuggetVideoId.length) {
                     knuggetVideoId = knuggetVideoId.replace("http://www.youtube.com/watch?v=", "").replace("https://www.youtube.com/watch?v=", "");
                 }
                 isYoutubePage = 1;
             }
 
-            video.addClass(DRAGDIS_EVENTS.selectors.VideoBlock);
+            video.addClass(KNUGGET_EVENTS.selectors.VideoBlock);
 
             vTop = video.offset().top;
 
@@ -1289,7 +1289,7 @@
             if (src) {
 
                 var knuggetVideo = document.createElement('img');
-                knuggetVideo.id = DRAGDIS_EVENTS.selectors.VideoIcon;
+                knuggetVideo.id = KNUGGET_EVENTS.selectors.VideoIcon;
                 knuggetVideo.setAttribute('data-provider', provider);
                 knuggetVideo.setAttribute('data-src', src);
                 knuggetVideo.setAttribute('draggable', true);

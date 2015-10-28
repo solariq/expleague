@@ -309,7 +309,7 @@ knuggetSidebarDirectives.directive('customScrollbar', ['dataService', '$timeout'
         restrict: 'A',
         link: function (scope, element) {
 
-            $rootScope.foldersBlockElement = element; //#DRAGDIS_folders
+            $rootScope.foldersBlockElement = element; //#KNUGGET_folders
             $rootScope.foldersListElement = element.children("ul"); //ul.folders-list
 
             scope.scroll = scope.scroll || {};

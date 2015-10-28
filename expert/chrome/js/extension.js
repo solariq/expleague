@@ -55,7 +55,7 @@ KNUGGET.backgroundListener = function (request) {
     if (window.safari && window.top !== window) {
         return;
     }
-    if (window.safari && request.name !== "DRAGDIS_MESSAGING") {
+    if (window.safari && request.name !== "KNUGGET_MESSAGING") {
         return;
     } //kill message if is not from knugget extension
 
@@ -66,7 +66,7 @@ KNUGGET.backgroundListener = function (request) {
     switch (request.Type) {
         case "SIDEBAR_SHOW":
             if (KNUGGET.sidebarController.active) {
-                DRAGDIS_SIDEBAR.openedByIcon = 0;
+                KNUGGET_SIDEBAR.openedByIcon = 0;
                 KNUGGET.sidebarController.hide(true, true); //closeFast , isCloseManually
             } else {
 
@@ -75,21 +75,21 @@ KNUGGET.backgroundListener = function (request) {
                     KNUGGET.config.isInitializedManually = true;
                 }
 
-                DRAGDIS_SIDEBAR.openedByIcon = 1;
-                DRAGDIS_SIDEBAR.show({ isOpenedManually: true });
+                KNUGGET_SIDEBAR.openedByIcon = 1;
+                KNUGGET_SIDEBAR.show({ isOpenedManually: true });
             }
             break;
         case "DISPLAY_UPLOAD_ERROR":
-            DRAGDIS_SIDEBAR.show({
+            KNUGGET_SIDEBAR.show({
                 showUploadError: true
             });
             break;
-        case "DRAGDIS_UPDATE_ACTIVE":
+        case "KNUGGET_UPDATE_ACTIVE":
             if (KNUGGET.sidebarController != null) {
                 KNUGGET.sidebarController.user.set(request.Value);
             }
             break;
-        case "DRAGDIS_UPDATE_FOLDERS":
+        case "KNUGGET_UPDATE_FOLDERS":
             if (KNUGGET.sidebarController != null && KNUGGET.sidebarController.folders) {
                 KNUGGET.sidebarController.folders.update(request.Value);
             }
@@ -162,7 +162,7 @@ window.addEventListener('message', function (e) {
 
     if (e.origin.toLowerCase().indexOf(KNUGGET.config.domain.toLowerCase().slice(0, -1)) > -1) {
 
-        if (data.type == 'DRAGDIS_ExtensionIframeSync' && data.action == 'FORCE_REFRESH') {
+        if (data.type == 'KNUGGET_ExtensionIframeSync' && data.action == 'FORCE_REFRESH') {
 
             // Send confirmation to iframe that message has been received 
             e.source.postMessage(JSON.stringify({

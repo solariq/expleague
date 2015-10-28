@@ -29,7 +29,7 @@ $(function() {
                 }
 
                 if (KNUGGET.sidebarController.active) {
-                    DRAGDIS_SIDEBAR.openedByIcon = 0;
+                    KNUGGET_SIDEBAR.openedByIcon = 0;
                     KNUGGET.sidebarController.hide(true, true); //closeFast , isCloseManually
 
                     $(icon).removeClass('silence');
@@ -41,8 +41,8 @@ $(function() {
                         KNUGGET.config.isInitializedManually = true;
                     }
 
-                    DRAGDIS_SIDEBAR.openedByIcon = 1;
-                    DRAGDIS_SIDEBAR.show({ isOpenedManually: true });
+                    KNUGGET_SIDEBAR.openedByIcon = 1;
+                    KNUGGET_SIDEBAR.show({ isOpenedManually: true });
 
                     $(icon).addClass('silence');
                 }

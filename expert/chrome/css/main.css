@@ -4652,14 +4652,14 @@ Site dialog global style
   -webkit-animation-delay: 0.15s;
   animation-delay: 0.15s;
 }
-#knugget-root #DRAGDIS_IFRAME_LOGIN,
-#knugget-info-icon #DRAGDIS_IFRAME_LOGIN {
+#knugget-root #KNUGGET_IFRAME_LOGIN,
+#knugget-info-icon #KNUGGET_IFRAME_LOGIN {
   height: 100%;
   overflow: hidden;
   width: 260px;
 }
-#knugget-root #DRAGDIS_IFRAME_LOGIN.loader,
-#knugget-info-icon #DRAGDIS_IFRAME_LOGIN.loader {
+#knugget-root #KNUGGET_IFRAME_LOGIN.loader,
+#knugget-info-icon #KNUGGET_IFRAME_LOGIN.loader {
   width: 40px;
   height: 40px;
   position: absolute;
@@ -4674,17 +4674,17 @@ Site dialog global style
   animation: pulse 1s linear infinite;
   opacity: 0.0;
 }
-#knugget-root #DRAGDIS_IFRAME_LOGIN.loader.grey,
-#knugget-info-icon #DRAGDIS_IFRAME_LOGIN.loader.grey {
+#knugget-root #KNUGGET_IFRAME_LOGIN.loader.grey,
+#knugget-info-icon #KNUGGET_IFRAME_LOGIN.loader.grey {
   background: url("chrome-extension://__MSG_@@extension_id__/images/loader-1.png") no-repeat center center;
   background-size: 40px 40px;
 }
-#knugget-root #DRAGDIS_IFRAME_LOGIN.loader.white,
-#knugget-info-icon #DRAGDIS_IFRAME_LOGIN.loader.white {
+#knugget-root #KNUGGET_IFRAME_LOGIN.loader.white,
+#knugget-info-icon #KNUGGET_IFRAME_LOGIN.loader.white {
   background: url("chrome-extension://__MSG_@@extension_id__/images/loader-2.png") no-repeat center center;
   background-size: 40px 40px;
 }
-#DRAGDIS_VIDEO_ICON {
+#KNUGGET_VIDEO_ICON {
   display: block;
   width: 30px !important;
   height: 30px !important;
@@ -4701,7 +4701,7 @@ Site dialog global style
   margin: 0 !important;
   border: 0 !important;
 }
-#DRAGDIS_VIDEO_ICON.hideForce {
+#KNUGGET_VIDEO_ICON.hideForce {
   display: none !important;
 }
 #knugget-info-icon {

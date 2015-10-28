@@ -1,4 +1,26 @@
 angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'fileBlob', function ($http, $q, $fileBlob) {
+
+    function BanManager() {
+        this.getBanList = function(callback) {
+            KNUGGET.storage.get("BanList", function (value) {
+                callback(JSON.parse(value))
+            });
+        };
+
+        this.banUser = function(user) {
+            this.getBanList(function(list) {
+               list.push(user);
+                KNUGGET.storage.set("BanList", JSON.stringify(user));
+            });
+        };
+
+        this.isBanned = function(user, callback) {
+            this.getBanList(function(list){
+               callback(list.indexOf(user) > -1);
+            });
+        };
+    }
+
     function JabberClient(login, password, resource) {
         this.login = login;
         this.password = password;
@@ -79,7 +101,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
                 return true;
             }, null, 'message', null, null, null);
         };
-        
+
         this.addPresenceListener = function(listener, from) {
             this.connection.addHandler(function(presence) {
                 var from = presence.getAttribute('from');
@@ -98,8 +120,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
                 var room = msg.getAttribute('from');
                 var elems = msg.getElementsByTagName('invite');
                 if (elems && elems.length > 0) {
-                    var from = elems[0].getAttribute('from');
-                    obj = {room: room, from: from, time: new Date().getTime()};
+                    obj = {room: room, time: new Date().getTime()};
                     params = msg.children[0].children;
                     for (var i = 0; i < params.length; i++) {
                         el = params[i];
@@ -144,6 +165,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         };
     }
 
+    debug = true;
+    var banManager = BanManager();
     var ExpertState = {
         READY: {
             value: 'ready',
@@ -161,8 +184,9 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         },
         CHECK: {
             value: 'check',
-            validate: function(prevState) {
-                return prevState == ExpertState.READY;
+            validate: function(prevState, ctx) {
+                //todo check banManager.isBanned(user)
+                return debug || prevState == ExpertState.READY;
             },
             onSet: function(presence) {
                 stateController.setState(ExpertState.STEADY, presence);
@@ -170,8 +194,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         },
         STEADY: {
             value: 'steady',
-            validate: function(prevState) {
-                return prevState == ExpertState.CHECK;
+            validate: function(prevState, ctx) {
+                return debug || prevState == ExpertState.CHECK;
             },
             onSet: function(presence) {
                 jabberClient.sendPres({to: presence.from, type: ExpertState.STEADY.value});
@@ -180,22 +204,22 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         },
         INVITE: {
             value: 'invite',
-            validate: function(prevSate) {
-                return prevSate == ExpertState.STEADY;
+            validate: function(prevState, ctx) {
+                return debug || prevState == ExpertState.STEADY;
             },
             onSet: function(invite) {
                 //todo remove this
                 if (!invite.subj) {
                     invite.subj = 'Question stub!';
                 }
-                question = {question: invite.subj, owner: invite.from, time: invite.time, id: invite.time, room: invite.room};
+                question = {question: invite.subj, owner: invite.owner, time: invite.time, id: invite.time, room: invite.room};
                 addQuestion(question, function(){});
             }
         },
         ACCEPT: {
             value: 'accept',
-            validate : function(prevSrate) {
-                return prevSrate == ExpertState.INVITE
+            validate: function(prevState, ctx) {
+                return debug || prevState == ExpertState.INVITE
             },
             onSet: function(data) {
                 //jabberClient.sendPres(data.request.room, 'expert');
@@ -206,8 +230,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         },
         DENIED: {
             value: 'denied',
-            validate: function(prevState) {
-                return prevState == ExpertState.ACCEPT;
+            validate: function(prevState, ctx) {
+                return debug || prevState == ExpertState.ACCEPT;
             },
             onSet: function(ctx) {
                 //todododododo
@@ -215,8 +239,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         },
         GO: {
             value: 'go',
-            validate: function(prevState) {
-                return prevState == ExpertState.ACCEPT;
+            validate: function(prevState, ctx) {
+                return debug || prevState == ExpertState.ACCEPT;
             },
             onSet: function(ctx) {
                 allowToShow(true);
@@ -229,7 +253,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
 
         this.setState = function(newState,  context) {
             //validation is disabled
-            if (true || newState.validate(this.state)) {
+            if (newState.validate(this.state, context)) {
                 this.state = newState;
                 allowToShow(false);
                 newState.onSet(context);
@@ -267,25 +291,74 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
     cleanAll = function() {
         KNUGGET.storage.set("Board", JSON.stringify([]));
         KNUGGET.storage.set("Requests", JSON.stringify([]));
+        KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
         KNUGGET.storage.set("AllowToShow", false);
+
         //$scope.board.update();
         //$scope.allowToShow.get(function(){});
         //$scope.activeRequest.get(function(){});
     };
 
-    addToBoardSync = function (answer, callback) {
+    newStyleResponce = function(callback) {
+        KNUGGET.storage.get("Board", function (value) {
+            result = [];
+            value = value ? JSON.parse(value) : [];
+            value.forEach(function(el, i) {
+                el = JSON.parse(el);
+                if (el.Type == 'link') {
+                    if (el.Base64Image != undefined) {
+                        result.push({
+                            image: {
+                                image: el.Base64Image,
+                                title: el.Title,
+                                referer: el.Referer
+                            }
+                        });
+                    } else {
+                        result.push({
+                            link: {
+                                href: el.Href,
+                                title: el.Title
+                            }
+                        });
+                    }
+                } else if (el.Type == 'text') {
+                    result.push({
+                        text: {
+                            text: el.Text,
+                            title: el.Title,
+                            referer: el.Referer
+                        }
+                    });
+                } else if (el.Type == 'picture') {
+                    result.push({
+                        image: {
+                            image: el.Image, //todo make base64
+                            title: el.Title,
+                            referer: el.Referer
+                        }
+                    });
+                }
+            });
+            callback(result);
+        });
+    };
+
+
+    addToBoardSync = function(answer, callback) {
         KNUGGET.storage.get("Board", function (value) {
             value = value ? JSON.parse(value) : [];
             value.push(answer);
             KNUGGET.storage.set("Board", JSON.stringify(value));
+            console.log(JSON.stringify(value));
             callback();
         });
     };
 
     addQuestion = function(question, callback) {
         KNUGGET.storage.get("Requests", function (value) {
-            value = value ? JSON.parse(value) : [];
-            //value = [];
+            //value = value ? JSON.parse(value) : [];
+            value = [];
             value.push(question);
             KNUGGET.storage.set("Requests", JSON.stringify(value));
             callback();
@@ -328,17 +401,39 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             return defer.promise;
         },
 
+        PageVisited: function(data) {
+            var defer = $q.defer();
+            console.log(JSON.stringify(data));
+            jabberClient.send({
+                    to: data.request.room,
+                    text: JSON.stringify({type: 'visitedPages', count: data.pages.length, links: data.pages})
+                }, function () {
+                    defer.resolve({status: 200});
+                }
+            );
+            return defer.promise;
+        },
+
         Available: function(data) {
-          setUserAvailable(data.isAvailable);
+            var defer = $q.defer();
+            setUserAvailable(data.isAvailable);
+            defer.resolve({status: 200});
+            return defer.promise;
+        },
+
+        BanUser: function(data) {
+            var defer = $q.defer();
+            //todo
+            defer.resolve({status: 200});
+            return defer.promise;
         },
 
         SendResponse: function(data) {
             var defer = $q.defer();
-            KNUGGET.storage.get("Board", function (board) {
-                board = board ? JSON.parse(board) : [];
+            newStyleResponce(function(result) {
                 jabberClient.send({
                         to: data.request.room,
-                        text: JSON.stringify(board)
+                        text: JSON.stringify({type: 'response', content : result})
                     }, function () {
                         defer.resolve({status: 200});
                     }
@@ -391,7 +486,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             setTimeout(function(){
                 message.close();
                 defer.reject({status : 500, messages : "Timeout"});
-            }, 30000);
+            }, 3000);
 
             //todo add timeout
             return promise;
@@ -538,7 +633,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             data.SenderId = senderId;
 
             if ((data.Files && data.Files[0]) || data.Base64Image || data.MakeSnapshot || data.Image) {
-                
+
                 var fileProcessing = $fileBlob.fileProcessing(data);
 
                 fileProcessing.success = function (fn) {

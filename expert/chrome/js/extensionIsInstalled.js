@@ -32,7 +32,7 @@ window.addEventListener('message', function (e) {
 
     if (e.origin.toLowerCase().indexOf(KNUGGET.config.domain.toLowerCase().slice(0, -1)) > -1) {
 
-        if (data.type == 'DRAGDIS_ExtensionIframeSync' && data.action == 'FORCE_REFRESH') {
+        if (data.type == 'KNUGGET_ExtensionIframeSync' && data.action == 'FORCE_REFRESH') {
 
             // Send confirmation to iframe that message has been received 
             e.source.postMessage(JSON.stringify({

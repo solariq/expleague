@@ -6,14 +6,14 @@ KNUGGET.Drag = {
     Data: {}
 };
 
-var DRAGDIS_EVENTS = {
+var KNUGGET_EVENTS = {
     selectors: {
         D: "img,a,p,span,h1,h2,h3,h4,h5,h6,sub,sup,ul,li,div,dd,dt,td,table,article,aside",
         Y: "object[data*='//www.youtube.com/v/'], iframe[src*='//www.youtube.com/embed/'], embed[src*='//s.ytimg.com/yts/swfbin/watch'],embed[src*='//s.ytimg.com/yts/swfbin/player'], video[data-youtube-id], embed[src*='//www.youtube.com/v/'],.html5-video-container, iframe[src*='https://attachment.fbsbx.com/external_iframe.php']",
         V: "iframe[src*='//player.vimeo.com/video/'], object[data*='vimeocdn.com/p/flash'], video[src*='//player.vimeo.com/play_redirect'], video[src*='//av.vimeo.com/'], div.vimeo_holder, div.player[data-fallback-url*='//player.vimeo.com/v2'], iframe[src*='https://attachment.fbsbx.com/external_iframe.php'], .player.with-fullscreen[data-fallback-url*='//player.vimeo.com/']",
-        VideoBlock: "DRAGDIS_VIDEO",
-        VideoIcon: "DRAGDIS_VIDEO_ICON",
-        FoldersList: ".DRAGDIS_FOLDERS_LIST"
+        VideoBlock: "KNUGGET_VIDEO",
+        VideoIcon: "KNUGGET_VIDEO_ICON",
+        FoldersList: ".KNUGGET_FOLDERS_LIST"
     },
 
     //blacklist of disabled elements when drag never open sidebar
@@ -34,16 +34,16 @@ var DRAGDIS_EVENTS = {
         event.stopPropagation();
         event.originalEvent.dataTransfer.effectAllowed = "all";
 
-        if (DRAGDIS_EVENTS.selectorIsDisabled(event.target)) return false;
+        if (KNUGGET_EVENTS.selectorIsDisabled(event.target)) return false;
 
-        if (DRAGDIS_SIDEBAR.dragActive) {
+        if (KNUGGET_SIDEBAR.dragActive) {
             return true;
         }
 
-        DRAGDIS_SIDEBAR.dragActive = true;
+        KNUGGET_SIDEBAR.dragActive = true;
         document.dispatchEvent(new CustomEvent('knuggetDragStart'));
 
-        DRAGDIS_SIDEBAR.show();
+        KNUGGET_SIDEBAR.show();
 
         KNUGGET.Drag = {
             Target: $(event.target),
@@ -79,10 +79,10 @@ var DRAGDIS_EVENTS = {
     dragEnter: function (event, iframeEvent) {
 
         // Return if dragging already started, otherwise set DragActive flag
-        if (DRAGDIS_SIDEBAR.dragActive) {
+        if (KNUGGET_SIDEBAR.dragActive) {
             return true;
         } else {
-            DRAGDIS_SIDEBAR.dragActive = true;
+            KNUGGET_SIDEBAR.dragActive = true;
         }
 
         //If event originated in iframe, pass it to higher tier window context (bubble through multiple iframes to the top window)
@@ -147,18 +147,18 @@ var DRAGDIS_EVENTS = {
                 };
             }
 
-            DRAGDIS_SIDEBAR.show();
+            KNUGGET_SIDEBAR.show();
         }
         return true;
     },
 
     dragEnd: function (event, iframeEvent) {
 
-        if (DRAGDIS_SIDEBAR.isSidebarElm($(event.target)) || DRAGDIS_SIDEBAR.dragActive === false || (KNUGGET.Drag && KNUGGET.Drag.IsOnSidebar)) {
+        if (KNUGGET_SIDEBAR.isSidebarElm($(event.target)) || KNUGGET_SIDEBAR.dragActive === false || (KNUGGET.Drag && KNUGGET.Drag.IsOnSidebar)) {
             return true;
         }
 
-        DRAGDIS_SIDEBAR.dragActive = false;
+        KNUGGET_SIDEBAR.dragActive = false;
         document.dispatchEvent(new CustomEvent('knuggetDragEnd'));
 
         event.stopPropagation();
@@ -167,7 +167,7 @@ var DRAGDIS_EVENTS = {
         KNUGGET.sidebarController.hide();
 
         //VideoIcon hide after dragend
-        $("#" + DRAGDIS_EVENTS.selectors.VideoIcon).remove();
+        $("#" + KNUGGET_EVENTS.selectors.VideoIcon).remove();
 
         return true;
     },
@@ -194,11 +194,11 @@ var DRAGDIS_EVENTS = {
 
         if (dragType == "address_bar" && event.originalEvent.clientX === 0 && event.originalEvent.clientY === 0) {
 
-            if (DRAGDIS_SIDEBAR.dragActive === false) {
+            if (KNUGGET_SIDEBAR.dragActive === false) {
                 return true;
             }
 
-            DRAGDIS_SIDEBAR.dragActive = false;
+            KNUGGET_SIDEBAR.dragActive = false;
             document.dispatchEvent(new CustomEvent('knuggetDragEnd'));
 
             event.preventDefault();
@@ -221,12 +221,12 @@ var DRAGDIS_EVENTS = {
 
     //on video players
     videoMouseEnter: function (event) {
-        if ($(event.relatedTarget).is("#" + DRAGDIS_EVENTS.selectors.VideoIcon)) {
+        if ($(event.relatedTarget).is("#" + KNUGGET_EVENTS.selectors.VideoIcon)) {
             return true;
         }
 
         if (KNUGGET.FullScreenMode) {
-            $("#" + DRAGDIS_EVENTS.selectors.VideoIcon).remove();
+            $("#" + KNUGGET_EVENTS.selectors.VideoIcon).remove();
             return false;
         }
 
@@ -245,13 +245,13 @@ var DRAGDIS_EVENTS = {
     },
 
     videoMouseLeave: function (event) {
-        if ($(event.relatedTarget).is("#" + DRAGDIS_EVENTS.selectors.VideoIcon) ||
+        if ($(event.relatedTarget).is("#" + KNUGGET_EVENTS.selectors.VideoIcon) ||
             ($(event.relatedTarget).is(".html5-video-container") && window.location.href.indexOf("//www.youtube.com/") !== -1)) { //this line prevent hide icon when video is smaller then html5 container
             return true;
         }
 
 
-        $("#" + DRAGDIS_EVENTS.selectors.VideoIcon).remove();
+        $("#" + KNUGGET_EVENTS.selectors.VideoIcon).remove();
     },
 
     videoIconMouseEnter: function () {
@@ -259,7 +259,7 @@ var DRAGDIS_EVENTS = {
     },
 
     mouseLeaveWindow: function (event) {
-        if (event.toElement === null && event.relatedTarget === null && $("#" + DRAGDIS_SIDEBAR_NAME).length) {
+        if (event.toElement === null && event.relatedTarget === null && $("#" + KNUGGET_SIDEBAR_NAME).length) {
             KNUGGET.sidebarController.hide();
         }
     },
@@ -271,13 +271,13 @@ var DRAGDIS_EVENTS = {
             return false;
         }
 
-        $(this).addClass("DRAGDIS_iframe").contents().find(DRAGDIS_EVENTS.selectors.D).not(".DRAGDIS_iframe")
-            .bind("dragstart", DRAGDIS_EVENTS.dragStart)
-            .bind("dragend", DRAGDIS_EVENTS.dragEnd);
+        $(this).addClass("KNUGGET_iframe").contents().find(KNUGGET_EVENTS.selectors.D).not(".KNUGGET_iframe")
+            .bind("dragstart", KNUGGET_EVENTS.dragStart)
+            .bind("dragend", KNUGGET_EVENTS.dragEnd);
     }
 };
 
-var DRAGDIS_CLASS = "knugget";
+var KNUGGET_CLASS = "knugget";
 
 $(document)
     // Put function execute into onload area
@@ -302,27 +302,27 @@ $(document)
             });
         }
     })
-    .on("dragstart", DRAGDIS_EVENTS.dragStart)
-    .on("dragend", DRAGDIS_EVENTS.dragEnd)
+    .on("dragstart", KNUGGET_EVENTS.dragStart)
+    .on("dragend", KNUGGET_EVENTS.dragEnd)
 
-    .on("dragenter", DRAGDIS_EVENTS.dragEnter)
-    .on("dragleave", DRAGDIS_EVENTS.dragLeave)
-    .on("mouseenter", "#" + DRAGDIS_SIDEBAR_NAME, DRAGDIS_EVENTS.mouseEnter)
-    .on("mouseleave", "#" + DRAGDIS_SIDEBAR_NAME, DRAGDIS_EVENTS.mouseLeave)
+    .on("dragenter", KNUGGET_EVENTS.dragEnter)
+    .on("dragleave", KNUGGET_EVENTS.dragLeave)
+    .on("mouseenter", "#" + KNUGGET_SIDEBAR_NAME, KNUGGET_EVENTS.mouseEnter)
+    .on("mouseleave", "#" + KNUGGET_SIDEBAR_NAME, KNUGGET_EVENTS.mouseLeave)
 
     //:>> YOUTUBE VIDEO ICON EMBED HOVER
-    .on("mouseenter", DRAGDIS_EVENTS.selectors.Y, { provider: 'youtube' }, DRAGDIS_EVENTS.videoMouseEnter)
+    .on("mouseenter", KNUGGET_EVENTS.selectors.Y, { provider: 'youtube' }, KNUGGET_EVENTS.videoMouseEnter)
     //VIMEO VIDEO EMBED HOVER
-    .on("mouseenter", DRAGDIS_EVENTS.selectors.V, { provider: 'vimeo' }, DRAGDIS_EVENTS.videoMouseEnter)
-    .on("mouseleave", DRAGDIS_EVENTS.selectors.Y + "," + DRAGDIS_EVENTS.selectors.V, DRAGDIS_EVENTS.videoMouseLeave)
-    //Hide .DRAGDIS_video_block
-    .on("mouseenter", DRAGDIS_EVENTS.selectors.VideoIcon, DRAGDIS_EVENTS.videoIconMouseEnter);
+    .on("mouseenter", KNUGGET_EVENTS.selectors.V, { provider: 'vimeo' }, KNUGGET_EVENTS.videoMouseEnter)
+    .on("mouseleave", KNUGGET_EVENTS.selectors.Y + "," + KNUGGET_EVENTS.selectors.V, KNUGGET_EVENTS.videoMouseLeave)
+    //Hide .KNUGGET_video_block
+    .on("mouseenter", KNUGGET_EVENTS.selectors.VideoIcon, KNUGGET_EVENTS.videoIconMouseEnter);
 
 
 if (window.location.host === "www.youtube.com") {
     $(document).on('DOMNodeInserted', function (e) {
         if (e.target.id == 'progress') {
-            $("." + DRAGDIS_EVENTS.selectors.VideoBlock).removeClass(DRAGDIS_EVENTS.selectors.VideoBlock);
+            $("." + KNUGGET_EVENTS.selectors.VideoBlock).removeClass(KNUGGET_EVENTS.selectors.VideoBlock);
         }
     });
 }
@@ -338,7 +338,7 @@ window.addEventListener("focus", function () {
 }, false);
 
 //IFRAME DRAG&DROP
-$(document).on("mouseenter", "iframe:not('.DRAGDIS_iframe')", DRAGDIS_EVENTS.iframeEvents);
+$(document).on("mouseenter", "iframe:not('.KNUGGET_iframe')", KNUGGET_EVENTS.iframeEvents);
 
 
 //HTML5 fullscreen  video_icons display: none
@@ -349,5 +349,5 @@ $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange msfu
 
     KNUGGET.FullScreenMode = fullscreenState ? true : false;
 
-    $("#" + DRAGDIS_EVENTS.selectors.VideoIcon).remove();
+    $("#" + KNUGGET_EVENTS.selectors.VideoIcon).remove();
 });

@@ -3,6 +3,7 @@
 
 KNUGGET.storage.set("Requests",JSON.stringify([]));
 KNUGGET.storage.set("Board",JSON.stringify([]));
+KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
 KNUGGET.storage.set("ActiveRequest", null);
 // REGISTER API COMMAND LISTENER
 chrome.runtime.onConnect.addListener(function(port) {
@@ -307,15 +308,6 @@ KNUGGET.getMessage = function(request, sender, sendResponse) {
 
         case "INJECTION":
             KNUGGET.injector.add(sender.tab.id, sender.tab.url);
-            break;
-
-        case "GET_BOOKMARKS":
-            KNUGGET.bookmarks.get(function(tree) {
-                KNUGGET.sendMessage({
-                    Type: "SET_BOOKMARKS",
-                    Value: tree
-                });
-            });
             break;
 
         case "CLIPBOARD_COPY":

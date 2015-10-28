@@ -16,7 +16,7 @@
                 <div ng-if="answer.Image != undefined && answer.Base64Image == undefined">
                     <img src="{{answer.Image}}">
                 </div>
-                <div ng-if="answer.Type == 'text'">
+                <div ng-if="answer.Type == 'text'" contenteditable>
                     {{printableAnswer(answer)}}
                 </div>
                 <!--<div ng-if="answer.Type == 'link' && answer.Image == undefined && answer.Base64Image == undefined">-->

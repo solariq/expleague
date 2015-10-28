@@ -51,7 +51,7 @@ knuggetSidebarDirectives.directive('folderDroppable', ['$timeout', '$window', '$
                         e.preventDefault(); //It's important line!! this kill redirect action
                         e.stopPropagation();
 
-                    DRAGDIS_SIDEBAR.dragActive = false;
+                    KNUGGET_SIDEBAR.dragActive = false;
 
                     var types = e.originalEvent.dataTransfer.types;
                         console.log("types");
@@ -77,14 +77,14 @@ knuggetSidebarDirectives.directive('folderDroppable', ['$timeout', '$window', '$
                     $timeout(function () {
 
                         // Close sidebar on mouseleave only for this time
-                        $("#" + DRAGDIS_SIDEBAR_NAME).one("mouseleave", function () {
-                            if (!DRAGDIS_SIDEBAR.openedByIcon) {
+                        $("#" + KNUGGET_SIDEBAR_NAME).one("mouseleave", function () {
+                            if (!KNUGGET_SIDEBAR.openedByIcon) {
                                 KNUGGET.sidebarController.hide();
                             }
                         });
 
 
-                        DRAGDIS_SIDEBAR.dragActive = false;
+                        KNUGGET_SIDEBAR.dragActive = false;
                         KNUGGET.sidebarController.dragEnd();
                         KNUGGET.sidebarController.addAnswer(function () {
                             $scope.$emit("itemDropped", {});

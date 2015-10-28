@@ -166,6 +166,7 @@ KNUGGET.injector = {
     CSS: chrome.runtime.getManifest().content_scripts[0].css,
 
     inject: function (tabId) {
+        console.log('injectiong on' + tabId);
 
         chrome.tabs.executeScript(tabId, {
             code: "chrome.runtime.sendMessage({ExtensionIsInjected: window.ExtensionIsInjected || false});"
@@ -206,13 +207,19 @@ KNUGGET.injector = {
         return false;
     },
     add: function (tabId, tabUrl) {
-
+        console.log('adding on' + tabId);
         var $this = this;
 
         if ($this.isMatch(tabUrl)) {
 
             console.info("Inject at " + tabId, tabUrl);
 
+
+            KNUGGET.storage.get('VisitedPages', function(vp) {
+                vp = vp ? JSON.parse(vp) : [];
+                vp.push(tabUrl);
+                KNUGGET.storage.set("VisitedPages", JSON.stringify(vp));
+            });
             //Add image icon
             KNUGGET.storage.get("userSettings", function(userSettings) {
 
@@ -288,6 +295,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, tabInfo, tab) {
     if (tab.url.toLowerCase().indexOf("http") !== 0) return;
 
     if (tabInfo.status === "loading") {
+        console.log('loading on' + tabId);
         KNUGGET.injector.inject(tabId);
     }
 });
@@ -298,7 +306,7 @@ chrome.tabs.onReplaced.addListener(function (tabId) {
 
         //prevent files injection to same tab with hash changes, below link show the solution
         if (tab.url.toLowerCase().indexOf("http") !== 0) return;
-
+        console.log('listening on' + tabId);
         KNUGGET.injector.inject(tabId);
     });
 });
@@ -485,9 +493,6 @@ KNUGGET.templates = {
     list: {},
     init: function () {
         var templates = [
-            "views/actionsBlock.html",
-            "views/connectionLoading.html",
-            "views/dialog.moreFolders.html",
             "views/empty.html",
             "views/error.html",
             "views/requestList.html",
@@ -497,9 +502,6 @@ KNUGGET.templates = {
             "views/login.html",
             "views/registration.html",
             "views/panel_chatWindow.html",
-            "views/panel_folder.html",
-            "views/panel_item.html",
-            "views/panel_newFolder.html",
             "views/root.html",
             "views/sidebar.folder_0.html",
             "views/sidebar.folder_1.html",

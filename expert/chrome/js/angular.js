@@ -1,4 +1,4 @@
-﻿﻿knuggetSidebar.controller('DRAGDIS_SIDEBAR_CTRL', ['$window', '$scope', '$controller', '$timeout', '$rootScope', 'dataService', 'dialogService', function ($window, $scope, $controller, $timeout, $rootScope, dataService, dialogService) {
+﻿﻿knuggetSidebar.controller('KNUGGET_SIDEBAR_CTRL', ['$window', '$scope', '$controller', '$timeout', '$rootScope', 'dataService', 'dialogService', function ($window, $scope, $controller, $timeout, $rootScope, dataService, dialogService) {
     $scope.domain = KNUGGET.config.domain;
     $scope.dialogIsActive = false;
     $scope.renderComplete = false;
@@ -54,6 +54,7 @@
         $scope.board.clear();
         $scope.requests.clear();
         $scope.activeRequest.set(null);
+        KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
     };
 
 
@@ -68,6 +69,7 @@
 
     $scope.activateRequest = function(request) {
         $scope.board.clear();
+        KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
         KNUGGET.api('Activate', {request: request}, function (response) {
             if (response.status == 200) {
                 $scope.activeRequest.set(request);
@@ -265,6 +267,14 @@
                     //alert('apply');
                     $scope.$apply();
                 }
+            } else if (data.VisitedPages) {
+                $scope.activeRequest.get(function(request) {
+                    console.log(request);
+                    console.log(data.VisitedPages.newValue)
+                    if (request) {
+                        KNUGGET.api("PageVisited", {request: request, pages: JSON.parse(data.VisitedPages.newValue)}, function () { });
+                    }
+                });
             }
 
             $timeout(function () {
@@ -365,6 +375,11 @@
         set: function(activeRequest) {
             $scope.activeRequest.value = activeRequest;
             KNUGGET.storage.set('ActiveRequest', activeRequest);
+        },
+
+        banOwner: function(callback) {
+            $scope.finishRequest();
+            KNUGGET.api("BanUser", $scope.activeRequest.value, function () {});
         }
     };
     $scope.user = {
@@ -423,7 +438,7 @@
 
 
     $scope.closeSidebar = function () {
-        DRAGDIS_SIDEBAR.openedByIcon = false;
+        KNUGGET_SIDEBAR.openedByIcon = false;
         $scope.hide(true, true);
     };
 
@@ -472,7 +487,7 @@
                 $scope.resetSidebar();
             }
 
-            if (DRAGDIS_SIDEBAR.dragActive) {
+            if (KNUGGET_SIDEBAR.dragActive) {
                 $scope.dragStart();
             }
 
@@ -490,12 +505,12 @@
         $timeout.cancel($scope.timeoutShow);
         $timeout.cancel($scope.timeoutHide);
 
-        if (DRAGDIS_SIDEBAR.openedByIcon || $scope.appMode) {
+        if (KNUGGET_SIDEBAR.openedByIcon || $scope.appMode) {
             return false;
         }
 
         //If user expanded sidebar panel, while dragging, ignore Hide event 
-        if (!DRAGDIS_SIDEBAR.openedByIcon && $scope.expandedView) {
+        if (!KNUGGET_SIDEBAR.openedByIcon && $scope.expandedView) {
             return false;
         }
 
@@ -506,7 +521,7 @@
 
             // Check if mouse is on sidebar. If true, register eve;nt to close sidebar after mouse leave
             if (!closeFast && KNUGGET.mouseIsOnSidebar) {
-                $("#" + DRAGDIS_SIDEBAR_NAME).one("mouseleave", function () {
+                $("#" + KNUGGET_SIDEBAR_NAME).one("mouseleave", function () {
                     $scope.hide();
                 });
                 return;
@@ -518,7 +533,7 @@
                 Type: "SendTrackData"
             });
 
-            DRAGDIS_SIDEBAR.dragActive = false;
+            KNUGGET_SIDEBAR.dragActive = false;
             $scope.active = false;
             $scope.expandedView = false;
 
@@ -565,7 +580,7 @@
     $scope.hideUploadError = function () {
 
         //Hide sidebar if it was not force opened
-        if (!DRAGDIS_SIDEBAR.openedByIcon) {
+        if (!KNUGGET_SIDEBAR.openedByIcon) {
             $scope.active = false;
             $scope.resetSidebar();
         };
@@ -580,6 +595,7 @@
             $scope.board.clear();
             $scope.requests.clear(request);
             $scope.activeRequest.set(null);
+            KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
         });
     };
 
