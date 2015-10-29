@@ -1,4 +1,4 @@
-package com.tbts.impl;
+package com.tbts.dao;
 
 import com.tbts.model.Client;
 import com.tbts.model.Expert;

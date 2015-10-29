@@ -1,4 +1,4 @@
-package com.tbts.impl;
+package com.tbts.dao;
 
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
@@ -16,8 +16,6 @@ import java.util.Map;
  * Time: 15:18
  */
 public class MySQLDAO extends DAO {
-  private static final String CONNECTION_URL = "jdbc:mysql://localhost:3307/tbts?user=tigase&password=tg30239&useUnicode=true&characterEncoding=UTF-8&autoCreateUser=true";
-
   // Rooms
 
   @Override
@@ -229,9 +227,9 @@ public class MySQLDAO extends DAO {
   final PreparedStatement updateRoomOwnerState;
   final PreparedStatement updateActiveExpert;
 
-  public MySQLDAO() {
+  public MySQLDAO(String connectionUrl) {
     try {
-      final Connection conn = DriverManager.getConnection(CONNECTION_URL);
+      final Connection conn = DriverManager.getConnection(connectionUrl);
       checkUser = conn.prepareStatement("SELECT * FROM tbts.Users WHERE id=?;");
       addUser = conn.prepareStatement("INSERT INTO tbts.Users SET id=?;");
       addClient = conn.prepareStatement("INSERT INTO tbts.Clients SET id=?;");

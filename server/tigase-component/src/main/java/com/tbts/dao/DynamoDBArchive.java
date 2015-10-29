@@ -1,4 +1,4 @@
-package com.tbts.impl;
+package com.tbts.dao;
 
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;

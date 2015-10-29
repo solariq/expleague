@@ -1,7 +1,7 @@
 package com.tbts.tigase.component;
 
-import com.tbts.impl.DynamoDBArchive;
-import com.tbts.impl.MySQLDAO;
+import com.tbts.dao.DynamoDBArchive;
+import com.tbts.dao.MySQLDAO;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
 import com.tbts.model.handlers.*;
@@ -18,6 +18,7 @@ import tigase.xmpp.JID;
 import tigase.xmpp.NotAuthorizedException;
 import tigase.xmpp.XMPPResourceConnection;
 
+import javax.script.Bindings;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -38,11 +39,18 @@ public class TrackPresenceComponent extends SessionManager {
   private static StatusTracker tracker = new StatusTracker(System.out);
   @Override
   public void setProperties(Map<String, Object> props) throws ConfigurationException {
-    if (DAO.instance == null)
-      DAO.instance = new MySQLDAO();
+    if (DAO.instance == null && props.containsKey("tbtsdb-connection"))
+      DAO.instance = new MySQLDAO((String)props.get("tbtsdb-connection"));
     if (Archive.instance == null)
       Archive.instance = new DynamoDBArchive();
     super.setProperties(props);
+  }
+
+  private Bindings bindings;
+  @Override
+  public void initBindings(Bindings binds) {
+    bindings = binds;
+    super.initBindings(binds);
   }
 
   @Override

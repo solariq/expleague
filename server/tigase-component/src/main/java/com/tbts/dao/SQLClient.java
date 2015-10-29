@@ -1,4 +1,4 @@
-package com.tbts.impl;
+package com.tbts.dao;
 
 import com.tbts.model.Room;
 import com.tbts.model.impl.ClientImpl;
