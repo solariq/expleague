@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Time: 14:55
  */
 public class DAO {
-  public static DAO instance = new DAO();
+  public static DAO instance;
 
   protected DAO() {}
 

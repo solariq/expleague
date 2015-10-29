@@ -1,10 +1,11 @@
 package com.tbts.tigase.component;
 
 import com.spbsu.commons.func.Action;
-import com.tbts.com.tbts.db.impl.MySQLDAO;
-import com.tbts.model.*;
+import com.tbts.model.Answer;
+import com.tbts.model.Client;
+import com.tbts.model.Expert;
+import com.tbts.model.Room;
 import com.tbts.model.handlers.ClientManager;
-import com.tbts.model.handlers.DAO;
 import com.tbts.model.handlers.ExpertManager;
 import com.tbts.model.handlers.Reception;
 import tigase.criteria.Criteria;
@@ -29,14 +30,8 @@ import java.util.logging.Logger;
  */
 public class AllocateRoomModule extends GroupchatMessageModule {
   private static final Logger log = Logger.getLogger(AllocateRoomModule.class.getName());
-  private static final String SUBJECT = "subject";
   private static final Criteria CRIT = ElementCriteria.name("message").add(ElementCriteria.name("subject"));
-  @SuppressWarnings("unused")
-  private static StatusTracker tracker = new StatusTracker(System.out);
 
-  static {
-    DAO.instance = new MySQLDAO();
-  }
   @SuppressWarnings("FieldCanBeLocal")
   private final Action<Expert> expertCommunication;
   private int expertsCount = 0;
@@ -92,26 +87,28 @@ public class AllocateRoomModule extends GroupchatMessageModule {
 
   @Override
   public void process(Packet packet) throws MUCException {
-    if (CRIT.match(packet.getElement())) {
-      final Client client = ClientManager.instance().byJID(packet.getStanzaFrom().getBareJID().toString());
-      final String subject = packet.getElement().getChild(SUBJECT).childrenToString();
-      Room room = Reception.instance().room(client, packet.getStanzaTo().getBareJID().toString());
-      client.activate(room);
-      room.text(subject);
-      client.query();
-    }
-    else {
-      final Expert expert = ExpertManager.instance().get(packet.getStanzaFrom().getBareJID().toString());
-      if (expert != null && expert.state() == Expert.State.GO) {
+    final BareJID to = packet.getStanzaTo().getBareJID();
+    final Room room = Reception.instance().room(to.toString());
+
+    final JID stanzaFrom = packet.getStanzaFrom();
+    if (room != null && stanzaFrom != null) {
+      final boolean isExpert = "expert".equals(stanzaFrom.getResource());
+      final String fromId = stanzaFrom.getBareJID().toString();
+      if ("message".equals(packet.getElement().getName())) {
+        room.onMessage(fromId, packet.getElement().toStringPretty());
+      }
+
+      final Client client = isExpert ? null : ClientManager.instance().get(fromId);
+      final Expert expert = isExpert ? ExpertManager.instance().get(fromId) : null;
+
+      if (client != null && CRIT.match(packet.getElement())) {
+        client.query();
+      }
+      else if (expert != null && expert.state() == Expert.State.GO) {
         expert.answer(new Answer());
       }
     }
 
-    final BareJID to = packet.getTo().getBareJID();
-    final Room room = Reception.instance().room(to.toString());
-    if (room != null && "message".equals(packet.getElement().getName())) {
-      room.onMessage(packet.getFrom().getBareJID().toString(), packet.getElement().toStringPretty());
-    }
     super.process(packet);
   }
 }

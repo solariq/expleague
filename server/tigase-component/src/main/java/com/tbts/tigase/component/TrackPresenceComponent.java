@@ -1,11 +1,12 @@
 package com.tbts.tigase.component;
 
+import com.tbts.impl.DynamoDBArchive;
+import com.tbts.impl.MySQLDAO;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
-import com.tbts.model.handlers.Reception;
+import com.tbts.model.handlers.*;
 import com.tbts.model.Room;
-import com.tbts.model.handlers.ClientManager;
-import com.tbts.model.handlers.ExpertManager;
+import tigase.conf.ConfigurationException;
 import tigase.criteria.Criteria;
 import tigase.criteria.ElementCriteria;
 import tigase.server.Iq;
@@ -33,6 +34,16 @@ public class TrackPresenceComponent extends SessionManager {
     super();
   }
 
+  @SuppressWarnings("unused")
+  private static StatusTracker tracker = new StatusTracker(System.out);
+  @Override
+  public void setProperties(Map<String, Object> props) throws ConfigurationException {
+    if (DAO.instance == null)
+      DAO.instance = new MySQLDAO();
+    if (Archive.instance == null)
+      Archive.instance = new DynamoDBArchive();
+    super.setProperties(props);
+  }
 
   @Override
   protected void closeSession(XMPPResourceConnection conn, boolean closeOnly) {
@@ -63,7 +74,7 @@ public class TrackPresenceComponent extends SessionManager {
   }
 
   private void updateClientState(JID from, JID to, Status status) {
-    final Client client = ClientManager.instance().byJID(from.getBareJID().toString());
+    final Client client = ClientManager.instance().get(from.getBareJID().toString());
     if (client == null)
       return;
     final Room room = to != null ? Reception.instance().room(client, to.getBareJID().toString()) : null;

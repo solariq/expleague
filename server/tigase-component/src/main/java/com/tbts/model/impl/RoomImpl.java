@@ -1,11 +1,17 @@
 package com.tbts.model.impl;
 
+import com.amazonaws.util.StringInputStream;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
+import com.spbsu.commons.xml.JDOMUtil;
 import com.tbts.model.*;
+import com.tbts.model.handlers.Archive;
 import com.tbts.model.handlers.ExpertManager;
 import com.tbts.model.handlers.Reception;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -23,11 +29,13 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
   private final String id;
   @SuppressWarnings("FieldCanBeLocal")
   private final Action<Expert> clearInviteLst;
+  private final Client owner;
 
   private State state;
   private Action<Expert> workerListener;
 
   public RoomImpl(String id, Client client) {
+    this.owner = client;
     this.id = id;
     state = State.INIT;
     client.addListener(clientLst = cl -> {
@@ -77,17 +85,20 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
     return id;
   }
 
-  private Query.Builder qBuilder = new Query.Builder();
-
-  @Override
-  public void text(String text) {
-    if (state != State.CLEAN)
-      throw new IllegalStateException();
-    qBuilder.addText(text);
-  }
-
   public Query query() {
-    return qBuilder.build();
+    final Query.Builder builder = new Query.Builder();
+    Archive.instance().visitMessages(this, (authorId, message, ts) -> {
+      try {
+        final Element element = JDOMUtil.loadXML(new StringInputStream(message.toString()));
+        final Element subject = element.getChild("subject", Namespace.getNamespace("jabber:client"));
+        if (subject != null)
+          builder.addText(subject.getText());
+      } catch (UnsupportedEncodingException e) {
+        throw new RuntimeException(e);
+      }
+      return true;
+    });
+    return builder.build();
   }
 
   protected void state(State state) {
@@ -149,8 +160,8 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
   }
 
   @Override
-  public void onMessage(String s, CharSequence element) {
-
+  public void onMessage(String author, CharSequence text) {
+    Archive.instance().log(this, author, text);
   }
 
   @Override

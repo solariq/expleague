@@ -20,7 +20,7 @@ public class ClientManager extends WeakListenerHolderImpl<Client> implements Act
     return CLIENT_MANAGER;
   }
 
-  public synchronized Client byJID(String jid) {
+  public synchronized Client get(String jid) {
     Client client = DAO.instance().client(jid);
     if (client == null) {
       if (jid.contains("@muc.") || !jid.contains("@"))

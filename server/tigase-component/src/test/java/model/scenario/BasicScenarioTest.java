@@ -47,7 +47,7 @@ public class BasicScenarioTest {
   public void testShortSuccess() throws TigaseStringprepException, InterruptedException {
     final StringBuffer track = new StringBuffer();
     final StatusTracker tracker = new StatusTracker(track);
-    final Client client = ClientManager.instance().byJID("client@localhost");
+    final Client client = ClientManager.instance().get("client@localhost");
     client.addListener(tracker.clientListener());
     Reception.instance().addListener(tracker.roomListener());
 
@@ -87,7 +87,7 @@ public class BasicScenarioTest {
   public void testExpertAfterClient() throws TigaseStringprepException, InterruptedException {
     final StringBuffer track = new StringBuffer();
     final StatusTracker tracker = new StatusTracker(track);
-    final Client client = ClientManager.instance().byJID("client@localhost");
+    final Client client = ClientManager.instance().get("client@localhost");
     client.addListener(tracker.clientListener());
     Reception.instance().addListener(tracker.roomListener());
 
@@ -128,7 +128,7 @@ public class BasicScenarioTest {
   public void testChatSuccess() throws TigaseStringprepException, InterruptedException {
     final StringBuffer track = new StringBuffer();
     final StatusTracker tracker = new StatusTracker(track);
-    final Client client = ClientManager.instance().byJID("client-chat-1@localhost");
+    final Client client = ClientManager.instance().get("client-chat-1@localhost");
     client.addListener(tracker.clientListener());
     Reception.instance().addListener(tracker.roomListener());
 
@@ -179,7 +179,7 @@ public class BasicScenarioTest {
   public void testChat2Success() throws TigaseStringprepException, InterruptedException {
     final StringBuffer track = new StringBuffer();
     final StatusTracker tracker = new StatusTracker(track);
-    final Client client = ClientManager.instance().byJID("client-chat-2@localhost");
+    final Client client = ClientManager.instance().get("client-chat-2@localhost");
     client.addListener(tracker.clientListener());
     Reception.instance().addListener(tracker.roomListener());
 

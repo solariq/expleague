@@ -1,4 +1,4 @@
-package com.tbts.com.tbts.db.impl;
+package com.tbts.impl;
 
 import com.tbts.model.Client;
 import com.tbts.model.Expert;

@@ -13,7 +13,6 @@ import java.util.Set;
 public interface Room extends WeakListenerHolder<Room> {
   String id();
 
-  void text(String text);
   Query query();
   void answer(Answer answer);
   void enter(Expert winner);
