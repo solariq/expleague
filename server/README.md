@@ -22,7 +22,7 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.60-b23, mixed mode)
 
 ## 3. Ставим MySQL c сайта Oracle:
 http://dev.mysql.com/downloads/file.php?id=458460
-К сожалению они не дают загружать без регистрации, так что прийдется на это потратить несколько минут.
+Чтобы не тратить время на регистрацию, нажимаем на ссылку в самом низу «No thanks, just start my download.»
 
 Я исхожу из того, что вы скачали репозиторий, и у вас стоит java 8 и MySQL с сайта Oracle.
 
