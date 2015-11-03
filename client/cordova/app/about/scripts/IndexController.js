@@ -55,6 +55,25 @@ angular
     // Как только устройство готово (при старте приложения), регистрируем пользователя
     document.addEventListener('deviceready', function () {
       registerUser();
+
+      function errorHandler (error) {
+        supersonic.logger.log('error = ' + error);
+      }
+
+      function registrationHandler (deviceToken) {
+        supersonic.logger.log('deviceToken = ' + deviceToken);
+        //save the deviceToken / registration ID to your Push Notification Server
+      }
+
+      window.plugins.pushNotification.register(
+        registrationHandler,
+        errorHandler, {
+          "badge":"true",
+          "sound":"true",
+          "alert":"true"
+        }
+      );
+
     }, false);
 
     // Сохраняем текущие значения параметров сервера в localStorage
