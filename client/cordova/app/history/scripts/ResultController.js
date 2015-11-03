@@ -114,6 +114,9 @@ angular
         changeConnectionStatus('connecting');
       } else if (status === Strophe.Status.CONNECTED) {
         changeConnectionStatus('connected');
+        // Отправляем presence, пользователь online
+        connection.send($pres());
+        // connection.send($pres().c('priority').t('5'));
         createChatRoom(connection, $scope.chatroom.name, $scope.user.username, $scope.chatroom.topic, onGroupchatMessage);
       } else if (status == Strophe.Status.DISCONNECTING) {
         changeConnectionStatus('disconnecting');
