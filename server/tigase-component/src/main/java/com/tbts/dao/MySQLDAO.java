@@ -22,7 +22,7 @@ public class MySQLDAO extends DAO {
   // Rooms
 
   @Override
-  protected Room room(String jid) {
+  protected synchronized Room room(String jid) {
     Room room = roomsMap.get(jid);
     if (room != null)
       return room;
@@ -31,13 +31,13 @@ public class MySQLDAO extends DAO {
   }
 
   @Override
-  protected Map<String, Room> rooms() {
+  protected synchronized Map<String, Room> rooms() {
     populateRoomsCache();
     return roomsMap;
   }
 
   @Override
-  protected Room createRoom(String id, Client owner) {
+  protected synchronized Room createRoom(String id, Client owner) {
     Room existing = room(id);
     if (existing != null)
       return existing;
@@ -220,7 +220,7 @@ public class MySQLDAO extends DAO {
   private PreparedStatement createStatement(String name, String stmt) {
     PreparedStatement preparedStatement = statements.get(name);
     try {
-      if (preparedStatement == null || preparedStatement.isClosed()) {
+      if (preparedStatement == null || preparedStatement.isClosed() || preparedStatement.getConnection() == null) {
         if (conn.isClosed())
           conn = DriverManager.getConnection(connectionUrl);
         preparedStatement = conn.prepareStatement(stmt);
