@@ -36,6 +36,7 @@ public interface Room extends WeakListenerHolder<Room> {
   enum State {
     CLEAN(0),
     DEPLOYED(1),
+    INVITE(8),
     LOCKED(2),
     TIMEOUT(3),
     COMPLETE(4),

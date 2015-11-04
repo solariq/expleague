@@ -1,5 +1,6 @@
 package com.tbts.dao;
 
+import com.spbsu.commons.filters.Filter;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
 import com.tbts.model.Room;
@@ -61,11 +62,10 @@ public class MySQLDAO extends DAO {
         final String activeExpertId = rs.getString("active_expert");
         final Expert active_expert = activeExpertId != null ? expert(activeExpertId) : null;
         final Room.State state = Room.State.byIndex(rs.getInt("state"));
-        final SQLRoom existing = (SQLRoom) roomsMap.get(id);
-        if (existing != null)
-          existing.update(state, active_expert);
-        else
-          roomsMap.put(id, new SQLRoom(this, id, owner, active_expert, state));
+        SQLRoom existing = (SQLRoom) roomsMap.get(id);
+        if (existing == null)
+          roomsMap.put(id, existing = new SQLRoom(this, id, owner, active_expert, state));
+        existing.update(state, active_expert);
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -223,11 +223,16 @@ public class MySQLDAO extends DAO {
   final PreparedStatement updateClientState;
   final PreparedStatement updateExpertState;
   final PreparedStatement updateRoomState;
+  final PreparedStatement updateRoomExpert;
   final PreparedStatement updateClientActiveRoom;
   final PreparedStatement updateRoomOwnerState;
-  final PreparedStatement updateActiveExpert;
 
-  public MySQLDAO(String connectionUrl) {
+  public void init() {
+    populateRoomsCache();
+  }
+
+  public MySQLDAO(String connectionUrl, Filter<String> availability) {
+    super(availability);
     try {
       final Connection conn = DriverManager.getConnection(connectionUrl);
       checkUser = conn.prepareStatement("SELECT * FROM tbts.Users WHERE id=?;");
@@ -238,20 +243,19 @@ public class MySQLDAO extends DAO {
       listClients = conn.prepareStatement("SELECT clients.id, rooms.id, rooms.owner_state, clients.active_room, clients.state " +
                                               "FROM tbts.Clients AS clients LEFT OUTER JOIN tbts.Rooms AS rooms " +
                                                 "ON clients.id = rooms.owner " +
-                                              "GROUP BY Clients.id;");
+                                              "GROUP BY clients.id;");
       listExperts = conn.prepareStatement("SELECT e.id, e.state, r.id FROM tbts.Experts AS e LEFT JOIN tbts.Rooms AS r ON e.id = r.active_expert;");
       listRooms = conn.prepareStatement("SELECT * FROM tbts.Rooms;");
-      updateClientState = conn.prepareStatement("UPDATE tbts.Experts SET state=? WHERE id=?;");
-      updateExpertState = conn.prepareStatement("UPDATE tbts.Clients SET state=? WHERE id=?;");
+      updateClientState = conn.prepareStatement("UPDATE tbts.Clients SET state=? WHERE id=?;");
+      updateExpertState = conn.prepareStatement("UPDATE tbts.Experts SET state=? WHERE id=?;");
       updateRoomState = conn.prepareStatement("UPDATE tbts.Rooms SET state=? WHERE id=?;");
-      updateActiveExpert = conn.prepareStatement("UPDATE tbts.Rooms SET active_expert=? WHERE id=?;");
+      updateRoomExpert = conn.prepareStatement("UPDATE tbts.Rooms SET active_expert=? WHERE id=?;");
       updateClientActiveRoom = conn.prepareStatement("UPDATE tbts.Clients SET active_room=? WHERE id=?;");
       updateRoomOwnerState = conn.prepareStatement("UPDATE tbts.Rooms SET owner_state=? WHERE id=?;");
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }
-
 
   static {
     try {

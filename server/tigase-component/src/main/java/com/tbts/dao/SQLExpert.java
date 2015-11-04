@@ -34,7 +34,10 @@ public class SQLExpert extends ExpertImpl {
   }
 
   public void update(State state, String active) {
-    // TODO
-//    throw new NotImplementedException();
+    if (!dao.isUserAvailable(id())) {
+      this.state = State.AWAY;
+    }
+    else
+      this.state = state;
   }
 }

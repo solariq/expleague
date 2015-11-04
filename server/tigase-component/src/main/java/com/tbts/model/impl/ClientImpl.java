@@ -23,7 +23,7 @@ import java.util.Map;
 public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client {
   private final String id;
   private final Map<String, State> states = new HashMap<>();
-  boolean online = false;
+  protected boolean online = false;
   private Action<Room> completeRoomListener = new Action<Room>() {
     @Override
     public void invoke(Room room) {
@@ -56,9 +56,10 @@ public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client
     return id;
   }
 
+  @Nullable
   @Override
   public Room active() {
-    return Reception.instance().room(activeId);
+    return activeId != null ? Reception.instance().room(activeId) : null;
   }
 
 

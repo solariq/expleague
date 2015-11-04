@@ -1,13 +1,14 @@
 package model.scenario;
 
+import com.spbsu.commons.filters.TrueFilter;
 import com.spbsu.commons.func.Action;
-import com.tbts.model.handlers.DAO;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
-import com.tbts.model.handlers.Reception;
 import com.tbts.model.Room;
 import com.tbts.model.handlers.ClientManager;
+import com.tbts.model.handlers.DAO;
 import com.tbts.model.handlers.ExpertManager;
+import com.tbts.model.handlers.Reception;
 import model.scenario.fake.ObedientClient;
 import model.scenario.fake.ObedientExpert;
 import org.junit.*;
@@ -275,6 +276,10 @@ public class BasicScenarioTest {
   }
 
   private static class MyDAO extends DAO {
+    protected MyDAO() {
+      super(new TrueFilter<>());
+    }
+
     @Override
     public Client createClient(String id) {
       if (id.contains("chat")) {

@@ -8,6 +8,7 @@ import com.tbts.model.Room;
 import com.tbts.model.handlers.ClientManager;
 import com.tbts.model.handlers.ExpertManager;
 import com.tbts.model.handlers.Reception;
+import tigase.component.Context;
 import tigase.criteria.Criteria;
 import tigase.criteria.ElementCriteria;
 import tigase.muc.exceptions.MUCException;
@@ -19,7 +20,6 @@ import tigase.xml.Element;
 import tigase.xmpp.BareJID;
 import tigase.xmpp.JID;
 
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,7 +34,6 @@ public class AllocateRoomModule extends GroupchatMessageModule {
 
   @SuppressWarnings("FieldCanBeLocal")
   private final Action<Expert> expertCommunication;
-  private int expertsCount = 0;
   public AllocateRoomModule() {
     expertCommunication = new Action<Expert>() {
       @Override
@@ -44,12 +43,20 @@ public class AllocateRoomModule extends GroupchatMessageModule {
             try {
               Room active = expert.active();
               final Element invite = new Element(Message.ELEM_NAME);
-              final Element x = new Element("x");
-              x.setXMLNS("http://jabber.org/protocol/muc#user");
-              x.addChild(new Element("invite", new String[]{"from"}, new String[]{active.id()}));
-              invite.addChild(x);
               final String subj = active.query().text();
-              x.addChild(new Element("subj", subj));
+              {
+                final Element x = new Element("x");
+                x.setXMLNS("http://jabber.org/protocol/muc#user");
+                x.addChild(new Element("invite", new String[]{"from"}, new String[]{active.id()}));
+                x.addChild(new Element("subj", subj));
+                invite.addChild(x);
+              }
+              {
+                final Element x = new Element("x");
+                x.setXMLNS("jabber:x:conference");
+                x.setAttribute("reason", subj);
+                invite.addChild(x);
+              }
               write(Packet.packetInstance(invite, JID.jidInstance(active.id()), JID.jidInstance(BareJID.bareJIDInstance(expert.id()), "expert")));
             } catch (TigaseStringprepException e) {
               log.log(Level.WARNING, "Error constructing invte", e);
@@ -58,31 +65,16 @@ public class AllocateRoomModule extends GroupchatMessageModule {
           case CHECK:
             expert.steady();
             break;
-          case AWAY:
-          case READY:
-            int expertsCount = ExpertManager.instance().count();
-            if (expertsCount != AllocateRoomModule.this.expertsCount) {
-              AllocateRoomModule.this.expertsCount = expertsCount;
-              final Element presence = new Element("message");
-              presence.setXMLNS("jabber:client");
-              final Element show = new Element("body");
-              show.setCData(expertsCount + " experts online");
-              presence.addChild(show);
-
-              final List<String> online = ClientManager.instance().online();
-              for (final String bareJID : online) {
-                try {
-                  write(Packet.packetInstance(presence, JID.jidInstance(context.getServiceName().getDomain()), JID.jidInstance(bareJID)));
-                } catch (TigaseStringprepException e) {
-                  throw new RuntimeException(e);
-                }
-              }
-            }
-            break;
         }
       }
     };
     ExpertManager.instance().addListener(expertCommunication);
+  }
+
+  @Override
+  public void setContext(Context context) {
+    super.setContext(context);
+//    context.getEventBus().addHandler(VHostListener.);
   }
 
   @Override

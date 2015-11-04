@@ -31,6 +31,18 @@ class SQLClient extends ClientImpl {
         throw new RuntimeException(e);
       }
     }
+    final Room active = active();
+    if (active != null) {
+      synchronized (dao.updateRoomOwnerState) {
+        try {
+          dao.updateRoomOwnerState.setInt(1, state.index());
+          dao.updateRoomOwnerState.setString(2, active.id());
+          dao.updateRoomOwnerState.execute();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
     super.state(state);
   }
 
@@ -49,7 +61,6 @@ class SQLClient extends ClientImpl {
   }
 
   public void update(Map<String, State> states, String currentActive) {
-    // TODO
-//    throw new NotImplementedException();
+    this.online = !dao.isUserAvailable(id());
   }
 }

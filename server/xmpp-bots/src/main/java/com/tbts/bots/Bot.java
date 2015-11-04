@@ -70,6 +70,7 @@ public class Bot {
             });
     jaxmpp.login();
     latch.state(2, 1);
+    System.out.println("Registration phase passed");
     jaxmpp.getSessionObject().setProperty(InBandRegistrationModule.IN_BAND_REGISTRATION_MODE_KEY, Boolean.FALSE);
     jaxmpp.getProperties().setUserProperty(SessionObject.USER_BARE_JID, jid);
     jaxmpp.getProperties().setUserProperty(SessionObject.PASSWORD, passwd);
@@ -77,6 +78,8 @@ public class Bot {
     jaxmpp.getEventBus().addHandler(JaxmppCore.ConnectedHandler.ConnectedEvent.class, sessionObject -> latch.advance());
     jaxmpp.login();
     latch.state(2, 1);
+    System.out.println("Logged in");
+
   }
 
   public void stop() throws JaxmppException {
@@ -101,6 +104,7 @@ public class Bot {
   public void online() {
     try {
       jaxmpp.send(Presence.create());
+      System.out.println("Online presence sent");
     } catch (JaxmppException e) {
       throw new RuntimeException(e);
     }

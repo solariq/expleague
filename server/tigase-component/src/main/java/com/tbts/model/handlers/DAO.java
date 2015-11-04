@@ -1,5 +1,6 @@
 package com.tbts.model.handlers;
 
+import com.spbsu.commons.filters.Filter;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
 import com.tbts.model.Room;
@@ -18,14 +19,17 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DAO {
   public static DAO instance;
+  public Filter<String> checkAvailability;
 
-  protected DAO() {}
+  protected DAO(final Filter<String> availabilityChecker) {
+    checkAvailability = availabilityChecker;
+  }
 
   protected static DAO instance() {
     return instance;
   }
 
-  protected Map<String, Expert> expertsMap = new ConcurrentHashMap<>();
+  protected final Map<String, Expert> expertsMap = new ConcurrentHashMap<>();
 
   protected Map<String, Expert> experts() {
     return Collections.unmodifiableMap(expertsMap);
@@ -41,7 +45,7 @@ public class DAO {
     return expertsMap.get(id);
   }
 
-  protected Map<String, Client> clientsMap = new ConcurrentHashMap<>();
+  protected final Map<String, Client> clientsMap = new ConcurrentHashMap<>();
 
   protected Map<String, Client> clients() {
     return Collections.unmodifiableMap(clientsMap);
@@ -58,7 +62,7 @@ public class DAO {
   }
 
 
-  protected Map<String, Room> roomsMap = new ConcurrentHashMap<>();
+  protected final Map<String, Room> roomsMap = new ConcurrentHashMap<>();
 
   protected Map<String, Room> rooms() {
     return roomsMap;
@@ -70,6 +74,12 @@ public class DAO {
 
   protected Room room(String jid) {
     return roomsMap.get(jid);
+  }
+
+  public void init() {}
+
+  public boolean isUserAvailable(String id) {
+    return checkAvailability.accept(id);
   }
 
   private static class MyClient extends ClientImpl {

@@ -100,8 +100,8 @@ public class ClientBot extends Bot {
     final StateLatch latch = new StateLatch();
     client.start();
     client.online();
-    client.startRoom();
-    client.topic("Hello world");
+//    client.startRoom();
+//    client.topic("Hello world");
     client.jaxmpp.getEventBus().addHandler(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, (sessionObject, stanza) -> {
       try {
         System.out.println("Msg: " + stanza.getAsString());

@@ -31,8 +31,8 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
   private final Action<Expert> clearInviteLst;
   private final Client owner;
 
-  private State state;
-  private Action<Expert> workerListener;
+  protected State state;
+  protected Action<Expert> workerListener;
 
   public RoomImpl(String id, Client client) {
     this.owner = client;
