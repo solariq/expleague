@@ -27,6 +27,7 @@
     <orderEntry type="library" name="Maven: tigase:jaxmpp-core:3.0.0" level="project" />
     <orderEntry type="library" name="Maven: tigase:tigase-xmltools:3.4.5" level="project" />
     <orderEntry type="library" name="Maven: dnsjava:dnsjava:2.1.1" level="project" />
+    <orderEntry type="library" name="Maven: tigase:jaxmpp-roster:3.0.0" level="project" />
     <orderEntry type="library" name="Maven: tigase:jaxmpp-presence:3.0.0" level="project" />
     <orderEntry type="library" name="Maven: mysql:mysql-connector-java:5.1.36" level="project" />
     <orderEntry type="library" name="Maven: junit:junit:4.12" level="project" />

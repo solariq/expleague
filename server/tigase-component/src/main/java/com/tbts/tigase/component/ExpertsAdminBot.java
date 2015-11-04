@@ -4,6 +4,7 @@ import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.SessionObject;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 import tigase.jaxmpp.core.client.xmpp.modules.presence.PresenceModule;
+import tigase.jaxmpp.core.client.xmpp.modules.roster.RosterModule;
 import tigase.jaxmpp.core.client.xmpp.stanzas.Presence;
 import tigase.jaxmpp.core.client.xmpp.stanzas.Stanza;
 import tigase.jaxmpp.j2se.J2SEPresenceStore;
@@ -24,25 +25,25 @@ public class ExpertsAdminBot {
   private final Thread botThread;
 
   public ExpertsAdminBot(String name) {
-    try {
-      if (!connection.isConnected()) { // create admin user if necessarily
-        BareJID jid = BareJID.bareJIDInstance(name);
-        connection.getProperties().setUserProperty(SessionObject.USER_BARE_JID, jid);
-        connection.getProperties().setUserProperty(SessionObject.PASSWORD, EXPERTS_ADMIN_LONG_PASSWORD);
-        connection.getSessionObject().setProperty(SocketConnector.TLS_DISABLED_KEY, true);
-        PresenceModule.setPresenceStore(connection.getSessionObject(), new J2SEPresenceStore());
-        connection.getModulesManager().register(new PresenceModule());
-        connection.login();
-      }
-    }
-    catch (JaxmppException e) {
-      throw new RuntimeException(e);
+    if (!connection.isConnected()) { // create admin user if necessarily
+      BareJID jid = BareJID.bareJIDInstance(name);
+      connection.getProperties().setUserProperty(SessionObject.USER_BARE_JID, jid);
+      connection.getProperties().setUserProperty(SessionObject.PASSWORD, EXPERTS_ADMIN_LONG_PASSWORD);
+      connection.getSessionObject().setProperty(SocketConnector.TLS_DISABLED_KEY, true);
+      PresenceModule.setPresenceStore(connection.getSessionObject(), new J2SEPresenceStore());
+      connection.getModulesManager().register(new PresenceModule());
+      connection.getModulesManager().register(new RosterModule());
     }
 
     botThread = new Thread("Experts admin bot") {
       @Override
       public void run() {
         { // sending presence with experts count
+          try {
+            connection.login();
+          } catch (JaxmppException e) {
+            throw new RuntimeException(e);
+          }
           synchronized (ExpertsAdminBot.this) {
             //noinspection InfiniteLoopStatement
             while (true) {
