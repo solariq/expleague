@@ -63,7 +63,10 @@ public class TrackPresenceComponent extends SessionManager {
               { // confirm that all users have admin as the roster buddy
                 final JID adminBuddy = JID.jidInstance(admin);
                 final RosterAbstract roster = RosterFactory.getRosterImplementation(true);
-                final XMPPResourceConnection adminConnection = getSession(admin).getResourceConnection(adminBuddy);
+                final XMPPSession adminSession = getSession(admin);
+                if (adminSession == null)
+                  return;
+                final XMPPResourceConnection adminConnection = adminSession.getResourceConnection(adminBuddy);
                 for (final String jid : ClientManager.instance().online()) {
                   final JID clientBuddy = JID.jidInstance(jid);
                   if (!roster.containsBuddy(adminConnection, clientBuddy)) {
