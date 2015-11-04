@@ -14,14 +14,6 @@ import tigase.db.AuthRepository;
 import tigase.db.RepositoryFactory;
 import tigase.db.TigaseDBException;
 import tigase.db.UserRepository;
-import tigase.jaxmpp.core.client.SessionObject;
-import tigase.jaxmpp.core.client.exceptions.JaxmppException;
-import tigase.jaxmpp.core.client.xmpp.modules.presence.PresenceModule;
-import tigase.jaxmpp.core.client.xmpp.stanzas.Stanza;
-import tigase.jaxmpp.j2se.J2SEPresenceStore;
-import tigase.jaxmpp.j2se.J2SESessionObject;
-import tigase.jaxmpp.j2se.Jaxmpp;
-import tigase.jaxmpp.j2se.connectors.socket.SocketConnector;
 import tigase.server.Iq;
 import tigase.server.Packet;
 import tigase.server.xmppsession.SessionManager;
@@ -42,16 +34,15 @@ import java.util.logging.Logger;
  */
 public class TrackPresenceComponent extends SessionManager {
   private static final Logger log = Logger.getLogger(TrackPresenceComponent.class.getName());
-  public static final String EXPERTS_ADMIN_LONG_PASSWORD = "experts-admin-long-password";
   private static Criteria CRIT = ElementCriteria.name("presence");
 
   @SuppressWarnings("FieldCanBeLocal")
   private final Action<Expert> expertCommunication;
-  private final Jaxmpp jaxmppServer = new Jaxmpp(new J2SESessionObject());
 
   private int expertsCount = -1;
   private AuthRepository authRepo;
   private UserRepository userRepo;
+  private ExpertsAdminBot adminBot;
 
   public TrackPresenceComponent() {
     super();
@@ -63,17 +54,12 @@ public class TrackPresenceComponent extends SessionManager {
           if (expertsCount != TrackPresenceComponent.this.expertsCount) {
             try {
               final BareJID admin = BareJID.bareJIDInstance("experts-admin@" + getDefVHostItem().getDomain());
-              if (!jaxmppServer.isConnected()) { // create admin user if necessarily
+              if (adminBot == null) {
                 if (!userRepo.userExists(admin))
-                  authRepo.addUser(admin, EXPERTS_ADMIN_LONG_PASSWORD);
-                tigase.jaxmpp.core.client.BareJID jid = tigase.jaxmpp.core.client.BareJID.bareJIDInstance(admin.toString());
-                jaxmppServer.getProperties().setUserProperty(SessionObject.USER_BARE_JID, jid);
-                jaxmppServer.getProperties().setUserProperty(SessionObject.PASSWORD, EXPERTS_ADMIN_LONG_PASSWORD);
-                jaxmppServer.getSessionObject().setProperty(SocketConnector.TLS_DISABLED_KEY, true);
-                PresenceModule.setPresenceStore(jaxmppServer.getSessionObject(), new J2SEPresenceStore());
-                jaxmppServer.getModulesManager().register(new PresenceModule());
-                jaxmppServer.login();
+                  authRepo.addUser(admin, ExpertsAdminBot.EXPERTS_ADMIN_LONG_PASSWORD);
+                adminBot = new ExpertsAdminBot(admin.toString());
               }
+
               { // confirm that all users have admin as the roster buddy
                 final JID adminBuddy = JID.jidInstance(admin);
                 final RosterAbstract roster = RosterFactory.getRosterImplementation(true);
@@ -97,15 +83,9 @@ public class TrackPresenceComponent extends SessionManager {
                   }
                 }
               }
-              { // sending presence with experts count
-                final tigase.jaxmpp.core.client.xmpp.stanzas.Presence presence = Stanza.createPresence();
-                presence.setStatus(expertsCount + " experts online");
-                presence.setShow(tigase.jaxmpp.core.client.xmpp.stanzas.Presence.Show.online);
-                jaxmppServer.send(presence);
-                System.out.println("Presence sent");
-              }
+              adminBot.updateExpertsCount(expertsCount);
             }
-            catch (TigaseDBException | NotAuthorizedException | JaxmppException | TigaseStringprepException e) {
+            catch (TigaseDBException | NotAuthorizedException | TigaseStringprepException e) {
               throw new RuntimeException(e);
             }
             finally {
