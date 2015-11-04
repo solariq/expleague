@@ -93,8 +93,9 @@ public class MySQLDAO extends DAO {
     final Expert fresh = new SQLExpert(this, id, Expert.State.AWAY, null);
     try {
       ensureUser(id);
-      getAddExpert().setString(1, id);
-      getAddExpert().execute();
+      final PreparedStatement addExpert = getAddExpert();
+      addExpert.setString(1, id);
+      addExpert.execute();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -225,6 +226,7 @@ public class MySQLDAO extends DAO {
         preparedStatement = conn.prepareStatement(stmt);
       }
       preparedStatement.clearParameters();
+      statements.put(name, preparedStatement);
       return preparedStatement;
     } catch (SQLException e) {
       throw new RuntimeException(e);
