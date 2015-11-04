@@ -112,16 +112,16 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
 
     log.fine("Starting challenge for room: " + room.id());
 
-    //noinspection SynchronizationOnLocalVariableOrMethodParameter
-    synchronized (winner) {
-      while (room.state() == Room.State.DEPLOYED) {
-        while (!room.quorum(reserved)) {
-          final Expert next = nextAvailable(room);
-          next.addListener(challenge);
-          reserved.add(next);
-          next.reserve(room);
-        }
+    while (room.state() == Room.State.DEPLOYED) {
+      while (!room.quorum(reserved)) {
+        final Expert next = nextAvailable(room);
+        next.addListener(challenge);
+        reserved.add(next);
+        next.reserve(room);
+      }
 
+      //noinspection SynchronizationOnLocalVariableOrMethodParameter
+      synchronized (winner) {
         while (!steady.isEmpty() && !winner.filled()) {
           final Iterator<Expert> iterator = steady.iterator();
           final Expert next = iterator.next();
@@ -141,8 +141,8 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
         if (room.quorum(reserved)) {
           try {
             winner.wait(0);
+          } catch (InterruptedException ignore) {
           }
-          catch (InterruptedException ignore) {}
         }
       }
     }
