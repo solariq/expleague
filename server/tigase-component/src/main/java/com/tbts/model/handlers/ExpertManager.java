@@ -75,7 +75,7 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     super.invoke(e);
   }
 
-  public synchronized void challenge(final Room room) {
+  public void challenge(final Room room) {
     final Thread thread = new Thread(() -> challengeImpl(room));
     thread.setDaemon(true);
     thread.setName("Challenge thread for " + room.id());
