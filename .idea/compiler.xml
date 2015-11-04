@@ -24,19 +24,19 @@
         <processorPath useClasspath="true" />
         <module name="commons" />
       </profile>
-      <profile default="false" name="Annotation profile for tigase-component" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="true" />
-        <module name="tigase-component" />
-      </profile>
       <profile default="false" name="Annotation profile for xmpp-bots" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
         <module name="xmpp-bots" />
+      </profile>
+      <profile default="false" name="Annotation profile for tigase-component" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="tigase-component" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
