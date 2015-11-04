@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Action<Expert> {
   private static final Logger log = Logger.getLogger(ExpertManager.class.getName());
   public static final ExpertManager EXPERT_MANAGER = new ExpertManager();
-  public static final long EXPERT_ACCEPT_INVITATION_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
+  public static final long EXPERT_ACCEPT_INVITATION_TIMEOUT = TimeUnit.MINUTES.toMillis(5);
 
   public static synchronized ExpertManager instance() {
     return EXPERT_MANAGER;
