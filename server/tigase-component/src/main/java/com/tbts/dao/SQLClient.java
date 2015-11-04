@@ -61,6 +61,10 @@ class SQLClient extends ClientImpl {
   }
 
   public void update(Map<String, State> states, String currentActive) {
-    this.online = !dao.isUserAvailable(id());
+    final boolean available = dao.isUserAvailable(id());
+    if (!available && this.online) {
+      activate(null);
+    }
+    this.online = !available;
   }
 }
