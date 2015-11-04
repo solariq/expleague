@@ -69,7 +69,9 @@ public class DAO {
   }
 
   protected Room createRoom(String id, Client owner) {
-    return new MyRoom(id, owner);
+    final Room room = new MyRoom(id, owner);
+    roomsMap.put(id, room);
+    return room;
   }
 
   protected Room room(String jid) {
