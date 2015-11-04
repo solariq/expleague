@@ -139,6 +139,8 @@ public class TrackPresenceComponent extends SessionManager {
       Archive.instance = new DynamoDBArchive();
     if (DAO.instance == null && props.containsKey("tbtsdb-connection")) {
       DAO.instance = new MySQLDAO((String) props.get("tbtsdb-connection"), jid -> {
+        if (bindings == null)
+          return false;
         //noinspection unchecked
         final Map<JID, XMPPResourceConnection> connections = (Map<JID, XMPPResourceConnection>)bindings.get("userConnections");
         for (final XMPPResourceConnection connection : connections.values()) {

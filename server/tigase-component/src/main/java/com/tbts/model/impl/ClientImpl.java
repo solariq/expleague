@@ -98,6 +98,8 @@ public class ClientImpl extends WeakListenerHolderImpl<Client> implements Client
   }
 
   public void presence(boolean val) {
+    if (val == online)
+      return;
     state(val ? State.ONLINE : State.OFFLINE);
   }
 

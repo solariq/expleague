@@ -2,6 +2,7 @@ package com.tbts.dao;
 
 import com.tbts.model.impl.ExpertImpl;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
@@ -21,11 +22,12 @@ public class SQLExpert extends ExpertImpl {
 
   @Override
   protected void state(State state) {
-    synchronized (dao.updateExpertState) {
+    final PreparedStatement updateExpertState = dao.getUpdateExpertState();
+    synchronized (updateExpertState) {
       try {
-        dao.updateExpertState.setInt(1, state.index());
-        dao.updateExpertState.setString(2, id());
-        dao.updateExpertState.execute();
+        updateExpertState.setInt(1, state.index());
+        updateExpertState.setString(2, id());
+        updateExpertState.execute();
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }

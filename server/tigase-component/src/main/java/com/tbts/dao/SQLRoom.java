@@ -5,6 +5,7 @@ import com.tbts.model.Expert;
 import com.tbts.model.handlers.ExpertManager;
 import com.tbts.model.impl.RoomImpl;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
@@ -39,11 +40,12 @@ public class SQLRoom extends RoomImpl {
 
   @Override
   public void enter(Expert winner) {
-    synchronized (dao.updateRoomExpert) {
+    final PreparedStatement updateRoomExpert = dao.getUpdateRoomExpert();
+    synchronized (updateRoomExpert) {
       try {
-        dao.updateRoomExpert.setString(1, winner.id());
-        dao.updateRoomExpert.setString(2, id());
-        dao.updateRoomExpert.execute();
+        updateRoomExpert.setString(1, winner.id());
+        updateRoomExpert.setString(2, id());
+        updateRoomExpert.execute();
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
@@ -53,11 +55,12 @@ public class SQLRoom extends RoomImpl {
 
   @Override
   protected void state(State state) {
-    synchronized (dao.updateRoomState) {
+    final PreparedStatement updateRoomState = dao.getUpdateRoomState();
+    synchronized (updateRoomState) {
       try {
-        dao.updateRoomState.setInt(1, state.index());
-        dao.updateRoomState.setString(2, id());
-        dao.updateRoomState.execute();
+        updateRoomState.setInt(1, state.index());
+        updateRoomState.setString(2, id());
+        updateRoomState.execute();
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
