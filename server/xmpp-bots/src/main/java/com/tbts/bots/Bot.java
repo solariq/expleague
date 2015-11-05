@@ -8,6 +8,7 @@ import tigase.jaxmpp.core.client.xml.ElementFactory;
 import tigase.jaxmpp.core.client.xmpp.modules.muc.MucModule;
 import tigase.jaxmpp.core.client.xmpp.modules.presence.PresenceModule;
 import tigase.jaxmpp.core.client.xmpp.modules.registration.InBandRegistrationModule;
+import tigase.jaxmpp.core.client.xmpp.modules.roster.RosterModule;
 import tigase.jaxmpp.core.client.xmpp.stanzas.IQ;
 import tigase.jaxmpp.core.client.xmpp.stanzas.Presence;
 import tigase.jaxmpp.core.client.xmpp.stanzas.Stanza;
@@ -39,6 +40,7 @@ public class Bot {
     jaxmpp.getModulesManager().register(new MucModule());
     PresenceModule.setPresenceStore(jaxmpp.getSessionObject(), new J2SEPresenceStore());
     jaxmpp.getModulesManager().register(new PresenceModule());
+    jaxmpp.getModulesManager().register(new RosterModule());
   }
 
   public void start() throws JaxmppException {
@@ -70,6 +72,7 @@ public class Bot {
             });
     jaxmpp.login();
     latch.state(2, 1);
+    System.out.println("Registration phase passed");
     jaxmpp.getSessionObject().setProperty(InBandRegistrationModule.IN_BAND_REGISTRATION_MODE_KEY, Boolean.FALSE);
     jaxmpp.getProperties().setUserProperty(SessionObject.USER_BARE_JID, jid);
     jaxmpp.getProperties().setUserProperty(SessionObject.PASSWORD, passwd);
@@ -77,6 +80,8 @@ public class Bot {
     jaxmpp.getEventBus().addHandler(JaxmppCore.ConnectedHandler.ConnectedEvent.class, sessionObject -> latch.advance());
     jaxmpp.login();
     latch.state(2, 1);
+    System.out.println("Logged in");
+
   }
 
   public void stop() throws JaxmppException {
@@ -101,6 +106,7 @@ public class Bot {
   public void online() {
     try {
       jaxmpp.send(Presence.create());
+      System.out.println("Online presence sent");
     } catch (JaxmppException e) {
       throw new RuntimeException(e);
     }

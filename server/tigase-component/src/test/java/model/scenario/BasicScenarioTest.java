@@ -1,13 +1,11 @@
 package model.scenario;
 
+import com.spbsu.commons.filters.TrueFilter;
 import com.spbsu.commons.func.Action;
-import com.tbts.model.handlers.DAO;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
-import com.tbts.model.handlers.Reception;
 import com.tbts.model.Room;
-import com.tbts.model.handlers.ClientManager;
-import com.tbts.model.handlers.ExpertManager;
+import com.tbts.model.handlers.*;
 import model.scenario.fake.ObedientClient;
 import model.scenario.fake.ObedientExpert;
 import org.junit.*;
@@ -15,6 +13,10 @@ import tigase.util.TigaseStringprepException;
 
 import java.text.MessageFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * User: solar
@@ -25,22 +27,27 @@ public class BasicScenarioTest {
 
   private static DAO initialDAO;
   private static MyDAO myDAO;
+  private static Archive initialArchive;
+  private static InMemArchive myArchive;
 
   @BeforeClass
   public static void setUp() {
     initialDAO = DAO.instance;
-    myDAO = new MyDAO();
-    DAO.instance = myDAO;
+    initialArchive = Archive.instance;
+    DAO.instance = myDAO = new MyDAO();
+    Archive.instance = myArchive = new InMemArchive();
   }
 
   @AfterClass
   public static void tearDown() {
     DAO.instance = initialDAO;
+    Archive.instance = initialArchive;
   }
 
   @After
   public void clearManagers() {
     myDAO.clear();
+    myArchive.clear();
   }
 
   @Test
@@ -275,6 +282,10 @@ public class BasicScenarioTest {
   }
 
   private static class MyDAO extends DAO {
+    protected MyDAO() {
+      super(new TrueFilter<>());
+    }
+
     @Override
     public Client createClient(String id) {
       if (id.contains("chat")) {
@@ -302,6 +313,44 @@ public class BasicScenarioTest {
       clientsMap.clear();
       expertsMap.clear();
       roomsMap.clear();
+    }
+  }
+
+  private static class InMemArchive extends Archive {
+    final Map<String, List<Msg>> map = new HashMap<>();
+
+    @Override
+    public void log(Room room, String authorId, CharSequence element) {
+      List<Msg> msgs = map.get(room.id());
+      if (msgs == null)
+        map.put(room.id(), msgs = new ArrayList<>());
+      msgs.add(new Msg(authorId, element, System.currentTimeMillis()));
+    }
+
+    @Override
+    public void visitMessages(Room room, MessageVisitor visitor) {
+      final List<Msg> msgs = map.get(room.id());
+      if (msgs != null) {
+        for (final Msg msg : msgs) {
+          visitor.accept(msg.author, msg.message, msg.ts);
+        }
+      }
+    }
+
+    public void clear() {
+      map.clear();
+    }
+
+    class Msg {
+      String author;
+      long ts;
+      CharSequence message;
+
+      public Msg(String author, CharSequence message, long ts) {
+        this.author = author;
+        this.message = message;
+        this.ts = ts;
+      }
     }
   }
 }

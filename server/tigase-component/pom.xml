@@ -4,6 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>com.tbts</groupId>
+        <artifactId>server</artifactId>
+        <relativePath>../pom.xml</relativePath>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
     <repositories>
         <repository>
             <snapshots />
@@ -13,18 +19,17 @@
         </repository>
     </repositories>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
-        <java.version>1.8</java.version>
-    </properties>
-
-    <groupId>com.tbts</groupId>
     <artifactId>tigase-component</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <dependencies>
+        <dependency>
+            <groupId>com.spbsu</groupId>
+            <artifactId>commons</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
         <dependency>
             <groupId>tigase</groupId>
             <artifactId>tigase-server</artifactId>
@@ -36,9 +41,19 @@
             <version>2.3.0</version>
         </dependency>
         <dependency>
-            <groupId>com.spbsu</groupId>
-            <artifactId>commons</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <groupId>tigase</groupId>
+            <artifactId>jaxmpp-j2se</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>tigase</groupId>
+            <artifactId>jaxmpp-roster</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>tigase</groupId>
+            <artifactId>jaxmpp-presence</artifactId>
+            <version>3.0.0</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
@@ -56,18 +71,4 @@
             <version>1.9.29</version>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

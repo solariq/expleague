@@ -1,22 +1,27 @@
 package com.tbts.tigase.component;
 
+import com.spbsu.commons.func.Action;
 import com.tbts.dao.DynamoDBArchive;
 import com.tbts.dao.MySQLDAO;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
-import com.tbts.model.handlers.*;
 import com.tbts.model.Room;
+import com.tbts.model.handlers.*;
 import tigase.conf.ConfigurationException;
 import tigase.criteria.Criteria;
 import tigase.criteria.ElementCriteria;
+import tigase.db.AuthRepository;
+import tigase.db.RepositoryFactory;
+import tigase.db.TigaseDBException;
+import tigase.db.UserRepository;
 import tigase.server.Iq;
 import tigase.server.Packet;
 import tigase.server.xmppsession.SessionManager;
+import tigase.util.TigaseStringprepException;
 import tigase.xml.Element;
-import tigase.xmpp.BareJID;
-import tigase.xmpp.JID;
-import tigase.xmpp.NotAuthorizedException;
-import tigase.xmpp.XMPPResourceConnection;
+import tigase.xmpp.*;
+import tigase.xmpp.impl.roster.RosterAbstract;
+import tigase.xmpp.impl.roster.RosterFactory;
 
 import javax.script.Bindings;
 import java.util.Map;
@@ -31,26 +36,116 @@ public class TrackPresenceComponent extends SessionManager {
   private static final Logger log = Logger.getLogger(TrackPresenceComponent.class.getName());
   private static Criteria CRIT = ElementCriteria.name("presence");
 
+  @SuppressWarnings("FieldCanBeLocal")
+  private final Action<Expert> expertCommunication;
+
+  private int expertsCount = -1;
+  private AuthRepository authRepo;
+  private UserRepository userRepo;
+  private ExpertsAdminBot adminBot;
+
   public TrackPresenceComponent() {
     super();
+    expertCommunication = expert -> {
+      switch (expert.state()) {
+        case AWAY:
+        case READY:
+          int expertsCount = ExpertManager.instance().count();
+          if (expertsCount != TrackPresenceComponent.this.expertsCount) {
+            try {
+              final BareJID admin = BareJID.bareJIDInstance("experts-admin@" + getDefVHostItem().getDomain());
+              if (adminBot == null) {
+                if (!userRepo.userExists(admin))
+                  authRepo.addUser(admin, ExpertsAdminBot.EXPERTS_ADMIN_LONG_PASSWORD);
+                adminBot = new ExpertsAdminBot(admin.toString());
+              }
+
+              { // confirm that all users have admin as the roster buddy
+                final JID adminBuddy = JID.jidInstance(admin);
+                final RosterAbstract roster = RosterFactory.getRosterImplementation(true);
+                final XMPPSession adminSession = getSession(admin);
+                if (adminSession == null)
+                  return;
+                final XMPPResourceConnection adminConnection = adminSession.getResourceConnection(adminBuddy);
+                for (final String jid : ClientManager.instance().online()) {
+                  final JID clientBuddy = JID.jidInstance(jid);
+                  if (!roster.containsBuddy(adminConnection, clientBuddy)) {
+                    roster.addBuddy(adminConnection, clientBuddy, jid, new String[0], "");
+                    roster.setBuddySubscription(adminConnection, RosterAbstract.SubscriptionType.both, clientBuddy);
+                  }
+                }
+                for (final BareJID jid : userRepo.getUsers()) {
+                  final XMPPSession session = getSession(jid);
+                  if (session != null) {
+                    for (final XMPPResourceConnection connection : session.getActiveResources()) {
+                      if (!roster.containsBuddy(connection, adminBuddy)) {
+                        roster.addBuddy(connection, adminBuddy, "Administator", new String[0], "");
+                        roster.setBuddySubscription(connection, RosterAbstract.SubscriptionType.both, adminBuddy);
+                      }
+                    }
+                  }
+                }
+              }
+              adminBot.updateExpertsCount(expertsCount);
+            }
+            catch (TigaseDBException | NotAuthorizedException | TigaseStringprepException e) {
+              throw new RuntimeException(e);
+            }
+            finally {
+              TrackPresenceComponent.this.expertsCount = expertsCount;
+            }
+          }
+          break;
+        case CHECK:
+          break;
+        case STEADY:
+          break;
+        case INVITE:
+          break;
+        case DENIED:
+          break;
+        case CANCELED:
+          break;
+        case GO:
+          break;
+      }
+    };
+    ExpertManager.instance().addListener(expertCommunication);
   }
 
   @SuppressWarnings("unused")
   private static StatusTracker tracker = new StatusTracker(System.out);
   @Override
   public void setProperties(Map<String, Object> props) throws ConfigurationException {
-    if (DAO.instance == null && props.containsKey("tbtsdb-connection"))
-      DAO.instance = new MySQLDAO((String)props.get("tbtsdb-connection"));
+    super.setProperties(props);
     if (Archive.instance == null)
       Archive.instance = new DynamoDBArchive();
-    super.setProperties(props);
+    if (DAO.instance == null && props.containsKey("tbtsdb-connection")) {
+      DAO.instance = new MySQLDAO((String) props.get("tbtsdb-connection"), jid -> {
+        if (bindings == null)
+          return false;
+        //noinspection unchecked
+        final Map<JID, XMPPResourceConnection> connections = (Map<JID, XMPPResourceConnection>)bindings.get("userConnections");
+        for (final XMPPResourceConnection connection : connections.values()) {
+          try {
+            if (jid.equals(connection.getBareJID().toString()))
+              return true;
+          }
+          catch (NotAuthorizedException ignore) {}
+        }
+        return false;
+      });
+      DAO.instance.init();
+    }
+    authRepo = (AuthRepository) props.get(RepositoryFactory.SHARED_AUTH_REPO_PROP_KEY);
+    userRepo = (UserRepository) props.get(RepositoryFactory.SHARED_USER_REPO_PROP_KEY);
   }
 
   private Bindings bindings;
   @Override
   public void initBindings(Bindings binds) {
-    bindings = binds;
     super.initBindings(binds);
+    bindings = binds;
   }
 
   @Override

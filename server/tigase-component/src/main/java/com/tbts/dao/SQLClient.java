@@ -4,6 +4,7 @@ import com.tbts.model.Room;
 import com.tbts.model.impl.ClientImpl;
 import org.jetbrains.annotations.Nullable;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -22,13 +23,27 @@ class SQLClient extends ClientImpl {
 
   @Override
   protected void state(State state) {
-    synchronized (dao.updateClientState) {
+    final PreparedStatement updateClientState = dao.getUpdateClientState();
+    synchronized (updateClientState) {
       try {
-        dao.updateClientState.setInt(1, state.index());
-        dao.updateClientState.setString(2, id());
-        dao.updateClientState.execute();
+        updateClientState.setInt(1, state.index());
+        updateClientState.setString(2, id());
+        updateClientState.execute();
       } catch (SQLException e) {
         throw new RuntimeException(e);
+      }
+    }
+    final Room active = active();
+    if (active != null) {
+      final PreparedStatement updateRoomOwnerState = dao.getUpdateRoomOwnerState();
+      synchronized (updateRoomOwnerState) {
+        try {
+          updateRoomOwnerState.setInt(1, state.index());
+          updateRoomOwnerState.setString(2, active.id());
+          updateRoomOwnerState.execute();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
       }
     }
     super.state(state);
@@ -36,11 +51,12 @@ class SQLClient extends ClientImpl {
 
   @Override
   public void activate(@Nullable Room room) {
-    synchronized (dao.updateClientActiveRoom) {
+    final PreparedStatement updateClientActiveRoom = dao.getUpdateClientActiveRoom();
+    synchronized (updateClientActiveRoom) {
       try {
-        dao.updateClientActiveRoom.setString(1, room != null ? room.id() : null);
-        dao.updateClientActiveRoom.setString(2, id());
-        dao.updateClientActiveRoom.execute();
+        updateClientActiveRoom.setString(1, room != null ? room.id() : null);
+        updateClientActiveRoom.setString(2, id());
+        updateClientActiveRoom.execute();
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
@@ -49,7 +65,10 @@ class SQLClient extends ClientImpl {
   }
 
   public void update(Map<String, State> states, String currentActive) {
-    // TODO
-//    throw new NotImplementedException();
+    final boolean available = dao.isUserAvailable(id());
+    if (!available && this.online) {
+      activate(null);
+    }
+    this.online = !available;
   }
 }

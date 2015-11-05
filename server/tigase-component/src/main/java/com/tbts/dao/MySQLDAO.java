@@ -1,5 +1,6 @@
 package com.tbts.dao;
 
+import com.spbsu.commons.filters.Filter;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
 import com.tbts.model.Room;
@@ -9,6 +10,7 @@ import java.sql.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: solar
@@ -16,10 +18,11 @@ import java.util.Map;
  * Time: 15:18
  */
 public class MySQLDAO extends DAO {
+  private final String connectionUrl;
   // Rooms
 
   @Override
-  protected Room room(String jid) {
+  protected synchronized Room room(String jid) {
     Room room = roomsMap.get(jid);
     if (room != null)
       return room;
@@ -28,18 +31,19 @@ public class MySQLDAO extends DAO {
   }
 
   @Override
-  protected Map<String, Room> rooms() {
+  protected synchronized Map<String, Room> rooms() {
     populateRoomsCache();
     return roomsMap;
   }
 
   @Override
-  protected Room createRoom(String id, Client owner) {
+  protected synchronized Room createRoom(String id, Client owner) {
     Room existing = room(id);
     if (existing != null)
       return existing;
     try {
       SQLRoom fresh = new SQLRoom(this, id, owner, null, Room.State.CLEAN);
+      final PreparedStatement addRoom = getAddRoom();
       addRoom.setString(1, id);
       addRoom.setString(2, owner.id());
       addRoom.execute();
@@ -53,19 +57,17 @@ public class MySQLDAO extends DAO {
   private void populateRoomsCache() {
     populateClientsCache();
     populateExpertsCache();
-    try {
-      final ResultSet rs = listRooms.executeQuery();
+    try (final ResultSet rs = getListRooms().executeQuery()) {
       while (rs.next()) {
         final String id = rs.getString("id");
         final Client owner = client(rs.getString("owner"));
         final String activeExpertId = rs.getString("active_expert");
         final Expert active_expert = activeExpertId != null ? expert(activeExpertId) : null;
         final Room.State state = Room.State.byIndex(rs.getInt("state"));
-        final SQLRoom existing = (SQLRoom) roomsMap.get(id);
-        if (existing != null)
-          existing.update(state, active_expert);
-        else
-          roomsMap.put(id, new SQLRoom(this, id, owner, active_expert, state));
+        SQLRoom existing = (SQLRoom) roomsMap.get(id);
+        if (existing == null)
+          roomsMap.put(id, existing = new SQLRoom(this, id, owner, active_expert, state));
+        existing.update(state, active_expert);
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -91,6 +93,7 @@ public class MySQLDAO extends DAO {
     final Expert fresh = new SQLExpert(this, id, Expert.State.AWAY, null);
     try {
       ensureUser(id);
+      final PreparedStatement addExpert = getAddExpert();
       addExpert.setString(1, id);
       addExpert.execute();
     } catch (SQLException e) {
@@ -107,8 +110,7 @@ public class MySQLDAO extends DAO {
   }
 
   private void populateExpertsCache() {
-    try {
-      final ResultSet rs = listExperts.executeQuery();
+    try (final ResultSet rs = getListExperts().executeQuery()) {
       while (rs.next()) {
         final String id = rs.getString(1);
         final Expert.State state = Expert.State.byIndex(rs.getInt(2));
@@ -148,6 +150,7 @@ public class MySQLDAO extends DAO {
     final Client fresh = new SQLClient(this, id, false, Collections.emptyMap(), null);
     try {
       ensureUser(id);
+      final PreparedStatement addClient = getAddClient();
       addClient.setString(1, id);
       addClient.execute();
     } catch (SQLException e) {
@@ -159,8 +162,10 @@ public class MySQLDAO extends DAO {
 
   private void ensureUser(String id) {
     try {
+      final PreparedStatement checkUser = getCheckUser();
       checkUser.setString(1, id);
       if (!checkUser.executeQuery().next()) {
+        final PreparedStatement addUser = getAddUser();
         addUser.setString(1, id);
         addUser.execute();
       }
@@ -170,9 +175,7 @@ public class MySQLDAO extends DAO {
   }
 
   private void populateClientsCache() {
-    try {
-      final ResultSet rs = listClients.executeQuery();
-
+    try(final ResultSet rs = getListClients().executeQuery()) {
       String currentId = null;
       String currentActive = null;
       boolean currentOnline = false;
@@ -212,46 +215,97 @@ public class MySQLDAO extends DAO {
 
   // SQL queries definition
 
-  private final PreparedStatement checkUser;
-  private final PreparedStatement addUser;
-  private final PreparedStatement addClient;
-  private final PreparedStatement addExpert;
-  private final PreparedStatement addRoom;
-  private final PreparedStatement listClients;
-  private final PreparedStatement listExperts;
-  private final PreparedStatement listRooms;
-  final PreparedStatement updateClientState;
-  final PreparedStatement updateExpertState;
-  final PreparedStatement updateRoomState;
-  final PreparedStatement updateClientActiveRoom;
-  final PreparedStatement updateRoomOwnerState;
-  final PreparedStatement updateActiveExpert;
-
-  public MySQLDAO(String connectionUrl) {
+  private Connection conn;
+  private final Map<String, PreparedStatement> statements = new ConcurrentHashMap<>();
+  private PreparedStatement createStatement(String name, String stmt) {
+    PreparedStatement preparedStatement = statements.get(name);
     try {
-      final Connection conn = DriverManager.getConnection(connectionUrl);
-      checkUser = conn.prepareStatement("SELECT * FROM tbts.Users WHERE id=?;");
-      addUser = conn.prepareStatement("INSERT INTO tbts.Users SET id=?;");
-      addClient = conn.prepareStatement("INSERT INTO tbts.Clients SET id=?;");
-      addExpert = conn.prepareStatement("INSERT INTO tbts.Experts SET id=?;");
-      addRoom = conn.prepareStatement("INSERT INTO tbts.Rooms SET id=?, owner=?;");
-      listClients = conn.prepareStatement("SELECT clients.id, rooms.id, rooms.owner_state, clients.active_room, clients.state " +
-                                              "FROM tbts.Clients AS clients LEFT OUTER JOIN tbts.Rooms AS rooms " +
-                                                "ON clients.id = rooms.owner " +
-                                              "GROUP BY Clients.id;");
-      listExperts = conn.prepareStatement("SELECT e.id, e.state, r.id FROM tbts.Experts AS e LEFT JOIN tbts.Rooms AS r ON e.id = r.active_expert;");
-      listRooms = conn.prepareStatement("SELECT * FROM tbts.Rooms;");
-      updateClientState = conn.prepareStatement("UPDATE tbts.Experts SET state=? WHERE id=?;");
-      updateExpertState = conn.prepareStatement("UPDATE tbts.Clients SET state=? WHERE id=?;");
-      updateRoomState = conn.prepareStatement("UPDATE tbts.Rooms SET state=? WHERE id=?;");
-      updateActiveExpert = conn.prepareStatement("UPDATE tbts.Rooms SET active_expert=? WHERE id=?;");
-      updateClientActiveRoom = conn.prepareStatement("UPDATE tbts.Clients SET active_room=? WHERE id=?;");
-      updateRoomOwnerState = conn.prepareStatement("UPDATE tbts.Rooms SET owner_state=? WHERE id=?;");
+      if (preparedStatement == null || preparedStatement.isClosed() || preparedStatement.getConnection() == null) {
+        if (conn.isClosed())
+          conn = DriverManager.getConnection(connectionUrl);
+        preparedStatement = conn.prepareStatement(stmt);
+      }
+      preparedStatement.clearParameters();
+      statements.put(name, preparedStatement);
+      return preparedStatement;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+  }
+
+  public void init() {
+    populateRoomsCache();
+  }
+
+  public MySQLDAO(String connectionUrl, Filter<String> availability) {
+    super(availability);
+    this.connectionUrl = connectionUrl;
+    try {
+      conn = DriverManager.getConnection(connectionUrl);
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }
 
+  public PreparedStatement getCheckUser() {
+    return createStatement("checkUser", "SELECT * FROM tbts.Users WHERE id=?;");
+  }
+
+  public PreparedStatement getAddUser() {
+    return createStatement("addUser", "INSERT INTO tbts.Users SET id=?;");
+  }
+
+  public PreparedStatement getAddClient() {
+    return createStatement("addClient", "INSERT INTO tbts.Clients SET id=?;");
+  }
+
+  public PreparedStatement getAddExpert() {
+    return createStatement("addExpert", "INSERT INTO tbts.Experts SET id=?;");
+  }
+
+  public PreparedStatement getAddRoom() {
+    return createStatement("addRoom", "INSERT INTO tbts.Rooms SET id=?, owner=?;");
+  }
+
+  public PreparedStatement getListClients() {
+    return createStatement("listClients", "SELECT clients.id, rooms.id, rooms.owner_state, clients.active_room, clients.state " +
+                                              "FROM tbts.Clients AS clients LEFT OUTER JOIN tbts.Rooms AS rooms " +
+                                              "ON clients.id = rooms.owner " +
+                                              "GROUP BY clients.id;");
+  }
+
+  public PreparedStatement getListExperts() {
+    return createStatement("listExperts", "SELECT e.id, e.state, r.id FROM tbts.Experts AS e LEFT JOIN tbts.Rooms AS r ON e.id = r.active_expert;");
+  }
+
+  public PreparedStatement getListRooms() {
+    return createStatement("listRooms", "SELECT * FROM tbts.Rooms;");
+  }
+
+  public PreparedStatement getUpdateClientState() {
+    return createStatement("updateClientState", "UPDATE tbts.Clients SET state=? WHERE id=?;");
+  }
+
+  public PreparedStatement getUpdateExpertState() {
+    return createStatement("updateExpertState", "UPDATE tbts.Experts SET state=? WHERE id=?;");
+  }
+
+  public PreparedStatement getUpdateRoomState() {
+    return createStatement("updateRoomState", "UPDATE tbts.Rooms SET state=? WHERE id=?;");
+  }
+
+  public PreparedStatement getUpdateRoomExpert() {
+    return createStatement("updateRoomExpert", "UPDATE tbts.Rooms SET active_expert=? WHERE id=?;");
+  }
+
+  public PreparedStatement getUpdateClientActiveRoom() {
+    return createStatement("updateClientActiveRoom", "UPDATE tbts.Clients SET active_room=? WHERE id=?;");
+  }
+
+  public PreparedStatement getUpdateRoomOwnerState() {
+    return createStatement("updateRoomOwnerState", "UPDATE tbts.Rooms SET owner_state=? WHERE id=?;");
+  }
 
   static {
     try {

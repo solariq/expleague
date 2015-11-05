@@ -28,7 +28,7 @@ create TABLE tbts.Experts (
   id varchar(128) not null,
   state int default 0,
 
-  CONSTRAINT Expert__foreign FOREIGN KEY (id) REFERENCES tbts.Users (id) ON DELETE CASCADE ON UPDATE CASCADE ON INSERT,
+  CONSTRAINT Expert__foreign FOREIGN KEY (id) REFERENCES tbts.Users (id) ON DELETE CASCADE ON UPDATE CASCADE,
   PRIMARY KEY (id)
 );
 

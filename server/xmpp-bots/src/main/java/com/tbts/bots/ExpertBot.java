@@ -26,6 +26,7 @@ public class ExpertBot extends Bot {
   }
 
   public void onInvite(MucModule.Invitation invitation) {
+    System.out.println("Invitation received from " + invitation.getInviterJID() + " to " + invitation.getRoomJID() + " on topic [" + invitation.getReason() + "]");
   }
 
 
@@ -41,10 +42,9 @@ public class ExpertBot extends Bot {
     expert.start();
 //    expert.offline();
     expert.online();
-    expert.onClose(latch::advance);
     latch.state(2, 1);
     expert.answer("Otvali!");
-    Thread.sleep(200);
+    Thread.sleep(20000);
     expert.offline();
     expert.stop();
   }
@@ -54,6 +54,7 @@ public class ExpertBot extends Bot {
       final Presence presence = Presence.create();
       presence.setShow(Presence.Show.xa);
       jaxmpp.send(presence);
+      System.out.println("Sent offline presence");
     } catch (JaxmppException e) {
       throw new RuntimeException(e);
     }
@@ -61,6 +62,7 @@ public class ExpertBot extends Bot {
 
   public void answer(String text) {
     try {
+      System.out.println("Answering to the room");
       final Message msg = Message.create();
       msg.setTo(JID.jidInstance(roomJID));
       msg.setType(StanzaType.groupchat);

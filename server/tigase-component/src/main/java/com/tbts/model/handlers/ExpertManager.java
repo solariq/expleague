@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Action<Expert> {
   private static final Logger log = Logger.getLogger(ExpertManager.class.getName());
   public static final ExpertManager EXPERT_MANAGER = new ExpertManager();
-  public static final long EXPERT_ACCEPT_INVITATION_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
+  public static final long EXPERT_ACCEPT_INVITATION_TIMEOUT = TimeUnit.MINUTES.toMillis(5);
 
   public static synchronized ExpertManager instance() {
     return EXPERT_MANAGER;
@@ -75,10 +75,10 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     super.invoke(e);
   }
 
-  public synchronized void challenge(final Room room) {
+  public void challenge(final Room room) {
     final Thread thread = new Thread(() -> challengeImpl(room));
     thread.setDaemon(true);
-    thread.setName("Challenge thread");
+    thread.setName("Challenge thread for " + room.id());
     thread.start();
   }
 
@@ -112,16 +112,16 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
 
     log.fine("Starting challenge for room: " + room.id());
 
-    //noinspection SynchronizationOnLocalVariableOrMethodParameter
-    synchronized (winner) {
-      while (room.state() == Room.State.DEPLOYED) {
-        while (!room.quorum(reserved)) {
-          final Expert next = nextAvailable(room);
-          next.addListener(challenge);
-          reserved.add(next);
-          next.reserve(room);
-        }
+    while (room.state() == Room.State.DEPLOYED) {
+      while (!room.quorum(reserved)) {
+        final Expert next = nextAvailable(room);
+        next.addListener(challenge);
+        reserved.add(next);
+        next.reserve(room);
+      }
 
+      //noinspection SynchronizationOnLocalVariableOrMethodParameter
+      synchronized (winner) {
         while (!steady.isEmpty() && !winner.filled()) {
           final Iterator<Expert> iterator = steady.iterator();
           final Expert next = iterator.next();
@@ -141,8 +141,8 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
         if (room.quorum(reserved)) {
           try {
             winner.wait(0);
+          } catch (InterruptedException ignore) {
           }
-          catch (InterruptedException ignore) {}
         }
       }
     }
