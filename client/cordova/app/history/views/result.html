@@ -9,7 +9,7 @@ body {
     <super-navbar-title>Результаты поиска</super-navbar-title>
     <super-navbar-button side="left" ng-click="backToHistory()">‹ История</super-navbar-button>
   </super-navbar>
-  <div class="debug">
+  <div ng-if="server.debug" class="debug">
     <div><b>Запрос</b></div>
     <div>text: {{order.text}}</div>
     <div>near: {{order.near}}</div>

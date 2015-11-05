@@ -6,14 +6,16 @@ angular
       profile: 'remote',
       bosh: 'http://toobusytosearch.net:5280/',
       host: 'toobusytosearch.net',
-      muc: 'muc.toobusytosearch.net'
+      muc: 'muc.toobusytosearch.net',
+      debug: false
     };
 
     var profileLocal = {
       profile: 'local',
       bosh: 'http://77.88.2.245:5280/',
       host: 'localhost/client',
-      muc: 'muc.localhost'
+      muc: 'muc.localhost',
+      debug: true
     };
 
     // Если профиля нет в localStorage используем profileRemote, иначе загружаем из localStorage

@@ -22,6 +22,12 @@
         <span class="input-label">MUC</span>
         <input ng-model="server.muc" ng-change="saveServerParams()" type="text" placeholder="MUC">
       </label>
+      <div class="item item-checkbox">
+        <label class="checkbox">
+          <input ng-model="server.debug" ng-change="saveServerParams()" type="checkbox" name="debug">
+        </label>
+        отладочная информация
+      </div>
     </div>
   </div>
 </div>
