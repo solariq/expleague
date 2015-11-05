@@ -16,8 +16,14 @@ angular
       muc: 'muc.localhost'
     };
 
-    // Если профиль сохранен в localStorage, загружаем его, иначе используем profileRemote
-    $scope.server = (localStorage.getItem('server') == undefined) ? profileRemote : JSON.parse(localStorage.getItem('server'));
+    // Если профиля нет в localStorage используем profileRemote, иначе загружаем из localStorage
+    if (localStorage.getItem('server') == undefined) {
+      $scope.server = profileRemote;
+      // Также нужно сохранить в localStorage, чтобы к нему был доступ из других страниц
+      localStorage.setItem('server', JSON.stringify($scope.server));
+    } else {
+      $scope.server = JSON.parse(localStorage.getItem('server'));
+    }
 
     // Регистрируем нового пользователя, если он ещё не зарегистрирован
     var registerUser = function(){
