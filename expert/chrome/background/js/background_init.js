@@ -497,6 +497,7 @@ KNUGGET.templates = {
             "views/error.html",
             "views/requestList.html",
             "views/dragArea.html",
+            "views/dialog.moreFolders.html",
             "views/waiting.html",
             "views/unavailable.html",
             "views/login.html",

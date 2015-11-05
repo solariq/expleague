@@ -131,11 +131,11 @@ knuggetSidebarDirectives.directive('folderDroppable', ['$timeout', '$window', '$
                         $timeout.cancel(mouseTimeoutReseter);
                     })
                     .mouseleave(function () {
-                        if (!$scope.folder.actionPanelTemplate) {
-                            mouseTimeoutReseter = $timeout(function () {
-                                element.off("mouseleave mouseenter");
-                            }, 1500);
-                        }
+                        //if (!$scope.folder.actionPanelTemplate) {
+                        //    mouseTimeoutReseter = $timeout(function () {
+                        //        element.off("mouseleave mouseenter");
+                        //    }, 1500);
+                        //}
                     });
             });
         },

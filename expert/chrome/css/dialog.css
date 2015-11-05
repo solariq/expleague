@@ -18,7 +18,7 @@ Site dialog global style
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: 10;
+  z-index: -1000;
   width: 100%;
   height: 100%;
   *display: inline-block;
@@ -65,7 +65,7 @@ Site dialog global style
   animation-name: anim-close;
 }
 .dialog-container .wrapper {
-  z-index: 10;
+  z-index: -1000;
   display: table-cell;
   text-align: center;
   vertical-align: middle;

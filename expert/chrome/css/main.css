@@ -1411,6 +1411,18 @@ Icons
   background-position: 9px 9px;
   background-size: 50% 50%;
 }
+#knugget-root .icon-new:before,
+#knugget-info-icon .icon-new:before {
+  background-image: url("chrome-extension://__MSG_@@extension_id__/images/add.png");
+  background-position: center center;
+  background-size: 70% 70%;
+}
+#knugget-root .icon-send:before,
+#knugget-info-icon .icon-send:before {
+  background-image: url("chrome-extension://__MSG_@@extension_id__/images/send.png");
+  background-position: center center;
+  background-size: 50% 50%;
+}
 #knugget-root .icon-shortUrl:before,
 #knugget-info-icon .icon-shortUrl:before {
   opacity: 0.3;
@@ -2174,6 +2186,36 @@ Site dialog global style
 #knugget-info-icon #knugget-sidebar .menu ul .storage-bar .used.bar10 {
   width: 100%;
 }
+#knugget-root #knugget-sidebar .menu .icon-send,
+#knugget-info-icon #knugget-sidebar .menu .icon-send {
+  display: block;
+  position: absolute;
+  top: 13px;
+  right: 34px;
+}
+#knugget-root #knugget-sidebar .menu .icon-send:hover .tooltip,
+#knugget-info-icon #knugget-sidebar .menu .icon-send:hover .tooltip {
+  opacity: 1;
+  -webkit-transition: opacity 0.3s ease-in-out 0.3s;
+  -moz-transition: opacity 0.3s ease-in-out 0.3s;
+  -o-transition: opacity 0.3s ease-in-out 0.3s;
+  transition: opacity 0.3s ease-in-out 0.3s;
+}
+#knugget-root #knugget-sidebar .menu .icon-new,
+#knugget-info-icon #knugget-sidebar .menu .icon-new {
+  display: block;
+  position: absolute;
+  top: 13px;
+  right: 54px;
+}
+#knugget-root #knugget-sidebar .menu .icon-new:hover .tooltip,
+#knugget-info-icon #knugget-sidebar .menu .icon-new:hover .tooltip {
+  opacity: 1;
+  -webkit-transition: opacity 0.3s ease-in-out 0.3s;
+  -moz-transition: opacity 0.3s ease-in-out 0.3s;
+  -o-transition: opacity 0.3s ease-in-out 0.3s;
+  transition: opacity 0.3s ease-in-out 0.3s;
+}
 #knugget-root #knugget-sidebar .menu .icon-closeSidebar,
 #knugget-info-icon #knugget-sidebar .menu .icon-closeSidebar {
   display: block;
@@ -2211,6 +2253,11 @@ Site dialog global style
 #knugget-root #knugget-sidebar .menu.active ul,
 #knugget-info-icon #knugget-sidebar .menu.active ul {
   display: block;
+}
+#knugget-root #knugget-sidebar .overlay,
+#knugget-info-icon #knugget-sidebar .overlay {
+  position: absolute;
+  z-index: 1;
 }
 #knugget-root #knugget-sidebar .folders,
 #knugget-info-icon #knugget-sidebar .folders {
@@ -2745,14 +2792,14 @@ Site dialog global style
 #knugget-info-icon #knugget-sidebar .folders .folder .drag-upload.folder-title.success,
 #knugget-root #knugget-sidebar .folders .folder .drag-upload.folder-title.movedSuccess,
 #knugget-info-icon #knugget-sidebar .folders .folder .drag-upload.folder-title.movedSuccess {
-  background: #27ae61;
-  border-color: #27ae61;
+  background: #ace1af;
+  border-color: #ace1af;
 }
 #knugget-root #knugget-sidebar .folders .folder .drag-upload.folder-title.success a.name,
 #knugget-info-icon #knugget-sidebar .folders .folder .drag-upload.folder-title.success a.name,
 #knugget-root #knugget-sidebar .folders .folder .drag-upload.folder-title.movedSuccess a.name,
 #knugget-info-icon #knugget-sidebar .folders .folder .drag-upload.folder-title.movedSuccess a.name {
-  background: #27ae61;
+  background: #ace1af;
   color: #fff !important;
 }
 #knugget-root #knugget-sidebar .folders .folder .drag-upload.folder-title.success a.name:before,
@@ -3722,6 +3769,7 @@ Site dialog global style
 }
 #knugget-root #knugget-sidebar .email_register .header .description,
 #knugget-info-icon #knugget-sidebar .email_register .header .description {
+  max-height: 350px;
   color: #747980;
   font-weight: 400;
   text-align: center;
@@ -3903,6 +3951,22 @@ Site dialog global style
 #knugget-info-icon #knugget-sidebar .email_register .email button.blue.loading:before {
   background-image: url("chrome-extension://__MSG_@@extension_id__/images/loader-2.png");
 }
+#knugget-root #knugget-sidebar .email_register .email button.green,
+#knugget-info-icon #knugget-sidebar .email_register .email button.green {
+  background: none repeat scroll 0 0 #ace1af;
+  box-shadow: 0 1px 0 0 #7EA580;
+  color: #fff;
+}
+#knugget-root #knugget-sidebar .email_register .email button.green:hover,
+#knugget-info-icon #knugget-sidebar .email_register .email button.green:hover {
+  background: none repeat scroll 0 0 #B0E6B3;
+  box-shadow: 0 1px 0 0 #59745A;
+  color: #fff;
+}
+#knugget-root #knugget-sidebar .email_register .email button.green.loading:before,
+#knugget-info-icon #knugget-sidebar .email_register .email button.green.loading:before {
+  background-image: url("chrome-extension://__MSG_@@extension_id__/images/loader-2.png");
+}
 #knugget-root #knugget-sidebar .email_register .email .link_to_register,
 #knugget-info-icon #knugget-sidebar .email_register .email .link_to_register {
   color: #747980;
@@ -4045,7 +4109,7 @@ Site dialog global style
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: 10;
+  z-index: -10000;
   width: 100%;
   height: 100%;
   *display: inline-block;
@@ -4070,7 +4134,7 @@ Site dialog global style
 }
 #knugget-root #knugget-sidebar .dialog-container .wrapper,
 #knugget-info-icon #knugget-sidebar .dialog-container .wrapper {
-  z-index: 10;
+  z-index: -10000;
   display: table-cell;
   text-align: center;
   vertical-align: middle;
@@ -4144,11 +4208,13 @@ Site dialog global style
 #knugget-root #knugget-sidebar .dialog-container .collaboration .dialog-title .description,
 #knugget-info-icon #knugget-sidebar .dialog-container .collaboration .dialog-title .description {
   color: #9B9FA3;
+  max-height: 350px;
+  overflow-y: scroll;
 }
 #knugget-root #knugget-sidebar .dialog-container .collaboration .controls,
 #knugget-info-icon #knugget-sidebar .dialog-container .collaboration .controls {
   box-sizing: border-box;
-  background: #3598dc;
+  background: #ace1af;
   padding: 25px 30px;
   width: 100%;
   display: block;
@@ -4329,7 +4395,7 @@ Site dialog global style
 }
 #knugget-root #knugget-sidebar .dialog-container .get-more-folders .dialog-title .header a,
 #knugget-info-icon #knugget-sidebar .dialog-container .get-more-folders .dialog-title .header a {
-  color: #3598dc;
+  color: #ace1af;
 }
 #knugget-root #knugget-sidebar .dialog-container .get-more-folders .dialog-title .header .spacing,
 #knugget-info-icon #knugget-sidebar .dialog-container .get-more-folders .dialog-title .header .spacing {
@@ -4415,7 +4481,7 @@ Site dialog global style
   color: #3598dc;
   border: 2px solid #fff;
   display: inline-block;
-  z-index: 10;
+  z-index: -10000;
 }
 #knugget-root #knugget-sidebar .dialog-container .get-more-folders .dialog-folders-meter .storage-bar .small-bubble.total,
 #knugget-info-icon #knugget-sidebar .dialog-container .get-more-folders .dialog-folders-meter .storage-bar .small-bubble.total {
@@ -4915,32 +4981,16 @@ Helper classes
 }
 #knugget-sidebar .workboard {
   display: block;
+  position: absolute;
   height: -webkit-calc(100% - 90px);
+  width: -webkit-calc(100% - 15px);
   overflow-y: -moz-scrollbars-vertical;
   overflow-y: scroll;
   overflow-x: hidden;
   padding: 10px;
-  margin-top: 70px;
+  margin-top: 60px;
   margin-right: 15px;
-}
-#knugget-sidebar .workboard .icon-send {
-  cursor: pointer;
-  display: block;
-  width: 20px;
-  height: 20px;
-  background-image: url("chrome-extension://__MSG_@@extension_id__/images/send.png");
-  background-repeat: no-repeat;
-  opacity: 0.85;
-  background-position: center center;
-  position: absolute;
-  top: 50px;
-  right: 20px;
-  z-index: 5;
-  opacity: .5;
-  background-size: 100% 100%;
-}
-#knugget-sidebar .workboard .icon-send:hover {
-  opacity: .7;
+  z-index: 2;
 }
 #knugget-sidebar .workboard .answer-block {
   word-wrap: break-word;

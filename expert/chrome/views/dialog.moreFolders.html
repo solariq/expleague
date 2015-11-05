@@ -1,0 +1,37 @@
+<div class="overlay dialog__overlay"></div>
+
+<div class="wrapper">
+    <div class="content dialog__content collaboration">
+
+        <i class="close" ng-click="closeDialog()"></i>
+
+        <div class="dialog-title">
+            <div class="header" contenteditable="true" edit-listener><h2>{{getTitileToEdit()}}</h2></div>
+
+            <!-- <div class="clearfix">
+                <div class="short-url share">
+                    <div class="copy-controls clearfix">
+                        <input type="text" readonly="readonly" ng-model="shareFolderLink" select-on-click />
+                        <button class="green ng-cloak" data-clipboard-text="{{shareFolderLink}}" title="Click to copy me." copy-to-clipboard="Read only folder link" new-style="true">Copy</button>
+                    </div> -->
+            <!--<div class="copy-success">Copied!</div>-->
+            <!-- </div>
+            </div> -->
+
+            <div class="description" contenteditable="true" edit-listener>{{getTextToEdit()}}</div>
+
+        </div>
+
+        <div class="controls clearfix">
+            <div class="short-url">
+                <div>
+                    <!-- TODO: set action-->
+                    <button class="ghost green rounded" ng-click="saveDialog()">Save</button>
+                    <button class="ghost green rounded" ng-click="closeDialog()">Cancel</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+

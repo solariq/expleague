@@ -1,4 +1,5 @@
 <div id="knugget-root">
-    <div id="knugget-sidebar" ng-show="active" ng-controller='KNUGGET_SIDEBAR_CTRL' ng-include="sidebarTemplate()"></div>
+    <div id="knugget-sidebar" ng-show="active" ng-controller='KNUGGET_SIDEBAR_CTRL' ng-include="sidebarTemplate()" ng-class="{expanded: dialogIsActive}">
+    </div>
 </div>
 
