@@ -78,7 +78,7 @@ knuggetSidebarDirectives.directive("editAnswer", ['dialogService', '$state', fun
                 if (resp.Type == 'text') {
                     dialogService.originReaponse = resp;
                     dialogService.index = index;
-                    dialogService.template = KNUGGET.config.sidebarTemplatesRoot + "dialog.moreFolders";
+                    dialogService.template = KNUGGET.config.sidebarTemplatesRoot + "editDialog";
                     dialogService.isNew = false;
                     dialogService.dialogIsActive = true;
                 } else {
@@ -89,7 +89,7 @@ knuggetSidebarDirectives.directive("editAnswer", ['dialogService', '$state', fun
             $scope.newAnswer = function(index) {
                 dialogService.originReaponse = {Title: 'Заголовок', Text: 'Текст', Referer: '#', Type: 'text'};
                 dialogService.index = index;
-                dialogService.template = KNUGGET.config.sidebarTemplatesRoot + "dialog.moreFolders";
+                dialogService.template = KNUGGET.config.sidebarTemplatesRoot + "editDialog";
                 dialogService.isNew = true;
                 dialogService.dialogIsActive = true;
             }
