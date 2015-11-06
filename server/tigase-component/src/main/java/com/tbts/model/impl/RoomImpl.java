@@ -1,8 +1,6 @@
 package com.tbts.model.impl;
 
 import com.amazonaws.util.StringInputStream;
-import com.spbsu.commons.func.Action;
-import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.spbsu.commons.xml.JDOMUtil;
 import com.tbts.model.*;
 import com.tbts.model.handlers.Archive;
@@ -10,11 +8,9 @@ import com.tbts.model.handlers.ExpertManager;
 import com.tbts.model.handlers.Reception;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -22,62 +18,29 @@ import java.util.Set;
  * Date: 04.10.15
  * Time: 19:25
  */
-public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
+public class RoomImpl extends StateWise.Stub<Room.State, Room> implements Room {
   @SuppressWarnings({"FieldCanBeLocal", "unused"})
-  private final Action<Client> clientLst;
-  private final Set<Expert> invited = new HashSet<>();
   private final String id;
-  @SuppressWarnings("FieldCanBeLocal")
-  private final Action<Expert> clearInviteLst;
-  private final Client owner;
 
-  protected State state;
-  protected Action<Expert> workerListener;
+  protected Expert worker;
+  private Client owner;
 
   public RoomImpl(String id, Client client) {
-    this.owner = client;
     this.id = id;
     state = State.INIT;
-    client.addListener(clientLst = cl -> {
-      if (cl.active() != this)
-        return;
-      switch (cl.state()) {
-        case CHAT:
-        case COMMITED:
-          commit();
-          break;
-        case FEEDBACK:
-          fix();
-          break;
-      }
-    });
-    workerListener = expert -> {
-      expert.removeListener(workerListener);
-      if (expert.state() != Expert.State.GO && answersCountOnDeploy == answers.size()) {
-        answer(Answer.EMPTY);
-      }
-    };
-
-    clearInviteLst = expert -> {
-      if (expert.state() == Expert.State.AWAY) {
-        invited.remove(expert);
-      }
-    };
-    ExpertManager.instance().addListener(clearInviteLst);
+    owner = client;
     addListener(Reception.instance());
   }
 
-  protected void fix() {
+  public void fix() {
     if (state != State.COMPLETE)
       throw new IllegalStateException();
   }
 
-  protected void commit() {
+  public void commit() {
     if (state != State.CLEAN && state != State.COMPLETE)
       throw new IllegalStateException();
-    answersCountOnDeploy = answers.size();
     state(State.DEPLOYED);
-    ExpertManager.instance().challenge(this);
   }
 
   @Override
@@ -101,25 +64,35 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
     return builder.build();
   }
 
-  protected void state(State state) {
-    this.state = state;
-    invoke(this);
+  int postponedAnswers = 0;
+  @Override
+  public void answer() {
+    if (state() != State.LOCKED) {
+      if (state() == State.DEPLOYED)
+        postponedAnswers++;
+      else
+        throw new IllegalStateException();
+    }
+    state(State.COMPLETE);
+    worker.free();
+    owner.feedback(this);
   }
 
-  private final List<Answer> answers = new ArrayList<>();
-  private int answersCountOnDeploy;
   @Override
-  public void answer(Answer answer) {
-    answers.add(answer);
-    if (state() == State.LOCKED)
-      state(State.COMPLETE);
+  public void cancel() {
+    state(State.CANCELED);
+    if (worker != null)
+      worker.free();
   }
 
   @Override
   public void enter(Expert winner) {
-    invited.remove(winner);
-    winner.addListener(workerListener);
+    worker = winner;
     state(State.LOCKED);
+    if (postponedAnswers > 0) {
+      postponedAnswers = 0;
+      answer();
+    }
   }
 
   @Override
@@ -133,16 +106,8 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
   }
 
   @Override
-  public void invite(Expert next) {
-    if (next.active() != this)
-      throw new IllegalArgumentException();
-    invited.add(next);
-    next.invite();
-  }
-
-  @Override
   public boolean relevant(Expert expert) {
-    return !invited.contains(expert);
+    return true;
   }
 
   @Override
@@ -151,21 +116,24 @@ public class RoomImpl extends WeakListenerHolderImpl<Room> implements Room {
   }
 
   @Override
-  public void exit(Expert expert) {
+  public void exit() {
+    if (state() == State.LOCKED)
+      state(State.DEPLOYED);
   }
 
   @Override
-  public List<Answer> answers() {
-    return answers;
+  public Client owner() {
+    return owner;
+  }
+
+  @Nullable
+  @Override
+  public Expert worker() {
+    return worker;
   }
 
   @Override
   public void onMessage(String author, CharSequence text) {
     Archive.instance().log(this, author, text);
-  }
-
-  @Override
-  public State state() {
-    return state;
   }
 }

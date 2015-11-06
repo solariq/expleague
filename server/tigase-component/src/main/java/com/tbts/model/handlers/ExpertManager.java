@@ -1,5 +1,6 @@
 package com.tbts.model.handlers;
 
+import com.spbsu.commons.filters.Filter;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.spbsu.commons.util.Holder;
@@ -28,16 +29,19 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     return DAO.instance().experts();
   }
 
-  public synchronized Expert nextAvailable(Room room) {
+  public void nextAvailable(Room room, Filter<Expert> action) {
     while (true) {
       for (final Expert expert : experts().values()) {
         if (expert.state() == Expert.State.READY && room.relevant(expert))
-          return expert;
+          if (action.accept(expert))
+            return;
       }
-      try {
-        wait();
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
+      synchronized (this) {
+        try {
+          wait();
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
       }
     }
   }
@@ -55,16 +59,7 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
   }
 
   public synchronized Expert get(String jid) {
-    return experts().get(jid);
-  }
-
-  public synchronized int count() {
-    int result = 0;
-    for (Expert expert : experts().values()) {
-      if (expert.state() != Expert.State.AWAY)
-        result++;
-    }
-    return result;
+    return DAO.instance().expert(jid);
   }
 
   @Override
@@ -75,7 +70,11 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     super.invoke(e);
   }
 
+  private final Set<Room> challenged = new HashSet<>();
   public void challenge(final Room room) {
+    if (challenged.contains(room))
+      return;
+    challenged.add(room);
     final Thread thread = new Thread(() -> challengeImpl(room));
     thread.setDaemon(true);
     thread.setName("Challenge thread for " + room.id());
@@ -87,7 +86,7 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     final Set<Expert> reserved = Collections.synchronizedSet(new HashSet<>());
     final Set<Expert> steady = Collections.synchronizedSet(new HashSet<>());
     final Action<Expert> challenge = expert -> {
-      if (!reserved.contains(expert) || room.state() != Room.State.DEPLOYED)
+      if (!reserved.contains(expert))
         return;
       if (expert.active() != room || (
               expert.state() != Expert.State.CHECK &&
@@ -110,32 +109,39 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
       }
     };
 
+    System.out.println("Starting challenge for room: " + room.id());
     log.fine("Starting challenge for room: " + room.id());
 
     while (room.state() == Room.State.DEPLOYED) {
       while (!room.quorum(reserved)) {
-        final Expert next = nextAvailable(room);
-        next.addListener(challenge);
-        reserved.add(next);
-        next.reserve(room);
+        nextAvailable(room, expert -> {
+          expert.addListener(challenge);
+          reserved.add(expert);
+          if (!expert.reserve(room)) {
+            expert.removeListener(challenge);
+            reserved.remove(expert);
+            return false;
+          }
+          return true;
+        });
       }
 
       //noinspection SynchronizationOnLocalVariableOrMethodParameter
+      while (!steady.isEmpty() && !winner.filled()) {
+        final Iterator<Expert> iterator = steady.iterator();
+        final Expert next = iterator.next();
+        iterator.remove();
+        next.invite();
+        new Timer(true).schedule(new TimerTask() {
+          @Override
+          public void run() {
+            if (next.state() == Expert.State.INVITE && next.active() == room)
+              next.free();
+          }
+        }, room.invitationTimeout());
+      }
+      //noinspection SynchronizationOnLocalVariableOrMethodParameter
       synchronized (winner) {
-        while (!steady.isEmpty() && !winner.filled()) {
-          final Iterator<Expert> iterator = steady.iterator();
-          final Expert next = iterator.next();
-          iterator.remove();
-
-          room.invite(next);
-          new Timer(true).schedule(new TimerTask() {
-            @Override
-            public void run() {
-              if (next.state() == Expert.State.INVITE && next.active() == room)
-                next.free();
-            }
-          }, room.invitationTimeout());
-        }
         if (winner.filled() && (winner.getValue().state() == Expert.State.GO || winner.getValue().state() == Expert.State.READY))
           break;
         if (room.quorum(reserved)) {
@@ -146,11 +152,10 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
         }
       }
     }
-    for (final Expert expert : reserved) {
-      if (expert.state() == Expert.State.STEADY)
-        expert.free();
-    }
+    reserved.stream().filter(expert -> expert.state() == Expert.State.STEADY).forEach(Expert::free);
+    System.out.println("Challenge for room " + room.id() + " finished. Winner: " + winner.getValue().id());
     log.fine("Challenge for room " + room.id() + " finished. Winner: " + winner.getValue().id());
+    challenged.remove(room);
     room.enter(winner.getValue());
   }
 }

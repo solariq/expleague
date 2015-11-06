@@ -15,27 +15,17 @@ import java.sql.SQLException;
  */
 public class SQLRoom extends RoomImpl {
   private final MySQLDAO dao;
-  private Expert active;
 
-  public SQLRoom(MySQLDAO dao, String id, Client client, Expert active_expert, State state) {
+  public SQLRoom(MySQLDAO dao, String id, Client client) {
     super(id, client);
     this.dao = dao;
-    this.state = state;
-    this.active = active_expert;
-    if (active_expert != null)
-      active_expert.addListener(workerListener);
   }
 
-  public void update(State state, Expert active_expert) {
-    if (state == State.DEPLOYED && active_expert == null && active == null)
+  public void update(State state, Expert worker) {
+    this.state = state;
+    this.worker = worker;
+    if (state == State.DEPLOYED && worker == null)
       ExpertManager.instance().challenge(this);
-    if (active_expert != active) {
-      if (active != null)
-        active.removeListener(workerListener);
-      if (active_expert != null)
-        active_expert.addListener(workerListener);
-      active = active_expert;
-    }
   }
 
   @Override
@@ -54,7 +44,22 @@ public class SQLRoom extends RoomImpl {
   }
 
   @Override
-  protected void state(State state) {
+  public void exit() {
+    final PreparedStatement updateRoomExpert = dao.getUpdateRoomExpert();
+    synchronized (updateRoomExpert) {
+      try {
+        updateRoomExpert.setString(1, null);
+        updateRoomExpert.setString(2, id());
+        updateRoomExpert.execute();
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    super.exit();
+  }
+
+  @Override
+  public void state(State state) {
     final PreparedStatement updateRoomState = dao.getUpdateRoomState();
     synchronized (updateRoomState) {
       try {

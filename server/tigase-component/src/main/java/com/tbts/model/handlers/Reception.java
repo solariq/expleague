@@ -31,6 +31,8 @@ public class Reception extends WeakListenerHolderImpl<Room> implements Action<Ro
   }
 
   public Room room(Client client, String id) {
+    if (!id.contains("@muc."))
+      return null;
     Room room = room(id);
     if (room == null)
       room = create(client, id);
@@ -39,10 +41,14 @@ public class Reception extends WeakListenerHolderImpl<Room> implements Action<Ro
 
   @Override
   public void invoke(Room e) {
+    if (e.state() == Room.State.DEPLOYED)
+      ExpertManager.instance().challenge(e);
     super.invoke(e);
   }
 
   public Room room(String jid) {
+    if (!jid.contains("@muc."))
+      return null;
     return DAO.instance().room(jid);
   }
 }

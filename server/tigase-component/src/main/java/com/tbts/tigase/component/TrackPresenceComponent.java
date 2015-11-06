@@ -1,6 +1,5 @@
 package com.tbts.tigase.component;
 
-import com.spbsu.commons.func.Action;
 import com.tbts.dao.DynamoDBArchive;
 import com.tbts.dao.MySQLDAO;
 import com.tbts.model.Client;
@@ -35,82 +34,10 @@ import java.util.logging.Logger;
 public class TrackPresenceComponent extends SessionManager {
   private static final Logger log = Logger.getLogger(TrackPresenceComponent.class.getName());
   private static Criteria CRIT = ElementCriteria.name("presence");
-
-  @SuppressWarnings("FieldCanBeLocal")
-  private final Action<Expert> expertCommunication;
-
-  private int expertsCount = -1;
-  private AuthRepository authRepo;
-  private UserRepository userRepo;
   private ExpertsAdminBot adminBot;
 
   public TrackPresenceComponent() {
     super();
-    expertCommunication = expert -> {
-      switch (expert.state()) {
-        case AWAY:
-        case READY:
-          int expertsCount = ExpertManager.instance().count();
-          if (expertsCount != TrackPresenceComponent.this.expertsCount) {
-            try {
-              final BareJID admin = BareJID.bareJIDInstance("experts-admin@" + getDefVHostItem().getDomain());
-              if (adminBot == null) {
-                if (!userRepo.userExists(admin))
-                  authRepo.addUser(admin, ExpertsAdminBot.EXPERTS_ADMIN_LONG_PASSWORD);
-                adminBot = new ExpertsAdminBot(admin.toString());
-              }
-
-              { // confirm that all users have admin as the roster buddy
-                final JID adminBuddy = JID.jidInstance(admin);
-                final RosterAbstract roster = RosterFactory.getRosterImplementation(true);
-                final XMPPSession adminSession = getSession(admin);
-                if (adminSession == null)
-                  return;
-                final XMPPResourceConnection adminConnection = adminSession.getResourceConnection(adminBuddy);
-                for (final String jid : ClientManager.instance().online()) {
-                  final JID clientBuddy = JID.jidInstance(jid);
-                  if (!roster.containsBuddy(adminConnection, clientBuddy)) {
-                    roster.addBuddy(adminConnection, clientBuddy, jid, new String[0], "");
-                    roster.setBuddySubscription(adminConnection, RosterAbstract.SubscriptionType.both, clientBuddy);
-                  }
-                }
-                for (final BareJID jid : userRepo.getUsers()) {
-                  final XMPPSession session = getSession(jid);
-                  if (session != null) {
-                    for (final XMPPResourceConnection connection : session.getActiveResources()) {
-                      if (!roster.containsBuddy(connection, adminBuddy)) {
-                        roster.addBuddy(connection, adminBuddy, "Administator", new String[0], "");
-                        roster.setBuddySubscription(connection, RosterAbstract.SubscriptionType.both, adminBuddy);
-                      }
-                    }
-                  }
-                }
-              }
-              adminBot.updateExpertsCount(expertsCount);
-            }
-            catch (TigaseDBException | NotAuthorizedException | TigaseStringprepException e) {
-              throw new RuntimeException(e);
-            }
-            finally {
-              TrackPresenceComponent.this.expertsCount = expertsCount;
-            }
-          }
-          break;
-        case CHECK:
-          break;
-        case STEADY:
-          break;
-        case INVITE:
-          break;
-        case DENIED:
-          break;
-        case CANCELED:
-          break;
-        case GO:
-          break;
-      }
-    };
-    ExpertManager.instance().addListener(expertCommunication);
   }
 
   @SuppressWarnings("unused")
@@ -137,8 +64,20 @@ public class TrackPresenceComponent extends SessionManager {
       });
       DAO.instance.init();
     }
-    authRepo = (AuthRepository) props.get(RepositoryFactory.SHARED_AUTH_REPO_PROP_KEY);
-    userRepo = (UserRepository) props.get(RepositoryFactory.SHARED_USER_REPO_PROP_KEY);
+    final AuthRepository authRepo = (AuthRepository) props.get(RepositoryFactory.SHARED_AUTH_REPO_PROP_KEY);
+    final UserRepository userRepo = (UserRepository) props.get(RepositoryFactory.SHARED_USER_REPO_PROP_KEY);
+    if (adminBot == null && authRepo != null && userRepo != null) {
+      final BareJID admin;
+      try {
+        admin = BareJID.bareJIDInstance("experts-admin@" + getDefVHostItem().getDomain());
+        if (!userRepo.userExists(admin))
+          authRepo.addUser(admin, ExpertsAdminBot.EXPERTS_ADMIN_LONG_PASSWORD);
+        adminBot = new ExpertsAdminBot(admin.toString(), this);
+      }
+      catch (TigaseStringprepException | TigaseDBException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   private Bindings bindings;
@@ -146,6 +85,33 @@ public class TrackPresenceComponent extends SessionManager {
   public void initBindings(Bindings binds) {
     super.initBindings(binds);
     bindings = binds;
+  }
+
+  @Override
+  public void handleLogin(BareJID userId, XMPPResourceConnection userConnection) {
+    super.handleLogin(userId, userConnection);
+    final RosterAbstract roster = RosterFactory.getRosterImplementation(true);
+
+    try {
+      final JID userBuddy = JID.jidInstance(userId);
+      final BareJID admin = BareJID.bareJIDInstance(adminBot.jid());
+      final XMPPSession adminSession = getSession(admin);
+      final JID adminBuddy = JID.jidInstance(admin);
+      if (adminSession != null) { // confirm that all users have admin as the roster buddy
+        for (final XMPPResourceConnection connection : adminSession.getActiveResources()) {
+          if (!roster.containsBuddy(connection, userBuddy)) {
+            roster.addBuddy(connection, userBuddy, userBuddy.getBareJID().toString(), new String[0], "");
+            roster.setBuddySubscription(connection, RosterAbstract.SubscriptionType.both, userBuddy);
+          }
+        }
+        if (!roster.containsBuddy(userConnection, adminBuddy)) {
+          roster.addBuddy(userConnection, adminBuddy, "Administator", new String[0], "");
+          roster.setBuddySubscription(userConnection, RosterAbstract.SubscriptionType.both, adminBuddy);
+        }
+      }
+    } catch (NotAuthorizedException | TigaseDBException | TigaseStringprepException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -195,23 +161,19 @@ public class TrackPresenceComponent extends SessionManager {
 
     switch (status) {
       case WAITING:
-        if (client.state() == Client.State.FORMULATING)
-          client.query();
-        break;
       case UNKNOWN:
-        break;
       case TYPING:
         break;
       case AVAILABLE:
-        client.presence(true);
+        client.online(true);
         if (room != null) {
           client.activate(room);
           client.formulating();
         }
         break;
       case UNAVAILABLE:
-        if (to == null)
-          client.presence(false);
+        if (to == null && client.active() != null)
+          client.online(false);
         else
           client.activate(null);
         break;
@@ -224,31 +186,15 @@ public class TrackPresenceComponent extends SessionManager {
       expert = ExpertManager.instance().register(from.getBareJID().toString());
     if (expert == null)
       return null;
-    final Room room = to != null ? Reception.instance().room(to.getBareJID().toString()) : null;
-    if (status == Status.UNAVAILABLE && room == null)
-      expert.online(false);
-    switch (expert.state()) {
-      case CHECK:
-        if (room != null && room.equals(expert.active()))
-          expert.steady();
-        break;
-      case INVITE:
-        if (room != null && room.equals(expert.active()))
-          expert.ask(room);
-        break;
-      case DENIED:
-        expert.online(true);
-        break;
-      case CANCELED:
-        expert.online(true);
-        break;
-      case GO:
-        break;
-      case AWAY:
-        if (status != Status.UNAVAILABLE)
-          expert.online(true);
-        break;
+    if (status != Status.UNAVAILABLE) {
+      expert.online(true);
+      final String roomId = to != null ? to.getBareJID().toString() : null;
+      final Room room = roomId != null ? Reception.instance().room(roomId) : null;
+      if (room != null)
+        expert.ask();
     }
+    else expert.online(false);
+
     return expert;
   }
 

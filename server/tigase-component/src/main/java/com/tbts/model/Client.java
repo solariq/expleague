@@ -1,20 +1,26 @@
 package com.tbts.model;
 
-import com.spbsu.commons.func.WeakListenerHolder;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * User: solar
  * Date: 04.10.15
  * Time: 18:46
  */
-public interface Client extends WeakListenerHolder<Client> {
+public interface Client extends StateWise<Client.State, Client> {
   String id();
 
+  @Nullable
   Room active();
+  State state();
+
+  // lifecycle
+  void online(boolean val);
+
   void activate(Room room);
   void formulating();
   void query();
-  void presence(boolean val);
+  void feedback(Room room);
 
   enum State {
     OFFLINE(0),
@@ -48,6 +54,4 @@ public interface Client extends WeakListenerHolder<Client> {
       return states[state];
     }
   }
-
-  State state();
 }

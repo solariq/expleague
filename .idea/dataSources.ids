@@ -26,68 +26,68 @@
       <column id="9" parent="2" name="state">
         <data-type>int(11)</data-type>
       </column>
-      <column id="10" parent="2" name="active_expert">
+      <column id="10" parent="2" name="worker">
         <data-type>varchar(128)</data-type>
       </column>
-      <column id="11" parent="2" name="storage_uri">
-        <data-type>varchar(256)</data-type>
-      </column>
-      <key id="12" parent="2" name="PRIMARY">
+      <key id="11" parent="2" name="PRIMARY">
         <columns>id</columns>
         <primary>1</primary>
       </key>
-      <foreign-key id="13" parent="2" name="Room__expert">
-        <columns>active_expert</columns>
+      <foreign-key id="12" parent="2" name="Room__expert">
+        <columns>worker</columns>
         <ref-key>Experts.PRIMARY</ref-key>
         <cascade-update-rule>restrict</cascade-update-rule>
         <cascade-delete-rule>restrict</cascade-delete-rule>
       </foreign-key>
-      <foreign-key id="14" parent="2" name="Room__owner">
+      <foreign-key id="13" parent="2" name="Room__owner">
         <columns>owner</columns>
         <ref-key>Clients.PRIMARY</ref-key>
         <cascade-update-rule>restrict</cascade-update-rule>
         <cascade-delete-rule>restrict</cascade-delete-rule>
       </foreign-key>
-      <column id="15" parent="3" name="id">
+      <column id="14" parent="3" name="id">
         <mandatory>1</mandatory>
         <data-type>varchar(128)</data-type>
       </column>
-      <key id="16" parent="3" name="PRIMARY">
+      <key id="15" parent="3" name="PRIMARY">
         <columns>id</columns>
         <primary>1</primary>
       </key>
-      <column id="17" parent="4" name="id">
+      <column id="16" parent="4" name="id">
         <mandatory>1</mandatory>
         <data-type>varchar(128)</data-type>
       </column>
-      <column id="18" parent="4" name="state">
+      <column id="17" parent="4" name="state">
         <data-type>int(11)</data-type>
       </column>
-      <column id="19" parent="4" name="active_room">
+      <column id="18" parent="4" name="active_room">
         <data-type>varchar(128)</data-type>
       </column>
-      <key id="20" parent="4" name="PRIMARY">
+      <key id="19" parent="4" name="PRIMARY">
         <columns>id</columns>
         <primary>1</primary>
       </key>
-      <foreign-key id="21" parent="4" name="Client__active_room">
+      <foreign-key id="20" parent="4" name="Client__active_room">
         <columns>active_room</columns>
         <ref-key>Rooms.PRIMARY</ref-key>
         <cascade-update-rule>restrict</cascade-update-rule>
         <cascade-delete-rule>restrict</cascade-delete-rule>
       </foreign-key>
-      <foreign-key id="22" parent="4" name="Client__foreign">
+      <foreign-key id="21" parent="4" name="Client__foreign">
         <columns>id</columns>
         <ref-key>Users.PRIMARY</ref-key>
         <cascade-update-rule>restrict</cascade-update-rule>
         <cascade-delete-rule>restrict</cascade-delete-rule>
       </foreign-key>
-      <column id="23" parent="5" name="id">
+      <column id="22" parent="5" name="id">
         <mandatory>1</mandatory>
         <data-type>varchar(128)</data-type>
       </column>
-      <column id="24" parent="5" name="state">
+      <column id="23" parent="5" name="state">
         <data-type>int(11)</data-type>
+      </column>
+      <column id="24" parent="5" name="active">
+        <data-type>varchar(128)</data-type>
       </column>
       <key id="25" parent="5" name="PRIMARY">
         <columns>id</columns>

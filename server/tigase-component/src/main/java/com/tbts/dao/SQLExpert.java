@@ -13,11 +13,9 @@ import java.sql.SQLException;
 public class SQLExpert extends ExpertImpl {
   private MySQLDAO dao;
 
-  public SQLExpert(MySQLDAO dao, String id, State state, String active) {
+  public SQLExpert(MySQLDAO dao, String id) {
     super(id);
     this.dao = dao;
-    this.state = state;
-    this.active = active;
   }
 
   @Override
@@ -26,7 +24,8 @@ public class SQLExpert extends ExpertImpl {
     synchronized (updateExpertState) {
       try {
         updateExpertState.setInt(1, state.index());
-        updateExpertState.setString(2, id());
+        updateExpertState.setString(2, active);
+        updateExpertState.setString(3, id());
         updateExpertState.execute();
       } catch (SQLException e) {
         throw new RuntimeException(e);
@@ -36,10 +35,13 @@ public class SQLExpert extends ExpertImpl {
   }
 
   public void update(State state, String active) {
-    if (!dao.isUserAvailable(id())) {
+    if (dao.isUserAvailable(id())) {
+      this.active = active;
+      this.state = state;
+    }
+    else {
+      this.active = null;
       this.state = State.AWAY;
     }
-    else
-      this.state = state;
   }
 }

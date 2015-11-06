@@ -5,8 +5,6 @@ import tigase.jaxmpp.core.client.*;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 import tigase.jaxmpp.core.client.xml.Element;
 import tigase.jaxmpp.core.client.xml.ElementFactory;
-import tigase.jaxmpp.core.client.xml.XMLException;
-import tigase.jaxmpp.core.client.xmpp.modules.muc.MucModule;
 import tigase.jaxmpp.core.client.xmpp.stanzas.*;
 
 import java.util.ArrayList;
@@ -102,21 +100,6 @@ public class ClientBot extends Bot {
     client.online();
     client.startRoom();
     client.topic("Hello world");
-    client.jaxmpp.getEventBus().addHandler(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, (sessionObject, stanza) -> {
-      try {
-        System.out.println("Msg: " + stanza.getAsString());
-      } catch (XMLException e) {
-        throw new RuntimeException(e);
-      }
-    });
-    client.jaxmpp.getEventBus().addHandler(MucModule.MucMessageReceivedHandler.MucMessageReceivedEvent.class, (sessionObject, message, room, s, date) -> {
-      try {
-        System.out.println("Group: " + message.getAsString());
-        latch.advance();
-      } catch (XMLException e) {
-        throw new RuntimeException(e);
-      }
-    });
     latch.state(2, 1);
     client.stop();
   }

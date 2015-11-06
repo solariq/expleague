@@ -16,8 +16,8 @@ import java.util.Map;
 class SQLClient extends ClientImpl {
   private MySQLDAO dao;
 
-  public SQLClient(MySQLDAO dao, String id, boolean online, Map<String, State> state, String active) {
-    super(id, online, state, active);
+  public SQLClient(MySQLDAO dao, String id) {
+    super(id);
     this.dao = dao;
   }
 
@@ -33,13 +33,12 @@ class SQLClient extends ClientImpl {
         throw new RuntimeException(e);
       }
     }
-    final Room active = active();
-    if (active != null) {
+    if (activeId != null) {
       final PreparedStatement updateRoomOwnerState = dao.getUpdateRoomOwnerState();
       synchronized (updateRoomOwnerState) {
         try {
           updateRoomOwnerState.setInt(1, state.index());
-          updateRoomOwnerState.setString(2, active.id());
+          updateRoomOwnerState.setString(2, activeId);
           updateRoomOwnerState.execute();
         } catch (SQLException e) {
           throw new RuntimeException(e);
@@ -65,10 +64,18 @@ class SQLClient extends ClientImpl {
   }
 
   public void update(Map<String, State> states, String currentActive) {
+    this.stateInRooms.putAll(states);
+    this.activeId = currentActive;
     final boolean available = dao.isUserAvailable(id());
-    if (!available && this.online) {
-      activate(null);
+    if (!available) {
+      state(State.OFFLINE);
     }
-    this.online = !available;
+    else if (activeId != null){
+      State state = stateInRooms.get(activeId);
+      this.state = state != null ? state : State.ONLINE;
+    }
+    else {
+      this.state = State.ONLINE;
+    }
   }
 }

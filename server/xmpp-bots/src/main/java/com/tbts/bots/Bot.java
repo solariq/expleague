@@ -2,17 +2,18 @@ package com.tbts.bots;
 
 import com.spbsu.commons.util.sync.StateLatch;
 import tigase.jaxmpp.core.client.*;
+import tigase.jaxmpp.core.client.criteria.Criteria;
+import tigase.jaxmpp.core.client.criteria.ElementCriteria;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 import tigase.jaxmpp.core.client.xml.Element;
 import tigase.jaxmpp.core.client.xml.ElementFactory;
+import tigase.jaxmpp.core.client.xml.XMLException;
+import tigase.jaxmpp.core.client.xmpp.modules.AbstractStanzaModule;
 import tigase.jaxmpp.core.client.xmpp.modules.muc.MucModule;
 import tigase.jaxmpp.core.client.xmpp.modules.presence.PresenceModule;
 import tigase.jaxmpp.core.client.xmpp.modules.registration.InBandRegistrationModule;
 import tigase.jaxmpp.core.client.xmpp.modules.roster.RosterModule;
-import tigase.jaxmpp.core.client.xmpp.stanzas.IQ;
-import tigase.jaxmpp.core.client.xmpp.stanzas.Presence;
-import tigase.jaxmpp.core.client.xmpp.stanzas.Stanza;
-import tigase.jaxmpp.core.client.xmpp.stanzas.StanzaType;
+import tigase.jaxmpp.core.client.xmpp.stanzas.*;
 import tigase.jaxmpp.j2se.J2SEPresenceStore;
 import tigase.jaxmpp.j2se.J2SESessionObject;
 import tigase.jaxmpp.j2se.Jaxmpp;
@@ -77,11 +78,46 @@ public class Bot {
     jaxmpp.getProperties().setUserProperty(SessionObject.USER_BARE_JID, jid);
     jaxmpp.getProperties().setUserProperty(SessionObject.PASSWORD, passwd);
     jaxmpp.getProperties().setUserProperty(SessionObject.RESOURCE, resource);
+//    jaxmpp.getModulesManager().register(new )
     jaxmpp.getEventBus().addHandler(JaxmppCore.ConnectedHandler.ConnectedEvent.class, sessionObject -> latch.advance());
+    jaxmpp.getModulesManager().register(new AbstractStanzaModule<Message>() {
+      @Override
+      public Criteria getCriteria() {
+        return new ElementCriteria("message", new String[0], new String[0]);
+      }
+
+      @Override
+      public String[] getFeatures() {
+        return new String[0];
+      }
+
+      @Override
+      public void process(Message stanza) throws JaxmppException {
+        onMessage(stanza.getAsString());
+        try {
+          System.out.println("Msg: " + stanza.getAsString());
+        } catch (XMLException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
+
+    jaxmpp.getEventBus().addHandler(MucModule.MucMessageReceivedHandler.MucMessageReceivedEvent.class, (sessionObject, message, room, s, date) -> {
+      try {
+        System.out.println("Group: " + message.getAsString());
+        latch.advance();
+      } catch (XMLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+
     jaxmpp.login();
     latch.state(2, 1);
     System.out.println("Logged in");
 
+  }
+
+  protected void onMessage(String asString) {
   }
 
   public void stop() throws JaxmppException {

@@ -1,7 +1,5 @@
 package com.tbts.tigase.component;
 
-import com.spbsu.commons.func.Action;
-import com.tbts.model.Answer;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
 import com.tbts.model.Room;
@@ -13,14 +11,10 @@ import tigase.criteria.Criteria;
 import tigase.criteria.ElementCriteria;
 import tigase.muc.exceptions.MUCException;
 import tigase.muc.modules.GroupchatMessageModule;
-import tigase.server.Message;
 import tigase.server.Packet;
-import tigase.util.TigaseStringprepException;
-import tigase.xml.Element;
 import tigase.xmpp.BareJID;
 import tigase.xmpp.JID;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -32,43 +26,7 @@ public class AllocateRoomModule extends GroupchatMessageModule {
   private static final Logger log = Logger.getLogger(AllocateRoomModule.class.getName());
   private static final Criteria CRIT = ElementCriteria.name("message").add(ElementCriteria.name("subject"));
 
-  @SuppressWarnings("FieldCanBeLocal")
-  private final Action<Expert> expertCommunication;
   public AllocateRoomModule() {
-    expertCommunication = new Action<Expert>() {
-      @Override
-      public void invoke(Expert expert) {
-        switch (expert.state()) {
-          case INVITE:
-            try {
-              Room active = expert.active();
-              final Element invite = new Element(Message.ELEM_NAME);
-              final String subj = active.query().text();
-              {
-                final Element x = new Element("x");
-                x.setXMLNS("http://jabber.org/protocol/muc#user");
-                x.addChild(new Element("invite", new String[]{"from"}, new String[]{active.id()}));
-                x.addChild(new Element("subj", subj));
-                invite.addChild(x);
-              }
-              {
-                final Element x = new Element("x");
-                x.setXMLNS("jabber:x:conference");
-                x.setAttribute("reason", subj);
-                invite.addChild(x);
-              }
-              write(Packet.packetInstance(invite, JID.jidInstance(active.id()), JID.jidInstance(BareJID.bareJIDInstance(expert.id()), "expert")));
-            } catch (TigaseStringprepException e) {
-              log.log(Level.WARNING, "Error constructing invte", e);
-            }
-            break;
-          case CHECK:
-            expert.steady();
-            break;
-        }
-      }
-    };
-    ExpertManager.instance().addListener(expertCommunication);
   }
 
   @Override
@@ -97,7 +55,7 @@ public class AllocateRoomModule extends GroupchatMessageModule {
         client.query();
       }
       else if (expert != null && expert.state() == Expert.State.GO) {
-        expert.answer(new Answer());
+        room.answer();
       }
     }
 

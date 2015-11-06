@@ -1,29 +1,23 @@
 package com.tbts.model;
 
-import com.spbsu.commons.func.WeakListenerHolder;
-
 /**
  * User: solar
  * Date: 04.10.15
  * Time: 18:49
  */
-public interface Expert extends WeakListenerHolder<Expert> {
+public interface Expert extends StateWise<Expert.State, Expert> {
   String id();
 
   void online(boolean val);
 
-  boolean reserve(Room room);
-
-  void invite();
-
-  void ask(Room room);
-
   Room active();
-  void free();
+  boolean reserve(Room room);
   void steady();
-  void answer(Answer answer);
-  State state();
+  void invite();
+  void ask();
+  void free();
 
+  State state();
 
   enum State {
     AWAY(0),

@@ -1,9 +1,13 @@
 package com.tbts.bots;
 
 import com.spbsu.commons.util.sync.StateLatch;
+import com.spbsu.commons.xml.JDOMUtil;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.JID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
+import tigase.jaxmpp.core.client.xml.ElementFactory;
 import tigase.jaxmpp.core.client.xmpp.modules.muc.MucModule;
 import tigase.jaxmpp.core.client.xmpp.stanzas.Message;
 import tigase.jaxmpp.core.client.xmpp.stanzas.Presence;
@@ -16,6 +20,7 @@ import tigase.jaxmpp.core.client.xmpp.stanzas.StanzaType;
  */
 public class ExpertBot extends Bot {
 
+  public static final String TBTS_XMLNS = "http://toobusytosearch.net/schema";
   private BareJID roomJID;
 
   public ExpertBot(final BareJID jid, final String passwd) throws JaxmppException {
@@ -39,6 +44,7 @@ public class ExpertBot extends Bot {
         latch.advance();
       }
     };
+
     expert.start();
 //    expert.offline();
     expert.online();
@@ -71,6 +77,30 @@ public class ExpertBot extends Bot {
     } catch (JaxmppException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  protected void onMessage(String asString) {
+    Element element = JDOMUtil.parseXml(asString);
+    Element room = element.getChild("body", Namespace.getNamespace("jabber:client")).getChild("room", Namespace.getNamespace(TBTS_XMLNS));
+    if (room != null) {
+      System.out.println("Answering to the room");
+      try {
+        final Message msg = Message.create();
+        msg.setTo(JID.jidInstance(element.getAttributeValue("from")));
+        msg.setType(StanzaType.chat);
+        msg.setBody("");
+        tigase.jaxmpp.core.client.xml.Element roomE = ElementFactory.create("room", "", TBTS_XMLNS);
+        roomE.setAttribute("type", "check");
+        roomE.setAttribute("id", room.getAttributeValue("id"));
+        roomE.setValue("Ok");
+        msg.getWrappedElement().getFirstChild().addChild(roomE);
+        jaxmpp.send(msg);
+      } catch (JaxmppException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    super.onMessage(asString);
   }
 
   public void accept(MucModule.Invitation invitation) {

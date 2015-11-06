@@ -20,7 +20,10 @@ public class StatusTracker {
   private final PrintStream stream;
   private Action<Client> clientListener  = new Action<Client>() {
     public void invoke(Client client) {
-      stream.append("Client " + client.id() + " -> " + client.state().toString() + "\n");
+      Client.State state = client.state();
+      if (state == null)
+        throw new NullPointerException();
+      stream.append("Client " + client.id() + " -> " + state.toString() + "\n");
     }
   };
   private Action<Expert> expertListener  = new Action<Expert>() {

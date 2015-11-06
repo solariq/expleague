@@ -1,8 +1,7 @@
 package com.tbts.model;
 
-import com.spbsu.commons.func.WeakListenerHolder;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -10,28 +9,32 @@ import java.util.Set;
  * Date: 04.10.15
  * Time: 18:50
  */
-public interface Room extends WeakListenerHolder<Room> {
+public interface Room extends StateWise<Room.State, Room> {
+  // Data
   String id();
-
   Query query();
-  void answer(Answer answer);
-  void enter(Expert winner);
+  Client owner();
 
+  @Nullable
+  Expert worker();
+
+  // lifecycle
   void open();
+  void enter(Expert winner);
+  void answer();
+  void cancel();
+  void exit();
+  void fix();
 
-  boolean quorum(Set<Expert> reserved);
-
-  void invite(Expert next);
-
+  // challenge stuff
+  void commit();
   boolean relevant(Expert expert);
-
+  boolean quorum(Set<Expert> reserved);
   long invitationTimeout();
 
-  void exit(Expert expert);
-
-  List<Answer> answers();
-
   void onMessage(String s, CharSequence element);
+
+  State state();
 
   enum State {
     CLEAN(0),
@@ -67,6 +70,4 @@ public interface Room extends WeakListenerHolder<Room> {
       return states[state];
     }
   }
-
-  State state();
 }

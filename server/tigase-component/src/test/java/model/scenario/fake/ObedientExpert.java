@@ -1,7 +1,5 @@
 package model.scenario.fake;
 
-import com.spbsu.commons.func.Action;
-import com.tbts.model.Answer;
 import com.tbts.model.Room;
 import com.tbts.model.impl.ExpertImpl;
 
@@ -11,17 +9,6 @@ import com.tbts.model.impl.ExpertImpl;
  * Time: 20:08
  */
 public class ObedientExpert extends ExpertImpl {
-  private Action<Room> roomAction = new Action<Room>() {
-    @Override
-    public void invoke(Room room) {
-      if (room.state() == Room.State.LOCKED) {
-        answer(new Answer());
-        room.removeListener(this);
-      }
-    }
-  };
-
-
   public ObedientExpert(String id) {
     super(id);
   }
@@ -38,7 +25,20 @@ public class ObedientExpert extends ExpertImpl {
   @Override
   public void invite() {
     super.invite();
-    ask(active());
-    active().addListener(roomAction);
+    ask();
+  }
+
+  @Override
+  public void ask() {
+    super.ask();
+    Room active = active();
+    if (active == null)
+      throw new RuntimeException();
+    active.addListener(room -> {
+      if (room.state() == Room.State.LOCKED) {
+        System.out.println("Answering to " + room.id());
+        room.answer();
+      }
+    });
   }
 }

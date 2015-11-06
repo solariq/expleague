@@ -7,10 +7,10 @@ import com.tbts.model.Room;
 import com.tbts.model.handlers.DAO;
 
 import java.sql.*;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 /**
  * User: solar
@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Time: 15:18
  */
 public class MySQLDAO extends DAO {
+  private static final Logger log = Logger.getLogger(MySQLDAO.class.getName());
   private final String connectionUrl;
   // Rooms
 
@@ -27,6 +28,8 @@ public class MySQLDAO extends DAO {
     if (room != null)
       return room;
     populateRoomsCache();
+    if (roomsMap.get(jid) == null)
+      log.warning("Requested room " + jid + " was not found!");
     return roomsMap.get(jid);
   }
 
@@ -42,7 +45,7 @@ public class MySQLDAO extends DAO {
     if (existing != null)
       return existing;
     try {
-      SQLRoom fresh = new SQLRoom(this, id, owner, null, Room.State.CLEAN);
+      SQLRoom fresh = new SQLRoom(this, id, owner);
       final PreparedStatement addRoom = getAddRoom();
       addRoom.setString(1, id);
       addRoom.setString(2, owner.id());
@@ -59,15 +62,15 @@ public class MySQLDAO extends DAO {
     populateExpertsCache();
     try (final ResultSet rs = getListRooms().executeQuery()) {
       while (rs.next()) {
-        final String id = rs.getString("id");
-        final Client owner = client(rs.getString("owner"));
-        final String activeExpertId = rs.getString("active_expert");
-        final Expert active_expert = activeExpertId != null ? expert(activeExpertId) : null;
-        final Room.State state = Room.State.byIndex(rs.getInt("state"));
+        final String id = rs.getString(1);
+        final Client owner = client(rs.getString(2));
+        final Room.State state = Room.State.byIndex(rs.getInt(4));
+        final String workerId = rs.getString(5);
+        final Expert worker = workerId != null ? expert(workerId) : null;
         SQLRoom existing = (SQLRoom) roomsMap.get(id);
         if (existing == null)
-          roomsMap.put(id, existing = new SQLRoom(this, id, owner, active_expert, state));
-        existing.update(state, active_expert);
+          roomsMap.put(id, existing = new SQLRoom(this, id, owner));
+        existing.update(state, worker);
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -90,7 +93,7 @@ public class MySQLDAO extends DAO {
     final Expert existing = expert(id);
     if (existing != null)
       return existing;
-    final Expert fresh = new SQLExpert(this, id, Expert.State.AWAY, null);
+    final Expert fresh = new SQLExpert(this, id);
     try {
       ensureUser(id);
       final PreparedStatement addExpert = getAddExpert();
@@ -115,11 +118,10 @@ public class MySQLDAO extends DAO {
         final String id = rs.getString(1);
         final Expert.State state = Expert.State.byIndex(rs.getInt(2));
         final String activeId = rs.getString(3);
-        final SQLExpert existing = (SQLExpert)expertsMap.get(id);
-        if (existing != null)
-          existing.update(state, activeId);
-        else
-          expertsMap.put(id, new SQLExpert(this, id, state, activeId));
+        SQLExpert existing = (SQLExpert)expertsMap.get(id);
+        if (existing == null)
+          expertsMap.put(id, existing = new SQLExpert(this, id));
+        existing.update(state, activeId);
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -147,7 +149,7 @@ public class MySQLDAO extends DAO {
     final Client existing = client(id);
     if (existing != null)
       return existing;
-    final Client fresh = new SQLClient(this, id, false, Collections.emptyMap(), null);
+    final Client fresh = new SQLClient(this, id);
     try {
       ensureUser(id);
       final PreparedStatement addClient = getAddClient();
@@ -188,11 +190,10 @@ public class MySQLDAO extends DAO {
         final String active = rs.getString(4);
         final boolean online = Client.State.byIndex(rs.getInt(5)) != Client.State.OFFLINE;
         if (!uid.equals(currentId) && currentId != null) {
-          final SQLClient client = (SQLClient)clientsMap.get(currentId);
+          SQLClient client = (SQLClient)clientsMap.get(currentId);
           if (client == null)
-            clientsMap.put(currentId, new SQLClient(this, currentId, currentOnline, states, currentActive));
-          else
-            client.update(states, currentActive);
+            clientsMap.put(currentId, client = new SQLClient(this, currentId));
+          client.update(states, currentActive);
           states.clear();
         }
         currentId = uid;
@@ -202,11 +203,10 @@ public class MySQLDAO extends DAO {
           states.put(roomId, Client.State.byIndex(state));
       }
       if (currentId != null) {
-        final SQLClient client = (SQLClient)clientsMap.get(currentId);
+        SQLClient client = (SQLClient)clientsMap.get(currentId);
         if (client == null)
-          clientsMap.put(currentId, new SQLClient(this, currentId, currentOnline, states, currentActive));
-        else
-          client.update(states, currentActive);
+          clientsMap.put(currentId, client = new SQLClient(this, currentId));
+        client.update(states, currentActive);
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -235,6 +235,7 @@ public class MySQLDAO extends DAO {
   }
 
   public void init() {
+    System.out.println("DAO init called!");
     populateRoomsCache();
   }
 
@@ -276,7 +277,7 @@ public class MySQLDAO extends DAO {
   }
 
   public PreparedStatement getListExperts() {
-    return createStatement("listExperts", "SELECT e.id, e.state, r.id FROM tbts.Experts AS e LEFT JOIN tbts.Rooms AS r ON e.id = r.active_expert;");
+    return createStatement("listExperts", "SELECT * FROM tbts.Experts;");
   }
 
   public PreparedStatement getListRooms() {
@@ -288,7 +289,7 @@ public class MySQLDAO extends DAO {
   }
 
   public PreparedStatement getUpdateExpertState() {
-    return createStatement("updateExpertState", "UPDATE tbts.Experts SET state=? WHERE id=?;");
+    return createStatement("updateExpertState", "UPDATE tbts.Experts SET state=?, active=? WHERE id=?;");
   }
 
   public PreparedStatement getUpdateRoomState() {
@@ -296,7 +297,7 @@ public class MySQLDAO extends DAO {
   }
 
   public PreparedStatement getUpdateRoomExpert() {
-    return createStatement("updateRoomExpert", "UPDATE tbts.Rooms SET active_expert=? WHERE id=?;");
+    return createStatement("updateRoomExpert", "UPDATE tbts.Rooms SET worker=? WHERE id=?;");
   }
 
   public PreparedStatement getUpdateClientActiveRoom() {
