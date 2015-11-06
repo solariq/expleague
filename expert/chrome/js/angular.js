@@ -8,11 +8,7 @@
     $scope.isRegisterForm = false;
 
     $scope.menu = {
-        active: false,
-        openMoreFoldersDialog: function () {
-            $scope.hide(true);
-            dialogService.template = KNUGGET.config.sidebarTemplatesRoot + "dialog.moreFolders";
-        }
+        active: false
     };
     $scope.active = false;
     $scope.connectionFail = false;
@@ -37,6 +33,10 @@
         });
     }
 
+
+    $scope.isDialogActive = function() {
+        return dialogService.dialogIsActive;
+    };
 
     $scope.send = function() {
         KNUGGET.api('SendResponse', {request: $scope.activeRequest.value}, function (response) {
@@ -157,7 +157,14 @@
         } else {
             $('#chatboard').scrollTop = direction;
         }
-    }
+    };
+
+    $scope.getTitileToEdit = function() {
+        return dialogService.originReaponse.Title;
+    };
+    $scope.getTextToEdit = function() {
+        return dialogService.originReaponse.Text;
+    };
 
 
     $scope.sidebarContent = function () {
@@ -170,7 +177,11 @@
 
         //alert('waiting');
         return templatesRoot + ($scope.user.available ? 'waiting' : 'unavailable');
-    }
+    };
+
+    $scope.isWorkingOnAnswer = function() {
+        return $scope.activeRequest.value && $scope.allowToShow.value;
+    };
 
     $scope.sidebarTemplate = function () {
 

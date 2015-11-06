@@ -348,7 +348,11 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
     addToBoardSync = function(answer, callback) {
         KNUGGET.storage.get("Board", function (value) {
             value = value ? JSON.parse(value) : [];
-            value.push(answer);
+            if (typeof answer == 'string') {
+                value.push(answer);
+            } else {
+                value.push(JSON.stringify(answer));
+            }
             KNUGGET.storage.set("Board", JSON.stringify(value));
             console.log(JSON.stringify(value));
             callback();
@@ -535,8 +539,51 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             return defer.promise;
         },
 
-        addToBoard: function (data) {
-            //KNUGGET.storage.set("Board", JSON.stringify([]));
+        ReplaceAnswer: function(data) {
+            var defer = $q.defer();
+            pos = data.pos;
+            answer = data.answer;
+            KNUGGET.storage.get("Board", function (value) {
+                //console.log("was:");
+                //console.log(value);
+                arr = value ? JSON.parse(value) : [];
+                if (pos >= arr.length || pos < 0) {
+                    defer.resolve({status: 500});
+                    return;
+                }
+                arr[pos] = JSON.stringify(answer);
+                //console.log("got:");
+                //console.log(JSON.stringify(arr));
+                KNUGGET.storage.set("Board", JSON.stringify(arr));
+                defer.resolve({status: 200});
+            });
+            //defer.resolve({status: 200});
+            return defer.promise;
+        },
+
+        InsertAnswer: function(data) {
+            var defer = $q.defer();
+            pos = data.pos;
+            answer = data.answer;
+            KNUGGET.storage.get("Board", function (value) {
+                //console.log("was:");
+                //console.log(value);
+                arr = value ? JSON.parse(value) : [];
+                if (pos >= arr.length || pos < 0) {
+                    defer.resolve({status: 500});
+                    return;
+                }
+                arr.splice(pos, 0, JSON.stringify(answer));
+                //console.log("got:");
+                //console.log(JSON.stringify(arr));
+                KNUGGET.storage.set("Board", JSON.stringify(arr));
+                defer.resolve({status: 200});
+            });
+            //defer.resolve({status: 200});
+            return defer.promise;
+        },
+
+        addToBoard: function(data) {
             answer = data.answer;
             var defer = $q.defer();
             addToBoardSync(answer, function() {
@@ -545,7 +592,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             return defer.promise;
         },
 
-        registerUser: function (data) {
+        registerUser: function(data) {
             var future = $q.defer();
             if (jabberClient) {
                 jabberClient.logout();
@@ -562,7 +609,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             return future.promise;
         },
 
-        loginUser: function (data) {
+        loginUser: function(data) {
             var future = $q.defer();
 
             if (jabberClient) {
@@ -616,7 +663,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             return future.promise;
         },
 
-        Logout: function (data) {
+        Logout: function(data) {
             var defer = $q.defer();
             reason = data.reason ? data.reason : 'unknown';
             jabberClient.logout(reason);
@@ -628,7 +675,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             return defer.promise;
         },
 
-        Upload: function (data, senderId) {
+        Upload: function(data, senderId) {
 
             data.SenderId = senderId;
 

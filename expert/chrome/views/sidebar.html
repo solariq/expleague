@@ -1,6 +1,13 @@
 ﻿<!--<div class="sidebar-container first-time" scroll-preventer render-complete>-->
 <div class="sidebar-container first-time" render-complete>
 
+
+    <div class="dialog" dialog>
+        <!--<div class="dialog" dialog ng-if="isDialogActive()">-->
+        <div class="dialog-container" ui-view="sidebar_dialog"></div>
+        <div class="dialog-container" ng-include="dialogTemplate()"></div>
+    </div>
+
     <!-- MENU AND USER AVATAR -->
     <div class="menu" ng-class="{active: menu.active, overTop: blockMoveUp}">
         <!--<a class="user" ng-class="{reconnecting: isReconnecting}" toggle-menu>-->
@@ -10,8 +17,14 @@
         </a>
 
         <!--<span class="icon icon-chat" ng-click="chatWindow.open()"></span>-->
+        <span class="icon icon-new" ng-click="newAnswer(-1)" edit-answer ng-if="isWorkingOnAnswer()">
+            <span class="tooltip repositioned right-bottom">Новый ответ</span>
+        </span>
+        <span class="icon icon-send" ng-click="send()" ng-if="isWorkingOnAnswer()">
+            <span class="tooltip repositioned right-bottom">Отправить ответ</span>
+        </span>
         <span class="icon icon-closeSidebar" ng-click="closeSidebar()" tooltip-hover>
-            <span class="tooltip repositioned right-bottom">Close sidebar</span>
+            <span class="tooltip repositioned right-bottom">Свернуть плагин</span>
         </span>
 
 
@@ -32,6 +45,6 @@
 
 
 
-    <span ng-include="sidebarContent()"></span>
 
+    <span ng-include="sidebarContent()"></span>
 </div>

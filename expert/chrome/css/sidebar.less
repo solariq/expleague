@@ -407,6 +407,33 @@ textarea {
         }
     }
 
+    .icon-send {
+        display: block;
+        position: absolute;
+        top: 13px;
+        right: 34px;
+
+        &:hover {
+            .tooltip {
+                .tooltipHover
+            }
+        }
+    }
+
+    .icon-new {
+        display: block;
+        position: absolute;
+        top: 13px;
+        right: 54px;
+
+        &:hover {
+            .tooltip {
+                .tooltipHover
+            }
+        }
+    }
+
+
     .icon-closeSidebar {
         display: block;
         position: absolute;
@@ -440,6 +467,11 @@ textarea {
             display: block;
         }
     }
+}
+
+.overlay {
+    position: absolute;
+    z-index: 1;
 }
 
 .folders {
@@ -1814,6 +1846,7 @@ Expanded sidebar styles
         }
 
         .description {
+            max-height: 350px;
             color: #747980;
             font-weight: 400;
             text-align: center;
@@ -1982,6 +2015,24 @@ Expanded sidebar styles
             &:hover {
                 background: none repeat scroll 0 0 #5ca4d7;
                 box-shadow: 0 1px 0 0 #3f82b0;
+                color: #fff;
+            }
+
+            &.loading {
+                &:before {
+                    background-image: url("@{urlPrefix}/images/loader-2.png");
+                }
+            }
+        }
+
+        button.green {
+            background: none repeat scroll 0 0 #ace1af;
+            box-shadow: 0 1px 0 0 #7EA580;
+            color: #fff;
+
+            &:hover {
+                background: none repeat scroll 0 0 #B0E6B3;
+                box-shadow: 0 1px 0 0 #59745A;
                 color: #fff;
             }
 

@@ -1,15 +1,15 @@
 <div folder-droppable="1" class="workboard" id="workboard">
     <!--<div id="sortable">-->
     <!--sortable-list="scope"-->
-    <i class="icon-send" ng-click="send()"></i>
+    <!--<i class="icon-send" ng-click="send()"></i>-->
 
     <div ui-sortable="groupsSortableOptions"  ng-model="board.list" sortable-list>
-        <div ng-repeat="answer in board.list track by $index" class="answer-block">
+        <div edit-answer ng-repeat="answer in board.list track by $index" class="answer-block" ng-dblclick="edit(answer, $index)">
             <!--{{$index}} &#45;&#45; {{printableAnswer(answer)}}-->
             <i class="close" ng-click="removeFromBorder($index)"></i>
             <!--<a class="link" href="{{answer.Referer}}"></a>-->
             <div>
-                <a ng-href="answer.Href">{{truncateTitle(answer.Title)}}</a>
+                <a ng-href="{{answer.Referer}}">{{truncateTitle(answer.Title)}}</a>
                 <div ng-if="answer.Base64Image != undefined">
                     <img src="{{answer.Base64Image}}">
                 </div>
