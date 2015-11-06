@@ -201,6 +201,10 @@
   margin-left: 50px;
 }
 
+.result-plain .baloon.baloon-server.baloon-picture {
+  padding-right: 10px;
+}
+
 .message {
   position: fixed;
   bottom: -54px;

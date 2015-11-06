@@ -1,6 +1,6 @@
 <div ng-controller="ResultController">
   <super-navbar>
-    <super-navbar-title>Результаты поиска</super-navbar-title>
+    <super-navbar-title>Результаты</super-navbar-title>
     <super-navbar-button side="left" ng-click="backToHistory()">‹ История</super-navbar-button>
   </super-navbar>
 
@@ -16,6 +16,10 @@
   .expert-vote i {
     font-size: 24px;
     margin: 0 9px;
+  }
+
+  .result-plain #yesno .baloon-text {
+    display: none;
   }
   </style>
 
@@ -78,9 +82,10 @@ function playSound() {
 
 function requestClarification() {
   setTimeout(function() {
-    $('.result').append('<div class="baloon baloon-server"><div class="baloon-title">Необходимо уточнение</div><div class="baloon-text">Расскажите, что ещё необходимо найти</div></div>');
+    $('.result').append('<div class="baloon baloon-server baloon-picture"><div class="baloon-title">Необходимо уточнение</div><div class="baloon-text"><div class="expert-picture" style="background-image: url(/images/expert-3.png)"></div>Расскажите, что ещё необходимо найти</div></div>');
     playSound();
     $('.input-message').focus();
+    $(window).scrollTop(document.body.clientHeight);
   }, 500);
 }
 
@@ -97,7 +102,7 @@ function addYesNoEvents() {
       $('.popup-container').addClass('popup-showing');
     } else {
       $(this).parent().css('visibility','hidden');
-      $('.result').addClass('result-chat');
+      $('.result').removeClass('result-plain').addClass('result-chat');
       setTimeout(function() {
         $('.message').css('bottom', '0');
         $('.result').append('<div class="baloon baloon-client baloon-simple"><div class="baloon-text">Нет</div></div>');
@@ -142,28 +147,34 @@ $(document).ready(function() {
   if (steroids.view.params.id == undefined) {
     var searchText = localStorage.getItem('text').toLowerCase();
     if (/аптека|apteka/.test(searchText)) {
-      var messages = window.ordersHistory[3].messages;
+      var messages = window.ordersHistory[2].messages;
       $.each(messages, function(i, message) {
         setTimeout(function() {
           var tel = ('extra' in message && 'tel' in message.extra) ? '<div>Телефон: <a href="tel:' + message.extra.tel + '">' + message.extra.tel + '</a></div>' : '';
           var address = ('extra' in message && 'address' in message.extra) ? '<div>Адрес: <a href="comgooglemaps://?q=' + message.extra.address + '">' + message.extra.address + '</a></div>' : '';
           if (i == 1) {
+            $('.result').addClass('result-plain');
             $('.result').append('<div class="baloon baloon-' + message.type + '"><div class="baloon-title">' + message.title + '</div><div class="baloon-text"><div><div class="progress"><div class="progress-bar"></div></div></div></div></div>');
             setTimeout(function() {
               playSound();
               $('.progress').hide();
-              $('.progress').after('<div>' + message.text + '</div>');
+              var expert = '<div class="expert" style="background-image: url(' + message.expert.picture + ')">' + 
+                           '  <div class="expert-info">' + message.expert.name + ' ' + message.expert.description + '</div>' +
+                           '  <div class="expert-raiting">Рейтинг: <span><i class="super-ios-star"></i> <i class="super-ios-star"></i> <i class="super-ios-star"></i> <i class="super-ios-star"></i> <i class="super-ios-star-outline"></i></span></div>' +
+                           '</div>';
+              $('.progress').after(expert).after('<div>' + message.text + '</div>');
             }, 4000);
           } else {
-            $('.result').append('<div class="baloon baloon-' + message.type + '"><div class="baloon-title">' + message.title + '</div><div class="baloon-text"><div>' + message.text + '</div>' + tel + address + '</div></div>');
+            $('.result').append('<div class="baloon baloon-' + message.type + ' baloon-picture"><div class="baloon-title">' + message.title + '</div><div class="baloon-text"><div class="expert-picture" style="background-image: url(' + message.expert_picture + ')"></div><div>' + message.text + '</div>' + tel + address + '</div></div>');
           }
           playSound();
         }, timeouts[i]);
       });
 
       setTimeout(function() {
-        var question = '<div class="baloon baloon-server" id="yesno">' +
+        var question = '<div class="baloon baloon-server baloon-picture" id="yesno">' +
                        '  <div class="baloon-title">Вас устроил данный ответ?</div>' +
+                       '  <div class="baloon-text"><div class="expert-picture" style="background-image: url(/images/expert-3.png)"></div></div>' +
                        '  <div class="baloon-question">' +
                        '    <div class="baloon-question-yes">Да</div>' +
                        '    <div class="baloon-question-no">Нет</div>' +

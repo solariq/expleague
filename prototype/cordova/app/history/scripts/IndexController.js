@@ -12,20 +12,11 @@ angular
 
     $scope.history = [
       {
-        id: 3,
-        text: 'Пример чата с экспертом',
-        near: false,
-        expert: true,
-        urgency: 4, // От 0 до 5
-        started: 1443710220000,
-        ended: 1443710220001
-      },
-      {
         id: 2,
         text: 'Самый большой по площади парк Питера',
         near: false,
-        expert: false,
-        urgency: 0, // От 0 до 5
+        expert: true,
+        urgency: 4, // От 0 до 5
         started: 1443710220000,
         ended: 1443710220001
       },
