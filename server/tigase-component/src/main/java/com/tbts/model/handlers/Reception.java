@@ -5,6 +5,8 @@ import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.tbts.model.Client;
 import com.tbts.model.Room;
 
+import java.util.Map;
+
 /**
  * User: solar
  * Date: 04.10.15
@@ -50,5 +52,13 @@ public class Reception extends WeakListenerHolderImpl<Room> implements Action<Ro
     if (!jid.contains("@muc."))
       return null;
     return DAO.instance().room(jid);
+  }
+
+  public void visitClientRooms(Client client, Action<Room> roomAction) {
+    Map<String, Room> rooms = DAO.instance().rooms();
+    for (final Room room : rooms.values()) {
+      if (room.owner().equals(client))
+        roomAction.invoke(room);
+    }
   }
 }

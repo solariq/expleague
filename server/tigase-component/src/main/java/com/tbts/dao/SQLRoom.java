@@ -24,13 +24,17 @@ public class SQLRoom extends RoomImpl {
   public void update(State state, Expert worker) {
     this.state = state;
     this.worker = worker;
-    if (state == State.DEPLOYED && worker == null)
+    if (dao.isMaster(owner().id()) && state == State.DEPLOYED)
       ExpertManager.instance().challenge(this);
   }
 
   @Override
   public void enter(Expert winner) {
+    if (!dao.isMaster(owner().id()))
+      throw new IllegalStateException();
+
     final PreparedStatement updateRoomExpert = dao.getUpdateRoomExpert();
+    //noinspection SynchronizationOnLocalVariableOrMethodParameter
     synchronized (updateRoomExpert) {
       try {
         updateRoomExpert.setString(1, winner.id());
@@ -45,7 +49,11 @@ public class SQLRoom extends RoomImpl {
 
   @Override
   public void exit() {
+    if (!dao.isMaster(owner().id()))
+      throw new IllegalStateException();
+
     final PreparedStatement updateRoomExpert = dao.getUpdateRoomExpert();
+    //noinspection SynchronizationOnLocalVariableOrMethodParameter
     synchronized (updateRoomExpert) {
       try {
         updateRoomExpert.setString(1, null);
@@ -60,7 +68,10 @@ public class SQLRoom extends RoomImpl {
 
   @Override
   public void state(State state) {
+    if (!dao.isMaster(owner().id()))
+      throw new IllegalStateException();
     final PreparedStatement updateRoomState = dao.getUpdateRoomState();
+    //noinspection Duplicates,SynchronizationOnLocalVariableOrMethodParameter
     synchronized (updateRoomState) {
       try {
         updateRoomState.setInt(1, state.index());

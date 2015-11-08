@@ -70,14 +70,14 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     super.invoke(e);
   }
 
-  private final Set<Room> challenged = new HashSet<>();
+  private final Map<Room, Thread> challenged = new HashMap<>();
   public void challenge(final Room room) {
-    if (challenged.contains(room))
+    if (challenged.containsKey(room))
       return;
-    challenged.add(room);
     final Thread thread = new Thread(() -> challengeImpl(room));
     thread.setDaemon(true);
     thread.setName("Challenge thread for " + room.id());
+    challenged.put(room, thread);
     thread.start();
   }
 
@@ -157,5 +157,11 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     log.fine("Challenge for room " + room.id() + " finished. Winner: " + winner.getValue().id());
     challenged.remove(room);
     room.enter(winner.getValue());
+  }
+
+  public void cancelChallenge(Room room) {
+    final Thread thread = challenged.get(room);
+    if (thread != null && thread.isAlive())
+      thread.interrupt();
   }
 }

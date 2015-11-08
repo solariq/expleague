@@ -20,7 +20,10 @@ public class SQLExpert extends ExpertImpl {
 
   @Override
   protected void state(State state) {
+    if (!dao.isMaster(id()))
+      throw new IllegalStateException();
     final PreparedStatement updateExpertState = dao.getUpdateExpertState();
+    //noinspection SynchronizationOnLocalVariableOrMethodParameter
     synchronized (updateExpertState) {
       try {
         updateExpertState.setInt(1, state.index());
@@ -35,11 +38,11 @@ public class SQLExpert extends ExpertImpl {
   }
 
   public void update(State state, String active) {
-    if (dao.isUserAvailable(id())) {
+    if (!dao.isMaster(id())) {
       this.active = active;
       this.state = state;
     }
-    else {
+    else if (!dao.isUserAvailable(id())){
       this.active = null;
       this.state = State.AWAY;
     }

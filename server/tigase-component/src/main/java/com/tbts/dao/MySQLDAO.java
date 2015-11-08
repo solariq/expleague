@@ -4,12 +4,18 @@ import com.spbsu.commons.filters.Filter;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
 import com.tbts.model.Room;
+import com.tbts.model.handlers.ClientManager;
 import com.tbts.model.handlers.DAO;
+import com.tbts.model.handlers.ExpertManager;
+import com.tbts.model.handlers.Reception;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.Instant;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -20,6 +26,7 @@ import java.util.logging.Logger;
 public class MySQLDAO extends DAO {
   private static final Logger log = Logger.getLogger(MySQLDAO.class.getName());
   private final String connectionUrl;
+  private final Timer timer;
   // Rooms
 
   @Override
@@ -44,17 +51,19 @@ public class MySQLDAO extends DAO {
     Room existing = room(id);
     if (existing != null)
       return existing;
-    try {
-      SQLRoom fresh = new SQLRoom(this, id, owner);
-      final PreparedStatement addRoom = getAddRoom();
-      addRoom.setString(1, id);
-      addRoom.setString(2, owner.id());
-      addRoom.execute();
-      roomsMap.put(id, fresh);
-      return fresh;
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
+    SQLRoom fresh = new SQLRoom(this, id, owner);
+    if (isMaster(id)) {
+      try {
+        final PreparedStatement addRoom = getAddRoom();
+        addRoom.setString(1, id);
+        addRoom.setString(2, owner.id());
+        addRoom.execute();
+        roomsMap.put(id, fresh);
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
     }
+    return fresh;
   }
 
   private void populateRoomsCache() {
@@ -68,9 +77,12 @@ public class MySQLDAO extends DAO {
         final String workerId = rs.getString(5);
         final Expert worker = workerId != null ? expert(workerId) : null;
         SQLRoom existing = (SQLRoom) roomsMap.get(id);
-        if (existing == null)
+        if (existing == null) {
           roomsMap.put(id, existing = new SQLRoom(this, id, owner));
-        existing.update(state, worker);
+          existing.update(state, worker);
+        }
+        else if (!isMaster(owner.id()))
+          existing.update(state, worker);
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -102,6 +114,7 @@ public class MySQLDAO extends DAO {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+    localUsers.add(id);
     expertsMap.put(id, fresh);
     return fresh;
   }
@@ -119,9 +132,12 @@ public class MySQLDAO extends DAO {
         final Expert.State state = Expert.State.byIndex(rs.getInt(2));
         final String activeId = rs.getString(3);
         SQLExpert existing = (SQLExpert)expertsMap.get(id);
-        if (existing == null)
+        if (existing == null) {
           expertsMap.put(id, existing = new SQLExpert(this, id));
-        existing.update(state, activeId);
+          existing.update(state, activeId);
+        }
+        else if (!isMaster(id))
+          existing.update(state, activeId);
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -158,6 +174,7 @@ public class MySQLDAO extends DAO {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+    localUsers.add(id);
     clientsMap.put(id, fresh);
     return fresh;
   }
@@ -180,7 +197,6 @@ public class MySQLDAO extends DAO {
     try(final ResultSet rs = getListClients().executeQuery()) {
       String currentId = null;
       String currentActive = null;
-      boolean currentOnline = false;
       final Map<String, Client.State> states = new HashMap<>();
       while (rs.next()) {
         // SELECT clients.id, rooms.id, rooms.owner_state, clients.active_room, clients.state
@@ -188,28 +204,113 @@ public class MySQLDAO extends DAO {
         final String roomId = rs.getString(2);
         final int state = rs.getInt(3);
         final String active = rs.getString(4);
-        final boolean online = Client.State.byIndex(rs.getInt(5)) != Client.State.OFFLINE;
         if (!uid.equals(currentId) && currentId != null) {
-          SQLClient client = (SQLClient)clientsMap.get(currentId);
-          if (client == null)
-            clientsMap.put(currentId, client = new SQLClient(this, currentId));
-          client.update(states, currentActive);
+          updateClient(currentId, currentActive, states);
           states.clear();
         }
         currentId = uid;
         currentActive = active;
-        currentOnline = online;
         if (roomId != null)
           states.put(roomId, Client.State.byIndex(state));
       }
       if (currentId != null) {
-        SQLClient client = (SQLClient)clientsMap.get(currentId);
-        if (client == null)
-          clientsMap.put(currentId, client = new SQLClient(this, currentId));
-        client.update(states, currentActive);
+        updateClient(currentId, currentActive, states);
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  private void updateClient(String currentId, String currentActive, Map<String, Client.State> states) {
+    SQLClient existing = (SQLClient)clientsMap.get(currentId);
+    if (existing == null) {
+      clientsMap.put(currentId, existing = new SQLClient(this, currentId));
+      existing.update(states, currentActive);
+    }
+    else if (!isMaster(currentId))
+      existing.update(states, currentActive);
+  }
+
+  // Cluster stuff
+  private final Set<String> localUsers = new HashSet<>();
+
+  public boolean isMaster(String uid) {
+    return isUserAvailable(uid) || localUsers.contains(uid);
+  }
+
+  private void makeMaster(String uid) {
+    localUsers.add(uid);
+    final Client client = ClientManager.instance().get(uid);
+    Reception.instance().visitClientRooms(client, room -> {
+      if (room.state() == Room.State.DEPLOYED)
+        ExpertManager.instance().challenge(room);
+    });
+  }
+
+  private void makeSlave(String uid){
+    localUsers.remove(uid);
+    final Client client = ClientManager.instance().get(uid);
+    Reception.instance().visitClientRooms(client, room -> {
+      if (room.state() == Room.State.DEPLOYED)
+        ExpertManager.instance().cancelChallenge(room);
+    });
+  }
+
+  private class NodeOwnershipTask extends TimerTask {
+    private final String localHost;
+
+    public NodeOwnershipTask(String localHost) {
+      this.localHost = localHost;
+    }
+
+    @Override
+    public void run() {
+      synchronized (MySQLDAO.this) {
+        populateRoomsCache();
+        final Set<String> known = new HashSet<>();
+        final long now = System.currentTimeMillis();
+        {
+          final PreparedStatement statement = createStatement("Acquire ownership", "SELECT * FROM tbts.Connections;");
+          try (final ResultSet rs = statement.executeQuery()) {
+            while (rs.next()) {
+              final String uid = rs.getString(1);
+              final String node = rs.getString(2);
+              final long ts = rs.getTimestamp(3).getTime();
+              known.add(uid);
+              if (node == null || now - ts > TimeUnit.SECONDS.toMillis(60) || isUserAvailable(uid))
+                makeMaster(uid);
+              else if (!node.equals(localHost))
+                makeSlave(uid);
+            }
+          } catch (SQLException e) {
+            throw new RuntimeException(e);
+          }
+        }
+        {
+          final PreparedStatement statementUpdate = createStatement("Update ownership", "UPDATE tbts.Connections SET user=?, node=" + localHost + ", ts=?;");
+          final PreparedStatement statementInsert = createStatement("Insert ownership", "INSERT INTO tbts.Connections SET user=?, node=" + localHost + ", ts=?;");
+          try {
+            //noinspection SynchronizationOnLocalVariableOrMethodParameter
+            synchronized (statementUpdate) {
+              for (final String localUser : localUsers) {
+                final PreparedStatement insertInto;
+                if (known.contains(localUser))
+                  insertInto = statementUpdate;
+                else
+                  insertInto = statementInsert;
+                insertInto.setString(1, localUser);
+                insertInto.setString(2, localHost);
+                insertInto.setTimestamp(3, Timestamp.from(Instant.ofEpochMilli(now)));
+                insertInto.addBatch();
+              }
+            }
+            statementInsert.executeBatch();
+            statementUpdate.executeBatch();
+          } catch (SQLException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      }
     }
   }
 
@@ -247,6 +348,15 @@ public class MySQLDAO extends DAO {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+    timer = new Timer("Users ownership daemon", true);
+    final String localHost;
+    try {
+      final InetAddress localHostAddr = InetAddress.getLocalHost();
+      localHost = localHostAddr.getHostName();
+    } catch (UnknownHostException e) {
+      throw new RuntimeException(e);
+    }
+    timer.scheduleAtFixedRate(new NodeOwnershipTask(localHost), 10L, TimeUnit.SECONDS.toMillis(30));
   }
 
   public PreparedStatement getCheckUser() {

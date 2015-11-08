@@ -23,9 +23,14 @@ class SQLClient extends ClientImpl {
 
   @Override
   protected void state(State state) {
+    if (!dao.isMaster(id()))
+      throw new IllegalStateException();
+
     final PreparedStatement updateClientState = dao.getUpdateClientState();
+    //noinspection SynchronizationOnLocalVariableOrMethodParameter,Duplicates
     synchronized (updateClientState) {
       try {
+        //noinspection Duplicates
         updateClientState.setInt(1, state.index());
         updateClientState.setString(2, id());
         updateClientState.execute();
@@ -35,6 +40,7 @@ class SQLClient extends ClientImpl {
     }
     if (activeId != null) {
       final PreparedStatement updateRoomOwnerState = dao.getUpdateRoomOwnerState();
+      //noinspection SynchronizationOnLocalVariableOrMethodParameter
       synchronized (updateRoomOwnerState) {
         try {
           updateRoomOwnerState.setInt(1, state.index());
@@ -50,7 +56,10 @@ class SQLClient extends ClientImpl {
 
   @Override
   public void activate(@Nullable Room room) {
+    if (!dao.isMaster(id()))
+      throw new IllegalStateException();
     final PreparedStatement updateClientActiveRoom = dao.getUpdateClientActiveRoom();
+    //noinspection SynchronizationOnLocalVariableOrMethodParameter
     synchronized (updateClientActiveRoom) {
       try {
         updateClientActiveRoom.setString(1, room != null ? room.id() : null);
@@ -66,16 +75,19 @@ class SQLClient extends ClientImpl {
   public void update(Map<String, State> states, String currentActive) {
     this.stateInRooms.putAll(states);
     this.activeId = currentActive;
-    final boolean available = dao.isUserAvailable(id());
-    if (!available) {
-      state(State.OFFLINE);
-    }
-    else if (activeId != null){
-      State state = stateInRooms.get(activeId);
+    if (activeId != null){
+      final State state = stateInRooms.get(activeId);
       this.state = state != null ? state : State.ONLINE;
     }
     else {
       this.state = State.ONLINE;
+    }
+
+    if (dao.isMaster(id())) {
+      final boolean available = dao.isUserAvailable(id());
+      if (!available) {
+        state(State.OFFLINE);
+      }
     }
   }
 }
