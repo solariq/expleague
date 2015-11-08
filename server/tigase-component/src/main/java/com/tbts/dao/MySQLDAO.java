@@ -52,7 +52,7 @@ public class MySQLDAO extends DAO {
     if (existing != null)
       return existing;
     SQLRoom fresh = new SQLRoom(this, id, owner);
-    if (isMaster(id)) {
+    if (isMaster(owner.id())) {
       try {
         final PreparedStatement addRoom = getAddRoom();
         addRoom.setString(1, id);
@@ -265,51 +265,59 @@ public class MySQLDAO extends DAO {
 
     @Override
     public void run() {
-      synchronized (MySQLDAO.this) {
-        populateRoomsCache();
-        final Set<String> known = new HashSet<>();
-        final long now = System.currentTimeMillis();
-        {
-          final PreparedStatement statement = createStatement("Acquire ownership", "SELECT * FROM tbts.Connections;");
-          try (final ResultSet rs = statement.executeQuery()) {
-            while (rs.next()) {
-              final String uid = rs.getString(1);
-              final String node = rs.getString(2);
-              final long ts = rs.getTimestamp(3).getTime();
-              known.add(uid);
-              if (node == null || now - ts > TimeUnit.SECONDS.toMillis(60) || isUserAvailable(uid))
-                makeMaster(uid);
-              else if (!node.equals(localHost))
-                makeSlave(uid);
-            }
-          } catch (SQLException e) {
-            throw new RuntimeException(e);
-          }
-        }
-        {
-          final PreparedStatement statementUpdate = createStatement("Update ownership", "UPDATE tbts.Connections SET user=?, node=" + localHost + ", ts=?;");
-          final PreparedStatement statementInsert = createStatement("Insert ownership", "INSERT INTO tbts.Connections SET user=?, node=" + localHost + ", ts=?;");
-          try {
-            //noinspection SynchronizationOnLocalVariableOrMethodParameter
-            synchronized (statementUpdate) {
-              for (final String localUser : localUsers) {
-                final PreparedStatement insertInto;
-                if (known.contains(localUser))
-                  insertInto = statementUpdate;
-                else
-                  insertInto = statementInsert;
-                insertInto.setString(1, localUser);
-                insertInto.setString(2, localHost);
-                insertInto.setTimestamp(3, Timestamp.from(Instant.ofEpochMilli(now)));
-                insertInto.addBatch();
+      try {
+        synchronized (MySQLDAO.this) {
+          populateRoomsCache();
+          final Set<String> known = new HashSet<>();
+          final long now = System.currentTimeMillis();
+          {
+            final PreparedStatement statement = createStatement("Acquire ownership", "SELECT id, node, heartbeat FROM tbts.Users LEFT JOIN tbts.Connections ON id = user;");
+            try (final ResultSet rs = statement.executeQuery()) {
+              while (rs.next()) {
+                final String uid = rs.getString(1);
+                final String node = rs.getString(2);
+                Timestamp timestamp = rs.getTimestamp(3);
+                final long ts = timestamp != null ? timestamp.getTime() : -1;
+                if (timestamp != null)
+                  known.add(uid);
+                if (node == null || now - ts > TimeUnit.SECONDS.toMillis(60) || isUserAvailable(uid))
+                  makeMaster(uid);
+                else if (!node.equals(localHost))
+                  makeSlave(uid);
               }
+            } catch (SQLException e) {
+              throw new RuntimeException(e);
             }
-            statementInsert.executeBatch();
-            statementUpdate.executeBatch();
-          } catch (SQLException e) {
-            throw new RuntimeException(e);
+          }
+          {
+            final PreparedStatement statementUpdate = createStatement("Update ownership", "UPDATE tbts.Connections SET node='" + localHost + "', heartbeat=? WHERE user=?;");
+            final PreparedStatement statementInsert = createStatement("Insert ownership", "INSERT INTO tbts.Connections SET user=?, node='" + localHost + "', heartbeat=?;");
+            try {
+              //noinspection SynchronizationOnLocalVariableOrMethodParameter
+              synchronized (statementUpdate) {
+                for (final String localUser : localUsers) {
+                  if (known.contains(localUser)) {
+                    statementUpdate.setTimestamp(1, Timestamp.from(Instant.ofEpochMilli(now)));
+                    statementUpdate.setString(2, localUser);
+                    statementUpdate.addBatch();
+                  }
+                  else {
+                    statementInsert.setString(1, localUser);
+                    statementInsert.setTimestamp(2, Timestamp.from(Instant.ofEpochMilli(now)));
+                    statementInsert.addBatch();
+                  }
+                }
+              }
+              statementInsert.executeBatch();
+              statementUpdate.executeBatch();
+            } catch (SQLException e) {
+              throw new RuntimeException(e);
+            }
           }
         }
+      }
+      catch(Exception e) {
+        e.printStackTrace();
       }
     }
   }
@@ -335,7 +343,7 @@ public class MySQLDAO extends DAO {
 
   }
 
-  public void init() {
+  public synchronized void init() {
     System.out.println("DAO init called!");
     populateRoomsCache();
   }
@@ -356,7 +364,7 @@ public class MySQLDAO extends DAO {
     } catch (UnknownHostException e) {
       throw new RuntimeException(e);
     }
-    timer.scheduleAtFixedRate(new NodeOwnershipTask(localHost), 10L, TimeUnit.SECONDS.toMillis(30));
+    timer.scheduleAtFixedRate(new NodeOwnershipTask(localHost), 0L, TimeUnit.SECONDS.toMillis(30));
   }
 
   public PreparedStatement getCheckUser() {

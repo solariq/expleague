@@ -22,6 +22,7 @@ public class ClientImpl extends StateWise.Stub<Client.State, Client> implements 
 
   public ClientImpl(String id) {
     this.id = id;
+    this.state = State.OFFLINE;
     addListener(ClientManager.instance());
   }
 

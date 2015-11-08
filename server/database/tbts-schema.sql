@@ -32,7 +32,17 @@ create TABLE tbts.Experts (
   PRIMARY KEY (id)
 );
 
+create TABLE Connections (
+  user varchar(128) not null,
+  node varchar(128),
+  heartbeat timestamp not null default 'CURRENT_TIMESTAMP',
+
+  CONSTRAINT Connections__foreign FOREIGN KEY (user) REFERENCES tbts.Users (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  PRIMARY KEY (user)
+);
+
 ALTER TABLE tbts.Rooms ADD CONSTRAINT Room__owner FOREIGN KEY (owner) REFERENCES tbts.Clients (id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE tbts.Rooms ADD CONSTRAINT Room__expert FOREIGN KEY (worker) REFERENCES tbts.Experts (id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE tbts.Clients ADD CONSTRAINT Client__active_room FOREIGN KEY (active_room) REFERENCES tbts.Rooms (id) ON DELETE CASCADE ON UPDATE CASCADE;
 
+SELECT id, node, heartbeat FROM tbts.Users LEFT JOIN tbts.Connections ON id = user;
