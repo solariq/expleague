@@ -3,6 +3,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
     function BanManager() {
         this.getBanList = function(callback) {
             KNUGGET.storage.get("BanList", function (value) {
+                value = value != '' ? value : '[]';
                 callback(JSON.parse(value))
             });
         };
@@ -30,7 +31,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         //this.connection = new Strophe.Connection('http://toobusytosearch.net:5280/http-bind');
         this.connection = new Strophe.Connection('http://' + this.host + ':5280/http-bind/');
 
-        this.register = function(regCallback) {
+        this.register = function (regCallback) {
             conn = this.connection;
             pass = this.password;
             login = this.login;
@@ -64,22 +65,28 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             this.connection.register.connect(this.host, callback);
         };
 
-        this.loginUser = function(nick, callback) {
+        this.loginUser = function (nick, callback) {
             //todo set resource
             this.connection.connect(nick ? this.login + '/' + nick : this.login, this.password, callback);
         };
 
-        this.logout = function(reason) {
+        this.logout = function (reason) {
             this.connection.disconnect(reason);
             this.connection.reset();
         };
 
-        this.send = function (message, callback) {
+
+        this.unsafeSend = function(msg, callback) {
+            this.connection.send(msg.tree());
+            callback();
+        };
+
+        this.send = function (message, type, callback) {
             console.log("sending to " + message.to);
             console.log("from " + this.connection.jid);
             console.log("text " + message.text);
 
-            var msg = $msg({to: message.to, from: this.connection.jid, type: 'groupchat'})
+            var msg = $msg({to: message.to, from: this.connection.jid, type: type != null ? type : 'groupchat'})
                 .c('body')
                 .t(message.text);
             this.connection.send(msg.tree());
@@ -96,7 +103,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
                 if (type == "chat" && elems.length > 0) {
                     var body = elems[0];
                     //listener({text: Strophe.getText(body), from: from, time: new Date().getTime()});
-                    listener({question: Strophe.getText(body), owner: from, time: new Date().getTime(), id: new Date().getTime()});
+                    listener(body, {question: Strophe.getText(body), owner: from, time: new Date().getTime(), id: new Date().getTime()});
                 }
                 return true;
             }, null, 'message', null, null, null);
@@ -166,7 +173,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
     }
 
     debug = true;
-    var banManager = BanManager();
+    var banManager = new BanManager();
     var ExpertState = {
         READY: {
             value: 'ready',
@@ -185,6 +192,18 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         CHECK: {
             value: 'check',
             validate: function(prevState, ctx) {
+                new BanManager().isBanned(ctx.user, function(isBanned) {
+                    if (!isBanned) {
+                        var msg = $msg({to: ctx.to, from: jabberClient.connection.jid, type: 'chat'})
+                            .c('body')
+                            .c('room')
+                            .attrs({id: ctx.id, type: 'check', xmlns: "http://toobusytosearch.net/schema"})
+                            .t('Ok');
+                        jabberClient.unsafeSend(msg, function(){});
+                    } else {
+                        stateController.setState(ExpertState.READY, {});
+                    }
+                });
                 //todo check banManager.isBanned(user)
                 return debug || prevState == ExpertState.READY;
             },
@@ -411,7 +430,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             jabberClient.send({
                     to: data.request.room,
                     text: JSON.stringify({type: 'visitedPages', count: data.pages.length, links: data.pages})
-                }, function () {
+                }, 'groupchat', function () {
                     defer.resolve({status: 200});
                 }
             );
@@ -438,7 +457,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
                 jabberClient.send({
                         to: data.request.room,
                         text: JSON.stringify({type: 'response', content : result})
-                    }, function () {
+                    }, 'groupchat', function () {
                         defer.resolve({status: 200});
                     }
                 );
@@ -646,8 +665,17 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
                 }
             });
 
-            jabberClient.addMessageListener(function(msg) {
-                //
+            jabberClient.addMessageListener(function(body, msg) {
+                if (body.getElementsByTagName('room') && body.getElementsByTagName('room').length > 0) {
+                    type = body.getElementsByTagName('room')[0].getAttribute('type');
+                    if (type == 'check') {
+                        user = Strophe.getText(body);
+                        id = body.getElementsByTagName('room')[0].getAttribute('id');
+                        stateController.setState(ExpertState.CHECK, {user: user, to: msg.owner, id: id});
+                    }
+
+                }
+                console.log(msg);
             });
 
             jabberClient.addInviteListener(function(invite) {
