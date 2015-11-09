@@ -31,9 +31,6 @@ import tigase.xml.SimpleParser;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -87,19 +84,6 @@ public class ExpertsAdminBot {
       }
     });
 
-    final Timer restoreConnectionTimer = new Timer("Experts admin bot connection restore thread", true);
-    restoreConnectionTimer.scheduleAtFixedRate(new TimerTask() {
-      @Override
-      public void run() {
-        try {
-          if (!connection.isConnected())
-            connection.login();
-        }
-        catch (JaxmppException ignore) {
-          ignore.printStackTrace();
-        }
-      }
-    }, 0, TimeUnit.MINUTES.toMillis(3));
     expertLogic = new ExpertLogic();
     ExpertManager.instance().addListener(expertLogic);
   }

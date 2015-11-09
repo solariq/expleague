@@ -29,7 +29,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         this.host = login.split('@')[1];
 
         //this.connection = new Strophe.Connection('http://toobusytosearch.net:5280/http-bind');
-        this.connection = new Strophe.Connection('http://' + this.host + ':5280/http-bind/');
+        this.connection = new Strophe.Connection('http://' + this.host + ':5280/');
 
         this.register = function (regCallback) {
             conn = this.connection;
