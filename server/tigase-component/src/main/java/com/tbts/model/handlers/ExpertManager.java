@@ -29,7 +29,7 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     return DAO.instance().experts();
   }
 
-  public void nextAvailable(Room room, Filter<Expert> action) {
+  public void nextAvailable(Room room, Filter<Expert> action) throws InterruptedException {
     while (true) {
       for (final Expert expert : experts().values()) {
         if (expert.state() == Expert.State.READY && room.relevant(expert))
@@ -37,11 +37,7 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
             return;
       }
       synchronized (this) {
-        try {
-          wait();
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
+        wait();
       }
     }
   }
@@ -111,52 +107,57 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
 
     System.out.println("Starting challenge for room: " + room.id());
     log.fine("Starting challenge for room: " + room.id());
+    try {
+      while (room.state() == Room.State.DEPLOYED) {
+        while (!room.quorum(reserved)) {
+          nextAvailable(room, expert -> {
+            expert.addListener(challenge);
+            reserved.add(expert);
+            if (!expert.reserve(room)) {
+              expert.removeListener(challenge);
+              reserved.remove(expert);
+              return false;
+            }
+            return true;
+          });
+        }
 
-    while (room.state() == Room.State.DEPLOYED) {
-      while (!room.quorum(reserved)) {
-        nextAvailable(room, expert -> {
-          expert.addListener(challenge);
-          reserved.add(expert);
-          if (!expert.reserve(room)) {
-            expert.removeListener(challenge);
-            reserved.remove(expert);
-            return false;
-          }
-          return true;
-        });
-      }
-
-      //noinspection SynchronizationOnLocalVariableOrMethodParameter
-      while (!steady.isEmpty() && !winner.filled()) {
-        final Iterator<Expert> iterator = steady.iterator();
-        final Expert next = iterator.next();
-        iterator.remove();
-        next.invite();
-        new Timer(true).schedule(new TimerTask() {
-          @Override
-          public void run() {
-            if (next.state() == Expert.State.INVITE && next.active() == room)
-              next.free();
-          }
-        }, room.invitationTimeout());
-      }
-      //noinspection SynchronizationOnLocalVariableOrMethodParameter
-      synchronized (winner) {
-        if (winner.filled() && (winner.getValue().state() == Expert.State.GO || winner.getValue().state() == Expert.State.READY))
-          break;
-        if (room.quorum(reserved)) {
-          try {
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        while (!steady.isEmpty() && !winner.filled()) {
+          final Iterator<Expert> iterator = steady.iterator();
+          final Expert next = iterator.next();
+          iterator.remove();
+          next.invite();
+          new Timer(true).schedule(new TimerTask() {
+            @Override
+            public void run() {
+              if (next.state() == Expert.State.INVITE && next.active() == room)
+                next.free();
+            }
+          }, room.invitationTimeout());
+        }
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (winner) {
+          if (winner.filled() && (winner.getValue().state() == Expert.State.GO || winner.getValue().state() == Expert.State.READY))
+            break;
+          if (room.quorum(reserved)) {
             winner.wait(0);
-          } catch (InterruptedException ignore) {
           }
         }
       }
+      reserved.stream().filter(expert -> expert.state() == Expert.State.STEADY).forEach(Expert::free);
+      System.out.println("Challenge for room " + room.id() + " finished. Winner: " + winner.getValue().id());
+      log.fine("Challenge for room " + room.id() + " finished. Winner: " + winner.getValue().id());
+      challenged.remove(room);
+      room.enter(winner.getValue());
     }
-    reserved.stream().filter(expert -> expert.state() == Expert.State.STEADY).forEach(Expert::free);
-    System.out.println("Challenge for room " + room.id() + " finished. Winner: " + winner.getValue().id());
-    log.fine("Challenge for room " + room.id() + " finished. Winner: " + winner.getValue().id());
-    challenged.remove(room);
-    room.enter(winner.getValue());
+    catch (InterruptedException ie) {
+      log.fine("Challenge interrupted for room " + room.id() + ".");
+      challenged.remove(room);
+      for (final Expert expert : reserved) {
+        expert.removeListener(challenge);
+      }
+    }
   }
 
   public void cancelChallenge(Room room) {
