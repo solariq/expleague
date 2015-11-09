@@ -124,8 +124,11 @@ public class ExpertsAdminBot {
     @Override
     public void invoke(Expert expert) {
       if (!connection.isConnected()) {
-        log.warning("Bot connection is not available, skipping expert state change: " + expert.id() + " -> " + expert.state());
-        return;
+        try {
+          connection.login();
+        } catch (JaxmppException ignore) {
+          ignore.printStackTrace();
+        }
       }
       Room active = expert.active();
       switch (expert.state()) {

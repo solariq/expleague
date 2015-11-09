@@ -32,7 +32,7 @@ create TABLE tbts.Experts (
   PRIMARY KEY (id)
 );
 
-create TABLE Connections (
+create TABLE tbts.Connections (
   user varchar(128) not null,
   node varchar(128),
   heartbeat timestamp not null default 'CURRENT_TIMESTAMP',
