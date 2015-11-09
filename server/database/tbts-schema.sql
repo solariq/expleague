@@ -32,10 +32,10 @@ create TABLE tbts.Experts (
   PRIMARY KEY (id)
 );
 
-create TABLE Connections (
+create TABLE tbts.Connections (
   user varchar(128) not null,
   node varchar(128),
-  heartbeat timestamp not null default 'CURRENT_TIMESTAMP',
+  heartbeat timestamp,
 
   CONSTRAINT Connections__foreign FOREIGN KEY (user) REFERENCES tbts.Users (id) ON DELETE CASCADE ON UPDATE CASCADE,
   PRIMARY KEY (user)
