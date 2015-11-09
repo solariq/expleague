@@ -687,7 +687,6 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
                     this.setState(ptype, presence);
                 }
             });
-            setUserAvailable(true);
             return future.promise;
         },
 
