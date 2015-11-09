@@ -37,7 +37,7 @@ public class ExpertBot extends Bot {
 
   public static void main(final String[] args) throws JaxmppException, InterruptedException {
     final StateLatch latch = new StateLatch();
-    final ExpertBot expert = new ExpertBot(BareJID.bareJIDInstance("expert-bot-1", "localhost"), "poassord") {
+    final ExpertBot expert = new ExpertBot(BareJID.bareJIDInstance("expert-bot-1", "toobusytosearch.net"), "poassord") {
       @Override
       public void onInvite(MucModule.Invitation invitation) {
         accept(invitation);

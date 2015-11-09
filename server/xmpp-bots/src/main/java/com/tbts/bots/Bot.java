@@ -36,7 +36,7 @@ public class Bot {
     this.passwd = passwd;
     this.resource = resource;
 
-    jaxmpp.getProperties().setUserProperty(SessionObject.DOMAIN_NAME, "localhost");
+    jaxmpp.getProperties().setUserProperty(SessionObject.DOMAIN_NAME, jid.getDomain());
     jaxmpp.getSessionObject().setProperty(SocketConnector.TLS_DISABLED_KEY, true);
     jaxmpp.getModulesManager().register(new MucModule());
     PresenceModule.setPresenceStore(jaxmpp.getSessionObject(), new J2SEPresenceStore());
@@ -108,6 +108,13 @@ public class Bot {
         latch.advance();
       } catch (XMLException e) {
         throw new RuntimeException(e);
+      }
+    });
+
+    jaxmpp.getEventBus().addHandler(PresenceModule.ContactAvailableHandler.ContactAvailableEvent.class, new PresenceModule.ContactAvailableHandler() {
+      @Override
+      public void onContactAvailable(SessionObject sessionObject, Presence presence, JID jid, Presence.Show show, String s, Integer integer) throws JaxmppException {
+        System.out.println(jid + " available with message " + presence.getShow());
       }
     });
 
