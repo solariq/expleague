@@ -31,6 +31,9 @@ import tigase.xml.SimpleParser;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -84,20 +87,19 @@ public class ExpertsAdminBot {
       }
     });
 
-    final Thread botThread = new Thread("Experts admin bot") {
+    final Timer restoreConnectionTimer = new Timer("Experts admin bot connection restore thread", true);
+    restoreConnectionTimer.scheduleAtFixedRate(new TimerTask() {
       @Override
       public void run() {
-        while (!connection.isConnected()) {
-          try {
+        try {
+          if (!connection.isConnected())
             connection.login();
-          } catch (JaxmppException e) {
-//          throw new RuntimeException(e);
-          }
+        }
+        catch (JaxmppException ignore) {
+          ignore.printStackTrace();
         }
       }
-    };
-    botThread.setDaemon(true);
-    botThread.start();
+    }, 0, TimeUnit.MINUTES.toMillis(3));
     expertLogic = new ExpertLogic();
     ExpertManager.instance().addListener(expertLogic);
   }
@@ -122,8 +124,11 @@ public class ExpertsAdminBot {
     @Override
     public void invoke(Expert expert) {
       if (!connection.isConnected()) {
-        log.warning("Bot connection is not available, skipping expert state change: " + expert.id() + " -> " + expert.state());
-        return;
+        try {
+          connection.login();
+        } catch (JaxmppException ignore) {
+          ignore.printStackTrace();
+        }
       }
       Room active = expert.active();
       switch (expert.state()) {
