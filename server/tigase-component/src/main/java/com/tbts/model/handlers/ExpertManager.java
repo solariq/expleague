@@ -138,26 +138,32 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
         }
         //noinspection SynchronizationOnLocalVariableOrMethodParameter
         synchronized (winner) {
-          if (winner.filled() && (winner.getValue().state() == Expert.State.GO || winner.getValue().state() == Expert.State.READY))
-            break;
-          if (room.quorum(reserved)) {
+          if (!winner.filled() && room.quorum(reserved)) {
             winner.wait(0);
           }
         }
       }
       reserved.stream().filter(expert -> expert.state() == Expert.State.STEADY).forEach(Expert::free);
-      System.out.println("Challenge for room " + room.id() + " finished. Winner: " + winner.getValue().id());
-      log.fine("Challenge for room " + room.id() + " finished. Winner: " + winner.getValue().id());
+      log("Challenge for room " + room.id() + " finished.");
+      if (winner.filled())
+        log("Winner: " + winner.getValue().id());
+      else
+        log("No winner found, the room changed state to " + room.state());
       challenged.remove(room);
       room.enter(winner.getValue());
     }
     catch (InterruptedException ie) {
-      log.fine("Challenge interrupted for room " + room.id() + ".");
+      log("Challenge interrupted for room " + room.id() + ".");
       challenged.remove(room);
       for (final Expert expert : reserved) {
         expert.removeListener(challenge);
       }
     }
+  }
+
+  private void log(String msg) {
+    System.out.println(msg);
+    log.fine(msg);
   }
 
   public void cancelChallenge(Room room) {
