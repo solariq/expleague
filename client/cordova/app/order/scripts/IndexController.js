@@ -78,4 +78,31 @@ angular
       // Для корректной работы валидации, устанавливаем статус форму pristine
       $scope.orderForm.$setPristine();
     }
+
+    // Количество экспертов online
+    $scope.expersOnline = null;
+    // Если в localStorage уже есть настройки server и user
+    function presenceHandler(presence) {
+      var from = $(presence).attr('from');
+      if (from.split('@')[0] == 'experts-admin') {
+        // Ешё не совсем понял суть Angular, без $apply не работает обновление значения expersOnline в html
+        $scope.$apply(function() {
+          $scope.expersOnline = parseInt($('status', presence).text());
+        });
+      }
+      return true;
+    }
+
+    if (localStorage.getItem('server') != undefined && localStorage.getItem('user') != undefined) {
+      $scope.server = JSON.parse(localStorage.getItem('server'));
+      $scope.user = JSON.parse(localStorage.getItem('user'));
+      var connection = new Strophe.Connection($scope.server.bosh);
+      connection.connect($scope.user.username + '@' + $scope.server.host, $scope.user.password, function (status) {
+        if (status === Strophe.Status.CONNECTED) {
+          connection.addHandler(presenceHandler, null, 'presence');
+          connection.send($pres());
+        }
+      });
+    }
+
   });

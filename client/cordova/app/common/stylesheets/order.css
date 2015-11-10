@@ -2,3 +2,25 @@ form.ng-submitted.ng-invalid .order-text-label,
 form.ng-dirty.ng-invalid .order-text-label {
   background-color: rgba(255,0,0,0.2);
 }
+
+.order-price {
+  font-size: 16px;
+  color: #999;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.account-total {
+  font-size: 14px;
+  color: #999;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.experts-online {
+  font-size: 14px;
+  color: #999;
+  text-align: center;
+  margin: 10px 0;
+  min-height: 20px;
+}

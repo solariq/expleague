@@ -34,6 +34,7 @@
       <div class="list">
         <div class="order-price">Цена услуги: {{getTotalPrice()}} единиц</div>
         <div class="account-total">У вас на счете: {{userBalance}} единиц</div>
+        <div class="experts-online"><span ng-if="expersOnline">Количество экспертов online: {{expersOnline}}</span></div>
       </div>
       <input type="submit" class="button button-block button-positive" value="Начать поиск" />
     </form>
