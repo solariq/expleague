@@ -128,6 +128,7 @@ public class TrackPresenceComponent extends SessionManager {
 
   @Override
   public void processPacket(Packet packet) {
+
     super.processPacket(packet);
     if (!CRIT.match(packet.getElement()))
       return;
@@ -138,6 +139,8 @@ public class TrackPresenceComponent extends SessionManager {
       return;
     }
     final Status status = statusFromPacket(packet);
+    if (status == Status.UNKNOWN)
+      return;
     if (updateExpertState(from, to, status) == null)
       updateClientState(from, to, status);
   }
@@ -227,6 +230,8 @@ public class TrackPresenceComponent extends SessionManager {
     }
     else if (attrs.get("type") == null)
       return Status.AVAILABLE;
+    if ("probe".equals(attrs.get("type")))
+      return Status.UNKNOWN;
     log.warning("Unknown user state. Type: " + attrs.get("type") + (show != null ? " show: " + show.toString() : ""));
     return Status.UNKNOWN;
   }

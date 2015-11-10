@@ -55,7 +55,7 @@ public class ClientImpl extends StateWise.Stub<Client.State, Client> implements 
 
   public void query() {
     if (state() != State.FORMULATING && state() != State.FEEDBACK)
-      throw new IllegalStateException();
+      throw new IllegalStateException(state().toString());
     state(State.COMMITED);
     final Room room = Reception.instance().room(activeId);
     room.commit();
@@ -63,7 +63,7 @@ public class ClientImpl extends StateWise.Stub<Client.State, Client> implements 
 
   public void feedback(Room room) {
     if (state(room) != State.COMMITED)
-      throw new IllegalStateException();
+      throw new IllegalStateException(state(room).toString());
     activate(room);
     state(State.FEEDBACK);
   }
@@ -86,7 +86,7 @@ public class ClientImpl extends StateWise.Stub<Client.State, Client> implements 
       online = state == State.ONLINE;
     }
     else if (activeId == null) {
-      throw new IllegalStateException();
+      throw new IllegalStateException("No rooms activated for state " + state);
     }
     else {
       stateInRooms.put(activeId, state);
