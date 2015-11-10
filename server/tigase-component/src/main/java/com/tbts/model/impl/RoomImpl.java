@@ -87,6 +87,8 @@ public class RoomImpl extends StateWise.Stub<Room.State, Room> implements Room {
 
   @Override
   public void enter(Expert winner) {
+    if (winner == null)
+      throw new IllegalStateException();
     worker = winner;
     state(State.LOCKED);
     if (postponedAnswers > 0) {
