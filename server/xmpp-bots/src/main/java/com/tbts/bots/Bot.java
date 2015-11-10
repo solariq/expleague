@@ -37,7 +37,8 @@ public class Bot {
     this.resource = resource;
 
     jaxmpp.getProperties().setUserProperty(SessionObject.DOMAIN_NAME, jid.getDomain());
-    jaxmpp.getSessionObject().setProperty(SocketConnector.TLS_DISABLED_KEY, true);
+    jaxmpp.getProperties().setUserProperty(SocketConnector.HOSTNAME_VERIFIER_DISABLED_KEY, true);
+//    jaxmpp.getSessionObject().setProperty(SocketConnector.TLS_DISABLED_KEY, true);
     jaxmpp.getModulesManager().register(new MucModule());
     PresenceModule.setPresenceStore(jaxmpp.getSessionObject(), new J2SEPresenceStore());
     jaxmpp.getModulesManager().register(new PresenceModule());

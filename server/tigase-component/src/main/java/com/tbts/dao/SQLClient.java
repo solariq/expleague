@@ -23,31 +23,30 @@ class SQLClient extends ClientImpl {
 
   @Override
   protected void state(State state) {
-    if (!dao.isMaster(id()))
-      throw new IllegalStateException();
-
-    final PreparedStatement updateClientState = dao.getUpdateClientState();
-    //noinspection SynchronizationOnLocalVariableOrMethodParameter,Duplicates
-    synchronized (updateClientState) {
-      try {
-        //noinspection Duplicates
-        updateClientState.setInt(1, state.index());
-        updateClientState.setString(2, id());
-        updateClientState.execute();
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
-    }
-    if (activeId != null) {
-      final PreparedStatement updateRoomOwnerState = dao.getUpdateRoomOwnerState();
-      //noinspection SynchronizationOnLocalVariableOrMethodParameter
-      synchronized (updateRoomOwnerState) {
+    if (dao.isMaster(id())) {
+      final PreparedStatement updateClientState = dao.getUpdateClientState();
+      //noinspection SynchronizationOnLocalVariableOrMethodParameter,Duplicates
+      synchronized (updateClientState) {
         try {
-          updateRoomOwnerState.setInt(1, state.index());
-          updateRoomOwnerState.setString(2, activeId);
-          updateRoomOwnerState.execute();
+          //noinspection Duplicates
+          updateClientState.setInt(1, state.index());
+          updateClientState.setString(2, id());
+          updateClientState.execute();
         } catch (SQLException e) {
           throw new RuntimeException(e);
+        }
+      }
+      if (activeId != null) {
+        final PreparedStatement updateRoomOwnerState = dao.getUpdateRoomOwnerState();
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (updateRoomOwnerState) {
+          try {
+            updateRoomOwnerState.setInt(1, state.index());
+            updateRoomOwnerState.setString(2, activeId);
+            updateRoomOwnerState.execute();
+          } catch (SQLException e) {
+            throw new RuntimeException(e);
+          }
         }
       }
     }
@@ -56,17 +55,17 @@ class SQLClient extends ClientImpl {
 
   @Override
   public void activate(@Nullable Room room) {
-    if (!dao.isMaster(id()))
-      throw new IllegalStateException();
-    final PreparedStatement updateClientActiveRoom = dao.getUpdateClientActiveRoom();
-    //noinspection SynchronizationOnLocalVariableOrMethodParameter
-    synchronized (updateClientActiveRoom) {
-      try {
-        updateClientActiveRoom.setString(1, room != null ? room.id() : null);
-        updateClientActiveRoom.setString(2, id());
-        updateClientActiveRoom.execute();
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
+    if (dao.isMaster(id())) {
+      final PreparedStatement updateClientActiveRoom = dao.getUpdateClientActiveRoom();
+      //noinspection SynchronizationOnLocalVariableOrMethodParameter
+      synchronized (updateClientActiveRoom) {
+        try {
+          updateClientActiveRoom.setString(1, room != null ? room.id() : null);
+          updateClientActiveRoom.setString(2, id());
+          updateClientActiveRoom.execute();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
       }
     }
     super.activate(room);
@@ -84,10 +83,7 @@ class SQLClient extends ClientImpl {
     }
 
     if (dao.isMaster(id())) {
-      final boolean available = dao.isUserAvailable(id());
-      if (!available) {
-        state(State.OFFLINE);
-      }
+      online(dao.isUserAvailable(id()));
     }
   }
 }

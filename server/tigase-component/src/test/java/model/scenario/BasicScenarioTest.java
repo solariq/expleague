@@ -98,7 +98,6 @@ public class BasicScenarioTest {
     final Room room = Reception.instance().room(client, "room@muc.localhost");
     room.open();
     client.activate(room);
-    client.formulating();
     client.query();
     latch.await(2);
 
@@ -144,7 +143,6 @@ public class BasicScenarioTest {
     final Room room = Reception.instance().room(client, "room@muc.localhost");
     room.open();
     client.activate(room);
-    client.formulating();
     client.query();
 
     expert.online(true);
@@ -192,7 +190,6 @@ public class BasicScenarioTest {
     final Room room = Reception.instance().room(client, "room@muc.localhost");
     client.activate(room);
     room.open();
-    client.formulating();
     client.query();
     latch.await(2);
 
@@ -200,8 +197,8 @@ public class BasicScenarioTest {
         "Expert expert@localhost -> READY\n" +
         "Client client@localhost -> ONLINE\n" +
         "Room room@muc.localhost -> INIT\n" +
-        "Room room@muc.localhost -> CLEAN\n" +
         "Client client@localhost -> FORMULATING\n" +
+        "Room room@muc.localhost -> CLEAN\n" +
         "Client client@localhost -> COMMITED\n" +
         "Room room@muc.localhost -> DEPLOYED\n" +
         "Expert expert@localhost -> CHECK\n" +
@@ -212,7 +209,6 @@ public class BasicScenarioTest {
         "Room room@muc.localhost -> COMPLETE\n" +
         "Expert expert@localhost -> READY\n" +
         "Client client@localhost -> FEEDBACK\n" +
-        "Client client@localhost -> FORMULATING\n" +
         "Client client@localhost -> COMMITED\n" +
         "Room room@muc.localhost -> DEPLOYED\n" +
         "Expert expert@localhost -> CHECK\n" +
@@ -249,7 +245,6 @@ public class BasicScenarioTest {
     final Room room = Reception.instance().room(client, "room@muc.localhost");
     client.activate(room);
     room.open();
-    client.formulating();
     client.query();
     latch.await(2);
 
@@ -257,8 +252,8 @@ public class BasicScenarioTest {
         "Expert expert@localhost -> READY\n" +
             "Client client@localhost -> ONLINE\n" +
             "Room room@muc.localhost -> INIT\n" +
+            "Client client@localhost -> FORMULATING\n" +
             "Room room@muc.localhost -> CLEAN\n" +
-            "Client client@localhost -> FORMULATING\n" +
             "Client client@localhost -> COMMITED\n" +
             "Room room@muc.localhost -> DEPLOYED\n" +
             "Expert expert@localhost -> CHECK\n" +
@@ -269,7 +264,6 @@ public class BasicScenarioTest {
             "Room room@muc.localhost -> COMPLETE\n" +
             "Expert expert@localhost -> READY\n" +
             "Client client@localhost -> FEEDBACK\n" +
-            "Client client@localhost -> FORMULATING\n" +
             "Client client@localhost -> COMMITED\n" +
             "Room room@muc.localhost -> DEPLOYED\n" +
             "Expert expert@localhost -> CHECK\n" +
@@ -280,7 +274,6 @@ public class BasicScenarioTest {
             "Room room@muc.localhost -> COMPLETE\n" +
             "Expert expert@localhost -> READY\n" +
             "Client client@localhost -> FEEDBACK\n" +
-            "Client client@localhost -> FORMULATING\n" +
             "Client client@localhost -> COMMITED\n" +
             "Room room@muc.localhost -> DEPLOYED\n" +
             "Expert expert@localhost -> CHECK\n" +

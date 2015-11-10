@@ -98,8 +98,8 @@ public class ClientBot extends Bot {
     final StateLatch latch = new StateLatch();
     client.start();
     client.online();
-    client.startRoom();
-    client.topic("Hello world");
+//    client.startRoom();
+//    client.topic("Hello world");
     latch.state(2, 1);
     client.stop();
   }

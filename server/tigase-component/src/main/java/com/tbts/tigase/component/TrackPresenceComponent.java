@@ -166,10 +166,8 @@ public class TrackPresenceComponent extends SessionManager {
         break;
       case AVAILABLE:
         client.online(true);
-        if (room != null) {
+        if (room != null)
           client.activate(room);
-          client.formulating();
-        }
         break;
       case UNAVAILABLE:
         if (to == null && client.active() != null)

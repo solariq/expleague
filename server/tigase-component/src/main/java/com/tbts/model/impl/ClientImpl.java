@@ -39,24 +39,22 @@ public class ClientImpl extends StateWise.Stub<Client.State, Client> implements 
 
   protected String activeId = null;
   public void activate(Room room) {
-    if ((room == null && activeId == null) || (room != null && room.id().equals(activeId)))
-      return;
-    activeId = room != null ? room.id() : null;
-    State state = stateInRooms.get(activeId);
-    if (state == null)
-      state(this.state != State.OFFLINE ? State.ONLINE : State.OFFLINE);
-    else
-      this.state = state;
-  }
-
-  public void formulating() {
-    if (state() != State.ONLINE && state() == State.CHAT || active() == null)
-      throw new IllegalStateException();
-    state(State.FORMULATING);
+    if (room == null) {
+      activeId = null;
+      state(online ? State.ONLINE : State.OFFLINE);
+    }
+    else {
+      activeId = room.id();
+      State state = stateInRooms.get(activeId);
+      if (state == null)
+        state(State.FORMULATING);
+      else
+        this.state = state;
+    }
   }
 
   public void query() {
-    if (state() != State.FORMULATING && state() != State.CHAT)
+    if (state() != State.FORMULATING && state() != State.FEEDBACK)
       throw new IllegalStateException();
     state(State.COMMITED);
     final Room room = Reception.instance().room(activeId);
@@ -64,7 +62,7 @@ public class ClientImpl extends StateWise.Stub<Client.State, Client> implements 
   }
 
   public void feedback(Room room) {
-    if (state(room) != State.COMMITED && state(room) != State.CHAT)
+    if (state(room) != State.COMMITED)
       throw new IllegalStateException();
     activate(room);
     state(State.FEEDBACK);
@@ -77,6 +75,8 @@ public class ClientImpl extends StateWise.Stub<Client.State, Client> implements 
   public void online(boolean val) {
     if (val == online)
       return;
+    if (!val)
+      activate(null);
     state(val ? State.ONLINE : State.OFFLINE);
   }
 

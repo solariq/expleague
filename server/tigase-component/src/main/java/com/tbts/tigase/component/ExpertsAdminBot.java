@@ -55,7 +55,8 @@ public class ExpertsAdminBot {
     jid = BareJID.bareJIDInstance(name);
     connection.getProperties().setUserProperty(SessionObject.USER_BARE_JID, jid);
     connection.getProperties().setUserProperty(SessionObject.PASSWORD, EXPERTS_ADMIN_LONG_PASSWORD);
-    connection.getSessionObject().setProperty(SocketConnector.TLS_DISABLED_KEY, true);
+    connection.getProperties().setUserProperty(SocketConnector.HOSTNAME_VERIFIER_DISABLED_KEY, true);
+//    connection.getSessionObject().setProperty(SocketConnector.TLS_DISABLED_KEY, true);
     PresenceModule.setPresenceStore(connection.getSessionObject(), new J2SEPresenceStore());
     connection.getModulesManager().register(new PresenceModule());
     connection.getModulesManager().register(new RosterModule());

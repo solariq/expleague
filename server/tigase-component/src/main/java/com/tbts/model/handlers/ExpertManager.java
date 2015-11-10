@@ -138,7 +138,9 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
         }
         //noinspection SynchronizationOnLocalVariableOrMethodParameter
         synchronized (winner) {
-          if (!winner.filled() && room.quorum(reserved)) {
+          if (winner.filled())
+            break;
+          if (room.quorum(reserved)) {
             winner.wait(0);
           }
         }

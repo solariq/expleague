@@ -18,7 +18,6 @@ public interface Client extends StateWise<Client.State, Client> {
   void online(boolean val);
 
   void activate(Room room);
-  void formulating();
   void query();
   void feedback(Room room);
 
@@ -28,8 +27,7 @@ public interface Client extends StateWise<Client.State, Client> {
     FORMULATING(2),
     COMMITED(3),
     TIMEOUT(4),
-    FEEDBACK(5),
-    CHAT(6);
+    FEEDBACK(5);
 
     private final int index;
 
