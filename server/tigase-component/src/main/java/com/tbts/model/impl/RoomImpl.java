@@ -34,12 +34,12 @@ public class RoomImpl extends StateWise.Stub<Room.State, Room> implements Room {
 
   public void fix() {
     if (state != State.COMPLETE)
-      throw new IllegalStateException();
+      throw new IllegalStateException(state.toString());
   }
 
   public void commit() {
     if (state != State.CLEAN && state != State.COMPLETE)
-      throw new IllegalStateException();
+      throw new IllegalStateException(state.toString());
     state(State.DEPLOYED);
   }
 
@@ -71,7 +71,7 @@ public class RoomImpl extends StateWise.Stub<Room.State, Room> implements Room {
       if (state() == State.DEPLOYED)
         postponedAnswers++;
       else
-        throw new IllegalStateException();
+        throw new IllegalStateException(state().toString());
     }
     state(State.COMPLETE);
     worker.free();
@@ -88,7 +88,7 @@ public class RoomImpl extends StateWise.Stub<Room.State, Room> implements Room {
   @Override
   public void enter(Expert winner) {
     if (winner == null)
-      throw new IllegalStateException();
+      throw new IllegalArgumentException("Winner must be non-zero");
     worker = winner;
     state(State.LOCKED);
     if (postponedAnswers > 0) {

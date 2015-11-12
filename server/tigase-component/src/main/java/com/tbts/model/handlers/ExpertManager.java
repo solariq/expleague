@@ -151,15 +151,16 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
         log("Winner: " + winner.getValue().id());
       else
         log("No winner found, the room changed state to " + room.state());
-      challenged.remove(room);
       room.enter(winner.getValue());
     }
     catch (InterruptedException ie) {
       log("Challenge interrupted for room " + room.id() + ".");
-      challenged.remove(room);
       for (final Expert expert : reserved) {
         expert.removeListener(challenge);
       }
+    }
+    finally {
+      challenged.remove(room);
     }
   }
 
