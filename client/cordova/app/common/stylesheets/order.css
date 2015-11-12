@@ -24,3 +24,22 @@ form.ng-dirty.ng-invalid .order-text-label {
   margin: 10px 0;
   min-height: 20px;
 }
+
+.order-text-label {
+  padding: 2px 8px 8px;
+}
+
+.order-textarea {
+  font-size: 16px;
+  padding: 8px 4px 4px 4px;
+  border-radius: 0;
+  box-sizing: border-box;
+  max-height: 94px;
+  min-height: 31px;
+  overflow-x: hidden;
+}
+
+.item-floating-label .input-label.has-input {
+  padding-left: 3px;
+  color: #999;
+}
