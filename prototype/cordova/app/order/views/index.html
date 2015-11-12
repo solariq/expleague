@@ -6,8 +6,8 @@
   <div class="padding">
     <div class="list">
       <label class="item item-input item-floating-label">
-        <span class="input-label">Что необходимо найти?</span>
-        <input type="text" class="input-text" name="text" placeholder="Что необходимо найти?" value="">
+        <span class="input-label">&nbsp;Что необходимо найти?</span>
+        <textarea ng-model="order.text" class="order-textarea" name="text" rows="1" placeholder="&nbsp;Что необходимо найти?" required></textarea>
       </label>
       <div class="item item-checkbox">
         <label class="checkbox">
@@ -38,6 +38,9 @@
   </div>
 </div>
 <script>
+// Расширяющаяся textarea
+$('.order-textarea').textareaAutoSize();
+
 var speedNames = ['в течение дня', '4 часа', '2 часа', '1 час', 'пол часа', 'в течение минуты'];
 var speedQuotes = [0, 50, 100, 150, 200, 250];
 
@@ -53,13 +56,14 @@ function defaultFormState() {
   priceDefault = 100;
   priceExpert = 0;
   var defaulRangeValue = 2;
-  $('.input-text').val('');
+  $('.order-textarea').val('');
   $('.checkbox-near').attr('checked', false);
   $('.checkbox-expert').attr('checked', false);
   $('.range-speed').val(defaulRangeValue);
   priceSpeed = speedQuotes[defaulRangeValue];
   $('.speed-name').text(speedNames[defaulRangeValue]);
   $('.order-price span b').text(getTotalPrice());
+  $('.input-label').removeClass('has-input');
 }
 
 defaultFormState();
@@ -81,7 +85,7 @@ $('.checkbox-expert').change(function() {
 });
 
 $('.button-start-search').click(function() {
-  localStorage.setItem('text', $('.input-text').val());
+  localStorage.setItem('text', $('.order-textarea').val());
   localStorage.setItem('speed', speedNames[$('.range-speed').val()]);
   steroids.tabBar.selectTab(1);
   var modalView = new supersonic.ui.View('history#result');
@@ -92,11 +96,11 @@ $('.button-start-search').click(function() {
   defaultFormState();
 });
 
-// $('.input-text').focus(function() {
+// $('.order-textarea').focus(function() {
 //   supersonic.ui.tabs.hide();
 // });
 //
-// $('.input-text').blur(function() {
+// $('.order-textarea').blur(function() {
 //   supersonic.ui.tabs.show();
 // });
 </script>
