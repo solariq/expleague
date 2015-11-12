@@ -1,6 +1,8 @@
 angular
   .module('order')
   .controller('IndexController', function($scope, supersonic) {
+    // Расширяющаяся textarea
+    $('.order-textarea').textareaAutoSize();
 
     // Количество денег у пользователя
     $scope.userBalance = 1000;

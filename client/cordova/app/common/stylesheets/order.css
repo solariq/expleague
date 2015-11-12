@@ -37,6 +37,7 @@ form.ng-dirty.ng-invalid .order-text-label {
   max-height: 94px;
   min-height: 31px;
   overflow-x: hidden;
+  line-height: 1.4;
 }
 
 .item-floating-label .input-label.has-input {
