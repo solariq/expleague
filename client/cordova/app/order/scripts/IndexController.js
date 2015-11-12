@@ -79,6 +79,8 @@ angular
       }
       // Для корректной работы валидации, устанавливаем статус форму pristine
       $scope.orderForm.$setPristine();
+      // Возвращаем floating-label в исходное состояние
+      $('.input-label').removeClass('has-input');
     }
 
     // Количество экспертов online
