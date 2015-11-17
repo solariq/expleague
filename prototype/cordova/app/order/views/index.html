@@ -93,7 +93,7 @@
         Срочность заказа: <span class="speed-name"></span>
         <div class="range range-positive range-custom">
           <i class="icon icon-custom-34 icon-custom-turtle"></i>
-          <input class="range-speed" type="range" name="speed" min="0" max="5" step="1" value="2">
+          <input class="range-speed" type="range" name="speed" min="0" max="2" step="1" value="1">
           <i class="icon icon-custom-34 icon-custom-rocket"></i>
         </div>
       </div>
@@ -109,8 +109,8 @@
 // Расширяющаяся textarea
 $('.order-textarea').textareaAutoSize();
 
-var speedNames = ['в течение дня', '4 часа', '2 часа', '1 час', 'пол часа', 'в течение минуты'];
-var speedQuotes = [0, 50, 100, 150, 200, 250];
+var speedNames = ['неважно', 'сегодня', 'срочно'];
+var speedQuotes = [0, 50, 100];
 
 var priceDefault = 100;
 var priceSpeed = speedQuotes[0];
@@ -123,7 +123,7 @@ function getTotalPrice() {
 function defaultFormState() {
   priceDefault = 100;
   priceExpert = 0;
-  var defaulRangeValue = 2;
+  var defaulRangeValue = 1;
   $('.order-textarea').val('');
   $('.checkbox-near').attr('checked', false);
   $('.checkbox-expert').attr('checked', false);
