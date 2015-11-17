@@ -21,6 +21,10 @@
   .result-plain #yesno .baloon-text {
     display: none;
   }
+
+  .popup-container {
+    top: auto;
+  }
   </style>
 
   <div class="padding result result-{{currentHistoryItem.answerMode}}">
@@ -80,16 +84,16 @@ function playSound() {
   sound.play();
 }
 
-function requestClarification() {
+function requestClarification(expert) {
   setTimeout(function() {
-    $('.result').append('<div class="baloon baloon-server baloon-picture"><div class="baloon-title">Необходимо уточнение</div><div class="baloon-text"><div class="expert-picture" style="background-image: url(/images/expert-3.png)"></div>Расскажите, что ещё необходимо найти</div></div>');
+    $('.result').append('<div class="baloon baloon-server baloon-picture"><div class="baloon-title">Необходимо уточнение</div><div class="baloon-text"><div class="expert-picture" style="background-image: url(' + expert + ')"></div>Расскажите, что ещё необходимо найти</div></div>');
     playSound();
     $('.input-message').focus();
     $(window).scrollTop(document.body.clientHeight);
   }, 500);
 }
 
-function addYesNoEvents() {
+function addYesNoEvents(expert) {
   $('.baloon-question-yes, .baloon-question-no').on('touchstart', function() {
     $(this).css('background','#555');
   });
@@ -107,7 +111,7 @@ function addYesNoEvents() {
         $('.message').css('bottom', '0');
         $('.result').append('<div class="baloon baloon-client baloon-simple"><div class="baloon-text">Нет</div></div>');
         playSound();
-        requestClarification();
+        requestClarification(expert);
       }, 1500);
     }
   });
@@ -147,7 +151,7 @@ $(document).ready(function() {
   if (steroids.view.params.id == undefined) {
     var searchText = localStorage.getItem('text').toLowerCase();
     if (/аптека|apteka/.test(searchText)) {
-      var messages = window.ordersHistory[2].messages;
+      var messages = window.ordersHistory[window.ordersHistory.length - 1].messages;
       $.each(messages, function(i, message) {
         setTimeout(function() {
           var tel = ('extra' in message && 'tel' in message.extra) ? '<div>Телефон: <a href="tel:' + message.extra.tel + '">' + message.extra.tel + '</a></div>' : '';
@@ -182,8 +186,67 @@ $(document).ready(function() {
                        '</div>';
         $('.result').append(question);
         playSound();
-        addYesNoEvents();
+        addYesNoEvents('/images/expert-3.png');
       }, timeouts[3]);
+    } else if (/мото|moto/.test(searchText)) {
+      var messages = window.ordersHistory[0].messages;
+      $.each(messages, function(i, message) {
+        setTimeout(function() {
+          if (i == 1) {
+            $('.result').addClass('result-plain');
+            $('.result').append('<div class="baloon baloon-' + message.type + '"><div class="baloon-title">' + message.title + '</div><div class="baloon-text"><div><div class="progress"><div class="progress-bar"></div></div></div></div></div>');
+            setTimeout(function() {
+              playSound();
+              $('.progress').hide();
+              var expert = '<div class="expert" style="background-image: url(' + message.expert.picture + ')">' + 
+                           '  <div class="expert-info">' + message.expert.name + ', ' + message.expert.description + '</div>' +
+                           '  <div class="expert-raiting">Рейтинг: <span><i class="super-ios-star"></i> <i class="super-ios-star"></i> <i class="super-ios-star"></i> <i class="super-ios-star"></i> <i class="super-ios-star-outline"></i></span></div>' +
+                           '</div>';
+              $('.progress').after(expert).after('<div>' + message.text + '</div>');
+            }, 4000);
+          } else {
+            $('.result').append('<div class="baloon baloon-' + message.type + ' baloon-picture"><div class="baloon-title">' + message.title + '</div><div class="baloon-text"><div class="expert-picture" style="background-image: url(' + message.expert_picture + ')"></div><div>' + message.text + '</div></div></div>');
+            setTimeout(function() {
+              $(window).scrollTop(document.body.clientHeight);
+            }, 200);
+          }
+          playSound();
+        }, timeouts[i]);
+      });
+
+      setTimeout(function() {
+        var question = '<div class="baloon baloon-server baloon-picture" id="yesno">' +
+                       '  <div class="baloon-title">Вас устроил данный ответ?</div>' +
+                       '  <div class="baloon-text"><div class="expert-picture" style="background-image: url(/images/expert-4.png)"></div></div>' +
+                       '  <div class="baloon-question">' +
+                       '    <div class="baloon-question-yes">Да</div>' +
+                       '    <div class="baloon-question-no">Нет</div>' +
+                       '  </div>' +
+                       '</div>';
+        $('.result').append(question);
+        $(window).scrollTop(document.body.clientHeight);
+        playSound();
+        addYesNoEvents('/images/expert-4.png');
+      }, timeouts[3]);
+    } else if (/колонк|kolonk/.test(searchText)) {
+      var messages = window.ordersHistory[0].messages;
+      $('.result').addClass('result-plain');
+      // Первое сообщение
+      var message = messages[0];
+      $('.result').append('<div class="baloon baloon-smallimg baloon-' + message.type + ' baloon-picture"><div class="baloon-title">' + message.title + '</div><div class="baloon-text"><div class="expert-picture" style="background-image: url(' + message.expert_picture + ')"></div><div>' + message.text + '</div></div></div>');
+      //playSound();
+      // Второе сообщение
+      message = messages[1];
+      $('.result').append('<div class="baloon baloon-' + message.type + '"><div class="baloon-title">' + message.title + '</div><div class="baloon-text"><div><div class="progress"><div class="progress-bar"></div></div></div></div></div>');
+      setTimeout(function() {
+        //playSound();
+        $('.progress').hide();
+        var expert = '<div class="expert" style="background-image: url(' + message.expert.picture + ')">' +
+                     '  <div class="expert-info">' + message.expert.name + ' ' + message.expert.description + '</div>' +
+                     '  <div class="expert-raiting">Рейтинг: <span><i class="super-ios-star"></i> <i class="super-ios-star"></i> <i class="super-ios-star"></i> <i class="super-ios-star"></i> <i class="super-ios-star-outline"></i></span></div>' +
+                     '</div>';
+        $('.progress').after(expert).after('<div>' + message.text + '</div>');
+      }, 4000);
     }
   }
 });

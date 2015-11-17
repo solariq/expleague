@@ -9,6 +9,121 @@ angular
     // Временно положил в глобальный window.ordersHistory чтобы сделать демо-режим на jQuery
     window.ordersHistory = [
       {
+        id: 4,
+        text: 'Что это за клевый мотоцикл?',
+        near: false,
+        expert: false,
+        urgency: 4, // От 0 до 5
+        started: 1447767190000,
+        ended: 1447767190001,
+        answerMode: 'plain',
+        messages: [
+          {
+            type: 'client',
+            title: 'Необходимо найти',
+            text: `
+              Что это за клевый мотоцикл?<br>
+              Cрочность поиска: пол часа, необходима помощь эксперта.
+              <div>
+                <img src="/images/moto_client.jpg">
+              </div>
+            `,
+            timestamp: null
+          },
+          {
+            type: 'server',
+            title: 'Поиск исполнителя',
+            text: 'Эксперт найден. Вы получите уведомление, когда исполнитель найдет необходимую информацию.',
+            expert: {
+              name: 'Евгений',
+              picture: '/images/expert-4.png',
+              description: 'эксперт в области «техника»',
+              raiting: 4
+            },
+            timestamp: null
+          },
+          {
+            type: 'server',
+            expert_picture: '/images/expert-4.png',
+            title: 'Результаты поиска',
+            text: `
+              Harley-Davidson Heritage Softail Classic
+              <img src="/images/moto_answer.jpg">
+              По фотографии сложно установить год, внешний вид модели не сильно менялся. Дополнительные навороты ставятся отдельно и не зависят от года выпуска.
+            `,
+            timestamp: null
+          }
+        ]
+      },
+      {
+        id: 3,
+        text: 'Захотела подключить колонки к телевизору, чтобы на них выводился звук. Помогите разобраться, пожалуйста. Вот фотка колонок, вот фотка телевизора. Как можно их подключить к телевизору? Какой нужен провод?',
+        near: false,
+        expert: false,
+        urgency: 4, // От 0 до 5
+        started: 1447671040000,
+        ended: 1447671040001,
+        answerMode: 'chat',
+        messages: [
+          {
+            type: 'client',
+            title: 'Необходимо найти',
+            text: `
+              Захотела подключить колонки к телевизору, чтобы на них выводился звук.
+              Помогите разобраться, пожалуйста.
+              Вот фотка колонок, вот фотка телевизора.
+              Как можно их подключить к телевизору? Какой нужен провод?, срочность поиска: пол часа, необходима помощь эксперта
+              <div>
+                <img src="/images/speakers.jpg">
+                <img src="/images/tele.jpg">
+              </div>
+            `,
+            timestamp: null
+          },
+          {
+            type: 'server',
+            title: 'Поиск исполнителя',
+            text: 'Эксперт найден. Вы получите уведомление, когда исполнитель найдет необходимую информацию.',
+            expert: {
+              name: 'Евгений',
+              picture: '/images/expert-4.png',
+              description: 'эксперт в области «техника»',
+              raiting: 4
+            },
+            timestamp: null
+          },
+          {
+            type: 'server',
+            expert_picture: '/images/expert-4.png',
+            title: 'Результаты поиска',
+            text: `
+              Обычно используются вот такой провод:
+              <img src="/images/jack.png">
+              Или, если на телевизоре нет соответствующего разъема, переходник с джека на колокольчики:
+              <img src="/images/tulpany.jpg">
+              Если хотите точнее, то нужна фотография разъемов телевизора.
+            `,
+            timestamp: null
+          },
+          {
+            type: 'client',
+            title: '',
+            text: `
+              Вот разъемы 
+              <img src="/images/zadtv.jpg">
+            `,
+            timestamp: null
+          },
+          {
+            type: 'server',
+            expert_picture: '/images/expert-4.png',
+            title: 'Дополнительный ответ',
+            text: 'Вам нужен вот такой провод: название, фотография, ссылка в интернете, где можно купить. Подключать надо вот этот разьем на телевизоре (фотография) к этому разъему на колонках (фотография)',
+            timestamp: null
+          }
+        ]
+      },
+      {
         id: 2,
         text: 'Самый большой по площади парк Питера',
         near: false,

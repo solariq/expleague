@@ -1,3 +1,65 @@
+<style>
+.attachment {
+  display: none;
+  position: absolute;
+  top: 5px;
+  right: 0;
+  text-align: center;
+  line-height: 36px;
+  width: 36px;
+  height: 36px;
+  z-index: 9000;
+}
+.attachment i {
+  font-size: 36px;
+}
+
+.item.item-input {
+  border-bottom: 0;
+}
+
+.item-attachments {
+  display: none;
+  border-left: #ddd 1px solid;
+  border-right: #ddd 1px solid;
+  padding: 10px 15px;
+}
+
+.attachment-image {
+  width: 40px;
+  height: 40px;
+  margin-right: 8px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  display: inline-block;
+  border-radius: 50%;
+  border-width: 20px;
+  border-color: #fff;
+  border-style: solid;
+  -webkit-transition-property: all;
+  -webkit-transition-duration: 200ms;
+}
+
+.attachment-image-show {
+  border-radius: 0px;
+  border-width: 1px;
+  border-color: #eee;
+}
+
+.attachment-image-1 {
+  background-image: url(/images/speakers.jpg);
+}
+
+.attachment-image-2 {
+  background-image: url(/images/tele.jpg);
+}
+
+.attachment-image-3 {
+  background-image: url(/images/moto_client.jpg);
+}
+</style>
+
 <div ng-controller="IndexController">
   <super-navbar>
     <super-navbar-title>Заказ</super-navbar-title>
@@ -5,10 +67,16 @@
 
   <div class="padding">
     <div class="list">
+      <div class="attachment"><i class="super-paperclip"></i></div>
       <label class="item item-input item-floating-label">
         <span class="input-label">&nbsp;Что необходимо найти?</span>
         <textarea ng-model="order.text" class="order-textarea" name="text" rows="1" placeholder="&nbsp;Что необходимо найти?" required></textarea>
       </label>
+      <div class="item-attachments">
+        <div class="attachment-image attachment-image-3"></div>
+        <div class="attachment-image attachment-image-1"></div>
+        <div class="attachment-image attachment-image-2"></div>
+      </div>
       <div class="item item-checkbox">
         <label class="checkbox">
           <input type="checkbox" class="checkbox-near">
@@ -64,6 +132,8 @@ function defaultFormState() {
   $('.speed-name').text(speedNames[defaulRangeValue]);
   $('.order-price span b').text(getTotalPrice());
   $('.input-label').removeClass('has-input');
+  $('.item-attachments').hide();
+  $('.attachment-image').removeClass('attachment-image-show');
 }
 
 defaultFormState();
@@ -94,6 +164,36 @@ $('.button-start-search').click(function() {
   }
   supersonic.ui.modal.show(modalView, options);
   defaultFormState();
+});
+
+
+function checkInput() {
+  var inputValue = $('.order-textarea').val().trim();
+  if (inputValue != '') {
+    $('.attachment').show();
+  } else {
+    $('.attachment').hide();
+  }
+};
+
+window.setInterval("checkInput()", 300);
+var showAttachments = 0;
+$('.attachment').click(function() {
+  $('.item-attachments').show();
+  supersonic.media.camera.getFromPhotoLibrary({}).then(function(result){
+    var searchText = $('.order-textarea').val().trim().toLowerCase();
+    if (/колонк|kolonk/.test(searchText)) {
+      if (showAttachments == 0) {
+        $('.attachment-image-1').addClass('attachment-image-show');
+        showAttachments = 1;
+      } else if (showAttachments == 1) {
+        $('.attachment-image-2').addClass('attachment-image-show');
+        showAttachments = 2;
+      }
+    } else {
+      $('.attachment-image-3').addClass('attachment-image-show');
+    }
+  });
 });
 
 // $('.order-textarea').focus(function() {
