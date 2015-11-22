@@ -4,6 +4,7 @@ import com.amazonaws.util.StringInputStream;
 import com.spbsu.commons.xml.JDOMUtil;
 import com.tbts.model.*;
 import com.tbts.model.handlers.Archive;
+import com.tbts.model.handlers.ClientManager;
 import com.tbts.model.handlers.ExpertManager;
 import com.tbts.model.handlers.Reception;
 import org.jdom2.Element;
@@ -20,15 +21,19 @@ import java.util.Set;
  */
 public class RoomImpl extends StateWise.Stub<Room.State, Room> implements Room {
   @SuppressWarnings({"FieldCanBeLocal", "unused"})
-  private final String id;
+  private String id;
 
-  protected Expert worker;
-  private Client owner;
+  protected String worker;
+  private String owner;
 
   public RoomImpl(String id, Client client) {
     this.id = id;
     state = State.INIT;
-    owner = client;
+    owner = client.id();
+    addListener(Reception.instance());
+  }
+
+  public RoomImpl() {
     addListener(Reception.instance());
   }
 
@@ -74,13 +79,15 @@ public class RoomImpl extends StateWise.Stub<Room.State, Room> implements Room {
         throw new IllegalStateException(state().toString());
     }
     state(State.COMPLETE);
-    worker.free();
-    owner.feedback(this);
+    //noinspection ConstantConditions
+    worker().free();
+    owner().feedback(this);
   }
 
   @Override
   public void cancel() {
     state(State.CANCELED);
+    Expert worker = worker();
     if (worker != null)
       worker.free();
   }
@@ -89,7 +96,7 @@ public class RoomImpl extends StateWise.Stub<Room.State, Room> implements Room {
   public void enter(Expert winner) {
     if (winner == null)
       throw new IllegalArgumentException("Winner must be non-zero");
-    worker = winner;
+    worker = winner.id();
     state(State.LOCKED);
     if (postponedAnswers > 0) {
       postponedAnswers = 0;
@@ -125,13 +132,13 @@ public class RoomImpl extends StateWise.Stub<Room.State, Room> implements Room {
 
   @Override
   public Client owner() {
-    return owner;
+    return ClientManager.instance().get(owner);
   }
 
   @Nullable
   @Override
   public Expert worker() {
-    return worker;
+    return ExpertManager.instance().get(worker);
   }
 
   @Override

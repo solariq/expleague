@@ -1,4 +1,4 @@
-package com.tbts.dao;
+package com.tbts.dao.sql;
 
 import com.tbts.model.impl.ExpertImpl;
 
@@ -19,22 +19,20 @@ public class SQLExpert extends ExpertImpl {
   }
 
   @Override
-  protected void state(State state) {
+  protected void stateImpl(State state) {
     if (!dao.isMaster(id()))
       throw new IllegalStateException();
     final PreparedStatement updateExpertState = dao.getUpdateExpertState();
     //noinspection SynchronizationOnLocalVariableOrMethodParameter
-    synchronized (updateExpertState) {
-      try {
-        updateExpertState.setInt(1, state.index());
-        updateExpertState.setString(2, active);
-        updateExpertState.setString(3, id());
-        updateExpertState.execute();
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
+    try {
+      updateExpertState.setInt(1, state.index());
+      updateExpertState.setString(2, active);
+      updateExpertState.setString(3, id());
+      updateExpertState.execute();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
-    super.state(state);
+    super.stateImpl(state);
   }
 
   public void update(State state, String active) {

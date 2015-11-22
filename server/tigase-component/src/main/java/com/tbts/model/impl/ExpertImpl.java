@@ -13,11 +13,14 @@ import org.jetbrains.annotations.Nullable;
  * Time: 19:13
  */
 public class ExpertImpl extends StateWise.Stub<Expert.State, Expert> implements Expert {
-  private final String id;
+  private String id;
 
   public ExpertImpl(String id) {
     this.id = id;
     state = State.AWAY;
+    addListener(ExpertManager.instance());
+  }
+  public ExpertImpl() {
     addListener(ExpertManager.instance());
   }
 
@@ -48,7 +51,7 @@ public class ExpertImpl extends StateWise.Stub<Expert.State, Expert> implements 
     return true;
   }
 
-  private void join(@Nullable Room room) {
+  public void join(@Nullable Room room) {
     if ((active == null && room == null) ||
         (room != null && room.id().equals(active)))
       return;

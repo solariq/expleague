@@ -41,6 +41,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="commons" target="1.8" />
+      <module name="server" target="1.8" />
       <module name="tigase-component" target="1.8" />
       <module name="xmpp-bots" target="1.8" />
     </bytecodeTargetLevel>

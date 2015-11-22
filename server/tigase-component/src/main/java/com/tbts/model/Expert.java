@@ -1,5 +1,8 @@
 package com.tbts.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /**
  * User: solar
  * Date: 04.10.15
@@ -35,6 +38,7 @@ public interface Expert extends StateWise<Expert.State, Expert> {
       this.index = index;
     }
 
+    @JsonValue
     public int index() {
       return index;
     }
@@ -47,6 +51,7 @@ public interface Expert extends StateWise<Expert.State, Expert> {
       }
     }
 
+    @JsonCreator
     public static State byIndex(int state) {
       return states[state];
     }

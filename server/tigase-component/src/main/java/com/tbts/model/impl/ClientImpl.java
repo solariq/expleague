@@ -16,13 +16,17 @@ import java.util.Map;
  * Time: 19:31
  */
 public class ClientImpl extends StateWise.Stub<Client.State, Client> implements Client {
-  private final String id;
+  private String id;
   protected final Map<String, State> stateInRooms = new HashMap<>();
   protected boolean online = false;
 
   public ClientImpl(String id) {
     this.id = id;
     this.state = State.OFFLINE;
+    addListener(ClientManager.instance());
+  }
+
+  public ClientImpl() {
     addListener(ClientManager.instance());
   }
 
@@ -81,7 +85,7 @@ public class ClientImpl extends StateWise.Stub<Client.State, Client> implements 
   }
 
   @Override
-  protected void state(State state) {
+  protected void stateImpl(State state) {
     if (state == State.ONLINE || state == State.OFFLINE) {
       online = state == State.ONLINE;
     }
@@ -91,6 +95,6 @@ public class ClientImpl extends StateWise.Stub<Client.State, Client> implements 
     else {
       stateInRooms.put(activeId, state);
     }
-    super.state(state);
+    super.stateImpl(state);
   }
 }

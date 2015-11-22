@@ -42,7 +42,7 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     }
   }
 
-  public synchronized Expert register(String id) {
+  public Expert register(String id) {
     if (!id.contains("@") || id.contains("@muc."))
       return null;
 
@@ -54,14 +54,17 @@ public class ExpertManager extends WeakListenerHolderImpl<Expert> implements Act
     return expert;
   }
 
-  public synchronized Expert get(String jid) {
+  public Expert get(String jid) {
     return DAO.instance().expert(jid);
   }
 
   @Override
-  public synchronized void invoke(Expert e) {
-    if (e.state() == Expert.State.READY)
-      notifyAll();
+  public void invoke(Expert e) {
+    if (e.state() == Expert.State.READY) {
+      synchronized (this) {
+        notifyAll();
+      }
+    }
 
     super.invoke(e);
   }

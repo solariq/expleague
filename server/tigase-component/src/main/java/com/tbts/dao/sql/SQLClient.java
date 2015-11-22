@@ -1,4 +1,4 @@
-package com.tbts.dao;
+package com.tbts.dao.sql;
 
 import com.tbts.model.Room;
 import com.tbts.model.impl.ClientImpl;
@@ -22,35 +22,31 @@ class SQLClient extends ClientImpl {
   }
 
   @Override
-  protected void state(State state) {
+  protected void stateImpl(State state) {
     if (dao.isMaster(id())) {
       final PreparedStatement updateClientState = dao.getUpdateClientState();
       //noinspection SynchronizationOnLocalVariableOrMethodParameter,Duplicates
-      synchronized (updateClientState) {
-        try {
-          //noinspection Duplicates
-          updateClientState.setInt(1, state.index());
-          updateClientState.setString(2, id());
-          updateClientState.execute();
-        } catch (SQLException e) {
-          throw new RuntimeException(e);
-        }
+      try {
+        //noinspection Duplicates
+        updateClientState.setInt(1, state.index());
+        updateClientState.setString(2, id());
+        updateClientState.execute();
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
       }
       if (activeId != null) {
         final PreparedStatement updateRoomOwnerState = dao.getUpdateRoomOwnerState();
         //noinspection SynchronizationOnLocalVariableOrMethodParameter
-        synchronized (updateRoomOwnerState) {
-          try {
-            updateRoomOwnerState.setInt(1, state.index());
-            updateRoomOwnerState.setString(2, activeId);
-            updateRoomOwnerState.execute();
-          } catch (SQLException e) {
-            throw new RuntimeException(e);
-          }
+        try {
+          updateRoomOwnerState.setInt(1, state.index());
+          updateRoomOwnerState.setString(2, activeId);
+          updateRoomOwnerState.execute();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
         }
       }
     }
-    super.state(state);
+    super.stateImpl(state);
   }
 
   @Override
