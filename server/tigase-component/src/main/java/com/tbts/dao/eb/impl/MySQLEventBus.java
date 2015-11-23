@@ -42,6 +42,7 @@ public class MySQLEventBus implements EventBus<String, CharSequence> {
   private boolean sendEvts = true;
 
   public MySQLEventBus(String connectionUrl, Filter<String> connected) {
+    System.out.println("Connecting event bus to db: " + connectionUrl);
     this.connected = connected;
     this.ops = new MySQLOps(connectionUrl);
     try {
