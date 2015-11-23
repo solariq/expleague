@@ -54,7 +54,7 @@ create TABLE tbts.Log (
 
 create TABLE tbts.Nodes (
   node varchar(128) not null,
-  heartbeat timestamp not null default 'CURRENT_TIMESTAMP',
+  heartbeat timestamp not null default CURRENT_TIMESTAMP(),
   age bigint(20),
   PRIMARY KEY (node)
 );
