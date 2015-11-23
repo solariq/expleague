@@ -42,6 +42,16 @@
         </dependency>
         <dependency>
             <groupId>tigase</groupId>
+            <artifactId>tigase-acs</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>tigase</groupId>
+            <artifactId>tigase-acs-muc</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>tigase</groupId>
             <artifactId>jaxmpp-j2se</artifactId>
             <version>3.0.0</version>
         </dependency>

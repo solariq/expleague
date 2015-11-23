@@ -23,6 +23,12 @@
     <orderEntry type="library" name="Maven: tigase:tigase-server:7.0.2" level="project" />
     <orderEntry type="library" name="Maven: tigase:tigase-utils:3.4.4" level="project" />
     <orderEntry type="library" name="Maven: tigase:tigase-muc:2.3.0" level="project" />
+    <orderEntry type="library" name="Maven: tigase:tigase-acs:2.1.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: tigase:tigase-acs-pubsub:1.0.0" level="project" />
+    <orderEntry type="library" name="Maven: tigase:licence-lib:1.0.0" level="project" />
+    <orderEntry type="library" name="Maven: tigase:tigase-stats-collector-provider:1.0.0" level="project" />
+    <orderEntry type="library" name="Maven: tigase:tigase-stats-collector-library:1.0.0" level="project" />
+    <orderEntry type="library" name="Maven: tigase:tigase-acs-muc:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: tigase:jaxmpp-j2se:3.0.0" level="project" />
     <orderEntry type="library" name="Maven: tigase:jaxmpp-core:3.0.0" level="project" />
     <orderEntry type="library" name="Maven: tigase:tigase-xmltools:3.4.5" level="project" />
@@ -81,6 +87,6 @@
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.3.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.3.2" level="project" />
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.6" level="project" />
-    <orderEntry type="library" name="Maven: joda-time:joda-time:2.9" level="project" />
+    <orderEntry type="library" name="Maven: joda-time:joda-time:2.9.1" level="project" />
   </component>
 </module>
