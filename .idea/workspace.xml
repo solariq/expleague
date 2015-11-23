@@ -6,17 +6,10 @@
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c71e5450-21a0-4dac-9e17-b1ca74780897" name="Default" comment="Corrected links to DB">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__tigase_licence_lib_1_0_0.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__tigase_tigase_acs_2_1_0.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__tigase_tigase_acs_muc_1_1_0.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__tigase_tigase_acs_pubsub_1_0_0.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__tigase_tigase_stats_collector_library_1_0_0.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__tigase_tigase_stats_collector_provider_1_0_0.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__joda_time_joda_time_2_9.xml" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__joda_time_joda_time_2_9_1.xml" />
+    <list default="true" id="c71e5450-21a0-4dac-9e17-b1ca74780897" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/TrackPresenceComponentClustered.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/tigase-component/pom.xml" afterPath="$PROJECT_DIR$/server/tigase-component/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/tigase-component/tigase-component.iml" afterPath="$PROJECT_DIR$/server/tigase-component/tigase-component.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/ExpertsAdminBot.java" afterPath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/ExpertsAdminBot.java" />
     </list>
     <list id="f303b163-6c7b-46ef-86e2-2ead008b1b66" name="Trash" comment="" />
     <ignored path="tbts.iws" />
@@ -102,26 +95,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="tigase-local.conf" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/etc/tigase-local.conf">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="6" column="47" selection-start-line="6" selection-start-column="47" selection-end-line="6" selection-end-column="47" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="init.properties" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/etc/init.properties">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="12" column="35" selection-start-line="12" selection-start-column="35" selection-end-line="12" selection-end-column="35" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="tigase-test.conf" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server/etc/tigase-test.conf">
           <provider selected="true" editor-type-id="text-editor">
@@ -142,31 +115,51 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="pom.xml" pinned="false" current-in-tab="true">
+      <file leaf-file-name="pom.xml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server/tigase-component/pom.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.59016395">
-              <caret line="53" column="71" selection-start-line="53" selection-start-column="37" selection-end-line="53" selection-end-column="37" />
+            <state vertical-scroll-proportion="-13.0">
+              <caret line="45" column="56" selection-start-line="45" selection-start-column="36" selection-end-line="45" selection-end-column="36" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="init-local.properties" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/etc/init-local.properties">
+      <file leaf-file-name="TrackPresenceComponent.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/TrackPresenceComponent.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <caret line="36" column="51" selection-start-line="36" selection-start-column="51" selection-end-line="36" selection-end-column="51" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="MessageRouter.java" pinned="false" current-in-tab="false">
-        <entry file="jar://$MAVEN_REPOSITORY$/tigase/tigase-server/7.0.2/tigase-server-7.0.2-sources.jar!/tigase/server/MessageRouter.java">
+      <file leaf-file-name="TrackPresenceComponentClustered.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/TrackPresenceComponentClustered.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.2253635">
+              <caret line="89" column="31" selection-start-line="89" selection-start-column="31" selection-end-line="89" selection-end-column="31" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ExpertsAdminBot.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/ExpertsAdminBot.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="602" column="0" selection-start-line="602" selection-start-column="0" selection-end-line="602" selection-end-column="0" />
+              <caret line="52" column="9" selection-start-line="52" selection-start-column="0" selection-end-line="52" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SessionManager.java" pinned="false" current-in-tab="false">
+        <entry file="jar://$MAVEN_REPOSITORY$/tigase/tigase-server/7.0.2/tigase-server-7.0.2-sources.jar!/tigase/server/xmppsession/SessionManager.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="127" column="39" selection-start-line="127" selection-start-column="16" selection-end-line="127" selection-end-column="39" />
               <folding />
             </state>
           </provider>
@@ -323,10 +316,8 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/server/README.md" />
         <option value="$PROJECT_DIR$/expert/chrome/background/js/knugget-api.js" />
         <option value="$PROJECT_DIR$/server/xmpp-bots/src/main/java/com/tbts/bots/ExpertBot.java" />
-        <option value="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/ExpertsAdminBot.java" />
         <option value="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/SQLClient.java" />
         <option value="$PROJECT_DIR$/server/tigase-component/src/test/java/model/scenario/fake/ObedientClient.java" />
         <option value="$PROJECT_DIR$/server/tigase-component/src/test/java/model/scenario/BasicScenarioTest.java" />
@@ -374,6 +365,8 @@
         <option value="$PROJECT_DIR$/server/etc/init-test.properties" />
         <option value="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/eb/impl/MySQLEventBus.java" />
         <option value="$PROJECT_DIR$/server/tigase-component/pom.xml" />
+        <option value="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/TrackPresenceComponentClustered.java" />
+        <option value="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/ExpertsAdminBot.java" />
       </list>
     </option>
   </component>
@@ -1274,6 +1267,7 @@
       <recent name="$PROJECT_DIR$/server/etc" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.tbts.tigase.component" />
       <recent name="com.tbts.dao.eb" />
       <recent name="com.tbts.bots" />
     </key>
@@ -2118,13 +2112,7 @@
       <workItem from="1446489823069" duration="49916000" />
       <workItem from="1446810881245" duration="137594000" />
       <workItem from="1448187034244" duration="591000" />
-      <workItem from="1448195192417" duration="8620000" />
-    </task>
-    <task id="LOCAL-00002" summary="Stupid NPE fixed. Tigase components artifact">
-      <created>1443184737117</created>
-      <option name="number" value="00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1443184737117</updated>
+      <workItem from="1448195192417" duration="9961000" />
     </task>
     <task id="LOCAL-00003" summary="Trash">
       <created>1444133426261</created>
@@ -2414,7 +2402,13 @@
       <option name="project" value="LOCAL" />
       <updated>1448276462890</updated>
     </task>
-    <option name="localTasksCounter" value="51" />
+    <task id="LOCAL-00051" summary="Corrected links to DB">
+      <created>1448277992866</created>
+      <option name="number" value="00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1448277992866</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -2450,11 +2444,11 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="433663000" />
+    <option name="totallyTimeSpent" value="435004000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1816" y="-799" width="1819" height="1358" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -2472,7 +2466,7 @@
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27857143" sideWeight="0.50666666" order="3" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3807267" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3807267" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -2598,7 +2592,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/ExpertsAdminBot.java</url>
-          <line>154</line>
+          <line>155</line>
           <properties />
           <option name="timeStamp" value="650" />
         </line-breakpoint>
@@ -2651,20 +2645,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-databind/2.5.3/jackson-databind-2.5.3-sources.jar!/com/fasterxml/jackson/databind/DeserializationContext.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="405" column="0" selection-start-line="405" selection-start-column="0" selection-end-line="405" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-databind/2.5.3/jackson-databind-2.5.3-sources.jar!/com/fasterxml/jackson/databind/ObjectMapper.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="3665" column="0" selection-start-line="3665" selection-start-column="0" selection-end-line="3665" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-databind/2.5.3/jackson-databind-2.5.3-sources.jar!/com/fasterxml/jackson/databind/deser/DeserializerCache.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -2721,16 +2701,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/ExpertsAdminBot.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="154" column="0" selection-start-line="154" selection-start-column="0" selection-end-line="154" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -3030,14 +3000,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/TrackPresenceComponent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="60" column="49" selection-start-line="60" selection-start-column="49" selection-end-line="60" selection-end-column="49" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/eb/impl/MySQLEventBus.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -3130,8 +3092,40 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/tigase-component/pom.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.59016395">
-          <caret line="53" column="71" selection-start-line="53" selection-start-column="37" selection-end-line="53" selection-end-column="37" />
+        <state vertical-scroll-proportion="-13.0">
+          <caret line="45" column="56" selection-start-line="45" selection-start-column="36" selection-end-line="45" selection-end-column="36" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/TrackPresenceComponent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="36" column="51" selection-start-line="36" selection-start-column="51" selection-end-line="36" selection-end-column="51" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/tigase/tigase-server/7.0.2/tigase-server-7.0.2-sources.jar!/tigase/server/xmppsession/SessionManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="127" column="39" selection-start-line="127" selection-start-column="16" selection-end-line="127" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/ExpertsAdminBot.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="52" column="9" selection-start-line="52" selection-start-column="0" selection-end-line="52" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/TrackPresenceComponentClustered.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.2253635">
+          <caret line="89" column="31" selection-start-line="89" selection-start-column="31" selection-end-line="89" selection-end-column="31" />
           <folding />
         </state>
       </provider>

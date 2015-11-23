@@ -23,6 +23,7 @@ import tigase.jaxmpp.j2se.J2SEPresenceStore;
 import tigase.jaxmpp.j2se.J2SESessionObject;
 import tigase.jaxmpp.j2se.Jaxmpp;
 import tigase.jaxmpp.j2se.connectors.socket.SocketConnector;
+import tigase.server.AbstractMessageReceiver;
 import tigase.server.Packet;
 import tigase.util.TigaseStringprepException;
 import tigase.xml.DomBuilderHandler;
@@ -44,13 +45,13 @@ public class ExpertsAdminBot {
   private static final Logger log = Logger.getLogger(ExpertsAdminBot.class.getName());
   private final Jaxmpp connection = new Jaxmpp(new J2SESessionObject());
   public static final String EXPERTS_ADMIN_LONG_PASSWORD = "experts-admin-long-password";
-  private final TrackPresenceComponent sessionManager;
+  private final AbstractMessageReceiver sessionManager;
 
   private final BareJID jid;
   @SuppressWarnings("FieldCanBeLocal")
   private final Action<Expert> expertLogic;
 
-  public ExpertsAdminBot(String name, TrackPresenceComponent sessionManager) {
+  public ExpertsAdminBot(String name, AbstractMessageReceiver sessionManager) {
     this.sessionManager = sessionManager;
     jid = BareJID.bareJIDInstance(name);
     connection.getProperties().setUserProperty(SessionObject.USER_BARE_JID, jid);
