@@ -1,5 +1,6 @@
 package model.scenario;
 
+import com.spbsu.commons.JUnitIOCapture;
 import com.spbsu.commons.filters.TrueFilter;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.util.sync.StateLatch;
@@ -11,12 +12,8 @@ import com.tbts.model.handlers.*;
 import model.scenario.fake.ObedientClient;
 import model.scenario.fake.ObedientExpert;
 import org.junit.*;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
 import tigase.util.TigaseStringprepException;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.text.MessageFormat;
 import java.text.ParseException;
 
@@ -25,7 +22,7 @@ import java.text.ParseException;
  * Date: 04.10.15
  * Time: 19:39
  */
-public class BasicScenarioTest {
+public class BasicScenarioTest extends JUnitIOCapture {
 
   private static DAO initialDAO;
   private static MyDAO myDAO;
@@ -50,26 +47,6 @@ public class BasicScenarioTest {
   public void clearManagers() {
     myDAO.clear();
     myArchive.clear();
-  }
-
-  ByteArrayOutputStream out = new ByteArrayOutputStream();
-  PrintStream oldOut;
-  ByteArrayOutputStream err = new ByteArrayOutputStream();
-  PrintStream oldErr;
-  @Before
-  public void ioCapture() {
-    out.reset();
-    oldOut = System.out;
-    System.setOut(new PrintStream(out));
-    err.reset();
-    oldErr = System.err;
-    System.setErr(new PrintStream(err));
-  }
-
-  @After
-  public void ioClear() {
-    System.setOut(oldOut);
-    System.setErr(oldErr);
   }
 
   @Test
@@ -362,14 +339,4 @@ public class BasicScenarioTest {
       roomsMap.clear();
     }
   }
-
-  @Rule
-  public final TestWatcher watcher = new TestWatcher() {
-    @Override
-    protected void failed(Throwable e, Description description) {
-      super.failed(e, description);
-      oldOut.append(out.toString());
-      oldErr.append(err.toString());
-    }
-  };
 }

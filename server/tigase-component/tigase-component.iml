@@ -20,6 +20,7 @@
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.5.3" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.5.0" level="project" />
     <orderEntry type="library" name="Maven: net.sf.trove4j:trove4j:3.0.3" level="project" />
+    <orderEntry type="module" module-name="commons" scope="TEST" production-on-test="" />
     <orderEntry type="library" name="Maven: tigase:tigase-server:7.0.2" level="project" />
     <orderEntry type="library" name="Maven: tigase:tigase-utils:3.4.4" level="project" />
     <orderEntry type="library" name="Maven: tigase:tigase-muc:2.3.0" level="project" />

@@ -12,6 +12,7 @@
     <modules>
         <module>commons</module>
         <module>tigase-component</module>
+        <module>fastxml</module>
     </modules>
 
     <properties>
