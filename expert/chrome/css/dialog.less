@@ -66,6 +66,10 @@ Site dialog global style
             *display: inline-block;
             *top: -50%;
         }
+
+        .contentex {
+            width: 800px;
+        }
     }
 
     .overlay {
@@ -122,43 +126,44 @@ Site dialog global style
                 color: #9B9FA3;
                 max-height: 350px;
                 overflow-y: scroll;
+
+                .space {
+                    margin-top: 20px;
+                }
+                .cropArea {
+                    background: #E4E4E4;
+                    //overflow: hidden;
+                    width: 350px;
+                    height: 350px;
+                    text-align: center;
+                }
+
+                .cropAreaEx {
+                    background: #E4E4E4;
+                    max-height: 100%;
+                    width: 750px;
+                    height: 350px;
+                    text-align: center;
+
+                    img {
+                        max-height: 100%;
+                        max-width: 100%;
+                    }
+                }
+
+
+
             }
         }
 
 
         .controls {
             box-sizing: border-box;
-            background: @greenColor;
-            padding: 25px 30px;
+            background: lightgrey;
+            //padding: 10px 10px;
             width: 100%;
-            display: block;
+            display: inline-block;
             position: relative;
-
-            .folder {
-                float: left;
-                color: #FFF;
-                font-size: 14px;
-                line-height: 30px;
-                padding: 0 0 0 30px;
-                white-space: nowrap;
-                position: relative;
-                max-width: 160px;
-                text-overflow: ellipsis;
-                overflow: hidden;
-
-                &:before {
-                    background-image: url("@{urlPrefix}/images/sprite_2.png");
-                    background-repeat: no-repeat;
-                    background-size: 20px 1125px;
-                    content: "";
-                    position: absolute;
-                    height: 44px;
-                    width: 20px;
-                    left: 0;
-                    top: -7px;
-                    z-index: 1;
-                }
-            }
 
             input {
                 background: none;
@@ -168,59 +173,37 @@ Site dialog global style
                 float: right;
                 color: #FFF;
                 margin: 0;
+                padding: 10px;
+            }
+
+            .lgreen {
+                background: none repeat scroll 0 0 #ace1af;
+                box-shadow: 0 1px 0 0 #ace1af;
+                color: #fff;
+
+                &:hover {
+                    background: none repeat scroll 0 0 #6fc26f;
+                    box-shadow: 0 1px 0 0 #B0E6B3;
+                    color: #fff;
+                }
+            }
+
+            .lred {
+                background: none repeat scroll 0 0 #f16f5f;
+                box-shadow: 0 1px 0 0 #f16f5f;
+                color: #fff;
+
+                &:hover {
+                    background: none repeat scroll 0 0 #e84c3d;
+                    box-shadow: 0 1px 0 0 #e84c3d;
+                    color: #fff;
+                }
             }
 
             button {
+                width: 50%;
+                height: 100%;
                 float: right;
-
-                &.copy {
-                    width: 70px;
-                    -o-transition: all .3s ease;
-                    -moz-transition: all .3s ease;
-                    -webkit-transition: all .3s ease;
-                    transition: all .3s ease;
-
-                    &.copy-success {
-                        padding-left: 35px;
-                        width: 80px;
-
-                        &:before {
-                            content: "";
-                            height: 30px;
-                            position: absolute;
-                            width: 20px;
-                            z-index: 1;
-                            left: 9px;
-                            top: -2px;
-                            opacity: 0.8;
-                            background: url("@{urlPrefix}/images/icon_success_white.png") no-repeat center center;
-                            background-size: 20px 20px;
-                        }
-                    }
-                }
-            }
-        }
-
-        .linked-users {
-            height: 55px;
-            box-sizing: border-box;
-            padding: 17px 30px 0;
-
-            span {
-                color: #9B9FA3;
-            }
-
-            a {
-                text-decoration: none;
-                color: #4F4F4F;
-
-                &:hover {
-                    color: #000;
-                }
-
-                &.destroy-link {
-                    float: right;
-                }
             }
         }
     }
@@ -306,6 +289,7 @@ Site dialog global style
                     text-align: center;
                     width: 85%;
                     margin: 0 auto;
+                    //here
                 }
 
                 a {
@@ -467,50 +451,6 @@ Site dialog global style
 
             button {
                 float: right;
-
-                &.copy {
-                    width: 170px;
-                    -o-transition: all .3s ease;
-                    -moz-transition: all .3s ease;
-                    -webkit-transition: all .3s ease;
-                    transition: all .3s ease;
-                    font-size: 16px;
-                    background: @blueColor;
-                    line-height: 50px;
-                    height: 50px;
-                    padding-left: 50px;
-
-                    &:before {
-                        content: "";
-                        height: 50px;
-                        position: absolute;
-                        width: 18px;
-                        z-index: 1;
-                        left: 30px;
-                        top: 0;
-                        opacity: 1;
-                        background: url("@{urlPrefix}/images/referal_copy.png") no-repeat center center;
-                        background-size: 18px 18px;
-                    }
-
-                    &.copy-success {
-                        &:before {
-                            background: url("@{urlPrefix}/images/icon_success_white.png") no-repeat center center;
-                        }
-                    }
-                }
-
-                &.subscribe-button {
-                    padding: 0;
-
-                    &:before {
-                        display: none;
-                    }
-                }
-
-                &:hover {
-                    background: rgba(255,255,255,0.2);
-                }
             }
         }
 

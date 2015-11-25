@@ -1,0 +1,23 @@
+<div class="overlay dialog__overlay"></div>
+
+<div class="wrapper">
+    <div class="content dialog__content collaboration">
+
+        <i class="close" ng-click="closeDialog()"></i>
+
+        <div class="dialog-title">
+            <div class="header"><h2>Вы действительно хотите отправить ответ?</h2></div>
+            <div class="description">Данное действие является необратимым. После подтверждения заказ будет автоматически закрыт.</div>
+        </div>
+
+        <div class="controls clearfix bgwhite">
+            <div class="short-url">
+                <div confirm-answer>
+                    <button class="lred" ng-click="closeDialog()">Отменить</button>
+                    <button class="lgreen" ng-click="doConfirm()">Отправить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,30 @@
+<div class="overlay dialog__overlay"></div>
+
+<div class="wrapper" crop-dialog>
+    <div class="content contentex dialog__content collaboration">
+
+        <i class="close" ng-click="closeCrop()"></i>
+
+        <div class="dialog-title">
+            <div class="header"><h2>Поиск по картинке</h2></div>
+            <div class="description">
+                <!--<div class="cropArea" style="background: #E4E4E4;overflow: hidden;width:500px;height:350px;">-->
+                <div class="cropArea" style="float: left;">
+                    <img-crop image="originImage" result-image="croppedImage" area-min-size="50"></img-crop>
+                </div>
+                <div class="cropArea" style="float: right;"><img style="height: 350px;" ng-src="{{croppedImage}}"/></div>
+                <!--<img style="max-width:90%;max-height:90%;" src="https://upload.wikimedia.org/wikipedia/commons/c/c4/PM5544_with_non-PAL_signals.png">-->
+            </div>
+        </div>
+
+        <div class="controls clearfix bgwhite">
+            <div class="short-url">
+                <div>
+                    <button class="lgreen" ng-click="imgsearch('yandex')">Yandex</button>
+                    <button class="lgreen" ng-click="imgsearch('google')">Google</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

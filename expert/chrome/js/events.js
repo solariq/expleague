@@ -3,7 +3,8 @@
 KNUGGET.Drag = {
     IsOnSidebar: false,
     Context: null,
-    Data: {}
+    Data: {},
+    Clicked: null
 };
 
 var KNUGGET_EVENTS = {
@@ -282,25 +283,31 @@ var KNUGGET_CLASS = "knugget";
 $(document)
     // Put function execute into onload area
     .ready(function () {
+        $(document).on('contextmenu', function(ev) {
+            KNUGGET.Drag.Clicked = $(ev.target);
+            //ev.preventDefault();
+            return true;
+        });
+
         if (window.location.href.indexOf("//www.youtube.com/") === -1 && window.location.href.indexOf("&list=") === -1) {
             if ($.fn.fixFlash !== undefined) {
                 $(this).fixFlash();
             }
         }
 
-        //FB drag video
-        if (window.location.href.indexOf("//www.facebook.com/") > -1) {
-            $(document).on("mouseenter", "a[href*='//www.youtube.com/watch?v='], a[href*='//youtu.be/'],a[href*='//vimeo.com/']", function () {
-                if ($(this).find("._5pbd,._1y4,._6ku,._1ui2,._6o1").length) {
-                    $(this).parents().eq(2).addClass("knugget_video_player").attr("data-knuggetVideoHref", $(this).attr("href")).attr("data-knuggetVideoProvider", "youtube");
-                }
-            });
-            $(document).on("mouseenter", "a[href*='//vimeo.com/']", function () {
-                if ($(this).find("._5pbd,._1y4,._6ku,._1ui2,._6o1").length) {
-                    $(this).parents().eq(2).addClass("knugget_video_player").attr("data-knuggetVideoHref", $(this).attr("href")).attr("data-knuggetVideoProvider", "vimeo");
-                }
-            });
-        }
+        ////FB drag video
+        //if (window.location.href.indexOf("//www.facebook.com/") > -1) {
+        //    $(document).on("mouseenter", "a[href*='//www.youtube.com/watch?v='], a[href*='//youtu.be/'],a[href*='//vimeo.com/']", function () {
+        //        if ($(this).find("._5pbd,._1y4,._6ku,._1ui2,._6o1").length) {
+        //            $(this).parents().eq(2).addClass("knugget_video_player").attr("data-knuggetVideoHref", $(this).attr("href")).attr("data-knuggetVideoProvider", "youtube");
+        //        }
+        //    });
+        //    $(document).on("mouseenter", "a[href*='//vimeo.com/']", function () {
+        //        if ($(this).find("._5pbd,._1y4,._6ku,._1ui2,._6o1").length) {
+        //            $(this).parents().eq(2).addClass("knugget_video_player").attr("data-knuggetVideoHref", $(this).attr("href")).attr("data-knuggetVideoProvider", "vimeo");
+        //        }
+        //    });
+        //}
     })
     .on("dragstart", KNUGGET_EVENTS.dragStart)
     .on("dragend", KNUGGET_EVENTS.dragEnd)
@@ -308,15 +315,15 @@ $(document)
     .on("dragenter", KNUGGET_EVENTS.dragEnter)
     .on("dragleave", KNUGGET_EVENTS.dragLeave)
     .on("mouseenter", "#" + KNUGGET_SIDEBAR_NAME, KNUGGET_EVENTS.mouseEnter)
-    .on("mouseleave", "#" + KNUGGET_SIDEBAR_NAME, KNUGGET_EVENTS.mouseLeave)
+    .on("mouseleave", "#" + KNUGGET_SIDEBAR_NAME, KNUGGET_EVENTS.mouseLeave);
 
-    //:>> YOUTUBE VIDEO ICON EMBED HOVER
-    .on("mouseenter", KNUGGET_EVENTS.selectors.Y, { provider: 'youtube' }, KNUGGET_EVENTS.videoMouseEnter)
-    //VIMEO VIDEO EMBED HOVER
-    .on("mouseenter", KNUGGET_EVENTS.selectors.V, { provider: 'vimeo' }, KNUGGET_EVENTS.videoMouseEnter)
-    .on("mouseleave", KNUGGET_EVENTS.selectors.Y + "," + KNUGGET_EVENTS.selectors.V, KNUGGET_EVENTS.videoMouseLeave)
-    //Hide .KNUGGET_video_block
-    .on("mouseenter", KNUGGET_EVENTS.selectors.VideoIcon, KNUGGET_EVENTS.videoIconMouseEnter);
+    ////:>> YOUTUBE VIDEO ICON EMBED HOVER
+    //.on("mouseenter", KNUGGET_EVENTS.selectors.Y, { provider: 'youtube' }, KNUGGET_EVENTS.videoMouseEnter)
+    ////VIMEO VIDEO EMBED HOVER
+    //.on("mouseenter", KNUGGET_EVENTS.selectors.V, { provider: 'vimeo' }, KNUGGET_EVENTS.videoMouseEnter)
+    //.on("mouseleave", KNUGGET_EVENTS.selectors.Y + "," + KNUGGET_EVENTS.selectors.V, KNUGGET_EVENTS.videoMouseLeave)
+    ////Hide .KNUGGET_video_block
+    //.on("mouseenter", KNUGGET_EVENTS.selectors.VideoIcon, KNUGGET_EVENTS.videoIconMouseEnter);
 
 
 if (window.location.host === "www.youtube.com") {

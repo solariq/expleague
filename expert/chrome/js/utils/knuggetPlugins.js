@@ -589,7 +589,7 @@
                     collection.Title = dragElmnt.parents('article').find('h2').text();
                 }
 
-                //grab gif 
+                //grab gif
                 var dataImage = childElement.attr("data-image");
                 if (dataImage && dataImage.length && dataImage.indexOf(".gif") !== -1) {
                     collection.Type = "picture";
@@ -680,10 +680,10 @@
                 collection.Title = dragElmnt.attr('alt');
 
                 if (dragElmnt.closest('.cover-img-link').length) {
-                    
+
                     collection.Href = correctUrl(dragElmnt.closest('.cover-img-link').attr("href"));
                     collection.Type = 'link';
-                    
+
                     if (!collection.Referer) {
                         collection.Referer = window.location.href;
                     }
@@ -766,7 +766,7 @@
 
                 //if (image) {
                 //    collection.Image = image;
-                //} 
+                //}
 
                 collection.Type = 'link';
 
@@ -782,6 +782,9 @@
                 var container;
                 var i;
                 var eventWindow = KNUGGET.Drag.Context;
+                if (eventWindow == null) {
+                    eventWindow = window;
+                }
 
                 if (typeof eventWindow.getSelection != "undefined") {
                     sel = eventWindow.getSelection();
@@ -943,7 +946,7 @@
                 }); //clean array with simple values
         }
 
-        function getDragType() {            
+        function getDragType() {
 
             if (dragElmnt.is("#" + KNUGGET_EVENTS.selectors.VideoIcon) || dragElmnt.find('#' + KNUGGET_EVENTS.selectors.VideoIcon).length) {
 
@@ -971,7 +974,7 @@
                     collection.Title = dragElmnt.attr('alt');
                     collection.Href = correctUrl(linkElement.attr("href"));
                     collection.Type = 'link';
-                    
+
                     if (!collection.Referer) {
                         collection.Referer = window.location.href;
                     }
@@ -994,9 +997,9 @@
                 cloneElement.find(':hidden:not(:contains("img")').not('img').remove();
 
                 if (cloneElement.find('img').length === 1) {
-                    
+
                     collection.Type = 'apicture';
-                
+
                 } else {
 
                     ////////CHECKINI BACKGROUND IR KAD NEBUTU 1x1 image
@@ -1026,7 +1029,7 @@
                         collection.Type = 'link';
                     }
                 }
-            
+
             } else if (dragElmnt.is('[draggable="true"]')) {
 
                 //REMOVE_ ALL TAGS Except img
@@ -1064,14 +1067,14 @@
                         collection.Type = 'link';
                     }
                 }
-            
+
             } else if (collection.Type == "address_bar") {
                 //
-            
+
             } else {
                 //FOUND <tag> a.k.a selected text
                 collection.Type = 'text';
-            
+
             }
         }
 
@@ -1120,7 +1123,7 @@
         getSitePage();
 
         if (collection.Type != "" && collection.Sitepage != "") {
-            
+
             var funcName = "Drag_" + collection.Sitepage + "_" + collection.Type;
             var runFunction = false;
 
@@ -1241,7 +1244,7 @@
                             src = video.attr("src") || video.attr("data");
 
                             //disable from playlist outside
-                            if (src.indexOf("list=") !== -1) { //src.indexOf("origin=") !== -1 || 
+                            if (src.indexOf("list=") !== -1) { //src.indexOf("origin=") !== -1 ||
                                 src = "";
                             }
                             //remove all queryparams

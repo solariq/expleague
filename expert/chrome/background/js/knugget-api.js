@@ -231,7 +231,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
                 if (!invite.subj) {
                     invite.subj = 'Question stub!';
                 }
-                question = {question: invite.subj, owner: invite.owner, time: invite.time, id: invite.time, room: invite.room};
+                //todo kvv insert real img url
+                question = {question: invite.subj, owner: invite.owner, time: invite.time, id: invite.time, room: invite.room, img: 'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg'};
                 addQuestion(question, function(){});
             }
         },
@@ -447,6 +448,13 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         BanUser: function(data) {
             var defer = $q.defer();
             //todo
+            defer.resolve({status: 200});
+            return defer.promise;
+        },
+
+        ShortCut: function(data) {
+            var defer = $q.defer();
+            console.log("shortcut");
             defer.resolve({status: 200});
             return defer.promise;
         },

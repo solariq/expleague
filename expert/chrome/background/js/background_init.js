@@ -1,4 +1,4 @@
-﻿﻿/* ==========================================================================
+﻿/* ==========================================================================
 Storage
 ========================================================================== */
 KNUGGET.storage = {
@@ -24,85 +24,6 @@ KNUGGET.storage = {
 /* ==========================================================================
 Content script injection
 ========================================================================== */
-KNUGGET.disabledDomains = {
-    storageName: "DisabledDomains",
-    list: [],
-    add: function (domain) {
-        var $this = this;
-        KNUGGET.storage.get($this.storageName, function (list) {
-            var disabledDomains = !list ? [] : JSON.parse(list);
-            var domainIndex = list.indexOf(domain);
-
-            if (domainIndex === -1) {
-                disabledDomains.push(domain);
-            }
-
-            KNUGGET.storage.set($this.storageName, JSON.stringify(disabledDomains));
-            $this.list = disabledDomains;
-
-            window.chrome.tabs.query({
-                highlighted: true,
-                active: true
-            }, function (tabs) {
-                for (var i = 0; i < tabs.length; i++) {
-                    $this.updateTabContextMenu(tabs[i].id);
-                }
-            });
-        });
-    },
-    remove: function (domain) {
-        var $this = this;
-        if (this.list.length > 0) {
-            var domainIndex = $.inArray(domain, this.list);
-
-            if (domainIndex !== -1) {
-                this.list.splice(domainIndex, 1);
-            }
-
-            KNUGGET.storage.set(this.storageName, JSON.stringify(this.list));
-
-            window.chrome.tabs.query({
-                highlighted: true,
-                active: true
-            }, function (tabs) {
-                for (var i = 0; i < tabs.length; i++) {
-                    $this.updateTabContextMenu(tabs[i].id);
-                }
-            });
-        }
-    },
-    updateTabContextMenu: function (tabId) {
-        var $this = this;
-
-        window.chrome.tabs.get(tabId, function (tab) {
-            if (!tab.url) {
-                return;
-            }
-            var domain = KNUGGET.getHostName(tab.url);
-
-            KNUGGET.storage.get($this.storageName, function (list) {
-                var disabledDomains = !list ? [] : JSON.parse(list);
-                $this.list = disabledDomains;
-
-                if ($.inArray(domain, disabledDomains) !== -1) {
-                    window.chrome.contextMenus.update(DisabledDomains_Disable, {
-                        enabled: false
-                    });
-                    window.chrome.contextMenus.update(DisabledDomains_Enable, {
-                        enabled: true
-                    });
-                } else {
-                    window.chrome.contextMenus.update(DisabledDomains_Disable, {
-                        enabled: true
-                    });
-                    window.chrome.contextMenus.update(DisabledDomains_Enable, {
-                        enabled: false
-                    });
-                }
-            });
-        });
-    }
-};
 
 KNUGGET.imageIcon = {
     whiteList: [
@@ -146,11 +67,11 @@ KNUGGET.imageIcon = {
                 isViable = true;
                 return true;
             };
-        })
+        });
 
         return isViable;
     }
-}
+};
 
 KNUGGET.injector = {
     matches: [
@@ -186,15 +107,6 @@ KNUGGET.injector = {
             }
         }
 
-        //disabled Domains
-        for (var dd = 0; dd < KNUGGET.disabledDomains.list.length; dd++) {
-            var pattForDisabledDomains = new RegExp("^http*.://(.+)?(" + KNUGGET.disabledDomains.list[dd] + ").+", "i");
-
-            if (pattForDisabledDomains.test(url)) {
-                return false;
-            }
-        }
-
         //allow places
         for (var a = 0; a < this.matches.length; a++) {
             var pattForMatches = new RegExp(this.matches[a], "i");
@@ -220,6 +132,8 @@ KNUGGET.injector = {
                 vp.push(tabUrl);
                 KNUGGET.storage.set("VisitedPages", JSON.stringify(vp));
             });
+
+
             //Add image icon
             KNUGGET.storage.get("userSettings", function(userSettings) {
 
@@ -247,9 +161,8 @@ KNUGGET.injector = {
 
             //inject js files
             for (var j = 0; j < $this.JS.length; j++) {
-
+                console.log($this.JS[j]);
                 window.chrome.tabs.executeScript(tabId, {
-
                     file: $this.JS[j],
                     allFrames: false,
                     runAt: "document_start"
@@ -290,8 +203,6 @@ KNUGGET.injector = {
 
 chrome.tabs.onUpdated.addListener(function (tabId, tabInfo, tab) {
 
-    setTimeout(KNUGGET.disabledDomains.updateTabContextMenu(tabId));
-
     if (tab.url.toLowerCase().indexOf("http") !== 0) return;
 
     if (tabInfo.status === "loading") {
@@ -302,8 +213,6 @@ chrome.tabs.onUpdated.addListener(function (tabId, tabInfo, tab) {
 
 chrome.tabs.onReplaced.addListener(function (tabId) {
     window.chrome.tabs.get(tabId, function (tab) {
-        setTimeout(KNUGGET.disabledDomains.updateTabContextMenu(tabId));
-
         //prevent files injection to same tab with hash changes, below link show the solution
         if (tab.url.toLowerCase().indexOf("http") !== 0) return;
         console.log('listening on' + tabId);
@@ -319,42 +228,12 @@ Context menu
 ========================================================================== */
 
 window.chrome.contextMenus.create({
-    'title': 'Open knugget.com',
+    'title': 'Добавить к ответу',
     'contexts': ['all'],
-    'onclick': function () {
-        window.chrome.tabs.create({
-            url: KNUGGET.config.domain
-        });
-    }
-});
-
-window.chrome.contextMenus.create({
-    type: 'separator',
-    'contexts': ['page']
-});
-
-var DisabledDomains_Disable = window.chrome.contextMenus.create({
-    'title': 'Disable on this page',
-    'contexts': ['page'],
     'onclick': function (info) {
-        KNUGGET.disabledDomains.add(KNUGGET.getHostName(info.pageUrl));
+        KNUGGET.storage.set("AddTrigger", {shouldAdd: true, salt: Math.random()});
     }
 });
-
-var DisabledDomains_Enable = window.chrome.contextMenus.create({
-    'title': 'Enable on this page',
-    'contexts': ['page'],
-    'onclick': function (info) {
-        KNUGGET.disabledDomains.remove(KNUGGET.getHostName(info.pageUrl));
-    }
-});
-
-window.chrome.contextMenus.create({
-    type: 'separator',
-    'contexts': ['page']
-});
-
-
 
 
 /* ==========================================================================
@@ -498,6 +377,9 @@ KNUGGET.templates = {
             "views/requestList.html",
             "views/dragArea.html",
             "views/editDialog.html",
+            "views/confirmAnswer.html",
+            "views/cropImage.html",
+            "views/question.html",
             "views/waiting.html",
             "views/unavailable.html",
             "views/login.html",

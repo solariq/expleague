@@ -1,0 +1,20 @@
+<div class="overlay dialog__overlay"></div>
+
+<div class="wrapper" show-question>
+    <div class="content contentex dialog__content collaboration">
+
+        <i class="close" ng-click="closeDialog()"></i>
+
+        <div class="dialog-title">
+            <div class="header"><h2>Запрос пользователя</h2></div>
+            <div class="description">
+                {{getQuestion()}}
+                <div class="space"></div>
+                <div crop-dialog ng-if="hasImg()" class="cropAreaEx">
+                    <img src="{{getImg()}}" ng-dblclick="openCrop(getImg())">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

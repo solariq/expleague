@@ -1,4 +1,14 @@
-﻿﻿knuggetSidebar.controller('KNUGGET_SIDEBAR_CTRL', ['$window', '$scope', '$controller', '$timeout', '$rootScope', 'dataService', 'dialogService', function ($window, $scope, $controller, $timeout, $rootScope, dataService, dialogService) {
+﻿﻿﻿knuggetSidebar.controller('KNUGGET_SIDEBAR_CTRL', ['$window', '$scope', '$controller', '$timeout', '$rootScope', 'dataService', 'dialogService', function ($window, $scope, $controller, $timeout, $rootScope, dataService, dialogService) {
+
+    //var mapOptions = {
+    //    zoom: 4,
+    //    center: new google.maps.LatLng(40.0000, -98.0000),
+    //    mapTypeId: google.maps.MapTypeId.TERRAIN
+    //};
+    //
+    //$scope.map = new google.maps.Map(document.getElementById('map'), mapOptions);
+
+
     $scope.domain = KNUGGET.config.domain;
     $scope.dialogIsActive = false;
     $scope.renderComplete = false;
@@ -38,6 +48,12 @@
         return dialogService.dialogIsActive;
     };
 
+
+    $scope.trySend = function() {
+
+    };
+
+
     $scope.send = function() {
         KNUGGET.api('SendResponse', {request: $scope.activeRequest.value}, function (response) {
             if (response.status == 200) {
@@ -55,6 +71,7 @@
         $scope.requests.clear();
         $scope.activeRequest.set(null);
         KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
+        KNUGGET.storage.set("AddTrigger", {shouldAdd: false});
     };
 
 
@@ -65,14 +82,16 @@
                 index = i;
         });
         return index;
-    }
+    };
 
     $scope.activateRequest = function(request) {
         $scope.board.clear();
         KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
+        KNUGGET.storage.set("AddTrigger", {shouldAdd: false});
         KNUGGET.api('Activate', {request: request}, function (response) {
             if (response.status == 200) {
                 $scope.activeRequest.set(request);
+                $scope.showQuestion(request);
             } else {
                 alert('Ваша заявка отклонена сервисом');
             }
@@ -83,6 +102,13 @@
                 $scope.$apply();
             }
         }, 100);
+    };
+
+
+    $scope.showQuestion = function(request) {
+        dialogService.template = KNUGGET.config.sidebarTemplatesRoot + "question";
+        dialogService.dialogIsActive = true;
+        dialogService.request = request;
     };
 
     $scope.rejectRequest = function(request) {
@@ -162,6 +188,11 @@
     $scope.getTitileToEdit = function() {
         return dialogService.originReaponse.Title;
     };
+
+    $scope.isText = function() {
+        return dialogService.isText;
+    };
+
     $scope.getTextToEdit = function() {
         return dialogService.originReaponse.Text;
     };
@@ -182,6 +213,7 @@
     $scope.isWorkingOnAnswer = function() {
         return $scope.activeRequest.value && $scope.allowToShow.value;
     };
+
 
     $scope.sidebarTemplate = function () {
 
@@ -286,6 +318,19 @@
                         KNUGGET.api("PageVisited", {request: request, pages: JSON.parse(data.VisitedPages.newValue)}, function () { });
                     }
                 });
+            } else if (data.AddTrigger) {
+                if (data.AddTrigger.newValue.shouldAdd) {
+                    KNUGGET.storage.set('AddTrigger', {shouldAdd: false});
+                    if (KNUGGET.Drag.Clicked) {
+                        KNUGGET.Drag.Clicked.knuggetCollection(function (data) {
+                            var answer = JSON.stringify(data);
+                            KNUGGET.api('addToBoard', {answer: answer}, function (response) {
+                            });
+                        });
+                        KNUGGET.Drag.Clicked = null;
+                    }
+                }
+
             }
 
             $timeout(function () {
@@ -391,7 +436,22 @@
         banOwner: function(callback) {
             $scope.finishRequest();
             KNUGGET.api("BanUser", $scope.activeRequest.value, function () {});
+        },
+
+        hasImage: function() {
+            return $scope.activeRequest.value.img != undefined && $scope.activeRequest.value.img != null;
+        },
+
+        getImage: function() {
+            return $scope.activeRequest.value.img;
+        },
+
+        reject: function() {
+            $scope.finishRequest();
+            KNUGGET.api("Reject", $scope.activeRequest.value, function () {});
         }
+
+
     };
     $scope.user = {
         username: "",
@@ -607,6 +667,7 @@
             $scope.requests.clear(request);
             $scope.activeRequest.set(null);
             KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
+            KNUGGET.storage.set("AddTrigger", {shouldAdd: false});
         });
     };
 
@@ -622,7 +683,7 @@
 
     $scope.init = function () {
         KNUGGET.sidebarController = $scope;
-
+        $scope.map = { center: { latitude: 45, longitude: -73 }, zoom: 8 };
         $scope.board.update();
         $scope.allowToShow.get(function(){});
         $scope.activeRequest.get(function(){});

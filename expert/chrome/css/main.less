@@ -1018,6 +1018,41 @@ Helper classes
         background-color: gainsboro;
     }
 
+    .shadow-block {
+        width: 100%;
+        //background-color: #cccccc;
+        margin-top: 0.7em;
+        opacity: 0.5;
+        font-size:14pt;
+
+        &:hover {
+            cursor: pointer;
+            opacity: 1;
+        }
+
+        div, i, span {
+            &:hover {
+                cursor: pointer;
+            }
+        }
+
+        .title {
+            opacity: 0.5;
+            display: inline;
+            .time {
+                text-align: right;
+            }
+            .name {
+                text-align: left;
+            }
+        }
+
+        .time {
+            text-align: right;
+
+        }
+    }
+
     .workboard {
         display: block;
         position: absolute;

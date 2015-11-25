@@ -5,11 +5,18 @@ var knuggetSidebar = angular.module('knuggetSidebar', [
     'ui.sortable',
     'ngTagsInput',
     'ngAnimate',
+    'ngImgCrop',
     'knuggetSidebarDirectives'
 ]);
 
 // Prevent angulat from scrolling to top on bootstrap 
 knuggetSidebar.value('$anchorScroll', angular.noop);
+
+//knuggetSidebar.config(['uiGmapGoogleMapApiProvider', function(GoogleMapApiProviders) {
+//    GoogleMapApiProviders.configure({
+//        china: true
+//    });
+//}]);
 
 knuggetSidebar.config(['$httpProvider', '$compileProvider', '$sceDelegateProvider', function ($httpProvider, $compileProvider, $sceDelegateProvider) {
 

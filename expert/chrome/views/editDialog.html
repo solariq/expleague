@@ -18,16 +18,15 @@
             <!-- </div>
             </div> -->
 
-            <div class="description" contenteditable="true" edit-listener>{{getTextToEdit()}}</div>
+            <div class="description" contenteditable="true" edit-listener ng-if="isText()">{{getTextToEdit()}}</div>
 
         </div>
 
         <div class="controls clearfix">
             <div class="short-url">
                 <div>
-                    <!-- TODO: set action-->
-                    <button class="ghost green rounded" ng-click="saveDialog()">Save</button>
-                    <button class="ghost green rounded" ng-click="closeDialog()">Cancel</button>
+                    <button class="lgreen" ng-click="saveDialog()">Сохранить</button>
+                    <button class="lred" ng-click="closeDialog()">Отменить</button>
                 </div>
             </div>
 

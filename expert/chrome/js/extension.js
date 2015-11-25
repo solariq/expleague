@@ -196,6 +196,29 @@ $(document).on("ready", function () {
 
 });
 
+function getSelectionText() {
+    var text = "";
+    if (window.getSelection) {
+        text = window.getSelection().toString();
+    } else if (document.selection && document.selection.type != "Control") {
+        text = document.selection.createRange().text;
+    }
+    return text;
+}
+
+$(document).on('keypress', function(e){
+    if (e.which == 2) { //Ctrl + b
+        var answer = {
+            Referer: window.location.href,
+            Title: document.title,
+            Text: getSelectionText(),
+            Type: 'text'
+        };
+        KNUGGET.api("addToBoard", {answer: answer});
+    }
+});
+
+
 KNUGGET.storage.get("templates", function (templates) {
     KNUGGET.templates = JSON.parse(templates);
 });

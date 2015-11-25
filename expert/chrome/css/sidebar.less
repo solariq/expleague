@@ -1467,6 +1467,10 @@ Helper classes
 /* ==========================================================================
 Expanded sidebar styles
 ========================================================================== */
+angular-google-map-container {
+    height: 400px;
+    width: 400px;
+}
 .panel-container {
     background: #fff;
     display: block;
@@ -2035,11 +2039,17 @@ Expanded sidebar styles
                 box-shadow: 0 1px 0 0 #59745A;
                 color: #fff;
             }
+        }
 
-            &.loading {
-                &:before {
-                    background-image: url("@{urlPrefix}/images/loader-2.png");
-                }
+        button.red {
+            background: none repeat scroll 0 0 #f16f5f;
+            box-shadow: 0 1px 0 0 #e83c30;
+            color: #fff;
+
+            &:hover {
+                background: none repeat scroll 0 0 #e84c3d;
+                box-shadow: 0 1px 0 0 #e84c3d;
+                color: #fff;
             }
         }
 

@@ -2,7 +2,7 @@
 <div class="sidebar-container first-time" render-complete>
 
 
-    <div class="dialog" dialog>
+    <div class="dialog" edit-dialog="" dialog>
         <!--<div class="dialog" dialog ng-if="isDialogActive()">-->
         <div class="dialog-container" ui-view="sidebar_dialog"></div>
         <div class="dialog-container" ng-include="dialogTemplate()"></div>
@@ -23,6 +23,10 @@
         <span class="icon icon-send" ng-click="send()" ng-if="isWorkingOnAnswer()">
             <span class="tooltip repositioned right-bottom">Отправить ответ</span>
         </span>
+
+        <span class="icon icon-send" ng-click="confirm()" confirm-answer ng-if="isWorkingOnAnswer()">
+            <span class="tooltip repositioned right-bottom">Отправить ответ</span>
+        </span>
         <span class="icon icon-closeSidebar" ng-click="closeSidebar()" tooltip-hover>
             <span class="tooltip repositioned right-bottom">Свернуть плагин</span>
         </span>
@@ -36,15 +40,16 @@
             <li ng-if="!user.available">
                 <a ng-click="user.makeAvailable()">Перейти в online</a>
             </li>
+            <li ng-if="activeRequest.value" show-question><a ng-click="showQuestion()">Показать запрос</a> </li>
             <!--<li><a ng-click="finishRequest()">Завершить заказ</a></li>-->
             <li ng-if="activeRequest.value"><a ng-click="activeRequest.banOwner()">Заблокировать</a></li>
+            <li ng-if="activeRequest.value"><a ng-click="activeRequest.reject()">Отказаться</a></li>
             <li class="seperator"></li>
             <li><a ng-click="logout($event)">Выйти</a></li>
         </ul>
     </div>
 
-
-
-
+    <!--<div id="map" style="position: relative; overflow: hidden; transform: translateZ(0px); background-color: rgb(229, 227, 223);"></div>-->
+    <!--<ui-gmap-google-map center='map.center' zoom='map.zoom'></ui-gmap-google-map>-->
     <span ng-include="sidebarContent()"></span>
 </div>
