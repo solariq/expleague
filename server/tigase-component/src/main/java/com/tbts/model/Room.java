@@ -1,5 +1,7 @@
 package com.tbts.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
@@ -39,7 +41,6 @@ public interface Room extends StateWise<Room.State, Room> {
   enum State {
     CLEAN(0),
     DEPLOYED(1),
-    INVITE(8),
     LOCKED(2),
     TIMEOUT(3),
     COMPLETE(4),
@@ -54,6 +55,7 @@ public interface Room extends StateWise<Room.State, Room> {
       this.index = index;
     }
 
+    @JsonValue
     public int index() {
       return index;
     }
@@ -66,6 +68,7 @@ public interface Room extends StateWise<Room.State, Room> {
       }
     }
 
+    @JsonCreator
     public static State byIndex(int state) {
       return states[state];
     }

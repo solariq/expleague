@@ -37,7 +37,8 @@ public class Bot {
     this.resource = resource;
 
     jaxmpp.getProperties().setUserProperty(SessionObject.DOMAIN_NAME, jid.getDomain());
-    jaxmpp.getSessionObject().setProperty(SocketConnector.TLS_DISABLED_KEY, true);
+    jaxmpp.getProperties().setUserProperty(SocketConnector.HOSTNAME_VERIFIER_DISABLED_KEY, true);
+//    jaxmpp.getSessionObject().setProperty(SocketConnector.TLS_DISABLED_KEY, true);
     jaxmpp.getModulesManager().register(new MucModule());
     PresenceModule.setPresenceStore(jaxmpp.getSessionObject(), new J2SEPresenceStore());
     jaxmpp.getModulesManager().register(new PresenceModule());
@@ -114,7 +115,15 @@ public class Bot {
     jaxmpp.getEventBus().addHandler(PresenceModule.ContactAvailableHandler.ContactAvailableEvent.class, new PresenceModule.ContactAvailableHandler() {
       @Override
       public void onContactAvailable(SessionObject sessionObject, Presence presence, JID jid, Presence.Show show, String s, Integer integer) throws JaxmppException {
-        System.out.println(jid + " available with message " + presence.getShow());
+        System.out.println(jid + " available with message " + presence.getStatus());
+      }
+    });
+
+    jaxmpp.getEventBus().addHandler(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, (sessionObject, stanza) -> {
+      try {
+        System.out.println("Msg: " + stanza.getAsString());
+      } catch (XMLException e) {
+        throw new RuntimeException(e);
       }
     });
 
@@ -148,7 +157,8 @@ public class Bot {
 
   public void online() {
     try {
-      jaxmpp.send(Presence.create());
+      final Presence stanza = Presence.create();
+      jaxmpp.send(stanza);
       System.out.println("Online presence sent");
     } catch (JaxmppException e) {
       throw new RuntimeException(e);

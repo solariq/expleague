@@ -149,6 +149,17 @@
   margin: 10px auto;
 }
 
+.result-chat .baloon img {
+  max-width: 150px;
+}
+
+.baloon.baloon-smallimg img {
+  max-width: 100px;
+  max-height: 100px;
+  display: inline-block;
+  margin-right: 20px;
+}
+
 .expert {
   min-height: 100px;
   margin: 5px -8px -5px;

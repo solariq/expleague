@@ -9,6 +9,7 @@
     "supersonic": "1.x",
     "jquery": "2.1.x",
     "strophe": "1.1.x",
-    "strophejs-plugins": "0.0.x"
+    "strophejs-plugins": "0.0.x",
+    "textarea-autosize": "latest"
   }
 }

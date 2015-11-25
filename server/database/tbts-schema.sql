@@ -45,4 +45,24 @@ ALTER TABLE tbts.Rooms ADD CONSTRAINT Room__owner FOREIGN KEY (owner) REFERENCES
 ALTER TABLE tbts.Rooms ADD CONSTRAINT Room__expert FOREIGN KEY (worker) REFERENCES tbts.Experts (id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE tbts.Clients ADD CONSTRAINT Client__active_room FOREIGN KEY (active_room) REFERENCES tbts.Rooms (id) ON DELETE CASCADE ON UPDATE CASCADE;
 
-SELECT id, node, heartbeat FROM tbts.Users LEFT JOIN tbts.Connections ON id = user;
+create TABLE tbts.Log (
+  id bigint(20) not null,
+  uid varchar(128) not null,
+  data text not null,
+  PRIMARY KEY (id)
+);
+
+create TABLE tbts.Nodes (
+  node varchar(128) not null,
+  heartbeat timestamp not null default CURRENT_TIMESTAMP(),
+  age bigint(20),
+  PRIMARY KEY (node)
+);
+
+create TABLE tbts.States (
+  id varchar(128) not null,
+  age bigint(20),
+  data text not null,
+  type varchar(128),
+  PRIMARY KEY (id)
+);

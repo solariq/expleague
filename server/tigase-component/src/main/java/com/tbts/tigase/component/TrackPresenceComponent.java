@@ -1,7 +1,10 @@
 package com.tbts.tigase.component;
 
+import com.amazonaws.AmazonClientException;
 import com.tbts.dao.DynamoDBArchive;
-import com.tbts.dao.MySQLDAO;
+import com.tbts.dao.InMemArchive;
+import com.tbts.dao.eb.EventBusDAO;
+import com.tbts.dao.eb.impl.MySQLEventBus;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
 import com.tbts.model.Room;
@@ -46,9 +49,20 @@ public class TrackPresenceComponent extends SessionManager {
   public void setProperties(Map<String, Object> props) throws ConfigurationException {
     super.setProperties(props);
     if (Archive.instance == null)
-      Archive.instance = new DynamoDBArchive();
+      try {
+        Archive.instance = new DynamoDBArchive();
+      }
+      catch (AmazonClientException ace) { // no connection to Amazon
+        log.warning("No connection to Amazon servers! Falling back to in-mem archive." +
+                        "If you see this in production the server must be STOPPED unless you want users messages get lost after restart");
+        Archive.instance = new InMemArchive();
+      }
     if (DAO.instance == null && props.containsKey("tbtsdb-connection")) {
-      DAO.instance = new MySQLDAO((String) props.get("tbtsdb-connection"), jid -> {
+      DAO.instance = new EventBusDAO(new MySQLEventBus((String)props.get("tbtsdb-connection"), jid -> {
+        Room room = Reception.instance().room(jid);
+        if (room != null)
+          jid = room.owner().id();
+//      DAO.instance = new MySQLDAO((String) props.get("tbtsdb-connection"), jid -> {
         if (bindings == null)
           return false;
         //noinspection unchecked
@@ -61,7 +75,8 @@ public class TrackPresenceComponent extends SessionManager {
           catch (NotAuthorizedException ignore) {}
         }
         return false;
-      });
+      }));
+//      });
       DAO.instance.init();
     }
     final AuthRepository authRepo = (AuthRepository) props.get(RepositoryFactory.SHARED_AUTH_REPO_PROP_KEY);
@@ -128,6 +143,7 @@ public class TrackPresenceComponent extends SessionManager {
 
   @Override
   public void processPacket(Packet packet) {
+
     super.processPacket(packet);
     if (!CRIT.match(packet.getElement()))
       return;
@@ -138,6 +154,8 @@ public class TrackPresenceComponent extends SessionManager {
       return;
     }
     final Status status = statusFromPacket(packet);
+    if (status == Status.UNKNOWN)
+      return;
     if (updateExpertState(from, to, status) == null)
       updateClientState(from, to, status);
   }
@@ -166,10 +184,8 @@ public class TrackPresenceComponent extends SessionManager {
         break;
       case AVAILABLE:
         client.online(true);
-        if (room != null) {
+        if (room != null)
           client.activate(room);
-          client.formulating();
-        }
         break;
       case UNAVAILABLE:
         if (to == null && client.active() != null)
@@ -229,6 +245,8 @@ public class TrackPresenceComponent extends SessionManager {
     }
     else if (attrs.get("type") == null)
       return Status.AVAILABLE;
+    if ("probe".equals(attrs.get("type")))
+      return Status.UNKNOWN;
     log.warning("Unknown user state. Type: " + attrs.get("type") + (show != null ? " show: " + show.toString() : ""));
     return Status.UNKNOWN;
   }

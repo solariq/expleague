@@ -24,7 +24,6 @@ public class ObedientClient extends ClientImpl {
   public void feedback(Room room) {
     super.feedback(room);
     if (chatLength-- > 0) {
-      formulating();
       query();
     }
     else

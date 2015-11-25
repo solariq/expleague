@@ -1,6 +1,7 @@
-package com.tbts.dao;
+package com.tbts.dao.sql;
 
 import com.spbsu.commons.filters.Filter;
+import com.tbts.dao.MySQLOps;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
 import com.tbts.model.Room;
@@ -11,10 +12,12 @@ import com.tbts.model.handlers.Reception;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -25,7 +28,7 @@ import java.util.logging.Logger;
  */
 public class MySQLDAO extends DAO {
   private static final Logger log = Logger.getLogger(MySQLDAO.class.getName());
-  private final String connectionUrl;
+
   private final Timer timer;
   // Rooms
 
@@ -271,7 +274,7 @@ public class MySQLDAO extends DAO {
           final Set<String> known = new HashSet<>();
           final long now = System.currentTimeMillis();
           {
-            final PreparedStatement statement = createStatement("Acquire ownership", "SELECT id, node, heartbeat FROM tbts.Users LEFT JOIN tbts.Connections ON id = user;");
+            final PreparedStatement statement = ops.createStatement("Acquire ownership", "SELECT id, node, heartbeat FROM tbts.Users LEFT JOIN tbts.Connections ON id = user;");
             try (final ResultSet rs = statement.executeQuery()) {
               while (rs.next()) {
                 final String uid = rs.getString(1);
@@ -290,8 +293,8 @@ public class MySQLDAO extends DAO {
             }
           }
           {
-            final PreparedStatement statementUpdate = createStatement("Update ownership", "UPDATE tbts.Connections SET node='" + localHost + "', heartbeat=? WHERE user=?;");
-            final PreparedStatement statementInsert = createStatement("Insert ownership", "INSERT INTO tbts.Connections SET user=?, node='" + localHost + "', heartbeat=?;");
+            final PreparedStatement statementUpdate = ops.createStatement("Update ownership", "UPDATE tbts.Connections SET node='" + localHost + "', heartbeat=? WHERE user=?;");
+            final PreparedStatement statementInsert = ops.createStatement("Insert ownership", "INSERT INTO tbts.Connections SET user=?, node='" + localHost + "', heartbeat=?;");
             try {
               //noinspection SynchronizationOnLocalVariableOrMethodParameter
               synchronized (statementUpdate) {
@@ -324,38 +327,15 @@ public class MySQLDAO extends DAO {
 
   // SQL queries definition
 
-  private Connection conn;
-  private final Map<String, PreparedStatement> statements = new ConcurrentHashMap<>();
-  private PreparedStatement createStatement(String name, String stmt) {
-    PreparedStatement preparedStatement = statements.get(name);
-    try {
-      if (preparedStatement == null || preparedStatement.isClosed() || preparedStatement.getConnection() == null) {
-        if (conn.isClosed())
-          conn = DriverManager.getConnection(connectionUrl);
-        preparedStatement = conn.prepareStatement(stmt);
-      }
-      preparedStatement.clearParameters();
-      statements.put(name, preparedStatement);
-      return preparedStatement;
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-
-  }
-
   public synchronized void init() {
     System.out.println("DAO init called!");
     populateRoomsCache();
   }
 
+  private final MySQLOps ops;
   public MySQLDAO(String connectionUrl, Filter<String> availability) {
     super(availability);
-    this.connectionUrl = connectionUrl;
-    try {
-      conn = DriverManager.getConnection(connectionUrl);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    ops = new MySQLOps(connectionUrl);
     timer = new Timer("Users ownership daemon", true);
     final String localHost;
     try {
@@ -368,69 +348,61 @@ public class MySQLDAO extends DAO {
   }
 
   public PreparedStatement getCheckUser() {
-    return createStatement("checkUser", "SELECT * FROM tbts.Users WHERE id=?;");
+    return ops.createStatement("checkUser", "SELECT * FROM tbts.Users WHERE id=?;");
   }
 
   public PreparedStatement getAddUser() {
-    return createStatement("addUser", "INSERT INTO tbts.Users SET id=?;");
+    return ops.createStatement("addUser", "INSERT INTO tbts.Users SET id=?;");
   }
 
   public PreparedStatement getAddClient() {
-    return createStatement("addClient", "INSERT INTO tbts.Clients SET id=?;");
+    return ops.createStatement("addClient", "INSERT INTO tbts.Clients SET id=?;");
   }
 
   public PreparedStatement getAddExpert() {
-    return createStatement("addExpert", "INSERT INTO tbts.Experts SET id=?;");
+    return ops.createStatement("addExpert", "INSERT INTO tbts.Experts SET id=?;");
   }
 
   public PreparedStatement getAddRoom() {
-    return createStatement("addRoom", "INSERT INTO tbts.Rooms SET id=?, owner=?;");
+    return ops.createStatement("addRoom", "INSERT INTO tbts.Rooms SET id=?, owner=?;");
   }
 
   public PreparedStatement getListClients() {
-    return createStatement("listClients", "SELECT clients.id, rooms.id, rooms.owner_state, clients.active_room, clients.state " +
+    return ops.createStatement("listClients", "SELECT clients.id, rooms.id, rooms.owner_state, clients.active_room, clients.state " +
                                               "FROM tbts.Clients AS clients LEFT OUTER JOIN tbts.Rooms AS rooms " +
                                               "ON clients.id = rooms.owner " +
                                               "GROUP BY clients.id;");
   }
 
   public PreparedStatement getListExperts() {
-    return createStatement("listExperts", "SELECT * FROM tbts.Experts;");
+    return ops.createStatement("listExperts", "SELECT * FROM tbts.Experts;");
   }
 
   public PreparedStatement getListRooms() {
-    return createStatement("listRooms", "SELECT * FROM tbts.Rooms;");
+    return ops.createStatement("listRooms", "SELECT * FROM tbts.Rooms;");
   }
 
   public PreparedStatement getUpdateClientState() {
-    return createStatement("updateClientState", "UPDATE tbts.Clients SET state=? WHERE id=?;");
+    return ops.createStatement("updateClientState", "UPDATE tbts.Clients SET state=? WHERE id=?;");
   }
 
   public PreparedStatement getUpdateExpertState() {
-    return createStatement("updateExpertState", "UPDATE tbts.Experts SET state=?, active=? WHERE id=?;");
+    return ops.createStatement("updateExpertState", "UPDATE tbts.Experts SET state=?, active=? WHERE id=?;");
   }
 
   public PreparedStatement getUpdateRoomState() {
-    return createStatement("updateRoomState", "UPDATE tbts.Rooms SET state=? WHERE id=?;");
+    return ops.createStatement("updateRoomState", "UPDATE tbts.Rooms SET state=? WHERE id=?;");
   }
 
   public PreparedStatement getUpdateRoomExpert() {
-    return createStatement("updateRoomExpert", "UPDATE tbts.Rooms SET worker=? WHERE id=?;");
+    return ops.createStatement("updateRoomExpert", "UPDATE tbts.Rooms SET worker=? WHERE id=?;");
   }
 
   public PreparedStatement getUpdateClientActiveRoom() {
-    return createStatement("updateClientActiveRoom", "UPDATE tbts.Clients SET active_room=? WHERE id=?;");
+    return ops.createStatement("updateClientActiveRoom", "UPDATE tbts.Clients SET active_room=? WHERE id=?;");
   }
 
   public PreparedStatement getUpdateRoomOwnerState() {
-    return createStatement("updateRoomOwnerState", "UPDATE tbts.Rooms SET owner_state=? WHERE id=?;");
-  }
-
-  static {
-    try {
-      Class.forName("com.mysql.jdbc.Driver");
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
+    return ops.createStatement("updateRoomOwnerState", "UPDATE tbts.Rooms SET owner_state=? WHERE id=?;");
   }
 }

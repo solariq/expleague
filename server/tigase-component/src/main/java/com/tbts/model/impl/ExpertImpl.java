@@ -13,11 +13,14 @@ import org.jetbrains.annotations.Nullable;
  * Time: 19:13
  */
 public class ExpertImpl extends StateWise.Stub<Expert.State, Expert> implements Expert {
-  private final String id;
+  private String id;
 
   public ExpertImpl(String id) {
     this.id = id;
     state = State.AWAY;
+    addListener(ExpertManager.instance());
+  }
+  public ExpertImpl() {
     addListener(ExpertManager.instance());
   }
 
@@ -48,7 +51,7 @@ public class ExpertImpl extends StateWise.Stub<Expert.State, Expert> implements 
     return true;
   }
 
-  private void join(@Nullable Room room) {
+  public void join(@Nullable Room room) {
     if ((active == null && room == null) ||
         (room != null && room.id().equals(active)))
       return;
@@ -62,7 +65,7 @@ public class ExpertImpl extends StateWise.Stub<Expert.State, Expert> implements 
   @Override
   public void free() {
     if (state != State.STEADY && state != State.INVITE && state != State.GO)
-      throw new IllegalStateException();
+      throw new IllegalStateException(state.toString());
     join(null);
     state(State.READY);
   }
@@ -70,21 +73,21 @@ public class ExpertImpl extends StateWise.Stub<Expert.State, Expert> implements 
   @Override
   public void steady() {
     if (state != State.CHECK)
-      throw new IllegalStateException();
+      throw new IllegalStateException(state.toString());
     state(State.STEADY);
   }
 
   @Override
   public void invite() {
     if (state != State.STEADY)
-      throw new IllegalStateException();
+      throw new IllegalStateException(state.toString());
     state(State.INVITE);
   }
 
   @Override
   public void ask() {
     if (state != State.INVITE || active == null)
-      throw new IllegalStateException();
+      throw new IllegalStateException(state.toString());
     state(State.GO);
   }
 

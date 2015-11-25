@@ -1,4 +1,4 @@
-package com.tbts.dao;
+package com.tbts.dao.sql;
 
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
@@ -23,7 +23,7 @@ public class SQLRoom extends RoomImpl {
 
   public void update(State state, Expert worker) {
     this.state = state;
-    this.worker = worker;
+    this.worker = worker.id();
     if (dao.isMaster(owner().id()) && state == State.DEPLOYED)
       ExpertManager.instance().challenge(this);
   }
@@ -67,20 +67,18 @@ public class SQLRoom extends RoomImpl {
   }
 
   @Override
-  public void state(State state) {
+  public void stateImpl(State state) {
     if (!dao.isMaster(owner().id()))
       throw new IllegalStateException();
     final PreparedStatement updateRoomState = dao.getUpdateRoomState();
     //noinspection Duplicates,SynchronizationOnLocalVariableOrMethodParameter
-    synchronized (updateRoomState) {
-      try {
-        updateRoomState.setInt(1, state.index());
-        updateRoomState.setString(2, id());
-        updateRoomState.execute();
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
+    try {
+      updateRoomState.setInt(1, state.index());
+      updateRoomState.setString(2, id());
+      updateRoomState.execute();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
-    super.state(state);
+    super.stateImpl(state);
   }
 }

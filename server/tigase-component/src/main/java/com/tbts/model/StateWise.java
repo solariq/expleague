@@ -28,19 +28,23 @@ public interface StateWise<T, Evt> extends WeakListenerHolder<Evt> {
       }
     }
 
-    protected void state(T newState) {
+    public final void state(T newState) {
       lock.writeLock().lock();
       try {
-        if (state == newState)
-          return;
-
-        state = newState;
-        //noinspection unchecked
-        invoke((Evt)this);
+        stateImpl(newState);
       }
       finally {
         lock.writeLock().unlock();
       }
+    }
+
+    protected void stateImpl(T newState) {
+      if (state == newState)
+        return;
+
+      state = newState;
+      //noinspection unchecked
+      invoke((Evt)this);
     }
   }
 }

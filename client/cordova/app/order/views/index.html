@@ -7,8 +7,8 @@
     <form name="orderForm" ng-submit="orderForm.$valid && submitOrder()" novalidate>
       <div class="list">
         <label class="item item-input item-floating-label order-text-label">
-          <span class="input-label">Что необходимо найти?</span>
-          <input ng-model="order.text" type="text" name="text" placeholder="Что необходимо найти?" value="" required>
+          <span class="input-label">&nbsp;Что необходимо найти?</span>
+          <textarea ng-model="order.text" class="order-textarea" name="text" rows="1" placeholder="&nbsp;Что необходимо найти?" required></textarea>
         </label>
         <div class="item item-checkbox">
           <label class="checkbox">
@@ -34,6 +34,7 @@
       <div class="list">
         <div class="order-price">Цена услуги: {{getTotalPrice()}} единиц</div>
         <div class="account-total">У вас на счете: {{userBalance}} единиц</div>
+        <div class="experts-online"><span ng-if="expersOnline">Количество экспертов online: {{expersOnline}}</span></div>
       </div>
       <input type="submit" class="button button-block button-positive" value="Начать поиск" />
     </form>

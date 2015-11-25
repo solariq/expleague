@@ -1,6 +1,8 @@
 angular
   .module('order')
   .controller('IndexController', function($scope, supersonic) {
+    // Расширяющаяся textarea
+    $('.order-textarea').textareaAutoSize();
 
     // Количество денег у пользователя
     $scope.userBalance = 1000;
@@ -77,5 +79,68 @@ angular
       }
       // Для корректной работы валидации, устанавливаем статус форму pristine
       $scope.orderForm.$setPristine();
+      // Возвращаем floating-label в исходное состояние
+      $('.input-label').removeClass('has-input');
     }
+
+    // Количество экспертов online
+    $scope.expersOnline = null;
+    // Если в localStorage уже есть настройки server и user
+    function presenceHandler(presence) {
+      var from = $(presence).attr('from');
+      if (from.split('@')[0] == 'experts-admin') {
+        // Ешё не совсем понял суть Angular, без $apply не работает обновление значения expersOnline в html
+        $scope.$apply(function() {
+          $scope.expersOnline = parseInt($('status', presence).text());
+        });
+      }
+      return true;
+    }
+
+    if (localStorage.getItem('server') != undefined && localStorage.getItem('user') != undefined) {
+      $scope.server = JSON.parse(localStorage.getItem('server'));
+      $scope.user = JSON.parse(localStorage.getItem('user'));
+      var connection = new Strophe.Connection($scope.server.bosh);
+      connection.connect($scope.user.username + '@' + $scope.server.host, $scope.user.password, function (status) {
+        if (status === Strophe.Status.CONNECTED) {
+          connection.addHandler(presenceHandler, null, 'presence');
+          connection.send($pres());
+        }
+      });
+    }
+
+  })
+  .directive('itemFloatingLabel', function() {
+    return {
+      restrict: 'C',
+      link: function(scope, element) {
+        var el = element[0];
+        var input = el.querySelector('input, textarea');
+        var inputLabel = el.querySelector('.input-label');
+
+        if (!input || !inputLabel) return;
+
+        var onInput = function() {
+          if (input.value) {
+            inputLabel.classList.add('has-input');
+          } else {
+            inputLabel.classList.remove('has-input');
+          }
+        };
+
+        input.addEventListener('input', onInput);
+
+        var ngModelCtrl = jqLite(input).controller('ngModel');
+        if (ngModelCtrl) {
+          ngModelCtrl.$render = function() {
+            input.value = ngModelCtrl.$viewValue || '';
+            onInput();
+          };
+        }
+
+        scope.$on('$destroy', function() {
+          input.removeEventListener('input', onInput);
+        });
+      }
+    };
   });

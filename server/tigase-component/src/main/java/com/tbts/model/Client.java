@@ -1,5 +1,7 @@
 package com.tbts.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -18,7 +20,6 @@ public interface Client extends StateWise<Client.State, Client> {
   void online(boolean val);
 
   void activate(Room room);
-  void formulating();
   void query();
   void feedback(Room room);
 
@@ -28,8 +29,7 @@ public interface Client extends StateWise<Client.State, Client> {
     FORMULATING(2),
     COMMITED(3),
     TIMEOUT(4),
-    FEEDBACK(5),
-    CHAT(6);
+    FEEDBACK(5);
 
     private final int index;
 
@@ -37,6 +37,7 @@ public interface Client extends StateWise<Client.State, Client> {
       this.index = index;
     }
 
+    @JsonValue
     public int index() {
       return index;
     }
@@ -50,6 +51,7 @@ public interface Client extends StateWise<Client.State, Client> {
       }
     }
 
+    @JsonCreator
     public static State byIndex(int state) {
       return states[state];
     }
