@@ -4970,6 +4970,9 @@ Helper classes
   margin-right: 15px;
   z-index: 2;
 }
+#knugget-sidebar .workboard .angular-google-map-container {
+  height: 400px;
+}
 #knugget-sidebar .workboard .answer-block {
   word-wrap: break-word;
   width: -webkit-calc(100% - 100px)%;

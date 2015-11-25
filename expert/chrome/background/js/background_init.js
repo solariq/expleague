@@ -145,17 +145,17 @@ KNUGGET.injector = {
                     isUserInactive = true;
                 }
 
-                if (KNUGGET.imageIcon.isViableHost(tabUrl) && isUserInactive) {
-                    window.chrome.tabs.executeScript(tabId, {
-                        file: chrome.runtime.getManifest().content_scripts[3].js[0],
-                        allFrames: false,
-                        runAt: "document_start"
-                    }, function (result) {
-                        if (chrome.runtime.lastError) {
-                            return;
-                        }
-                    });
-                }
+                //if (KNUGGET.imageIcon.isViableHost(tabUrl) && isUserInactive) {
+                //    window.chrome.tabs.executeScript(tabId, {
+                //        file: chrome.runtime.getManifest().content_scripts[3].js[0],
+                //        allFrames: false,
+                //        runAt: "document_start"
+                //    }, function (result) {
+                //        if (chrome.runtime.lastError) {
+                //            return;
+                //        }
+                //    });
+                //}
 
             });
 
@@ -166,7 +166,6 @@ KNUGGET.injector = {
                     file: $this.JS[j],
                     allFrames: false,
                     runAt: "document_start"
-
                 }, function (result) {
 
                     if (chrome.runtime.lastError) {
@@ -174,8 +173,21 @@ KNUGGET.injector = {
                     }
 
                 });
-
             }
+
+
+
+            window.chrome.tabs.executeScript({
+                file: 'js/lib/scriptTagContext.js',
+                allFrames: false,
+                runAt: "document_start"
+            }, function() {
+                ["js/lib/lodash.min.js", "js/lib/angular/angular-simple-logger.js", "js/lib/angular/angular-google-maps.min.js"].forEach(function (js) {
+                    chrome.tabs.executeScript({
+                        file: js
+                    });
+                });
+            });
 
             //inject css files
             for (var s = 0; s < $this.CSS.length; s++) {

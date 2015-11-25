@@ -28,6 +28,10 @@
     $scope.uploadError = 0;
     $scope.expandedView = 0;
 
+    $scope.afterMapInit = function() {
+        alert('after');
+    };
+
     //$scope.activeRequest = null;
 
     $scope.msg = {
@@ -91,7 +95,9 @@
         KNUGGET.api('Activate', {request: request}, function (response) {
             if (response.status == 200) {
                 $scope.activeRequest.set(request);
-                $scope.showQuestion(request);
+                $timeout(function() {
+                    $scope.showQuestion(request);
+                }, 100);
             } else {
                 alert('Ваша заявка отклонена сервисом');
             }
