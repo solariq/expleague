@@ -8,20 +8,20 @@ var knuggetSidebar = angular.module('knuggetSidebar', [
     'ngImgCrop',
     //'yaMap',
     //'ymaps',
-    'uiGmapgoogle-maps',
+    //'uiGmapgoogle-maps',
     'knuggetSidebarDirectives'
 ]);
 
 // Prevent angulat from scrolling to top on bootstrap 
 knuggetSidebar.value('$anchorScroll', angular.noop);
 
-knuggetSidebar.config(['uiGmapGoogleMapApiProvider', function(uiGmapGoogleMapApiProvider) {
-    uiGmapGoogleMapApiProvider.configure({
-        //    key: 'your api key',
-        v: '3.20', //defaults to latest 3.X anyhow
-        libraries: 'weather,geometry,visualization'
-    });
-}]);
+//knuggetSidebar.config(['uiGmapGoogleMapApiProvider', function(uiGmapGoogleMapApiProvider) {
+//    uiGmapGoogleMapApiProvider.configure({
+//        //    key: 'your api key',
+//        v: '3.20', //defaults to latest 3.X anyhow
+//        libraries: 'weather,geometry,visualization'
+//    });
+//}]);
 
 knuggetSidebar.config(['$httpProvider', '$compileProvider', '$sceDelegateProvider', function ($httpProvider, $compileProvider, $sceDelegateProvider) {
 

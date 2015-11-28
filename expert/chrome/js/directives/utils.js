@@ -709,6 +709,22 @@ knuggetSidebarDirectives.directive('scrollPreventer', ['$timeout', function ($ti
         }
     };
 }]);
+
+
+knuggetSidebarDirectives.directive('searchDisable', function () {
+    return {
+        restrict: "A",
+        link: function (scope, element, attr) {
+            element.bind('keyup', function (e) {
+                e.stopPropagation();
+            });
+            element.bind('keydown', function(e){
+                e.stopPropagation();
+            });
+        }
+    };
+});
+
 knuggetSidebarDirectives.directive('keyUp', function () {
     return {
         restrict: "A",

@@ -1,11 +1,17 @@
-<div class="request-board overlay">
-    <div ng-repeat="request in requests.list track by $index" class="request-block" ng-click="activateRequest(request);showQuestion();">
-        <div class="title">
-            <span class="name">{{request.owner}}</span>
-            <span title="{{request.time}}" class="time" time-ago></span>
-        </div>
-        <div>
-        {{request.question}}
-        </div>
-    </div>
+<div class="new" ng-class="{loading : false}" ng-click="showQuestion(requests.list[0])">
+    <h2>Нажмите, что бы просмотреть</h2>
+    <h3>Осталось {{readableTime(requests.list[0].timeleft)}}</h3>
 </div>
+
+<!--<div class="request-board overlay">-->
+    <!--<div ng-repeat="request in requests.list track by $index" class="request-block" ng-click="showQuestion(request);">-->
+        <!--<div class="title">-->
+            <!--<span class="name">{{request.owner}}</span>-->
+            <!--<span title="{{request.time}}" class="time" time-ago></span>-->
+        <!--</div>-->
+        <!--<div>-->
+        <!--{{request.question}}-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--<a href="#" class="button cancel" ng-click="ac()" prevent-click>Отказаться от заказа</a>-->
+<!--</div>-->

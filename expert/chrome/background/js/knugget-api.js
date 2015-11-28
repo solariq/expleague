@@ -232,7 +232,16 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
                     invite.subj = 'Question stub!';
                 }
                 //todo kvv insert real img url
-                question = {question: invite.subj, owner: invite.owner, time: invite.time, id: invite.time, room: invite.room, img: 'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg'};
+                question = {
+                    question: invite.subj,
+                    owner: invite.owner,
+                    time: invite.time,
+                    id: invite.time,
+                    room: invite.room,
+                    img: 'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg',
+                    timeleft: 65
+
+                };
                 addQuestion(question, function(){});
             }
         },
@@ -517,7 +526,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
             setTimeout(function(){
                 message.close();
                 defer.reject({status : 500, messages : "Timeout"});
-            }, 3000);
+            }, 6000);
 
             //todo add timeout
             return promise;

@@ -6,7 +6,7 @@
         <i class="close" ng-click="closeDialog()"></i>
 
         <div class="dialog-title">
-            <div class="header"><h2>Запрос пользователя</h2></div>
+            <div class="header"><h2>Запрос пользователя ({{readableTime(getLeftTime())}})</h2></div>
             <div class="description">
                 {{getQuestion()}}
                 <div class="space"></div>
@@ -19,6 +19,16 @@
                 <!--</div>-->
             </div>
         </div>
+
+        <div class="controls clearfix bgwhite" ng-if="isUnconfirmed()">
+            <div class="short-url">
+                <div>
+                    <button class="lgreen" ng-click="activateRequest(getRequest());closeDialog();">Принять</button>
+                    <button class="lred" ng-click="rejectRequest(getRequest());closeDialog();">Отказаться</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 

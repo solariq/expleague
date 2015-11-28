@@ -6,7 +6,7 @@
         <i class="close" ng-click="closeDialog()"></i>
 
         <div class="dialog-title">
-            <div class="header" contenteditable="true" edit-listener><h2>{{getTitileToEdit()}}</h2></div>
+            <div class="header" contenteditable="true" edit-listener search-disable=""><h2>{{getTitileToEdit()}}</h2></div>
 
             <!-- <div class="clearfix">
                 <div class="short-url share">
@@ -18,7 +18,7 @@
             <!-- </div>
             </div> -->
 
-            <div class="description" contenteditable="true" edit-listener ng-if="isText()">{{getTextToEdit()}}</div>
+            <div class="description" contenteditable="true" edit-listener ng-if="isText()" search-disable="">{{getTextToEdit()}}</div>
 
         </div>
 

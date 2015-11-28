@@ -100,6 +100,7 @@ knuggetSidebarDirectives.directive("editAnswer", ['dialogService', '$state', fun
                 dialogService.template = KNUGGET.config.sidebarTemplatesRoot + "editDialog";
                 dialogService.isNew = true;
                 dialogService.dialogIsActive = true;
+                dialogService.isText = true;
             };
         }]
     };
@@ -133,6 +134,10 @@ knuggetSidebarDirectives.directive("showQuestion", ['dialogService', '$state', f
                 dialogService.request = $scope.activeRequest.value;
             };
 
+            $scope.getLeftTime = function() {
+                return dialogService.request.timeleft;
+            };
+
             $scope.getQuestion = function() {
                 return dialogService.request.question;
             };
@@ -143,6 +148,14 @@ knuggetSidebarDirectives.directive("showQuestion", ['dialogService', '$state', f
 
             $scope.getImg = function() {
                 return dialogService.request.img;
+            };
+
+            $scope.isUnconfirmed = function() {
+                return dialogService.request.isUnconfirmed == true;
+            };
+
+            $scope.getRequest = function() {
+                return dialogService.request;
             };
 
         }]

@@ -822,8 +822,8 @@
                 var stripSelection = stripTags(selection, '');
 
 
-                collection.Keywords = stripSelection;
-                collection.Text = selection;
+                collection.Text = stripSelection;
+                collection.Keywords = selection;
             },
 
             Drag_d_video: function () {

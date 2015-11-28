@@ -1,4 +1,4 @@
-﻿﻿﻿knuggetSidebar.controller('KNUGGET_SIDEBAR_CTRL', ['$window', '$scope', '$controller', '$timeout', '$rootScope', 'dataService', 'dialogService', function ($window, $scope, $controller, $timeout, $rootScope, dataService, dialogService) {
+﻿﻿﻿knuggetSidebar.controller('KNUGGET_SIDEBAR_CTRL', ['$window', '$scope', '$interval', '$controller', '$timeout', '$rootScope', 'dataService', 'dialogService', function ($window, $scope, $interval, $controller, $timeout, $rootScope, dataService, dialogService) {
 
     //var mapOptions = {
     //    zoom: 4,
@@ -70,6 +70,13 @@
         });
     };
 
+    $scope.readableTime = function(time) {
+        if (time > 60) {
+            return Math.floor(time / 60) + ' мин. ' + (time - 60 * Math.floor(time / 60)) + ' с.'
+        }
+        return time + ' с.';
+    };
+
     $scope.clear = function() {
         $scope.board.clear();
         $scope.requests.clear();
@@ -89,15 +96,18 @@
     };
 
     $scope.activateRequest = function(request) {
+        console.log("activate request");
+        console.log(request);
+
         $scope.board.clear();
         KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
         KNUGGET.storage.set("AddTrigger", {shouldAdd: false});
+        request.isUnconfirmed = false;
+        //$interval.cancel($scope.requests.confirmTimer);
         KNUGGET.api('Activate', {request: request}, function (response) {
             if (response.status == 200) {
                 $scope.activeRequest.set(request);
-                $timeout(function() {
-                    $scope.showQuestion(request);
-                }, 100);
+                $scope.requests.removeRequest(request);
             } else {
                 alert('Ваша заявка отклонена сервисом');
             }
@@ -112,9 +122,10 @@
 
 
     $scope.showQuestion = function(request) {
+        request.isUnconfirmed = true;
+        dialogService.request = request;
         dialogService.template = KNUGGET.config.sidebarTemplatesRoot + "question";
         dialogService.dialogIsActive = true;
-        dialogService.request = request;
     };
 
     $scope.rejectRequest = function(request) {
@@ -132,12 +143,12 @@
             return 'Результат поиска Google';
         }
         return title;
-    }
+    };
 
 
     $scope.getImgPrefix = function(base64Image) {
         return base64Image.split(',', 1)[0];//.slice(1).join(',')
-    }
+    };
 
     $scope.getImgData = function(base64Image) {
         return base64Image.split(',').slice(1).join(',');
@@ -196,7 +207,7 @@
     };
 
     $scope.isText = function() {
-        return dialogService.isText;
+        return dialogService.isText || dialogService.isNew;
     };
 
     $scope.getTextToEdit = function() {
@@ -299,13 +310,16 @@
                     newVal.forEach(function(request) {
                         index = $scope.findRequest(oldVal, request);
                         if (index < 0) {
+                            console.log("send notification: " + request.question);
                            KNUGGET.api("Notify", {owner: request.owner, tag: "new-request",body : request.question}, function (resp){
+                               req = $scope.requests.getSame(request);
                                if (resp.status == 200) {
-                                   $scope.activateRequest(request);
+                                   $scope.showQuestion(req);
                                } else if (resp.status == 501) {
-                                   alert('reject');
-                                   $scope.rejectRequest(request);
+                                   $interval.cancel($scope.requests.confirmTimer);
+                                   $scope.rejectRequest(req);
                                }
+                               $scope.$apply();
                            });
                        }
                     });
@@ -351,6 +365,24 @@
 
     $scope.requests = {
         list: [],
+        confirmTimer: $interval(function() {
+            $scope.requests.list.forEach(function(req) {
+                req.timeleft -= 1;
+                if (req.timeleft <= 0) {
+                    $scope.rejectRequest(req);
+                }
+            });
+        }, 1000),
+
+        getSame: function(req) {
+            var same = [req];
+            $scope.requests.list.forEach(function(el) {
+                if (req.id == el.id) {
+                    same.push(el);
+                }
+            });
+            return same[[same.length-1]];
+        },
 
         update: function() {
             KNUGGET.storage.get('Requests', function(value) {
@@ -685,6 +717,11 @@
         $scope.finishRequest();
 
         KNUGGET.api("Logout", {}, function () { });
+    };
+
+
+    $scope.ac = function() {
+        alert('ping');
     };
 
     $scope.init = function () {

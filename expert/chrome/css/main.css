@@ -1694,6 +1694,96 @@ Site dialog global style
   text-align: center;
   margin: 0 0 20px;
 }
+#knugget-root #knugget-sidebar .new,
+#knugget-info-icon #knugget-sidebar .new {
+  height: 160px !important;
+  position: absolute !important;
+  top: 0 !important;
+  width: 220px !important;
+  bottom: 0 !important;
+  text-align: center !important;
+  margin: auto !important;
+  padding: 60px 20px 0 20px !important;
+}
+#knugget-root #knugget-sidebar .new:before,
+#knugget-info-icon #knugget-sidebar .new:before {
+  background: url("chrome-extension://__MSG_@@extension_id__/images/new_task.png") no-repeat scroll center top;
+  background-size: 50px;
+  content: "";
+  height: 50px;
+  left: 105px;
+  position: absolute;
+  top: 0;
+  transform: rotate(17deg);
+  width: 50px;
+}
+@keyframes beat {
+  to {
+    transform: scale(1.4);
+  }
+}
+#knugget-root #knugget-sidebar .new.loading:before,
+#knugget-info-icon #knugget-sidebar .new.loading:before {
+  -webkit-animation: beat 1.5s linear infinite;
+  -moz-animation: beat 1.5s linear infinite;
+  -o-animation: beat 1.5s linear infinite;
+  animation: beat 1.5s linear infinite;
+}
+#knugget-root #knugget-sidebar .new h2,
+#knugget-info-icon #knugget-sidebar .new h2 {
+  line-height: 25px;
+  min-height: 50px;
+  font-size: 20px;
+  text-align: center;
+  font-weight: 300;
+  margin: 10px 0 20px 0;
+  color: #5c626e;
+}
+#knugget-root #knugget-sidebar .new h3,
+#knugget-info-icon #knugget-sidebar .new h3 {
+  line-height: 18px;
+  color: #aaa;
+  text-align: center;
+  margin: 0 0 20px;
+}
+#knugget-root #knugget-sidebar .new .error-btn,
+#knugget-info-icon #knugget-sidebar .new .error-btn {
+  margin: 0 auto;
+  padding: 10px 20px;
+  font-size: 13px;
+  text-decoration: none;
+  display: block;
+  width: 100px;
+  text-align: center;
+  font-weight: 400;
+  color: #fff !important;
+  border-radius: 3px;
+  -webkit-box-shadow: inset 0 -1px 0 0 #1860a3;
+  box-shadow: inset 0 -1px 0 0 #1860a3;
+  background: -webkit-linear-gradient(top, #3e94e4, #2374c0);
+  background: -moz-linear-gradient(top, #3e94e4, #2374c0);
+}
+#knugget-root #knugget-sidebar .new .error-btn:hover,
+#knugget-info-icon #knugget-sidebar .new .error-btn:hover {
+  -webkit-box-shadow: inset 0 -1px 0 0 #3e73a4;
+  box-shadow: inset 0 -1px 0 0 #3e73a4;
+  background: -webkit-linear-gradient(top, #5ba4e8, #458aca);
+  background: -moz-linear-gradient(top, #5ba4e8, #458aca);
+}
+#knugget-root #knugget-sidebar .new .help,
+#knugget-info-icon #knugget-sidebar .new .help {
+  color: #69717e !important;
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 300;
+  margin: 20px 0 0 0;
+  text-decoration: none;
+}
+#knugget-root #knugget-sidebar .new .help:hover,
+#knugget-info-icon #knugget-sidebar .new .help:hover {
+  color: #000 !important;
+}
 #knugget-root #knugget-sidebar .error,
 #knugget-info-icon #knugget-sidebar .error {
   height: 160px !important;
@@ -4969,9 +5059,6 @@ Helper classes
   margin-top: 60px;
   margin-right: 15px;
   z-index: 2;
-}
-#knugget-sidebar .workboard .angular-google-map-container {
-  height: 400px;
 }
 #knugget-sidebar .workboard .answer-block {
   word-wrap: break-word;
