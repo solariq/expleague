@@ -155,6 +155,11 @@
         dialogService.dialogIsActive = true;
     };
 
+    $scope.forceCloseDialog = function() {
+        dialogService.template = null;
+        dialogService.dialogIsActive = false;
+    };
+
     $scope.rejectRequest = function(request) {
         KNUGGET.api('Reject', {request: request}, function (response) {});
         //if (request.timer) {
@@ -341,7 +346,7 @@
                         index = $scope.findRequest(oldVal, request);
                         if (index < 0) {
                             console.log("send notification: " + request.question);
-                           KNUGGET.api("Notify", {owner: request.owner, tag: "new-request",body : request.question}, function (resp){
+                           KNUGGET.api("Notify", {id: request.id, owner: request.owner, tag: "new-request",body : request.question}, function (resp){
                                req = $scope.requests.getSame(request);
                                if (resp.status == 200) {
                                    $scope.showQuestion(req);
@@ -382,6 +387,7 @@
                 }
 
             } else if (data.ActiveRequest) {
+                $scope.forceCloseDialog(); //close question dialog
                 $scope.activeRequest.value = data.ActiveRequest.newValue;
             }
 

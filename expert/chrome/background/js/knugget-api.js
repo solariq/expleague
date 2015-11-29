@@ -1,5 +1,49 @@
 angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$interval', 'fileBlob', function ($http, $q, $interval, $fileBlob) {
 
+    function NotificationCache() {
+        this.notifications = {};
+
+        this.getDefer = function(data) {
+            var id = data.id;
+            var defer = this.notifications[id];
+            if (defer) {
+                return defer;
+            }
+            defer = $q.defer();
+
+            var message = new Notification(data.owner, {
+                tag : data.tag,
+                body : data.body
+            });
+            var promise = defer.promise;
+            message.onclick = function(){
+                defer.resolve({status: 200});
+            };
+
+            message.onclose = function(){
+                if (promise.$$state.status == 0) {
+                    defer.resolve({status: 501});
+                }
+            };
+
+            setTimeout(function(){
+                message.close();
+                defer.reject({status : 500, messages : "Timeout"});
+            }, 6000);
+
+            this.notifications[id] = promise;
+
+            var ntfctns = this.notifications;
+            setTimeout(function() {
+                delete ntfctns[id];
+            }, 1000);
+
+            return promise;
+
+        }
+    }
+
+    var ncache = new NotificationCache();
     function BanManager() {
         this.getBanList = function(callback) {
             KNUGGET.storage.get("BanList", function (value) {
@@ -516,28 +560,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         },
 
         Notify: function(data) {
-            var defer = $q.defer();
-            var promise = defer.promise;
-            var message = new Notification(data.owner, {
-                tag : data.tag,
-                body : data.body
-            });
-            message.onclick = function(){
-                defer.resolve({status: 200});
-            };
-            message.onclose = function(){
-                if (promise.$$state.status == 0) {
-                    defer.resolve({status: 501});
-                }
-            };
-
-            setTimeout(function(){
-                message.close();
-                defer.reject({status : 500, messages : "Timeout"});
-            }, 6000);
-
-            //todo add timeout
-            return promise;
+            return ncache.getDefer(data);
         },
 
         Remove: function(data) {
