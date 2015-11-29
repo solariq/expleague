@@ -1,4 +1,4 @@
-angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'fileBlob', function ($http, $q, $fileBlob) {
+angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$interval', 'fileBlob', function ($http, $q, $interval, $fileBlob) {
 
     function BanManager() {
         this.getBanList = function(callback) {
@@ -239,8 +239,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
                     id: invite.time,
                     room: invite.room,
                     img: 'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg',
-                    timeleft: 65
-
+                    confirmExpireTime: Date.now() + 65 * 1000,
+                    resolveExpireTime: Date.now() + 150 * 1000
                 };
                 addQuestion(question, function(){});
             }
@@ -423,6 +423,14 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', 'f
         }
         KNUGGET.storage.set("UserAvailable", isAvailable);
     };
+
+    //timeLimit = $interval(function () {
+    //    KNUGGET.storage.get('ActiveRequest', function (e) {
+    //        if (e) {
+    //            e.timeleft -= 1;
+    //        }
+    //    });
+    //}, 1000);
 
     // API METHODS
     return {

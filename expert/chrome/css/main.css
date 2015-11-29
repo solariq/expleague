@@ -1717,17 +1717,12 @@ Site dialog global style
   transform: rotate(17deg);
   width: 50px;
 }
-@keyframes beat {
-  to {
-    transform: scale(1.4);
-  }
-}
 #knugget-root #knugget-sidebar .new.loading:before,
 #knugget-info-icon #knugget-sidebar .new.loading:before {
-  -webkit-animation: beat 1.5s linear infinite;
-  -moz-animation: beat 1.5s linear infinite;
-  -o-animation: beat 1.5s linear infinite;
-  animation: beat 1.5s linear infinite;
+  -webkit-animation: spin 1.5s linear infinite;
+  -moz-animation: spin 1.5s linear infinite;
+  -o-animation: spin 1.5s linear infinite;
+  animation: spin 1.5s linear infinite;
 }
 #knugget-root #knugget-sidebar .new h2,
 #knugget-info-icon #knugget-sidebar .new h2 {
@@ -5046,6 +5041,17 @@ Helper classes
 }
 #knugget-sidebar .shadow-block .time {
   text-align: right;
+}
+#knugget-sidebar .footer {
+  display: block;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2em;
+  width: 100%;
+  z-index: 3;
+  text-align: center;
+  background: white;
 }
 #knugget-sidebar .workboard {
   display: block;

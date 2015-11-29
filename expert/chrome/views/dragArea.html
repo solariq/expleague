@@ -1,8 +1,4 @@
 <div folder-droppable="1" class="workboard" id="workboard">
-    <!--<div id="sortable">-->
-    <!--sortable-list="scope"-->
-    <!--<i class="icon-send" ng-click="send()"></i>-->
-
     <div ui-sortable="groupsSortableOptions"  ng-model="board.list" sortable-list>
         <div edit-answer ng-repeat="answer in board.list track by $index" class="answer-block" ng-dblclick="edit(answer, $index)">
             <!--{{$index}} &#45;&#45; {{printableAnswer(answer)}}-->
@@ -19,15 +15,11 @@
                 <div ng-if="answer.Type == 'text'" contenteditable>
                     {{printableAnswer(answer)}}
                 </div>
-                <!--<div ng-if="answer.Type == 'link' && answer.Image == undefined && answer.Base64Image == undefined">-->
-                <!--<a ng-href="answer.Href">{{answer.Title}}</a>-->
-                <!--</div>-->
             </div>
-            <!--<div ng-switch on=\"itemColumn.highlight\">-->
-            <!--<span ng-switch-when=\"true\"><div ng-bind-html-unsafe=\"getValueToBind(item,itemColumn.field) | highlight: getFieldToFilter()\" ></div>-->
-            <!--</span>-->
-            <!--<span ng-switch-when=\"false\">{{item[itemColumn.field]}}</span>-->
-            <!--</div>-->
         </div>
     </div>
+</div>
+
+<div class="footer">
+    Осталось: {{readableTime(activeRequest.value.timeleft)}}
 </div>

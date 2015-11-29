@@ -32,6 +32,26 @@
         alert('after');
     };
 
+    $scope.confirmTimer = $interval(function() {
+        var now = Date.now();
+        if ($scope.activeRequest.value) {
+            //has active request
+            if (now >= $scope.activeRequest.value.resolveExpireTime) {
+                $scope.rejectRequest($scope.activeRequest.value);
+                //alert('Время на исполнение заказа истекло');
+            }
+            $scope.activeRequest.value.timeleft = Math.floor(($scope.activeRequest.value.resolveExpireTime - now) / 1000);
+        } else {
+            $scope.requests.list.forEach(function(el) {
+               if (now >= el.confirmExpireTime) {
+                   $scope.rejectRequest(el);
+                   //alert('Время на подтверждение заказа истекло');
+               }
+                el.timeleft = Math.floor((el.confirmExpireTime - now) / 1000);
+            });
+        }
+    }, 1000);
+
     //$scope.activeRequest = null;
 
     $scope.msg = {
@@ -106,6 +126,13 @@
         //$interval.cancel($scope.requests.confirmTimer);
         KNUGGET.api('Activate', {request: request}, function (response) {
             if (response.status == 200) {
+                //request.timer = $interval(function() {
+                //    request.timeleft -= 1;
+                //    if (request.timeleft <= 0) {
+                //        $scope.rejectRequest(request);
+                //        alert('Время на выполнение задания истекло!');
+                //    }
+                //}, 1000);
                 $scope.activeRequest.set(request);
                 $scope.requests.removeRequest(request);
             } else {
@@ -130,6 +157,9 @@
 
     $scope.rejectRequest = function(request) {
         KNUGGET.api('Reject', {request: request}, function (response) {});
+        //if (request.timer) {
+        //    $interval.cancel(request.timer);
+        //}
         if ($scope.activeRequest.value == request) {
             $scope.activeRequest.set(null);
         }
@@ -316,7 +346,7 @@
                                if (resp.status == 200) {
                                    $scope.showQuestion(req);
                                } else if (resp.status == 501) {
-                                   $interval.cancel($scope.requests.confirmTimer);
+                                   //$interval.cancel($scope.requests.confirmTimer);
                                    $scope.rejectRequest(req);
                                }
                                $scope.$apply();
@@ -333,7 +363,7 @@
             } else if (data.VisitedPages) {
                 $scope.activeRequest.get(function(request) {
                     console.log(request);
-                    console.log(data.VisitedPages.newValue)
+                    console.log(data.VisitedPages.newValue);
                     if (request) {
                         KNUGGET.api("PageVisited", {request: request, pages: JSON.parse(data.VisitedPages.newValue)}, function () { });
                     }
@@ -351,6 +381,8 @@
                     }
                 }
 
+            } else if (data.ActiveRequest) {
+                $scope.activeRequest.value = data.ActiveRequest.newValue;
             }
 
             $timeout(function () {
@@ -365,14 +397,14 @@
 
     $scope.requests = {
         list: [],
-        confirmTimer: $interval(function() {
-            $scope.requests.list.forEach(function(req) {
-                req.timeleft -= 1;
-                if (req.timeleft <= 0) {
-                    $scope.rejectRequest(req);
-                }
-            });
-        }, 1000),
+        //confirmTimer: $interval(function() {
+        //    $scope.requests.list.forEach(function(req) {
+        //        req.timeleft -= 1;
+        //        if (req.timeleft <= 0) {
+        //            $scope.rejectRequest(req);
+        //        }
+        //    });
+        //}, 1000),
 
         getSame: function(req) {
             var same = [req];
@@ -702,7 +734,7 @@
         $scope.activeRequest.get(function(request) {
             KNUGGET.api("Finish", {request: request}, function () { });
             $scope.board.clear();
-            $scope.requests.clear(request);
+            $scope.requests.clear();
             $scope.activeRequest.set(null);
             KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
             KNUGGET.storage.set("AddTrigger", {shouldAdd: false});
@@ -730,6 +762,7 @@
         $scope.board.update();
         $scope.allowToShow.get(function(){});
         $scope.activeRequest.get(function(){});
+        $scope.requests.update();
 
         KNUGGET.storage.get("IsConnected", function (userConnected) {
             if (userConnected) {
