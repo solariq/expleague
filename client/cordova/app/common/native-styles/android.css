@@ -71,3 +71,52 @@ tab-bar-item#history {
 tab-bar-item#about {
   background-image: url(icons/about.svg);
 }
+
+/*default css class for the inputField*/
+.nativeInput {
+  background-color: #eee;
+  color: black;
+}
+
+/*default css class for the panel */
+.nativeInput-panel {
+  background-color: white;
+}
+
+/*default class for the left button */
+.nativeInput-leftButton {
+  border-color: #0c63ee;
+  background-color: #fff;
+  color: #0c63ee;
+  font-size: 16px;
+  line-height: 19px;
+  margin-top: 3px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 2px;
+  text-align: center;
+  background-image: url(icons/ios-plus-empty.png);
+}
+
+.nativeInput-leftButton:pressed {
+  background-color: #C0C0C0;
+}
+
+/*default class for the right button */
+.nativeInput-rightButton {
+  border-color: #0c63ee;
+  background-color: #387ef5;
+  color: #0c63ee;
+  font-size: 16px;
+  line-height: 19px;
+  margin-top: 3px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 2px;
+  text-align: center;
+  background-image: url(icons/paper-airplane.png);
+}
+
+.nativeInput-rightButton:pressed{
+  background-color: #C0C0C0;
+}

@@ -10,6 +10,9 @@ angular
     //   text: 'Текст сообщения' // может содержать html-теги
     // };
 
+    // Текущая высота окна, необходима для определения открыта или закрыта клавиатура
+    $scope.currentWindowHeight;
+
     $scope.backToHistory = function() {
       supersonic.ui.modal.hide();
     };
@@ -118,6 +121,7 @@ angular
         connection.send($pres());
         // connection.send($pres().c('priority').t('5'));
         createChatRoom(connection, $scope.chatroom.name, $scope.user.username, $scope.chatroom.topic, onGroupchatMessage);
+        window.cordova.plugins.NativeInput.show('');
       } else if (status == Strophe.Status.DISCONNECTING) {
         changeConnectionStatus('disconnecting');
       } else if (status === Strophe.Status.DISCONNECTED) {
@@ -143,4 +147,57 @@ angular
       $('.input-message').val('');
       $('.input-message').focus();
     };
+
+    document.addEventListener('deviceready', function () {
+      var params = {
+        leftButton:{
+          styleCSS: 'text: ;'
+        },
+        rightButton: {
+          styleCSS: 'text: ;'
+        },
+        input:{
+          placeHolder: 'Введите сообщение',
+          type: 'normal',
+          lines: 3
+        }
+      }
+      window.cordova.plugins.NativeInput.setup(params);
+      window.cordova.plugins.NativeInput.onButtonAction(function(side){
+        if(side === 'left'){
+          alert("left button tapped");
+        }
+        if(side === 'right'){
+          window.cordova.plugins.NativeInput.getValue(function(value){
+            if (value != '') {
+              connection.send(
+                $msg({
+                  to: $scope.chatroom.name,
+                  type: 'groupchat'
+                }).c('body').t(value)
+              );
+              window.cordova.plugins.NativeInput.setValue('');
+            }
+          });
+        }
+      });
+      window.cordova.plugins.NativeInput.onKeyboardAction(false, function(action){
+        // TODO if (action == 'newline') {} - отправляем сообщение
+      });
+
+      // При изменение размера экрана определяем открыта или закрыта клавиатура
+      $(window).resize(function(){
+        $scope.currentWindowHeight = $scope.currentWindowHeight || $(window).height();
+        if ($(window).height() > $scope.currentWindowHeight) {
+          // Клавиатура закрыта
+          $('.result').css('padding-bottom', '60px');
+          $(window).scrollTop(document.body.clientHeight);
+        } else {
+          // Клавиатура открыта
+          $('.result').css('padding-bottom', '0px');
+          $(window).scrollTop(document.body.clientHeight);
+        }
+        $scope.currentWindowHeight = $(window).height();
+      });
+    }, false);
   });
