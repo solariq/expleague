@@ -422,3 +422,19 @@ KNUGGET.templates = {
 };
 
 KNUGGET.templates.init();
+
+if (window.chrome && window.chrome.storage) {
+    window.chrome.storage.onChanged.addListener(function (data) {
+        if (data.Requests) {
+            if (JSON.parse(data.Requests.newValue).length > 0) {
+                window.chrome.browserAction.setIcon({
+                    path: '../../images/icons/icon_16_notify.png'
+                });
+            } else {
+                window.chrome.browserAction.setIcon({
+                    path: '../../images/icons/icon_16.png'
+                });
+            }
+        }
+    });
+}

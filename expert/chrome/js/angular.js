@@ -358,8 +358,8 @@
                            });
                        }
                     });
-
                 }
+
                 //$scope.moveChatScroll(1, 1500);
                 if (!$scope.$$phase) {
                     //alert('apply');
