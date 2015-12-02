@@ -40,7 +40,8 @@ angular
 
     function playSound() {
       var sound = new Media('http://localhost/bb2.mp3');
-      sound.play();
+      // http://ilee.co.uk/phonegap-plays-sound-on-mute/
+      sound.play({ playAudioWhenScreenIsLocked : false });
     }
 
     // Ешё не совсем понял суть Angular, без $apply не работает обновление значения status в html
