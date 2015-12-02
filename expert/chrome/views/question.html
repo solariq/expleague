@@ -10,8 +10,11 @@
             <div class="description">
                 {{getQuestion()}}
                 <div class="space"></div>
+                <div ng-if="hasImg()" class="some-help">
+                    Дважды кликните по картинке, что бы перейти к поиску по изображению
+                </div>
                 <div crop-dialog ng-if="hasImg()" class="cropAreaEx">
-                    <img src="{{getImg()}}" ng-dblclick="openCrop(getImg())">
+                    <img src="{{getImg()}}" ng-dblclick="openCrop(getImg())" style="cursor: pointer">
                 </div>
                 <!--<div class="space"></div>-->
                 <!--<div style="width: 750px;height: 350px;">-->

@@ -37,6 +37,7 @@
         if ($scope.activeRequest.value) {
             //has active request
             if (now >= $scope.activeRequest.value.resolveExpireTime) {
+                $scope.forceCloseDialog();
                 $scope.rejectRequest($scope.activeRequest.value);
                 //alert('Время на исполнение заказа истекло');
             }
@@ -44,6 +45,7 @@
         } else {
             $scope.requests.list.forEach(function(el) {
                if (now >= el.confirmExpireTime) {
+                   $scope.forceCloseDialog();
                    $scope.rejectRequest(el);
                    //alert('Время на подтверждение заказа истекло');
                }
@@ -338,6 +340,7 @@
             } else if (data.AllowToShow) {
                 $scope.allowToShow.set(data.AllowToShow)
             } else if(data.Requests) {
+                $scope.forceCloseDialog(); //only one request is allowed, so close all dialong on request list changed
                 $scope.requests.update();
                 if (data.Requests.oldValue) {
                     oldVal = JSON.parse(data.Requests.oldValue);

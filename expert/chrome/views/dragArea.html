@@ -1,4 +1,8 @@
 <div folder-droppable="1" class="workboard" id="workboard">
+    <div class="question-section" ng-click="showQuestion()" show-question>
+        {{activeRequest.value.question}}
+    </div>
+
     <div ui-sortable="groupsSortableOptions"  ng-model="board.list" sortable-list>
         <div edit-answer ng-repeat="answer in board.list track by $index" class="answer-block" ng-dblclick="edit(answer, $index)">
             <!--{{$index}} &#45;&#45; {{printableAnswer(answer)}}-->

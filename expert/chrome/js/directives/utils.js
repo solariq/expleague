@@ -638,11 +638,17 @@ knuggetSidebarDirectives.directive('tooltipHover', ['$rootScope', function ($roo
         link: function (scope, element) {
             element.hover(function () {
 
+                var documentOffset;
                 if (!foldersBlockElement) {
                     foldersBlockElement = $rootScope.foldersBlockElement;
                 }
+                if (foldersBlockElement) {
+                    documentOffset = foldersBlockElement.offset().top;
+                } else {
+                    documentOffset = $(element[0]).offset().top;
+                }
+                console.log(element);
 
-                var documentOffset = foldersBlockElement.offset().top;
                 var hoverPosition = $(this).offset().top - documentOffset;
 
                 if (hoverPosition < 60) {
