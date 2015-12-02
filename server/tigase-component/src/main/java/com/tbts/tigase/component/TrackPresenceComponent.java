@@ -9,6 +9,7 @@ import com.tbts.model.Client;
 import com.tbts.model.Expert;
 import com.tbts.model.Room;
 import com.tbts.model.handlers.*;
+import com.tbts.server.img.ImageStorage;
 import tigase.conf.ConfigurationException;
 import tigase.criteria.Criteria;
 import tigase.criteria.ElementCriteria;
@@ -48,6 +49,7 @@ public class TrackPresenceComponent extends SessionManager {
   @Override
   public void setProperties(Map<String, Object> props) throws ConfigurationException {
     super.setProperties(props);
+    ImageStorage.instance();
     if (Archive.instance == null)
       try {
         Archive.instance = new DynamoDBArchive();

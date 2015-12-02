@@ -7,6 +7,7 @@
       <module fileurl="file://$PROJECT_DIR$/server/server.iml" filepath="$PROJECT_DIR$/server/server.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/tbts.iml" filepath="$PROJECT_DIR$/.idea/tbts.iml" />
       <module fileurl="file://$PROJECT_DIR$/server/tigase-component/tigase-component.iml" filepath="$PROJECT_DIR$/server/tigase-component/tigase-component.iml" />
+      <module fileurl="file://$PROJECT_DIR$/server/xmpp/xmpp.iml" filepath="$PROJECT_DIR$/server/xmpp/xmpp.iml" />
       <module fileurl="file://$PROJECT_DIR$/server/xmpp-bots/xmpp-bots.iml" filepath="$PROJECT_DIR$/server/xmpp-bots/xmpp-bots.iml" />
     </modules>
   </component>

@@ -21,6 +21,33 @@
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.5.0" level="project" />
     <orderEntry type="library" name="Maven: net.sf.trove4j:trove4j:3.0.3" level="project" />
     <orderEntry type="module" module-name="commons" scope="TEST" production-on-test="" />
+    <orderEntry type="module" module-name="xmpp" />
+    <orderEntry type="module" module-name="fastxml" />
+    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-actor_2.11:2.4.0" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.11.7" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe:config:1.3.0" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-cluster_2.11:2.4.0" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-remote_2.11:2.4.0" level="project" />
+    <orderEntry type="library" name="Maven: io.netty:netty:3.10.3.Final" level="project" />
+    <orderEntry type="library" name="Maven: org.uncommons.maths:uncommons-maths:1.2.2a" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-persistence_2.11:2.4.0" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-protobuf_2.11:2.4.0" level="project" />
+    <orderEntry type="library" name="Maven: io.spray:spray-io_2.11:1.3.3" level="project" />
+    <orderEntry type="library" name="Maven: io.spray:spray-util_2.11:1.3.3" level="project" />
+    <orderEntry type="library" name="Maven: io.spray:spray-http_2.11:1.3.3" level="project" />
+    <orderEntry type="library" name="Maven: org.parboiled:parboiled-scala_2.11:1.1.7" level="project" />
+    <orderEntry type="library" name="Maven: org.parboiled:parboiled-core:1.1.7" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-http-experimental_2.11:2.0-M1" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-http-core-experimental_2.11:2.0-M1" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-parsing-experimental_2.11:2.0-M1" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-stream-experimental_2.11:2.0-M1" level="project" />
+    <orderEntry type="library" name="Maven: org.reactivestreams:reactive-streams:1.0.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.3.6" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.3.3" level="project" />
+    <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.6" level="project" />
+    <orderEntry type="library" name="Maven: commons-fileupload:commons-fileupload:1.3.1" level="project" />
+    <orderEntry type="library" name="Maven: commons-io:commons-io:2.2" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-dynamodb:1.9.29" level="project" />
     <orderEntry type="library" name="Maven: tigase:tigase-server:7.0.2" level="project" />
     <orderEntry type="library" name="Maven: tigase:tigase-utils:3.4.4" level="project" />
     <orderEntry type="library" name="Maven: tigase:tigase-muc:2.3.0" level="project" />
@@ -60,7 +87,6 @@
     <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-elasticache:1.9.29" level="project" />
     <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-elastictranscoder:1.9.29" level="project" />
     <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-ec2:1.9.29" level="project" />
-    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-dynamodb:1.9.29" level="project" />
     <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-sns:1.9.29" level="project" />
     <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cloudtrail:1.9.29" level="project" />
     <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cloudwatch:1.9.29" level="project" />
@@ -85,9 +111,6 @@
     <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-cloudhsm:1.9.29" level="project" />
     <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-ssm:1.9.29" level="project" />
     <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-core:1.9.29" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.3.4" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.3.2" level="project" />
-    <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.6" level="project" />
     <orderEntry type="library" name="Maven: joda-time:joda-time:2.9.1" level="project" />
   </component>
 </module>

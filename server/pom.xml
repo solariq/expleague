@@ -13,6 +13,7 @@
         <module>commons</module>
         <module>tigase-component</module>
         <module>fastxml</module>
+        <module>xmpp</module>
     </modules>
 
     <properties>

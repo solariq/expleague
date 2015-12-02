@@ -63,7 +63,6 @@ public class DynamoDBArchive extends Archive {
     archive.log(new RoomImpl("room@muc.localhost", client), client.id(), "Hello world");
   }
 
-
   @SuppressWarnings("unused")
   @DynamoDBTable(tableName = "tbts-rooms")
   public static class RoomArchive {
@@ -140,5 +139,4 @@ public class DynamoDBArchive extends Archive {
       this.ts = ts;
     }
   }
-
 }

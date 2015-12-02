@@ -5,6 +5,7 @@
     <file url="file://$PROJECT_DIR$/server/commons" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/server/fastxml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/server/tigase-component" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/server/xmpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/server/xmpp-bots" charset="UTF-8" />
     <file url="PROJECT" charset="UTF-8" />
   </component>
