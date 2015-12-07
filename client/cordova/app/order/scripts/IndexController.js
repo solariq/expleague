@@ -10,28 +10,16 @@ angular
     // Массив с названиями интервалов срочности и их ценой
     var urgencyRange = [
       {
-        name: 'в течение дня',
+        name: 'неважно',
         price: 100
       },
       {
-        name: '4 часа',
+        name: 'сегодня',
         price: 150
       },
       {
-        name: '2 часа',
+        name: 'срочно',
         price: 200
-      },
-      {
-        name: '1 час',
-        price: 250
-      },
-      {
-        name: 'пол часа',
-        price: 300
-      },
-      {
-        name: 'в течение минуты',
-        price: 350
       }
     ];
 
@@ -43,7 +31,7 @@ angular
       text: '',
       near: false,
       expert: false,
-      urgency: 2
+      urgency: 1
     }
 
     // Возвращает имя значения urgency выбраного пользователем
@@ -75,7 +63,7 @@ angular
         text: '',
         near: false,
         expert: false,
-        urgency: 2
+        urgency: 1
       }
       // Для корректной работы валидации, устанавливаем статус форму pristine
       $scope.orderForm.$setPristine();
