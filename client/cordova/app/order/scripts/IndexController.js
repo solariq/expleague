@@ -47,11 +47,27 @@ angular
     }
 
     $scope.submitOrder = function(){
-      // Сохраняем результат введенный в поисковую форму в localStorage, чтобы получить к нему доступ на странице result
-      localStorage.setItem('order', JSON.stringify($scope.order));
+      // Сохраняем результат введенный в поисковую форму в localStorage (tbtsHistory), чтобы получить к нему доступ на странице result
+      var tbtsHistory = JSON.parse(localStorage.getItem('tbtsHistory')) || [];
+      var historyItem = {
+        id: tbtsHistory.length,
+        text: $scope.order.text,
+        near: $scope.order.near,
+        expert: $scope.order.expert,
+        urgency: $scope.order.urgency,
+        started: new Date().getTime(),
+        ended: null,
+        room: null,
+        answerMode: 'chat',
+        messages: []
+      }
+      tbtsHistory.push(historyItem);
+      localStorage.setItem('tbtsHistory', JSON.stringify(tbtsHistory));
+      // Отправляем history#index сообщение, что нужно обновить список истории
+      supersonic.data.channel('announcements').publish({content: 'refresh'});
       // Переключаемся на таб history
       steroids.tabBar.selectTab(1);
-      // Показываем модальный экран result
+      // Показываем модальный экран result, если не задан параметр id, то показываем самый последний объект history
       var modalView = new supersonic.ui.View('history#result');
       var options = {
         animate: false

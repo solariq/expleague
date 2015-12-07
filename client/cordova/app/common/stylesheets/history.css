@@ -1,0 +1,11 @@
+.item-date {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.item-status {
+  color: #777;
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: bold;
+}
