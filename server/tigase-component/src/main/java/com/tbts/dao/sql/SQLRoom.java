@@ -23,7 +23,7 @@ public class SQLRoom extends RoomImpl {
 
   public void update(State state, Expert worker) {
     this.state = state;
-    this.worker = worker.id();
+    this.worker = worker != null ? worker.id() : null;
     if (dao.isMaster(owner().id()) && state == State.DEPLOYED)
       ExpertManager.instance().challenge(this);
   }
