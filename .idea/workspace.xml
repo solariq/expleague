@@ -59,7 +59,7 @@
         <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/resources/application.conf">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.075250834">
-              <caret line="3" column="18" selection-start-line="3" selection-start-column="18" selection-end-line="3" selection-end-column="18" />
+              <caret line="3" column="0" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -1597,7 +1597,7 @@
       <workItem from="1443627366773" duration="2463000" />
       <workItem from="1449068457399" duration="9292000" />
       <workItem from="1449153606441" duration="19689000" />
-      <workItem from="1449400609951" duration="40529000" />
+      <workItem from="1449400609951" duration="41123000" />
     </task>
     <task id="LOCAL-00001" summary="Server initial commit">
       <created>1443178411727</created>
@@ -1665,11 +1665,17 @@
       <option name="project" value="LOCAL" />
       <updated>1449576530168</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="One more try to fix akka configuration">
+      <created>1449576685313</created>
+      <option name="number" value="00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1449576685313</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="115101000" />
+    <option name="totallyTimeSpent" value="115695000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1449" y="-756" width="2178" height="1288" extended-state="0" />
@@ -1748,7 +1754,8 @@
     <MESSAGE value="Typo fix :)" />
     <MESSAGE value="akka configuration for ImageStorage server" />
     <MESSAGE value="NPE on room init fixed" />
-    <option name="LAST_COMMIT_MESSAGE" value="NPE on room init fixed" />
+    <MESSAGE value="One more try to fix akka configuration" />
+    <option name="LAST_COMMIT_MESSAGE" value="One more try to fix akka configuration" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2184,7 +2191,7 @@
     <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/resources/application.conf">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.075250834">
-          <caret line="3" column="18" selection-start-line="3" selection-start-column="18" selection-end-line="3" selection-end-column="18" />
+          <caret line="3" column="0" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
           <folding />
         </state>
       </provider>
