@@ -7,42 +7,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c71e5450-21a0-4dac-9e17-b1ca74780897" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_codehaus_woodstox_stax2_api_3_1_4.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_fasterxml_aalto_xml_1_0_0.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/com_fasterxml_aalto_xml_1_0_0.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/com_fasterxml_staxmate_staxmate_2_3_0.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/seq/CharSeqBuilderReader.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/fastxml/src/main/java/com/spbsu/xml/XmlReader.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/XMPPServer.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPHandshake.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/dump.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/akka/UntypedActorAdapter.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/AsyncJAXBStreamReader.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/AsyncXMLBuilder.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/JAXBObjectBuilder.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/IQ.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/JID.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Message.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Presence.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Stanza.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Stream.java" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__io_spray_spray_http_2_11_1_3_3.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__io_spray_spray_io_2_11_1_3_3.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__io_spray_spray_util_2_11_1_3_3.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_parboiled_parboiled_core_1_1_7.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_parboiled_parboiled_scala_2_11_1_1_7.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPServer.java" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/img/ImageStorage.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/ImageStorage.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/XmlInstructionBuilderFactory.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/commons" afterPath="$PROJECT_DIR$/server/commons" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/fastxml" afterPath="$PROJECT_DIR$/server/fastxml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/seq/CharSeq.java" afterPath="$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/seq/CharSeq.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/util/MultiMap.java" afterPath="$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/util/MultiMap.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/fastxml/src/main/java/com/spbsu/xml/impl/XmlTagChildBase.java" afterPath="$PROJECT_DIR$/server/fastxml/src/main/java/com/spbsu/xml/impl/XmlTagChildBase.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/TrackPresenceComponent.java" afterPath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/tigase/component/TrackPresenceComponent.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/tigase-component/tigase-component.iml" afterPath="$PROJECT_DIR$/server/tigase-component/tigase-component.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/pom.xml" afterPath="$PROJECT_DIR$/server/xmpp/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/xmpp.iml" afterPath="$PROJECT_DIR$/server/xmpp/xmpp.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/pom.xml" afterPath="$PROJECT_DIR$/server/pom.xml" />
     </list>
     <ignored path="tbts.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -101,11 +70,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="MySQLDAO.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="MySQLDAO.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/sql/MySQLDAO.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.40731996">
-              <caret line="42" column="21" selection-start-line="42" selection-start-column="21" selection-end-line="42" selection-end-column="21" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="51" column="53" selection-start-line="51" selection-start-column="11" selection-end-line="51" selection-end-column="11" />
               <folding>
                 <marker date="1448196587000" expanded="true" signature="8197:8279" placeholder="SELECT id, n... Users" />
                 <marker date="1448196587000" expanded="true" signature="9152:9230" placeholder="UPDATE tbts.... " />
@@ -125,6 +94,16 @@
                 <marker date="1448196587000" expanded="true" signature="13276:13324" placeholder="UPDATE tbts.... " />
                 <marker date="1448196587000" expanded="true" signature="13445:13491" placeholder="UPDATE tbts.... " />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pom.xml" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/server/pom.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.14337789">
+              <caret line="15" column="20" selection-start-line="15" selection-start-column="20" selection-end-line="15" selection-end-column="20" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -182,16 +161,6 @@
                 <element signature="e#803#804#0" expanded="true" />
                 <element signature="e#835#836#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="MarshallerImpl.class" pinned="false" current-in-tab="false">
-        <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/jre/lib/rt.jar!/com/sun/xml/internal/bind/v2/runtime/MarshallerImpl.class">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="249" column="0" selection-start-line="249" selection-start-column="0" selection-end-line="249" selection-end-column="0" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -264,6 +233,7 @@
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/akka/UntypedActorAdapter.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPHandshake.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/dump.xml" />
+        <option value="$PROJECT_DIR$/server/pom.xml" />
       </list>
     </option>
   </component>
@@ -290,6 +260,26 @@
         <PATH_ELEMENT>
           <option name="myItemId" value="" />
           <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$RootNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$RootNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Too Busy To Search server" />
+          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$ProjectNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$RootNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="tigase-component" />
+          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$ProjectNode" />
         </PATH_ELEMENT>
       </PATH>
       <PATH>
@@ -1818,7 +1808,7 @@
       <workItem from="1443627366773" duration="2463000" />
       <workItem from="1449068457399" duration="9292000" />
       <workItem from="1449153606441" duration="19689000" />
-      <workItem from="1449400609951" duration="35883000" />
+      <workItem from="1449400609951" duration="36394000" />
     </task>
     <task id="LOCAL-00001" summary="Server initial commit">
       <created>1443178411727</created>
@@ -1838,11 +1828,17 @@
       <option name="project" value="LOCAL" />
       <updated>1449068917580</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="XMPPServer prototype">
+      <created>1449572065435</created>
+      <option name="number" value="00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1449572065435</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="110455000" />
+    <option name="totallyTimeSpent" value="110966000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1449" y="-756" width="2178" height="1288" extended-state="0" />
@@ -1853,7 +1849,7 @@
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3285953" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.29026216" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.29026216" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.45980984" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.14580032" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -1916,7 +1912,8 @@
     <MESSAGE value="Stupid NPE fixed. Tigase components artifact" />
     <MESSAGE value="AllocateRoomModule is recovered, the DAO switched back to mysql model" />
     <MESSAGE value="DAO switched back to mysql model" />
-    <option name="LAST_COMMIT_MESSAGE" value="DAO switched back to mysql model" />
+    <MESSAGE value="XMPPServer prototype" />
+    <option name="LAST_COMMIT_MESSAGE" value="XMPPServer prototype" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1955,38 +1952,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$MAVEN_REPOSITORY$/org/codehaus/woodstox/stax2-api/3.1.4/stax2-api-3.1.4-sources.jar!/org/codehaus/stax2/ri/Stax2ReaderAdapter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="46" column="22" selection-start-line="46" selection-start-column="22" selection-end-line="46" selection-end-column="22" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#2973#2974#0" expanded="false" />
-            <element signature="e#2998#2999#0" expanded="false" />
-            <element signature="e#23764#23765#0" expanded="false" />
-            <element signature="e#23824#23825#0" expanded="false" />
-            <element signature="e#25049#25050#0" expanded="false" />
-            <element signature="e#25076#25077#0" expanded="false" />
-            <element signature="e#29266#29267#0" expanded="false" />
-            <element signature="e#29293#29294#0" expanded="false" />
-            <element signature="e#29331#29332#0" expanded="false" />
-            <element signature="e#29358#29359#0" expanded="false" />
-            <element signature="e#29396#29397#0" expanded="false" />
-            <element signature="e#29423#29424#0" expanded="false" />
-            <element signature="e#29461#29462#0" expanded="false" />
-            <element signature="e#29488#29489#0" expanded="false" />
-            <element signature="e#30047#30048#0" expanded="false" />
-            <element signature="e#30074#30075#0" expanded="false" />
-            <element signature="e#30378#30379#0" expanded="false" />
-            <element signature="e#30404#30405#0" expanded="false" />
-            <element signature="e#30447#30448#0" expanded="false" />
-            <element signature="e#30471#30472#0" expanded="false" />
-            <element signature="e#32308#32309#0" expanded="false" />
-            <element signature="e#32335#32336#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$MAVEN_REPOSITORY$/org/codehaus/woodstox/stax2-api/3.1.4/stax2-api-3.1.4-sources.jar!/org/codehaus/stax2/XMLInputFactory2.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -2473,8 +2438,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/sql/MySQLDAO.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.40731996">
-          <caret line="42" column="21" selection-start-line="42" selection-start-column="21" selection-end-line="42" selection-end-column="21" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="51" column="53" selection-start-line="51" selection-start-column="11" selection-end-line="51" selection-end-column="11" />
           <folding>
             <marker date="1448196587000" expanded="true" signature="8197:8279" placeholder="SELECT id, n... Users" />
             <marker date="1448196587000" expanded="true" signature="9152:9230" placeholder="UPDATE tbts.... " />
@@ -2494,6 +2459,14 @@
             <marker date="1448196587000" expanded="true" signature="13276:13324" placeholder="UPDATE tbts.... " />
             <marker date="1448196587000" expanded="true" signature="13445:13491" placeholder="UPDATE tbts.... " />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.14337789">
+          <caret line="15" column="20" selection-start-line="15" selection-start-column="20" selection-end-line="15" selection-end-column="20" />
+          <folding />
         </state>
       </provider>
     </entry>
