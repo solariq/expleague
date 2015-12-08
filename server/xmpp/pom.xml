@@ -57,7 +57,7 @@
             <version>3.1.4</version>
         </dependency>
         <dependency>
-            <groupId>org.fasterxml</groupId>
+            <groupId>com.fasterxml</groupId>
             <artifactId>aalto-xml</artifactId>
             <version>1.0.0</version>
         </dependency>
