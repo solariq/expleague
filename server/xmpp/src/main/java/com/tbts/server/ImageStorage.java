@@ -1,4 +1,4 @@
-package com.tbts.server.img;
+package com.tbts.server;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;
@@ -171,7 +171,8 @@ public class ImageStorage {
           }
           try {
             final File tempFile = File.createTempFile("asdasd", "adsasd");
-            StreamTools.writeBytes(contents.toByteArray(), tempFile); //            final String streamMD5 = new String(Base64.encodeBase64(DigestUtils.md5(img.contents)));
+            StreamTools.writeBytes(contents.toByteArray(), tempFile);
+//            final String streamMD5 = new String(Base64.encodeBase64(DigestUtils.md5(img.contents)));
 //            metadata.setContentMD5(streamMD5);
 
             final PutObjectRequest putRequest = new PutObjectRequest(BUCKET_NAME, id, tempFile);
