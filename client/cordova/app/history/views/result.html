@@ -65,7 +65,7 @@ body {
     <div ng-repeat="message in messages" class="baloon baloon-{{message.type}}">
       <div class="baloon-title">{{message.title}}</div>
       <div class="baloon-text">
-        <div>{{message.text}}</div>
+        <div ng-bind-html="parseMessage(message.text)"></div>
       </div>
     </div>
   </div>

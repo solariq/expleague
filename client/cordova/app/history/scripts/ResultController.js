@@ -44,6 +44,21 @@ angular
       topic: $scope.tbtsHistoryItem.text
     };
 
+    $scope.parseMessage = function(text) {
+      try{
+        var json = JSON.parse(text);
+        var result = '';
+        for (var i = 0, c = json.content; i < c.length; i++) {
+          var title = (c[i].text.title) ? '<div><b>' + c[i].text.title + '</b></div>' : '';
+          var text = (c[i].text.text) ? '<div>' + c[i].text.text + '</div>' : '';
+          result = result + title + text;
+        }
+        return result;
+      } catch(e) {
+        return text;
+      }
+    };
+
     function playSound() {
       var sound = new Media('http://localhost/bb2.mp3');
       // http://ilee.co.uk/phonegap-plays-sound-on-mute/
@@ -210,3 +225,4 @@ angular
       });
     }, false);
   });
+
