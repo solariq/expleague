@@ -22,7 +22,6 @@
     <orderEntry type="library" name="Maven: net.sf.trove4j:trove4j:3.0.3" level="project" />
     <orderEntry type="module" module-name="commons" scope="TEST" production-on-test="" />
     <orderEntry type="module" module-name="xmpp" />
-    <orderEntry type="module" module-name="fastxml" />
     <orderEntry type="library" name="Maven: com.typesafe.akka:akka-actor_2.11:2.4.0" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.11.7" level="project" />
     <orderEntry type="library" name="Maven: com.typesafe:config:1.3.0" level="project" />
