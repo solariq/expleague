@@ -7,12 +7,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c71e5450-21a0-4dac-9e17-b1ca74780897" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_spbsu_fastxml_1_0_SNAPSHOT.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/compiler.xml" afterPath="$PROJECT_DIR$/.idea/compiler.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_protobuf_protobuf_java_2_5_0.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_typesafe_akka_akka_actor_tests_2_11_2_4_M2.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_typesafe_akka_akka_testkit_2_11_2_4_M2.xml" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/tigase-component/tigase-component.iml" afterPath="$PROJECT_DIR$/server/tigase-component/tigase-component.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/pom.xml" afterPath="$PROJECT_DIR$/server/pom.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/pom.xml" afterPath="$PROJECT_DIR$/server/xmpp/pom.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/xmpp.iml" afterPath="$PROJECT_DIR$/server/xmpp/xmpp.iml" />
     </list>
@@ -104,8 +103,8 @@
       <file leaf-file-name="pom.xml" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/server/xmpp/pom.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.36452004">
-              <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.20048603">
+              <caret line="30" column="90" selection-start-line="30" selection-start-column="20" selection-end-line="30" selection-end-column="20" />
               <folding />
             </state>
           </provider>
@@ -114,8 +113,8 @@
       <file leaf-file-name="pom.xml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server/pom.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-4.9166665">
-              <caret line="15" column="20" selection-start-line="15" selection-start-column="20" selection-end-line="15" selection-end-column="20" />
+            <state vertical-scroll-proportion="-15.625">
+              <caret line="25" column="17" selection-start-line="25" selection-start-column="17" selection-end-line="25" selection-end-column="17" />
               <folding />
             </state>
           </provider>
@@ -235,8 +234,8 @@
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/akka/UntypedActorAdapter.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPHandshake.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/dump.xml" />
-        <option value="$PROJECT_DIR$/server/pom.xml" />
         <option value="$PROJECT_DIR$/server/xmpp/pom.xml" />
+        <option value="$PROJECT_DIR$/server/pom.xml" />
       </list>
     </option>
   </component>
@@ -1835,7 +1834,7 @@
       <workItem from="1443627366773" duration="2463000" />
       <workItem from="1449068457399" duration="9292000" />
       <workItem from="1449153606441" duration="19689000" />
-      <workItem from="1449400609951" duration="36486000" />
+      <workItem from="1449400609951" duration="37165000" />
     </task>
     <task id="LOCAL-00001" summary="Server initial commit">
       <created>1443178411727</created>
@@ -1867,11 +1866,17 @@
       <option name="project" value="LOCAL" />
       <updated>1449572524715</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="fastxml changed to aalto">
+      <created>1449572679667</created>
+      <option name="number" value="00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1449572679667</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="111058000" />
+    <option name="totallyTimeSpent" value="111737000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1449" y="-756" width="2178" height="1288" extended-state="0" />
@@ -1946,7 +1951,8 @@
     <MESSAGE value="AllocateRoomModule is recovered, the DAO switched back to mysql model" />
     <MESSAGE value="DAO switched back to mysql model" />
     <MESSAGE value="XMPPServer prototype" />
-    <option name="LAST_COMMIT_MESSAGE" value="XMPPServer prototype" />
+    <MESSAGE value="fastxml changed to aalto" />
+    <option name="LAST_COMMIT_MESSAGE" value="fastxml changed to aalto" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2489,16 +2495,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/pom.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-4.9166665">
-          <caret line="15" column="20" selection-start-line="15" selection-start-column="20" selection-end-line="15" selection-end-column="20" />
+        <state vertical-scroll-proportion="-15.625">
+          <caret line="25" column="17" selection-start-line="25" selection-start-column="17" selection-end-line="25" selection-end-column="17" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/server/xmpp/pom.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.36452004">
-          <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.20048603">
+          <caret line="30" column="90" selection-start-line="30" selection-start-column="20" selection-end-line="30" selection-end-column="20" />
           <folding />
         </state>
       </provider>
