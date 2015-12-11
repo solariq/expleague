@@ -2,10 +2,15 @@ package com.tbts.util.xml;
 
 import com.fasterxml.aalto.AsyncXMLStreamReader;
 import com.spbsu.commons.func.Action;
+import com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallerImpl;
+import com.tbts.util.xml.stolen.StAXStreamConnector;
+import org.xml.sax.SAXException;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.XMLEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
@@ -15,27 +20,29 @@ import java.lang.reflect.Modifier;
  * Time: 15:49
  */
 public class AsyncJAXBStreamReader {
-  private final JAXBObjectBuilder builder;
+  private final StAXStreamConnector connector;
+  private Action action;
 
-  public AsyncJAXBStreamReader(String name, String ns, Class<?> jaxbSchema) {
+  public AsyncJAXBStreamReader(AsyncXMLStreamReader reader, JAXBContext context) {
+    try {
+      final UnmarshallerImpl unmarshaller = (UnmarshallerImpl)context.createUnmarshaller();
+      unmarshaller.setListener(new Unmarshaller.Listener() {
+        @Override
+        public void afterUnmarshal(Object target, Object parent) {
+          //noinspection unchecked
+          action.invoke(target);
+        }
+      });
+      connector = new StAXStreamConnector(reader, unmarshaller.createUnmarshallerHandler(null, false, null));
+    } catch (JAXBException e) {
+      throw new RuntimeException(e);
+    }
     //noinspection unchecked
-    builder = new JAXBObjectBuilder(name, ns, jaxbSchema);
   }
 
-  public void drain(AsyncXMLStreamReader xmlReader, Action action) throws XMLStreamException {
-    int next;
-    while ((next = xmlReader.next()) != AsyncXMLStreamReader.EVENT_INCOMPLETE) {
-      printStateName(next);
-      switch (next) {
-        case XMLEvent.START_DOCUMENT: break;
-        case XMLEvent.END_DOCUMENT: return;
-        case XMLEvent.START_ELEMENT: // fixing lack of attribute event
-          builder.acceptFlat(next, xmlReader, action);
-          next = XMLEvent.ATTRIBUTE;
-        default:
-          builder.acceptFlat(next, xmlReader, action);
-      }
-    }
+  public void drain(Action action) throws XMLStreamException, SAXException {
+    this.action = action;
+    connector.drain();
   }
 
   private void printStateName(int next) {

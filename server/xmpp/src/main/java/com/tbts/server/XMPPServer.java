@@ -6,19 +6,11 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.io.Tcp;
 import akka.io.TcpMessage;
-import akka.util.ByteString;
-import com.tbts.server.xmpp.XMPPHandshake;
+import com.tbts.server.xmpp.XMPPClientConnection;
 import com.tbts.util.akka.UntypedActorAdapter;
-import com.tbts.xmpp.Stream;
-import com.tbts.xmpp.Stanza;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.namespace.QName;
-import java.io.IOException;
-import java.io.StringWriter;
 import java.net.InetSocketAddress;
 
 /**
@@ -27,11 +19,27 @@ import java.net.InetSocketAddress;
  * Time: 17:42
  */
 public class XMPPServer {
+  private static Config config = new Config();
+  private static UserManager users;
+
   public static void main(String[] args) {
+    users = new UserManager() {
+      @Override
+      public JabberUser byName(String name) {
+        return null;
+      }
+    };
+//    Config config = ConfigFactory.parseString("akka.loglevel = DEBUG \n" +
+//        "akka.actor.debug.lifecycle = on \n akka.event-stream = on");
+//    final ActorSystem system = ActorSystem.create("TBTS_Light_XMPP", config);
     final ActorSystem system = ActorSystem.create("TBTS_Light_XMPP");
 //    system.actorOf(Props.create(XMPPClientIncomingStream.class));
     final ActorRef actorRef = system.actorOf(Props.create(ConnectionManager.class));
     system.actorOf(Props.create(Server.class, actorRef));
+  }
+
+  public static synchronized UserManager users() {
+    return users;
   }
 
   public static class ConnectionManager extends UntypedActor {
@@ -52,7 +60,6 @@ public class XMPPServer {
     public void preStart() throws Exception {
       final ActorRef tcp = Tcp.get(getContext().system()).manager();
       tcp.tell(TcpMessage.bind(getSelf(), new InetSocketAddress("localhost", 5222), 100), getSelf());
-      tcp.tell(TcpMessage.bind(getSelf(), new InetSocketAddress("localhost", 5223), 100), getSelf());
     }
 
     public void invoke(Tcp.Event msg) {
@@ -65,78 +72,18 @@ public class XMPPServer {
       else if (msg instanceof Tcp.Connected) {
         final Tcp.Connected conn = (Tcp.Connected) msg;
         manager.tell(conn, getSelf());
-        final ActorRef handshake = getContext().actorOf(Props.create(XMPPHandshake.class, getSender()));
-        getSender().tell(TcpMessage.register(handshake), getSelf());
+        getContext().actorOf(Props.create(XMPPClientConnection.class, getSender()));
       }
     }
   }
 
-  //  public static class XMPPClientIncomingStream extends UntypedActorAdapter {
-//    private static final Logger log = Logger.getLogger(XMPPClientIncomingStream.class.getName());
-//    private final AsyncXMLStreamReader<AsyncByteArrayFeeder> asyncXml;
-//    private final AsyncJAXBStreamReader reader = new AsyncJAXBStreamReader("stream", "http://etherx.jabber.org/streams", Stream.class);
-//
-//    public XMPPClientIncomingStream(ActorRef connection) {
-//      try {
-//        final AsyncXMLInputFactory factory = new InputFactoryImpl();
-//        asyncXml = factory.createAsyncForByteArray();
-//      }
-//      catch (Exception e) {
-//        log.log(Level.SEVERE, "Exception during client connection init", e);
-//        throw new RuntimeException(e);
-//      }
-//    }
-//    public void invoke(Tcp.Received evt) throws IOException, XMLStreamException {
-//      final ByteString data = evt.data();
-//      byte[] copy = new byte[data.length()];
-//      data.asByteBuffer().get(copy);
-//      asyncXml.getInputFeeder().feedInput(copy, 0, copy.length);
-//      reader.drain(asyncXml, o -> {
-//        if (o instanceof Stanza)
-//          incoming((Stanza)o);
-//      });
-//    }
-//
-//    public void invoke(Tcp.ConnectionClosed closed) {
-//      System.out.println("Incoming connection closed");
-//    }
-//
-//    public void incoming(Stanza tag) {
-//      System.out.println(tag.toString());
-//    }
-//  }
+  public static Config config() {
+    return config;
+  }
 
-  public static class XMPPClientOutgoingStream extends UntypedActorAdapter {
-    private final ActorRef connection;
-    private final Marshaller marshaller;
-
-
-    public XMPPClientOutgoingStream(ActorRef connection) {
-      this.connection = connection;
-      try {
-        final JAXBContext context = JAXBContext.newInstance(Stream.class);
-        marshaller = context.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
-      } catch (JAXBException e) {
-        throw new RuntimeException(e);
-      }
-
-    }
-
-    public void invoke(Stanza stanza) {
-      try (final StringWriter writer = new StringWriter(100)){
-        //noinspection unchecked
-        marshaller.marshal(new JAXBElement<>(new QName(stanza.ns(), stanza.name()), (Class<Stanza>)stanza.getClass(), stanza), writer);
-        writer.close();
-        connection.tell(TcpMessage.write(ByteString.fromString(writer.toString())), getSelf());
-      }
-      catch (JAXBException | IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    public void invoke(Tcp.ConnectionClosed closed) {
-      System.out.println("Outgoing connection closed");
+  public static class Config {
+    public String domain() {
+      return "localhost";
     }
   }
 }

@@ -38,6 +38,9 @@ public abstract class UntypedActorAdapter extends UntypedActor {
         method.invoke(this, message);
       }
     }
-    else unhandled(message);
+    else {
+      System.out.println("Unhandeled!: " + message.toString());
+      unhandled(message);
+    }
   }
 }

@@ -98,7 +98,7 @@ public class ImageStorage {
       if (request.method() == HttpMethods.GET && uri.path().equals("/")) {
         response = HttpResponse.create().withEntity(
             MediaTypes.TEXT_HTML.toContentType(),
-            "<html><body><form enctype=\"multipart/form-data\" action=\"/\" method=\"post\" type=><input name=\"id\" type=\"text\"><input name=\"image\" accept=\"image/jpeg\" type=\"file\" alt=\"Submit\"><input type=\"submit\"></form></body></html>");
+            "<html><body><form enctype=\"multipart/form-data\" action=\".\" method=\"post\" type=><input name=\"id\" type=\"text\"><input name=\"image\" accept=\"image/jpeg\" type=\"file\" alt=\"Submit\"><input type=\"submit\"></form></body></html>");
       }
       else if (request.method() == HttpMethods.GET) {
         final String id = uri.path().substring(1); // skip first slash
