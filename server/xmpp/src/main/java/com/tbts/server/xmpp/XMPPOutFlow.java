@@ -6,7 +6,6 @@ import akka.stream.stage.PushPullStage;
 import akka.stream.stage.SyncDirective;
 import akka.stream.stage.TerminationDirective;
 import akka.util.ByteString;
-import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 import com.tbts.xmpp.Item;
 import com.tbts.xmpp.Stream;
 import org.jetbrains.annotations.NotNull;
@@ -34,31 +33,12 @@ public class XMPPOutFlow extends PushPullStage<Item, ByteString> {
   private final JAXBIntrospector introspector;
 
   public XMPPOutFlow() {
-    try {
-      final JAXBContext context = Stream.jaxb();
-      introspector = context.createJAXBIntrospector();
-      marshaller = context.createMarshaller();
-      marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
-      marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new NamespacePrefixMapper() {
-        @Override
-        public String getPreferredPrefix(String ns, String suggest, boolean requirePrefix) {
-//          System.out.println(ns + " " + suggest + " " + requirePrefix);
-          switch (ns) {
-            case "http://etherx.jabber.org/streams":
-              return "stream";
-            case "http://www.w3.org/XML/1998/namespace":
-              return "xml";
-            default:
-              return "";
-          }
-        }
-      });
-      queue.add(ByteString.fromString(
-          "<stream:stream xmlns:stream=\"http://etherx.jabber.org/streams\" version=\"1.0\" xmlns=\"jabber:client\" xml:lang=\"en\" xmlns:xml=\"http://www.w3.org/XML/1998/namespace\">"
-      ));
-    } catch (JAXBException e) {
-      throw new RuntimeException(e);
-    }
+    final JAXBContext context = Stream.jaxb();
+    introspector = context.createJAXBIntrospector();
+    marshaller = Stream.marshaller();
+    queue.add(ByteString.fromString(
+        "<stream:stream xmlns:stream=\"http://etherx.jabber.org/streams\" version=\"1.0\" xmlns=\"jabber:client\" xml:lang=\"en\" xmlns:xml=\"http://www.w3.org/XML/1998/namespace\">"
+    ));
   }
 
   @Override
@@ -74,6 +54,7 @@ public class XMPPOutFlow extends PushPullStage<Item, ByteString> {
       //noinspection unchecked
       marshaller.marshal(new JAXBElement<>(qnameByItem(item), (Class<Item>) item.getClass(), item), writer);
       writer.close();
+//      System.out.println("< " + writer.toString());
       queue.add(ByteString.fromString(writer.toString()));
     } catch (JAXBException | IOException e) {
       throw new RuntimeException(e);

@@ -2,7 +2,7 @@ package com.tbts.xmpp.control.sasl;
 
 import com.tbts.server.JabberUser;
 import com.tbts.server.XMPPServer;
-import com.tbts.xmpp.Item;
+import com.tbts.xmpp.control.XMPPFeature;
 
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
@@ -19,7 +19,7 @@ import java.util.*;
  * Time: 16:14
  */
 @XmlRootElement
-public class Mechanisms extends Item  {
+public class Mechanisms extends XMPPFeature {
   @XmlElement(name = "mechanism", namespace = "urn:ietf:params:xml:ns:xmpp-sasl")
   @XmlJavaTypeAdapter(AuthMechanismXmlAdapter.class)
   private final List<SaslServer> mechanisms = new ArrayList<>();
@@ -49,13 +49,20 @@ public class Mechanisms extends Item  {
         return Sasl.createSaslServer(mechanism, "xmpp", XMPPServer.config().domain(), Collections.emptyMap(), callbacks -> {
           final Optional<NameCallback> nameO = Arrays.asList(callbacks).stream().filter(callback -> callback instanceof NameCallback).map(a -> (NameCallback)a).findAny();
           final Optional<PasswordCallback> passwdO = Arrays.asList(callbacks).stream().filter(callback -> callback instanceof PasswordCallback).map(a -> (PasswordCallback)a).findAny();
+          final Optional<AuthorizeCallback> authO = Arrays.asList(callbacks).stream().filter(callback -> callback instanceof AuthorizeCallback).map(a -> (AuthorizeCallback)a).findAny();
           if (passwdO.isPresent() && nameO.isPresent()) {
             final PasswordCallback passwd = passwdO.get();
-            final JabberUser user = XMPPServer.users().byName(nameO.get().getName());
+            final JabberUser user = XMPPServer.roster().byName(nameO.get().getDefaultName());
             if (user != null)
               passwd.setPassword(user.passwd().toCharArray());
             else
               throw new AuthenticationException("No such user");
+          }
+          if (authO.isPresent()) {
+            final AuthorizeCallback auth = authO.get();
+            if (auth.getAuthenticationID().equals(auth.getAuthorizationID())) {
+              auth.setAuthorized(true);
+            }
           }
         });
       } catch (SaslException e) {

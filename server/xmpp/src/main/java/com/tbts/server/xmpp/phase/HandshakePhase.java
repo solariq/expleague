@@ -23,6 +23,6 @@ public class HandshakePhase extends XMPPPhase {
   public void invoke(StartTLS tls) {
     answer(new Proceed());
     stop();
-    controller.tell(XMPPClientConnection.ConnectionState.AUTHORIZATION, ActorRef.noSender());
+    controller.tell(XMPPClientConnection.ConnectionState.STARTTLS, ActorRef.noSender());
   }
 }

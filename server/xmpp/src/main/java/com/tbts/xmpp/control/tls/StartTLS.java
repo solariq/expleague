@@ -1,6 +1,6 @@
 package com.tbts.xmpp.control.tls;
 
-import com.tbts.xmpp.Item;
+import com.tbts.xmpp.control.XMPPFeature;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -10,5 +10,5 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Time: 18:07
  */
 @XmlRootElement(name = "starttls")
-public class StartTLS extends Item {
+public class StartTLS extends XMPPFeature {
 }

@@ -1,9 +1,14 @@
 package com.tbts.server.xmpp.phase;
 
 import akka.actor.ActorRef;
+import com.tbts.server.Roster;
 import com.tbts.server.xmpp.XMPPClientConnection;
 import com.tbts.xmpp.Features;
+import com.tbts.xmpp.control.register.Query;
+import com.tbts.xmpp.control.register.Register;
 import com.tbts.xmpp.control.sasl.*;
+import com.tbts.xmpp.stanza.IqH;
+import com.tbts.xmpp.stanza.data.Err;
 
 import javax.security.sasl.AuthenticationException;
 import javax.security.sasl.SaslException;
@@ -16,6 +21,7 @@ import java.util.logging.Logger;
  * Date: 10.12.15
  * Time: 16:03
  */
+@SuppressWarnings("unused")
 public class AuthorizationPhase extends XMPPPhase {
   private static final Logger log = Logger.getLogger(AuthorizationPhase.class.getName());
   private final ActorRef controller;
@@ -27,8 +33,27 @@ public class AuthorizationPhase extends XMPPPhase {
     auth = new Mechanisms();
     auth.fillKnownMechanisms();
     answer(new Features(
-        auth
+        auth,
+        new Register()
     ));
+  }
+
+  public void invoke(IqH<Query> request) {
+    final Query query = request.get();
+    if (query != null) {
+      if (request.type() == IqH.IqType.GET && query.isEmpty()) {
+        answer(IqH.answer(request, Roster.instance().required()));
+      }
+      else if (request.type() == IqH.IqType.SET && !query.isEmpty()) {
+        try {
+          Roster.instance().register(query);
+          answer(IqH.answer(request));
+        }
+        catch (Exception e) {
+          answer(IqH.answer(request, new Err(Err.Cause.INSTERNAL_SERVER_ERROR, Err.ErrType.AUTH, e.getMessage())));
+        }
+      }
+    }
   }
 
   public void invoke(Response response) {
@@ -41,6 +66,7 @@ public class AuthorizationPhase extends XMPPPhase {
       }
       else {
         answer(new Success());
+        stop();
         controller.tell(XMPPClientConnection.ConnectionState.CONNECTED, ActorRef.noSender());
       }
     }

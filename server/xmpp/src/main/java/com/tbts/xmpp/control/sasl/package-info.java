@@ -5,9 +5,11 @@
  */
 @XmlSchema(
     namespace = "urn:ietf:params:xml:ns:xmpp-sasl",
+    elementFormDefault = XmlNsForm.UNQUALIFIED,
     xmlns = {@XmlNs(prefix = "", namespaceURI = "urn:ietf:params:xml:ns:xmpp-sasl")}
 )
 package com.tbts.xmpp.control.sasl;
 
 import javax.xml.bind.annotation.XmlNs;
+import javax.xml.bind.annotation.XmlNsForm;
 import javax.xml.bind.annotation.XmlSchema;

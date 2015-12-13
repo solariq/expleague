@@ -41,6 +41,11 @@ public class XMPPPhase extends PushPullStage<Item, Item> {
   private final Queue<Item> out = new ArrayDeque<>();
   @Override
   public SyncDirective onPush(Item message, Context<Item> itemContext) {
+    invoke(message);
+    return onPull(itemContext);
+  }
+
+  private void invoke(Object message) {
     Collection<Method> methods = methodMap.get(message.getClass());
     if (methods == MultiMap.EMPTY) {
       methods = new ArrayList<>();
@@ -61,9 +66,8 @@ public class XMPPPhase extends PushPullStage<Item, Item> {
         }
       }
     }
-    else unhandled(message);
-
-    return onPull(itemContext);
+    else if (message instanceof Item)
+      unhandled((Item) message);
   }
 
   @Override

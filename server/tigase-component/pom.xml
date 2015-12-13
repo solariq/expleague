@@ -31,6 +31,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.tbts</groupId>
+            <artifactId>model</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.spbsu</groupId>
             <artifactId>commons</artifactId>
             <version>1.0-SNAPSHOT</version>
@@ -88,11 +94,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
-        </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk</artifactId>
-            <version>1.9.29</version>
         </dependency>
     </dependencies>
 </project>

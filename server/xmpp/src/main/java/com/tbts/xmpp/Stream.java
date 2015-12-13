@@ -1,9 +1,11 @@
 package com.tbts.xmpp;
 
 import com.spbsu.commons.system.RuntimeUtils;
+import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -22,7 +24,6 @@ import java.util.stream.Collectors;
 @SuppressWarnings("unused")
 @XmlRootElement
 public class Stream {
-  public static final String NS = "http://etherx.jabber.org/streams";
   @XmlAttribute
   private String version;
   @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
@@ -62,5 +63,36 @@ public class Stream {
   }
   public static JAXBContext jaxb() {
     return context;
+  }
+
+  public static Marshaller marshaller() {
+    final Marshaller marshaller;
+    try {
+      marshaller = jaxb().createMarshaller();
+      marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+      marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new NamespacePrefixMapper() {
+        @Override
+        public String[] getPreDeclaredNamespaceUris() {
+          return new String[]{"http://etherx.jabber.org/streams", "http://www.w3.org/XML/1998/namespace", "jabber:client"};
+        }
+
+        @Override
+        public String getPreferredPrefix(String ns, String suggest, boolean requirePrefix) {
+//          System.out.println(ns + " " + suggest + " " + requirePrefix);
+          switch (ns) {
+            case "http://etherx.jabber.org/streams":
+              return "stream";
+            case "http://www.w3.org/XML/1998/namespace":
+              return "xml";
+            default:
+              return "";
+          }
+        }
+      });
+    }
+    catch (JAXBException e) {
+      throw new RuntimeException(e);
+    }
+    return marshaller;
   }
 }

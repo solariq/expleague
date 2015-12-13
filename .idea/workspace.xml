@@ -7,59 +7,135 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c71e5450-21a0-4dac-9e17-b1ca74780897" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_sun_xml_bind_jaxb_core_2_2_11.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_sun_xml_bind_jaxb_impl_2_2_11.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/JabberUser.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/UserManager.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPInFlow.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPOutFlow.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/HandshakePhase.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/XMPPPhase.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/Base64Adapter.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/stolen/StAXConnector.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/stolen/StAXStreamConnector.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Features.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Item.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/XMPPFeature.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Auth.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Challenge.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Failure.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Mechanisms.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Response.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Success.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/package-info.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/tls/Proceed.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/tls/StartTLS.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/tls/package-info.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/package-info.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/package-info.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/test/java/tbts/akka/TestStreams.java" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/AsyncXMLBuilder.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/JAXBObjectBuilder.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/XmlInstructionBuilderFactory.java" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_codehaus_woodstox_stax2_api_3_1_4.xml" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_codehaus_woodstox_stax2_api_4_0_0.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPHandshake.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/IQ.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/IQ.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Message.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Message.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Presence.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Presence.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Stanza.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Stanza.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_httpcomponents_httpclient_4_3_4.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_httpcomponents_httpcore_4_3_2.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/model/pom.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/roster/MySQLRoster.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/SSLHandshake.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/Field.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/Item.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/ObjectFactory.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/Option.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/Query.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/Register.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/Reported.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/X.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/package-info.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/IqH.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/data/Err.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/data/Text.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/resources/xmpp/iq-register.xsd" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/resources/xmpp/jabber-client.xsd" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/resources/xmpp/sasl.xsd" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/resources/xmpp/x-data.xsd" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_autoscaling_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_cloudformation_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_cloudfront_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_cloudhsm_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_cloudsearch_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_cloudtrail_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_cloudwatch_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_cloudwatchmetrics_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_codedeploy_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_cognitoidentity_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_cognitosync_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_config_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_datapipeline_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_directconnect_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_ec2_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_ecs_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_elasticache_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_elasticbeanstalk_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_elasticloadbalancing_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_elastictranscoder_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_emr_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_glacier_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_iam_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_importexport_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_kinesis_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_lambda_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_logs_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_opsworks_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_rds_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_redshift_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_route53_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_ses_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_simpledb_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_simpleworkflow_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_sns_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_sqs_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_ssm_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_storagegateway_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_sts_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_support_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_amazonaws_aws_java_sdk_swf_libraries_1_9_29.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/resources/application.conf" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/IQ.java" afterPath="" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/DistributedItem.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/DistributedItem.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/DynamoDBArchive.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/DynamoDBArchive.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/InMemArchive.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/InMemArchive.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/MySQLOps.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/MySQLOps.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/eb/EBRoom.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/eb/EBRoom.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/eb/EBUser.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/eb/EBUser.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/eb/EventBus.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/eb/EventBus.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/eb/EventBusDAO.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/eb/EventBusDAO.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/eb/impl/MySQLEventBus.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/eb/impl/MySQLEventBus.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/sql/MySQLDAO.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/sql/MySQLDAO.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/sql/SQLClient.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/sql/SQLClient.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/sql/SQLExpert.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/sql/SQLExpert.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/dao/sql/SQLRoom.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/sql/SQLRoom.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/model/Answer.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/Answer.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/model/Client.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/Client.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/model/Expert.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/Expert.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/model/Query.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/Query.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/model/Room.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/Room.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/model/StateWise.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/StateWise.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/model/handlers/Archive.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/handlers/Archive.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/model/handlers/ClientManager.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/handlers/ClientManager.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/model/handlers/DAO.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/handlers/DAO.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/model/handlers/ExpertManager.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/handlers/ExpertManager.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/model/handlers/Reception.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/handlers/Reception.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/model/impl/ClientImpl.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/impl/ClientImpl.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/model/impl/ExpertImpl.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/impl/ExpertImpl.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/tigase-component/src/main/java/com/tbts/model/impl/RoomImpl.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/impl/RoomImpl.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/UserManager.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/Roster.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/server/xmpp/src/main/resources/application.conf" afterPath="$PROJECT_DIR$/server/xmpp/src/main/resources/tbts.conf" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dataSources.ids" afterPath="$PROJECT_DIR$/.idea/dataSources.ids" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/commons" afterPath="$PROJECT_DIR$/server/commons" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/compiler.xml" afterPath="$PROJECT_DIR$/.idea/compiler.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dataSources.xml" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/encodings.xml" afterPath="$PROJECT_DIR$/.idea/encodings.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/com_fasterxml_aalto_xml_1_0_0.xml" afterPath="$PROJECT_DIR$/.idea/libraries/com_fasterxml_aalto_xml_1_0_0.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/com_fasterxml_staxmate_staxmate_2_3_0.xml" afterPath="$PROJECT_DIR$/.idea/libraries/com_fasterxml_staxmate_staxmate_2_3_0.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/commons/pom.xml" afterPath="$PROJECT_DIR$/server/commons/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/io/StreamTools.java" afterPath="$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/io/StreamTools.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/net/URLConnectionTools.java" afterPath="$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/net/URLConnectionTools.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/system/RuntimeUtils.java" afterPath="$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/system/RuntimeUtils.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/util/MultiMap.java" afterPath="$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/util/MultiMap.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/pom.xml" afterPath="$PROJECT_DIR$/server/pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/tigase-component/pom.xml" afterPath="$PROJECT_DIR$/server/tigase-component/pom.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/tigase-component/tigase-component.iml" afterPath="$PROJECT_DIR$/server/tigase-component/tigase-component.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp-bots/xmpp-bots.iml" afterPath="$PROJECT_DIR$/server/xmpp-bots/xmpp-bots.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/pom.xml" afterPath="$PROJECT_DIR$/server/xmpp/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/ImageStorage.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/ImageStorage.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/XMPPServer.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/XMPPServer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/akka/UntypedActorAdapter.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/akka/UntypedActorAdapter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/AsyncJAXBStreamReader.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/AsyncJAXBStreamReader.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPInFlow.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPInFlow.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPOutFlow.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPOutFlow.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/dump.xml" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/dump.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/HandshakePhase.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/HandshakePhase.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/XMPPPhase.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/XMPPPhase.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Features.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Features.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Item.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Item.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Stream.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Stream.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/resources/application.conf" afterPath="$PROJECT_DIR$/server/xmpp/src/main/resources/application.conf" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/XMPPFeature.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/XMPPFeature.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Mechanisms.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Mechanisms.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/package-info.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/package-info.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/tls/StartTLS.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/tls/StartTLS.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/package-info.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/package-info.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Message.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Message.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Presence.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Presence.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Stanza.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Stanza.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/package-info.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/package-info.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/xmpp.iml" afterPath="$PROJECT_DIR$/server/xmpp/xmpp.iml" />
     </list>
     <ignored path="tbts.iws" />
@@ -70,6 +146,7 @@
     <ignored path="$PROJECT_DIR$/server/tigase-component/target/" />
     <ignored path="$PROJECT_DIR$/server/commons/target/" />
     <ignored path="$PROJECT_DIR$/server/xmpp-bots/target/" />
+    <ignored path="$PROJECT_DIR$/server/model/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -81,80 +158,71 @@
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
   </component>
+  <component name="DatabaseView">
+    <option name="GROUP_SCHEMA" value="true" />
+    <option name="GROUP_CONTENTS" value="false" />
+    <option name="SORT_POSITIONED" value="false" />
+    <option name="SHOW_TABLE_DETAILS" value="true" />
+    <option name="SHOW_EMPTY_GROUPS" value="false" />
+    <PATH>
+      <PATH_ELEMENT>
+        <option name="myItemId" />
+        <option name="myItemType" value="com.intellij.database.view.DatabaseStructure$Root" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="MySQL - tbts@localhost" />
+        <option name="myItemType" value="com.intellij.database.view.DbNodeDescriptor" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="Users" />
+        <option name="myItemType" value="com.intellij.database.view.DbNodeDescriptor" />
+      </PATH_ELEMENT>
+    </PATH>
+    <PATH>
+      <PATH_ELEMENT>
+        <option name="myItemId" />
+        <option name="myItemType" value="com.intellij.database.view.DatabaseStructure$Root" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="MySQL - tbts@localhost" />
+        <option name="myItemType" value="com.intellij.database.view.DbNodeDescriptor" />
+      </PATH_ELEMENT>
+    </PATH>
+  </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FavoritesManager">
     <favorites_list name="tbts" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="Stream.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Stream.java">
+      <file leaf-file-name="XMPPClientConnection.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="29" column="19" selection-start-line="29" selection-start-column="19" selection-end-line="29" selection-end-column="19" />
+              <caret line="202" column="0" selection-start-line="202" selection-start-column="0" selection-end-line="202" selection-end-column="0" />
               <folding>
-                <element signature="e#1895#1896#0" expanded="true" />
-                <element signature="e#1919#1920#0" expanded="true" />
+                <element signature="imports" expanded="true" />
+                <element signature="e#917#944#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="StartTLS.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/tls/StartTLS.java">
+      <file leaf-file-name="Shape.scala" pinned="false" current-in-tab="false">
+        <entry file="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1-sources.jar!/akka/stream/Shape.scala">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="10" column="32" selection-start-line="10" selection-start-column="3" selection-end-line="10" selection-end-column="3" />
+              <caret line="248" column="17" selection-start-line="248" selection-start-column="17" selection-end-line="248" selection-end-column="17" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="package-info.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/tls/package-info.java">
+      <file leaf-file-name="XMPPInFlow.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPInFlow.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="12" column="67" selection-start-line="12" selection-start-column="43" selection-end-line="12" selection-end-column="43" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Predicate.java" pinned="false" current-in-tab="false">
-        <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/java/util/function/Predicate.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="48" column="12" selection-start-line="48" selection-start-column="12" selection-end-line="48" selection-end-column="12" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="RuntimeUtils.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/system/RuntimeUtils.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="107" column="0" selection-start-line="107" selection-start-column="0" selection-end-line="107" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="StreamTools.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/io/StreamTools.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="305" column="22" selection-start-line="305" selection-start-column="22" selection-end-line="305" selection-end-column="22" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TypeConvertersCollection.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/func/types/impl/TypeConvertersCollection.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="63" column="46" selection-start-line="63" selection-start-column="46" selection-end-line="63" selection-end-column="46" />
+              <caret line="40" column="40" selection-start-line="40" selection-start-column="40" selection-end-line="40" selection-end-column="40" />
               <folding />
             </state>
           </provider>
@@ -164,30 +232,76 @@
         <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPOutFlow.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="37" column="0" selection-start-line="37" selection-start-column="0" selection-end-line="37" selection-end-column="0" />
+              <caret line="54" column="32" selection-start-line="54" selection-start-column="32" selection-end-line="54" selection-end-column="32" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Item.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/Item.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="39" column="13" selection-start-line="39" selection-start-column="13" selection-end-line="39" selection-end-column="13" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="IqH.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/IqH.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.60453403">
+              <caret line="55" column="16" selection-start-line="55" selection-start-column="16" selection-end-line="55" selection-end-column="16" />
               <folding>
-                <element signature="imports" expanded="true" />
+                <element signature="e#2224#2225#0" expanded="true" />
+                <element signature="e#2262#2263#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="XMPPInFlow.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPInFlow.java">
+      <file leaf-file-name="Item.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Item.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.517611">
-              <caret line="46" column="0" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="25" column="34" selection-start-line="25" selection-start-column="34" selection-end-line="25" selection-end-column="34" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AsyncJAXBStreamReader.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/AsyncJAXBStreamReader.java">
+      <file leaf-file-name="XMPPServer.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/XMPPServer.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="28" column="0" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
+              <caret line="35" column="66" selection-start-line="35" selection-start-column="66" selection-end-line="35" selection-end-column="66" />
+              <folding>
+                <element signature="e#1663#1664#0" expanded="true" />
+                <element signature="e#1685#1686#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AuthorizationPhase.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="67" column="0" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SSLHandshake.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/SSLHandshake.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="40" column="66" selection-start-line="40" selection-start-column="37" selection-end-line="40" selection-end-column="37" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -197,8 +311,6 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Interface" />
-        <option value="package-info" />
         <option value="Class" />
       </list>
     </option>
@@ -214,57 +326,57 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/AuthMechanism.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/SaslPLAIN.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/auth/AbstractSasl.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/auth/MechanismsFeature.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/auth/SaslANONYMOUS.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/auth/SaslPLAIN.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/auth/AuthMechanismsFactory.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/auth/package-info.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/auth/AuthCommand.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/SuccessStatus.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/Base64Adapter.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/auth/ChallengeCommand.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/auth/ResponceCommand.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/auth/ResponseCommand.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/JAXBInFlow.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/stolen/StAXConnector.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/stolen/StAXStreamConnector.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/auth/AuthMechanismsFeature.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/auth/Response.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/auth/SuccessStatus.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/auth/Success.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Item.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/tls/StartTLS.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Auth.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Challenge.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Success.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Response.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/tls/Proceed.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/Features.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/IQ.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Message.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Presence.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Stanza.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Features.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/package-info.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/tls/package-info.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/package-info.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/package-info.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/UserManager.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/JabberUser.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Mechanisms.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Failure.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/XMPPServer.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPOutFlow.java" />
+        <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="$PROJECT_DIR$/server/tigase-component/main/src/java/com/tbts/tigase/component/AllocateRoomModule.java" />
+        <option value="$PROJECT_DIR$/server/pom.xml" />
         <option value="$PROJECT_DIR$/server/xmpp/pom.xml" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/AsyncJAXBStreamReader.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPInFlow.java" />
-        <option value="$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/system/RuntimeUtils.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/resources/application.conf" />
+        <option value="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/impl/RoomImpl.java" />
+        <option value="$PROJECT_DIR$/server/tigase-component/pom.xml" />
+        <option value="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/DynamoDBArchive.java" />
+        <option value="$PROJECT_DIR$/server/model/pom.xml" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Thread.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Message.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/resources/xmpp/iq-register.xsd" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/X.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Presence.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/XMPPFeature.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/Register.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Features.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/tls/StartTLS.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/jaxb/ErrorType.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/data/Text.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/jaxb/ErrorCause.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/package-info.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/package-info.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/package-info.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/package-info.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Stream.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Error.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Stanza.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/Roster.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/Query.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/roster/MySQLRoster.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/data/Error.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/data/Err.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Mechanisms.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/dump.xml" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/XMPPPhase.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/Example.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/SSLEngineSimpleDemo.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/HandshakePhase.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/SSLHandshake.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/SSLHandshake.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPInFlow.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPOutFlow.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/tls/OptionalTLSConnection.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Item.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/XMPPServer.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Iq.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/IQ.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/IqH.java" />
       </list>
     </option>
   </component>
@@ -278,11 +390,6 @@
       <MavenGeneralSettings>
         <option name="mavenHome" value="Bundled (Maven 3)" />
       </MavenGeneralSettings>
-    </option>
-    <option name="importingSettings">
-      <MavenImportingSettings>
-        <option name="importAutomatically" value="true" />
-      </MavenImportingSettings>
     </option>
   </component>
   <component name="MavenProjectNavigator">
@@ -299,30 +406,6 @@
           <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$RootNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="Too Busy To Search server" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$ProjectNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$RootNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="Too Busy To Search server" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$ProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="Lifecycle" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$LifecycleNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$RootNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
           <option name="myItemId" value="tigase-component" />
           <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$ProjectNode" />
         </PATH_ELEMENT>
@@ -333,12 +416,8 @@
           <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$RootNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="tigase-component" />
+          <option name="myItemId" value="model" />
           <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$ProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="Lifecycle" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$LifecycleNode" />
         </PATH_ELEMENT>
       </PATH>
       <PATH>
@@ -349,47 +428,14 @@
         <PATH_ELEMENT>
           <option name="myItemId" value="light-xmpp" />
           <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$ProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="Dependencies" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$DependenciesNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$RootNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="light-xmpp" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$ProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="Plugins" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$PluginsNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$RootNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="light-xmpp" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$ProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="Lifecycle" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$LifecycleNode" />
         </PATH_ELEMENT>
       </PATH>
     </treeState>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="1452" />
-    <option name="y" value="-776" />
-    <option name="width" value="2178" />
-    <option name="height" value="1288" />
+    <option name="y" value="23" />
+    <option name="width" value="1280" />
+    <option name="height" value="723" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -416,7 +462,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -427,6 +472,198 @@
             <PATH_ELEMENT>
               <option name="myItemId" value="External Libraries" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.typesafe.akka:akka-stream-experimental_2.11:2.0-M1" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="akka-stream-experimental_2.11-2.0-M1.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.typesafe.akka:akka-stream-experimental_2.11:2.0-M1" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="akka-stream-experimental_2.11-2.0-M1.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="stream" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.typesafe.akka:akka-stream-experimental_2.11:2.0-M1" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="akka-stream-experimental_2.11-2.0-M1.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="stream" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="io" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.typesafe.akka:akka-stream-experimental_2.11:2.0-M1" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="akka-stream-experimental_2.11-2.0-M1.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="stream" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="io" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Server.class" />
+              <option name="myItemType" value="org.jetbrains.plugins.scala.components.ScalaDefsProjectViewProvider$ScalaFileTreeNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.sun.xml.bind:jaxb-impl:2.2.11" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jaxb-impl-2.2.11.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.sun.xml.bind:jaxb-impl:2.2.11" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jaxb-impl-2.2.11.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="bind" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.sun.xml.bind:jaxb-impl:2.2.11" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jaxb-impl-2.2.11.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="bind" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="v2" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.sun.xml.bind:jaxb-impl:2.2.11" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jaxb-impl-2.2.11.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="bind" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="v2" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="runtime" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
           <PATH>
@@ -505,6 +742,150 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.fasterxml:aalto-xml:1.0.0" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="aalto-xml-1.0.0.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="aalto" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="out" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.fasterxml:aalto-xml:1.0.0" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="aalto-xml-1.0.0.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="aalto" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="io" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.fasterxml:aalto-xml:1.0.0" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="aalto-xml-1.0.0.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="aalto" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="async" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.fasterxml.jackson.core:jackson-databind:2.5.3" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jackson-databind-2.5.3.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.fasterxml.jackson.core:jackson-databind:2.5.3" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jackson-databind-2.5.3.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="databind" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.fasterxml.jackson.core:jackson-databind:2.5.3" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jackson-databind-2.5.3.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="databind" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ext" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="&lt; 1.8 &gt;" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
             </PATH_ELEMENT>
@@ -524,6 +905,96 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="rt.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="&lt; 1.8 &gt;" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="rt.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="javax" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="xml" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="&lt; 1.8 &gt;" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="rt.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="javax" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="xml" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="bind" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="&lt; 1.8 &gt;" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="rt.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="javax" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="xml" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="bind" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="annotation" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -724,18 +1195,6 @@
               <option name="myItemId" value="src" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="test" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="akka" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
@@ -793,6 +1252,40 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="resources" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="xmpp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="xmpp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="java" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -839,11 +1332,11 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="util" />
+              <option name="myItemId" value="xmpp" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="xml" />
+              <option name="myItemId" value="stanza" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -881,11 +1374,183 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="util" />
+              <option name="myItemId" value="xmpp" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="akka" />
+              <option name="myItemId" value="stanza" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="data" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="xmpp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="xmpp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="control" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="xmpp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="xmpp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="control" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sasl" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="xmpp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="xmpp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="control" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="register" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="xmpp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1081,41 +1746,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="resources" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tbts" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tbts" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="server" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tigase-component" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="main" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
               <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tbts" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -1137,7 +1768,25 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="tigase-component" />
+              <option name="myItemId" value="model" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="model" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -1154,6 +1803,86 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="model" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="dao" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="model" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="dao" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="eb" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1224,6 +1953,7 @@
         </subPane>
       </pane>
       <pane id="Scope" />
+      <pane id="PackagesPane" />
       <pane id="Scratches" />
     </panes>
   </component>
@@ -1235,7 +1965,7 @@
     <property name="GoToClass.includeLibraries" value="false" />
     <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="last_opened_file_path" value="$USER_HOME$/Downloads/vcs/camel-xmpp-server-read-only" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/server/model/pom.xml" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
@@ -1244,10 +1974,11 @@
     <property name="Downloaded.Files.Path" value="$PROJECT_DIR$/server/libs" />
     <property name="Repository.Attach.JavaDocs" value="true" />
     <property name="Repository.Attach.Sources" value="true" />
-    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Java" />
+    <property name="settings.editor.selected.configurable" value="reference.settings.project.maven.repository.indices" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="recentsLimit" value="5" />
     <property name="dynamic.classpath" value="false" />
+    <property name="UNSCRAMBLE_LOG_FILE_LAST_URL" value="" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="227" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="244" />
@@ -1265,62 +1996,36 @@
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="1038" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder3" value="3" />
     <property name="js-jscs-nodeInterpreter" value="$USER_HOME$/.nvm/versions/node/v0.12.7/bin/node" />
+    <property name="last_directory_selection" value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/data" />
     <property name="extract.method.default.visibility" value="private" />
-    <property name="last_directory_selection" value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza" />
+      <recent name="$PROJECT_DIR$/server/model/src" />
       <recent name="$PROJECT_DIR$/server/libs/tigase" />
       <recent name="$PROJECT_DIR$/server/main/src" />
     </key>
-    <key name="MoveMembersDialog.RECENTS_KEY">
-      <recent name="com.spbsu.commons.net.URLConnectionTools" />
-    </key>
-    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
-      <recent name="com.tbts.xmpp.control.auth" />
-      <recent name="com.tbts.util.akka" />
-      <recent name="com.tbts.xmpp" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/server/tigase-component/src/main/resources" />
-    </key>
-    <key name="CopyClassDialog.RECENTS_KEY">
-      <recent name="com.tbts.xmpp.control.auth" />
-      <recent name="com.tbts.xmpp.control" />
-      <recent name="com.tbts.util.xml" />
-    </key>
-    <key name="CreateClassDialog.RecentsKey">
-      <recent name="com.tbts.server" />
-      <recent name="com.tbts.xmpp.control.auth" />
-      <recent name="com.tbts.xmpp.control" />
-      <recent name="com.tbts.xmpp" />
-    </key>
   </component>
   <component name="RunManager" selected="Application.XMPPServer">
-    <configuration default="false" name="TestStreams.testFlows" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration default="false" name="SSLEngineSimpleDemo" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
         <pattern>
-          <option name="PATTERN" value="tbts.akka.*" />
+          <option name="PATTERN" value="com.tbts.server.xmpp.tls.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
-      <module name="xmpp" />
+      <option name="MAIN_CLASS_NAME" value="com.tbts.server.xmpp.SSLEngineSimpleDemo" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$/server" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" value="tbts.akka" />
-      <option name="MAIN_CLASS_NAME" value="tbts.akka.TestStreams" />
-      <option name="METHOD_NAME" value="testFlows" />
-      <option name="TEST_OBJECT" value="method" />
-      <option name="VM_PARAMETERS" value="-ea" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="moduleWithDependencies" />
-      </option>
+      <module name="xmpp" />
       <envs />
-      <patterns />
       <method />
     </configuration>
     <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin">
@@ -1397,10 +2102,10 @@
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="MAIN_CLASS_NAME" value="" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$/server" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
       <option name="ENABLE_SWING_INSPECTOR" value="false" />
@@ -1643,28 +2348,6 @@
       <envs />
       <method />
     </configuration>
-    <configuration default="true" type="MavenRunConfiguration" factoryName="Maven">
-      <MavenSettings>
-        <option name="myGeneralSettings" />
-        <option name="myRunnerSettings" />
-        <option name="myRunnerParameters">
-          <MavenRunnerParameters>
-            <option name="profiles">
-              <set />
-            </option>
-            <option name="goals">
-              <list />
-            </option>
-            <option name="profilesMap">
-              <map />
-            </option>
-            <option name="resolveToWorkspace" value="false" />
-            <option name="workingDirPath" value="" />
-          </MavenRunnerParameters>
-        </option>
-      </MavenSettings>
-      <method />
-    </configuration>
     <configuration default="true" type="Remote" factoryName="Remote">
       <option name="USE_SOCKET_TRANSPORT" value="true" />
       <option name="SERVER_MODE" value="false" />
@@ -1805,10 +2488,10 @@
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <option name="MAIN_CLASS_NAME" value="tigase.server.XMPPServer" />
       <option name="VM_PARAMETERS" value="" />
-      <option name="PROGRAM_PARAMETERS" value="--property-file etc/init-local.properties" />
+      <option name="PROGRAM_PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$/server" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
       <option name="ENABLE_SWING_INSPECTOR" value="false" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
@@ -1824,7 +2507,7 @@
         </pattern>
       </extension>
       <option name="MAIN_CLASS_NAME" value="com.tbts.server.XMPPServer" />
-      <option name="VM_PARAMETERS" value="-DDjavax.net.debug=ssl,handshake" />
+      <option name="VM_PARAMETERS" value="" />
       <option name="PROGRAM_PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$/server" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -1839,11 +2522,11 @@
     <list size="3">
       <item index="0" class="java.lang.String" itemvalue="Application.Server" />
       <item index="1" class="java.lang.String" itemvalue="Application.XMPPServer" />
-      <item index="2" class="java.lang.String" itemvalue="JUnit.TestStreams.testFlows" />
+      <item index="2" class="java.lang.String" itemvalue="Application.SSLEngineSimpleDemo" />
     </list>
     <recent_temporary>
       <list size="1">
-        <item index="0" class="java.lang.String" itemvalue="JUnit.TestStreams.testFlows" />
+        <item index="0" class="java.lang.String" itemvalue="Application.SSLEngineSimpleDemo" />
       </list>
     </recent_temporary>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
@@ -1870,9 +2553,7 @@
       <workItem from="1443004615885" duration="22765000" />
       <workItem from="1443112658540" duration="18885000" />
       <workItem from="1443627366773" duration="2463000" />
-      <workItem from="1449068457399" duration="9292000" />
-      <workItem from="1449153606441" duration="19689000" />
-      <workItem from="1449400609951" duration="141850000" />
+      <workItem from="1449888208091" duration="34360000" />
     </task>
     <task id="LOCAL-00001" summary="Server initial commit">
       <created>1443178411727</created>
@@ -1886,151 +2567,35 @@
       <option name="project" value="LOCAL" />
       <updated>1443184737117</updated>
     </task>
-    <task id="LOCAL-00003" summary="DAO switched back to mysql model">
-      <created>1449068917580</created>
-      <option name="number" value="00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1449068917580</updated>
-    </task>
-    <task id="LOCAL-00004" summary="XMPPServer prototype">
-      <created>1449572065435</created>
-      <option name="number" value="00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1449572065435</updated>
-    </task>
-    <task id="LOCAL-00005" summary="XMPPServer prototype">
-      <created>1449572524715</created>
-      <option name="number" value="00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1449572524715</updated>
-    </task>
-    <task id="LOCAL-00006" summary="fastxml changed to aalto">
-      <created>1449572679667</created>
-      <option name="number" value="00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1449572679667</updated>
-    </task>
-    <task id="LOCAL-00007" summary="fastxml changed to aalto">
-      <created>1449573297877</created>
-      <option name="number" value="00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1449573297877</updated>
-    </task>
-    <task id="LOCAL-00008" summary="Typo fix :)">
-      <created>1449573478534</created>
-      <option name="number" value="00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1449573478534</updated>
-    </task>
-    <task id="LOCAL-00009" summary="akka configuration for ImageStorage server">
-      <created>1449574400354</created>
-      <option name="number" value="00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1449574400354</updated>
-    </task>
-    <task id="LOCAL-00010" summary="NPE on room init fixed">
-      <created>1449575809322</created>
-      <option name="number" value="00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1449575809322</updated>
-    </task>
-    <task id="LOCAL-00011" summary="NPE on room init fixed">
-      <created>1449576530168</created>
-      <option name="number" value="00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1449576530168</updated>
-    </task>
-    <task id="LOCAL-00012" summary="One more try to fix akka configuration">
-      <created>1449576685313</created>
-      <option name="number" value="00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1449576685313</updated>
-    </task>
-    <task id="LOCAL-00013" summary="One more try to fix akka configuration">
-      <created>1449577269810</created>
-      <option name="number" value="00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1449577269810</updated>
-    </task>
-    <task id="LOCAL-00014" summary="One more try to fix akka configuration">
-      <created>1449577483885</created>
-      <option name="number" value="00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1449577483885</updated>
-    </task>
-    <task id="LOCAL-00015" summary="One more try to fix akka configuration">
-      <created>1449578503806</created>
-      <option name="number" value="00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1449578503806</updated>
-    </task>
-    <task id="LOCAL-00016" summary="One more try to fix akka configuration">
-      <created>1449578685225</created>
-      <option name="number" value="00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1449578685225</updated>
-    </task>
-    <option name="localTasksCounter" value="17" />
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
-  <component name="TestHistory">
-    <history-entry file="TestStreams_testFlows - 2015.12.09 at 11h 48m 00s.xml">
-      <configuration name="TestStreams.testFlows" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="TestStreams_testFlows - 2015.12.09 at 11h 48m 34s.xml">
-      <configuration name="TestStreams.testFlows" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="TestStreams_testFlows - 2015.12.09 at 11h 48m 46s.xml">
-      <configuration name="TestStreams.testFlows" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="TestStreams_testFlows - 2015.12.09 at 11h 49m 07s.xml">
-      <configuration name="TestStreams.testFlows" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="TestStreams_testFlows - 2015.12.09 at 11h 49m 24s.xml">
-      <configuration name="TestStreams.testFlows" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="TestStreams_testFlows - 2015.12.09 at 12h 16m 44s.xml">
-      <configuration name="TestStreams.testFlows" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="TestStreams_testFlows - 2015.12.09 at 12h 16m 56s.xml">
-      <configuration name="TestStreams.testFlows" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="TestStreams_testFlows - 2015.12.09 at 13h 02m 26s.xml">
-      <configuration name="TestStreams.testFlows" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="TestStreams_testFlows - 2015.12.09 at 13h 10m 16s.xml">
-      <configuration name="TestStreams.testFlows" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="TestStreams_testFlows - 2015.12.09 at 13h 30m 24s.xml">
-      <configuration name="TestStreams.testFlows" configurationId="JUnit" />
-    </history-entry>
-  </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="216422000" />
+    <option name="totallyTimeSpent" value="87882000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1452" y="-776" width="2178" height="1288" extended-state="0" />
-    <editor active="false" />
+    <frame x="0" y="23" width="1280" height="723" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3285953" sideWeight="0.49812734" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32646593" sideWeight="0.49812734" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.430602" sideWeight="0.5037453" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.29026216" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18746708" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.45980984" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.45652175" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19709738" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31856188" sideWeight="0.49812734" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26979" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3828756" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32912058" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3181818" sideWeight="0.49812734" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.430602" sideWeight="0.49625468" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.38351822" sideWeight="0.49625468" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -2041,27 +2606,27 @@
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3285953" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32761577" sideWeight="0.49812734" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.430602" sideWeight="0.5037453" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.29026216" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18746708" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.45980984" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.45652175" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20037453" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3035117" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26979" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3828756" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32912058" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3181818" sideWeight="0.49812734" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26839465" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.38351822" sideWeight="0.49625468" order="3" side_tool="false" content_ui="tabs" />
     </layout-to-restore>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -2076,17 +2641,12 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="Server initial commit" />
     <MESSAGE value="Stupid NPE fixed. Tigase components artifact" />
-    <MESSAGE value="AllocateRoomModule is recovered, the DAO switched back to mysql model" />
-    <MESSAGE value="DAO switched back to mysql model" />
-    <MESSAGE value="XMPPServer prototype" />
-    <MESSAGE value="fastxml changed to aalto" />
-    <MESSAGE value="Typo fix :)" />
-    <MESSAGE value="akka configuration for ImageStorage server" />
-    <MESSAGE value="NPE on room init fixed" />
-    <MESSAGE value="One more try to fix akka configuration" />
-    <option name="LAST_COMMIT_MESSAGE" value="One more try to fix akka configuration" />
+    <MESSAGE value="TLS reworked for being able to work with async actors, registration/authorization implemented" />
+    <option name="LAST_COMMIT_MESSAGE" value="TLS reworked for being able to work with async actors, registration/authorization implemented" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2109,23 +2669,8 @@
           <properties />
           <option name="timeStamp" value="41" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>jar://$MAVEN_REPOSITORY$/tigase/tigase-server/7.0.2/tigase-server-7.0.2-sources.jar!/tigase/io/SSLContextContainer.java</url>
-          <line>268</line>
-          <properties />
-          <option name="timeStamp" value="170" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="scala-line">
-          <url>jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1-sources.jar!/akka/stream/impl/io/SslTlsCipherActor.scala</url>
-          <line>428</line>
-          <properties />
-          <option name="timeStamp" value="191" />
-        </line-breakpoint>
       </breakpoints>
-      <breakpoints-dialog>
-        <breakpoints-dialog />
-      </breakpoints-dialog>
-      <option name="time" value="209" />
+      <option name="time" value="127" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -2134,216 +2679,20 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Item.java">
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/package-info.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="10" column="7" selection-start-line="10" selection-start-column="7" selection-end-line="10" selection-end-column="7" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/JID.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="11" column="13" selection-start-line="11" selection-start-column="13" selection-end-line="11" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Message.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="7" column="15" selection-start-line="7" selection-start-column="14" selection-end-line="7" selection-end-column="14" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/IQ.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="9" column="15" selection-start-line="9" selection-start-column="15" selection-end-line="9" selection-end-column="15" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Presence.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="9" column="15" selection-start-line="9" selection-start-column="15" selection-end-line="9" selection-end-column="15" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Stanza.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="26" column="0" selection-start-line="26" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
+          <caret line="9" column="46" selection-start-line="9" selection-start-column="46" selection-end-line="9" selection-end-column="46" />
           <folding>
             <element signature="imports" expanded="false" />
-            <element signature="e#189#216#0" expanded="false" />
-            <element signature="e#352#353#0" expanded="false" />
-            <element signature="e#373#374#0" expanded="false" />
-            <element signature="e#394#395#0" expanded="false" />
-            <element signature="e#413#414#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/javax/xml/bind/JAXBElement.java">
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/package-info.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="123" column="11" selection-start-line="123" selection-start-column="11" selection-end-line="123" selection-end-column="11" />
-          <folding>
-            <element signature="e#3912#3913#0" expanded="false" />
-            <element signature="e#3975#3976#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/javax/xml/namespace/QName.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="74" column="13" selection-start-line="74" selection-start-column="13" selection-end-line="74" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/javax/xml/bind/annotation/XmlRootElement.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="170" column="16" selection-start-line="170" selection-start-column="16" selection-end-line="170" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/com/sun/xml/bind/jaxb-core/2.2.11/jaxb-core-2.2.11.jar!/com/sun/xml/bind/v2/model/core/TypeInfo.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.3333333">
-          <caret line="9" column="22" selection-start-line="9" selection-start-column="22" selection-end-line="9" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/com/sun/xml/bind/jaxb-core/2.2.11/jaxb-core-2.2.11.jar!/com/sun/xml/bind/v2/model/core/ClassInfo.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-6.111111">
-          <caret line="16" column="2" selection-start-line="16" selection-start-column="2" selection-end-line="16" selection-end-column="2" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/com/sun/xml/bind/jaxb-core/2.2.11/jaxb-core-2.2.11.jar!/com/sun/xml/bind/v2/model/core/Element.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.3333333">
-          <caret line="11" column="19" selection-start-line="11" selection-start-column="19" selection-end-line="11" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/com/sun/xml/bind/jaxb-impl/2.2.11/jaxb-impl-2.2.11-sources.jar!/com/sun/xml/bind/v2/model/impl/ClassInfoImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="168" column="22" selection-start-line="168" selection-start-column="22" selection-end-line="168" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/com/sun/xml/bind/jaxb-impl/2.2.11/jaxb-impl-2.2.11-sources.jar!/com/sun/xml/bind/v2/model/impl/TypeInfoImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="112" column="34" selection-start-line="112" selection-start-column="34" selection-end-line="112" selection-end-column="34" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/javax/xml/bind/Element.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="40" column="17" selection-start-line="40" selection-start-column="17" selection-end-line="40" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#881#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/org/w3c/dom/Element.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="60" column="17" selection-start-line="60" selection-start-column="17" selection-end-line="60" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/org/w3c/dom/Node.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="164" column="17" selection-start-line="164" selection-start-column="17" selection-end-line="164" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/javax/xml/bind/Binder.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="342" column="25" selection-start-line="342" selection-start-column="25" selection-end-line="342" selection-end-column="25" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/javax/xml/validation/Schema.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="66" column="22" selection-start-line="66" selection-start-column="22" selection-end-line="66" selection-end-column="22" />
-          <folding>
-            <element signature="e#0#2916#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/com/sun/org/apache/xerces/internal/jaxp/validation/AbstractXMLSchema.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="92" column="15" selection-start-line="92" selection-start-column="7" selection-end-line="92" selection-end-column="7" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/com/sun/org/apache/xerces/internal/jaxp/validation/XMLSchema.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="48" column="20" selection-start-line="48" selection-start-column="20" selection-end-line="48" selection-end-column="20" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/com/sun/org/apache/xerces/internal/xni/grammars/XMLGrammarPool.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="46" column="17" selection-start-line="46" selection-start-column="17" selection-end-line="46" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/javax/xml/bind/JAXBIntrospector.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="69" column="26" selection-start-line="69" selection-start-column="26" selection-end-line="69" selection-end-column="26" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Features.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="17" column="41" selection-start-line="17" selection-start-column="15" selection-end-line="17" selection-end-column="15" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/package-info.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="6" column="4" selection-start-line="6" selection-start-column="4" selection-end-line="6" selection-end-column="51" />
+          <caret line="7" column="63" selection-start-line="7" selection-start-column="63" selection-end-line="7" selection-end-column="63" />
           <folding />
         </state>
       </provider>
@@ -2351,210 +2700,82 @@
     <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/package-info.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="7" column="32" selection-start-line="7" selection-start-column="32" selection-end-line="7" selection-end-column="32" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/package-info.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="6" column="51" selection-start-line="6" selection-start-column="51" selection-end-line="6" selection-end-column="51" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/javax/security/auth/callback/PasswordCallback.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="34" column="13" selection-start-line="34" selection-start-column="13" selection-end-line="34" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/JabberUser.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="20" column="9" selection-start-line="20" selection-start-column="9" selection-end-line="20" selection-end-column="9" />
+          <caret line="14" column="67" selection-start-line="14" selection-start-column="43" selection-end-line="14" selection-end-column="43" />
           <folding>
-            <element signature="e#295#296#0" expanded="true" />
-            <element signature="e#316#317#0" expanded="true" />
-            <element signature="e#344#345#0" expanded="true" />
-            <element signature="e#367#368#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/UserManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="8" column="9" selection-start-line="8" selection-start-column="9" selection-end-line="8" selection-end-column="9" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/javax/security/sasl/AuthenticationException.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="45" column="13" selection-start-line="45" selection-start-column="13" selection-end-line="45" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/com/sun/org/apache/xpath/internal/operations/String.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="30" column="13" selection-start-line="30" selection-start-column="13" selection-end-line="30" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/XMPPServer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="30" column="6" selection-start-line="30" selection-start-column="6" selection-end-line="30" selection-end-column="6" />
-          <folding>
-            <element signature="e#701#702#0" expanded="false" />
-            <element signature="e#730#731#0" expanded="false" />
-            <element signature="e#1303#1304#0" expanded="false" />
-            <element signature="e#1325#1326#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Mechanisms.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="57" column="0" selection-start-line="57" selection-start-column="0" selection-end-line="57" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/jre/lib/rt.jar!/com/sun/security/sasl/digest/DigestMD5Server.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="323" column="0" selection-start-line="323" selection-start-column="0" selection-end-line="323" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/javax/security/sasl/SaslException.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="38" column="13" selection-start-line="38" selection-start-column="13" selection-end-line="38" selection-end-column="13" />
-          <folding>
-            <element signature="e#809#810#0" expanded="false" />
-            <element signature="e#832#833#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="56" column="0" selection-start-line="56" selection-start-column="0" selection-end-line="56" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1-sources.jar!/akka/stream/impl/io/SslTlsCipherActor.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="428" column="0" selection-start-line="428" selection-start-column="0" selection-end-line="428" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Failure.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="42" column="8" selection-start-line="42" selection-start-column="8" selection-end-line="42" selection-end-column="8" />
-          <folding>
+            <element signature="e#0#647#0" expanded="false" />
             <element signature="imports" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/pom.xml">
+    <entry file="jar://$MAVEN_REPOSITORY$/com/sun/xml/bind/jaxb-impl/2.2.11/jaxb-impl-2.2.11-sources.jar!/com/sun/xml/bind/v2/runtime/Coordinator.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-9.375">
-          <caret line="15" column="8" selection-start-line="15" selection-start-column="8" selection-end-line="15" selection-end-column="8" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="79" column="22" selection-start-line="79" selection-start-column="22" selection-end-line="79" selection-end-column="22" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/func/types/impl/TypeConvertersCollection.java">
+    <entry file="jar://$MAVEN_REPOSITORY$/com/sun/xml/bind/jaxb-impl/2.2.11/jaxb-impl-2.2.11-sources.jar!/com/sun/xml/bind/v2/runtime/AssociationMap.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="63" column="46" selection-start-line="63" selection-start-column="46" selection-end-line="63" selection-end-column="46" />
+          <caret line="59" column="19" selection-start-line="59" selection-start-column="19" selection-end-line="59" selection-end-column="19" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/io/StreamTools.java">
+    <entry file="jar://$MAVEN_REPOSITORY$/com/sun/xml/bind/jaxb-impl/2.2.11/jaxb-impl-2.2.11-sources.jar!/com/sun/xml/bind/v2/runtime/MarshallerImpl.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="305" column="22" selection-start-line="305" selection-start-column="22" selection-end-line="305" selection-end-column="22" />
+          <caret line="110" column="48" selection-start-line="110" selection-start-column="48" selection-end-line="110" selection-end-column="48" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/system/RuntimeUtils.java">
+    <entry file="jar://$MAVEN_REPOSITORY$/com/sun/xml/bind/jaxb-impl/2.2.11/jaxb-impl-2.2.11-sources.jar!/com/sun/xml/bind/v2/runtime/XMLSerializer.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="107" column="0" selection-start-line="107" selection-start-column="0" selection-end-line="107" selection-end-column="0" />
+          <caret line="771" column="40" selection-start-line="771" selection-start-column="9" selection-end-line="771" selection-end-column="9" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPOutFlow.java">
+    <entry file="jar://$MAVEN_REPOSITORY$/com/sun/xml/bind/jaxb-impl/2.2.11/jaxb-impl-2.2.11-sources.jar!/com/sun/xml/bind/v2/runtime/output/NamespaceContextImpl.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="37" column="0" selection-start-line="37" selection-start-column="0" selection-end-line="37" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/java/util/function/Predicate.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="48" column="12" selection-start-line="48" selection-start-column="12" selection-end-line="48" selection-end-column="12" />
+          <caret line="133" column="16" selection-start-line="133" selection-start-column="16" selection-end-line="133" selection-end-column="16" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/javax/xml/bind/Unmarshaller.java">
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/javax/xml/bind/JAXBContext.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.2970904">
-          <caret line="1117" column="20" selection-start-line="1117" selection-start-column="20" selection-end-line="1117" selection-end-column="20" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="664" column="31" selection-start-line="664" selection-start-column="31" selection-end-line="664" selection-end-column="31" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/AsyncJAXBStreamReader.java">
+    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-databind/2.5.3/jackson-databind-2.5.3-sources.jar!/com/fasterxml/jackson/databind/ext/CoreXMLSerializers.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="28" column="0" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
+          <caret line="28" column="23" selection-start-line="28" selection-start-column="23" selection-end-line="28" selection-end-column="23" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/tls/StartTLS.java">
+    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-databind/2.5.3/jackson-databind-2.5.3-sources.jar!/com/fasterxml/jackson/databind/SerializationConfig.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="10" column="32" selection-start-line="10" selection-start-column="3" selection-end-line="10" selection-end-column="3" />
+          <caret line="35" column="19" selection-start-line="35" selection-start-column="19" selection-end-line="35" selection-end-column="19" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/tls/package-info.java">
+    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/out/XmlWriter.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="12" column="67" selection-start-line="12" selection-start-column="43" selection-end-line="12" selection-end-column="43" />
+          <caret line="59" column="32" selection-start-line="59" selection-start-column="0" selection-end-line="59" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -2562,19 +2783,385 @@
     <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Stream.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="19" selection-start-line="29" selection-start-column="19" selection-end-line="29" selection-end-column="19" />
+          <caret line="70" column="58" selection-start-line="70" selection-start-column="45" selection-end-line="70" selection-end-column="45" />
           <folding>
-            <element signature="e#1895#1896#0" expanded="true" />
-            <element signature="e#1919#1920#0" expanded="true" />
+            <element signature="e#1917#1918#0" expanded="false" />
+            <element signature="e#1941#1942#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/server/libs/stax2-api-3.1.4.jar!/org/codehaus/stax2/ri/Stax2WriterAdapter.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-6.111111">
+          <caret line="32" column="12" selection-start-line="32" selection-start-column="12" selection-end-line="32" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Stanza.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="21" column="11" selection-start-line="21" selection-start-column="2" selection-end-line="21" selection-end-column="11" />
+          <folding>
+            <element signature="e#447#448#0" expanded="false" />
+            <element signature="e#474#475#0" expanded="false" />
+            <element signature="e#769#770#0" expanded="false" />
+            <element signature="e#791#792#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/Roster.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.20661157">
+          <caret line="10" column="2" selection-start-line="10" selection-start-column="2" selection-end-line="10" selection-end-column="2" />
+          <folding>
+            <element signature="e#283#284#0" expanded="false" />
+            <element signature="e#319#320#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/sql/MySQLDAO.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="360" column="13" selection-start-line="360" selection-start-column="0" selection-end-line="360" selection-end-column="0" />
+          <folding>
+            <marker date="1448196587000" expanded="true" signature="8197:8279" placeholder="SELECT id, n... Users" />
+            <marker date="1448196587000" expanded="true" signature="9152:9230" placeholder="UPDATE tbts.... " />
+            <marker date="1448196587000" expanded="true" signature="9330:9408" placeholder="INSERT INTO tbts.Connections... " />
+            <marker date="1448196587000" expanded="true" signature="11259:11294" placeholder="SELECT * FRO... Users" />
+            <marker date="1448196587000" expanded="true" signature="11389:11420" placeholder="INSERT INTO tbts.Users... " />
+            <marker date="1448196587000" expanded="true" signature="11519:11552" placeholder="INSERT INTO tbts.Clients... " />
+            <marker date="1448196587000" expanded="true" signature="11651:11684" placeholder="INSERT INTO tbts.Experts... " />
+            <marker date="1448196587000" expanded="true" signature="11779:11819" placeholder="INSERT INTO tbts.Rooms... " />
+            <marker date="1448196587000" expanded="true" signature="11922:12270" placeholder="SELECT clien... Clients" />
+            <marker date="1448196587000" expanded="true" signature="12373:12399" placeholder="SELECT * FRO... Experts" />
+            <marker date="1448196587000" expanded="true" signature="12498:12522" placeholder="SELECT * FRO... Rooms" />
+            <marker date="1448196587000" expanded="true" signature="12637:12679" placeholder="UPDATE tbts.... " />
+            <marker date="1448196587000" expanded="true" signature="12794:12846" placeholder="UPDATE tbts.... " />
+            <marker date="1448196587000" expanded="true" signature="12957:12997" placeholder="UPDATE tbts.... " />
+            <marker date="1448196587000" expanded="true" signature="13110:13151" placeholder="UPDATE tbts.... " />
+            <marker date="1448196587000" expanded="true" signature="13276:13324" placeholder="UPDATE tbts.... " />
+            <marker date="1448196587000" expanded="true" signature="13445:13491" placeholder="UPDATE tbts.... " />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/Query.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="172" column="19" selection-start-line="172" selection-start-column="19" selection-end-line="172" selection-end-column="19" />
+          <folding>
+            <element signature="e#6185#6186#0" expanded="false" />
+            <element signature="e#6211#6212#0" expanded="false" />
+            <element signature="e#6250#6251#0" expanded="false" />
+            <element signature="e#6282#6283#0" expanded="false" />
+            <element signature="e#6308#6309#0" expanded="false" />
+            <element signature="e#6329#6330#0" expanded="false" />
+            <element signature="e#6357#6358#0" expanded="false" />
+            <element signature="e#6382#6383#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/java/sql/SQLException.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="52" column="13" selection-start-line="52" selection-start-column="13" selection-end-line="52" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/data/Err.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="66" column="9" selection-start-line="66" selection-start-column="9" selection-end-line="66" selection-end-column="9" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="dbDummy://dbtable:/54acdf6a/592587b6-b828-4143-ad66-089337f6bd0a/tbts.Users">
+      <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
+        <state>
+          <filtering enabled="true" />
+        </state>
+      </provider>
+      <provider editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/Roster.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="11" column="11" selection-start-line="11" selection-start-column="11" selection-end-line="11" selection-end-column="11" />
+          <folding>
+            <element signature="e#283#284#0" expanded="false" />
+            <element signature="e#319#320#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/roster/MySQLRoster.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="47" column="0" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
+          <folding>
+            <marker date="1449934803000" expanded="true" signature="744:789" placeholder="INSERT INTO tbts.Users... " />
+            <marker date="1449934803000" expanded="true" signature="1057:1094" placeholder="SELECT * FRO... Users" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/sasl/Mechanisms.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="52" column="0" selection-start-line="52" selection-start-column="0" selection-end-line="52" selection-end-column="0" />
+          <folding>
+            <element signature="e#3202#3203#0" expanded="false" />
+            <element signature="e#3243#3244#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/dump.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-11.875">
+          <caret line="147" column="34" selection-start-line="147" selection-start-column="0" selection-end-line="147" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1-sources.jar!/akka/stream/stage/Stage.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="332" column="51" selection-start-line="332" selection-start-column="51" selection-end-line="332" selection-end-column="51" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1-sources.jar!/akka/stream/javadsl/BidiFlow.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.6487603">
+          <caret line="186" column="19" selection-start-line="186" selection-start-column="19" selection-end-line="186" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1-sources.jar!/akka/stream/scaladsl/BidiFlow.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="11" column="12" selection-start-line="11" selection-start-column="12" selection-end-line="11" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1-sources.jar!/akka/stream/scaladsl/Flow.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="555" column="6" selection-start-line="555" selection-start-column="6" selection-end-line="555" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1-sources.jar!/akka/stream/io/SslTls.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-14.111111">
+          <caret line="317" column="11" selection-start-line="317" selection-start-column="11" selection-end-line="317" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/jre/lib/jsse.jar!/sun/security/ssl/ServerHandshaker.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="535" column="0" selection-start-line="535" selection-start-column="0" selection-end-line="535" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/jre/lib/jsse.jar!/sun/security/ssl/HandshakeMessage.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="524" column="0" selection-start-line="524" selection-start-column="0" selection-end-line="524" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/jre/lib/rt.jar!/javax/net/ssl/SSLEngine.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.45454547">
+          <caret line="34" column="25" selection-start-line="34" selection-start-column="25" selection-end-line="34" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/jre/lib/rt.jar!/javax/net/ssl/SSLEngineResult.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="24" column="35" selection-start-line="24" selection-start-column="35" selection-end-line="24" selection-end-column="35" />
+          <folding>
+            <element signature="e#790#791#0" expanded="true" />
+            <element signature="e#818#819#0" expanded="true" />
+            <element signature="e#889#890#0" expanded="true" />
+            <element signature="e#926#927#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/tls/StartTLS.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="12" column="41" selection-start-line="12" selection-start-column="41" selection-end-line="12" selection-end-column="41" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-actor_2.11/2.4.0/akka-actor_2.11-2.4.0-sources.jar!/akka/io/Tcp.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="414" column="19" selection-start-line="414" selection-start-column="19" selection-end-line="414" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-actor_2.11/2.4.0/akka-actor_2.11-2.4.0-sources.jar!/akka/actor/ActorCell.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="483" column="75" selection-start-line="483" selection-start-column="0" selection-end-line="483" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/akka/UntypedActorAdapter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="37" column="0" selection-start-line="37" selection-start-column="0" selection-end-line="37" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/XMPPPhase.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="37" column="7" selection-start-line="37" selection-start-column="7" selection-end-line="37" selection-end-column="7" />
+          <folding>
+            <element signature="e#1183#1184#0" expanded="true" />
+            <element signature="e#1207#1208#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/HandshakePhase.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="13" column="13" selection-start-line="13" selection-start-column="13" selection-end-line="13" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/scala-lang/scala-library/2.11.7/scala-library-2.11.7-sources.jar!/scala/collection/TraversableOnce.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="324" column="6" selection-start-line="324" selection-start-column="6" selection-end-line="324" selection-end-column="6" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPInFlow.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.517611">
-          <caret line="46" column="0" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="40" column="40" selection-start-line="40" selection-start-column="40" selection-end-line="40" selection-end-column="40" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="67" column="0" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1-sources.jar!/akka/stream/Shape.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="248" column="17" selection-start-line="248" selection-start-column="17" selection-end-line="248" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/SSLHandshake.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="40" column="66" selection-start-line="40" selection-start-column="37" selection-end-line="40" selection-end-column="37" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPOutFlow.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="54" column="32" selection-start-line="54" selection-start-column="32" selection-end-line="54" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Item.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="25" column="34" selection-start-line="25" selection-start-column="34" selection-end-line="25" selection-end-column="34" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/XMPPServer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="35" column="66" selection-start-line="35" selection-start-column="66" selection-end-line="35" selection-end-column="66" />
+          <folding>
+            <element signature="e#1663#1664#0" expanded="true" />
+            <element signature="e#1685#1686#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="202" column="0" selection-start-line="202" selection-start-column="0" selection-end-line="202" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#917#944#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/Item.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="39" column="13" selection-start-line="39" selection-start-column="13" selection-end-line="39" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/IqH.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.60453403">
+          <caret line="55" column="16" selection-start-line="55" selection-start-column="16" selection-end-line="55" selection-end-column="16" />
+          <folding>
+            <element signature="e#2224#2225#0" expanded="true" />
+            <element signature="e#2262#2263#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -2633,11 +3220,12 @@
       </state>
       <state key="ModuleStructureConfigurable.UI">
         <settings>
-          <last-edited>xmpp</last-edited>
+          <last-edited>model</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
                 <option value="0.34252873" />
+                <option value="0.6" />
               </list>
             </option>
           </splitter-proportions>

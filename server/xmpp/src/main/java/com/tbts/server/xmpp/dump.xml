@@ -4,7 +4,7 @@
 <stream:stream xmlns:stream="http://etherx.jabber.org/streams" version="1.0" xmlns="jabber:client" to="toobusytosearch.net" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">
 
 
-    <?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='toobusytosearch.net' id='c0d60dba-3b9a-4ba4-a01b-50e0cefe3323' version='1.0' xml:lang='en'>
+    <?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='toobusytosearch.net' id='22a4acaa-54c7-4dad-a935-3a9d3a57d180' version='1.0' xml:lang='en'>
 
 
     <stream:features>
@@ -34,7 +34,7 @@
     <stream:stream xmlns:stream="http://etherx.jabber.org/streams" version="1.0" xmlns="jabber:client" to="toobusytosearch.net" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">
 
 
-        <?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='toobusytosearch.net' id='c0d60dba-3b9a-4ba4-a01b-50e0cefe3323' version='1.0' xml:lang='en'>
+        <?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='toobusytosearch.net' id='22a4acaa-54c7-4dad-a935-3a9d3a57d180' version='1.0' xml:lang='en'>
 
 
         <stream:features>
@@ -63,7 +63,7 @@
         <stream:stream xmlns:stream="http://etherx.jabber.org/streams" version="1.0" xmlns="jabber:client" to="toobusytosearch.net" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">
 
 
-            <?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='toobusytosearch.net' id='c0d60dba-3b9a-4ba4-a01b-50e0cefe3323' version='1.0' xml:lang='en'>
+            <?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='toobusytosearch.net' id='22a4acaa-54c7-4dad-a935-3a9d3a57d180' version='1.0' xml:lang='en'>
 
 
             <stream:features>
@@ -84,27 +84,27 @@
             </iq>
 
 
-            <iq xmlns="jabber:client" type="result" to="expert@toobusytosearch.net/expert" id="bind_1">
+            <iq xmlns="jabber:client" type="result" id="bind_1" to="expert@toobusytosearch.net/expert">
                 <bind xmlns="urn:ietf:params:xml:ns:xmpp-bind">
                     <jid>expert@toobusytosearch.net/expert</jid>
                 </bind>
             </iq>
 
 
-            <iq type="set" id="aab8a">
+            <iq type="set" id="aac5a">
                 <session xmlns="urn:ietf:params:xml:ns:xmpp-session"/>
             </iq>
 
 
-            <iq type="result" to="expert@toobusytosearch.net/expert" id="aab8a"/>
+            <iq type="result" id="aac5a" to="expert@toobusytosearch.net/expert"/>
 
 
-            <iq type="get" id="aab9a">
+            <iq type="get" id="aac6a">
                 <query xmlns="jabber:iq:roster"/>
             </iq>
 
 
-            <iq type="result" to="expert@toobusytosearch.net/expert" id="aab9a">
+            <iq type="result" id="aac6a" to="expert@toobusytosearch.net/expert">
                 <query xmlns="jabber:iq:roster">
                     <item subscription="from" name="Administator" jid="experts-admin@toobusytosearch.net"/>
                 </query>
@@ -117,24 +117,19 @@
             </presence>
 
 
-            <iq type="get" to="expert@toobusytosearch.net/expert" id="aabba">
-                <query xmlns="http://jabber.org/protocol/disco#info" node="http://psi-im.org/caps#ca"/>
-            </iq>
-
-
-            <iq type="get" id="aabca">
+            <iq type="get" id="aac8a">
                 <query xmlns="jabber:iq:private">
                     <storage xmlns="storage:bookmarks"/>
                 </query>
             </iq>
 
 
-            <iq type="get" to="expert@toobusytosearch.net" id="aabda">
+            <iq type="get" to="expert@toobusytosearch.net" id="aac9a">
                 <vCard xmlns="vcard-temp"/>
             </iq>
 
 
-            <iq type="get" to="toobusytosearch.net" id="aabea">
+            <iq type="get" to="toobusytosearch.net" id="aacaa">
                 <query xmlns="http://jabber.org/protocol/disco#info"/>
             </iq>
 
@@ -147,28 +142,11 @@
 
             <message from="experts-admin@toobusytosearch.net/217390304-tigase-1" type="chat" to="expert@toobusytosearch.net">
                 <body>
-                    <room xmlns="http://toobusytosearch.net/schema" type="check" id="room1449504851012@muc.toobusytosearch.net"/>05772661-45E6-4D03-875A-9E2EC07CB896@toobusytosearch.net</body>
+                    <room xmlns="http://toobusytosearch.net/schema" type="check" id="room1448901212763@muc.toobusytosearch.net"/>05772661-45E6-4D03-875A-9E2EC07CB896@toobusytosearch.net</body>
             </message>
 
 
-            <iq type="result" to="expert@toobusytosearch.net/expert" id="aabca">
-                <query xmlns="jabber:iq:private">
-                    <storage xmlns="storage:bookmarks"/>
-                </query>
-            </iq>
-
-
-            <iq from="expert@toobusytosearch.net" type="result" to="expert@toobusytosearch.net/expert" id="aabda">
-                <vCard xmlns="vcard-temp"/>
-            </iq>
-
-
-            <iq type="get" to="expert@toobusytosearch.net/expert" id="aabfa">
-                <query xmlns="jabber:iq:version"/>
-            </iq>
-
-
-            <iq from="toobusytosearch.net" type="result" to="expert@toobusytosearch.net/expert" id="aabea">
+            <iq from="toobusytosearch.net" type="result" id="aacaa" to="expert@toobusytosearch.net/expert">
                 <query xmlns="http://jabber.org/protocol/disco#info">
                     <identity category="component" type="im" name="Tigase ver. 0.0.0-0"/>
                     <identity category="server" type="im" name="Tigase ver. 0.0.0-0"/>
@@ -195,38 +173,28 @@
             </iq>
 
 
-            <iq from="expert@toobusytosearch.net/expert" type="get" to="expert@toobusytosearch.net/expert" id="aabba">
-                <query xmlns="http://jabber.org/protocol/disco#info" node="http://psi-im.org/caps#ca"/>
-            </iq>
-
-
-            <iq type="result" to="expert@toobusytosearch.net/expert" id="aabba">
-                <query xmlns="http://jabber.org/protocol/disco#info" node="http://psi-im.org/caps#ca">
-                    <identity category="client" type="pc" name="Psi"/>
-                    <feature var="urn:xmpp:jingle:1"/>
-                    <feature var="urn:xmpp:jingle:transports:ice-udp:1"/>
-                    <feature var="urn:xmpp:jingle:apps:rtp:1"/>
-                    <feature var="urn:xmpp:jingle:apps:rtp:audio"/>
+            <iq type="result" id="aac8a" to="expert@toobusytosearch.net/expert">
+                <query xmlns="jabber:iq:private">
+                    <storage xmlns="storage:bookmarks"/>
                 </query>
             </iq>
 
 
-            <iq from="expert@toobusytosearch.net/expert" type="result" to="expert@toobusytosearch.net/expert" id="aabfa">
+            <iq from="expert@toobusytosearch.net" type="result" id="aac9a" to="expert@toobusytosearch.net/expert">
+                <vCard xmlns="vcard-temp"/>
+            </iq>
+
+
+            <iq type="get" to="expert@toobusytosearch.net/expert" id="aacba">
+                <query xmlns="jabber:iq:version"/>
+            </iq>
+
+
+            <iq from="expert@toobusytosearch.net/expert" type="result" id="aacba" to="expert@toobusytosearch.net/expert">
                 <query xmlns="jabber:iq:version">
                     <name>Tigase</name>
                     <version>0.0.0-0</version>
                     <os>Linux-amd64-3.13.0-48-generic, Java HotSpot(TM) 64-Bit Server VM-25.60-b23-Oracle Corporation</os>
-                </query>
-            </iq>
-
-
-            <iq from="expert@toobusytosearch.net/expert" type="result" to="expert@toobusytosearch.net/expert" id="aabba">
-                <query xmlns="http://jabber.org/protocol/disco#info" node="http://psi-im.org/caps#ca">
-                    <identity category="client" type="pc" name="Psi"/>
-                    <feature var="urn:xmpp:jingle:1"/>
-                    <feature var="urn:xmpp:jingle:transports:ice-udp:1"/>
-                    <feature var="urn:xmpp:jingle:apps:rtp:1"/>
-                    <feature var="urn:xmpp:jingle:apps:rtp:audio"/>
                 </query>
             </iq>
 

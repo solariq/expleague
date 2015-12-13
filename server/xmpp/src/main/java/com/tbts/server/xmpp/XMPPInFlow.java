@@ -41,6 +41,7 @@ public class XMPPInFlow extends PushPullStage<ByteString, Item> {
   public SyncDirective onPush(ByteString data, Context<Item> itemContext) {
     final byte[] copy = new byte[data.length()];
     data.asByteBuffer().get(copy);
+//    System.out.println("> " + new String(copy));
     try {
       asyncXml.getInputFeeder().feedInput(copy, 0, copy.length);
       reader.drain(o -> {

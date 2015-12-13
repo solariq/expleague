@@ -25,6 +25,10 @@
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.6" level="project" />
     <orderEntry type="library" name="Maven: org.bouncycastle:bcpkix-jdk15on:1.51" level="project" />
     <orderEntry type="library" name="Maven: org.bouncycastle:bcprov-jdk15on:1.51" level="project" />
+    <orderEntry type="module" module-name="model" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-core:1.9.29" level="project" />
+    <orderEntry type="library" name="Maven: joda-time:joda-time:2.9.1" level="project" />
+    <orderEntry type="library" name="Maven: mysql:mysql-connector-java:5.1.36" level="project" />
     <orderEntry type="library" name="Maven: com.typesafe.akka:akka-actor_2.11:2.4.0" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.11.7" level="project" />
     <orderEntry type="library" name="Maven: com.typesafe:config:1.3.0" level="project" />
@@ -50,8 +54,6 @@
     <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-dynamodb:1.9.29" level="project" />
     <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-s3:1.9.29" level="project" />
     <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-kms:1.9.29" level="project" />
-    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-core:1.9.29" level="project" />
-    <orderEntry type="library" name="Maven: joda-time:joda-time:2.9.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.12" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
   </component>
