@@ -10,7 +10,7 @@ import com.tbts.server.roster.MySQLRoster;
 import com.tbts.server.xmpp.XMPPClientConnection;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.Stream;
-import com.tbts.xmpp.stanza.IqH;
+import com.tbts.xmpp.stanza.Iq;
 import com.tbts.xmpp.stanza.data.Err;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -32,7 +32,7 @@ public class XMPPServer {
     users = new MySQLRoster(config.db());
     Stream.jaxb();
 
-    final IqH<Void> iq = new IqH<>();
+    final Iq<Void> iq = new Iq<>();
     iq.error(new Err(Err.Cause.INSTERNAL_SERVER_ERROR, Err.ErrType.AUTH, ""));
     System.out.println(iq.toString());
 

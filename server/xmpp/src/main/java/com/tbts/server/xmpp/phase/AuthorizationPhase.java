@@ -7,7 +7,7 @@ import com.tbts.xmpp.Features;
 import com.tbts.xmpp.control.register.Query;
 import com.tbts.xmpp.control.register.Register;
 import com.tbts.xmpp.control.sasl.*;
-import com.tbts.xmpp.stanza.IqH;
+import com.tbts.xmpp.stanza.Iq;
 import com.tbts.xmpp.stanza.data.Err;
 
 import javax.security.sasl.AuthenticationException;
@@ -38,19 +38,19 @@ public class AuthorizationPhase extends XMPPPhase {
     ));
   }
 
-  public void invoke(IqH<Query> request) {
+  public void invoke(Iq<Query> request) {
     final Query query = request.get();
     if (query != null) {
-      if (request.type() == IqH.IqType.GET && query.isEmpty()) {
-        answer(IqH.answer(request, Roster.instance().required()));
+      if (request.type() == Iq.IqType.GET && query.isEmpty()) {
+        answer(Iq.answer(request, Roster.instance().required()));
       }
-      else if (request.type() == IqH.IqType.SET && !query.isEmpty()) {
+      else if (request.type() == Iq.IqType.SET && !query.isEmpty()) {
         try {
           Roster.instance().register(query);
-          answer(IqH.answer(request));
+          answer(Iq.answer(request));
         }
         catch (Exception e) {
-          answer(IqH.answer(request, new Err(Err.Cause.INSTERNAL_SERVER_ERROR, Err.ErrType.AUTH, e.getMessage())));
+          answer(Iq.answer(request, new Err(Err.Cause.INSTERNAL_SERVER_ERROR, Err.ErrType.AUTH, e.getMessage())));
         }
       }
     }

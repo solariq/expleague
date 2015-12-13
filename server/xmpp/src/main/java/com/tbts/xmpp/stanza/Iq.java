@@ -53,16 +53,16 @@ import javax.xml.bind.annotation.*;
     "error"
 })
 @XmlRootElement(name = "iq")
-public class IqH<T> extends Stanza {
+public class Iq<T> extends Stanza {
 
-  public static <T> IqH<T> answer(IqH<?> request, T content) {
-    final IqH<T> result = new IqH<>(request.id, IqType.RESULT, content);
+  public static <T> Iq<T> answer(Iq<?> request, T content) {
+    final Iq<T> result = new Iq<>(request.id, IqType.RESULT, content);
     result.from = request.to;
     result.to = request.from;
     return result;
   }
 
-  public static IqH<Void> answer(IqH<?> request) {
+  public static Iq<Void> answer(Iq<?> request) {
     return answer(request, null);
   }
 
@@ -74,9 +74,9 @@ public class IqH<T> extends Stanza {
   @XmlAttribute
   private IqType type;
 
-  public IqH(){}
+  public Iq(){}
 
-  private IqH(String id, IqType type, T content) {
+  private Iq(String id, IqType type, T content) {
     super(id);
     this.type = type;
     if (content instanceof Err)
