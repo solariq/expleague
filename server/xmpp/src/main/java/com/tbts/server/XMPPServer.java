@@ -7,9 +7,14 @@ import akka.actor.UntypedActor;
 import akka.io.Tcp;
 import akka.io.TcpMessage;
 import com.tbts.server.roster.MySQLRoster;
+import com.tbts.server.services.Services;
 import com.tbts.server.xmpp.XMPPClientConnection;
+import com.tbts.server.xmpp.agents.Agency;
 import com.tbts.util.akka.UntypedActorAdapter;
+import com.tbts.xmpp.Features;
 import com.tbts.xmpp.Stream;
+import com.tbts.xmpp.control.register.Register;
+import com.tbts.xmpp.control.sasl.Mechanisms;
 import com.tbts.xmpp.stanza.Iq;
 import com.tbts.xmpp.stanza.data.Err;
 import com.typesafe.config.Config;
@@ -32,17 +37,15 @@ public class XMPPServer {
     users = new MySQLRoster(config.db());
     Stream.jaxb();
 
-    final Iq<Void> iq = new Iq<>();
-    iq.error(new Err(Err.Cause.INSTERNAL_SERVER_ERROR, Err.ErrType.AUTH, ""));
-    System.out.println(iq.toString());
-
 //    Config config = ConfigFactory.parseString("akka.loglevel = DEBUG \n" +
 //        "akka.actor.debug.lifecycle = on \n akka.event-stream = on");
 //    final ActorSystem system = ActorSystem.create("TBTS_Light_XMPP", config);
 //    system.actorOf(Props.create(XMPPClientIncomingStream.class));
     final ActorSystem system = ActorSystem.create("TBTS_Light_XMPP", load);
     final ActorRef actorRef = system.actorOf(Props.create(ConnectionManager.class));
-    system.actorOf(Props.create(Server.class, actorRef));
+    system.actorOf(Props.create(Agency.class), "xmpp");
+    system.actorOf(Props.create(Services.class), "services");
+    system.actorOf(Props.create(Server.class, actorRef), "comm");
   }
 
   public static synchronized Roster roster() {

@@ -6,16 +6,24 @@ import akka.actor.Terminated;
 import akka.io.Tcp;
 import akka.io.TcpMessage;
 import akka.japi.function.Function;
-import akka.stream.*;
+import akka.stream.ActorMaterializer;
+import akka.stream.ActorMaterializerSettings;
+import akka.stream.OverflowStrategy;
+import akka.stream.Supervision;
 import akka.stream.io.NegotiateNewSession;
-import akka.stream.javadsl.*;
+import akka.stream.javadsl.Flow;
+import akka.stream.javadsl.Sink;
+import akka.stream.javadsl.Source;
 import akka.util.ByteString;
 import com.spbsu.commons.net.URLConnectionTools;
 import com.tbts.server.xmpp.phase.AuthorizationPhase;
+import com.tbts.server.xmpp.phase.ConnectedPhase;
 import com.tbts.server.xmpp.phase.HandshakePhase;
 import com.tbts.server.xmpp.phase.SSLHandshake;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.Item;
+import com.tbts.xmpp.control.Close;
+import com.tbts.xmpp.control.Open;
 import scala.runtime.BoxedUnit;
 
 import javax.net.ssl.SSLContext;
@@ -41,6 +49,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
 
   private final ActorMaterializer materializer;
   private SSLEngine sslEngine;
+  private String id;
 
   public XMPPClientConnection(ActorRef connection) {
     this.connection = connection;
@@ -62,7 +71,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
   private ByteBuffer inDst = ByteBuffer.allocate(4096);
   private ByteBuffer inSrc = ByteBuffer.allocate(4096);
   public void invoke(Tcp.Received msgIn) {
-    if (sslEngine == null || currentState == ConnectionState.STARTTLS) {
+    if (currentState == ConnectionState.HANDSHAKE || currentState == ConnectionState.STARTTLS) {
       businessLogic.tell(msgIn, getSelf());
       return;
     }
@@ -101,7 +110,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         }
         inDst.flip();
         final ByteString data = ByteString.fromByteBuffer(inDst);
-        System.out.println("> [" + data.utf8String()+ "]");
+//        System.out.println("> [" + data.utf8String()+ "]");
         businessLogic.tell(new Tcp.Received(data), getSelf());
         inDst.clear();
         inSrc.compact();
@@ -136,7 +145,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         }
       }
       outSrc.clear();
-      System.out.println("<" + data.utf8String());
+//      System.out.println("<" + data.utf8String());
     }
     else connection.tell(command, getSelf());
   }
@@ -171,9 +180,9 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         final Source<Tcp.Received, ActorRef> source = Source.actorRef(100, OverflowStrategy.fail());
         newLogic = source
             .via(inFlow)
-            .transform(() -> new HandshakePhase(getSelf()))
+            .transform(HandshakePhase::new)
             .via(outFlow)
-            .to(Sink.actorRef(getSelf(), TcpMessage.resumeReading()))
+            .to(Sink.actorRef(getSelf(), ConnectionState.STARTTLS))
             .run(materializer);
         break;
       }
@@ -190,17 +199,28 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         break;
       }
       case AUTHORIZATION: {
-        final Source<Tcp.Received, ActorRef> source = Source.actorRef(100, OverflowStrategy.fail());
-        newLogic = source
+        newLogic = Source.<Tcp.Received>actorRef(100, OverflowStrategy.fail())
             .via(inFlow)
-            .transform(() -> new AuthorizationPhase(getSelf()))
+            .transform(() -> new AuthorizationPhase(id -> XMPPClientConnection.this.id = id))
             .via(outFlow)
-            .to(Sink.actorRef(getSelf(), TcpMessage.resumeReading()))
+            .to(Sink.actorRef(getSelf(), ConnectionState.CONNECTED))
             .run(materializer);
         break;
       }
-      case CONNECTED:
+      case CONNECTED: {
+        final ActorRef inFlowActor = Source.<Item>actorRef(100, OverflowStrategy.fail())
+            .via(outFlow)
+            .to(Sink.actorRef(getSelf(), ConnectionState.CLOSED))
+            .run(materializer);
+        final ActorRef connectionLogic = getContext().actorOf(Props.create(ConnectedPhase.class, id, inFlowActor));
+        newLogic = Source.<Tcp.Received>actorRef(100, OverflowStrategy.fail())
+            .via(inFlow)
+            .to(Sink.actorRef(
+                connectionLogic, new Close()))
+            .run(materializer);
+        connectionLogic.tell(new Open(), getSelf());
         break;
+      }
       case CLOSED:
         break;
     }

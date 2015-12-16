@@ -6,7 +6,9 @@
 //
 
 
-package com.tbts.xmpp.control.register;
+package com.tbts.xmpp.stanza.data;
+
+import com.tbts.xmpp.control.register.Reported;
 
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
@@ -56,7 +58,6 @@ import java.util.List;
 })
 @XmlRootElement(name = "x")
 public class X {
-
     protected List<String> instructions;
     protected String title;
     protected List<Field> field;

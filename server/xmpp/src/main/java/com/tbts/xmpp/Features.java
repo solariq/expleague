@@ -1,12 +1,8 @@
 package com.tbts.xmpp;
 
 import com.tbts.xmpp.control.XMPPFeature;
-import com.tbts.xmpp.control.register.Register;
-import com.tbts.xmpp.control.sasl.Mechanisms;
-import com.tbts.xmpp.control.tls.StartTLS;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,11 +21,7 @@ public class Features extends Item {
   public Features() {
   }
 
-  @XmlElements({
-    @XmlElement(name = "starttls", namespace = "urn:ietf:params:xml:ns:xmpp-tls", type = StartTLS.class),
-    @XmlElement(name = "mechanisms", namespace = "urn:ietf:params:xml:ns:xmpp-sasl", type = Mechanisms.class),
-    @XmlElement(name = "register", namespace = "jabber:iq:register", type = Register.class),
-  })
+  @XmlAnyElement(lax = true)
   private List<XMPPFeature> features = new ArrayList<>();
 
 

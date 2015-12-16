@@ -4,9 +4,7 @@ import akka.actor.UntypedActor;
 import com.spbsu.commons.util.MultiMap;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * User: solar
@@ -14,24 +12,26 @@ import java.util.Collection;
  * Time: 15:57
  */
 public abstract class UntypedActorAdapter extends UntypedActor {
-  public final MultiMap<Class<?>, Method> methodMap = new MultiMap<>();
+  public final Map<Class<?>, Method> typesMap = new HashMap<>();
+  public final MultiMap<Class<?>, Method> cache = new MultiMap<>();
 
   public UntypedActorAdapter() {
     Arrays.asList(getClass().getMethods()).stream()
         .filter(method -> "invoke".equals(method.getName()) && method.getParameterCount() == 1 && method.getReturnType() == void.class)
-        .forEach(method -> methodMap.put(method.getParameterTypes()[0], method));
+        .forEach(method -> typesMap.put(method.getParameterTypes()[0], method));
   }
 
   @Override
   public final void onReceive(Object message) throws Exception {
-    Collection<Method> methods = methodMap.get(message.getClass());
+    Collection<Method> methods = cache.get(message.getClass());
     if (methods == MultiMap.EMPTY) {
       methods = new ArrayList<>();
-      for (final Class<?> aClass : methodMap.keySet()) {
+      for (final Class<?> aClass : typesMap.keySet()) {
         if (aClass.isAssignableFrom(message.getClass())) {
-          methods.addAll(methodMap.get(aClass));
+          methods.add(typesMap.get(aClass));
         }
       }
+      cache.putAll(message.getClass(), methods);
     }
     if (!methods.isEmpty()) {
       for (final Method method : methods) {

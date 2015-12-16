@@ -44,4 +44,22 @@ public class Stanza extends Item {
     buffer.asLongBuffer().put(value);
     return Base64.getEncoder().encodeToString(buffer.array());
   }
+
+  public JID from() {
+    return from;
+  }
+  public void from(JID jid) {
+    this.from = jid;
+  }
+
+  public JID to() {
+    return to;
+  }
+  public void to(JID to) {
+    this.to = to;
+  }
+
+  public String id() {
+    return id;
+  }
 }

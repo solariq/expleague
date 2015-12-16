@@ -10,7 +10,6 @@ package com.tbts.xmpp.stanza;
 
 import com.tbts.xmpp.stanza.data.Err;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -60,19 +59,15 @@ import java.util.List;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "showOrStatusOrPriority",
-    "any",
-    "error"
-})
-@XmlRootElement(name = "presence")
+@XmlRootElement
 public class Presence extends Stanza {
-    @XmlElements({
-        @XmlElement(name = "show", namespace = "jabber:client", type = JAXBElement.class, required = false),
-        @XmlElement(name = "status", namespace = "jabber:client", type = Status.class, required = false),
-        @XmlElement(name = "priority", namespace = "jabber:client", type = JAXBElement.class, required = false)
-    })
-    protected List<Object> showOrStatusOrPriority;
+    @XmlElement
+    private String show;
+    @XmlElement
+    private Status status;
+    @XmlElement
+    private Integer priority;
+
     @XmlAnyElement(lax = true)
     protected List<Object> any;
     protected Err error;

@@ -1,8 +1,7 @@
 package com.tbts.server.xmpp.phase;
 
-import akka.actor.ActorRef;
+import com.spbsu.commons.func.Action;
 import com.tbts.server.Roster;
-import com.tbts.server.xmpp.XMPPClientConnection;
 import com.tbts.xmpp.Features;
 import com.tbts.xmpp.control.register.Query;
 import com.tbts.xmpp.control.register.Register;
@@ -24,12 +23,12 @@ import java.util.logging.Logger;
 @SuppressWarnings("unused")
 public class AuthorizationPhase extends XMPPPhase {
   private static final Logger log = Logger.getLogger(AuthorizationPhase.class.getName());
-  private final ActorRef controller;
   private final Mechanisms auth;
+  private final Action<String> authorizedCallback;
   private SaslServer sasl;
 
-  public AuthorizationPhase(ActorRef controller) {
-    this.controller = controller;
+  public AuthorizationPhase(Action<String> authorizedCallback) {
+    this.authorizedCallback = authorizedCallback;
     auth = new Mechanisms();
     auth.fillKnownMechanisms();
     answer(new Features(
@@ -66,8 +65,8 @@ public class AuthorizationPhase extends XMPPPhase {
       }
       else {
         answer(new Success());
+        authorizedCallback.invoke(sasl.getAuthorizationID());
         stop();
-        controller.tell(XMPPClientConnection.ConnectionState.CONNECTED, ActorRef.noSender());
       }
     }
     catch (SaslException e) {

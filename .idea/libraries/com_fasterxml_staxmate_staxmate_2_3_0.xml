@@ -16,6 +16,7 @@
     <SOURCES>
       <root url="jar://$PROJECT_DIR$/server/libs/staxmate-2.3.0-sources.jar!/" />
       <root url="jar://$PROJECT_DIR$/server/libs/staxmate-2.3.0-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.ideaLibSources/stax2-api-3.1.4-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

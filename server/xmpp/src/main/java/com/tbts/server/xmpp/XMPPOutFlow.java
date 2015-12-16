@@ -10,10 +10,9 @@ import com.tbts.xmpp.Item;
 import com.tbts.xmpp.Stream;
 import org.jetbrains.annotations.NotNull;
 
-import javax.xml.bind.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBIntrospector;
 import javax.xml.namespace.QName;
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,38 +26,27 @@ import java.util.logging.Logger;
  * Time: 15:30
  */
 public class XMPPOutFlow extends PushPullStage<Item, ByteString> {
+  public static final String XMPP_START = "<stream:stream xmlns:stream=\"http://etherx.jabber.org/streams\" version=\"1.0\" xmlns=\"jabber:client\" xml:lang=\"en\" xmlns:xml=\"http://www.w3.org/XML/1998/namespace\">";
   private static final Logger log = Logger.getLogger(XMPPOutFlow.class.getName());
   private final Queue<ByteString> queue = new ArrayDeque<>();
-  private final Marshaller marshaller;
   private final JAXBIntrospector introspector;
 
   public XMPPOutFlow() {
     final JAXBContext context = Stream.jaxb();
     introspector = context.createJAXBIntrospector();
-    marshaller = Stream.marshaller();
-    queue.add(ByteString.fromString(
-        "<stream:stream xmlns:stream=\"http://etherx.jabber.org/streams\" version=\"1.0\" xmlns=\"jabber:client\" xml:lang=\"en\" xmlns:xml=\"http://www.w3.org/XML/1998/namespace\">"
-    ));
+    queue.add(ByteString.fromString(XMPP_START));
   }
 
   @Override
   public TerminationDirective onUpstreamFinish(Context<ByteString> context) {
 //    queue.add(ByteString.fromString("</stream:stream>"));
-    queue.add(ByteString.fromString(""));
+//    queue.add(ByteString.fromString(""));
     return context.absorbTermination();
   }
 
   @Override
   public SyncDirective onPush(Item item, Context<ByteString> itemContext) {
-    try (final StringWriter writer = new StringWriter(100)) {
-      //noinspection unchecked
-      marshaller.marshal(new JAXBElement<>(qnameByItem(item), (Class<Item>) item.getClass(), item), writer);
-      writer.close();
-//      System.out.println("< " + writer.toString());
-      queue.add(ByteString.fromString(writer.toString()));
-    } catch (JAXBException | IOException e) {
-      throw new RuntimeException(e);
-    }
+    queue.add(ByteString.fromString(item.xmlString()));
     return onPull(itemContext);
   }
 

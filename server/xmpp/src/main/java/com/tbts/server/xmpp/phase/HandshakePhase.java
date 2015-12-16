@@ -1,7 +1,5 @@
 package com.tbts.server.xmpp.phase;
 
-import akka.actor.ActorRef;
-import com.tbts.server.xmpp.XMPPClientConnection;
 import com.tbts.xmpp.Features;
 import com.tbts.xmpp.control.tls.Proceed;
 import com.tbts.xmpp.control.tls.StartTLS;
@@ -12,10 +10,8 @@ import com.tbts.xmpp.control.tls.StartTLS;
  * Time: 14:38
  */
 public class HandshakePhase extends XMPPPhase {
-  private final ActorRef controller;
 
-  public HandshakePhase(ActorRef controller) {
-    this.controller = controller;
+  public HandshakePhase() {
     answer(new Features(new StartTLS()));
   }
 
@@ -23,6 +19,5 @@ public class HandshakePhase extends XMPPPhase {
   public void invoke(StartTLS tls) {
     answer(new Proceed());
     stop();
-    controller.tell(XMPPClientConnection.ConnectionState.STARTTLS, ActorRef.noSender());
   }
 }

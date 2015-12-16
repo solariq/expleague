@@ -4,6 +4,7 @@ import com.fasterxml.aalto.AsyncXMLStreamReader;
 import com.spbsu.commons.func.Action;
 import com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallerImpl;
 import com.tbts.util.xml.stolen.StAXStreamConnector;
+import com.tbts.xmpp.Stream;
 import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBContext;
@@ -29,8 +30,9 @@ public class AsyncJAXBStreamReader {
       unmarshaller.setListener(new Unmarshaller.Listener() {
         @Override
         public void afterUnmarshal(Object target, Object parent) {
-          //noinspection unchecked
-          action.invoke(target);
+          if (parent instanceof Stream)
+            //noinspection unchecked
+            action.invoke(target);
         }
       });
       connector = new StAXStreamConnector(reader, unmarshaller.createUnmarshallerHandler(null, false, null));

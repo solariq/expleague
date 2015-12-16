@@ -6,9 +6,9 @@
 //
 
 @javax.xml.bind.annotation.XmlSchema(
-    namespace = "http://etherx.jabber.org/streams",
+    namespace = Stream.NS,
     elementFormDefault = XmlNsForm.UNQUALIFIED,
-    xmlns = @XmlNs(prefix = "stream", namespaceURI = "http://etherx.jabber.org/streams"))
+    xmlns = @XmlNs(prefix = "stream", namespaceURI = Stream.NS))
 package com.tbts.xmpp;
 
 import javax.xml.bind.annotation.XmlNs;

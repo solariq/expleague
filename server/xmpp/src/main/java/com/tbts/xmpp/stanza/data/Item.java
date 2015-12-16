@@ -6,7 +6,7 @@
 //
 
 
-package com.tbts.xmpp.control.register;
+package com.tbts.xmpp.stanza.data;
 
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;

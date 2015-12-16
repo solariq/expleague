@@ -8,7 +8,10 @@
 
 package com.tbts.xmpp.stanza;
 
+import com.tbts.xmpp.Item;
+import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.data.Err;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.bind.annotation.*;
 
@@ -66,7 +69,6 @@ public class Iq<T> extends Stanza {
     return answer(request, null);
   }
 
-
   @XmlAnyElement(lax = true)
   protected T any;
   @XmlElementRef
@@ -95,12 +97,28 @@ public class Iq<T> extends Stanza {
     }
   }
 
+  @Nullable
+  public String serviceNS() {
+    if (any instanceof Item) {
+      return Item.ns((Item)any);
+    }
+    return null;
+  }
+
   public void error(Err error) {
     this.error = error;
   }
 
   public IqType type() {
     return type;
+  }
+
+  public static <T extends Item> Iq<T> create(JID to, IqType type, T item) {
+    final Iq<T> iq = new Iq<>();
+    iq.any = item;
+    iq.to(to);
+    iq.type = type;
+    return iq;
   }
 
   @XmlEnum
