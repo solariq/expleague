@@ -3,12 +3,12 @@ package com.tbts.tigase.component;
 import com.amazonaws.AmazonClientException;
 import com.tbts.dao.DynamoDBArchive;
 import com.tbts.dao.InMemArchive;
-import com.tbts.dao.eb.EventBusDAO;
-import com.tbts.dao.eb.impl.MySQLEventBus;
+import com.tbts.dao.sql.MySQLDAO;
 import com.tbts.model.Client;
 import com.tbts.model.Expert;
 import com.tbts.model.Room;
 import com.tbts.model.handlers.*;
+import com.tbts.server.ImageStorage;
 import tigase.conf.ConfigurationException;
 import tigase.criteria.Criteria;
 import tigase.criteria.ElementCriteria;
@@ -48,6 +48,7 @@ public class TrackPresenceComponent extends SessionManager {
   @Override
   public void setProperties(Map<String, Object> props) throws ConfigurationException {
     super.setProperties(props);
+    ImageStorage.instance();
     if (Archive.instance == null)
       try {
         Archive.instance = new DynamoDBArchive();
@@ -58,11 +59,11 @@ public class TrackPresenceComponent extends SessionManager {
         Archive.instance = new InMemArchive();
       }
     if (DAO.instance == null && props.containsKey("tbtsdb-connection")) {
-      DAO.instance = new EventBusDAO(new MySQLEventBus((String)props.get("tbtsdb-connection"), jid -> {
+      DAO.instance = new MySQLDAO((String) props.get("tbtsdb-connection"), jid -> {
+//      DAO.instance = new EventBusDAO(new MySQLEventBus((String)props.get("tbtsdb-connection"), jid -> {
         Room room = Reception.instance().room(jid);
         if (room != null)
           jid = room.owner().id();
-//      DAO.instance = new MySQLDAO((String) props.get("tbtsdb-connection"), jid -> {
         if (bindings == null)
           return false;
         //noinspection unchecked
@@ -75,8 +76,8 @@ public class TrackPresenceComponent extends SessionManager {
           catch (NotAuthorizedException ignore) {}
         }
         return false;
-      }));
-//      });
+//      }));
+      });
       DAO.instance.init();
     }
     final AuthRepository authRepo = (AuthRepository) props.get(RepositoryFactory.SHARED_AUTH_REPO_PROP_KEY);

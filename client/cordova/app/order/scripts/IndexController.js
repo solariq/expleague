@@ -10,28 +10,16 @@ angular
     // Массив с названиями интервалов срочности и их ценой
     var urgencyRange = [
       {
-        name: 'в течение дня',
+        name: 'неважно',
         price: 100
       },
       {
-        name: '4 часа',
+        name: 'сегодня',
         price: 150
       },
       {
-        name: '2 часа',
+        name: 'срочно',
         price: 200
-      },
-      {
-        name: '1 час',
-        price: 250
-      },
-      {
-        name: 'пол часа',
-        price: 300
-      },
-      {
-        name: 'в течение минуты',
-        price: 350
       }
     ];
 
@@ -43,7 +31,7 @@ angular
       text: '',
       near: false,
       expert: false,
-      urgency: 2
+      urgency: 1
     }
 
     // Возвращает имя значения urgency выбраного пользователем
@@ -59,11 +47,27 @@ angular
     }
 
     $scope.submitOrder = function(){
-      // Сохраняем результат введенный в поисковую форму в localStorage, чтобы получить к нему доступ на странице result
-      localStorage.setItem('order', JSON.stringify($scope.order));
+      // Сохраняем результат введенный в поисковую форму в localStorage (tbtsHistory), чтобы получить к нему доступ на странице result
+      var tbtsHistory = JSON.parse(localStorage.getItem('tbtsHistory')) || [];
+      var historyItem = {
+        id: tbtsHistory.length,
+        text: $scope.order.text,
+        near: $scope.order.near,
+        expert: $scope.order.expert,
+        urgency: $scope.order.urgency,
+        started: new Date().getTime(),
+        ended: null,
+        room: null,
+        answerMode: 'chat',
+        messages: []
+      }
+      tbtsHistory.push(historyItem);
+      localStorage.setItem('tbtsHistory', JSON.stringify(tbtsHistory));
+      // Отправляем history#index сообщение, что нужно обновить список истории
+      supersonic.data.channel('announcements').publish({content: 'refresh'});
       // Переключаемся на таб history
       steroids.tabBar.selectTab(1);
-      // Показываем модальный экран result
+      // Показываем модальный экран result, если не задан параметр id, то показываем самый последний объект history
       var modalView = new supersonic.ui.View('history#result');
       var options = {
         animate: false
@@ -75,7 +79,7 @@ angular
         text: '',
         near: false,
         expert: false,
-        urgency: 2
+        urgency: 1
       }
       // Для корректной работы валидации, устанавливаем статус форму pristine
       $scope.orderForm.$setPristine();

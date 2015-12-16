@@ -43,14 +43,29 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
-        <module name="fastxml" />
+      </profile>
+      <profile default="false" name="Annotation profile for xmpp" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="xmpp" />
+      </profile>
+      <profile default="false" name="Annotation profile for model" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="model" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="commons" target="1.8" />
       <module name="fastxml" target="1.8" />
+      <module name="model" target="1.8" />
       <module name="server" target="1.8" />
       <module name="tigase-component" target="1.8" />
+      <module name="xmpp" target="1.8" />
       <module name="xmpp-bots" target="1.8" />
     </bytecodeTargetLevel>
   </component>

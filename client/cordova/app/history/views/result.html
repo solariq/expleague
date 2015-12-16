@@ -6,7 +6,7 @@ body {
 
 <div ng-controller="ResultController">
   <super-navbar>
-    <super-navbar-title>Результаты поиска</super-navbar-title>
+    <super-navbar-title>Результаты</super-navbar-title>
     <super-navbar-button side="left" ng-click="backToHistory()">‹ История</super-navbar-button>
   </super-navbar>
 
@@ -41,10 +41,10 @@ body {
 
   <div ng-if="server.debug" class="debug">
     <div><b>Запрос</b></div>
-    <div>text: {{order.text}}</div>
-    <div>near: {{order.near}}</div>
-    <div>expert: {{order.expert}}</div>
-    <div>urgency: {{order.urgency}}</div>
+    <div>text: {{tbtsHistoryItem.text}}</div>
+    <div>near: {{tbtsHistoryItem.near}}</div>
+    <div>expert: {{tbtsHistoryItem.expert}}</div>
+    <div>urgency: {{tbtsHistoryItem.urgency}}</div>
     <div><b>Сервер</b></div>
     <div>bosh: {{server.bosh}}</div>
     <div>host: {{server.host}}</div>
@@ -65,7 +65,7 @@ body {
     <div ng-repeat="message in messages" class="baloon baloon-{{message.type}}">
       <div class="baloon-title">{{message.title}}</div>
       <div class="baloon-text">
-        <div>{{message.text}}</div>
+        <div ng-bind-html="parseMessage(message.text)"></div>
       </div>
     </div>
   </div>

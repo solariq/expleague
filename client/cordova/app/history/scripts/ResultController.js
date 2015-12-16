@@ -2,13 +2,29 @@ angular
   .module('history')
   .controller('ResultController', function($scope, supersonic) {
 
-    $scope.messages = [];
+    // Вытаскиваем историю из localStorage
+    var tbtsHistory = JSON.parse(localStorage.getItem('tbtsHistory')) || [];
+    // Ищем конкретную запись в массиве tbtsHistory по id, переданному в качестве параметра view,
+    // если id не передали, берем последнюю запись в массиве
+    var tbtsHistoryItemId = steroids.view.params.id || (tbtsHistory.length - 1);
+    $scope.tbtsHistoryItem = tbtsHistory[tbtsHistoryItemId];
+
+    $scope.messages = $scope.tbtsHistoryItem.messages;
     // Формат message
     // {
     //   type: 'client',         // 'client' или 'server'
     //   title: 'Заголовок',     // может быть пустым
     //   text: 'Текст сообщения' // может содержать html-теги
     // };
+
+    // Вытаскиваем из localStorage значение server
+    $scope.server = JSON.parse(localStorage.getItem('server'));
+
+    // Вытаскиваем из localStorage значение user
+    $scope.user = JSON.parse(localStorage.getItem('user'));
+
+    // Усли комната ещё не создана, задаем имя комнаты
+    $scope.tbtsHistoryItem.room = $scope.tbtsHistoryItem.room || ('room' + (new Date().getTime()) + '@' + $scope.server.muc);
 
     // Текущая высота окна, необходима для определения открыта или закрыта клавиатура
     $scope.currentWindowHeight;
@@ -17,16 +33,6 @@ angular
       supersonic.ui.modal.hide();
     };
 
-    // Вытаскиваем из localStorage значение order
-    $scope.order = JSON.parse(localStorage.getItem('order'));
-    localStorage.removeItem('order');
-
-    // Вытаскиваем из localStorage значение server
-    $scope.server = JSON.parse(localStorage.getItem('server'));
-
-    // Вытаскиваем из localStorage значение user
-    $scope.user = JSON.parse(localStorage.getItem('user'));
-
     $scope.connection = {
       status: null,
       jid: $scope.user.username + '@' + $scope.server.host
@@ -34,8 +40,23 @@ angular
 
     $scope.chatroom = {
       status: null,
-      name: 'room' + (new Date().getTime()) + '@' + $scope.server.muc,
-      topic: $scope.order.text
+      name: $scope.tbtsHistoryItem.room,
+      topic: $scope.tbtsHistoryItem.text
+    };
+
+    $scope.parseMessage = function(text) {
+      try{
+        var json = JSON.parse(text);
+        var result = '';
+        for (var i = 0, c = json.content; i < c.length; i++) {
+          var title = (c[i].text.title) ? '<div><b>' + c[i].text.title + '</b></div>' : '';
+          var text = (c[i].text.text) ? '<div>' + c[i].text.text + '</div>' : '';
+          result = result + title + text;
+        }
+        return result;
+      } catch(e) {
+        return text;
+      }
     };
 
     function playSound() {
@@ -78,6 +99,8 @@ angular
         $scope.$apply(function() {
           $scope.messages.push(message);
         });
+        // Записываем историю localStorage
+        localStorage.setItem('tbtsHistory', JSON.stringify(tbtsHistory));
         $(window).scrollTop(document.body.clientHeight);
         playSound();
       }
@@ -202,3 +225,4 @@ angular
       });
     }, false);
   });
+

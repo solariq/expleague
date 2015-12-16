@@ -1,0 +1,22 @@
+<component name="libraryTable">
+  <library name="com.fasterxml.staxmate:staxmate:2.3.0" type="repository">
+    <properties maven-id="com.fasterxml.staxmate:staxmate:2.3.0" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/server/libs/staxmate-2.3.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/stax-api-1.0-2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/stax2-api-3.1.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/staxmate-2.3.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/stax-api-1.0-2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/stax2-api-3.1.4.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/server/libs/staxmate-2.3.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/staxmate-2.3.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/server/libs/staxmate-2.3.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/server/libs/staxmate-2.3.0-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.ideaLibSources/stax2-api-3.1.4-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

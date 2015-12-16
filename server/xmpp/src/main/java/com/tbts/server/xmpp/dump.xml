@@ -1,0 +1,62 @@
+<iq type="set" id="aac0a">
+    <query xmlns="jabber:iq:roster">
+        <item jid="expert@toobusytosearch.net"/>
+    </query>
+</iq>
+
+
+<presence type="subscribe" to="expert@toobusytosearch.net">
+<nick xmlns="http://jabber.org/protocol/nick">client</nick>
+</presence>
+
+
+<iq type="set" id="rsttig4" to="client@toobusytosearch.net/solar-osx">
+<query xmlns="jabber:iq:roster" ver="2f4f1a6526815acdc72e14fd00a17e3b">
+    <item subscription="none" name="expert" jid="expert@toobusytosearch.net"/>
+</query>
+</iq>
+
+
+<iq type="result" id="rsttig4"/>
+
+
+<iq type="result" id="aac0a" to="client@toobusytosearch.net/solar-osx"/>
+
+
+<iq type="set" id="rsttig5" to="client@toobusytosearch.net/solar-osx">
+<query xmlns="jabber:iq:roster" ver="2f4f1a6526815acdc72e14fd00a17e3b">
+    <item subscription="none" ask="subscribe" name="expert" jid="expert@toobusytosearch.net"/>
+</query>
+</iq>
+
+
+<iq type="result" id="rsttig5"/>
+
+
+<presence>
+<show>away</show>
+<status>Auto Status (idle)</status>
+<priority>5</priority>
+<c xmlns="http://jabber.org/protocol/caps" node="http://psi-im.org/caps" ver="caps-b75d8d2b25" ext="ca cs ep-notify-2 html"/>
+</presence>
+
+
+<presence from="experts-admin@toobusytosearch.net/217390304-tigase-1" to="client@toobusytosearch.net">
+<status>0 experts online</status>
+</presence>
+
+
+<presence from="client@toobusytosearch.net/solar-osx" to="client@toobusytosearch.net">
+<show>away</show>
+<status>Auto Status (idle)</status>
+<priority>5</priority>
+<c xmlns="http://jabber.org/protocol/caps" node="http://psi-im.org/caps" ver="caps-b75d8d2b25" ext="ca cs ep-notify-2 html"/>
+</presence>
+
+
+<presence>
+<show>xa</show>
+<status>Auto Status (idle)</status>
+<priority>5</priority>
+<c xmlns="http://jabber.org/protocol/caps" node="http://psi-im.org/caps" ver="caps-b75d8d2b25" ext="ca cs ep-notify-2 html"/>
+</presence>
