@@ -177,7 +177,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
     ActorRef newLogic = null;
     switch (state) {
       case HANDSHAKE: {
-        final Source<Tcp.Received, ActorRef> source = Source.actorRef(100, OverflowStrategy.fail());
+        final Source<Tcp.Received, ActorRef> source = Source.actorRef(1000, OverflowStrategy.fail());
         newLogic = source
             .via(inFlow)
             .transform(HandshakePhase::new)
@@ -199,7 +199,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         break;
       }
       case AUTHORIZATION: {
-        newLogic = Source.<Tcp.Received>actorRef(100, OverflowStrategy.fail())
+        newLogic = Source.<Tcp.Received>actorRef(1000, OverflowStrategy.fail())
             .via(inFlow)
             .transform(() -> new AuthorizationPhase(id -> XMPPClientConnection.this.id = id))
             .via(outFlow)
@@ -213,7 +213,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
             .to(Sink.actorRef(getSelf(), ConnectionState.CLOSED))
             .run(materializer);
         final ActorRef connectionLogic = getContext().actorOf(Props.create(ConnectedPhase.class, id, inFlowActor));
-        newLogic = Source.<Tcp.Received>actorRef(100, OverflowStrategy.fail())
+        newLogic = Source.<Tcp.Received>actorRef(1000, OverflowStrategy.fail())
             .via(inFlow)
             .to(Sink.actorRef(
                 connectionLogic, new Close()))

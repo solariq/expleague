@@ -5,6 +5,7 @@ import akka.actor.ActorSelection;
 import com.tbts.server.XMPPServer;
 import com.tbts.server.services.Services;
 import com.tbts.server.xmpp.agents.MailBoxAgent;
+import com.tbts.server.xmpp.agents.UserAgent;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.Features;
 import com.tbts.xmpp.JID;
@@ -34,7 +35,7 @@ public class ConnectedPhase extends UntypedActorAdapter {
   }
 
   public void invoke(ActorRef agent) {
-    agent.tell(new MailBoxAgent.Connected(getSelf()), getSelf());
+    agent.tell(new UserAgent.Connected(getSelf()), getSelf());
   }
 
   public void invoke(Iq<?> iq) {
@@ -63,14 +64,15 @@ public class ConnectedPhase extends UntypedActorAdapter {
   }
 
   public void invoke(Stanza msg) {
+    if (msg instanceof Iq)
+      return;
     if (msg.to() != null && jid().bareEq(msg.to())) { // incoming
       outFlow.tell(msg, getSender());
-      if (!(msg instanceof Iq))
-        getSender().tell(new MailBoxAgent.Delivered(msg.id()), getSelf());
+      getSender().tell(new MailBoxAgent.Delivered(msg.id()), getSelf());
     }
     else { // outgoing
       msg.from(jid);
-      final ActorRef agency = getContext().actorFor("/user/xmpp");
+      final ActorSelection agency = getContext().actorSelection("/user/xmpp");
       agency.tell(msg, getSelf());
     }
   }

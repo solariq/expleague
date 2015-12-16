@@ -1,8 +1,8 @@
 package com.tbts.server.xmpp.agents;
 
-import akka.actor.ActorRef;
 import akka.persistence.SnapshotOffer;
 import akka.persistence.UntypedPersistentActor;
+import com.spbsu.commons.system.RuntimeUtils;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Stanza;
 
@@ -15,12 +15,13 @@ import java.util.List;
  * Date: 14.12.15
  * Time: 20:02
  */
-public class MailBoxAgent extends UntypedPersistentActor {
+public abstract class MailBoxAgent extends UntypedPersistentActor {
   private final JID bareJid;
-  private ActorRef connecter;
-  private final List<Stanza> undelivered = new ArrayList<>();
+  protected final List<Stanza> undelivered = new ArrayList<>();
+  private final RuntimeUtils.InvokeDispatcher dispatcher;
 
   public MailBoxAgent(JID jid) {
+    dispatcher = new RuntimeUtils.InvokeDispatcher(getClass(), this::unhandled);
     this.bareJid = jid.bare();
   }
 
@@ -39,16 +40,8 @@ public class MailBoxAgent extends UntypedPersistentActor {
   @Override
   public void onReceiveCommand(Object msg) throws Exception {
     if (msg instanceof Stanza) {
+      dispatcher.invoke(this, msg);
       undelivered.add((Stanza) msg);
-      if (connecter != null)
-        connecter.tell(msg, getSelf());
-    }
-    else if (msg instanceof Connected) {
-      connecter = ((Connected) msg).connecter;
-      for (int i = 0; i < undelivered.size(); i++) {
-        final Stanza stanza = undelivered.get(i);
-        connecter.tell(stanza, getSelf());
-      }
     }
     else if (msg instanceof Delivered) {
       final Iterator<Stanza> iterator = undelivered.iterator();
@@ -60,7 +53,7 @@ public class MailBoxAgent extends UntypedPersistentActor {
         }
       }
     }
-    else unhandled(msg);
+    else dispatcher.invoke(this, msg);
   }
 
   @Override
@@ -68,18 +61,14 @@ public class MailBoxAgent extends UntypedPersistentActor {
     return bareJid.getAddr();
   }
 
-  public static class Connected {
-    private final ActorRef connecter;
-
-    public Connected(ActorRef connecter) {
-      this.connecter = connecter;
-    }
-  }
-
   public static class Delivered {
     private final String id;
     public Delivered(String id) {
       this.id = id;
     }
+  }
+
+  public JID jid() {
+    return bareJid;
   }
 }

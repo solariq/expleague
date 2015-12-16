@@ -68,6 +68,15 @@ public class Item implements Serializable {
     return cached;
   }
 
+  public <T extends Item> T copy() {
+    try {
+      return (T)clone();
+    }
+    catch (CloneNotSupportedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private static class XmlOutputter {
     private final ByteArrayOutputStream output = new ByteArrayOutputStream();
     private final XMLStreamWriter writer;

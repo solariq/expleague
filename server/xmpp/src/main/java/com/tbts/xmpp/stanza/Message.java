@@ -8,11 +8,13 @@
 
 package com.tbts.xmpp.stanza;
 
+import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.data.Err;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -80,6 +82,15 @@ public class Message extends Stanza {
   @XmlSchemaType(name = "language")
   protected String lang;
 
+  public Message() {}
+
+  public Message(JID from, JID to, String message) {
+    this.from = from;
+    this.to = to;
+    this.subjectOrBodyOrThread = new ArrayList<>();
+    subjectOrBodyOrThread.add(new Body(message));
+  }
+
   /**
    * <p>Java class for anonymous complex type.
    *
@@ -110,6 +121,12 @@ public class Message extends Stanza {
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "language")
     protected String lang;
+
+    public Body() {}
+
+    public Body(String message) {
+      value = message;
+    }
 
     /**
      * Gets the value of the value property.

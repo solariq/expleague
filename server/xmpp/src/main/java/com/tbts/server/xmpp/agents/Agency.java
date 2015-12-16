@@ -1,11 +1,12 @@
 package com.tbts.server.xmpp.agents;
 
-import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
 import akka.actor.Props;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Presence;
 import com.tbts.xmpp.stanza.Stanza;
+import scala.concurrent.duration.Duration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,8 +17,8 @@ import java.util.Map;
  * Time: 21:59
  */
 public class Agency extends UntypedActorAdapter {
-  private final Map<String, ActorRef> knownAgents = new HashMap<>();
   private final Map<JID, Presence> status = new HashMap<>();
+
   public void invoke(final JID jid) {
     getSender().tell(allocate(jid), getSelf());
   }
@@ -29,13 +30,20 @@ public class Agency extends UntypedActorAdapter {
 
   public void invoke(Presence presence) {
     status.put(presence.from(), presence);
+    if (presence.to() != null) {
+      allocate(presence.to()).tell(presence, self());
+    }
   }
 
-  private ActorRef allocate(JID jid) {
+  private ActorSelection allocate(JID jid) {
     final String key = jid.bare().getAddr();
-    ActorRef actorRef = knownAgents.get(key);
-    if (actorRef == null)
-      knownAgents.put(key, actorRef = getContext().actorOf(Props.create(UserAgent.class, jid.bare()), jid.bare().toString()));
-    return actorRef;
+    ActorSelection selection = context().actorSelection("/user/xmpp/" + key);
+    if (selection.resolveOne(Duration.Zero()).value().get().toOption().isEmpty()) {
+      if (jid.domain().startsWith("muc."))
+        selection = ActorSelection.apply(context().actorOf(Props.create(GroupChatAgent.class, jid.bare())), "/user/xmpp/" + key);
+      else
+        selection = ActorSelection.apply(context().actorOf(Props.create(UserAgent.class, jid.bare())), "/user/xmpp/" + key);
+    }
+    return selection;
   }
 }

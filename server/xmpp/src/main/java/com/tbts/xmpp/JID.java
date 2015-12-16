@@ -95,4 +95,9 @@ public class JID {
     final int dogIndex = bare.indexOf('@');
     return dogIndex >= 0 ? bare.substring(0, dogIndex) : "";
   }
+
+  public String domain() {
+    final int dogIndex = bare.indexOf('@');
+    return dogIndex >= 0 ? bare.substring(dogIndex + 1) : bare;
+  }
 }

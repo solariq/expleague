@@ -8,6 +8,8 @@ import com.tbts.xmpp.control.register.Query;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * User: solar
@@ -15,6 +17,7 @@ import java.sql.SQLException;
  * Time: 22:37
  */
 public class MySQLRoster extends MySQLOps implements Roster {
+  private static final Logger log = Logger.getLogger(MySQLRoster.class.getName());
   public MySQLRoster(String connectionUrl) {
     super(connectionUrl);
   }
@@ -29,6 +32,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
 
   @Override
   public void register(Query query) throws Exception {
+    log.log(Level.FINE, "Registering user" + query.name());
     try (final PreparedStatement register = createStatement("register", "INSERT INTO tbts.Users SET id = ?, passwd = ?;")) {
       register.setString(1, query.name());
       register.setString(2, query.passwd());
