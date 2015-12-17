@@ -60,7 +60,7 @@ public class ClientBot extends Bot {
           latch.state(2);
         } else if (stanza instanceof Message && "groupchat".equals(stanza.getAttribute("type")) && latch.state() == 2) {
           Element body = stanza.getWrappedElement().getFirstChild("body");
-          if (body != null && "Room is now unlocked".equals(body.getValue())) {
+          if (body != null && body.getValue().contains("unlocked")) {
             System.out.println("Room created & unlocked");
             latch.state(4);
           }

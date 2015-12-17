@@ -41,7 +41,11 @@ public class XMPPInFlow extends PushPullStage<ByteString, Item> {
   public SyncDirective onPush(ByteString data, Context<Item> itemContext) {
     final byte[] copy = new byte[data.length()];
     data.asByteBuffer().get(copy);
-//    System.out.println("> " + new String(copy));
+    final String s = new String(copy).trim();
+    { // debug
+      if (!s.isEmpty())
+        log.finest(s);
+    }
     try {
       asyncXml.getInputFeeder().feedInput(copy, 0, copy.length);
       reader.drain(o -> {
@@ -50,7 +54,7 @@ public class XMPPInFlow extends PushPullStage<ByteString, Item> {
       });
     }
     catch (XMLStreamException | SAXException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("On [" + s + "] message", e);
     }
 
     return onPull(itemContext);
@@ -58,7 +62,10 @@ public class XMPPInFlow extends PushPullStage<ByteString, Item> {
 
   @Override
   public SyncDirective onPull(Context<Item> itemContext) {
-    return queue.isEmpty() ? itemContext.pull() : itemContext.push(queue.poll());
+    if (queue.isEmpty())
+      return itemContext.pull();
+    else
+      return itemContext.push(queue.poll());
   }
 
   @Override

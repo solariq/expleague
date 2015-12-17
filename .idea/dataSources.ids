@@ -6,7 +6,7 @@
       <identifier-quote-string>`</identifier-quote-string>
     </database-info>
     <case-sensitivity plain-identifiers="mixed" quoted-identifiers="upper"/>
-    <database-model serializer="dbm" rdbms="MYSQL" format-version="2.3">
+    <database-model serializer="dbm" rdbms="MYSQL" format-version="2.4">
       <schema id="1" name="tbts"/>
       <table id="2" parent="1" name="Clients"/>
       <table id="3" parent="1" name="Connections"/>

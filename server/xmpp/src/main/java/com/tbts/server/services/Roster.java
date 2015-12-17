@@ -7,6 +7,7 @@ import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.control.roster.Query;
 import com.tbts.xmpp.stanza.Iq;
+import com.tbts.xmpp.stanza.Stanza;
 import scala.runtime.AbstractFunction0;
 
 /**
@@ -56,7 +57,7 @@ public class Roster extends UntypedActorAdapter {
             data.initial.get().items().stream()
                 .map(item -> new Query.RosterItem(item.jid(), Query.RosterItem.Subscription.NONE, item.jid().local()))
                 .forEach(query::add);
-            final Iq<Query> msg = Iq.create(iq.from(), Iq.IqType.SET, query);
+            final Iq<Query> msg = Iq.create(iq.from(), Stanza.StanzaType.SET, query);
             data.waitingForId = msg.id();
             sender().tell(msg, self());
             return goTo(States.CLIENT_ROSTER_SET);
@@ -64,13 +65,13 @@ public class Roster extends UntypedActorAdapter {
 
       when(States.CLIENT_ROSTER_SET,
           matchEvent(Iq.class, (iq, data) -> {
-            if (!data.waitingForId.equals(iq.id()) || iq.type() != Iq.IqType.RESULT)
+            if (!data.waitingForId.equals(iq.id()) || iq.type() != Stanza.StanzaType.RESULT)
               return stop(new Failure("Expected answer for " + data.waitingForId + " but received " + iq));
             final Query query = new Query();
             data.initial.get().items().stream()
                 .map(item -> new Query.RosterItem(item.jid(), Query.RosterItem.Subscription.NONE, item.jid().local(), "subscribe"))
                 .forEach(query::add);
-            final Iq<Query> msg = Iq.create(iq.from(), Iq.IqType.SET, query);
+            final Iq<Query> msg = Iq.create(iq.from(), Stanza.StanzaType.SET, query);
             data.waitingForId = msg.id();
             sender().tell(msg, self());
 
@@ -79,7 +80,7 @@ public class Roster extends UntypedActorAdapter {
 
       when(States.CLIENT_SUBSCRIPTION_SET,
           matchEvent(Iq.class, (iq, data) -> {
-            if (!data.waitingForId.equals(iq.id()) || iq.type() != Iq.IqType.RESULT)
+            if (!data.waitingForId.equals(iq.id()) || iq.type() != Stanza.StanzaType.RESULT)
               return stop(new Failure("Expected answer for " + data.waitingForId + " but received " + iq));
             sender().tell(Iq.answer(data.initial), self());
             return stop();

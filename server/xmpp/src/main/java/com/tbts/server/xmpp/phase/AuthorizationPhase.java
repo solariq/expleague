@@ -7,6 +7,7 @@ import com.tbts.xmpp.control.register.Query;
 import com.tbts.xmpp.control.register.Register;
 import com.tbts.xmpp.control.sasl.*;
 import com.tbts.xmpp.stanza.Iq;
+import com.tbts.xmpp.stanza.Stanza;
 import com.tbts.xmpp.stanza.data.Err;
 
 import javax.security.sasl.AuthenticationException;
@@ -40,15 +41,16 @@ public class AuthorizationPhase extends XMPPPhase {
   public void invoke(Iq<Query> request) {
     final Query query = request.get();
     if (query != null) {
-      if (request.type() == Iq.IqType.GET && query.isEmpty()) {
+      if (request.type() == Stanza.StanzaType.GET && query.isEmpty()) {
         answer(Iq.answer(request, Roster.instance().required()));
       }
-      else if (request.type() == Iq.IqType.SET && !query.isEmpty()) {
+      else if (request.type() == Stanza.StanzaType.SET && !query.isEmpty()) {
         try {
           Roster.instance().register(query);
           answer(Iq.answer(request));
         }
         catch (Exception e) {
+          log.log(Level.WARNING, "Exception during user registration", e);
           answer(Iq.answer(request, new Err(Err.Cause.INSTERNAL_SERVER_ERROR, Err.ErrType.AUTH, e.getMessage())));
         }
       }
@@ -60,8 +62,8 @@ public class AuthorizationPhase extends XMPPPhase {
       throw new IllegalStateException();
     try {
       if (response.data().length > 0 || !sasl.isComplete()) {
-        final byte[] bytes = sasl.evaluateResponse(response.data());
-        answer(new Challenge(bytes));
+        final byte[] challenge = sasl.evaluateResponse(response.data());
+        answer(new Challenge(challenge));
       }
       else {
         answer(new Success());
@@ -83,10 +85,20 @@ public class AuthorizationPhase extends XMPPPhase {
   public void invoke(Auth auth) {
     sasl = this.auth.get(auth.mechanism());
     if (!sasl.isComplete()) {
-      final byte[] response;
+      final byte[] challenge;
       try {
-        response = sasl.evaluateResponse(new byte[0]);
-        answer(new Challenge(response));
+        challenge = sasl.evaluateResponse(auth.challenge());
+        if ((challenge != null && challenge.length > 0) || !sasl.isComplete()) {
+          answer(new Challenge(challenge));
+        }
+        else {
+          answer(new Success());
+          authorizedCallback.invoke(sasl.getAuthorizationID());
+          stop();
+        }
+      }
+      catch (AuthenticationException e) {
+        answer(new Failure(Failure.Type.NOT_AUTHORIZED, e.getMessage()));
       }
       catch (SaslException e) {
         log.log(Level.WARNING, "Exception during initial challenge generation", e);

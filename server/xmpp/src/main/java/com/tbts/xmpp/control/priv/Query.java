@@ -18,7 +18,7 @@ public class Query extends XMPPQuery {
   private String storage;
 
   @Override
-  public Item reply(Iq.IqType type) {
+  public Item reply(Iq.StanzaType type) {
     return this;
   }
 }

@@ -1,9 +1,6 @@
 package com.tbts.server.services;
 
-import akka.actor.Actor;
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
+import akka.actor.*;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.Item;
 import com.tbts.xmpp.control.XMPPQuery;
@@ -48,7 +45,7 @@ public class Services extends UntypedActorAdapter {
     shortNames.put(ns, shortName);
   }
 
-  public static ActorRef reference(ActorSystem system) {
-    return system.actorFor("/user/services");
+  public static ActorSelection reference(ActorSystem system) {
+    return system.actorSelection("/user/services");
   }
 }

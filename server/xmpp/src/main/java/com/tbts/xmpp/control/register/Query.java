@@ -168,7 +168,12 @@ public class Query {
   }
 
   public String name() {
-    return name;
+    if (name != null)
+      return name;
+    else {
+      final int dogIndex = username.indexOf('@');
+      return dogIndex >= 0 ? username.substring(0, dogIndex) : username;
+    }
   }
 
   public String passwd() {

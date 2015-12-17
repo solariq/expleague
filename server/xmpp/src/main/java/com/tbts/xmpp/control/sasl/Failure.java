@@ -2,89 +2,37 @@ package com.tbts.xmpp.control.sasl;
 
 import com.tbts.xmpp.Item;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.namespace.QName;
 
 /**
  * User: solar
  * Date: 11.12.15
  * Time: 16:08
  */
-@XmlRootElement
+@XmlRootElement(namespace = "urn:ietf:params:xml:ns:xmpp-sasl")
 public class Failure extends Item {
-  @XmlElement
-  protected String aborted;
-  @XmlElement(name = "account-disabled")
-  protected String accountDisabled;
-  @XmlElement(name = "credentials-expired")
-  protected String credentialsExpired;
-  @XmlElement(name = "encryption-required")
-  protected String encryptionRequired;
-  @XmlElement(name = "incorrect-encoding")
-  protected String incorrectEncoding;
-  @XmlElement(name = "invalid-authzid")
-  protected String invalidAuthzid;
-  @XmlElement(name = "invalid-mechanism")
-  protected String invalidMechanism;
-  @XmlElement(name = "malformed-request")
-  protected String malformedRequest;
-  @XmlElement(name = "mechanism-too-weak")
-  protected String mechanismTooWeak;
-  @XmlElement(name = "not-authorized")
-  protected String notAuthorized;
-  @XmlElement(name = "temporary-auth-failure")
-  protected String temporaryAuthFailure;
-  @XmlElement(name = "transition-needed")
-  protected String transitionNeeded;
+  @XmlAnyElement
+  @XmlJavaTypeAdapter(type = JAXBElement.class, value = Type.TypeAdapter.class)
+  private Type type;
 
-  @XmlElement
+  @XmlElement(namespace = "urn:ietf:params:xml:ns:xmpp-sasl")
   protected String text;
 
   public Failure() {}
 
   public Failure(Type type, String text) {
-    switch (type) {
-      case ABORTED:
-        aborted = "";
-        break;
-      case ACCOUNT_DISABLED:
-        accountDisabled = "";
-        break;
-      case CREDENTIALS_EXPIRED:
-        credentialsExpired = "";
-        break;
-      case ENCRYPTION_REQUIRED:
-        encryptionRequired = "";
-        break;
-      case INCORRECT_ENCODING:
-        incorrectEncoding = "";
-        break;
-      case INVALID_AUTHZID:
-        invalidAuthzid = "";
-        break;
-      case INVALID_MECHANISM:
-        invalidMechanism = "";
-        break;
-      case MALFORMED_REQUEST:
-        malformedRequest = "";
-        break;
-      case MECHANISM_TOO_WEAK:
-        mechanismTooWeak = "";
-        break;
-      case NOT_AUTHORIZED:
-        notAuthorized = "";
-        break;
-      case TEMPORARY_AUTH_FAILURE:
-        temporaryAuthFailure = "";
-        break;
-      case TRANSITION_NEEDED:
-        transitionNeeded = "";
-        break;
-    }
+    this.type = type;
     this.text = text;
   }
 
-
+  @XmlEnum
   public enum Type {
     ACCOUNT_DISABLED,
     CREDENTIALS_EXPIRED,
@@ -96,6 +44,20 @@ public class Failure extends Item {
     MECHANISM_TOO_WEAK,
     NOT_AUTHORIZED,
     TEMPORARY_AUTH_FAILURE,
-    ABORTED, TRANSITION_NEEDED
+    ABORTED, TRANSITION_NEEDED;
+    public static class TypeAdapter extends XmlAdapter<JAXBElement<?>, Type> {
+      @Override
+      public Type unmarshal(JAXBElement<?> v) throws Exception {
+        final String propName = v.getName().getLocalPart().toUpperCase().replace('-', '_');
+        return Type.valueOf(propName);
+      }
+
+      @Override
+      public JAXBElement<?> marshal(Type v) throws Exception {
+        final QName qName = new QName("urn:ietf:params:xml:ns:xmpp-sasl", v.name().toLowerCase().replace('_', '-'));
+        //noinspection unchecked
+        return new JAXBElement(qName, Type.class, null);
+      }
+    }
   }
 }

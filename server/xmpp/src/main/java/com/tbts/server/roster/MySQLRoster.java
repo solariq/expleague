@@ -32,7 +32,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
 
   @Override
   public void register(Query query) throws Exception {
-    log.log(Level.FINE, "Registering user" + query.name());
+    log.log(Level.FINE, "Registering user " + query.name());
     try (final PreparedStatement register = createStatement("register", "INSERT INTO tbts.Users SET id = ?, passwd = ?;")) {
       register.setString(1, query.name());
       register.setString(2, query.passwd());

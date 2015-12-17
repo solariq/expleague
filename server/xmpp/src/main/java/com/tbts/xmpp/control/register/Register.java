@@ -9,6 +9,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Date: 12.12.15
  * Time: 0:19
  */
-@XmlRootElement(namespace = "jabber:iq:register")
+@XmlRootElement(namespace = "http://jabber.org/features/iq-register")
 public class Register extends XMPPFeature {
 }

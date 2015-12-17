@@ -30,7 +30,7 @@ import java.util.Map;
  * Time: 17:57
  */
 @XmlTransient
-public class Item implements Serializable {
+public class Item implements Serializable, Cloneable {
   private static ThreadLocal<XmlOutputter> tlWriter = new ThreadLocal<XmlOutputter>() {
     @Override
     protected XmlOutputter initialValue() {
@@ -70,6 +70,7 @@ public class Item implements Serializable {
 
   public <T extends Item> T copy() {
     try {
+      //noinspection unchecked
       return (T)clone();
     }
     catch (CloneNotSupportedException e) {

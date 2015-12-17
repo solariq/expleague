@@ -12,5 +12,5 @@ import javax.xml.bind.annotation.XmlTransient;
  */
 @XmlTransient
 public abstract class XMPPQuery extends Item {
-  public abstract Item reply(Iq.IqType type);
+  public abstract Item reply(Iq.StanzaType type);
 }

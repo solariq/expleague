@@ -34,13 +34,15 @@ public class ConnectedPhase extends UntypedActorAdapter {
     outFlow.tell(new Features(new Bind(), new Session()), getSelf());
   }
 
-  public void invoke(ActorRef agent) {
+  public void invoke(ActorSelection agent) {
     agent.tell(new UserAgent.Connected(getSelf()), getSelf());
   }
 
   public void invoke(Iq<?> iq) {
-    if (jid().equals(iq.to())) // skip outgoing iq
+    if (jid().equals(iq.to())) { // incoming
+      outFlow.tell(iq, getSender());
       return;
+    }
     if (bound)
       iq.from(jid());
     switch (iq.type()) {
@@ -59,7 +61,11 @@ public class ConnectedPhase extends UntypedActorAdapter {
         }
       }
       default:
-        Services.reference(getContext().system()).tell(iq, getSelf());
+        if (iq.to() != null) {
+          iq.from(jid);
+          context().actorSelection("/user/xmpp").tell(iq, self());
+        }
+        else Services.reference(context().system()).tell(iq, getSelf());
     }
   }
 
@@ -72,8 +78,7 @@ public class ConnectedPhase extends UntypedActorAdapter {
     }
     else { // outgoing
       msg.from(jid);
-      final ActorSelection agency = getContext().actorSelection("/user/xmpp");
-      agency.tell(msg, getSelf());
+      getContext().actorSelection("/user/xmpp").tell(msg, getSelf());
     }
   }
 

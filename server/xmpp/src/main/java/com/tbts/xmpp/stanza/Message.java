@@ -8,14 +8,13 @@
 
 package com.tbts.xmpp.stanza;
 
+import com.tbts.xmpp.Item;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.data.Err;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -59,21 +58,12 @@ import java.util.List;
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "subjectOrBodyOrThread",
-    "any",
-    "error"
-})
 @XmlRootElement(name = "message")
 public class Message extends Stanza {
-  @XmlElements({
-      @XmlElement(name = "subject", type = Subject.class),
-      @XmlElement(name = "body", type = Body.class),
-      @XmlElement(name = "thread", type = Thread.class)
-  })
-  protected List<Object> subjectOrBodyOrThread;
   @XmlAnyElement(lax = true)
-  protected List<Object> any;
+  protected Item subjectOrBodyOrThread;
+  @XmlAnyElement(lax = true)
+  protected Object any;
 
   @XmlElement
   protected Err error;
@@ -87,8 +77,7 @@ public class Message extends Stanza {
   public Message(JID from, JID to, String message) {
     this.from = from;
     this.to = to;
-    this.subjectOrBodyOrThread = new ArrayList<>();
-    subjectOrBodyOrThread.add(new Body(message));
+    subjectOrBodyOrThread = new Body(message);
   }
 
   /**
@@ -109,11 +98,8 @@ public class Message extends Stanza {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {
-      "value"
-  })
   @XmlRootElement(name = "body")
-  public static class Body {
+  public static class Body extends Item {
 
     @XmlValue
     protected String value;
@@ -127,55 +113,6 @@ public class Message extends Stanza {
     public Body(String message) {
       value = message;
     }
-
-    /**
-     * Gets the value of the value property.
-     *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
-     */
-    public String getValue() {
-      return value;
-    }
-
-    /**
-     * Sets the value of the value property.
-     *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
-     */
-    public void setValue(String value) {
-      this.value = value;
-    }
-
-    /**
-     * Gets the value of the lang property.
-     *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
-     */
-    public String getLang() {
-      return lang;
-    }
-
-    /**
-     * Sets the value of the lang property.
-     *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
-     */
-    public void setLang(String value) {
-      this.lang = value;
-    }
-
   }
 
   /**
@@ -196,67 +133,13 @@ public class Message extends Stanza {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {
-      "value"
-  })
   @XmlRootElement(name = "subject")
-  public static class Subject {
-
+  public static class Subject extends Item {
       @XmlValue
       protected String value;
+
       @XmlAttribute(name = "lang", namespace = "http://www.w3.org/XML/1998/namespace")
-      @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-      @XmlSchemaType(name = "language")
       protected String lang;
-
-      /**
-       * Gets the value of the value property.
-       *
-       * @return
-       *     possible object is
-       *     {@link String }
-       *
-       */
-      public String getValue() {
-          return value;
-      }
-
-      /**
-       * Sets the value of the value property.
-       *
-       * @param value
-       *     allowed object is
-       *     {@link String }
-       *
-       */
-      public void setValue(String value) {
-          this.value = value;
-      }
-
-      /**
-       * Gets the value of the lang property.
-       *
-       * @return
-       *     possible object is
-       *     {@link String }
-       *
-       */
-      public String getLang() {
-          return lang;
-      }
-
-      /**
-       * Sets the value of the lang property.
-       *
-       * @param value
-       *     allowed object is
-       *     {@link String }
-       *
-       */
-      public void setLang(String value) {
-          this.lang = value;
-      }
-
   }
 
   /**
@@ -281,14 +164,10 @@ public class Message extends Stanza {
       "value"
   })
   @XmlRootElement(name = "thread")
-  public static class Thread {
+  public static class Thread extends Item {
       @XmlValue
-      @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-      @XmlSchemaType(name = "NMTOKEN")
       protected String value;
       @XmlAttribute(name = "parent")
-      @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-      @XmlSchemaType(name = "NMTOKEN")
       protected String parent;
   }
 }

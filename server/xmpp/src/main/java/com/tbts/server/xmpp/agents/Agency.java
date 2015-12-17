@@ -1,15 +1,18 @@
 package com.tbts.server.xmpp.agents;
 
+import akka.actor.ActorNotFound;
 import akka.actor.ActorSelection;
 import akka.actor.Props;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Presence;
 import com.tbts.xmpp.stanza.Stanza;
+import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: solar
@@ -37,12 +40,18 @@ public class Agency extends UntypedActorAdapter {
 
   private ActorSelection allocate(JID jid) {
     final String key = jid.bare().getAddr();
-    ActorSelection selection = context().actorSelection("/user/xmpp/" + key);
-    if (selection.resolveOne(Duration.Zero()).value().get().toOption().isEmpty()) {
+    final ActorSelection selection = context().actorSelection("/user/xmpp/" + key);
+    try {
+      Await.result(selection.resolveOne(Duration.create(1, TimeUnit.SECONDS)), Duration.Inf());
+    }
+    catch (ActorNotFound anf){
       if (jid.domain().startsWith("muc."))
-        selection = ActorSelection.apply(context().actorOf(Props.create(GroupChatAgent.class, jid.bare())), "/user/xmpp/" + key);
+        context().actorOf(Props.create(GroupChatAgent.class, jid), key);
       else
-        selection = ActorSelection.apply(context().actorOf(Props.create(UserAgent.class, jid.bare())), "/user/xmpp/" + key);
+        context().actorOf(Props.create(UserAgent.class, jid), key);
+    }
+    catch (Exception e) {
+      throw new RuntimeException(e);
     }
     return selection;
   }

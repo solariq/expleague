@@ -11,16 +11,20 @@ import com.tbts.server.services.Services;
 import com.tbts.server.xmpp.XMPPClientConnection;
 import com.tbts.server.xmpp.agents.Agency;
 import com.tbts.util.akka.UntypedActorAdapter;
-import com.tbts.xmpp.Features;
-import com.tbts.xmpp.Stream;
-import com.tbts.xmpp.control.register.Register;
-import com.tbts.xmpp.control.sasl.Mechanisms;
-import com.tbts.xmpp.stanza.Iq;
-import com.tbts.xmpp.stanza.data.Err;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.LoginException;
+import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.security.AuthProvider;
+import java.security.Security;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
 
 /**
  * User: solar
@@ -31,11 +35,32 @@ public class XMPPServer {
   private static Cfg config;
   private static Roster users;
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     final Config load = ConfigFactory.parseResourcesAnySyntax("tbts.conf").withFallback(ConfigFactory.load()).resolve();
     config = new Cfg(load);
     users = new MySQLRoster(config.db());
-    Stream.jaxb();
+    Security.addProvider(new AuthProvider("PLAIN", 1.0, "") {
+      @Override
+      public void login(Subject subject, CallbackHandler handler) throws LoginException {
+        try {
+          handler.handle(new Callback[0]);
+        }
+        catch (IOException | UnsupportedCallbackException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      @Override
+      public void logout() throws LoginException {
+
+      }
+
+      @Override
+      public void setCallbackHandler(CallbackHandler handler) {
+        System.out.println();
+      }
+    });
+    LogManager.getLogManager().readConfiguration(XMPPServer.class.getResourceAsStream("/logging.properties"));
 
 //    Config config = ConfigFactory.parseString("akka.loglevel = DEBUG \n" +
 //        "akka.actor.debug.lifecycle = on \n akka.event-stream = on");
@@ -94,11 +119,13 @@ public class XMPPServer {
   public static class Cfg {
     private final String db;
     private final String domain;
+    private final Level level;
 
     public Cfg(Config load) {
       final Config tbts = load.getConfig("tbts");
       db = tbts.getString("db");
       domain = tbts.getString("domain");
+      level = tbts.hasPath("loglevel") ? Level.parse(tbts.getString("loglevel")) : Level.WARNING;
     }
 
     public String domain() {
@@ -107,6 +134,10 @@ public class XMPPServer {
 
     public String db() {
       return db;
+    }
+
+    public Level logging() {
+      return level;
     }
   }
 }
