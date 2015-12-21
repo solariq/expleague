@@ -6,6 +6,7 @@ import akka.stream.stage.PushPullStage;
 import akka.stream.stage.SyncDirective;
 import akka.util.ByteString;
 import com.tbts.xmpp.Item;
+import com.tbts.xmpp.control.Close;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -27,6 +28,8 @@ public class XMPPOutFlow extends PushPullStage<Item, ByteString> {
 
   @Override
   public SyncDirective onPush(Item item, Context<ByteString> itemContext) {
+    if (item instanceof Close)
+      return onPull(itemContext);
     final String out = item.xmlString();
     { // debug
       log.finest(out);

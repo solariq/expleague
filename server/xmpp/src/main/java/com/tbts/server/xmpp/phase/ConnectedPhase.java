@@ -1,18 +1,21 @@
 package com.tbts.server.xmpp.phase;
 
 import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
 import com.tbts.server.XMPPServer;
+import com.tbts.server.agents.LaborExchange;
+import com.tbts.server.agents.MailBoxAgent;
+import com.tbts.server.agents.UserAgent;
+import com.tbts.server.agents.XMPP;
 import com.tbts.server.services.Services;
-import com.tbts.server.xmpp.agents.MailBoxAgent;
-import com.tbts.server.xmpp.agents.UserAgent;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.Features;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.control.Bind;
+import com.tbts.xmpp.control.Close;
 import com.tbts.xmpp.control.Open;
 import com.tbts.xmpp.control.Session;
 import com.tbts.xmpp.stanza.Iq;
+import com.tbts.xmpp.stanza.Presence;
 import com.tbts.xmpp.stanza.Stanza;
 
 /**
@@ -24,6 +27,7 @@ public class ConnectedPhase extends UntypedActorAdapter {
   private JID jid;
   private final ActorRef outFlow;
   private boolean bound = false;
+  private ActorRef agent;
 
   public ConnectedPhase(String authId, ActorRef outFlow) {
     this.jid = JID.parse(authId + "@" + XMPPServer.config().domain());
@@ -32,10 +36,6 @@ public class ConnectedPhase extends UntypedActorAdapter {
 
   public void invoke(Open o) {
     outFlow.tell(new Features(new Bind(), new Session()), getSelf());
-  }
-
-  public void invoke(ActorSelection agent) {
-    agent.tell(new UserAgent.Connected(getSelf()), getSelf());
   }
 
   public void invoke(Iq<?> iq) {
@@ -54,8 +54,16 @@ public class ConnectedPhase extends UntypedActorAdapter {
           break;
         }
         else if (iq.get() instanceof Session) {
-          final ActorSelection agency = getContext().actorSelection("/user/xmpp");
-          agency.tell(jid(), getSelf());
+          agent = XMPP.register(jid(), context());
+          final ActorRef role;
+          switch (jid().resource()) {
+            case "expert":
+              role = LaborExchange.register(jid.bare(), context());
+              break;
+            default:
+              role = null;
+          }
+          agent.tell(new UserAgent.Connected(self(), role), self());
           outFlow.tell(Iq.answer(iq, new Session()), getSelf());
           break;
         }
@@ -63,7 +71,7 @@ public class ConnectedPhase extends UntypedActorAdapter {
       default:
         if (iq.to() != null) {
           iq.from(jid);
-          context().actorSelection("/user/xmpp").tell(iq, self());
+          agent.tell(iq, self());
         }
         else Services.reference(context().system()).tell(iq, getSelf());
     }
@@ -78,8 +86,14 @@ public class ConnectedPhase extends UntypedActorAdapter {
     }
     else { // outgoing
       msg.from(jid);
-      getContext().actorSelection("/user/xmpp").tell(msg, getSelf());
+      agent.tell(msg, self());
     }
+  }
+
+  @SuppressWarnings("UnusedParameters")
+  public void invoke(Close close) throws Exception {
+    if (agent != null)
+    agent.tell(new Presence(jid, false), self());
   }
 
   public JID jid() {

@@ -15,6 +15,10 @@ import com.tbts.xmpp.stanza.data.Err;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -61,9 +65,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "message")
 public class Message extends Stanza {
   @XmlAnyElement(lax = true)
-  protected Item subjectOrBodyOrThread;
-  @XmlAnyElement(lax = true)
-  protected Object any;
+  protected List<Object> any = new ArrayList<>();
 
   @XmlElement
   protected Err error;
@@ -72,12 +74,61 @@ public class Message extends Stanza {
   @XmlSchemaType(name = "language")
   protected String lang;
 
+  @XmlAttribute
+  private MessageType type;
+
   public Message() {}
 
   public Message(JID from, JID to, String message) {
     this.from = from;
     this.to = to;
-    subjectOrBodyOrThread = new Body(message);
+    any.add(new Body(message));
+  }
+
+  public Message(JID from, JID to, Item... any) {
+    this.from = from;
+    this.to = to;
+    this.any.addAll(Arrays.asList(any));
+  }
+
+  public MessageType type() {
+    return type;
+  }
+
+  public void type(MessageType type) {
+    this.type = type;
+  }
+
+  public <T> T any() {
+    for (int i = 0; i < any.size(); i++) {
+      try {
+        //noinspection unchecked
+        return (T) any;
+      }
+      catch (ClassCastException ignore) {
+      }
+    }
+    return null;
+  }
+
+  public boolean contains(Class<?> clazz) {
+    return any.stream().anyMatch(x -> clazz.isAssignableFrom(x.getClass()));
+  }
+
+  public String body() {
+    final Body t = get(Body.class);
+    return t != null ? t.value : "";
+  }
+
+  public <T> T get(Class<T> clazz) {
+    //noinspection unchecked
+    final Optional<T> any = (Optional<T>)this.any.stream().filter(x -> clazz.isAssignableFrom(x.getClass())).findAny();
+    return any.isPresent() ? any.get() : null;
+  }
+
+  public Message append(Object o) {
+    any.add(o);
+    return this;
   }
 
   /**
@@ -135,11 +186,15 @@ public class Message extends Stanza {
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlRootElement(name = "subject")
   public static class Subject extends Item {
-      @XmlValue
-      protected String value;
+    @XmlValue
+    protected String value;
 
-      @XmlAttribute(name = "lang", namespace = "http://www.w3.org/XML/1998/namespace")
-      protected String lang;
+    @XmlAttribute(name = "lang", namespace = "http://www.w3.org/XML/1998/namespace")
+    protected String lang;
+
+    public String value() {
+      return value;
+    }
   }
 
   /**
@@ -165,9 +220,14 @@ public class Message extends Stanza {
   })
   @XmlRootElement(name = "thread")
   public static class Thread extends Item {
-      @XmlValue
-      protected String value;
-      @XmlAttribute(name = "parent")
-      protected String parent;
+    @XmlValue
+    protected String value;
+    @XmlAttribute(name = "parent")
+    protected String parent;
+  }
+
+  @XmlEnum
+  public enum MessageType {
+    @XmlEnumValue(value = "groupchat") GROUP_CHAT,
   }
 }

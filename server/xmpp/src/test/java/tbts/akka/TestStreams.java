@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
+import akka.pattern.AskableActorSelection;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import akka.stream.actor.*;
@@ -13,11 +14,17 @@ import akka.stream.javadsl.Source;
 import akka.stream.stage.Context;
 import akka.stream.stage.PushPullStage;
 import akka.stream.stage.SyncDirective;
+import akka.util.Timeout;
 import com.spbsu.commons.random.FastRandom;
+import com.tbts.util.akka.UntypedActorAdapter;
 import org.junit.Test;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
+import scala.concurrent.duration.Duration;
 import scala.runtime.BoxedUnit;
 
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: solar
@@ -118,4 +125,21 @@ public class TestStreams {
 //    actorRef.tell("stop", ActorRef.noSender());
     Thread.sleep(100);
   }
+
+  @Test
+  public void testActorsSelection() throws Exception {
+    final ActorSystem system = ActorSystem.create("test-env");
+    for (int i = 0; i < 100; i++)
+      system.actorOf(Props.create(C.class));
+    final Future<Object> ask = new AskableActorSelection(system.actorSelection("/user/*")).ask("", Timeout.apply(Duration.create(1, TimeUnit.SECONDS)));
+    final Object result = Await.result(ask, Duration.Inf());
+    System.out.println(result);
+  }
+
+  public static class C extends UntypedActorAdapter {
+    public void invoke(String a) {
+      sender().tell((Long)new FastRandom().nextLong(), self());
+    }
+  }
+
 }

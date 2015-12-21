@@ -100,4 +100,8 @@ public class JID {
     final int dogIndex = bare.indexOf('@');
     return dogIndex >= 0 ? bare.substring(dogIndex + 1) : bare;
   }
+
+  public String resource() {
+    return resource;
+  }
 }

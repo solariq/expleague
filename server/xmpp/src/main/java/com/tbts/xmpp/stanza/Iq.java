@@ -59,7 +59,7 @@ import javax.xml.bind.annotation.*;
 public class Iq<T> extends Stanza {
 
   public static <T> Iq<T> answer(Iq<?> request, T content) {
-    final Iq<T> result = new Iq<>(request.id, StanzaType.RESULT, content);
+    final Iq<T> result = new Iq<>(request.id, IqType.RESULT, content);
     result.from = request.to;
     result.to = request.from;
     return result;
@@ -73,11 +73,14 @@ public class Iq<T> extends Stanza {
   protected T any;
   @XmlElementRef
   protected Err error;
+  @XmlAttribute
+  private IqType type;
 
   public Iq(){}
 
-  private Iq(String id, StanzaType type, T content) {
-    super(id, type);
+  private Iq(String id, IqType type, T content) {
+    super(id);
+    this.type = type;
     if (content instanceof Err)
       this.error = (Err) content;
     else if (content != null)
@@ -106,7 +109,11 @@ public class Iq<T> extends Stanza {
     this.error = error;
   }
 
-  public static <T extends Item> Iq<T> create(JID to, StanzaType type, T item) {
+  public IqType type() {
+    return type;
+  }
+
+  public static <T extends Item> Iq<T> create(JID to, IqType type, T item) {
     final Iq<T> iq = new Iq<>();
     iq.any = item;
     iq.to(to);
@@ -114,4 +121,11 @@ public class Iq<T> extends Stanza {
     return iq;
   }
 
+  @XmlEnum
+  public enum IqType {
+    @XmlEnumValue(value = "error") ERROR,
+    @XmlEnumValue(value = "get") GET,
+    @XmlEnumValue(value = "set") SET,
+    @XmlEnumValue(value = "result") RESULT,
+  }
 }

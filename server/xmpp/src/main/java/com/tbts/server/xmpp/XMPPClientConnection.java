@@ -1,9 +1,6 @@
 package com.tbts.server.xmpp;
 
-import akka.actor.ActorRef;
-import akka.actor.Props;
-import akka.actor.Status;
-import akka.actor.Terminated;
+import akka.actor.*;
 import akka.io.Tcp;
 import akka.io.TcpMessage;
 import akka.japi.function.Function;
@@ -127,6 +124,8 @@ public class XMPPClientConnection extends UntypedActorAdapter {
   }
 
   public void invoke(Status.Failure failure) {
+    if(businessLogic != null)
+      businessLogic.tell(PoisonPill.getInstance(), self());
     log.log(Level.SEVERE, "Stream failure", failure.cause());
   }
 
@@ -138,9 +137,11 @@ public class XMPPClientConnection extends UntypedActorAdapter {
       if (outSrc.remaining() < data.length())
         outSrc = SSLHandshake.expandBuffer(outSrc, data.length());
       data.copyToBuffer(outSrc);
-      outSrc.flip();
-      while (outSrc.remaining() > 0) {
+OUTER:
+      while (outSrc.position() > 0) {
+        outSrc.flip();
         final SSLEngineResult result = sslEngine.wrap(outSrc, outDst);
+        outSrc.compact();
         switch (result.getStatus()) {
           case BUFFER_OVERFLOW:
             outDst = SSLHandshake.expandBuffer(outDst, sslEngine.getSession().getPacketBufferSize());
@@ -149,22 +150,24 @@ public class XMPPClientConnection extends UntypedActorAdapter {
             throw new RuntimeException("Strange happened!");
           default:
             outDst.flip();
-            connection.tell(TcpMessage.write(ByteString.fromByteBuffer(outDst)), getSelf());
+            if (outDst.limit() == 0)
+              break OUTER;
+            connection.tell(TcpMessage.write(ByteString.fromByteBuffer(outDst)), self());
             outDst.clear();
         }
       }
-      outSrc.clear();
-//      System.out.println("<" + data.utf8String());
     }
     else connection.tell(command, getSelf());
   }
 
   public void invoke(Tcp.ConnectionClosed ignore) {
-    System.out.println("Client connection closed");
+    if(businessLogic != null)
+      businessLogic.tell(PoisonPill.getInstance(), self());
+    log.finest("Client connection closed");
   }
 
   public void invoke(Terminated who) {
-    System.out.println("Terminated " + who.actor());
+    log.finest("Terminated " + who.actor());
   }
 
   private ConnectionState currentState;
@@ -236,7 +239,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
     if (businessLogic != null)
       connection.tell(TcpMessage.resumeReading(), getSelf());
     businessLogic = newLogic;
-    System.out.println("BL changed to: " + newLogic.path());
+    log.finest("BL changed to: " + (newLogic != null ? newLogic.path() : null));
 
     currentState = state;
   }

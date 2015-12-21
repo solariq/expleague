@@ -1,11 +1,11 @@
-package com.tbts.server.xmpp.agents;
+package com.tbts.server.agents;
 
-import akka.actor.ActorSelection;
+import com.tbts.modelNew.Offer;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Iq;
 import com.tbts.xmpp.stanza.Message;
+import com.tbts.xmpp.stanza.Message.MessageType;
 import com.tbts.xmpp.stanza.Presence;
-import com.tbts.xmpp.stanza.Stanza;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,37 +15,39 @@ import java.util.Set;
  * Date: 16.12.15
  * Time: 13:18
  */
-public class GroupChatAgent extends MailBoxAgent {
+public class RoomAgent extends MailBoxAgent {
   private final Set<JID> partisipants = new HashSet<>();
-  public GroupChatAgent(JID jid) {
+  public RoomAgent(JID jid) {
     super(jid);
   }
 
   public void invoke(Message msg) {
-    final ActorSelection agency = context().actorSelection("/user/xmpp");
+    super.invoke(msg);
 
     for (final JID jid : partisipants) {
       if (jid.bareEq(msg.from()))
         continue;
       final Message copy = msg.copy();
-      copy.type(Stanza.StanzaType.GROUP_CHAT);
+      copy.type(MessageType.GROUP_CHAT);
       copy.to(jid);
-      agency.tell(copy, self());
+      XMPP.send(copy, context());
+    }
+
+    if (msg.get(Message.Subject.class) != null) {
+      LaborExchange.reference(context()).tell(new Offer(jid(), msg.from(), msg.get(Message.Subject.class)), self());
     }
   }
 
   public void invoke(Presence presence) {
-    final ActorSelection agency = context().actorSelection("/user/xmpp");
     if (!partisipants.contains(presence.from().bare())) {
-      if (partisipants.isEmpty()) {
+      if (partisipants.isEmpty())
         undelivered.add(new Message(jid(), null, "Welcome to room " + jid()));
-      }
       partisipants.add(presence.from().bare());
-      for (final Stanza stanza : undelivered) {
-        final Stanza copy = stanza.copy();
-        copy.type(Stanza.StanzaType.GROUP_CHAT);
+      for (final Message stanza : undelivered) {
+        final Message copy = stanza.copy();
+        copy.type(MessageType.GROUP_CHAT);
         copy.to(presence.from());
-        agency.tell(copy, self());
+        XMPP.send(copy, context());
       }
     }
 
@@ -54,14 +56,13 @@ public class GroupChatAgent extends MailBoxAgent {
       if (jid.bareEq(presence.from()))
         continue;
       copy.to(jid);
-      agency.tell(copy, self());
+      XMPP.send(copy, context());
     }
   }
 
   public void invoke(Iq command) {
-    context().actorSelection("/user/xmpp").tell(Iq.answer(command), self());
-    if (command.type() == Stanza.StanzaType.SET) {
+    XMPP.send(Iq.answer(command), context());
+    if (command.type() == Iq.IqType.SET)
       invoke(new Message(jid(), null, "Room set up and unlocked."));
-    }
   }
 }

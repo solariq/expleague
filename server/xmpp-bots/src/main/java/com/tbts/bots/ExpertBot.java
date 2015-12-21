@@ -1,17 +1,17 @@
 package com.tbts.bots;
 
 import com.spbsu.commons.util.sync.StateLatch;
-import com.spbsu.commons.xml.JDOMUtil;
-import org.jdom2.Element;
-import org.jdom2.Namespace;
 import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.JID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
-import tigase.jaxmpp.core.client.xml.ElementFactory;
 import tigase.jaxmpp.core.client.xmpp.modules.muc.MucModule;
 import tigase.jaxmpp.core.client.xmpp.stanzas.Message;
 import tigase.jaxmpp.core.client.xmpp.stanzas.Presence;
 import tigase.jaxmpp.core.client.xmpp.stanzas.StanzaType;
+import tigase.jaxmpp.j2se.xml.J2seElement;
+import tigase.xml.DomBuilderHandler;
+import tigase.xml.Element;
+import tigase.xml.SimpleParser;
 
 /**
  * User: solar
@@ -20,7 +20,7 @@ import tigase.jaxmpp.core.client.xmpp.stanzas.StanzaType;
  */
 public class ExpertBot extends Bot {
 
-  public static final String TBTS_XMLNS = "http://toobusytosearch.net/schema";
+  public static final String TBTS_XMLNS = "http://expleague.com/scheme";
   private BareJID roomJID;
 
   public ExpertBot(final BareJID jid, final String passwd) throws JaxmppException {
@@ -81,21 +81,27 @@ public class ExpertBot extends Bot {
 
   @Override
   protected void onMessage(String asString) {
-    Element element = JDOMUtil.parseXml(asString);
-    Element room = element.getChild("body", Namespace.getNamespace("jabber:client")).getChild("room", Namespace.getNamespace(TBTS_XMLNS));
-    if (room != null) {
+    final DomBuilderHandler handler = new DomBuilderHandler();
+    new SimpleParser().parse(handler, asString.toCharArray(), 0, asString.length());
+    final Element element = handler.getParsedElements().peek();
+
+    Element offer = element.getChild("offer", TBTS_XMLNS);
+    if (offer != null) {
       System.out.println("Answering to the room");
       try {
-        final Message msg = Message.create();
-        msg.setTo(JID.jidInstance(element.getAttributeValue("from")));
-        msg.setType(StanzaType.chat);
-        msg.setBody("");
-        tigase.jaxmpp.core.client.xml.Element roomE = ElementFactory.create("room", "", TBTS_XMLNS);
-        roomE.setAttribute("type", "check");
-        roomE.setAttribute("id", room.getAttributeValue("id"));
-        roomE.setValue("Ok");
-        msg.getWrappedElement().getFirstChild().addChild(roomE);
-        jaxmpp.send(msg);
+        final Element msg = new Element("message");
+        msg.setXMLNS("jabber:client");
+        msg.setAttribute("to", element.getAttributeStaticStr("from"));
+        msg.setAttribute("type", StanzaType.chat.name());
+        msg.addChild(offer);
+        final Element ok = new Element("ok");
+        ok.setXMLNS(TBTS_XMLNS);
+        msg.setXMLNS("jabber:client");
+        msg.addChild(ok);
+        jaxmpp.send(Message.create(new J2seElement(msg)));
+        final Presence stanza = Presence.create();
+        stanza.setTo(JID.jidInstance(element.getAttributeStaticStr("from")));
+        jaxmpp.send(stanza);
       } catch (JaxmppException e) {
         throw new RuntimeException(e);
       }

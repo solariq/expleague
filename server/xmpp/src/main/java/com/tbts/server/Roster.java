@@ -15,5 +15,4 @@ public interface Roster {
   static Roster instance() {
     return XMPPServer.roster();
   }
-
 }

@@ -5,8 +5,6 @@ import com.tbts.xmpp.Item;
 import com.tbts.xmpp.JID;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 
@@ -22,8 +20,6 @@ public class Stanza extends Item {
   protected JID to;
   @XmlAttribute
   protected String id;
-  @XmlAttribute
-  protected StanzaType type;
 
 
   public Stanza() {
@@ -37,9 +33,8 @@ public class Stanza extends Item {
     }
   };
 
-  public Stanza(String id, StanzaType type) {
+  public Stanza(String id) {
     this.id = id;
-    this.type = type;
   }
 
   private static String generateId() {
@@ -65,24 +60,7 @@ public class Stanza extends Item {
     this.to = to;
   }
 
-
-  public StanzaType type() {
-    return type;
-  }
-  public void type(StanzaType type) {
-    this.type = type;
-  }
-
   public String id() {
     return id;
-  }
-
-  @XmlEnum
-  public enum StanzaType {
-    @XmlEnumValue(value = "error") ERROR,
-    @XmlEnumValue(value = "get") GET,
-    @XmlEnumValue(value = "set") SET,
-    @XmlEnumValue(value = "result") RESULT,
-    @XmlEnumValue(value = "groupchat") GROUP_CHAT,
   }
 }

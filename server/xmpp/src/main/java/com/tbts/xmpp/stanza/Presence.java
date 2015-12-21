@@ -8,19 +8,19 @@
 
 package com.tbts.xmpp.stanza;
 
+import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.data.Err;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.util.List;
 
 
 /**
  * <p>Java class for anonymous complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType>
  *   &lt;complexContent>
@@ -55,105 +55,78 @@ import java.util.List;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement
 public class Presence extends Stanza {
-    @XmlElement
-    private String show;
-    @XmlElement
-    private Status status;
-    @XmlElement
-    private Integer priority;
+  @XmlElement
+  private String show;
+  @XmlElement
+  private Status status;
+  @XmlElement
+  private Integer priority;
 
-    @XmlAnyElement(lax = true)
-    protected List<Object> any;
-    protected Err error;
+  @XmlAttribute
+  private PresenceType type;
 
+  @XmlAnyElement(lax = true)
+  protected Object any;
+  protected Err error;
+
+  @XmlAttribute(name = "lang", namespace = "http://www.w3.org/XML/1998/namespace")
+  @XmlSchemaType(name = "language")
+  protected String lang;
+
+  public Presence() {}
+
+  public Presence(JID jid, boolean available) {
+    from = jid;
+    type = available ? PresenceType.AVAILABLE : PresenceType.UNAVAILABLE;
+  }
+
+  public boolean available() {
+    return (type == null && status == null) || type == PresenceType.AVAILABLE || (status != null && "available".equals(status.value));
+  }
+
+  /**
+   * <p>Java class for anonymous complex type.
+   *
+   * <p>The following schema fragment specifies the expected content contained within this class.
+   *
+   * <pre>
+   * &lt;complexType>
+   *   &lt;simpleContent>
+   *     &lt;extension base="&lt;jabber:client>string1024">
+   *       &lt;attribute ref="{http://www.w3.org/XML/1998/namespace}lang"/>
+   *     &lt;/extension>
+   *   &lt;/simpleContent>
+   * &lt;/complexType>
+   * </pre>
+   *
+   *
+   */
+  @XmlAccessorType(XmlAccessType.FIELD)
+  @XmlRootElement(name = "status")
+  public static class Status {
+    @XmlValue
+    protected String value;
     @XmlAttribute(name = "lang", namespace = "http://www.w3.org/XML/1998/namespace")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "language")
     protected String lang;
+  }
 
-    /**
-     * <p>Java class for anonymous complex type.
-     *
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;simpleContent>
-     *     &lt;extension base="&lt;jabber:client>string1024">
-     *       &lt;attribute ref="{http://www.w3.org/XML/1998/namespace}lang"/>
-     *     &lt;/extension>
-     *   &lt;/simpleContent>
-     * &lt;/complexType>
-     * </pre>
-     *
-     *
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {
-        "value"
-    })
-    @XmlRootElement(name = "status")
-    public static class Status {
-
-        @XmlValue
-        protected String value;
-        @XmlAttribute(name = "lang", namespace = "http://www.w3.org/XML/1998/namespace")
-        @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-        @XmlSchemaType(name = "language")
-        protected String lang;
-
-        /**
-         * Gets the value of the value property.
-         *
-         * @return
-         *     possible object is
-         *     {@link String }
-         *
-         */
-        public String getValue() {
-            return value;
-        }
-
-        /**
-         * Sets the value of the value property.
-         *
-         * @param value
-         *     allowed object is
-         *     {@link String }
-         *
-         */
-        public void setValue(String value) {
-            this.value = value;
-        }
-
-        /**
-         * Gets the value of the lang property.
-         *
-         * @return
-         *     possible object is
-         *     {@link String }
-         *
-         */
-        public String getLang() {
-            return lang;
-        }
-
-        /**
-         * Sets the value of the lang property.
-         *
-         * @param value
-         *     allowed object is
-         *     {@link String }
-         *
-         */
-        public void setLang(String value) {
-            this.lang = value;
-        }
-
-    }
+  @XmlEnum
+  public enum PresenceType {
+    @XmlEnumValue(value = "error") ERROR,
+    @XmlEnumValue(value = "probe") PROBE,
+    @XmlEnumValue(value = "subscribe") SUBSCRIBE,
+    @XmlEnumValue(value = "unsubscribe") UNSUBSCRIBE,
+    @XmlEnumValue(value = "subscribed") SUBSCRIBED,
+    @XmlEnumValue(value = "unsubscribed") UNSUBSCRIBED,
+    @XmlEnumValue(value = "available") AVAILABLE,
+    @XmlEnumValue(value = "unavailable") UNAVAILABLE,
+  }
 }

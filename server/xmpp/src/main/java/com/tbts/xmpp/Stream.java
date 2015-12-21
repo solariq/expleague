@@ -1,6 +1,7 @@
 package com.tbts.xmpp;
 
 import com.spbsu.commons.system.RuntimeUtils;
+import com.tbts.modelNew.Operations;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -45,7 +46,12 @@ public class Stream {
   private static final JAXBContext context;
   static {
     try {
-      final List<Class> classesInPackage = Arrays.asList(RuntimeUtils.packageResourcesList(Stream.class.getPackage().getName())).stream()
+      final List<Class> classesInPackage = Arrays.asList(
+          RuntimeUtils.packageResourcesList(
+              Stream.class.getPackage().getName(),
+              Operations.class.getPackage().getName()
+          ))
+          .stream()
           .filter(p -> p.endsWith(".class"))
           .map(resource -> {
             try {
