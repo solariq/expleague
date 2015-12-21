@@ -2,8 +2,13 @@ angular
   .module('history')
   .controller('ResultController', function($scope, supersonic) {
 
+    // TODO: вынести эти переменные в глобальные нестройки
+    var lsServerKeyName = 'tbtsServer';
+    var lsUserKeyName = 'tbtsUser';
+    var lsHistoryKeyName = 'tbtsHistory';
+
     // Вытаскиваем историю из localStorage
-    var tbtsHistory = JSON.parse(localStorage.getItem('tbtsHistory')) || [];
+    var tbtsHistory = JSON.parse(localStorage.getItem(lsHistoryKeyName)) || [];
     // Ищем конкретную запись в массиве tbtsHistory по id, переданному в качестве параметра view,
     // если id не передали, берем последнюю запись в массиве
     var tbtsHistoryItemId = steroids.view.params.id || (tbtsHistory.length - 1);
@@ -18,10 +23,10 @@ angular
     // };
 
     // Вытаскиваем из localStorage значение server
-    $scope.server = JSON.parse(localStorage.getItem('server'));
+    $scope.server = JSON.parse(localStorage.getItem(lsServerKeyName));
 
     // Вытаскиваем из localStorage значение user
-    $scope.user = JSON.parse(localStorage.getItem('user'));
+    $scope.user = JSON.parse(localStorage.getItem(lsUserKeyName));
 
     // Усли комната ещё не создана, задаем имя комнаты
     $scope.tbtsHistoryItem.room = $scope.tbtsHistoryItem.room || ('room' + (new Date().getTime()) + '@' + $scope.server.muc);
@@ -100,7 +105,7 @@ angular
           $scope.messages.push(message);
         });
         // Записываем историю localStorage
-        localStorage.setItem('tbtsHistory', JSON.stringify(tbtsHistory));
+        localStorage.setItem(lsHistoryKeyName, JSON.stringify(tbtsHistory));
         $(window).scrollTop(document.body.clientHeight);
         playSound();
       }

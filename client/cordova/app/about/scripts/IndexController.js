@@ -2,12 +2,24 @@ angular
   .module('about')
   .controller('IndexController', function($scope, supersonic) {
 
-    var profileRemote = {
-      profile: 'remote',
+    // TODO: вынести эти переменные в глобальные нестройки
+    var lsServerKeyName = 'tbtsServer';
+    var lsUserKeyName = 'tbtsUser';
+
+    var profileProduction = {
+      profile: 'production',
       bosh: 'http://toobusytosearch.net:5280/',
       host: 'toobusytosearch.net',
       muc: 'muc.toobusytosearch.net',
       debug: false
+    };
+
+    var profileTest = {
+      profile: 'test',
+      bosh: 'http://test.toobusytosearch.net:5280/',
+      host: 'test.toobusytosearch.net',
+      muc: 'test.toobusytosearch.net',
+      debug: true
     };
 
     var profileLocal = {
@@ -18,18 +30,18 @@ angular
       debug: true
     };
 
-    // Если профиля нет в localStorage используем profileRemote, иначе загружаем из localStorage
-    if (localStorage.getItem('server') == undefined) {
-      $scope.server = profileRemote;
+    // Если профиля нет в localStorage используем profileProduction, иначе загружаем из localStorage
+    if (localStorage.getItem(lsServerKeyName) == undefined) {
+      $scope.server = profileProduction;
       // Также нужно сохранить в localStorage, чтобы к нему был доступ из других страниц
-      localStorage.setItem('server', JSON.stringify($scope.server));
+      localStorage.setItem(lsServerKeyName, JSON.stringify($scope.server));
     } else {
-      $scope.server = JSON.parse(localStorage.getItem('server'));
+      $scope.server = JSON.parse(localStorage.getItem(lsServerKeyName));
     }
 
     // Регистрируем нового пользователя, если он ещё не зарегистрирован
     var registerUser = function(){
-      if (localStorage.getItem('user') == undefined) {
+      if (localStorage.getItem(lsUserKeyName) == undefined) {
         var connection = new Strophe.Connection($scope.server.bosh);
         var registerCallback = function (status) {
           // Пока логин и пароль равны UUID устройства
@@ -47,7 +59,7 @@ angular
               username: username,
               password: password
             };
-            localStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem(lsUserKeyName, JSON.stringify(user));
             connection.disconnect();
           } else if (status === Strophe.Status.NOTACCEPTABLE || status === Strophe.Status.REGIFAIL) {
             // Если сервер не поддерñивает регистрацию или произошла ошибка
@@ -86,15 +98,17 @@ angular
 
     // Сохраняем текущие значения параметров сервера в localStorage
     $scope.saveServerParams = function(){
-      localStorage.setItem('server', JSON.stringify($scope.server));
+      localStorage.setItem(lsServerKeyName, JSON.stringify($scope.server));
       // При смене параметров сервера удаляем сохраненные данные user и регистрируемся заново
-      localStorage.removeItem('user');
+      localStorage.removeItem(lsUserKeyName);
       registerUser();
     };
 
     $scope.setProfile = function(profile){
-      if (profile == 'remote') {
-        $scope.server = profileRemote;
+      if (profile == 'production') {
+        $scope.server = profileProduction;
+      } else if (profile == 'test') {
+        $scope.server = profileTest;
       } else if (profile == 'local') {
         $scope.server = profileLocal;
       }

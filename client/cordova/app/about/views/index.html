@@ -5,7 +5,8 @@
 
   <div class="padding">
     <div class="button-bar">
-      <a class="button" ng-class="{activated: server.profile == 'remote'}" ng-click="setProfile('remote')">Удаленно</a>
+      <a class="button" ng-class="{activated: server.profile == 'production'}" ng-click="setProfile('production')">Продакшн</a>
+      <a class="button" ng-class="{activated: server.profile == 'test'}" ng-click="setProfile('test')">Тест</a>
       <a class="button" ng-class="{activated: server.profile == 'local'}" ng-click="setProfile('local')">Локально</a>
     </div>
 

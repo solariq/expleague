@@ -1,6 +1,12 @@
 angular
   .module('order')
   .controller('IndexController', function($scope, supersonic) {
+
+    // TODO: вынести эти переменные в глобальные нестройки
+    var lsServerKeyName = 'tbtsServer';
+    var lsUserKeyName = 'tbtsUser';
+    var lsHistoryKeyName = 'tbtsHistory';
+
     // Расширяющаяся textarea
     $('.order-textarea').textareaAutoSize();
 
@@ -48,7 +54,7 @@ angular
 
     $scope.submitOrder = function(){
       // Сохраняем результат введенный в поисковую форму в localStorage (tbtsHistory), чтобы получить к нему доступ на странице result
-      var tbtsHistory = JSON.parse(localStorage.getItem('tbtsHistory')) || [];
+      var tbtsHistory = JSON.parse(localStorage.getItem(lsHistoryKeyName)) || [];
       var historyItem = {
         id: tbtsHistory.length,
         text: $scope.order.text,
@@ -62,7 +68,7 @@ angular
         messages: []
       }
       tbtsHistory.push(historyItem);
-      localStorage.setItem('tbtsHistory', JSON.stringify(tbtsHistory));
+      localStorage.setItem(lsHistoryKeyName, JSON.stringify(tbtsHistory));
       // Отправляем history#index сообщение, что нужно обновить список истории
       supersonic.data.channel('announcements').publish({content: 'refresh'});
       // Переключаемся на таб history
@@ -101,9 +107,9 @@ angular
       return true;
     }
 
-    if (localStorage.getItem('server') != undefined && localStorage.getItem('user') != undefined) {
-      $scope.server = JSON.parse(localStorage.getItem('server'));
-      $scope.user = JSON.parse(localStorage.getItem('user'));
+    if (localStorage.getItem(lsServerKeyName) != undefined && localStorage.getItem(lsUserKeyName) != undefined) {
+      $scope.server = JSON.parse(localStorage.getItem(lsServerKeyName));
+      $scope.user = JSON.parse(localStorage.getItem(lsUserKeyName));
       var connection = new Strophe.Connection($scope.server.bosh);
       connection.connect($scope.user.username + '@' + $scope.server.host, $scope.user.password, function (status) {
         if (status === Strophe.Status.CONNECTED) {
