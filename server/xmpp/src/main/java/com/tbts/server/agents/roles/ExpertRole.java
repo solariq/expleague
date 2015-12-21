@@ -48,12 +48,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
             }
         ).event(
             Presence.class,
-            (presence, offer) -> !presence.available(),
-            (presence, offer) -> {
-              if (offer != null)
-                offer.getSecond().tell(new Operations.Cancel(), self());
-              return goTo(State.OFFLINE);
-            }
+            (presence, offer) -> presence.available() ? stay() : goTo(State.OFFLINE)
         )
     );
     when(State.CHECK,

@@ -75,8 +75,6 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
               final Task task = new Task(offer);
               return goTo(State.STARVING).using(task).replying(new On(task));
             }
-        ).event(ActorRef.class,
-            (expert, zero) -> stay().replying(new Operations.Cancel())
         )
     );
 
@@ -139,6 +137,10 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
         )
     );
 
+    whenUnhandled(matchEvent(
+        ActorRef.class,
+        (expert, task) -> stay()
+    ));
 
     onTransition((from, to) -> {
       System.out.println(from + " -> " + to + (nextStateData() != null ? " " + nextStateData().offer : ""));

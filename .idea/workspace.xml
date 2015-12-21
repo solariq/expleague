@@ -7,24 +7,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c71e5450-21a0-4dac-9e17-b1ca74780897" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/SSLHelper.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp-bots/src/main/java/com/tbts/bots/Bot.java" afterPath="$PROJECT_DIR$/server/xmpp-bots/src/main/java/com/tbts/bots/Bot.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp-bots/src/main/java/com/tbts/bots/ExpertBot.java" afterPath="$PROJECT_DIR$/server/xmpp-bots/src/main/java/com/tbts/bots/ExpertBot.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/modelNew/Operations.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/modelNew/Operations.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/LaborExchange.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/LaborExchange.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/RoomAgent.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/RoomAgent.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/UserAgent.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/UserAgent.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/BrokerRole.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/BrokerRole.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/ExpertRole.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/ExpertRole.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/ConnectedPhase.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/ConnectedPhase.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/SSLHandshake.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/SSLHandshake.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/akka/AkkaTools.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/akka/AkkaTools.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/JID.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/JID.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Message.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Message.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Presence.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Presence.java" />
     </list>
     <ignored path="tbts.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -104,7 +89,7 @@
         <entry file="file://$PROJECT_DIR$/server/xmpp-bots/src/main/java/com/tbts/bots/ExpertBot.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="52" column="0" selection-start-line="52" selection-start-column="0" selection-end-line="52" selection-end-column="0" />
+              <caret line="35" column="65" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -112,11 +97,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="BrokerRole.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="BrokerRole.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/BrokerRole.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.56009334">
-              <caret line="86" column="102" selection-start-line="86" selection-start-column="48" selection-end-line="86" selection-end-column="48" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="138" column="32" selection-start-line="138" selection-start-column="0" selection-end-line="138" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -137,11 +122,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ExpertRole.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="ExpertRole.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/ExpertRole.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="121" column="0" selection-start-line="121" selection-start-column="0" selection-end-line="121" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.56242704">
+              <caret line="59" column="96" selection-start-line="59" selection-start-column="29" selection-end-line="59" selection-end-column="29" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -207,8 +192,8 @@
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/UserAgent.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/RoomAgent.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Presence.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/ExpertRole.java" />
         <option value="$PROJECT_DIR$/server/xmpp-bots/src/main/java/com/tbts/bots/ExpertBot.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/ExpertRole.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/BrokerRole.java" />
       </list>
     </option>
@@ -1552,11 +1537,17 @@
       <option name="project" value="LOCAL" />
       <updated>1450720397472</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Cleanup">
+      <created>1450729058883</created>
+      <option name="number" value="00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1450729058883</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="54205000" />
+    <option name="totallyTimeSpent" value="54498000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1538" y="-745" width="2060" height="1302" extended-state="0" />
@@ -1579,7 +1570,7 @@
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26859504" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26859504" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -1629,7 +1620,8 @@
     <MESSAGE value="Server initial commit" />
     <MESSAGE value="Stupid NPE fixed. Tigase components artifact" />
     <MESSAGE value="Simple scenarios seems to work fine." />
-    <option name="LAST_COMMIT_MESSAGE" value="Simple scenarios seems to work fine." />
+    <MESSAGE value="Cleanup" />
+    <option name="LAST_COMMIT_MESSAGE" value="Cleanup" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2088,20 +2080,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/ExpertRole.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="121" column="0" selection-start-line="121" selection-start-column="0" selection-end-line="121" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server/xmpp-bots/src/main/java/com/tbts/bots/ExpertBot.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="52" column="0" selection-start-line="52" selection-start-column="0" selection-end-line="52" selection-end-column="0" />
+          <caret line="35" column="65" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -2110,8 +2092,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/BrokerRole.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.56009334">
-          <caret line="86" column="102" selection-start-line="86" selection-start-column="48" selection-end-line="86" selection-end-column="48" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="138" column="32" selection-start-line="138" selection-start-column="0" selection-end-line="138" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/ExpertRole.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.56242704">
+          <caret line="59" column="96" selection-start-line="59" selection-start-column="29" selection-end-line="59" selection-end-column="29" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
