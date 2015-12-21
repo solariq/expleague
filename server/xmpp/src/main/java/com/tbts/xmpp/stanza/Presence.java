@@ -90,6 +90,10 @@ public class Presence extends Stanza {
     return (type == null && status == null) || type == PresenceType.AVAILABLE || (status != null && "available".equals(status.value));
   }
 
+  public Status status() {
+    return status != null ? status : new Status(type == null ? PresenceType.AVAILABLE : type);
+  }
+
   /**
    * <p>Java class for anonymous complex type.
    *
@@ -116,6 +120,32 @@ public class Presence extends Stanza {
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "language")
     protected String lang;
+
+    public Status() {}
+    public Status(PresenceType type) {
+      switch(type) {
+        case UNAVAILABLE:
+          value = "unavailable";
+          break;
+        case AVAILABLE:
+        default:
+          value = "available";
+          break;
+      }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof Status)) return false;
+      Status status = (Status) o;
+      return value.equals(status.value);
+    }
+
+    @Override
+    public int hashCode() {
+      return value.hashCode();
+    }
   }
 
   @XmlEnum

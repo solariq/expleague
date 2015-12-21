@@ -53,9 +53,7 @@ public class Operations {
 
   @XmlRootElement
   public static class Ok extends Item {
-    public Ok() {
-      System.out.println();
-    }
+    public Ok() { }
   }
 
   @XmlRootElement

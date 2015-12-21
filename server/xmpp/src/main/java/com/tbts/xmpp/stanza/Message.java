@@ -91,6 +91,13 @@ public class Message extends Stanza {
     this.any.addAll(Arrays.asList(any));
   }
 
+  public Message(JID from, JID to, MessageType type, String str) {
+    this.from = from;
+    this.to = to;
+    this.type = type;
+    any.add(new Body(str));
+  }
+
   public MessageType type() {
     return type;
   }

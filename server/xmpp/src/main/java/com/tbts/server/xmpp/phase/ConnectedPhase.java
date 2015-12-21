@@ -86,7 +86,8 @@ public class ConnectedPhase extends UntypedActorAdapter {
     }
     else { // outgoing
       msg.from(jid);
-      agent.tell(msg, self());
+      if (agent != null)
+        agent.tell(msg, self());
     }
   }
 

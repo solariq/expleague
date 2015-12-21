@@ -1,6 +1,9 @@
 package com.tbts.server.agents;
 
-import akka.actor.*;
+import akka.actor.ActorContext;
+import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
+import akka.actor.Props;
 import akka.pattern.AskableActorRef;
 import akka.persistence.UntypedPersistentActor;
 import akka.util.Timeout;
@@ -16,7 +19,7 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
-import java.util.Optional;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,22 +32,22 @@ public class LaborExchange extends UntypedPersistentActor {
   private static final Logger log = Logger.getLogger(LaborExchange.class.getName());
   public void invoke(Offer offer) {
     experts();
-    final Optional<Object> result = JavaConversions.asJavaCollection(context().children()).parallelStream()
-        .map(actorRef -> {
-          if (!"experts".equals(actorRef.path().name())) {
-            final AskableActorRef ref = new AskableActorRef(actorRef);
-            final Future<Object> future = ref.ask(offer, Timeout.apply(AkkaTools.AKKA_OPERATION_TIMEOUT));
-            try {
-              return Await.result(future, Duration.Inf());
-            }
-            catch (Exception e) {
-              log.log(Level.WARNING, "Exception during offer", e);
-            }
-          }
-          return null;
-        }).filter(x -> x instanceof BrokerRole.On).findAny();
-    if (!result.isPresent())
-      context().actorOf(Props.create(BrokerRole.class)).tell(offer, self());
+    final Collection<ActorRef> children = JavaConversions.asJavaCollection(context().children());
+    for (final ActorRef ref : children) {
+      if (!"experts".equals(ref.path().name())) {
+        final AskableActorRef ask = new AskableActorRef(ref);
+        final Future<Object> future = ask.ask(offer, Timeout.apply(AkkaTools.AKKA_OPERATION_TIMEOUT));
+        try {
+          final Object result = Await.result(future, Duration.Inf());
+          if (result instanceof BrokerRole.On)
+            return;
+        }
+        catch (Exception e) {
+          log.log(Level.WARNING, "Exception during offer", e);
+        }
+      }
+    }
+    context().actorOf(Props.create(BrokerRole.class)).tell(offer, self());
   }
 
   @SuppressWarnings("UnusedParameters")

@@ -1,12 +1,12 @@
 package com.tbts.server.xmpp.phase;
 
 import akka.actor.ActorRef;
-import akka.actor.PoisonPill;
 import akka.io.Tcp;
 import akka.io.TcpMessage;
 import akka.util.ByteString;
 import com.tbts.server.xmpp.XMPPClientConnection;
 import com.tbts.util.akka.UntypedActorAdapter;
+import com.tbts.xmpp.control.Close;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
@@ -29,32 +29,38 @@ public class SSLHandshake extends UntypedActorAdapter {
     this.conectionController = conectionController;
   }
 
+  boolean finished = false;
   private ByteBuffer in = ByteBuffer.allocate(4096);
   private ByteBuffer out = ByteBuffer.allocate(4096);
   private ByteBuffer toSend = ByteBuffer.allocate(4096);
+  public void invoke(Close close) {
+    if (in.position() != 0) {
+      in.flip();
+      sender().tell(new Tcp.Received(ByteString.fromByteBuffer(in)), self());
+    }
+  }
+
   public void invoke(Tcp.Received received) throws SSLException {
 //    System.out.println("in: [" + received.data().mkString() + "]");
-    SSLEngineResult.HandshakeStatus hsStatus = sslEngine.getHandshakeStatus();
     if (in.remaining() < received.data().length()) {
       in = expandBuffer(in, received.data().length());
     }
     received.data().copyToBuffer(in);
+    if (finished)
+      return;
+
+    SSLEngineResult.HandshakeStatus hsStatus = sslEngine.getHandshakeStatus();
     while (true) {
       SSLEngineResult res;
 //      System.out.println(hsStatus.toString());
 
       switch (hsStatus) {
         case FINISHED:
-          conectionController.tell(TcpMessage.suspendReading(), getSelf());
           send();
-          conectionController.tell(XMPPClientConnection.ConnectionState.AUTHORIZATION, getSelf());
-          if (in.position() != 0) {
-            in.flip();
-            conectionController.tell(new Tcp.Received(ByteString.fromByteBuffer(in)), getSelf());
-          }
+          conectionController.tell(XMPPClientConnection.ConnectionState.AUTHORIZATION, self());
+          finished = true;
           if (out.position() != 0)
             throw new RuntimeException("Buffer overflow after handshake");
-          getSelf().tell(PoisonPill.getInstance(), getSelf());
           return;
         case NEED_TASK:
           Runnable task;

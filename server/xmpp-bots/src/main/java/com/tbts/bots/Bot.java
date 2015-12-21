@@ -95,11 +95,6 @@ public class Bot {
       @Override
       public void process(Message stanza) throws JaxmppException {
         onMessage(stanza.getAsString());
-        try {
-          System.out.println("Msg: " + stanza.getAsString());
-        } catch (XMLException e) {
-          throw new RuntimeException(e);
-        }
       }
     });
 

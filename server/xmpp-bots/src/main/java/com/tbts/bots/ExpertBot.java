@@ -47,9 +47,9 @@ public class ExpertBot extends Bot {
 
     expert.start();
 //    expert.offline();
-    expert.online();
     latch.state(2, 1);
     expert.answer("Otvali!");
+    expert.online();
     Thread.sleep(20000);
     expert.offline();
     expert.stop();

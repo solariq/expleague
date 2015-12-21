@@ -50,7 +50,7 @@ public class AuthorizationPhase extends XMPPPhase {
           answer(Iq.answer(request));
         }
         catch (Exception e) {
-          log.log(Level.FINE, "Exception during user registration", e);
+          log.log(Level.FINEST, "Exception during user registration", e);
           answer(Iq.answer(request, new Err(Err.Cause.INSTERNAL_SERVER_ERROR, Err.ErrType.AUTH, e.getMessage())));
         }
       }

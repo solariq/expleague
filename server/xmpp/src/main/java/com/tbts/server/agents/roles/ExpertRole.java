@@ -98,11 +98,13 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
     when(State.INVITE,
         matchEvent(
             Presence.class,
-            (presence, task) -> presence.to().equals(task.getFirst().room()),
             (presence, task) -> {
-              timer.cancel();
-              task.second.tell(presence, self());
-              return goTo(State.BUSY);
+              if (task.getFirst().room().bareEq(presence.to())) {
+                timer.cancel();
+                task.second.tell(presence, self());
+                return goTo(State.BUSY);
+              }
+              return stay();
             }
         ).event(
             Timeout.class,
@@ -116,11 +118,15 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
     when(State.BUSY,
         matchEvent(
             Presence.class,
-            (presence, offer) -> presence.available() && (presence.to() == null || !presence.to().equals(offer.first.room())),
             (presence, offer) -> {
-              offer.second.tell(new Operations.Done(), self());
-              return goTo(State.READY).using(null);
+              if (presence.available() && (presence.to() == null || !presence.to().bareEq(offer.first.room()))) {
+                offer.second.tell(new Operations.Done(), self());
+                return goTo(State.READY).using(null);
+              }
+              return stay();
             }
+        ).event(Message.class,
+            (msg, offer) -> stay()
         )
     );
 
@@ -133,7 +139,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
 
     onTransition((from, to) -> {
       final Offer first = nextStateData() != null ? nextStateData().first : null;
-      System.out.println(from + " -> " + to + " " + first);
+      System.out.println(from + " -> " + to + (first != null ? " " + first : ""));
     });
 
     onTransition((from, to) -> {

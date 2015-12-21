@@ -88,7 +88,8 @@ public class JID {
   }
 
   public boolean bareEq(JID to) {
-    return this.bare == to.bare;
+    //noinspection StringEquality
+    return to != null && this.bare == to.bare;
   }
 
   public String local() {

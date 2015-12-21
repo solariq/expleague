@@ -15,7 +15,7 @@ import java.util.function.Supplier;
  * Time: 14:48
  */
 public class AkkaTools {
-  public static final FiniteDuration AKKA_OPERATION_TIMEOUT = FiniteDuration.create(1, TimeUnit.SECONDS);
+  public static final FiniteDuration AKKA_OPERATION_TIMEOUT = FiniteDuration.create(1, TimeUnit.MINUTES);
 
   public static ActorRef getOrCreate(String path, ActorRefFactory context, BiFunction<String, ActorRefFactory, ActorRef> factory) {
     final ActorSelection selection = context.actorSelection(path);
