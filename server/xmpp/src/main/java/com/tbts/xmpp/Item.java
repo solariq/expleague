@@ -44,8 +44,8 @@ public class Item implements Serializable, Cloneable {
     }
   };
 
-  public static Item create(String str) {
-    return tlReader.get().deserialize(str);
+  public static Item create(CharSequence str) {
+    return tlReader.get().deserialize(str.toString());
   }
 
   public String xmlString() {
@@ -128,8 +128,9 @@ public class Item implements Serializable, Cloneable {
       reader = new AsyncJAXBStreamReader(asyncXml, Stream.jaxb());
       try {
         asyncXml.getInputFeeder().feedInput(XMPPOutFlow.XMPP_START.getBytes(), 0, XMPPOutFlow.XMPP_START.length());
+        reader.drain(o -> { });
       }
-      catch (XMLStreamException e) {
+      catch (XMLStreamException | SAXException e) {
         throw new RuntimeException(e);
       }
     }

@@ -57,6 +57,11 @@ public class Operations {
   }
 
   @XmlRootElement
+  public static class Resume extends Item {
+    public Resume() { }
+  }
+
+  @XmlRootElement
   public static class Cancel extends Item {
     public Cancel(){ }
   }

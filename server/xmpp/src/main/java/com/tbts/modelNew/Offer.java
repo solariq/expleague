@@ -1,6 +1,5 @@
 package com.tbts.modelNew;
 
-import akka.actor.ActorRef;
 import com.tbts.xmpp.Item;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Message;
@@ -15,8 +14,6 @@ import java.util.Date;
  */
 @XmlRootElement
 public class Offer extends Item {
-  public ActorRef broker;
-
   @XmlAttribute
   private JID room;
   @XmlAttribute

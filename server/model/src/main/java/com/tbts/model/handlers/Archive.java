@@ -14,8 +14,15 @@ public abstract class Archive {
     return instance;
   }
 
-  public abstract void log(Room room, String authorId, CharSequence element);
-  public abstract void visitMessages(Room room, MessageVisitor visitor);
+  public abstract void log(String id, String authorId, CharSequence element);
+  public void log(Room room, String authorId, CharSequence element) {
+    log(room.id(),authorId, element);
+  }
+
+  public abstract void visitMessages(String id, MessageVisitor visitor);
+  public void visitMessages(Room room, MessageVisitor visitor) {
+    visitMessages(room.id(), visitor);
+  }
 
   /**
    * User: solar

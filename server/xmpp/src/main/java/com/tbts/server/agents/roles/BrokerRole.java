@@ -59,13 +59,6 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
     }
   }
 
-  public static class On {
-    private final Task offer;
-    public On(Task offer) {
-      this.offer = offer;
-    }
-  }
-
   {
     startWith(State.UNEMPLOYED, null);
     when(State.UNEMPLOYED,
@@ -73,7 +66,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
             (offer, zero) -> {
               LaborExchange.experts(context()).tell(offer, self());
               final Task task = new Task(offer);
-              return goTo(State.STARVING).using(task).replying(new On(task));
+              return goTo(State.STARVING).using(task).replying(new Operations.Ok());
             }
         )
     );

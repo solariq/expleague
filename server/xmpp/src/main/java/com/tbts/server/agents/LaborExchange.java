@@ -4,24 +4,22 @@ import akka.actor.ActorContext;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.Props;
-import akka.pattern.AskableActorRef;
+import akka.persistence.SaveSnapshotFailure;
+import akka.persistence.SaveSnapshotSuccess;
+import akka.persistence.SnapshotOffer;
 import akka.persistence.UntypedPersistentActor;
-import akka.util.Timeout;
 import com.spbsu.commons.system.RuntimeUtils;
 import com.tbts.modelNew.Offer;
+import com.tbts.modelNew.Operations;
+import com.tbts.server.XMPPServer;
 import com.tbts.server.agents.roles.BrokerRole;
 import com.tbts.server.agents.roles.ExpertRole;
 import com.tbts.util.akka.AkkaTools;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.JID;
 import scala.collection.JavaConversions;
-import scala.concurrent.Await;
-import scala.concurrent.Future;
-import scala.concurrent.duration.Duration;
 
-import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.*;
 
 /**
  * User: solar
@@ -29,29 +27,24 @@ import java.util.logging.Logger;
  * Time: 15:18
  */
 public class LaborExchange extends UntypedPersistentActor {
-  private static final Logger log = Logger.getLogger(LaborExchange.class.getName());
+  private final Map<String, ActorRef> openPositions = new HashMap<>();
+
   public void invoke(Offer offer) {
     experts();
     final Collection<ActorRef> children = JavaConversions.asJavaCollection(context().children());
     for (final ActorRef ref : children) {
       if (!"experts".equals(ref.path().name())) {
-        final AskableActorRef ask = new AskableActorRef(ref);
-        final Future<Object> future = ask.ask(offer, Timeout.apply(AkkaTools.AKKA_OPERATION_TIMEOUT));
-        try {
-          final Object result = Await.result(future, Duration.Inf());
-          if (result instanceof BrokerRole.On)
-            return;
-        }
-        catch (Exception e) {
-          log.log(Level.WARNING, "Exception during offer", e);
+        if (AkkaTools.ask(ref, offer) instanceof Operations.Ok) {
+          openPositions.put(offer.room().local(), ref);
+          return;
         }
       }
     }
-    context().actorOf(Props.create(BrokerRole.class)).tell(offer, self());
-  }
-
-  @SuppressWarnings("UnusedParameters")
-  public void invoke(BrokerRole.On on){
+    final ActorRef ref = context().actorOf(Props.create(BrokerRole.class));
+    if (!(AkkaTools.ask(ref, offer) instanceof Operations.Ok))
+      throw new RuntimeException("Unable to create alive broker!");
+    openPositions.put(offer.room().local(), ref);
+    saveSnapshot(new ArrayList<>(openPositions.keySet()));
   }
 
   public void invoke(ActorRef expertAgent) {
@@ -71,8 +64,29 @@ public class LaborExchange extends UntypedPersistentActor {
     return AkkaTools.getOrCreate("experts", context(), () -> Props.create(Dpt.class));
   }
 
+  public void invoke(Operations.Ok ok) {
+    final JID jid = Dpt.jid(sender());
+    openPositions.remove(jid.local());
+    saveSnapshot(new ArrayList<>(openPositions.keySet()));
+  }
+
+  public void invoke(Operations.Cancel cancel) {
+    final JID jid = Dpt.jid(sender());
+    openPositions.remove(jid.local()).forward(cancel, context());
+    saveSnapshot(new ArrayList<>(openPositions.keySet()));
+  }
+
   @Override
   public void onReceiveRecover(Object o) throws Exception {
+    if (o instanceof SnapshotOffer) {
+      final SnapshotOffer offer = (SnapshotOffer) o;
+      //noinspection unchecked
+      ((List<String>) offer.snapshot()).stream().forEach(local -> {
+        final JID room = new JID(local, "muc." + XMPPServer.config().domain(), null);
+        final ActorRef roomAgent = XMPP.register(room, context());
+        roomAgent.tell(new Operations.Resume(), self());
+      });
+    }
   }
 
   @Override
@@ -92,19 +106,16 @@ public class LaborExchange extends UntypedPersistentActor {
     );
   }
 
-  public static ActorRef register(JID jid, ActorContext context) {
-    final Future<Object> future = new AskableActorRef(reference(context)).ask(jid, Timeout.apply(AkkaTools.AKKA_OPERATION_TIMEOUT));
-    try {
-      return (ActorRef)Await.result(future, Duration.Inf());
-    }
-    catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+  public static ActorRef registerRole(JID jid, ActorContext context) {
+    return AkkaTools.ask(reference(context), jid);
   }
 
   public static ActorSelection experts(ActorContext context) {
     return context.actorSelection("/user/labor-exchange/experts");
   }
+
+  public void invoke(SaveSnapshotSuccess sss) {}
+  public void invoke(SaveSnapshotFailure ssf) {}
 
   /**
    * User: solar
@@ -124,6 +135,10 @@ public class LaborExchange extends UntypedPersistentActor {
       JavaConversions.asJavaCollection(context().children()).stream().forEach(
           expert -> expert.forward(o, context())
       );
+    }
+
+    public static JID jid(ActorRef ref) {
+      return JID.parse(ref.path().name());
     }
   }
 }

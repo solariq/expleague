@@ -24,6 +24,11 @@ public class JID {
     this.resource = "".equals(resource) ? null : resource;
   }
 
+  public JID(String local, String domain, String resource) {
+    this.bare = (local + "@" + domain).intern();
+    this.resource = resource;
+  }
+
   public URI asURI() {
     try {
       return new URI(bare);

@@ -5,9 +5,8 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
-import com.tbts.model.handlers.Archive;
 import com.tbts.model.Client;
-import com.tbts.model.Room;
+import com.tbts.model.handlers.Archive;
 import com.tbts.model.impl.ClientImpl;
 import com.tbts.model.impl.RoomImpl;
 import org.junit.Test;
@@ -37,17 +36,17 @@ public class DynamoDBArchive extends Archive {
   }
 
   @Override
-  public void log(Room room, String authorId, CharSequence element) {
-    RoomArchive archive = mapper.load(RoomArchive.class, room.id());
+  public void log(String id, String authorId, CharSequence element) {
+    RoomArchive archive = mapper.load(RoomArchive.class, id);
     if (archive == null)
-      archive = new RoomArchive(room.id());
+      archive = new RoomArchive(id);
     archive.log(element, authorId);
     mapper.save(archive);
   }
 
   @Override
-  public void visitMessages(Room room, MessageVisitor visitor) {
-    final RoomArchive archive = mapper.load(RoomArchive.class, room.id());
+  public void visitMessages(String id, MessageVisitor visitor) {
+    final RoomArchive archive = mapper.load(RoomArchive.class, id);
     if (archive != null) {
       for (final Message message : archive.getMessages()) {
         if (!visitor.accept(message.author, message.text, message.ts))

@@ -381,7 +381,7 @@ OUTER:
   }
 
   private void processText( boolean ignorable ) throws SAXException {
-    if( predictor.expectText() && (!ignorable || !WhiteSpaceProcessor.isWhiteSpace(buffer) || context.getCurrentState().isMixed())) {
+    if(predictor.expectText() && (!ignorable || !WhiteSpaceProcessor.isWhiteSpace(buffer) || context.getCurrentState().isMixed())) {
       if(textReported) {
         textReported = false;
       } else {

@@ -6,6 +6,8 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.io.Tcp;
 import akka.io.TcpMessage;
+import com.tbts.model.handlers.Archive;
+import com.tbts.server.agents.LaborExchange;
 import com.tbts.server.roster.MySQLRoster;
 import com.tbts.server.services.Services;
 import com.tbts.server.xmpp.XMPPClientConnection;
@@ -27,21 +29,19 @@ public class XMPPServer {
   private static Cfg config;
   private static Roster users;
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
     final Config load = ConfigFactory.parseResourcesAnySyntax("tbts.conf").withFallback(ConfigFactory.load()).resolve();
     config = new Cfg(load);
     users = new MySQLRoster(config.db());
+    Archive.instance = config.archive().newInstance();
     LogManager.getLogManager().readConfiguration(XMPPServer.class.getResourceAsStream("/logging.properties"));
 
-//    Config config = ConfigFactory.parseString("akka.loglevel = DEBUG \n" +
-//        "akka.actor.debug.lifecycle = on \n akka.event-stream = on");
-//    final ActorSystem system = ActorSystem.create("TBTS_Light_XMPP", config);
-//    system.actorOf(Props.create(XMPPClientIncomingStream.class));
     final ActorSystem system = ActorSystem.create("TBTS_Light_XMPP", load);
     final ActorRef actorRef = system.actorOf(Props.create(ConnectionManager.class));
     system.actorOf(Props.create(XMPP.class), "xmpp");
     system.actorOf(Props.create(Services.class), "services");
     system.actorOf(Props.create(Server.class, actorRef), "comm");
+    system.actorOf(Props.create(LaborExchange.class), "labor-exchange");
   }
 
   public static synchronized Roster roster() {
@@ -90,11 +90,14 @@ public class XMPPServer {
   public static class Cfg {
     private final String db;
     private final String domain;
+    private final Class<? extends Archive> archive;
 
-    public Cfg(Config load) {
+    public Cfg(Config load) throws ClassNotFoundException {
       final Config tbts = load.getConfig("tbts");
       db = tbts.getString("db");
       domain = tbts.getString("domain");
+      //noinspection unchecked
+      archive = (Class<? extends Archive>) Class.forName(tbts.getString("archive"));
     }
 
     public String domain() {
@@ -103,6 +106,10 @@ public class XMPPServer {
 
     public String db() {
       return db;
+    }
+
+    public Class<? extends Archive> archive() {
+      return archive;
     }
   }
 }

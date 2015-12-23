@@ -1,6 +1,5 @@
 package com.tbts.dao;
 
-import com.tbts.model.Room;
 import com.tbts.model.handlers.Archive;
 
 import java.util.ArrayList;
@@ -17,16 +16,16 @@ public class InMemArchive extends Archive {
   final Map<String, List<Msg>> map = new HashMap<>();
 
   @Override
-  public void log(Room room, String authorId, CharSequence element) {
-    List<Msg> msgs = map.get(room.id());
+  public void log(String id, String authorId, CharSequence element) {
+    List<Msg> msgs = map.get(id);
     if (msgs == null)
-      map.put(room.id(), msgs = new ArrayList<>());
+      map.put(id, msgs = new ArrayList<>());
     msgs.add(new Msg(authorId, element, System.currentTimeMillis()));
   }
 
   @Override
-  public void visitMessages(Room room, MessageVisitor visitor) {
-    final List<Msg> msgs = map.get(room.id());
+  public void visitMessages(String id, MessageVisitor visitor) {
+    final List<Msg> msgs = map.get(id);
     if (msgs != null) {
       for (final Msg msg : msgs) {
         visitor.accept(msg.author, msg.message, msg.ts);
