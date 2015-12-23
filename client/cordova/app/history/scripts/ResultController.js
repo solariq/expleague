@@ -1,6 +1,6 @@
 angular
   .module('history')
-  .controller('ResultController', function($scope, supersonic) {
+  .controller('ResultController', function($scope, $sce, supersonic) {
 
     // TODO: вынести эти переменные в глобальные нестройки
     var lsServerKeyName = 'tbtsServer';
@@ -54,11 +54,18 @@ angular
         var json = JSON.parse(text);
         var result = '';
         for (var i = 0, c = json.content; i < c.length; i++) {
-          var title = (c[i].text.title) ? '<div><b>' + c[i].text.title + '</b></div>' : '';
-          var text = (c[i].text.text) ? '<div>' + c[i].text.text + '</div>' : '';
-          result = result + title + text;
+          if (c[i].text != undefined) {
+            var title = (c[i].text.title) ? '<div><b>' + c[i].text.title + '</b></div>' : '';
+            var text = (c[i].text.text) ? '<div>' + c[i].text.text + '</div>' : '';
+            result = result + title + text;
+          }
+          if (c[i].image != undefined) {
+            var img = (c[i].image.image) ? '<img src="' + c[i].image.image + '" alt="">' : '';
+            var referer = (c[i].image.referer) ? '<div><a href="' + c[i].image.referer + '" onclick="supersonic.app.openURL(this.href); return false">Источник</a></div>' : '';
+            result = result + img + referer;
+          }
         }
-        return result;
+        return $sce.trustAsHtml(result);
       } catch(e) {
         return text;
       }

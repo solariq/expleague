@@ -149,6 +149,10 @@
   margin: 10px auto;
 }
 
+.result-chat .baloon img {
+  max-width: 268px;
+}
+
 .expert {
   min-height: 100px;
   margin: 5px -8px -5px;
