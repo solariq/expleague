@@ -2,6 +2,7 @@ package com.tbts.util.akka;
 
 import akka.actor.*;
 import akka.pattern.AskableActorRef;
+import akka.pattern.AskableActorSelection;
 import akka.util.Timeout;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
@@ -50,9 +51,30 @@ public class AkkaTools {
   }
 
   public static <T, A> T ask(ActorRef ref, A arg) {
+    return ask(ref, arg, Timeout.apply(AkkaTools.AKKA_OPERATION_TIMEOUT));
+  }
+
+  public static <T, A> T ask(ActorRef ref, A arg, Timeout to) {
     final AskableActorRef ask = new AskableActorRef(ref);
     //noinspection unchecked
-    final Future<T> future = (Future<T>)ask.ask(arg, Timeout.apply(AkkaTools.AKKA_OPERATION_TIMEOUT));
+    final Future<T> future = (Future<T>)ask.ask(arg, to);
+    try {
+      return Await.result(future, Duration.Inf());
+    }
+    catch (Exception e) {
+      log.log(Level.WARNING, "Exception during synchronous ask", e);
+      return null;
+    }
+  }
+
+  public static <T, A> T ask(ActorSelection ref, A arg) {
+    return ask(ref, arg, Timeout.apply(AkkaTools.AKKA_OPERATION_TIMEOUT));
+  }
+
+  public static <T, A> T ask(ActorSelection ref, A arg, Timeout apply) {
+    final AskableActorSelection ask = new AskableActorSelection(ref);
+    //noinspection unchecked
+    final Future<T> future = (Future<T>)ask.ask(arg, apply);
     try {
       return Await.result(future, Duration.Inf());
     }

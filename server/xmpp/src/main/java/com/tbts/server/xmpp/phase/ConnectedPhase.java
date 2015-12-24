@@ -1,7 +1,7 @@
 package com.tbts.server.xmpp.phase;
 
 import akka.actor.ActorRef;
-import com.tbts.server.XMPPServer;
+import com.tbts.server.TBTSServer;
 import com.tbts.server.agents.LaborExchange;
 import com.tbts.server.agents.MailBoxAgent;
 import com.tbts.server.agents.UserAgent;
@@ -30,7 +30,7 @@ public class ConnectedPhase extends UntypedActorAdapter {
   private ActorRef agent;
 
   public ConnectedPhase(String authId, ActorRef outFlow) {
-    this.jid = JID.parse(authId + "@" + XMPPServer.config().domain());
+    this.jid = JID.parse(authId + "@" + TBTSServer.config().domain());
     this.outFlow = outFlow;
   }
 

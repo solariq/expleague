@@ -31,6 +31,7 @@ import java.util.Map;
  */
 @XmlTransient
 public class Item implements Serializable, Cloneable {
+  public static Item EMPTY = new Item();
   private static ThreadLocal<XmlOutputter> tlWriter = new ThreadLocal<XmlOutputter>() {
     @Override
     protected XmlOutputter initialValue() {

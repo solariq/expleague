@@ -11,7 +11,7 @@ import akka.persistence.UntypedPersistentActor;
 import com.spbsu.commons.system.RuntimeUtils;
 import com.tbts.modelNew.Offer;
 import com.tbts.modelNew.Operations;
-import com.tbts.server.XMPPServer;
+import com.tbts.server.TBTSServer;
 import com.tbts.server.agents.roles.BrokerRole;
 import com.tbts.server.agents.roles.ExpertRole;
 import com.tbts.util.akka.AkkaTools;
@@ -82,10 +82,11 @@ public class LaborExchange extends UntypedPersistentActor {
       final SnapshotOffer offer = (SnapshotOffer) o;
       //noinspection unchecked
       ((List<String>) offer.snapshot()).stream().forEach(local -> {
-        final JID room = new JID(local, "muc." + XMPPServer.config().domain(), null);
+        final JID room = new JID(local, "muc." + TBTSServer.config().domain(), null);
         final ActorRef roomAgent = XMPP.register(room, context());
         roomAgent.tell(new Operations.Resume(), self());
       });
+      saveSnapshot(new ArrayList<>(openPositions.keySet()));
     }
   }
 

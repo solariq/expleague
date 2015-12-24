@@ -168,7 +168,7 @@ public class Query {
   }
 
   public String name() {
-    if (name != null)
+    if (name != null && !name.isEmpty())
       return name;
     else {
       final int dogIndex = username.indexOf('@');

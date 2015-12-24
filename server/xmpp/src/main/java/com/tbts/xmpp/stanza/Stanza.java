@@ -37,7 +37,7 @@ public class Stanza extends Item {
     this.id = id;
   }
 
-  private static String generateId() {
+  public static String generateId() {
     final Holder<Long> holder = thId.get();
     final Long value = holder.getValue();
     holder.setValue(value + 1);

@@ -139,7 +139,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
       case AUTHORIZATION: {
         businessLogic.tell(new Close(), self());
         businessLogic.tell(PoisonPill.getInstance(), self());
-        newLogic = Source.<Tcp.Received>actorRef(64, OverflowStrategy.dropHead())
+        newLogic = Source.<Tcp.Received>actorRef(64, OverflowStrategy.fail())
             .via(inFlow)
             .transform(() -> new AuthorizationPhase(id -> XMPPClientConnection.this.id = id))
             .via(outFlow)
