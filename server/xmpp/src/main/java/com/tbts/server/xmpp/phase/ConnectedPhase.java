@@ -35,7 +35,7 @@ public class ConnectedPhase extends UntypedActorAdapter {
   }
 
   public void invoke(Open o) {
-    outFlow.tell(new Features(new Bind(), new Session()), getSelf());
+    outFlow.tell(new Features(new Bind(), new Session()), self());
   }
 
   public void invoke(Iq<?> iq) {

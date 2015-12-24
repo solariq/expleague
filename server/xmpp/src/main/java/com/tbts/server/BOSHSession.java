@@ -70,6 +70,7 @@ public class BOSHSession extends UntypedActorAdapter {
             .run(this.materializer);
         break;
       case CONNECTED:
+        invoke(Timeout.zero());
         businesLogic = getContext().actorOf(Props.create(ConnectedPhase.class, id, self()));
         break;
       case CLOSED:
