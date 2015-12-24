@@ -9,20 +9,6 @@
     <list default="true" id="c71e5450-21a0-4dac-9e17-b1ca74780897" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/DynamoDBArchive.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/DynamoDBArchive.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/InMemArchive.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/InMemArchive.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/handlers/Archive.java" afterPath="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/handlers/Archive.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/modelNew/Offer.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/modelNew/Offer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/modelNew/Operations.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/modelNew/Operations.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/XMPPServer.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/XMPPServer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/LaborExchange.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/LaborExchange.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/RoomAgent.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/RoomAgent.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/BrokerRole.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/BrokerRole.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/ConnectedPhase.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/ConnectedPhase.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/akka/AkkaTools.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/akka/AkkaTools.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/stolen/StAXStreamConnector.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/stolen/StAXStreamConnector.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Item.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Item.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/JID.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/JID.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/resources/tbts.conf" afterPath="$PROJECT_DIR$/server/xmpp/src/main/resources/tbts.conf" />
     </list>
     <ignored path="tbts.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -67,20 +53,20 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="DynamoDBArchive.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="DynamoDBArchive.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/DynamoDBArchive.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="51" column="23" selection-start-line="51" selection-start-column="23" selection-end-line="51" selection-end-column="23" />
+            <state vertical-scroll-proportion="0.31746033">
+              <caret line="32" column="74" selection-start-line="32" selection-start-column="74" selection-end-line="32" selection-end-column="74" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="LaborExchange.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="LaborExchange.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/LaborExchange.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="1.0">
+            <state vertical-scroll-proportion="0.0">
               <caret line="86" column="0" selection-start-line="86" selection-start-column="0" selection-end-line="86" selection-end-column="0" />
               <folding />
             </state>
@@ -91,7 +77,7 @@
         <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/XMPP.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="59" column="0" selection-start-line="59" selection-start-column="0" selection-end-line="59" selection-end-column="0" />
+              <caret line="35" column="88" selection-start-line="35" selection-start-column="3" selection-end-line="35" selection-end-column="3" />
               <folding />
             </state>
           </provider>
@@ -195,7 +181,6 @@
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/ExpertRole.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/akka/AkkaTools.java" />
         <option value="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/handlers/Archive.java" />
-        <option value="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/DynamoDBArchive.java" />
         <option value="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/InMemArchive.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/BrokerRole.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/modelNew/Offer.java" />
@@ -211,6 +196,7 @@
         <option value="$PROJECT_DIR$/server/xmpp/src/main/resources/logging.properties" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/RoomAgent.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/LaborExchange.java" />
+        <option value="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/DynamoDBArchive.java" />
       </list>
     </option>
   </component>
@@ -1574,7 +1560,7 @@
       <workItem from="1443004615885" duration="22765000" />
       <workItem from="1443112658540" duration="18885000" />
       <workItem from="1443627366773" duration="2463000" />
-      <workItem from="1450882332455" duration="3418000" />
+      <workItem from="1450882332455" duration="5090000" />
     </task>
     <task id="LOCAL-00001" summary="Server initial commit">
       <created>1443178411727</created>
@@ -1606,11 +1592,17 @@
       <option name="project" value="LOCAL" />
       <updated>1450729379426</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Persistent rooms seems to work">
+      <created>1450897303359</created>
+      <option name="number" value="00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1450897303359</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="68042000" />
+    <option name="totallyTimeSpent" value="69714000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1538" y="-745" width="2060" height="1302" extended-state="0" />
@@ -1685,7 +1677,8 @@
     <MESSAGE value="Simple scenarios seems to work fine." />
     <MESSAGE value="Cleanup" />
     <MESSAGE value="Final for today cleanup. Simple scenarios looks now good in terms of logging" />
-    <option name="LAST_COMMIT_MESSAGE" value="Final for today cleanup. Simple scenarios looks now good in terms of logging" />
+    <MESSAGE value="Persistent rooms seems to work" />
+    <option name="LAST_COMMIT_MESSAGE" value="Persistent rooms seems to work" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1838,6 +1831,10 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="140" column="6" selection-start-line="140" selection-start-column="6" selection-end-line="140" selection-end-column="6" />
+          <folding>
+            <element signature="e#4628#4629#0" expanded="true" />
+            <element signature="e#4665#4666#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1853,7 +1850,7 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="141" column="8" selection-start-line="141" selection-start-column="8" selection-end-line="141" selection-end-column="8" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="imports" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1862,6 +1859,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="36" column="65" selection-start-line="36" selection-start-column="28" selection-end-line="36" selection-end-column="28" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1887,6 +1885,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="15" column="35" selection-start-line="15" selection-start-column="35" selection-end-line="15" selection-end-column="35" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1894,6 +1893,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="19" column="32" selection-start-line="19" selection-start-column="32" selection-end-line="19" selection-end-column="32" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1902,7 +1902,7 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="23" column="0" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="imports" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1951,6 +1951,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="7" column="37" selection-start-line="7" selection-start-column="37" selection-end-line="7" selection-end-column="37" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2118,30 +2119,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/XMPP.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="59" column="0" selection-start-line="59" selection-start-column="0" selection-end-line="59" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/handlers/Archive.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="21" column="23" selection-start-line="21" selection-start-column="23" selection-end-line="21" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/DynamoDBArchive.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="51" column="23" selection-start-line="51" selection-start-column="23" selection-end-line="51" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/RoomAgent.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -2153,10 +2130,34 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/handlers/Archive.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="21" column="23" selection-start-line="21" selection-start-column="23" selection-end-line="21" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/LaborExchange.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.0">
+        <state vertical-scroll-proportion="0.0">
           <caret line="86" column="0" selection-start-line="86" selection-start-column="0" selection-end-line="86" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/XMPP.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="35" column="88" selection-start-line="35" selection-start-column="3" selection-end-line="35" selection-end-column="3" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/DynamoDBArchive.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.31746033">
+          <caret line="32" column="74" selection-start-line="32" selection-start-column="74" selection-end-line="32" selection-end-column="74" />
           <folding />
         </state>
       </provider>

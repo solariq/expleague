@@ -30,7 +30,7 @@ public class DynamoDBArchive extends Archive {
     final List<String> tableNames = db.listTables().getTableNames();
     if (!tableNames.contains(TBTS_ROOMS)) {
       final CreateTableRequest createReq = mapper.generateCreateTableRequest(RoomArchive.class);
-      createReq.setProvisionedThroughput(new ProvisionedThroughput(100L, 100L));
+      createReq.setProvisionedThroughput(new ProvisionedThroughput(10L, 10L));
       db.createTable(createReq);
     }
   }
