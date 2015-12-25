@@ -13,6 +13,6 @@ public interface Roster {
   JabberUser byName(String name);
 
   static Roster instance() {
-    return XMPPServer.roster();
+    return TBTSServer.roster();
   }
 }

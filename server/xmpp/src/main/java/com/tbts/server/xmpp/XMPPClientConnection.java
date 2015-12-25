@@ -105,7 +105,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
 
     if (closed)
       state = ConnectionState.CLOSED;
-    else
+    else if (state != ConnectionState.CONNECTED)
       connection.tell(TcpMessage.suspendReading(), getSelf());
 
     final Flow<Tcp.Received, Item, BoxedUnit> inFlow = Flow.of(Tcp.Received.class).map(Tcp.Received::data).transform(XMPPInFlow::new);
@@ -138,10 +138,12 @@ public class XMPPClientConnection extends UntypedActorAdapter {
       }
       case AUTHORIZATION: {
         businessLogic.tell(new Close(), self());
-        businessLogic.tell(PoisonPill.getInstance(), self());
-        newLogic = Source.<Tcp.Received>actorRef(64, OverflowStrategy.dropHead())
+        newLogic = Source.<Tcp.Received>actorRef(64, OverflowStrategy.fail())
             .via(inFlow)
-            .transform(() -> new AuthorizationPhase(id -> XMPPClientConnection.this.id = id))
+            .transform(() -> new AuthorizationPhase(id -> {
+              XMPPClientConnection.this.id = id;
+              connection.tell(TcpMessage.suspendReading(), self());
+            }))
             .via(outFlow)
             .to(Sink.actorRef(self(), ConnectionState.CONNECTED))
             .run(materializer);

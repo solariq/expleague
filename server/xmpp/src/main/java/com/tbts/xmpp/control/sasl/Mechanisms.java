@@ -1,7 +1,7 @@
 package com.tbts.xmpp.control.sasl;
 
 import com.tbts.server.JabberUser;
-import com.tbts.server.XMPPServer;
+import com.tbts.server.TBTSServer;
 import com.tbts.xmpp.control.XMPPFeature;
 import com.tbts.xmpp.control.sasl.plain.PlainServer;
 
@@ -55,7 +55,7 @@ public class Mechanisms extends XMPPFeature {
           final Optional<AuthorizeCallback> authO = Arrays.asList(callbacks).stream().filter(callback -> callback instanceof AuthorizeCallback).map(a -> (AuthorizeCallback) a).findAny();
           if (passwdO.isPresent() && nameO.isPresent()) {
             final PasswordCallback passwd = passwdO.get();
-            final JabberUser user = XMPPServer.roster().byName(nameO.get().getDefaultName());
+            final JabberUser user = TBTSServer.roster().byName(nameO.get().getDefaultName());
             if (user != null)
               passwd.setPassword(user.passwd().toCharArray());
             else
@@ -69,8 +69,8 @@ public class Mechanisms extends XMPPFeature {
           }
         };
         if ("PLAIN".equals(mechanism))
-          return new PlainServer("xmpp", XMPPServer.config().domain(), callbackHandler);
-        else return Sasl.createSaslServer(mechanism, "xmpp", XMPPServer.config().domain(), Collections.emptyMap(), callbackHandler);
+          return new PlainServer("xmpp", TBTSServer.config().domain(), callbackHandler);
+        else return Sasl.createSaslServer(mechanism, "xmpp", TBTSServer.config().domain(), Collections.emptyMap(), callbackHandler);
       } catch (SaslException e) {
         throw new RuntimeException(e);
       }

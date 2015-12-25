@@ -3,6 +3,7 @@ package com.tbts.server.xmpp.phase;
 import com.spbsu.commons.func.Action;
 import com.tbts.server.Roster;
 import com.tbts.xmpp.Features;
+import com.tbts.xmpp.control.Open;
 import com.tbts.xmpp.control.register.Query;
 import com.tbts.xmpp.control.register.Register;
 import com.tbts.xmpp.control.sasl.*;
@@ -36,6 +37,9 @@ public class AuthorizationPhase extends XMPPPhase {
         auth,
         new Register()
     ));
+  }
+
+  public void invoke(Open open) {
   }
 
   public void invoke(Iq<Query> request) {
@@ -92,9 +96,7 @@ public class AuthorizationPhase extends XMPPPhase {
           answer(new Challenge(challenge));
         }
         else {
-          answer(new Success());
-          authorizedCallback.invoke(sasl.getAuthorizationID());
-          stop();
+          success();
         }
       }
       catch (AuthenticationException e) {
@@ -105,6 +107,12 @@ public class AuthorizationPhase extends XMPPPhase {
         throw new RuntimeException(e);
       }
     }
-    else answer(new Success());
+    else success();
+  }
+
+  public void success() {
+    authorizedCallback.invoke(sasl.getAuthorizationID());
+    answer(new Success());
+    stop();
   }
 }

@@ -38,6 +38,7 @@ public class SSLHandshake extends UntypedActorAdapter {
       in.flip();
       sender().tell(new Tcp.Received(ByteString.fromByteBuffer(in)), self());
     }
+    context().stop(self());
   }
 
   public void invoke(Tcp.Received received) throws SSLException {

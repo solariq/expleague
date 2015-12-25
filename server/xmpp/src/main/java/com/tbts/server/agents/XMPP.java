@@ -3,7 +3,7 @@ package com.tbts.server.agents;
 import akka.actor.*;
 import akka.pattern.AskableActorSelection;
 import akka.util.Timeout;
-import com.tbts.server.XMPPServer;
+import com.tbts.server.TBTSServer;
 import com.tbts.util.akka.AkkaTools;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.JID;
@@ -45,7 +45,7 @@ public class XMPP extends UntypedActorAdapter {
   private ActorRef allocate(JID jid) {
     return AkkaTools.getOrCreate(jid.bare().toString(), context(), () -> {
       if (jid.domain().startsWith("muc."))
-        return Props.create(RoomAgent.class, jid);
+        return Props.create(TBTSRoomAgent.class, jid);
       else
         return Props.create(UserAgent.class, jid);
     });
@@ -65,7 +65,7 @@ public class XMPP extends UntypedActorAdapter {
       throw new RuntimeException(e);
     }
   }
-  private static JID myJid = JID.parse(XMPPServer.config().domain());
+  private static JID myJid = JID.parse(TBTSServer.config().domain());
   public static JID jid() {
     return myJid;
   }

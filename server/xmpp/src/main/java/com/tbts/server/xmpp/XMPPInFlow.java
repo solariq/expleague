@@ -2,6 +2,7 @@ package com.tbts.server.xmpp;
 
 import akka.stream.Supervision;
 import akka.stream.stage.Context;
+import akka.stream.stage.LifecycleContext;
 import akka.stream.stage.PushPullStage;
 import akka.stream.stage.SyncDirective;
 import akka.util.ByteString;
@@ -15,6 +16,7 @@ import com.tbts.xmpp.Stream;
 import org.xml.sax.SAXException;
 
 import javax.xml.stream.XMLStreamException;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.logging.Level;
@@ -28,13 +30,18 @@ import java.util.logging.Logger;
 public class XMPPInFlow extends PushPullStage<ByteString, Item> {
   private static final Logger log = Logger.getLogger(XMPPInFlow.class.getName());
   private final Queue<Item> queue = new ArrayDeque<>();
-  private final AsyncXMLStreamReader<AsyncByteArrayFeeder> asyncXml;
-  private final AsyncJAXBStreamReader reader;
+  private AsyncXMLStreamReader<AsyncByteArrayFeeder> asyncXml;
+  private AsyncJAXBStreamReader reader;
+  // TODO: remove this shit after investigating wrong epilog state in aalto
+  private final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-  public XMPPInFlow() {
+  @Override
+  public void preStart(LifecycleContext lifecycleContext) throws Exception {
+    super.preStart(lifecycleContext);
     final AsyncXMLInputFactory factory = new InputFactoryImpl();
     asyncXml = factory.createAsyncForByteArray();
     reader = new AsyncJAXBStreamReader(asyncXml, Stream.jaxb());
+    baos.reset();
   }
 
   @Override
@@ -45,8 +52,10 @@ public class XMPPInFlow extends PushPullStage<ByteString, Item> {
     { // debug
       if (!s.isEmpty())
         log.finest(s);
+//      else return onPull(itemContext);
     }
     try {
+      baos.write(copy, 0, copy.length);
       asyncXml.getInputFeeder().feedInput(copy, 0, copy.length);
       reader.drain(o -> {
         if (o instanceof Item)
@@ -54,7 +63,7 @@ public class XMPPInFlow extends PushPullStage<ByteString, Item> {
       });
     }
     catch (XMLStreamException | SAXException e) {
-      throw new RuntimeException("On [" + s + "] message", e);
+      throw new RuntimeException("On [" + s + "] message in context [" + new String(baos.toByteArray()) + "]", e);
     }
 
     return onPull(itemContext);

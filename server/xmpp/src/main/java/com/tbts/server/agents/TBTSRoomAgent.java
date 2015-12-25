@@ -20,19 +20,18 @@ import java.util.*;
  * Time: 13:18
  */
 @SuppressWarnings("UnusedParameters")
-public class RoomAgent extends UntypedActorAdapter {
+public class TBTSRoomAgent extends UntypedActorAdapter {
   private final List<Item> snapshot = new ArrayList<>();
 
   private final Set<JID> partisipants = new HashSet<>();
   private final Map<JID, Presence.Status> presence = new HashMap<>();
   private final JID jid;
 
-  public RoomAgent(JID jid) {
+  public TBTSRoomAgent(JID jid) {
     this.jid = jid;
     Archive.instance().visitMessages(jid.local(), new Archive.MessageVisitor() {
       @Override
       public boolean accept(String authorId, CharSequence message, long ts) {
-        System.out.println(message);
         snapshot.add(Item.create(message));
         return true;
       }

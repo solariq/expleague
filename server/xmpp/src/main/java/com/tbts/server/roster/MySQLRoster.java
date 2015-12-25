@@ -3,6 +3,7 @@ package com.tbts.server.roster;
 import com.tbts.dao.MySQLOps;
 import com.tbts.server.JabberUser;
 import com.tbts.server.Roster;
+import com.tbts.server.TBTSServer;
 import com.tbts.xmpp.control.register.Query;
 
 import java.sql.PreparedStatement;
@@ -18,8 +19,8 @@ import java.util.logging.Logger;
  */
 public class MySQLRoster extends MySQLOps implements Roster {
   private static final Logger log = Logger.getLogger(MySQLRoster.class.getName());
-  public MySQLRoster(String connectionUrl) {
-    super(connectionUrl);
+  public MySQLRoster() {
+    super(TBTSServer.config().db());
   }
 
   @Override
