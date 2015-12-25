@@ -1,5 +1,21 @@
 angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$interval', 'fileBlob', function ($http, $q, $interval, $fileBlob) {
 
+    function findByTagName(nl, tag) {
+        for (i = 0; i < nl.length; ++i) {
+            if (nl[i].tagName == tag) {
+                return nl[i];
+            }
+        }
+        return null;
+    }
+
+    function Offer(node) {
+        this.room = node.getAttribute('room');
+        this.client = node.getAttribute('client');
+        this.subj = node.getElementsByTagName('subject')[0].textContent
+        this.node = node;
+    }
+
     function NotificationCache() {
         this.notifications = {};
 
@@ -72,7 +88,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         this.resource = resource;
         this.host = login.split('@')[1];
 
-        //this.connection = new Strophe.Connection('http://toobusytosearch.net:5280/http-bind');
+        //this.connection = new Strophe.Connection('http://expleague.com:5280/http-bind');
+        //this.connection = new Strophe.Connection('http://' + this.host + ':5280/');
         this.connection = new Strophe.Connection('http://' + this.host + ':5280/');
 
         this.register = function (regCallback) {
@@ -137,6 +154,17 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             callback();
         };
 
+        this.addOfferListener = function(listener) {
+            this.connection.addHandler(function(msg) {
+                var offer = findByTagName(msg.childNodes, 'offer');
+                if (offer) {
+                    offer = new Offer(offer);
+                    isCanceled = findByTagName(msg.childNodes, 'cancel') != null;
+                    listener(msg.getAttribute('id'), msg.getAttribute('from'), offer, isCanceled);
+                }
+            }, null, 'message', null, null, null);
+        };
+
         this.addMessageListener = function(listener) {
             this.connection.addHandler(function(msg) {
                 var to = msg.getAttribute('to');
@@ -167,20 +195,19 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
 
         this.addInviteListener = function(listener) {
             this.connection.addHandler(function(msg) {
-                var to = msg.getAttribute('to');
-                var room = msg.getAttribute('from');
                 var elems = msg.getElementsByTagName('invite');
                 if (elems && elems.length > 0) {
-                    obj = {room: room, time: new Date().getTime()};
-                    params = msg.children[0].children;
-                    for (var i = 0; i < params.length; i++) {
-                        el = params[i];
-                        name = el.nodeName;
-                        if (name != 'invite') {
-                            obj[name] = Strophe.getText(el.childNodes[0]);
-                        }
-                    }
-                    listener(obj);
+                    var offer = new Offer(msg.getElementsByTagName('offer')[0]);
+                    var invite = {};
+                    invite.subj = offer.subj;
+                    invite.owner = offer.client;
+                    invite.room = offer.room.replace("/client", "");
+                    invite.time= new Date().getTime();
+                    invite.img = 'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg';
+                    invite.confirmExpireTime =  Date.now() + 965 * 1000;
+                    invite.resolveExpireTime = Date.now() + 9150 * 1000;
+                    invite.map = { center: { latitude: 59.977755, longitude: 30.3343742 }, zoom: 15};
+                    listener(invite);
                 }
                 return true;
             }, null, 'message', null, null, null);
@@ -239,10 +266,10 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                 new BanManager().isBanned(ctx.user, function(isBanned) {
                     if (!isBanned) {
                         var msg = $msg({to: ctx.to, from: jabberClient.connection.jid, type: 'chat'})
-                            .c('body')
-                            .c('room')
-                            .attrs({id: ctx.id, type: 'check', xmlns: "http://toobusytosearch.net/schema"})
-                            .t('Ok');
+                            .c('ok')
+                            .attrs({xmlns: "http://expleague.com/scheme"})
+                            .up()
+                            .cnode(ctx.offer.node);
                         jabberClient.unsafeSend(msg, function(){});
                     } else {
                         stateController.setState(ExpertState.READY, {});
@@ -283,8 +310,9 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                     id: invite.time,
                     room: invite.room,
                     img: 'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg',
-                    confirmExpireTime: Date.now() + 65 * 1000,
-                    resolveExpireTime: Date.now() + 150 * 1000
+                    confirmExpireTime: Date.now() + 965 * 1000,
+                    resolveExpireTime: Date.now() + 9150 * 1000,
+                    map: { center: { latitude: 59.977755, longitude: 30.3343742 }, zoom: 15}
                 };
                 addQuestion(question, function(){});
             }
@@ -344,7 +372,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
     var stateController = null;
 
     //var connection = new Strophe.Connection('http://localhost:5280/http-bind');
-    //var connection = new Strophe.Connection('http://toobusytosearch.net:5280/http-bind');
+    //var connection = new Strophe.Connection('http://expleague.com:5280/http-bind');
 
     // TODO get API url from config
     var apiUrl = KNUGGET.config.domain + "api";
@@ -416,7 +444,6 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             callback(result);
         });
     };
-
 
     addToBoardSync = function(answer, callback) {
         KNUGGET.storage.get("Board", function (value) {
@@ -713,6 +740,12 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                 }
             });
 
+            jabberClient.addOfferListener(function(id, from, offer, isCanceled) {
+                if (!isCanceled) {
+                    stateController.setState(ExpertState.CHECK, {to: from, id: id, offer: offer});
+                }
+            });
+
             jabberClient.addMessageListener(function(body, msg) {
                 if (body.getElementsByTagName('room') && body.getElementsByTagName('room').length > 0) {
                     type = body.getElementsByTagName('room')[0].getAttribute('type');
@@ -729,6 +762,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             jabberClient.addInviteListener(function(invite) {
                 stateController.setState(ExpertState.INVITE, invite);
             });
+
             jabberClient.addPresenceListener(function(presence) {
                 ptype = presence.type.toUpperCase();
                 if (ptype in ExpertState) {

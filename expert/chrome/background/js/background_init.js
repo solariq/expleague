@@ -183,6 +183,7 @@ KNUGGET.injector = {
                 runAt: "document_start"
             }, function() {
                 ["js/lib/lodash.min.js", "js/lib/angular/angular-simple-logger.js", "js/lib/angular/angular-google-maps.min.js"].forEach(function (js) {
+                    console.log("loading: " + js);
                     chrome.tabs.executeScript({
                         file: js
                     });
@@ -391,6 +392,7 @@ KNUGGET.templates = {
             "views/editDialog.html",
             "views/confirmAnswer.html",
             "views/cropImage.html",
+            "views/map.html",
             "views/question.html",
             "views/waiting.html",
             "views/unavailable.html",
