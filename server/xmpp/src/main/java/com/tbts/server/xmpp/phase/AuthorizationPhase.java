@@ -96,9 +96,7 @@ public class AuthorizationPhase extends XMPPPhase {
           answer(new Challenge(challenge));
         }
         else {
-          answer(new Success());
-          authorizedCallback.invoke(sasl.getAuthorizationID());
-          stop();
+          success();
         }
       }
       catch (AuthenticationException e) {
@@ -109,6 +107,12 @@ public class AuthorizationPhase extends XMPPPhase {
         throw new RuntimeException(e);
       }
     }
-    else answer(new Success());
+    else success();
+  }
+
+  public void success() {
+    authorizedCallback.invoke(sasl.getAuthorizationID());
+    answer(new Success());
+    stop();
   }
 }

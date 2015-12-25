@@ -6,10 +6,15 @@
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c71e5450-21a0-4dac-9e17-b1ca74780897" name="Default" comment="BOSH initial version">
+    <list default="true" id="c71e5450-21a0-4dac-9e17-b1ca74780897" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/roster/InMemRoster.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/BOSHSession.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/BOSHSession.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/ConnectedPhase.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/ConnectedPhase.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/TBTSServer.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/TBTSServer.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/roster/MySQLRoster.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/roster/MySQLRoster.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/SSLHandshake.java" afterPath="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/SSLHandshake.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/xmpp/src/main/resources/tbts.conf" afterPath="$PROJECT_DIR$/server/xmpp/src/main/resources/tbts.conf" />
     </list>
     <ignored path="tbts.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -48,48 +53,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="BOSHServer.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/BOSHServer.java">
+      <file leaf-file-name="XMPPInFlow.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPInFlow.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="76" column="71" selection-start-line="76" selection-start-column="62" selection-end-line="76" selection-end-column="62" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ConnectedPhase.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/ConnectedPhase.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.6">
-              <caret line="36" column="58" selection-start-line="36" selection-start-column="30" selection-end-line="36" selection-end-column="30" />
-              <folding>
-                <element signature="e#1153#1154#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="BOSHSession.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/BOSHSession.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="83" column="0" selection-start-line="83" selection-start-column="0" selection-end-line="83" selection-end-column="0" />
-              <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="e#1991#1997#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="AuthorizationPhase.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="46" column="0" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
+              <caret line="27" column="41" selection-start-line="27" selection-start-column="3" selection-end-line="27" selection-end-column="3" />
               <folding />
             </state>
           </provider>
@@ -105,59 +73,95 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="tbts.conf" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/resources/tbts.conf">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.37974682">
+              <caret line="10" column="3" selection-start-line="10" selection-start-column="3" selection-end-line="10" selection-end-column="3" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="XMPPClientConnection.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="168" column="31" selection-start-line="168" selection-start-column="7" selection-end-line="168" selection-end-column="7" />
+              <folding>
+                <element signature="e#5165#5179#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SSLHandshake.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/SSLHandshake.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="21" column="13" selection-start-line="21" selection-start-column="13" selection-end-line="21" selection-end-column="13" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AuthorizationPhase.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="113" column="14" selection-start-line="113" selection-start-column="14" selection-end-line="113" selection-end-column="14" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="TBTSServer.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/TBTSServer.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="23" column="18" selection-start-line="23" selection-start-column="18" selection-end-line="23" selection-end-column="18" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#1606#1607#0" expanded="true" />
+                <element signature="e#1628#1629#0" expanded="true" />
+                <element signature="e#2714#2715#0" expanded="true" />
+                <element signature="e#2741#2742#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Roster.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/services/Roster.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="17" column="13" selection-start-line="17" selection-start-column="13" selection-end-line="17" selection-end-column="13" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="MySQLRoster.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/roster/MySQLRoster.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="36" column="36" selection-start-line="36" selection-start-column="36" selection-end-line="36" selection-end-column="36" />
+              <caret line="57" column="0" selection-start-line="24" selection-start-column="0" selection-end-line="57" selection-end-column="0" />
               <folding>
-                <marker date="1450348322000" expanded="true" signature="953:998" placeholder="INSERT INTO tbts.Users... " />
-                <marker date="1450348322000" expanded="true" signature="1266:1303" placeholder="SELECT * FRO... Users" />
+                <marker date="1451018309000" expanded="true" signature="979:1024" placeholder="INSERT INTO tbts.Users... " />
+                <marker date="1451018309000" expanded="true" signature="1292:1329" placeholder="SELECT * FRO... Users" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Query.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/Query.java">
+      <file leaf-file-name="InMemRoster.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/roster/InMemRoster.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="171" column="25" selection-start-line="171" selection-start-column="18" selection-end-line="171" selection-end-column="18" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="AkkaTools.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/akka/AkkaTools.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="56" column="25" selection-start-line="56" selection-start-column="25" selection-end-line="56" selection-end-column="25" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="StreamPipe.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/akka/StreamPipe.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="32" column="30" selection-start-line="32" selection-start-column="30" selection-end-line="32" selection-end-column="30" />
+              <caret line="36" column="50" selection-start-line="36" selection-start-column="50" selection-end-line="36" selection-end-column="50" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#722#723#0" expanded="true" />
-                <element signature="e#759#760#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="InputStreamSink.class" pinned="false" current-in-tab="false">
-        <entry file="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1.jar!/akka/stream/io/InputStreamSink.class">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-7.7777777">
-              <caret line="17" column="19" selection-start-line="17" selection-start-column="19" selection-end-line="17" selection-end-column="19" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -183,20 +187,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/ExpertRole.java" />
-        <option value="$PROJECT_DIR$/server/model/src/main/java/com/tbts/model/handlers/Archive.java" />
-        <option value="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/InMemArchive.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/roles/BrokerRole.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/modelNew/Offer.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/modelNew/Operations.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/JID.java" />
-        <option value="/Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/jre/lib/rt.jar!/sun/nio/ch/KQueueArrayWrapper.class" />
-        <option value="/Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/java/lang/Thread.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/stolen/StAXStreamConnector.java" />
-        <option value="$MAVEN_REPOSITORY$/com/sun/xml/bind/jaxb-impl/2.2.11/jaxb-impl-2.2.11-sources.jar!/com/sun/xml/bind/v2/runtime/unmarshaller/UnmarshallingContext.java" />
-        <option value="$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/DynamoDBArchive.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/resources/logging.properties" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/RoomAgent.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/TBTSRoomAgent.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/agents/LaborExchange.java" />
         <option value="$MAVEN_REPOSITORY$/tigase/jaxmpp-j2se/3.0.0/jaxmpp-j2se-3.0.0-sources.jar!/tigase/jaxmpp/j2se/connectors/bosh/BoshConnector.java" />
@@ -206,23 +196,19 @@
         <option value="$MAVEN_REPOSITORY$/com/typesafe/akka/akka-http-core-experimental_2.11/2.0-M1/akka-http-core-experimental_2.11-2.0-M1-sources.jar!/akka/http/javadsl/model/StatusCode.java" />
         <option value="$MAVEN_REPOSITORY$/com/typesafe/akka/akka-http-core-experimental_2.11/2.0-M1/akka-http-core-experimental_2.11-2.0-M1.jar!/akka/http/scaladsl/model/StatusCodes.class" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Bosh.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/TBTSServer.java" />
         <option value="$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1.jar!/akka/stream/stage/AbstractStage.class" />
         <option value="$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1.jar!/akka/stream/impl/fusing/GraphInterpreter.class" />
         <option value="$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1.jar!/akka/stream/stage/TimerGraphStageLogic.class" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/stanza/Stanza.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/Item.java" />
         <option value="$MAVEN_REPOSITORY$/com/typesafe/akka/akka-actor_2.11/2.4.0/akka-actor_2.11-2.4.0.jar!/akka/actor/ActorPaths.class" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/BoshBody.java" />
         <option value="$MAVEN_REPOSITORY$/com/typesafe/akka/akka-http-core-experimental_2.11/2.0-M1/akka-http-core-experimental_2.11-2.0-M1-sources.jar!/akka/http/javadsl/model/HttpResponse.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/dump.xml" />
         <option value="/Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/java/lang/String.java" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java" />
         <option value="$MAVEN_REPOSITORY$/com/typesafe/akka/akka-actor_2.11/2.4.0/akka-actor_2.11-2.4.0.jar!/akka/util/ByteString.class" />
         <option value="$MAVEN_REPOSITORY$/com/typesafe/akka/akka-http-core-experimental_2.11/2.0-M1/akka-http-core-experimental_2.11-2.0-M1-sources.jar!/akka/http/javadsl/model/HttpEntity.java" />
         <option value="$MAVEN_REPOSITORY$/com/typesafe/akka/akka-actor_2.11/2.4.0/akka-actor_2.11-2.4.0.jar!/akka/japi/JavaPartialFunction.class" />
-        <option value="$PROJECT_DIR$/server/xmpp/src/main/resources/tbts.conf" />
         <option value="$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1.jar!/akka/stream/io/InputStreamSink.class" />
         <option value="/Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/java/io/InputStream.java" />
         <option value="$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1.jar!/akka/stream/impl/io/InputStreamAdapter.class" />
@@ -234,6 +220,24 @@
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/akka/StreamPipe.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/ConnectedPhase.java" />
         <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/BOSHSession.java" />
+        <option value="$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/WFCException.java" />
+        <option value="$PROJECT_DIR$/server/libs/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/stax/StreamReaderImpl.java" />
+        <option value="$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/stax/StreamReaderImpl.java" />
+        <option value="$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/in/InputBootstrapper.java" />
+        <option value="$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/impl/ErrorConsts.java" />
+        <option value="$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/in/XmlScanner.java" />
+        <option value="$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/async/AsyncByteArrayScanner.java" />
+        <option value="$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/async/AsyncByteScanner.java" />
+        <option value="$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/async/AsyncByteBufferScanner.java" />
+        <option value="$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/sax/SAXParserImpl.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPInFlow.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/roster/MySQLRoster.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/TBTSServer.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/roster/InMemRoster.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/SSLHandshake.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java" />
+        <option value="$PROJECT_DIR$/server/xmpp/src/main/resources/tbts.conf" />
       </list>
     </option>
   </component>
@@ -423,6 +427,98 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="jaxmpp-j2se-3.0.0.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.fasterxml:aalto-xml:1.0.0" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="aalto-xml-1.0.0.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.fasterxml:aalto-xml:1.0.0" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="aalto-xml-1.0.0.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="aalto" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.fasterxml:aalto-xml:1.0.0" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="aalto-xml-1.0.0.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="aalto" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="stax" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Maven: com.fasterxml:aalto-xml:1.0.0" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="aalto-xml-1.0.0.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="aalto" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="async" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -823,6 +919,48 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="xmpp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tbts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="roster" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1265,8 +1403,6 @@
     <property name="Repository.Attach.Sources" value="true" />
     <property name="settings.editor.selected.configurable" value="reference.settings.project.maven.repository.indices" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
-    <property name="OverrideImplement.combined" value="true" />
-    <property name="OverrideImplement.overriding.sorted" value="false" />
     <property name="recentsLimit" value="5" />
     <property name="dynamic.classpath" value="false" />
     <property name="UNSCRAMBLE_LOG_FILE_LAST_URL" value="" />
@@ -1287,7 +1423,7 @@
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="1038" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder3" value="3" />
     <property name="js-jscs-nodeInterpreter" value="$USER_HOME$/.nvm/versions/node/v0.12.7/bin/node" />
-    <property name="extract.method.default.visibility" value="private" />
+    <property name="extract.method.default.visibility" value="public" />
   </component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
@@ -1298,7 +1434,7 @@
       <recent name="$PROJECT_DIR$/server/main/src" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.TBTSServer">
+  <component name="RunManager" selected="Application.ClientBot">
     <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin">
       <module name="" />
       <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -XX:MaxPermSize=250m" />
@@ -1772,7 +1908,7 @@
       <workItem from="1443112658540" duration="18885000" />
       <workItem from="1443627366773" duration="2463000" />
       <workItem from="1450882332455" duration="13528000" />
-      <workItem from="1450962579241" duration="17641000" />
+      <workItem from="1450962579241" duration="21719000" />
     </task>
     <task id="LOCAL-00001" summary="Server initial commit">
       <created>1443178411727</created>
@@ -1822,11 +1958,23 @@
       <option name="project" value="LOCAL" />
       <updated>1450991793245</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="BOSH batching was too aggressive">
+      <created>1450996576116</created>
+      <option name="number" value="00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1450996576116</updated>
+    </task>
+    <task id="LOCAL-00010" summary="More debug info for aalto illegal state investigation&#10;">
+      <created>1451018005630</created>
+      <option name="number" value="00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1451018005630</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="95793000" />
+    <option name="totallyTimeSpent" value="99871000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1280" height="724" extended-state="6" />
@@ -1842,15 +1990,15 @@
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.14580032" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3796446" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3796446" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.40710825" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.10753221" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3247934" sideWeight="0.49801785" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3227848" sideWeight="0.49801785" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.6392405" sideWeight="0.49801785" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3306962" sideWeight="0.49801785" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -1904,7 +2052,9 @@
     <MESSAGE value="Persistent rooms seems to work" />
     <MESSAGE value="Provisions lowered" />
     <MESSAGE value="BOSH initial version" />
-    <option name="LAST_COMMIT_MESSAGE" value="BOSH initial version" />
+    <MESSAGE value="BOSH batching was too aggressive" />
+    <MESSAGE value="More debug info for aalto illegal state investigation&#10;" />
+    <option name="LAST_COMMIT_MESSAGE" value="More debug info for aalto illegal state investigation&#10;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1927,8 +2077,14 @@
           <properties />
           <option name="timeStamp" value="41" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>jar://$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/async/AsyncByteBufferScanner.java</url>
+          <line>1059</line>
+          <properties />
+          <option name="timeStamp" value="154" />
+        </line-breakpoint>
       </breakpoints>
-      <option name="time" value="153" />
+      <option name="time" value="156" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -1937,119 +2093,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/expert/chrome/background/background.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-5.0">
-          <caret line="8" column="65" selection-start-line="8" selection-start-column="65" selection-end-line="8" selection-end-column="65" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/expert/chrome/js/strophe.register.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="121" column="10" selection-start-line="121" selection-start-column="10" selection-end-line="121" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Downloads/JabberHTTPBind-1.1.1/build.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/tigase/jaxmpp-j2se/3.0.0/jaxmpp-j2se-3.0.0-sources.jar!/tigase/jaxmpp/j2se/connectors/bosh/BoshConnector.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.09505703">
-          <caret line="32" column="13" selection-start-line="32" selection-start-column="13" selection-end-line="32" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/tigase/tigase-server/7.0.2/tigase-server-7.0.2-sources.jar!/tigase/server/bosh/BoshConnectionManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33333334">
-          <caret line="76" column="13" selection-start-line="76" selection-start-column="13" selection-end-line="76" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/tigase/tigase-server/7.0.2/tigase-server-7.0.2-sources.jar!/tigase/server/bosh/BoshConnectionManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="846" column="24" selection-start-line="846" selection-start-column="24" selection-end-line="846" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/tigase/jaxmpp-j2se/3.0.0/jaxmpp-j2se-3.0.0-sources.jar!/tigase/jaxmpp/j2se/connectors/bosh/BoshConnector.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="65" column="45" selection-start-line="65" selection-start-column="0" selection-end-line="65" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/expert/chrome/background/js/knugget-api.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="70" column="50" selection-start-line="70" selection-start-column="33" selection-end-line="70" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/XMPPServer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="16" column="13" selection-start-line="16" selection-start-column="13" selection-end-line="16" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-http-core-experimental_2.11/2.0-M1/akka-http-core-experimental_2.11-2.0-M1.jar!/akka/http/scaladsl/model/StatusCodes.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="61.51852">
-          <caret line="307" column="28" selection-start-line="307" selection-start-column="28" selection-end-line="307" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPInFlow.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="35" column="47" selection-start-line="35" selection-start-column="47" selection-end-line="35" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-http-core-experimental_2.11/2.0-M1/akka-http-core-experimental_2.11-2.0-M1-sources.jar!/akka/http/javadsl/model/StatusCode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="10" column="22" selection-start-line="10" selection-start-column="22" selection-end-line="10" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/com/typesafe/akka/akka-stream-experimental_2.11/2.0-M1/akka-stream-experimental_2.11-2.0-M1.jar!/akka/stream/stage/TimerGraphStageLogic.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.70439416">
-          <caret line="88" column="0" selection-start-line="88" selection-start-column="0" selection-end-line="88" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/commons/src/main/java/com/spbsu/commons/system/RuntimeUtils.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="349" column="0" selection-start-line="349" selection-start-column="0" selection-end-line="349" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#9892#9893#0" expanded="false" />
-            <element signature="e#9954#9955#0" expanded="false" />
-            <element signature="e#10001#10002#0" expanded="false" />
-            <element signature="e#10057#10058#0" expanded="false" />
-            <element signature="e#10102#10103#0" expanded="false" />
-            <element signature="e#10156#10157#0" expanded="false" />
-            <element signature="e#10201#10202#0" expanded="false" />
-            <element signature="e#10259#10260#0" expanded="false" />
-            <element signature="e#10297#10298#0" expanded="false" />
-            <element signature="e#10343#10344#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/util/xml/stolen/StAXStreamConnector.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -2168,7 +2211,7 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="1433" column="0" selection-start-line="1433" selection-start-column="0" selection-end-line="1433" selection-end-column="0" />
           <folding>
-            <element signature="e#55844#55845#0" expanded="true" />
+            <element signature="e#55844#55845#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -2189,14 +2232,6 @@
             <element signature="e#886#887#0" expanded="false" />
             <element signature="e#909#910#0" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="150" column="25" selection-start-line="150" selection-start-column="25" selection-end-line="150" selection-end-column="25" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2233,22 +2268,6 @@
           <folding>
             <element signature="e#0#7006#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/TBTSServer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="28" column="0" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/resources/tbts.conf">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="8" column="30" selection-start-line="8" selection-start-column="30" selection-end-line="8" selection-end-column="30" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2300,37 +2319,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="46" column="0" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/Roster.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="9" column="17" selection-start-line="9" selection-start-column="17" selection-end-line="9" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/roster/MySQLRoster.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="36" column="36" selection-start-line="36" selection-start-column="36" selection-end-line="36" selection-end-column="36" />
-          <folding>
-            <marker date="1450348322000" expanded="true" signature="953:998" placeholder="INSERT INTO tbts.Users... " />
-            <marker date="1450348322000" expanded="true" signature="1266:1303" placeholder="SELECT * FRO... Users" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/xmpp/control/register/Query.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="171" column="25" selection-start-line="171" selection-start-column="18" selection-end-line="171" selection-end-column="18" />
+          <caret line="171" column="18" selection-start-line="171" selection-start-column="18" selection-end-line="171" selection-end-column="18" />
           <folding />
         </state>
       </provider>
@@ -2350,7 +2342,7 @@
     <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/BOSHServer.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="76" column="71" selection-start-line="76" selection-start-column="62" selection-end-line="76" selection-end-column="62" />
+          <caret line="76" column="62" selection-start-line="76" selection-start-column="62" selection-end-line="76" selection-end-column="62" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -2370,11 +2362,185 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/ConnectedPhase.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6">
-          <caret line="36" column="58" selection-start-line="36" selection-start-column="30" selection-end-line="36" selection-end-column="30" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="41" column="44" selection-start-line="41" selection-start-column="44" selection-end-line="41" selection-end-column="44" />
           <folding>
+            <element signature="e#1082#1083#0" expanded="true" />
             <element signature="e#1153#1154#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/WFCException.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.4177215">
+          <caret line="26" column="13" selection-start-line="26" selection-start-column="13" selection-end-line="26" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/async/AsyncByteScanner.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="653" column="18" selection-start-line="653" selection-start-column="18" selection-end-line="653" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/async/AsyncByteBufferScanner.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="1074" column="38" selection-start-line="1074" selection-start-column="38" selection-end-line="1074" selection-end-column="38" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/sax/SAXParserImpl.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="15.8354435">
+          <caret line="475" column="28" selection-start-line="475" selection-start-column="28" selection-end-line="475" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/async/AsyncByteArrayScanner.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.40759495">
+          <caret line="955" column="29" selection-start-line="955" selection-start-column="29" selection-end-line="955" selection-end-column="29" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/in/XmlScanner.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33670887">
+          <caret line="1346" column="19" selection-start-line="1346" selection-start-column="19" selection-end-line="1346" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/impl/ErrorConsts.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33670887">
+          <caret line="39" column="31" selection-start-line="39" selection-start-column="31" selection-end-line="39" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/in/InputBootstrapper.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.4177215">
+          <caret line="41" column="33" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/stax/StreamReaderImpl.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33670887">
+          <caret line="789" column="42" selection-start-line="789" selection-start-column="42" selection-end-line="789" selection-end-column="42" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/com/fasterxml/aalto-xml/1.0.0/aalto-xml-1.0.0-sources.jar!/com/fasterxml/aalto/WFCException.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.4177215">
+          <caret line="26" column="14" selection-start-line="26" selection-start-column="14" selection-end-line="26" selection-end-column="14" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPInFlow.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="27" column="41" selection-start-line="27" selection-start-column="3" selection-end-line="27" selection-end-column="3" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/services/Roster.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="17" column="13" selection-start-line="17" selection-start-column="13" selection-end-line="17" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/Roster.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="9" column="17" selection-start-line="9" selection-start-column="17" selection-end-line="9" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/TBTSServer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="23" column="18" selection-start-line="23" selection-start-column="18" selection-end-line="23" selection-end-column="18" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#1606#1607#0" expanded="true" />
+            <element signature="e#1628#1629#0" expanded="true" />
+            <element signature="e#2714#2715#0" expanded="true" />
+            <element signature="e#2741#2742#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/roster/MySQLRoster.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="57" column="0" selection-start-line="24" selection-start-column="0" selection-end-line="57" selection-end-column="0" />
+          <folding>
+            <marker date="1451018309000" expanded="true" signature="979:1024" placeholder="INSERT INTO tbts.Users... " />
+            <marker date="1451018309000" expanded="true" signature="1292:1329" placeholder="SELECT * FRO... Users" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/roster/InMemRoster.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="36" column="50" selection-start-line="36" selection-start-column="50" selection-end-line="36" selection-end-column="50" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/SSLHandshake.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="21" column="13" selection-start-line="21" selection-start-column="13" selection-end-line="21" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/phase/AuthorizationPhase.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="113" column="14" selection-start-line="113" selection-start-column="14" selection-end-line="113" selection-end-column="14" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/java/com/tbts/server/xmpp/XMPPClientConnection.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="168" column="31" selection-start-line="168" selection-start-column="7" selection-end-line="168" selection-end-column="7" />
+          <folding>
+            <element signature="e#5165#5179#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/xmpp/src/main/resources/tbts.conf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.37974682">
+          <caret line="10" column="3" selection-start-line="10" selection-start-column="3" selection-end-line="10" selection-end-column="3" />
+          <folding />
         </state>
       </provider>
     </entry>

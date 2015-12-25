@@ -6,7 +6,6 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import com.tbts.model.handlers.Archive;
 import com.tbts.server.agents.LaborExchange;
-import com.tbts.server.roster.MySQLRoster;
 import com.tbts.server.services.Services;
 import com.tbts.server.agents.XMPP;
 import com.typesafe.config.Config;
@@ -27,7 +26,7 @@ public class TBTSServer {
   public static void main(String[] args) throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
     final Config load = ConfigFactory.parseResourcesAnySyntax("tbts.conf").withFallback(ConfigFactory.load()).resolve();
     config = new Cfg(load);
-    users = new MySQLRoster(config.db());
+    users = config.roster().newInstance();
     Archive.instance = config.archive().newInstance();
     LogManager.getLogManager().readConfiguration(TBTSServer.class.getResourceAsStream("/logging.properties"));
 
@@ -61,6 +60,7 @@ public class TBTSServer {
     private final String db;
     private final String domain;
     private final Class<? extends Archive> archive;
+    private final Class<? extends Roster> roster;
 
     public Cfg(Config load) throws ClassNotFoundException {
       final Config tbts = load.getConfig("tbts");
@@ -68,6 +68,8 @@ public class TBTSServer {
       domain = tbts.getString("domain");
       //noinspection unchecked
       archive = (Class<? extends Archive>) Class.forName(tbts.getString("archive"));
+      //noinspection unchecked
+      roster = (Class<? extends Roster>) Class.forName(tbts.getString("roster"));
     }
 
     public String domain() {
@@ -80,6 +82,10 @@ public class TBTSServer {
 
     public Class<? extends Archive> archive() {
       return archive;
+    }
+
+    public Class<? extends Roster> roster() {
+      return roster;
     }
   }
 }
