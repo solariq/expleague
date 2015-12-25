@@ -15,6 +15,7 @@ import com.tbts.xmpp.Stream;
 import org.xml.sax.SAXException;
 
 import javax.xml.stream.XMLStreamException;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.logging.Level;
@@ -30,6 +31,8 @@ public class XMPPInFlow extends PushPullStage<ByteString, Item> {
   private final Queue<Item> queue = new ArrayDeque<>();
   private final AsyncXMLStreamReader<AsyncByteArrayFeeder> asyncXml;
   private final AsyncJAXBStreamReader reader;
+  // TODO: remove this shit after investigating wrong epilog state in aalto
+  private final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
   public XMPPInFlow() {
     final AsyncXMLInputFactory factory = new InputFactoryImpl();
@@ -45,8 +48,10 @@ public class XMPPInFlow extends PushPullStage<ByteString, Item> {
     { // debug
       if (!s.isEmpty())
         log.finest(s);
+//      else return onPull(itemContext);
     }
     try {
+      baos.write(copy, 0, copy.length);
       asyncXml.getInputFeeder().feedInput(copy, 0, copy.length);
       reader.drain(o -> {
         if (o instanceof Item)
@@ -54,7 +59,7 @@ public class XMPPInFlow extends PushPullStage<ByteString, Item> {
       });
     }
     catch (XMLStreamException | SAXException e) {
-      throw new RuntimeException("On [" + s + "] message", e);
+      throw new RuntimeException("On [" + s + "] message in context [" + new String(baos.toByteArray()) + "]", e);
     }
 
     return onPull(itemContext);
