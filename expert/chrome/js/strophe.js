@@ -1458,7 +1458,7 @@ Strophe = {
     /* jshint ignore:start */
     log: function (level, msg)
     {
-        return;
+        console.log("strophe:: " + level + "\t\t" + msg)
     },
     /* jshint ignore:end */
 
@@ -2976,10 +2976,12 @@ Strophe.Connection.prototype = {
      */
     _dataRecv: function (req, raw)
     {
+        console.log('_dataRecv::' + req.data);
         Strophe.info("_dataRecv called");
         var elem = this._proto._reqToData(req);
         if (elem === null) { return; }
 
+        console.log('_dataRecv1::' + elem.outerHTML);
         if (this.xmlInput !== Strophe.Connection.prototype.xmlInput) {
             if (elem.nodeName === this._proto.strip && elem.childNodes.length) {
                 this.xmlInput(elem.childNodes[0]);

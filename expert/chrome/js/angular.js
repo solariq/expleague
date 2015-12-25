@@ -767,7 +767,6 @@
 
     $scope.init = function () {
         KNUGGET.sidebarController = $scope;
-        $scope.map = { center: { latitude: 45, longitude: -73 }, zoom: 8 };
         $scope.board.update();
         $scope.allowToShow.get(function(){});
         $scope.activeRequest.get(function(){});

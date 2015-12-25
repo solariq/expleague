@@ -7,8 +7,18 @@
 
             <form class="email" ng-submit="registerUser(event)" ng-class="{disabled: isRegisterInProgress}">
                 <fieldset>
-                    <input type="text" id="Username" name="Username" placeholder="Email address" value="" ng-model="registerForm.Username" ng-disabled="isRegisterInProgress" auto-focus>
-                    <input type="password" id="Password" name="Password" placeholder="Password" ng-model="registerForm.Password" ng-disabled="isRegisterInProgress">
+                    <input type="text" id="Username" name="Username" placeholder="Email" value="" ng-model="registerForm.Username" ng-disabled="isRegisterInProgress" auto-focus>
+                    <input type="password" id="Password" name="Password" placeholder="Пароль" ng-model="registerForm.Password" ng-disabled="isRegisterInProgress">
+                    <!--<input type="file" ng-file-select="onFileSelect($files, myModelObj)" >-->
+                    <!--<button type="file" ngf-select="uploadFiles($file, $invalidFiles)"-->
+                            <!--accept="image/*" ngf-max-height="1000" ngf-max-size="1MB">Выберите аватар</button>-->
+
+                    <button class="blue" ngf-select ng-model="picFile" accept="image/*">Выберите аватар</button>
+                    <div class="avatar">
+                        <img class="avatar" ng-src="{{avatar}}"/>
+                    </div>
+
+                    <input type="text" id="Nickname" name="Nickname" placeholder="Имя" ng-model="registerForm.Nickname" ng-disabled="isRegisterInProgress">
                 </fieldset>
 
                 <!--<fieldset class="forgot_password"><a href="{{domain}}Account/PasswordRecovery" target="_blank">Forgot password?</a></fieldset>-->
@@ -22,6 +32,7 @@
                     <span class="link_to_register"><a class="white" href="#" ng-click="enableLogin()">Вход</a></span>
                 </div>
             </form>
+
             <!--<form class="email" ng-submit="register(event)">-->
                 <!--<div class="controls">-->
                     <!--<button class="blue">Зарегистрироваться</button>-->

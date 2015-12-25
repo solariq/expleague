@@ -11,7 +11,7 @@
       "css": [ "css/main.css", "css/ng-img-crop.css", "css/chat.css"],
       "exclude_globs": [ "https://*bank*" ],
       "exclude_matches": [ "http://*/*", "https://*/*" ],
-      "js": [ "js/lib/jquery/jquery-2.1.1.min.js", "js/lib/jquery/jquery-ui-1.10.3.custom.min.js", "js/lib/jquery/jquery.mousewheel.js", "js/lib/jquery/jquery.nearest.js", "js/lib/jquery/jquery.scrollTo.js", "js/lib/angular/angular_mod.js", "js/lib/angular/angular.sortable.js", "js/lib/angular/angular-animate.js", "js/lib/angular/ng-img-crop.js",
+      "js": [ "js/lib/jquery/jquery-2.1.1.min.js", "js/lib/jquery/jquery-ui-1.10.3.custom.min.js", "js/lib/jquery/jquery.mousewheel.js", "js/lib/jquery/jquery.nearest.js", "js/lib/jquery/jquery.scrollTo.js", "js/lib/angular/angular_mod.js", "js/lib/angular/angular.sortable.js", "js/lib/angular/angular-animate.js", "js/lib/angular/ng-img-crop.js", "js/lib/angular/ng-file-upload.js",
          "js/lib/ng-tags-input.min.js", "js/lib/antiscroll.min.js", "js/lib/dragster.min.js", "config/sidebar-config.js", "js/utils/utils.js", "js/utils/knuggetPlugins.js", "js/sidebar.js", "config/sidebar-app.js", "js/angular.js", "js/extension.js", "js/events.js", "js/factories/utils.js", "js/factories/dialog.js", "js/factories/fakemodules.js", "js/services/services.js", "js/directives/dragdrop.js", "js/directives/loginRegister.js", "js/directives/dialog.js", "js/directives/utils.js"],
       "matches": [ "http://*/*", "https://*/*" ],
       "run_at": "document_start"

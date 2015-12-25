@@ -1,7 +1,30 @@
 ﻿knuggetSidebarDirectives.directive('login', function () {
     return {
         restrict: 'A',
-        controller: ['$scope', function ($scope) {
+        controller: ['$scope', 'Upload', function ($scope, Upload) {
+
+            $scope.uploadFiles = function($files, myModelObj) {
+                //$http.uploadFile({
+                //    url: 'my/upload/url',
+                //    file: $file[0] // for single file
+                //    //files: $files  // for multiple files
+                //}).then(function(data) {
+                //    myModelObj.fileId = data;
+                //});
+                alert('on set');
+            };
+
+            var reader = new FileReader();
+
+            reader.onloadend = function () {
+                $scope.avatar = reader.result;
+            };
+
+            $scope.$watch('picFile', function() {
+                if ($scope.picFile) {
+                    reader.readAsDataURL($scope.picFile);
+                }
+            });
 
             $scope.$parent.isLoginForm = $scope.$parent.isLoginForm == undefined ? true : $scope.$parent.isLoginForm;
             $scope.$parent.isRegisterForm = $scope.$parent.isRegisterForm == undefined ? false : $scope.$parent.isRegisterForm;
@@ -25,6 +48,7 @@
                 }
 
                 $scope.isRegisterInProgress = true;
+                $scope.registerForm.avatar = $scope.avatar;
 
                 KNUGGET.api("registerUser", $scope.registerForm, function (response) {
 
@@ -130,3 +154,8 @@
         }]
     };
 });
+
+
+/*
+ Single Image upload
+ */

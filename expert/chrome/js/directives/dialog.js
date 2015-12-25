@@ -146,6 +146,30 @@ knuggetSidebarDirectives.directive("showQuestion", ['dialogService', '$state', f
                 return dialogService.request.img != undefined && dialogService.request.img != null;
             };
 
+            $scope.hasMap = function() {
+                return dialogService.request.map != undefined && dialogService.request.map != null;
+            };
+
+            $scope.getMap = function() {
+                return dialogService.request.map;
+            };
+
+            $scope.getMarker = function() {
+                marker = {
+                    latitude: 59.977755,
+                    longitude: 30.3343742
+                    //longitude: dialogService.request.map.center.longitude,
+                    //id: 0
+                };
+                return [marker];
+            };
+
+            $scope.getOptions = function() {
+                return {
+                    scrollwheel: false
+                };
+            };
+
             $scope.getImg = function() {
                 return dialogService.request.img;
             };
@@ -157,6 +181,15 @@ knuggetSidebarDirectives.directive("showQuestion", ['dialogService', '$state', f
             $scope.getRequest = function() {
                 return dialogService.request;
             };
+
+            $scope.closeMap = function() {
+                $scope.nextDialog('question');
+            };
+
+            $scope.openMap = function() {
+                dialogService.template = KNUGGET.config.sidebarTemplatesRoot + "map";
+                dialogService.dialogIsActive = true;
+            }
 
         }]
     };
