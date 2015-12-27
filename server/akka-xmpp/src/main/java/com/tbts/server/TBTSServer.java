@@ -4,10 +4,10 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
-import com.tbts.model.handlers.Archive;
+import com.tbts.dao.Archive;
 import com.tbts.server.agents.LaborExchange;
-import com.tbts.server.services.Services;
 import com.tbts.server.agents.XMPP;
+import com.tbts.server.services.Services;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 

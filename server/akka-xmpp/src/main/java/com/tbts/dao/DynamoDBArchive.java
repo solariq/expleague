@@ -5,11 +5,6 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
-import com.tbts.model.Client;
-import com.tbts.model.handlers.Archive;
-import com.tbts.model.impl.ClientImpl;
-import com.tbts.model.impl.RoomImpl;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +14,7 @@ import java.util.List;
  * Date: 21.10.15
  * Time: 14:29
  */
+@SuppressWarnings("unused")
 public class DynamoDBArchive extends Archive {
   public static final String TBTS_ROOMS = "tbts-rooms";
   private final DynamoDBMapper mapper;
@@ -53,13 +49,6 @@ public class DynamoDBArchive extends Archive {
           break;
       }
     }
-  }
-
-  @Test
-  public void testSave() {
-    Archive archive = new DynamoDBArchive();
-    Client client = new ClientImpl("client@localhost");
-    archive.log(new RoomImpl("room@muc.localhost", client), client.id(), "Hello world");
   }
 
   @SuppressWarnings("unused")

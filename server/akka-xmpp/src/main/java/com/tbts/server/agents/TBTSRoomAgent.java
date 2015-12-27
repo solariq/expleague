@@ -1,6 +1,6 @@
 package com.tbts.server.agents;
 
-import com.tbts.model.handlers.Archive;
+import com.tbts.dao.Archive;
 import com.tbts.modelNew.Offer;
 import com.tbts.modelNew.Operations;
 import com.tbts.util.akka.UntypedActorAdapter;

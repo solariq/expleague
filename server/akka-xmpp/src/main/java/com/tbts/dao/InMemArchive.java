@@ -1,6 +1,5 @@
 package com.tbts.dao;
 
-import com.tbts.model.handlers.Archive;
 
 import java.util.ArrayList;
 import java.util.HashMap;
