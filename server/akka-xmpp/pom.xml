@@ -117,7 +117,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <minimizeJar/>
+                            <!--<minimizeJar/>-->
                             <finalName>tbts-xmpp</finalName>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>allinone</shadedClassifierName>
