@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="SqlDialectMappings">
-    <file url="file://$PROJECT_DIR$/server/database/tbts-schema.sql" dialect="MySQL" />
-    <file url="file://$PROJECT_DIR$/server/model/src/main/java/com/tbts/dao/sql/MySQLDAO.java" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/server/akka-xmpp/src/main/resources/tbts-schema.sql" dialect="MySQL" />
   </component>
 </project>

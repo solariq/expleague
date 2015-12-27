@@ -12,5 +12,7 @@ hs_err_pid*
 
 output/
 server/logs/*
-server/etc/config-dump.properties
 .idea/workspace.xml
+server/snapshots
+server/target
+server/logs

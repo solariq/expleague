@@ -7,10 +7,8 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/server/commons/pom.xml" />
-        <option value="$PROJECT_DIR$/server/tigase-component/pom.xml" />
         <option value="$PROJECT_DIR$/server/xmpp-bots/pom.xml" />
         <option value="$PROJECT_DIR$/server/pom.xml" />
-        <option value="$PROJECT_DIR$/server/model/pom.xml" />
       </list>
     </option>
   </component>
