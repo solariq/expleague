@@ -90,7 +90,10 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
 
         //this.connection = new Strophe.Connection('http://expleague.com:5280/http-bind');
         //this.connection = new Strophe.Connection('http://' + this.host + ':5280/');
-        this.connection = new Strophe.Connection('http://' + this.host + ':5280/');
+        if (this.host == 'localhost')
+            this.connection = new Strophe.Connection('http://' + this.host + ':5280/');
+        else
+            this.connection = new Strophe.Connection('http://' + this.host + '/http-bind');
 
         this.register = function (regCallback) {
             conn = this.connection;
