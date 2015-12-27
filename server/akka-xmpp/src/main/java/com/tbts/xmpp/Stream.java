@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("unused")
 @XmlRootElement
 public class Stream {
+  private static final Logger log = Logger.getLogger(Stream.class.getName());
   public static final String NS = "http://etherx.jabber.org/streams";
   @XmlAttribute
   private String version;
@@ -56,6 +58,7 @@ public class Stream {
           .map(resource -> {
             try {
               final String name = resource.substring(0, resource.length() - ".class".length()).replace('/', '.');
+              log.finest("Loading " + name + " to JAXB context");
               return Class.forName(name);
             }
             catch (ClassNotFoundException e) {
