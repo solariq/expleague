@@ -54,10 +54,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
+        <module name="akka-xmpp" />
         <module name="xmpp" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="akka-xmpp" target="1.5" />
       <module name="commons" target="1.8" />
       <module name="fastxml" target="1.8" />
       <module name="model" target="1.8" />
