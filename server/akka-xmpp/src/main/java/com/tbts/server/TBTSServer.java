@@ -4,7 +4,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
-import com.tbts.dao.Archive;
+import com.tbts.server.dao.Archive;
 import com.tbts.server.agents.LaborExchange;
 import com.tbts.server.agents.XMPP;
 import com.tbts.server.services.Services;
@@ -24,7 +24,7 @@ public class TBTSServer {
   private static Roster users;
 
   public static void main(String[] args) throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-    final Config load = ConfigFactory.parseResourcesAnySyntax("tbts.conf").withFallback(ConfigFactory.load()).resolve();
+    final Config load = ConfigFactory.load();
     config = new Cfg(load);
     users = config.roster().newInstance();
     Archive.instance = config.archive().newInstance();

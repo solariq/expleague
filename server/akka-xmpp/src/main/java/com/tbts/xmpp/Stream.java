@@ -1,7 +1,7 @@
 package com.tbts.xmpp;
 
 import com.spbsu.commons.system.RuntimeUtils;
-import com.tbts.modelNew.Operations;
+import com.tbts.model.Operations;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;

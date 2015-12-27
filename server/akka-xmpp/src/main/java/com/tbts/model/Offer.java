@@ -1,4 +1,4 @@
-package com.tbts.modelNew;
+package com.tbts.model;
 
 import com.tbts.xmpp.Item;
 import com.tbts.xmpp.JID;

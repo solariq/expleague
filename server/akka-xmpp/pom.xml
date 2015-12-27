@@ -117,11 +117,19 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>com.tbts.server.TBTSServer</mainClass>
+                                </manifest>
+                            </archive>
+                            <finalName>tbts-xmpp</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>allinone</shadedClassifierName>
                             <artifactSet>
                                 <includes>
-                                    <include>*:*</include>
+                                    <include>*</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
@@ -133,6 +141,32 @@
                     </execution>
                 </executions>
             </plugin>
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-assembly-plugin</artifactId>-->
+                <!--<version>2.4</version>-->
+                <!--<configuration>-->
+                    <!--<archive>-->
+                        <!--<manifest>-->
+                            <!--<mainClass>com.tbts.server.TBTSServer</mainClass>-->
+                        <!--</manifest>-->
+                    <!--</archive>-->
+                    <!--<descriptorRefs>-->
+                        <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
+                    <!--</descriptorRefs>-->
+                    <!--<finalName>tbts-xmpp</finalName>-->
+                    <!--<appendAssemblyId>true</appendAssemblyId>-->
+                    <!--<classifier>allinone</classifier>-->
+                <!--</configuration>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>single</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
         </plugins>
     </build>
 </project>

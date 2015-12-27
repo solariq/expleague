@@ -1,6 +1,6 @@
 package com.tbts.server.roster;
 
-import com.tbts.dao.MySQLOps;
+import com.tbts.server.dao.MySQLOps;
 import com.tbts.server.JabberUser;
 import com.tbts.server.Roster;
 import com.tbts.server.TBTSServer;

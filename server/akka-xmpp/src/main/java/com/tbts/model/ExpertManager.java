@@ -1,4 +1,4 @@
-package com.tbts.modelNew;
+package com.tbts.model;
 
 import com.spbsu.commons.util.Pair;
 import com.tbts.server.agents.roles.ExpertRole;

@@ -1,4 +1,4 @@
-package com.tbts.dao;
+package com.tbts.server.dao;
 
 /**
  * User: solar

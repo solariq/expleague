@@ -8,7 +8,7 @@
     namespace = Operations.NS,
     elementFormDefault = XmlNsForm.UNQUALIFIED,
     xmlns = @XmlNs(prefix = "", namespaceURI = Operations.NS))
-package com.tbts.modelNew;
+package com.tbts.model;
 
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlNsForm;

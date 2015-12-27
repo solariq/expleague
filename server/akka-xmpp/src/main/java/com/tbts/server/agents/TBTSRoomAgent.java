@@ -1,8 +1,8 @@
 package com.tbts.server.agents;
 
-import com.tbts.dao.Archive;
-import com.tbts.modelNew.Offer;
-import com.tbts.modelNew.Operations;
+import com.tbts.server.dao.Archive;
+import com.tbts.model.Offer;
+import com.tbts.model.Operations;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.Item;
 import com.tbts.xmpp.JID;
