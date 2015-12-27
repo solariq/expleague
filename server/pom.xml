@@ -35,6 +35,9 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                    <finalName>tbts-xmpp</finalName>
+                    <appendAssemblyId>true</appendAssemblyId>
+                    <!--<classifier></classifier>-->
                 </configuration>
                 <executions>
                     <execution>
