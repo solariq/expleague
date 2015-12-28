@@ -1,5 +1,7 @@
 package com.tbts.util.xml;
 
+import com.tbts.xmpp.Stream;
+
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -144,6 +146,6 @@ public class LazyNSXMLStreamWriter implements XMLStreamWriter {
   }
 
   public void writeStartElement(String prefix, String localName, String namespaceURI) throws XMLStreamException {
-    delegate.writeStartElement("", localName, namespaceURI);
+    delegate.writeStartElement(Stream.NS.equals(namespaceURI) ? "stream" : "", localName, namespaceURI);
   }
 }

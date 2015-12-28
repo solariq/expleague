@@ -21,8 +21,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: solar
@@ -59,7 +59,7 @@ public class Item implements Serializable, Cloneable {
   }
 
 
-  private static Map<Class<? extends Item>, String> nsMap = new HashMap<>();
+  private static Map<Class<? extends Item>, String> nsMap = new ConcurrentHashMap<>();
   public static <T extends Item> String ns(T item) {
     String cached = nsMap.get(item.getClass());
     if (cached == null) {
