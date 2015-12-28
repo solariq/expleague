@@ -58,13 +58,26 @@ public class Operations {
 
   @XmlRootElement
   public static class Resume extends Item {
+    @XmlElementRef
+    private Offer offer;
     public Resume() { }
+
+    public Resume(Offer offer) {
+      this.offer = offer;
+    }
+
+    public Offer offer() {
+      return offer;
+    }
   }
 
   @XmlRootElement
   public static class Cancel extends Item {
     public Cancel(){ }
   }
+
+  @XmlRootElement
+  public static class Start extends Item {}
 
   @XmlRootElement
   public static class Done extends Item {}

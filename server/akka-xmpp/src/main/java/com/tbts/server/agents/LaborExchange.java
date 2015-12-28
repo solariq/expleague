@@ -11,12 +11,14 @@ import akka.persistence.UntypedPersistentActor;
 import com.spbsu.commons.system.RuntimeUtils;
 import com.tbts.model.Offer;
 import com.tbts.model.Operations;
+import com.tbts.model.ServiceStatus;
 import com.tbts.server.TBTSServer;
 import com.tbts.server.agents.roles.BrokerRole;
 import com.tbts.server.agents.roles.ExpertRole;
 import com.tbts.util.akka.AkkaTools;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.JID;
+import com.tbts.xmpp.stanza.Presence;
 import scala.collection.JavaConversions;
 
 import java.util.*;
@@ -107,7 +109,7 @@ public class LaborExchange extends UntypedPersistentActor {
     );
   }
 
-  public static ActorRef registerRole(JID jid, ActorContext context) {
+  public static ActorRef registerExpert(JID jid, ActorContext context) {
     return AkkaTools.ask(reference(context), jid);
   }
 
@@ -125,9 +127,7 @@ public class LaborExchange extends UntypedPersistentActor {
    */
   public static class Dpt extends UntypedActorAdapter {
     public void invoke(JID jid) {
-      sender().tell(
-          AkkaTools.getOrCreate(jid.bare().toString(), context(), () -> Props.create(ExpertRole.class)),
-          self());
+      sender().tell(AkkaTools.getOrCreate(jid.bare().toString(), context(), () -> Props.create(ExpertRole.class)), self());
     }
 
     public void invoke(Object o) {
@@ -136,6 +136,22 @@ public class LaborExchange extends UntypedPersistentActor {
       JavaConversions.asJavaCollection(context().children()).stream().forEach(
           expert -> expert.forward(o, context())
       );
+    }
+
+    public int readyCount = 0;
+    public void invoke(ExpertRole.State state) {
+      switch (state) {
+        case READY:
+          readyCount++;
+          break;
+        case OFFLINE:
+        case CHECK:
+        case INVITE:
+        case BUSY:
+          readyCount--;
+          break;
+      }
+      XMPP.send(new Presence(XMPP.jid(), readyCount != 0, new ServiceStatus(readyCount)), context());
     }
 
     public static JID jid(ActorRef ref) {

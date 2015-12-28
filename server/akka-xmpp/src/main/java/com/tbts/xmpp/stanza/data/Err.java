@@ -49,7 +49,7 @@ import javax.xml.namespace.QName;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "error", namespace = "urn:ietf:params:xml:ns:xmpp-stanzas")
-public class Err {
+public class Err extends Item {
   @XmlElement(namespace = "urn:ietf:params:xml:ns:xmpp-stanzas")
   private Text text;
 

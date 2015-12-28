@@ -58,7 +58,7 @@ public class ConnectedPhase extends UntypedActorAdapter {
           final ActorRef role;
           switch (jid().resource()) {
             case "expert":
-              role = LaborExchange.registerRole(jid.bare(), context());
+              role = LaborExchange.registerExpert(jid.bare(), context());
               break;
             default:
               role = null;

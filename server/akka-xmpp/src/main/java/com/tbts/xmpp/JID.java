@@ -47,6 +47,7 @@ public class JID {
     return resource == null ? bare : bare + "/" + resource;
   }
 
+  @SuppressWarnings("unused") // needed for unmarshaling inside JAXB
   public void setAddr(String addr) {
     //noinspection ResultOfMethodCallIgnored
     URI.create(addr); // check syntax
@@ -67,16 +68,16 @@ public class JID {
     return result;
   }
 
-  public boolean hasResource() {
-    return resource != null;
-  }
-
   public boolean equals(Object obj) {
     if (!(obj instanceof JID))
       return false;
     final JID jid = (JID) obj;
     //noinspection StringEquality
     return jid.bare == bare && (resource == jid.resource || (resource != null && resource.equals(jid.resource)));
+  }
+
+  public boolean hasResource() {
+    return resource != null;
   }
 
   public static JID parse(String addr) {

@@ -34,8 +34,11 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
     when(State.OFFLINE,
         matchEvent(
             Presence.class,
-            (presence, zero) -> presence.available(),
-            (presence, zero) -> goTo(State.READY)
+            (presence, task) -> presence.available(),
+            (presence, zero) -> zero == null ? goTo(State.READY) : goTo(State.BUSY)
+        ).event(Operations.Resume.class,
+            (resume, zero) -> zero == null,
+            (resume, zero) -> stay().using(Pair.create(resume.offer(), sender()))
         ));
     when(State.READY,
         matchEvent(
@@ -48,7 +51,10 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
             }
         ).event(
             Presence.class,
-            (presence, offer) -> presence.available() ? stay() : goTo(State.OFFLINE)
+            (presence, task) -> presence.available() ? stay() : goTo(State.OFFLINE)
+        ).event(Operations.Resume.class,
+            (resume, zero) -> zero == null,
+            (resume, zero) -> goTo(State.BUSY).using(Pair.create(resume.offer(), sender()))
         )
     );
     when(State.CHECK,
@@ -61,7 +67,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
               return stay().using(task);
             }
         ).event( // expert canceled check
-            (msg, task) -> msg instanceof Timeout || (msg instanceof Message && ((Message)msg).get(Operations.Cancel.class) != null),
+            (msg, task) -> msg instanceof Timeout || (msg instanceof Message && ((Message) msg).get(Operations.Cancel.class) != null),
             (msg, task) -> {
               if (msg instanceof Timeout)
                 XMPP.send(new Message(XMPP.jid(), jid(), task.first, new Operations.Cancel()), context());
@@ -81,10 +87,10 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
             }
         ).event(
             Presence.class,
-            (presence, offer) -> !presence.available(),
-            (presence, offer) -> {
-              if (offer != null)
-                offer.getSecond().tell(new Operations.Cancel(), self());
+            (presence, task) -> !presence.available(),
+            (presence, task) -> {
+              if (task != null)
+                task.getSecond().tell(new Operations.Cancel(), self());
               timer.cancel();
               return goTo(State.OFFLINE).using(null);
             }
@@ -97,6 +103,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
               if (task.getFirst().room().bareEq(presence.to())) {
                 timer.cancel();
                 task.second.tell(presence, self());
+                XMPP.send(new Message(jid(), task.first.room(), new Operations.Start()), context());
                 return goTo(State.BUSY);
               }
               return stay();
@@ -113,9 +120,10 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
     when(State.BUSY,
         matchEvent(
             Presence.class,
-            (presence, offer) -> {
-              if (presence.available() && (presence.to() == null || !presence.to().bareEq(offer.first.room()))) {
-                offer.second.tell(new Operations.Done(), self());
+            (presence, task) -> {
+              if (presence.available() && (presence.to() == null || !presence.to().bareEq(task.first.room()))) {
+                task.second.tell(new Operations.Done(), self());
+                XMPP.send(new Message(jid(), task.first.room(), new Operations.Done()), context());
                 return goTo(State.READY).using(null);
               }
               return stay();
@@ -125,11 +133,21 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
         )
     );
 
+    whenUnhandled(matchEvent(Operations.Resume.class,
+        (resume, task) -> {
+          XMPP.send(new Message(jid(), resume.offer().room(), new Operations.Done()), context());
+          return stay().replying(new Operations.Cancel());
+        }
+    ));
+
 //    whenUnhandled(matchAnyEvent((state, data) -> stay().replying(new Operations.Cancel())));
 
     onTransition((from, to) -> {
       final Offer first = nextStateData() != null ? nextStateData().first : null;
       ExpertManager.instance().record(jid()).entry(first, to);
+      if (from != to) {
+        context().parent().tell(to, self());
+      }
     });
 
     onTransition((from, to) -> {

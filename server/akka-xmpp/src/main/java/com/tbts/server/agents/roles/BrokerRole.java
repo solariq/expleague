@@ -7,6 +7,8 @@ import com.tbts.model.ExpertManager;
 import com.tbts.model.Offer;
 import com.tbts.model.Operations;
 import com.tbts.server.agents.LaborExchange;
+import com.tbts.server.agents.TBTSRoomAgent;
+import com.tbts.util.akka.AkkaTools;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Presence;
 
@@ -64,9 +66,19 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
     when(State.UNEMPLOYED,
         matchEvent(Offer.class,
             (offer, zero) -> {
-              LaborExchange.experts(context()).tell(offer, self());
-              final Task task = new Task(offer);
-              return goTo(State.STARVING).using(task).replying(new Operations.Ok());
+              final TBTSRoomAgent.Status status = AkkaTools.ask(sender(), TBTSRoomAgent.Status.class);
+              if (status.worker() != null) {
+                final ActorRef expert = LaborExchange.registerExpert(status.worker(), context());
+                expert.tell(new Operations.Resume(offer), self());
+                final Task task = new Task(offer);
+                task.onTask = status.worker();
+                return goTo(State.WORK_TRACKING).using(task);
+              }
+              else {
+                final Task task = new Task(offer);
+                LaborExchange.experts(context()).tell(offer, self());
+                return goTo(State.STARVING).using(task).replying(new Operations.Ok());
+              }
             }
         )
     );
@@ -125,6 +137,12 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
         matchEvent(Operations.Done.class,
             (done, task) -> task.onTask(JID.parse(sender().path().name())),
             (done, task) -> goTo(State.UNEMPLOYED).using(null)
+        ).event(Operations.Cancel.class,
+            (cancel, task) -> task.onTask(JID.parse(sender().path().name())),
+            (cancel, task) -> {
+              LaborExchange.experts(context()).tell(task.offer, self());
+              return goTo(State.STARVING).using(task.enter(null));
+            }
         ).event(Offer.class,
             (offer, task) -> stay().replying(new Operations.Cancel())
         )

@@ -1,6 +1,8 @@
 package com.tbts.server.agents;
 
-import akka.actor.*;
+import akka.actor.ActorContext;
+import akka.actor.ActorRef;
+import akka.actor.Props;
 import akka.pattern.AskableActorSelection;
 import akka.util.Timeout;
 import com.tbts.server.TBTSServer;
@@ -9,12 +11,12 @@ import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Presence;
 import com.tbts.xmpp.stanza.Stanza;
+import scala.collection.JavaConversions;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,9 +38,21 @@ public class XMPP extends UntypedActorAdapter {
   }
 
   public void invoke(Presence presence) {
-    status.put(presence.from(), presence);
-    if (presence.to() != null) {
-      allocate(presence.to()).tell(presence, self());
+    final JID from = presence.from().bare();
+    final Presence known = status.get(from);
+    if (!presence.equals(known)) {
+      status.put(from, presence);
+      for (final ActorRef agent : JavaConversions.asJavaCollection(context().children())) {
+        final JID jid = JID.parse(agent.path().name());
+        if (XMPP.jid().bareEq(from) || subscription.getOrDefault(jid, Collections.emptySet()).contains(from)) {
+          final Presence copy = presence.copy();
+          copy.to(jid);
+          agent.tell(copy, self());
+        }
+        else if (jid.equals(presence.to())) {
+          agent.tell(presence, self());
+        }
+      }
     }
   }
 
@@ -68,5 +82,30 @@ public class XMPP extends UntypedActorAdapter {
   private static JID myJid = JID.parse(TBTSServer.config().domain());
   public static JID jid() {
     return myJid;
+  }
+
+  public Map<JID, Set<JID>> subscription = new HashMap<>();
+  public void invoke(Subscribe subscribe) {
+    if (!XMPP.jid().bareEq(subscribe.forJid)) {
+      subscription.compute(subscribe.from, (jid, set) -> {
+        if (set == null)
+          set = new HashSet<>();
+        set.add(subscribe.forJid);
+        return set;
+      });
+    }
+    status.computeIfPresent(subscribe.forJid, (jid, presence) -> {
+      sender().tell(presence, self());
+      return presence;
+    });
+  }
+  public static class Subscribe {
+    private final JID forJid;
+    private final JID from;
+
+    public Subscribe(JID forJid, JID from) {
+      this.forJid = forJid;
+      this.from = from;
+    }
   }
 }

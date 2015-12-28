@@ -1,7 +1,7 @@
-POST /webclient HTTP/1.1
-Host: localhost
+POST /http-bind HTTP/1.1
+Host: test.expleague.com
 Accept-Encoding: gzip, deflate
 Content-Type: text/xml; charset=utf-8
-Content-Length: 226
+Content-Length: 69
 
-<body content='text/xml; charset=utf-8' from='user@example.com' hold='1' rid='1573741820' to='example.com' route='xmpp:example.com:9999' ver='1.6' wait='60' ack='1' xml:lang='en' xmlns='http://jabber.org/protocol/httpbind'/>
+<body xmlns="http://jabber.org/protocol/httpbind" rid="798558081"/>

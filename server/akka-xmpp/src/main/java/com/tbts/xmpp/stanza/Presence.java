@@ -8,12 +8,14 @@
 
 package com.tbts.xmpp.stanza;
 
+import com.tbts.xmpp.Item;
 import com.tbts.xmpp.JID;
-import com.tbts.xmpp.stanza.data.Err;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -61,19 +63,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement
 public class Presence extends Stanza {
-  @XmlElement
-  private String show;
-  @XmlElement
-  private Status status;
-  @XmlElement
-  private Integer priority;
-
   @XmlAttribute
   private PresenceType type;
 
   @XmlAnyElement(lax = true)
-  protected Object any;
-  protected Err error;
+  protected List<Item> any;
 
   @XmlAttribute(name = "lang", namespace = "http://www.w3.org/XML/1998/namespace")
   @XmlSchemaType(name = "language")
@@ -81,17 +75,47 @@ public class Presence extends Stanza {
 
   public Presence() {}
 
-  public Presence(JID jid, boolean available) {
-    from = jid;
+  public Presence(JID from, boolean available) {
+    this.from = from;
+    type = available ? PresenceType.AVAILABLE : PresenceType.UNAVAILABLE;
+  }
+
+  public Presence(JID from, boolean available, Item... contents) {
+    this.from = from;
     type = available ? PresenceType.AVAILABLE : PresenceType.UNAVAILABLE;
   }
 
   public boolean available() {
-    return (type == null && status == null) || type == PresenceType.AVAILABLE || (status != null && "available".equals(status.value));
+    return (type == null && status() == null) || type == PresenceType.AVAILABLE || "available".equals(status().value);
   }
 
   public Status status() {
+    final Status status = get(Status.class);
     return status != null ? status : new Status(type == null ? PresenceType.AVAILABLE : type);
+  }
+
+  public <T extends Item> T get(Class<T> clazz) {
+    final Optional<Item> any = this.any.stream().filter(i -> clazz.isAssignableFrom(i.getClass())).findAny();
+    //noinspection unchecked
+    return any.isPresent() ? (T)any.get() : null;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Presence)) return false;
+    Presence presence = (Presence) o;
+
+    if (type != presence.type) return false;
+    return any.equals(presence.any);
+
+  }
+
+  @Override
+  public int hashCode() {
+    int result = type != null ? type.hashCode() : 0;
+    result = 31 * result + any.hashCode();
+    return result;
   }
 
   /**
@@ -113,7 +137,7 @@ public class Presence extends Stanza {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlRootElement(name = "status")
-  public static class Status {
+  public static class Status extends Item {
     @XmlValue
     protected String value;
     @XmlAttribute(name = "lang", namespace = "http://www.w3.org/XML/1998/namespace")
@@ -140,6 +164,58 @@ public class Presence extends Stanza {
       if (!(o instanceof Status)) return false;
       Status status = (Status) o;
       return value.equals(status.value);
+    }
+
+    @Override
+    public int hashCode() {
+      return value.hashCode();
+    }
+  }
+
+  @SuppressWarnings("unused")
+  @XmlRootElement
+  public static class Show extends Item {
+    @XmlValue
+    private String value;
+
+    public String value() {
+      return value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof Show)) return false;
+
+      Show show = (Show) o;
+
+      return value.equals(show.value);
+    }
+
+    @Override
+    public int hashCode() {
+      return value.hashCode();
+    }
+  }
+
+  @SuppressWarnings("unused")
+  @XmlRootElement
+  public static class Priority extends Item {
+    @XmlValue
+    private Integer value;
+
+    public int value() {
+      return value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof Priority)) return false;
+
+      Priority priority = (Priority) o;
+
+      return value.equals(priority.value);
     }
 
     @Override

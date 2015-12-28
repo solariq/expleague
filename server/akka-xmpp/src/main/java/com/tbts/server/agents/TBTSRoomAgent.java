@@ -1,8 +1,8 @@
 package com.tbts.server.agents;
 
-import com.tbts.server.dao.Archive;
 import com.tbts.model.Offer;
 import com.tbts.model.Operations;
+import com.tbts.server.dao.Archive;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.Item;
 import com.tbts.xmpp.JID;
@@ -112,15 +112,29 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     Archive.instance().log(jid.local(), stanza.from().toString(), stanza.xmlString());
   }
 
-  public void invoke(View type) {
-    switch(type) {
-      case ALL:
-        sender().tell(Collections.unmodifiableList(snapshot), self());
-        break;
+  public void invoke(Class<?> c) {
+    if (Status.class.equals(c)) {
+      Status result = new Status();
+      JID onTask = null;
+      for (final Item item : snapshot) {
+        if (item instanceof Message) {
+          final Message msg = (Message) item;
+          if (msg.get(Operations.Start.class) != null)
+            onTask = msg.from();
+          else if (msg.get(Operations.Done.class) != null && msg.from().bareEq(onTask))
+            onTask = null;
+        }
+      }
+      result.worker = onTask;
+      sender().tell(result, self());
     }
   }
 
-  public enum View {
-    ALL
+  public static class Status {
+    private JID worker;
+
+    public JID worker() {
+      return worker;
+    }
   }
 }
