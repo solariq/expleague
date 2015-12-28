@@ -16,9 +16,9 @@ angular
 
     var profileTest = {
       profile: 'test',
-      bosh: 'http://test.toobusytosearch.net:5280/',
-      host: 'test.toobusytosearch.net',
-      muc: 'test.toobusytosearch.net',
+      bosh: 'http://test.expleague.com/http-bind/',
+      host: 'test.expleague.com',
+      muc: 'muc.test.expleague.com',
       debug: true
     };
 
