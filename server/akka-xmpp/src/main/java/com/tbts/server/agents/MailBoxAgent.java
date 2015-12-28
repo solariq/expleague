@@ -66,7 +66,7 @@ public abstract class MailBoxAgent extends UntypedPersistentActor {
 
   @SuppressWarnings("UnusedParameters")
   public void invoke(Snapshot ignore) {
-    this.saveSnapshot(undelivered);
+    this.saveSnapshot(new ArrayList<>(undelivered));
   }
 
   @Override
