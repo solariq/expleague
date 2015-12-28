@@ -107,8 +107,7 @@ public class Presence extends Stanza {
     Presence presence = (Presence) o;
 
     if (type != presence.type) return false;
-    return any.equals(presence.any);
-
+    return any == presence.any || (any != null && any.equals(presence.any));
   }
 
   @Override
