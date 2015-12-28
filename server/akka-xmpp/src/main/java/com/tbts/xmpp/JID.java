@@ -109,6 +109,6 @@ public class JID {
   }
 
   public String resource() {
-    return resource;
+    return resource != null ? resource : "";
   }
 }
