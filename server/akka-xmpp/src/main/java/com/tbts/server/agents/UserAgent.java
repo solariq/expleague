@@ -25,6 +25,7 @@ public class UserAgent extends MailBoxAgent {
       final Stanza stanza = undelivered.get(i);
       connecter.tell(stanza, getSelf());
     }
+    XMPP.subscribe(XMPP.jid(), self(), context());
   }
 
   public void invoke(Stanza stanza) {

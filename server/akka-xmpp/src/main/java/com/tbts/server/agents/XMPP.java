@@ -99,11 +99,16 @@ public class XMPP extends UntypedActorAdapter {
       return presence;
     });
   }
+
+  public static void subscribe(JID forJid, ActorRef ref, ActorContext context) {
+    context.actorSelection(XMPP_ACTOR_PATH).tell(new Subscribe(JID.parse(ref.path().name()), forJid), ref);
+  }
+
   public static class Subscribe {
     private final JID forJid;
     private final JID from;
 
-    public Subscribe(JID forJid, JID from) {
+    public Subscribe(JID from, JID forJid) {
       this.forJid = forJid;
       this.from = from;
     }
