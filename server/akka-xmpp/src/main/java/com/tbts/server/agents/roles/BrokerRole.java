@@ -8,6 +8,7 @@ import com.tbts.model.Offer;
 import com.tbts.model.Operations;
 import com.tbts.server.agents.LaborExchange;
 import com.tbts.server.agents.TBTSRoomAgent;
+import com.tbts.server.agents.XMPP;
 import com.tbts.util.akka.AkkaTools;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Presence;
@@ -66,7 +67,8 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
     when(State.UNEMPLOYED,
         matchEvent(Offer.class,
             (offer, zero) -> {
-              final TBTSRoomAgent.Status status = AkkaTools.ask(sender(), TBTSRoomAgent.Status.class);
+              final ActorRef agent = XMPP.register(offer.room(), context());
+              final TBTSRoomAgent.Status status = AkkaTools.ask(agent, TBTSRoomAgent.Status.class);
               if (status.worker() != null) {
                 final ActorRef expert = LaborExchange.registerExpert(status.worker(), context());
                 expert.tell(new Operations.Resume(offer), self());

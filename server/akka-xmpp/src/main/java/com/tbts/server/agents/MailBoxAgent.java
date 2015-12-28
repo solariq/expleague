@@ -18,7 +18,7 @@ import java.util.*;
  * Time: 20:02
  */
 public abstract class MailBoxAgent extends UntypedPersistentActor {
-  public static final int MESSAGES_IN_QUEUE = 10000;
+  public static final int MESSAGES_IN_QUEUE = 100;
   private final JID bareJid;
   protected final List<Stanza> undelivered = new ArrayList<>();
   protected final Map<JID, Presence> presenceMap = new HashMap<>();
@@ -31,14 +31,18 @@ public abstract class MailBoxAgent extends UntypedPersistentActor {
   }
 
   public void invoke(Message msg) {
-    this.persistAsync(msg, undelivered::add);
+    if (!jid().bareEq(msg.to())) // only incoming
+      return;
+    this.persist(msg, undelivered::add);
     if (msgToSnapshot-- <= 0)
       self().tell(new Snapshot(), self());
   }
 
   public void invoke(Presence presence) {
-    this.persistAsync(presence, undelivered::add);
-    final Presence replace = presenceMap.replace(presence.from(), presence);
+    if (!jid().bareEq(presence.to())) // only incoming
+      return;
+    this.persist(presence, undelivered::add);
+    final Presence replace = presenceMap.put(presence.from().bare(), presence);
     if (replace != null)
       invoke(new Delivered(replace.id()));
     if (msgToSnapshot-- <= 0)
@@ -79,10 +83,11 @@ public abstract class MailBoxAgent extends UntypedPersistentActor {
       removeById(((Delivered) msg).id);
     }
     else if (msg instanceof SnapshotOffer) {
+      undelivered.clear();
       //noinspection unchecked
       undelivered.addAll((List<Stanza>) ((SnapshotOffer) msg).snapshot());
     }
-    else unhandled(msg);
+//    else unhandled(msg);
   }
 
   public void invoke(SaveSnapshotSuccess sss) {}

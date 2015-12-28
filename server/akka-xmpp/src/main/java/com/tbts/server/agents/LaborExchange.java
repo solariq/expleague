@@ -43,8 +43,9 @@ public class LaborExchange extends UntypedPersistentActor {
       }
     }
     final ActorRef ref = context().actorOf(Props.create(BrokerRole.class));
-    if (!(AkkaTools.ask(ref, offer) instanceof Operations.Ok))
-      throw new RuntimeException("Unable to create alive broker!");
+    final Object answer = AkkaTools.ask(ref, offer);
+    if (!(answer instanceof Operations.Ok))
+      throw new RuntimeException("Unable to create alive broker! Received: " + answer);
     openPositions.put(offer.room().local(), ref);
     saveSnapshot(new ArrayList<>(openPositions.keySet()));
   }

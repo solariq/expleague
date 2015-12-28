@@ -128,6 +128,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
       result.worker = onTask;
       sender().tell(result, self());
     }
+    else unhandled(c);
   }
 
   public static class Status {

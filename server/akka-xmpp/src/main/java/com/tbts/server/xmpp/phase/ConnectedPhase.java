@@ -54,6 +54,7 @@ public class ConnectedPhase extends UntypedActorAdapter {
           break;
         }
         else if (iq.get() instanceof Session) {
+          bound = true;
           agent = XMPP.register(jid(), context());
           final ActorRef role;
           switch (jid().resource()) {
