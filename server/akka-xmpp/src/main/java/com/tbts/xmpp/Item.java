@@ -101,7 +101,7 @@ public class Item implements Serializable, Cloneable {
       factory.setProperty(XMLOutputFactory2.P_AUTOMATIC_EMPTY_ELEMENTS, true);
 //      factory.setProperty(XMLOutputFactory2.P_AUTOMATIC_NS_PREFIX, true);
       try {
-        writer = new LazyNSXMLStreamWriter(factory.createXMLStreamWriter(output));
+        writer = new LazyNSXMLStreamWriter(factory.createXMLStreamWriter(output), bosh);
         writer.setNamespaceContext(new XMPPStreamNamespaceContext());
         writer.writeStartDocument();
         if (!bosh)

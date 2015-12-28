@@ -58,7 +58,7 @@ public class Stream {
           .map(resource -> {
             try {
               final String name = resource.substring(0, resource.length() - ".class".length()).replace('/', '.');
-              log.finest("Loading " + name + " to JAXB context");
+//              log.finest("Loading " + name + " to JAXB context");
               return Class.forName(name);
             }
             catch (ClassNotFoundException e) {

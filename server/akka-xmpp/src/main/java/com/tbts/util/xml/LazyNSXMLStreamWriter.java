@@ -13,9 +13,11 @@ import javax.xml.stream.XMLStreamWriter;
  */
 public class LazyNSXMLStreamWriter implements XMLStreamWriter {
   private final XMLStreamWriter delegate;
+  private final boolean bosh;
 
-  public LazyNSXMLStreamWriter(XMLStreamWriter delegate) {
+  public LazyNSXMLStreamWriter(XMLStreamWriter delegate, boolean bosh) {
     this.delegate = delegate;
+    this.bosh = bosh;
   }
 
   public void close() throws XMLStreamException {
@@ -113,9 +115,9 @@ public class LazyNSXMLStreamWriter implements XMLStreamWriter {
   }
 
   public void writeNamespace(String prefix, String namespaceURI) throws XMLStreamException {
-    if ("stream".equals(prefix)) {
-      delegate.writeNamespace(prefix, namespaceURI);
-    }
+//    if ("stream".equals(prefix)) {
+//      delegate.writeNamespace(prefix, namespaceURI);
+//    }
   }
 
   public void writeProcessingInstruction(String target) throws XMLStreamException {
@@ -147,6 +149,10 @@ public class LazyNSXMLStreamWriter implements XMLStreamWriter {
   }
 
   public void writeStartElement(String prefix, String localName, String namespaceURI) throws XMLStreamException {
-    delegate.writeStartElement(Stream.NS.equals(namespaceURI) ? "stream" : "", localName, namespaceURI);
+    if (bosh && Stream.NS.equals(namespaceURI)) {
+      delegate.writeNamespace("stream", namespaceURI);
+      delegate.writeStartElement("stream", localName, namespaceURI);
+    }
+    else delegate.writeStartElement("", localName, namespaceURI);
   }
 }
