@@ -35,7 +35,13 @@ public class Item implements Serializable, Cloneable {
   private static ThreadLocal<XmlOutputter> tlWriter = new ThreadLocal<XmlOutputter>() {
     @Override
     protected XmlOutputter initialValue() {
-      return new XmlOutputter();
+      return new XmlOutputter(false);
+    }
+  };
+  private static ThreadLocal<XmlOutputter> tlWriterBosh = new ThreadLocal<XmlOutputter>() {
+    @Override
+    protected XmlOutputter initialValue() {
+      return new XmlOutputter(true);
     }
   };
   private static ThreadLocal<XmlInputter> tlReader = new ThreadLocal<XmlInputter>() {
@@ -51,6 +57,10 @@ public class Item implements Serializable, Cloneable {
 
   public String xmlString() {
     return tlWriter.get().serialize(this);
+  }
+
+  public String xmlString(boolean bosh) {
+    return bosh ? tlWriterBosh.get() .serialize(this) : tlWriter.get().serialize(this);
   }
 
   @Override
@@ -83,7 +93,7 @@ public class Item implements Serializable, Cloneable {
     private final ByteArrayOutputStream output = new ByteArrayOutputStream();
     private final XMLStreamWriter writer;
 
-    public XmlOutputter() {
+    public XmlOutputter(boolean bosh) {
       final OutputFactoryImpl factory = new OutputFactoryImpl();
       factory.configureForSpeed();
       factory.setProperty(XMLOutputFactory2.XSP_NAMESPACE_AWARE, true);
@@ -94,7 +104,9 @@ public class Item implements Serializable, Cloneable {
         writer = new LazyNSXMLStreamWriter(factory.createXMLStreamWriter(output));
         writer.setNamespaceContext(new XMPPStreamNamespaceContext());
         writer.writeStartDocument();
-        writer.writeStartElement(Stream.NS, "stream");
+        if (!bosh)
+          writer.writeStartElement(Stream.NS, "stream");
+
         writer.writeCharacters("");
         writer.flush();
       }

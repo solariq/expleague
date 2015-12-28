@@ -91,7 +91,7 @@ public class BOSHServer extends UntypedActorAdapter {
           { // outgoing
             final ResponseEntity entity = HttpEntities.create(
                 ContentType.create(MediaTypes.lookup("text", "xml").get(), HttpCharsets.UTF_8),
-                boshBody.xmlString()
+                boshBody.xmlString(true)
             );
 //          response.addHeader(Len)
             response = response.withEntity(entity);
