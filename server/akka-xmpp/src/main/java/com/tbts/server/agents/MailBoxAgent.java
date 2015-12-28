@@ -18,7 +18,7 @@ import java.util.*;
  * Time: 20:02
  */
 public abstract class MailBoxAgent extends UntypedPersistentActor {
-  public static final int MESSAGES_IN_QUEUE = 100;
+  public static final int MESSAGES_IN_QUEUE = 10000;
   private final JID bareJid;
   protected final List<Stanza> undelivered = new ArrayList<>();
   protected final Map<JID, Presence> presenceMap = new HashMap<>();
@@ -67,6 +67,7 @@ public abstract class MailBoxAgent extends UntypedPersistentActor {
   @SuppressWarnings("UnusedParameters")
   public void invoke(Snapshot ignore) {
     this.saveSnapshot(new ArrayList<>(undelivered));
+    msgToSnapshot = MESSAGES_IN_QUEUE;
   }
 
   @Override
