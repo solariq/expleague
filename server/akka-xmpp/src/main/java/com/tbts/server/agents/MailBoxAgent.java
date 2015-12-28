@@ -1,5 +1,6 @@
 package com.tbts.server.agents;
 
+import akka.persistence.SaveSnapshotSuccess;
 import akka.persistence.SnapshotOffer;
 import akka.persistence.UntypedPersistentActor;
 import com.spbsu.commons.system.RuntimeUtils;
@@ -82,6 +83,9 @@ public abstract class MailBoxAgent extends UntypedPersistentActor {
     }
     else unhandled(msg);
   }
+
+  public void invoke(SaveSnapshotSuccess sss) {}
+//  public void invoke(SaveSnapshotFailure sss) {}
 
   @Override
   public void onReceiveCommand(Object msg) throws Exception {
