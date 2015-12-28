@@ -150,8 +150,8 @@ public class LazyNSXMLStreamWriter implements XMLStreamWriter {
 
   public void writeStartElement(String prefix, String localName, String namespaceURI) throws XMLStreamException {
     if (bosh && Stream.NS.equals(namespaceURI)) {
-      delegate.writeNamespace("stream", namespaceURI);
       delegate.writeStartElement("stream", localName, namespaceURI);
+//      delegate.writeNamespace("stream", namespaceURI);
     }
     else delegate.writeStartElement("", localName, namespaceURI);
   }

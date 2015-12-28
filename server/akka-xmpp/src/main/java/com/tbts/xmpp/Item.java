@@ -8,6 +8,7 @@ import com.fasterxml.aalto.stax.OutputFactoryImpl;
 import com.spbsu.commons.io.StreamTools;
 import com.tbts.server.xmpp.XMPPOutFlow;
 import com.tbts.util.xml.AsyncJAXBStreamReader;
+import com.tbts.util.xml.BOSHNamespaceContext;
 import com.tbts.util.xml.LazyNSXMLStreamWriter;
 import com.tbts.util.xml.XMPPStreamNamespaceContext;
 import org.codehaus.stax2.XMLOutputFactory2;
@@ -102,12 +103,12 @@ public class Item implements Serializable, Cloneable {
 //      factory.setProperty(XMLOutputFactory2.P_AUTOMATIC_NS_PREFIX, true);
       try {
         writer = new LazyNSXMLStreamWriter(factory.createXMLStreamWriter(output), bosh);
-        writer.setNamespaceContext(new XMPPStreamNamespaceContext());
+        writer.setNamespaceContext(bosh ? new BOSHNamespaceContext() : new XMPPStreamNamespaceContext());
         writer.writeStartDocument();
-        if (!bosh)
-          writer.writeStartElement(Stream.NS, "stream");
-        else
+        if (bosh)
           writer.writeStartElement(BoshBody.NS, "body");
+        else
+          writer.writeStartElement(Stream.NS, "stream");
         writer.writeCharacters("");
         writer.flush();
       }
