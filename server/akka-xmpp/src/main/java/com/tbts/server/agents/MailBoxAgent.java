@@ -8,6 +8,7 @@ import com.tbts.xmpp.stanza.Message;
 import com.tbts.xmpp.stanza.Presence;
 import com.tbts.xmpp.stanza.Stanza;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -92,7 +93,7 @@ public abstract class MailBoxAgent extends UntypedPersistentActor {
     return bareJid.getAddr();
   }
 
-  public static class Delivered {
+  public static class Delivered implements Serializable {
     private final String id;
     public Delivered(String id) {
       this.id = id;
