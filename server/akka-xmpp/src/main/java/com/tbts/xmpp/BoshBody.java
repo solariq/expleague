@@ -11,8 +11,9 @@ import java.util.List;
  * Date: 24.12.15
  * Time: 15:14
  */
-@XmlRootElement(name = "body", namespace = "http://jabber.org/protocol/httpbind")
+@XmlRootElement(name = "body", namespace = BoshBody.NS)
 public class BoshBody extends Item {
+  public static final String NS = "http://jabber.org/protocol/httpbind";
   @XmlAttribute
   private String content;
 

@@ -113,8 +113,7 @@ public class LazyNSXMLStreamWriter implements XMLStreamWriter {
   }
 
   public void writeNamespace(String prefix, String namespaceURI) throws XMLStreamException {
-    return;
-//    delegate.writeNamespace(prefix, namespaceURI);
+    delegate.writeNamespace(prefix, namespaceURI);
   }
 
   public void writeProcessingInstruction(String target) throws XMLStreamException {

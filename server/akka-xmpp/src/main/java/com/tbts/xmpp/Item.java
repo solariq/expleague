@@ -106,7 +106,8 @@ public class Item implements Serializable, Cloneable {
         writer.writeStartDocument();
         if (!bosh)
           writer.writeStartElement(Stream.NS, "stream");
-
+        else
+          writer.writeStartElement(BoshBody.NS, "body");
         writer.writeCharacters("");
         writer.flush();
       }
