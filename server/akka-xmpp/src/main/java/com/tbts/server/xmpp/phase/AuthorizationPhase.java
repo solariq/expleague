@@ -14,6 +14,7 @@ import com.tbts.xmpp.stanza.data.Err;
 import javax.security.sasl.AuthenticationException;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,6 +53,9 @@ public class AuthorizationPhase extends XMPPPhase {
         try {
           Roster.instance().register(query);
           answer(Iq.answer(request));
+        }
+        catch (SQLIntegrityConstraintViolationException integrity) {
+          answer(Iq.answer(request, new Err(Err.Cause.CONFLICT, Err.ErrType.AUTH, integrity.getMessage())));
         }
         catch (Exception e) {
           log.log(Level.FINEST, "Exception during user registration", e);
