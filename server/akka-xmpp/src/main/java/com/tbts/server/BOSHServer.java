@@ -6,6 +6,8 @@ import akka.http.javadsl.Http;
 import akka.http.javadsl.IncomingConnection;
 import akka.http.javadsl.ServerBinding;
 import akka.http.javadsl.model.*;
+import akka.http.javadsl.model.headers.AccessControlAllowOrigin;
+import akka.http.javadsl.model.headers.HttpOriginRange;
 import akka.japi.function.Procedure;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
@@ -54,6 +56,7 @@ public class BOSHServer extends UntypedActorAdapter {
           return HttpResponse.create().withStatus(404);
 
         HttpResponse response = HttpResponse.create();
+        response = response.addHeader(AccessControlAllowOrigin.create(HttpOriginRange.ALL));
         try {
           PipedInputStream pis = new PipedInputStream();
           final ActorRef pipe = context().actorOf(Props.create(StreamPipe.class, pis));
@@ -80,6 +83,9 @@ public class BOSHServer extends UntypedActorAdapter {
                 boshBody.items().clear();
                 boshBody.items().addAll(contents);
               }
+            }
+            else {
+              boshBody.type("terminate");
             }
           }
           { // outgoing

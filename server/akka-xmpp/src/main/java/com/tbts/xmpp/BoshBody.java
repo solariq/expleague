@@ -17,6 +17,9 @@ public class BoshBody extends Item {
   private String content;
 
   @XmlAttribute
+  private String type;
+
+  @XmlAttribute
   private JID from;
 
   @XmlAttribute
@@ -54,5 +57,9 @@ public class BoshBody extends Item {
 
   public void requests(int count) {
     requests = count;
+  }
+
+  public void type(String terminate) {
+    this.type = terminate;
   }
 }
