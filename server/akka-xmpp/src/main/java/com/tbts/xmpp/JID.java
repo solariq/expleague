@@ -3,6 +3,7 @@ package com.tbts.xmpp;
 import com.sun.istack.Interned;
 
 import javax.xml.bind.annotation.XmlValue;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -11,7 +12,7 @@ import java.net.URISyntaxException;
  * Date: 07.12.15
  * Time: 13:01
  */
-public class JID {
+public class JID implements Serializable {
   @Interned
   private String bare;
   private String resource;

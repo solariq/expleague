@@ -97,7 +97,7 @@ public class Presence extends Stanza {
   public <T extends Item> T get(Class<T> clazz) {
     final Optional<Item> any = this.any.stream().filter(i -> clazz.isAssignableFrom(i.getClass())).findAny();
     //noinspection unchecked
-    return any.isPresent() ? (T)any.get() : null;
+    return any.isPresent() ? (T) any.get() : null;
   }
 
   @Override
