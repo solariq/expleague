@@ -52,6 +52,8 @@ public class BOSHServer extends UntypedActorAdapter {
     public void apply(IncomingConnection connection) throws Exception {
       System.out.println("Accepted new BOSH connection from " + connection.remoteAddress());
       connection.handleWith(Flow.of(HttpRequest.class).take(1).map(request -> {
+        if (request.method() == HttpMethods.OPTIONS)
+          return HttpResponse.create().addHeader(AccessControlAllowOrigin.create(HttpOriginRange.ALL)).withStatus(200);
         if (request.method() != HttpMethods.POST)
           return HttpResponse.create().withStatus(404);
 
