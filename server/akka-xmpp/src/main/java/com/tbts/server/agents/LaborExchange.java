@@ -159,7 +159,7 @@ public class LaborExchange extends UntypedPersistentActor {
         case CHECK:
         case INVITE:
         case BUSY:
-          return -1;
+          return 0;
       }
       return 0;
     }
