@@ -59,7 +59,7 @@ public class BOSHServer extends UntypedActorAdapter {
               .addHeader(AccessControlAllowOrigin.create(HttpOriginRange.ALL))
               .addHeader(AccessControlAllowMethods.create(HttpMethods.OPTIONS, HttpMethods.POST, HttpMethods.GET))
               .addHeader(AccessControlAllowHeaders.create("text/xml"))
-              .withStatus(200);
+              .withStatus(204);
         if (request.method() != HttpMethods.POST)
           return HttpResponse.create().withStatus(404);
 
