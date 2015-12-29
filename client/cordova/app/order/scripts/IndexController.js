@@ -107,17 +107,17 @@ angular
       return true;
     }
 
-    if (localStorage.getItem(lsServerKeyName) != undefined && localStorage.getItem(lsUserKeyName) != undefined) {
-      $scope.server = JSON.parse(localStorage.getItem(lsServerKeyName));
-      $scope.user = JSON.parse(localStorage.getItem(lsUserKeyName));
-      var connection = new Strophe.Connection($scope.server.bosh);
-      connection.connect($scope.user.username + '@' + $scope.server.host, $scope.user.password, function (status) {
-        if (status === Strophe.Status.CONNECTED) {
-          connection.addHandler(presenceHandler, null, 'presence');
-          connection.send($pres());
-        }
-      });
-    }
+    // if (localStorage.getItem(lsServerKeyName) != undefined && localStorage.getItem(lsUserKeyName) != undefined) {
+    //   $scope.server = JSON.parse(localStorage.getItem(lsServerKeyName));
+    //   $scope.user = JSON.parse(localStorage.getItem(lsUserKeyName));
+    //   var connection = new Strophe.Connection($scope.server.bosh);
+    //   connection.connect($scope.user.username + '@' + $scope.server.host, $scope.user.password, function (status) {
+    //     if (status === Strophe.Status.CONNECTED) {
+    //       connection.addHandler(presenceHandler, null, 'presence');
+    //       connection.send($pres());
+    //     }
+    //   });
+    // }
 
   })
   .directive('itemFloatingLabel', function() {
