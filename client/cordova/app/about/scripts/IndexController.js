@@ -16,7 +16,7 @@ angular
 
     var profileTest = {
       profile: 'test',
-      bosh: 'http://test.expleague.com/http-bind/',
+      bosh: 'http://test.expleague.com/http-bind',
       host: 'test.expleague.com',
       muc: 'muc.test.expleague.com',
       debug: true
@@ -62,7 +62,7 @@ angular
             localStorage.setItem(lsUserKeyName, JSON.stringify(user));
             connection.disconnect();
           } else if (status === Strophe.Status.NOTACCEPTABLE || status === Strophe.Status.REGIFAIL) {
-            // Если сервер не поддерñивает регистрацию или произошла ошибка
+            // Если сервер не поддерживает регистрацию или произошла ошибка
             // Сообщаем об ошибке, разъединяемся
             alert("Не удалось зарегистрировать нового пользователя");
             connection.disconnect();
