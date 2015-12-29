@@ -6,6 +6,7 @@ import akka.http.javadsl.Http;
 import akka.http.javadsl.IncomingConnection;
 import akka.http.javadsl.ServerBinding;
 import akka.http.javadsl.model.*;
+import akka.http.javadsl.model.headers.AccessControlAllowMethods;
 import akka.http.javadsl.model.headers.AccessControlAllowOrigin;
 import akka.http.javadsl.model.headers.HttpOriginRange;
 import akka.japi.function.Procedure;
@@ -53,7 +54,13 @@ public class BOSHServer extends UntypedActorAdapter {
       System.out.println("Accepted new BOSH connection from " + connection.remoteAddress());
       connection.handleWith(Flow.of(HttpRequest.class).take(1).map(request -> {
         if (request.method() == HttpMethods.OPTIONS)
-          return HttpResponse.create().addHeader(AccessControlAllowOrigin.create(HttpOriginRange.ALL)).withStatus(200);
+          return HttpResponse.create()
+              .addHeader(AccessControlAllowOrigin.create(HttpOriginRange.ALL))
+              .addHeader(AccessControlAllowMethods.create(HttpMethods.OPTIONS, HttpMethods.POST))
+              .withEntity(
+                  MediaTypes.TEXT_HTML.toContentType(),
+                  "<html><body></body></html>")
+              .withStatus(200);
         if (request.method() != HttpMethods.POST)
           return HttpResponse.create().withStatus(404);
 
