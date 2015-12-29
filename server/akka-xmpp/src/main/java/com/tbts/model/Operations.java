@@ -19,7 +19,7 @@ public class Operations {
 
   public static class Invite {
     @XmlRootElement(name = "x", namespace = "http://jabber.org/protocol/muc#user")
-    public static class Invitation {
+    public static class Invitation extends Item {
       @XmlElementRef
       private I invite;
 
@@ -30,14 +30,14 @@ public class Operations {
       }
 
       @XmlRootElement(name = "invite", namespace = "http://jabber.org/protocol/muc#user")
-      public static final class I {
+      public static final class I extends Item {
         @XmlAttribute
         private JID from;
       }
     }
 
     @XmlRootElement(name = "x", namespace = "jabber:x:conference")
-    public static class Reason {
+    public static class Reason extends Item {
       @XmlAttribute
       private String reason;
 

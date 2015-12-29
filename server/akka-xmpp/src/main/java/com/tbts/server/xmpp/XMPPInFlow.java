@@ -30,10 +30,16 @@ import java.util.logging.Logger;
 public class XMPPInFlow extends PushPullStage<ByteString, Item> {
   private static final Logger log = Logger.getLogger(XMPPInFlow.class.getName());
   private final Queue<Item> queue = new ArrayDeque<>();
+  private final String name;
   private AsyncXMLStreamReader<AsyncByteArrayFeeder> asyncXml;
   private AsyncJAXBStreamReader reader;
   // TODO: remove this shit after investigating wrong epilog state in aalto
   private final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+  public XMPPInFlow(String name) {
+    this.name = name;
+  }
+
 
   @Override
   public void preStart(LifecycleContext lifecycleContext) throws Exception {
@@ -63,7 +69,7 @@ public class XMPPInFlow extends PushPullStage<ByteString, Item> {
       });
     }
     catch (XMLStreamException | SAXException e) {
-      throw new RuntimeException("On [" + s + "] message in context [" + new String(baos.toByteArray()) + "]", e);
+      throw new RuntimeException("@" + name + " on [" + s + "] message in context [" + new String(baos.toByteArray()) + "]", e);
     }
 
     return onPull(itemContext);

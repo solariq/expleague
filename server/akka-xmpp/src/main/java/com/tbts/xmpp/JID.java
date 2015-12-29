@@ -3,6 +3,8 @@ package com.tbts.xmpp;
 import com.sun.istack.Interned;
 
 import javax.xml.bind.annotation.XmlValue;
+import java.io.IOException;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -12,7 +14,7 @@ import java.net.URISyntaxException;
  * Date: 07.12.15
  * Time: 13:01
  */
-public class JID implements Serializable {
+public class JID implements Serializable, Cloneable {
   @Interned
   private String bare;
   private String resource;
@@ -95,6 +97,8 @@ public class JID implements Serializable {
   }
 
   public boolean bareEq(JID to) {
+    if (to != null && this.bare.equals(to.bare) && this.bare != to.bare)
+      System.out.println();
     //noinspection StringEquality
     return to != null && this.bare == to.bare;
   }
@@ -111,5 +115,18 @@ public class JID implements Serializable {
 
   public String resource() {
     return resource != null ? resource : "";
+  }
+
+
+  private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    out.writeUTF(bare);
+    out.writeUTF(resource());
+  }
+  private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    bare = in.readUTF().intern();
+    final String resource = in.readUTF();
+    this.resource = resource.isEmpty() ? null : resource;
+  }
+  private void readObjectNoData() throws ObjectStreamException {
   }
 }

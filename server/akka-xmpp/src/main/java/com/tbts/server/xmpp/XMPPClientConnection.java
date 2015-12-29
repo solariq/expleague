@@ -108,7 +108,8 @@ public class XMPPClientConnection extends UntypedActorAdapter {
     else if (state != ConnectionState.CONNECTED)
       connection.tell(TcpMessage.suspendReading(), getSelf());
 
-    final Flow<Tcp.Received, Item, BoxedUnit> inFlow = Flow.of(Tcp.Received.class).map(Tcp.Received::data).transform(XMPPInFlow::new);
+    final ConnectionState finalState = state;
+    final Flow<Tcp.Received, Item, BoxedUnit> inFlow = Flow.of(Tcp.Received.class).map(Tcp.Received::data).transform(() -> new XMPPInFlow(finalState.name()));
     final Flow<Item, Tcp.Command, BoxedUnit> outFlow = Flow.of(Item.class).transform(XMPPOutFlow::new).map(TcpMessage::write);
 
     ActorRef newLogic = null;

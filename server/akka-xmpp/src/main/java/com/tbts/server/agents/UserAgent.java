@@ -23,7 +23,7 @@ public class UserAgent extends MailBoxAgent {
     role = connected.role;
     for (int i = 0; i < undelivered.size(); i++) {
       final Stanza stanza = undelivered.get(i);
-      connecter.tell(stanza, getSelf());
+      connecter.tell(stanza, self());
     }
     XMPP.subscribe(XMPP.jid(), self(), context());
   }

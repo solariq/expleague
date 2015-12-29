@@ -50,6 +50,8 @@ public class Stanza extends Item {
     return from;
   }
   public void from(JID jid) {
+    if (from != null && !from.equals(jid))
+      System.out.println();
     this.from = jid;
   }
 

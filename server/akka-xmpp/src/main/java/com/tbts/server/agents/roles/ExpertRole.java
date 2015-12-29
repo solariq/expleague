@@ -145,9 +145,8 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
     onTransition((from, to) -> {
       final Offer first = nextStateData() != null ? nextStateData().first : null;
       ExpertManager.instance().record(jid()).entry(first, to);
-      if (from != to) {
+      if (from != to)
         context().parent().tell(to, self());
-      }
     });
 
     onTransition((from, to) -> {

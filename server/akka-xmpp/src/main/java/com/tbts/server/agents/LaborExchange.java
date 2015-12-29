@@ -132,7 +132,7 @@ public class LaborExchange extends UntypedPersistentActor {
     }
 
     public void invoke(Object o) {
-      if (o instanceof JID)
+      if (o instanceof JID || o instanceof ExpertRole.State)
         return;
       JavaConversions.asJavaCollection(context().children()).stream().forEach(
           expert -> expert.forward(o, context())
@@ -146,11 +146,11 @@ public class LaborExchange extends UntypedPersistentActor {
           readyCount++;
           break;
         case OFFLINE:
+          readyCount--;
+          break;
         case CHECK:
         case INVITE:
         case BUSY:
-          readyCount--;
-          break;
       }
       XMPP.send(new Presence(XMPP.jid(), readyCount != 0, new ServiceStatus(readyCount)), context());
     }

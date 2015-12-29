@@ -50,7 +50,7 @@ public abstract class MailBoxAgent extends UntypedPersistentActor {
   }
 
   public void invoke(Delivered delivered) {
-    this.persistAsync(delivered, d -> {
+    this.persist(delivered, d -> {
       final String id = d.id;
       removeById(id);
       if (msgToSnapshot-- <= 0)

@@ -14,6 +14,8 @@ import com.tbts.xmpp.JID;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,6 +85,7 @@ public class Presence extends Stanza {
   public Presence(JID from, boolean available, Item... contents) {
     this.from = from;
     type = available ? PresenceType.AVAILABLE : PresenceType.UNAVAILABLE;
+    any = new ArrayList<>(Arrays.asList(contents));
   }
 
   public boolean available() {

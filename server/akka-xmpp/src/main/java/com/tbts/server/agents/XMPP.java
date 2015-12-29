@@ -32,25 +32,27 @@ public class XMPP extends UntypedActorAdapter {
     sender().tell(allocate(jid), getSelf());
   }
 
-  public void invoke(Stanza msg) {
-    if (msg.to() != null)
-      allocate(msg.to()).forward(msg, getContext());
+  public void invoke(Stanza stanza) {
+    if (stanza.to() != null)
+      allocate(stanza.to()).forward(stanza, getContext());
   }
 
   public void invoke(Presence presence) {
+    if (presence.to() != null) // not broadcast
+      return;
     final JID from = presence.from().bare();
     final Presence known = status.get(from);
     if (!presence.equals(known)) {
       status.put(from, presence);
-      for (final ActorRef agent : JavaConversions.asJavaCollection(context().children())) {
-        final JID jid = JID.parse(agent.path().name());
-        if (XMPP.jid().bareEq(from) || subscription.getOrDefault(jid, Collections.emptySet()).contains(from)) {
+      final Collection<ActorRef> children = JavaConversions.asJavaCollection(context().children());
+      for (final ActorRef agent : children) {
+        final JID actorJid = JID.parse(agent.path().name());
+        if (actorJid.local().isEmpty() || actorJid.bareEq(from))
+          continue;
+        if (XMPP.jid().bareEq(from) || subscription.getOrDefault(actorJid, Collections.emptySet()).contains(from)) {
           final Presence copy = presence.copy();
-          copy.to(jid);
+          copy.to(actorJid);
           agent.tell(copy, self());
-        }
-        else if (jid.equals(presence.to())) {
-          agent.tell(presence, self());
         }
       }
     }
@@ -95,7 +97,9 @@ public class XMPP extends UntypedActorAdapter {
       });
     }
     status.computeIfPresent(subscribe.forJid, (jid, presence) -> {
-      sender().tell(presence, self());
+      final Presence copy = presence.copy();
+      copy.to(subscribe.from);
+      sender().tell(copy, self());
       return presence;
     });
   }
