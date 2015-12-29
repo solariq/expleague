@@ -60,7 +60,7 @@ public class BOSHSession extends UntypedActorAdapter {
       timeout.cancel();
     outgoing.add(item);
     if (connected) // batching
-      timeout = context().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), self(), Timeout.zero(), context().dispatcher(), self());
+      timeout = context().system().scheduler().scheduleOnce(Duration.create(50, TimeUnit.MILLISECONDS), self(), Timeout.zero(), context().dispatcher(), self());
     else
       invoke(Timeout.zero());
   }
