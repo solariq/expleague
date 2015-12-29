@@ -131,7 +131,7 @@ angular
       function onMessage(message) {
         console.log('message', message);
         var body = $(message).children('body').text();
-        if (body == 'Room is locked. Please configure.') {
+        if (/^Welcome to room/.test(body)) {
           connection.muc.saveConfiguration(roomName, [],
             function () {
               changeChatroomStatus('connected');
