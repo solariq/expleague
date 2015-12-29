@@ -140,19 +140,28 @@ public class LaborExchange extends UntypedPersistentActor {
     }
 
     public int readyCount = 0;
-    public void invoke(ExpertRole.State state) {
-      switch (state) {
+    Map<String, ExpertRole.State> states = new HashMap<>();
+    public void invoke(ExpertRole.State next) {
+      final String key = sender().path().name();
+      final ExpertRole.State current = states.get(key);
+      readyCount += increment(next) - increment(current);
+      states.put(key, next);
+      XMPP.send(new Presence(XMPP.jid(), readyCount != 0, new ServiceStatus(readyCount)), context());
+    }
+
+    private int increment(ExpertRole.State next) {
+      if (next == null)
+        return 0;
+      switch (next) {
         case READY:
-          readyCount++;
-          break;
+          return 1;
         case OFFLINE:
-          readyCount--;
-          break;
         case CHECK:
         case INVITE:
         case BUSY:
+          return -1;
       }
-      XMPP.send(new Presence(XMPP.jid(), readyCount != 0, new ServiceStatus(readyCount)), context());
+      return 0;
     }
 
     public static JID jid(ActorRef ref) {
