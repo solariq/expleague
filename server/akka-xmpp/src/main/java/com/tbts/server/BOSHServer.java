@@ -6,6 +6,7 @@ import akka.http.javadsl.Http;
 import akka.http.javadsl.IncomingConnection;
 import akka.http.javadsl.ServerBinding;
 import akka.http.javadsl.model.*;
+import akka.http.javadsl.model.headers.AccessControlAllowHeaders;
 import akka.http.javadsl.model.headers.AccessControlAllowMethods;
 import akka.http.javadsl.model.headers.AccessControlAllowOrigin;
 import akka.http.javadsl.model.headers.HttpOriginRange;
@@ -57,6 +58,7 @@ public class BOSHServer extends UntypedActorAdapter {
           return HttpResponse.create()
               .addHeader(AccessControlAllowOrigin.create(HttpOriginRange.ALL))
               .addHeader(AccessControlAllowMethods.create(HttpMethods.OPTIONS, HttpMethods.POST, HttpMethods.GET))
+              .addHeader(AccessControlAllowHeaders.create("text/xml"))
               .withStatus(200);
         if (request.method() != HttpMethods.POST)
           return HttpResponse.create().withStatus(404);
