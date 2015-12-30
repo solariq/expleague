@@ -4418,6 +4418,10 @@ Site dialog global style
   box-shadow: 0 1px 0 0 #e84c3d;
   color: #fff;
 }
+#knugget-root #knugget-sidebar .dialog-container .collaboration .controls .full-width,
+#knugget-info-icon #knugget-sidebar .dialog-container .collaboration .controls .full-width {
+  width: 100%;
+}
 #knugget-root #knugget-sidebar .dialog-container .collaboration .controls button,
 #knugget-info-icon #knugget-sidebar .dialog-container .collaboration .controls button {
   width: 50%;
@@ -5091,6 +5095,18 @@ Helper classes
   text-align: center;
   background: white;
 }
+#knugget-sidebar .prefooter {
+  display: block;
+  position: absolute;
+  left: 0;
+  bottom: 4em;
+  height: 2em;
+  width: 100%;
+  z-index: 3;
+  text-align: center;
+  cursor: pointer;
+  background: white;
+}
 #knugget-sidebar .workboard {
   display: block;
   position: absolute;
@@ -5184,12 +5200,12 @@ Helper classes
 }
 #knugget-sidebar .chatboard {
   display: block;
-  height: -webkit-calc(100% - 300px);
+  height: 100%;
   overflow-y: -moz-scrollbars-vertical;
   overflow-y: scroll;
   overflow-x: hidden;
   padding: 10px;
-  margin-top: 70px;
+  margin-top: 10px;
 }
 #knugget-sidebar .chatboard::-webkit-scrollbar {
   width: 12px;

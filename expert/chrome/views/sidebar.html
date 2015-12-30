@@ -41,6 +41,7 @@
                 <a ng-click="user.makeAvailable()">Перейти в online</a>
             </li>
             <li ng-if="activeRequest.value" show-question><a ng-click="showQuestion()">Показать запрос</a> </li>
+            <li ng-if="activeRequest.value" chat><a ng-click="openChat()">Чат</a> </li>
             <!--<li><a ng-click="finishRequest()">Завершить заказ</a></li>-->
             <li ng-if="activeRequest.value"><a ng-click="activeRequest.banOwner()">Заблокировать</a></li>
             <li ng-if="activeRequest.value"><a ng-click="activeRequest.reject()">Отказаться</a></li>

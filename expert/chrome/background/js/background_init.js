@@ -398,7 +398,7 @@ KNUGGET.templates = {
             "views/unavailable.html",
             "views/login.html",
             "views/registration.html",
-            "views/panel_chatWindow.html",
+            "views/chat.html",
             "views/root.html",
             "views/sidebar.folder_0.html",
             "views/sidebar.folder_1.html",

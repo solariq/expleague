@@ -165,6 +165,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                     isCanceled = findByTagName(msg.childNodes, 'cancel') != null;
                     listener(msg.getAttribute('id'), msg.getAttribute('from'), offer, isCanceled);
                 }
+                return true;
             }, null, 'message', null, null, null);
         };
 
@@ -175,13 +176,13 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                 var type = msg.getAttribute('type');
                 var elems = msg.getElementsByTagName('body');
 
-                if (type == "chat" && elems.length > 0) {
+                if (elems.length > 0) {
                     var body = elems[0];
                     //listener({text: Strophe.getText(body), from: from, time: new Date().getTime()});
-                    listener(body, {question: Strophe.getText(body), owner: from, time: new Date().getTime(), id: new Date().getTime()});
+                    listener(Strophe.getText(body), from);
                 }
                 return true;
-            }, null, 'message', null, null, null);
+            }, null, 'message', 'groupchat', null, null);
         };
 
         this.addPresenceListener = function(listener, from) {
@@ -218,7 +219,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
 
         this.leaveRoom = function(room, nick) {
             //todo this!
-            //this.sendPres({to: room + '/' + nick, type: 'unavailable'});
+            this.sendPres({to: room + '/' + nick, type: 'unavailable'});
+            this.sendAvailable();
             //var pres = $pres({to: room + '/' + nick, type: 'unavailable'});
             //this.connection.send(pres.tree());
         };
@@ -251,6 +253,9 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
     var ExpertState = {
         READY: {
             value: 'ready',
+            validate: function(prevState, ctx) {
+                return true;
+            },
             onSet: function() {
                 cleanAll();
                 jabberClient.sendPres({type: 'available'});
@@ -258,6 +263,9 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         },
         AWAY: {
             value: 'away',
+            validate: function(prevState, ctx) {
+             return true;
+            },
             onSet: function() {
                 cleanAll();
                 jabberClient.sendPres({type: 'unavailable'});
@@ -392,6 +400,15 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         KNUGGET.storage.set("UserData", JSON.stringify({userLogin: login, userPassword: password}));
     };
 
+    addChatMsg = function(msg) {
+        console.log("add: " + JSON.stringify(msg));
+        KNUGGET.storage.get("ChatLog",function (value) {
+            var log = value ? JSON.parse(value) : [];
+            log.push(msg);
+            KNUGGET.storage.set("ChatLog", JSON.stringify(log));
+        });
+    };
+
     cleanAll = function() {
         KNUGGET.storage.set("Board", JSON.stringify([]));
         KNUGGET.storage.set("Requests", JSON.stringify([]));
@@ -516,6 +533,20 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             return defer.promise;
         },
 
+        SengMsg: function(data) {
+            var defer = $q.defer();
+            console.log(JSON.stringify(data));
+            jabberClient.send({
+                    to: data.request.room,
+                    text: JSON.stringify(data.text)
+                }, 'groupchat', function () {
+                    defer.resolve({status: 200});
+                }
+            );
+            addChatMsg({isOwn: true, text: data.text});
+            return defer.promise;
+        },
+
         PageVisited: function(data) {
             var defer = $q.defer();
             console.log(JSON.stringify(data));
@@ -568,7 +599,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             var defer = $q.defer();
             //todo data.request
             //connection.send($pres().tree());
-            //jabberClient.leaveRoom(data.request.room, 'expert');
+            jabberClient.leaveRoom(data.request.room, 'expert');
             defer.resolve({status: 200});
             return defer.promise;
         },
@@ -585,7 +616,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             removeRequest(data.request, function() {
                 defer.resolve({status: 200});
             });
-            jabberClient.setState(ExpertState.READY, null);
+            stateController.setState(ExpertState.READY, null);
             return defer.promise;
         },
 
@@ -746,20 +777,26 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             jabberClient.addOfferListener(function(id, from, offer, isCanceled) {
                 if (!isCanceled) {
                     stateController.setState(ExpertState.CHECK, {to: from, id: id, offer: offer});
+                } else {
+                    stateController.setState(ExpertState.READY, null);
                 }
             });
 
-            jabberClient.addMessageListener(function(body, msg) {
-                if (body.getElementsByTagName('room') && body.getElementsByTagName('room').length > 0) {
-                    type = body.getElementsByTagName('room')[0].getAttribute('type');
-                    if (type == 'check') {
-                        user = Strophe.getText(body);
-                        id = body.getElementsByTagName('room')[0].getAttribute('id');
-                        stateController.setState(ExpertState.CHECK, {user: user, to: msg.owner, id: id});
-                    }
+            //jabberClient.addMessageListener(function(body, msg) {
+            //    if (body.getElementsByTagName('room') && body.getElementsByTagName('room').length > 0) {
+            //        type = body.getElementsByTagName('room')[0].getAttribute('type');
+            //        if (type == 'check') {
+            //            user = Strophe.getText(body);
+            //            id = body.getElementsByTagName('room')[0].getAttribute('id');
+            //            stateController.setState(ExpertState.CHECK, {user: user, to: msg.owner, id: id});
+            //        }
+            //
+            //    }
+            //    console.log(msg);
+            //});
 
-                }
-                console.log(msg);
+            jabberClient.addMessageListener(function(text, from) {
+                addChatMsg({isOwn: false, text: text});
             });
 
             jabberClient.addInviteListener(function(invite) {

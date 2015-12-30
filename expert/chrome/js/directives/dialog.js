@@ -236,3 +236,41 @@ knuggetSidebarDirectives.directive("cropDialog", ['dialogService', '$state', fun
         }]
     };
 }]);
+
+knuggetSidebarDirectives.directive("chat", ['dialogService', '$state', '$timeout', '$anchorScroll', function (dialogService, $state, $timeout, $anchorScroll) {
+    return {
+        restrict: "A",
+        controller: ['$scope', function ($scope) {
+            $scope.getHistory = function() {
+                $scope.chatLog.get(function(log) {
+                    $scope.log = log;
+                });
+                $scope.chatLog.unread = 0;
+                return $scope.log ? $scope.log : [];
+            };
+
+            $scope.getBubbleClass = function(msg) {
+                return msg.isOwn ? 'triangle-isosceles-alt' : 'triangle-isosceles';
+            };
+
+            $scope.openChat = function () {
+                dialogService.template = KNUGGET.config.sidebarTemplatesRoot + "chat";
+                dialogService.dialogIsActive = true;
+                $scope.getHistory();
+            };
+
+
+            $scope.comunicate = function() {
+                KNUGGET.api('SengMsg', {request: $scope.activeRequest.value, text: $scope.respText}, function (response) {
+                    $scope.respText = '';
+                });
+            };
+
+            $scope.getUnreadCount = function() {
+                return $scope.chatLog.unread;
+            };
+
+            $scope.respText = '';
+        }]
+    };
+}]);

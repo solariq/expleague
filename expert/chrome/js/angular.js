@@ -74,12 +74,6 @@
         return dialogService.dialogIsActive;
     };
 
-
-    $scope.trySend = function() {
-
-    };
-
-
     $scope.send = function() {
         KNUGGET.api('SendResponse', {request: $scope.activeRequest.value}, function (response) {
             if (response.status == 200) {
@@ -103,6 +97,7 @@
         $scope.board.clear();
         $scope.requests.clear();
         $scope.activeRequest.set(null);
+        KNUGGET.storage.set("ChatLog", JSON.stringify([]));
         KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
         KNUGGET.storage.set("AddTrigger", {shouldAdd: false});
     };
@@ -123,6 +118,7 @@
 
         $scope.board.clear();
         KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
+        KNUGGET.storage.set("ChatLog", JSON.stringify([]));
         KNUGGET.storage.set("AddTrigger", {shouldAdd: false});
         request.isUnconfirmed = false;
         //$interval.cancel($scope.requests.confirmTimer);
@@ -223,20 +219,6 @@
                 callback();
             }
         });
-    };
-
-    $scope.moveChatScroll = function(direction, speed) {
-        div = $('#chatboard')[0];
-        if (direction > 0) {
-            direction = div.scrollHeight
-        } else {
-            direction = 0;
-        }
-        if (speed > 0) {
-            $('#chatboard').animate({scrollTop: direction}, speed)
-        } else {
-            $('#chatboard').scrollTop = direction;
-        }
     };
 
     $scope.getTitileToEdit = function() {
@@ -369,11 +351,15 @@
                     $scope.$apply();
                 }
             } else if (data.VisitedPages) {
-                $scope.activeRequest.get(function(request) {
+                $scope.activeRequest.get(function (request) {
                     console.log(request);
                     console.log(data.VisitedPages.newValue);
                     if (request) {
-                        KNUGGET.api("PageVisited", {request: request, pages: JSON.parse(data.VisitedPages.newValue)}, function () { });
+                        KNUGGET.api("PageVisited", {
+                            request: request,
+                            pages: JSON.parse(data.VisitedPages.newValue)
+                        }, function () {
+                        });
                     }
                 });
             } else if (data.AddTrigger) {
@@ -392,6 +378,8 @@
             } else if (data.ActiveRequest) {
                 $scope.forceCloseDialog(); //close question dialog
                 $scope.activeRequest.value = data.ActiveRequest.newValue;
+            } else if (data.ChatLog) {
+                $scope.chatLog.update(data.ChatLog.oldValue, data.ChatLog.newValue);
             }
 
             $timeout(function () {
@@ -494,6 +482,42 @@
         set: function(activeValue) {
             $scope.allowToShow.value = activeValue;
             KNUGGET.storage.set('allowToShow', activeValue);
+        }
+    };
+
+    $scope.chatLog = {
+        value: null,
+        unread: 0,
+
+        update: function(oldVal, newVal) {
+          if (newVal) {
+              var newVal = JSON.parse(newVal);
+              var oldVal = oldVal ? JSON.parse(oldVal) : [];
+
+              $scope.chatLog.value = newVal;
+
+              for (i = oldVal.length; i < newVal.length; i++) {
+                  var cur = newVal[i];
+                  if (!cur.isOwn && $scope.activeRequest.value) {
+                      KNUGGET.api("Notify", {id: i, tag: "chat", body: cur.text}, function (resp) {
+                      });
+                      $scope.chatLog.unread += 1;
+                  }
+              }
+          }
+        },
+
+        get: function(callback) {
+            KNUGGET.storage.get('ChatLog', function(value) {
+                value = value ? JSON.parse(value) : [];
+                $scope.chatLog.value = value;
+                callback(value);
+            });
+        },
+
+        add: function(msg) {
+            $scope.chatLog.value.push(msg);
+            KNUGGET.storage.set('ChatLog', activeRequest);
         }
     };
 
@@ -745,6 +769,7 @@
             $scope.board.clear();
             $scope.requests.clear();
             $scope.activeRequest.set(null);
+            KNUGGET.storage.set("ChatLog", JSON.stringify([]));
             KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
             KNUGGET.storage.set("AddTrigger", {shouldAdd: false});
         });

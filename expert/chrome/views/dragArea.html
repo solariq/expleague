@@ -24,6 +24,10 @@
     </div>
 </div>
 
+<div class="prefooter" ng-click="openChat()" chat>
+    {{getUnreadCount()}} сообщений не прочитано
+</div>
+
 <div class="footer">
     Осталось: {{readableTime(activeRequest.value.timeleft)}}
 </div>
