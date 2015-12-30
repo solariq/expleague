@@ -38,13 +38,16 @@ public abstract class MailBoxAgent extends UntypedPersistentActor {
       self().tell(new Snapshot(), self());
   }
 
+  protected abstract void incomingPresence(Presence presence);
+
   public void invoke(Presence presence) {
     if (!jid().bareEq(presence.to())) // only incoming
       return;
-    this.persist(presence, undelivered::add);
-    final Presence replace = presenceMap.put(presence.from().bare(), presence);
-    if (replace != null)
-      invoke(new Delivered(replace.id()));
+    final Presence replace = presenceMap.put(presence.from(), presence);
+    if (!presence.equals(replace)) {
+      incomingPresence(presence);
+      this.persist(presence, undelivered::add);
+    }
     if (msgToSnapshot-- <= 0)
       self().tell(new Snapshot(), self());
   }

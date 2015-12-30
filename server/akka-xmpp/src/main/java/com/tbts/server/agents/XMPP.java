@@ -49,7 +49,7 @@ public class XMPP extends UntypedActorAdapter {
         final JID actorJid = JID.parse(agent.path().name());
         if (actorJid.local().isEmpty() || actorJid.bareEq(from))
           continue;
-        if (XMPP.jid().bareEq(from) || subscription.getOrDefault(actorJid, Collections.emptySet()).contains(from)) {
+        if (subscription.getOrDefault(actorJid, Collections.emptySet()).contains(from)) {
           final Presence copy = presence.copy();
           copy.to(actorJid);
           agent.tell(copy, self());
@@ -88,14 +88,12 @@ public class XMPP extends UntypedActorAdapter {
 
   public Map<JID, Set<JID>> subscription = new HashMap<>();
   public void invoke(Subscribe subscribe) {
-    if (!XMPP.jid().bareEq(subscribe.forJid)) {
-      subscription.compute(subscribe.from, (jid, set) -> {
-        if (set == null)
-          set = new HashSet<>();
-        set.add(subscribe.forJid);
-        return set;
-      });
-    }
+    subscription.compute(subscribe.from, (jid, set) -> {
+      if (set == null)
+        set = new HashSet<>();
+      set.add(subscribe.forJid);
+      return set;
+    });
     status.computeIfPresent(subscribe.forJid, (jid, presence) -> {
       final Presence copy = presence.copy();
       copy.to(subscribe.from);

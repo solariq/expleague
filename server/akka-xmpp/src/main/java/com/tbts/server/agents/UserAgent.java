@@ -3,6 +3,7 @@ package com.tbts.server.agents;
 import akka.actor.ActorRef;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Iq;
+import com.tbts.xmpp.stanza.Presence;
 import com.tbts.xmpp.stanza.Stanza;
 
 /**
@@ -35,9 +36,15 @@ public class UserAgent extends MailBoxAgent {
         role.forward(stanza, context());
     }
     else {
-      if (connecter != null)
+      if (connecter != null && !(stanza instanceof Presence))
         connecter.tell(stanza, self());
     }
+  }
+
+  @Override
+  protected void incomingPresence(Presence presence) {
+    if (connecter != null)
+      connecter.tell(presence, self());
   }
 
   public static class Connected {

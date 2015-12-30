@@ -1,7 +1,29 @@
-POST /http-bind HTTP/1.1
-Host: test.expleague.com
-Accept-Encoding: gzip, deflate
-Content-Type: text/xml; charset=utf-8
-Content-Length: 69
-
-<body xmlns="http://jabber.org/protocol/httpbind" rid="798558081"/>
+<body xmlns="http://jabber.org/protocol/httpbind" rid="1561164080" sid="VYi1bwAAAAE=">
+    <message xmlns="jabber:client" type="groupchat"
+             from="room1451487883291@muc.test.expleague.com/30F9B121-B11B-43FE-9726-EB5843299D11"
+             to="tbts@test.expleague.com/expert" id="UiQqRwAAAAM=">
+        <body>Welcome to room room1451487883291@muc.test.expleague.com/30F9B121-B11B-43FE-9726-EB5843299D11</body>
+    </message>
+    <message xmlns="jabber:client" type="groupchat"
+             from="room1451487883291@muc.test.expleague.com/30F9B121-B11B-43FE-9726-EB5843299D11"
+             to="tbts@test.expleague.com/expert" id="Tsp/YQAAAAA=">
+        <body>Room set up and unlocked.</body>
+    </message>
+    <message xmlns="jabber:client" type="groupchat" from="30F9B121-B11B-43FE-9726-EB5843299D11@test.expleague.com"
+             to="tbts@test.expleague.com/expert" id="GIjSjAAAAAM=">
+        <subject>Тест Новый сервер 4</subject>
+    </message>
+    <message xmlns="jabber:client" type="groupchat" from="30F9B121-B11B-43FE-9726-EB5843299D11@test.expleague.com"
+             to="tbts@test.expleague.com/expert" id="GIjSjAAAAAg=">
+        <body>Тест связи с экспертом комната 4</body>
+    </message>
+    <message xmlns="jabber:client" type="groupchat" from="alomakina@test.expleague.com/expert"
+             to="tbts@test.expleague.com/expert" id="bY0QUQAAAAI=">
+        <body>{"type":"response","content":[{"text":{"text":"Док — вид панели инструментов, часть компьютерного
+            графического интерфейса пользователя, позволяющая запускать программы на выполнение и переключаться между
+            работающими программами.","title":"dock - Поиск в
+            Google","referer":"https://www.google.ru/webhp?sourceid=chrome-instant&amp;ion=1&amp;espv=2&amp;ie=UTF-8#q=dock"}},{"text":{"text":"Ответ
+            в комнату 4(!!!!!)","title":"Заголовок","referer":"#"}}]}
+        </body>
+    </message>
+</body>

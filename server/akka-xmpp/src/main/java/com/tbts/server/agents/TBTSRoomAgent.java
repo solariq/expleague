@@ -92,6 +92,8 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     if (!partisipants.contains(jid.bare())) {
       partisipants.add(jid.bare());
       snapshot.stream().filter(s -> s instanceof Message && ((Message)s).type() == MessageType.GROUP_CHAT).map(s -> (Message)s).forEach(message -> {
+        if (jid.bareEq(message.from()))
+          return;
         final Message copy = message.copy();
         copy.to(jid);
         copy.from(roomAlias(message.from()));

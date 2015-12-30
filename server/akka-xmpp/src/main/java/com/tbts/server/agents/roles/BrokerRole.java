@@ -11,7 +11,6 @@ import com.tbts.server.agents.TBTSRoomAgent;
 import com.tbts.server.agents.XMPP;
 import com.tbts.util.akka.AkkaTools;
 import com.tbts.xmpp.JID;
-import com.tbts.xmpp.stanza.Presence;
 
 import java.util.ArrayDeque;
 import java.util.Optional;
@@ -110,14 +109,13 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
     );
 
     when(State.INVITE,
-        matchEvent(Presence.class,
-            (presence, task) -> task.invited(presence.from()),
-            (presence, task) -> {
+        matchEvent(Operations.Start.class,
+            (start, task) -> task.invited(JID.parse(sender().path().name())),
+            (start, task) -> {
               JID expert;
-              while ((expert = task.next()) != null) {
+              while ((expert = task.next()) != null)
                 context().actorSelection("/user/labor-exchange/experts-dpt/" + expert.getAddr()).tell(new Operations.Cancel(), self());
-              }
-              return goTo(State.WORK_TRACKING).using(task.enter(presence.from()));
+              return goTo(State.WORK_TRACKING).using(task.enter(task.invited));
             }
         ).event(Operations.Cancel.class,
             (cancel, task) -> task.invited(JID.parse(sender().path().name())),
@@ -125,7 +123,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
               final JID expert = task.next();
               if (expert == null)
                 return goTo(State.STARVING);
-              sender().tell(new Operations.Invite(), self());
+              LaborExchange.registerExpert(expert, context()).tell(new Operations.Invite(), self());
               return stay();
             }
         ).event(Operations.Ok.class,

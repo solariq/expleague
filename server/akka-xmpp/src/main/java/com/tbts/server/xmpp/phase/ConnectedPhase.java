@@ -18,12 +18,15 @@ import com.tbts.xmpp.stanza.Iq;
 import com.tbts.xmpp.stanza.Presence;
 import com.tbts.xmpp.stanza.Stanza;
 
+import java.util.logging.Logger;
+
 /**
  * User: solar
  * Date: 14.12.15
  * Time: 16:37
  */
 public class ConnectedPhase extends UntypedActorAdapter {
+  private static final Logger log = Logger.getLogger(ConnectedPhase.class.getName());
   private JID jid;
   private final ActorRef outFlow;
   private boolean bound = false;
@@ -65,7 +68,7 @@ public class ConnectedPhase extends UntypedActorAdapter {
               role = null;
           }
           agent.tell(new UserAgent.Connected(self(), role), self());
-          outFlow.tell(Iq.answer(iq, new Session()), getSelf());
+          outFlow.tell(Iq.answer(iq, new Session()), self());
           break;
         }
       }
@@ -74,7 +77,7 @@ public class ConnectedPhase extends UntypedActorAdapter {
           iq.from(jid);
           agent.tell(iq, self());
         }
-        else Services.reference(context().system()).tell(iq, getSelf());
+        else Services.reference(context().system()).tell(iq, self());
     }
   }
 
@@ -82,8 +85,11 @@ public class ConnectedPhase extends UntypedActorAdapter {
     if (msg instanceof Iq)
       return;
     if (msg.to() != null && jid().bareEq(msg.to())) { // incoming
-      outFlow.tell(msg, getSender());
-      getSender().tell(new MailBoxAgent.Delivered(msg.id()), getSelf());
+      outFlow.tell(msg, sender());
+      if (sender().path().name().equals(jid.bare().toString())) // TODO: remove this shit
+        sender().tell(new MailBoxAgent.Delivered(msg.id()), self());
+      else
+        log.warning("Message " + msg + " received from strange source: " + sender().path());
     }
     else { // outgoing
       msg.from(jid);

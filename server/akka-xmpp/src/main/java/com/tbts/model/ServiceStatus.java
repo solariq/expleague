@@ -20,4 +20,17 @@ public class ServiceStatus extends Item {
   public ServiceStatus(int expertsOnline) {
     this.expertsOnline = expertsOnline;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof ServiceStatus)) return false;
+    ServiceStatus that = (ServiceStatus) o;
+    return expertsOnline == that.expertsOnline;
+  }
+
+  @Override
+  public int hashCode() {
+    return expertsOnline;
+  }
 }

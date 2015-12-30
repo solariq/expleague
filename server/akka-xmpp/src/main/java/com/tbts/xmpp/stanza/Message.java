@@ -138,6 +138,10 @@ public class Message extends Stanza {
     return this;
   }
 
+  public boolean has(Class<?> clazz) {
+    return this.any.stream().filter(x -> clazz.isAssignableFrom(x.getClass())).findAny().isPresent();
+  }
+
   /**
    * <p>Java class for anonymous complex type.
    *

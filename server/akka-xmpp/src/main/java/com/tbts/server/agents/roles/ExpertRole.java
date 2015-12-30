@@ -13,6 +13,7 @@ import com.tbts.server.agents.XMPP;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Message;
 import com.tbts.xmpp.stanza.Presence;
+import com.tbts.xmpp.stanza.Stanza;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
@@ -94,17 +95,25 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
               timer.cancel();
               return goTo(State.OFFLINE).using(null);
             }
+        ).event(
+            Presence.class,
+            (presence, task) -> presence.available(),
+            (presence, task) -> stay()
         )
     );
     when(State.INVITE,
         matchEvent(
-            Presence.class,
-            (presence, task) -> {
-              if (task.getFirst().room().bareEq(presence.to())) {
+            Stanza.class,
+            (stanza, task) -> {
+              if (task.getFirst().room().bareEq(stanza.to())) {
                 timer.cancel();
-                task.second.tell(presence, self());
-                XMPP.send(new Message(jid(), task.first.room(), new Operations.Start()), context());
-                return goTo(State.BUSY);
+                if (stanza instanceof Message && ((Message) stanza).has(Operations.Cancel.class))
+                  return goTo(State.READY).using(null);
+                else {
+                  task.second.tell(new Operations.Start(), self());
+                  XMPP.send(new Message(jid(), task.first.room(), new Operations.Start()), context());
+                  return goTo(State.BUSY);
+                }
               }
               return stay();
             }
@@ -133,12 +142,16 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
         )
     );
 
-    whenUnhandled(matchEvent(Operations.Resume.class,
-        (resume, task) -> {
-          XMPP.send(new Message(jid(), resume.offer().room(), new Operations.Done()), context());
-          return stay().replying(new Operations.Cancel());
-        }
-    ));
+    whenUnhandled(
+        matchEvent(Operations.Resume.class,
+            (resume, task) -> {
+              XMPP.send(new Message(jid(), resume.offer().room(), new Operations.Done()), context());
+              return stay().replying(new Operations.Cancel());
+            }
+        ).event(Offer.class,
+            (offer, task) -> stay().replying(new Operations.Cancel())
+        )
+    );
 
 //    whenUnhandled(matchAnyEvent((state, data) -> stay().replying(new Operations.Cancel())));
 

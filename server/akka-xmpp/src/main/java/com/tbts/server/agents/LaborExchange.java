@@ -30,6 +30,9 @@ import java.util.*;
  */
 public class LaborExchange extends UntypedPersistentActor {
   private final Map<String, ActorRef> openPositions = new HashMap<>();
+  public LaborExchange() {
+    XMPP.send(new Presence(XMPP.jid(), false, new ServiceStatus(0)), context());
+  }
 
   public void invoke(Offer offer) {
     experts();

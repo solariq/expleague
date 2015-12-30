@@ -97,8 +97,8 @@ public class BOSHServer extends UntypedActorAdapter {
             if (sessionOpt.isDefined()) {
               final ActorRef session = sessionOpt.get();
               final List<Item> contents = AkkaTools.ask(session, boshBody, Timeout.apply(1, TimeUnit.HOURS));
+              boshBody.items().clear();
               if (contents != null && !contents.isEmpty()) {
-                boshBody.items().clear();
                 boshBody.items().addAll(contents);
               }
             }
