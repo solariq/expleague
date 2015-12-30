@@ -10,9 +10,12 @@ import akka.http.javadsl.model.headers.AccessControlAllowHeaders;
 import akka.http.javadsl.model.headers.AccessControlAllowMethods;
 import akka.http.javadsl.model.headers.AccessControlAllowOrigin;
 import akka.http.javadsl.model.headers.HttpOriginRange;
+import akka.japi.function.Function;
 import akka.japi.function.Procedure;
 import akka.stream.ActorMaterializer;
+import akka.stream.ActorMaterializerSettings;
 import akka.stream.Materializer;
+import akka.stream.Supervision;
 import akka.stream.javadsl.Flow;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
@@ -44,7 +47,14 @@ public class BOSHServer extends UntypedActorAdapter {
   private Materializer materializer;
   @Override
   public void preStart() throws Exception {
-    materializer = ActorMaterializer.create(context());
+    final ActorMaterializerSettings settings = ActorMaterializerSettings.create(getContext().system())
+        .withSupervisionStrategy((Function<Throwable, Supervision.Directive>) param -> {
+          log.log(Level.SEVERE, "Exception in the BOSH protocol flow", param);
+          return Supervision.stop();
+        })
+        .withDebugLogging(true)
+        .withInputBuffer(1 << 6, 1 << 7);
+    materializer = ActorMaterializer.create(settings, context());
     final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("localhost", 5280, materializer);
     serverSource.to(Sink.foreach(new ProcessConnection())).run(materializer);
   }

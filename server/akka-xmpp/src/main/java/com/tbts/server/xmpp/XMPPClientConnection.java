@@ -57,7 +57,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
             })
             .withDebugLogging(true)
             .withInputBuffer(1<<6, 1<<7),
-        getContext().system());
+        context());
     try {
       invoke(ConnectionState.HANDSHAKE);
     }
