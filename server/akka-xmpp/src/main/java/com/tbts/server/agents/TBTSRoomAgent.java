@@ -56,11 +56,13 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     enterRoom(msg.from());
 
     if (msg.type() == MessageType.GROUP_CHAT) { // broadcast
+      final JID fromRoomAlias = new JID(jid.local(), jid.domain(), msg.from().local());
       for (final JID jid : partisipants) {
         if (jid.bareEq(msg.from()))
           continue;
         final Message copy = msg.copy();
         copy.to(jid);
+        copy.from(fromRoomAlias);
         XMPP.send(copy, context());
       }
     }
