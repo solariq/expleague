@@ -11,6 +11,7 @@ import com.tbts.xmpp.stanza.Message;
 import com.tbts.xmpp.stanza.Message.MessageType;
 import com.tbts.xmpp.stanza.Presence;
 import com.tbts.xmpp.stanza.Stanza;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -55,17 +56,8 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     log(msg);
     enterRoom(msg.from());
 
-    if (msg.type() == MessageType.GROUP_CHAT) { // broadcast
-      final JID fromRoomAlias = new JID(jid.local(), jid.domain(), msg.from().local());
-      for (final JID jid : partisipants) {
-        if (jid.bareEq(msg.from()))
-          continue;
-        final Message copy = msg.copy();
-        copy.to(jid);
-        copy.from(fromRoomAlias);
-        XMPP.send(copy, context());
-      }
-    }
+    if (msg.type() == MessageType.GROUP_CHAT)
+      broadcast(msg);
 
     if (msg.get(Message.Subject.class) != null)
       LaborExchange.reference(context()).tell(new Offer(jid, msg.from(), msg.get(Message.Subject.class)), self());
@@ -79,11 +71,17 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     if (presence.status().equals(currentStatus))
       return;
     this.presence.put(from, presence.status());
+    broadcast(presence);
+  }
+
+  private void broadcast(Stanza stanza) {
     for (final JID jid : partisipants) {
-      final Presence copy = presence.copy();
-      if (jid.bareEq(from))
-        continue;
+      if (jid.bareEq(stanza.from()))
+        return;
+
+      final Stanza copy = stanza.copy();
       copy.to(jid);
+      copy.from(roomAlias(stanza.from()));
       XMPP.send(copy, context());
     }
   }
@@ -96,9 +94,15 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
       snapshot.stream().filter(s -> s instanceof Message && ((Message)s).type() == MessageType.GROUP_CHAT).map(s -> (Message)s).forEach(message -> {
         final Message copy = message.copy();
         copy.to(jid);
+        copy.from(roomAlias(message.from()));
         XMPP.send(copy, context());
       });
     }
+  }
+
+  @NotNull
+  private JID roomAlias(JID from) {
+    return new JID(this.jid.local(), this.jid.domain(), from.local());
   }
 
   public void invoke(Iq command) {
@@ -109,7 +113,6 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   }
 
   public void log(Stanza stanza) { // saving everything to archive
-//    System.out.println(stanza.xmlString());
     snapshot.add(stanza);
     Archive.instance().log(jid.local(), stanza.from().toString(), stanza.xmlString());
   }
