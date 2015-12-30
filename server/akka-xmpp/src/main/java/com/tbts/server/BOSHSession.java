@@ -48,6 +48,10 @@ public class BOSHSession extends UntypedActorAdapter {
     if (!outgoing.isEmpty())
       invoke(Timeout.zero());
 
+    // schedule answer in half an hour in case of no messages received
+    context().system().scheduler().scheduleOnce(
+        Duration.create(30, TimeUnit.MINUTES),
+        self(), Timeout.zero(), context().dispatcher(), self());
     for (final Item item : body.items()) {
       businesLogic.tell(item, self());
     }
