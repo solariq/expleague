@@ -38,6 +38,7 @@ import java.io.PipedOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * User: solar
@@ -45,6 +46,7 @@ import java.util.concurrent.TimeUnit;
  * Time: 17:42
  */
 public class ImageStorage {
+  private static final Logger log = Logger.getLogger(ImageStorage.class.getName());
   private static final String BUCKET_NAME = "tbts-image-storage-main-chunk";
   private static ImageStorage instance;
   final AmazonS3Client s3Client;
@@ -74,7 +76,7 @@ public class ImageStorage {
         new Procedure<IncomingConnection>() {
           @Override
           public void apply(IncomingConnection connection) throws Exception {
-            System.out.println("Accepted new connection from " + connection.remoteAddress());
+            log.fine("Accepted new connection from " + connection.remoteAddress());
             connection.handleWithAsyncHandler((Function<HttpRequest, Future<HttpResponse>>) httpRequest -> {
               final Future ask = (Future)Patterns.ask(system.actorOf(Props.create(RequestHandler.class)), httpRequest, Timeout.apply(Duration.create(30, TimeUnit.SECONDS)));
               //noinspection unchecked

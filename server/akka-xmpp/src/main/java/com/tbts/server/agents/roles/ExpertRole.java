@@ -18,6 +18,7 @@ import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * User: solar
@@ -25,6 +26,7 @@ import java.util.concurrent.TimeUnit;
  * Time: 14:16
  */
 public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorRef>> {
+  private static final Logger log = Logger.getLogger(ExpertRole.class.getName());
   public static final FiniteDuration CHECK_TIMEOUT = Duration.create(10, TimeUnit.SECONDS);
   public static final FiniteDuration INVITE_TIMEOUT = Duration.create(1, TimeUnit.MINUTES);
   private Cancellable timer;
@@ -164,7 +166,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
 
     onTransition((from, to) -> {
       final Offer first = nextStateData() != null ? nextStateData().first : null;
-      System.out.println(from + " -> " + to + (first != null ? " " + first : ""));
+      log.fine(from + " -> " + to + (first != null ? " " + first : ""));
     });
 
     onTransition((from, to) -> {

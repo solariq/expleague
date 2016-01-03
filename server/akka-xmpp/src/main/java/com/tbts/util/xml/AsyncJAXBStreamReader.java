@@ -14,6 +14,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.logging.Logger;
 
 /**
  * User: solar
@@ -21,6 +22,7 @@ import java.lang.reflect.Modifier;
  * Time: 15:49
  */
 public class AsyncJAXBStreamReader {
+  private static final Logger log = Logger.getLogger(AsyncJAXBStreamReader.class.getName());
   private final StAXStreamConnector connector;
   private Action action;
 
@@ -53,7 +55,7 @@ public class AsyncJAXBStreamReader {
       try {
         if (int.class.equals(field.getType()) && (field.getModifiers() & Modifier.STATIC) != 0) {
           if (next == field.getInt(null))
-            System.out.println(field.getName());
+            log.finest(field.getName());
         }
       } catch (IllegalAccessException e) {
         throw new RuntimeException(e);

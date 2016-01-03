@@ -85,7 +85,7 @@ public class SSLHandshake extends UntypedActorAdapter {
           }
           else {
             out = expandBuffer(out, sslEngine.getSession().getApplicationBufferSize());
-            System.out.println("pos:" + in.position());
+            log.info("Unwrap buffer overflow. Pos:" + in.position());
           }
           break;
         case NEED_WRAP:

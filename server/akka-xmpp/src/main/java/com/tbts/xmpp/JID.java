@@ -97,8 +97,8 @@ public class JID implements Serializable, Cloneable {
   }
 
   public boolean bareEq(JID to) {
-    if (to != null && this.bare.equals(to.bare) && this.bare != to.bare)
-      System.out.println();
+//    if (to != null && this.bare.equals(to.bare) && this.bare != to.bare)
+//      System.out.println();
     //noinspection StringEquality
     return to != null && this.bare == to.bare;
   }

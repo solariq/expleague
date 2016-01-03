@@ -62,7 +62,7 @@ public class BOSHServer extends UntypedActorAdapter {
   private class ProcessConnection implements Procedure<IncomingConnection> {
     @Override
     public void apply(IncomingConnection connection) throws Exception {
-      System.out.println("Accepted new BOSH connection from " + connection.remoteAddress());
+      log.fine("Accepted new BOSH connection from " + connection.remoteAddress());
       connection.handleWith(Flow.of(HttpRequest.class).take(1).map(request -> {
         if (request.method() == HttpMethods.OPTIONS)
           return HttpResponse.create()

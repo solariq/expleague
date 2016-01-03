@@ -15,6 +15,7 @@ import com.tbts.xmpp.JID;
 import java.util.ArrayDeque;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.logging.Logger;
 
 /**
  * User: solar
@@ -22,6 +23,7 @@ import java.util.Queue;
  * Time: 22:50
  */
 public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
+  private static final Logger log = Logger.getLogger(BrokerRole.class.getName());
   public static class Task {
     public final Offer offer;
     private final Queue<JID> candidates = new ArrayDeque<>();
@@ -154,7 +156,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
     ));
 
     onTransition((from, to) -> {
-      System.out.println(from + " -> " + to + (nextStateData() != null ? " " + nextStateData().offer : ""));
+      log.fine(from + " -> " + to + (nextStateData() != null ? " " + nextStateData().offer : ""));
     });
 
     initialize();

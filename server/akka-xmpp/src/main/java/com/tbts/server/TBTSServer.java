@@ -13,6 +13,7 @@ import com.typesafe.config.ConfigFactory;
 
 import java.io.IOException;
 import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * User: solar
@@ -20,6 +21,7 @@ import java.util.logging.LogManager;
  * Time: 17:42
  */
 public class TBTSServer {
+  private static final Logger log = Logger.getLogger(TBTSServer.class.getName());
   private static Cfg config;
   private static Roster users;
 
@@ -48,7 +50,7 @@ public class TBTSServer {
   public static class ConnectionManager extends UntypedActor {
     @Override
     public void onReceive(Object o) throws Exception {
-      System.out.println(String.valueOf(o));
+      log.fine(String.valueOf(o));
     }
   }
 
