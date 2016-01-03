@@ -15,6 +15,7 @@ import akka.stream.stage.Context;
 import akka.stream.stage.PushPullStage;
 import akka.stream.stage.SyncDirective;
 import akka.util.Timeout;
+import com.spbsu.commons.JUnitIOCapture;
 import com.spbsu.commons.random.FastRandom;
 import com.tbts.util.akka.UntypedActorAdapter;
 import org.junit.Test;
@@ -31,7 +32,7 @@ import java.util.concurrent.TimeUnit;
  * Date: 09.12.15
  * Time: 10:46
  */
-public class TestStreams {
+public class TestStreams extends JUnitIOCapture {
   private static class RandIntStream extends AbstractActorPublisher<Integer> {
     private final FastRandom rng = new FastRandom();
     public RandIntStream() {
