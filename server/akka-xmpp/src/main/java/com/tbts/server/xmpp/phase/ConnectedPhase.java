@@ -6,7 +6,7 @@ import com.tbts.server.agents.LaborExchange;
 import com.tbts.server.agents.MailBoxAgent;
 import com.tbts.server.agents.UserAgent;
 import com.tbts.server.agents.XMPP;
-import com.tbts.server.services.Services;
+import com.tbts.server.services.XMPPServices;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.Features;
 import com.tbts.xmpp.JID;
@@ -77,7 +77,7 @@ public class ConnectedPhase extends UntypedActorAdapter {
           iq.from(jid);
           agent.tell(iq, self());
         }
-        else Services.reference(context().system()).tell(iq, self());
+        else XMPPServices.reference(context().system()).tell(iq, self());
     }
   }
 

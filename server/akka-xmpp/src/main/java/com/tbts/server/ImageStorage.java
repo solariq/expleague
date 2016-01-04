@@ -1,6 +1,7 @@
 package com.tbts.server;
 
 import akka.actor.ActorSystem;
+import akka.actor.PoisonPill;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.http.javadsl.Http;
@@ -45,11 +46,11 @@ import java.util.logging.Logger;
  * Date: 24.11.15
  * Time: 17:42
  */
-public class ImageStorage {
+public class ImageStorage extends UntypedActor {
   private static final Logger log = Logger.getLogger(ImageStorage.class.getName());
   private static final String BUCKET_NAME = "tbts-image-storage-main-chunk";
-  private static ImageStorage instance;
   final AmazonS3Client s3Client;
+  private Materializer materializer;
 
   private ImageStorage() {
     final BasicAWSCredentials credentials = new BasicAWSCredentials("AKIAJPLJBHVNFAWY3S4A", "UEnvfQ2ver5mlOu7IJsjxRH3G9uF3/f0WNLFZ9c6");
@@ -60,37 +61,40 @@ public class ImageStorage {
     }
   }
 
-  public static synchronized ImageStorage instance() {
-    if (instance == null) {
-      instance = new ImageStorage();
-      instance.start();
-    }
-    return instance;
+  @Override
+  public void preStart() throws Exception {
+    materializer = ActorMaterializer.create(context());
+    final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("localhost", 8067, materializer);
+    serverSource.to(Sink.actorRef(self(), PoisonPill.getInstance())).run(materializer);
   }
 
-  public void start() {
-    final ActorSystem system = ActorSystem.create("TBTS_Light_XMPP");
-    final Materializer materializer = ActorMaterializer.create(system);
-    final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(system).bind("localhost", 8067, materializer);
-    serverSource.to(Sink.foreach(
-        new Procedure<IncomingConnection>() {
-          @Override
-          public void apply(IncomingConnection connection) throws Exception {
-            log.fine("Accepted new connection from " + connection.remoteAddress());
-            connection.handleWithAsyncHandler((Function<HttpRequest, Future<HttpResponse>>) httpRequest -> {
-              final Future ask = (Future)Patterns.ask(system.actorOf(Props.create(RequestHandler.class)), httpRequest, Timeout.apply(Duration.create(30, TimeUnit.SECONDS)));
-              //noinspection unchecked
-              return (Future<HttpResponse>)ask;
-            }, materializer);
-          }
-        })).run(materializer);
+  @Override
+  public void onReceive(Object o) throws Exception {
+    if (o instanceof IncomingConnection) {
+      final IncomingConnection connection = (IncomingConnection) o;
+
+      log.fine("Accepted new connection from " + connection.remoteAddress());
+      connection.handleWithAsyncHandler((Function<HttpRequest, Future<HttpResponse>>) httpRequest -> {
+        final Future ask = (Future) Patterns.ask(context().actorOf(Props.create(RequestHandler.class, s3Client)), httpRequest, Timeout.apply(Duration.create(30, TimeUnit.SECONDS)));
+        //noinspection unchecked
+        return (Future<HttpResponse>)ask;
+      }, materializer);
+    }
+    else unhandled(o);
   }
 
   public static void main(String[] args) {
-    instance.start();
+    final ActorSystem system = ActorSystem.create("TBTS_Light_XMPP");
+    system.actorOf(Props.create(ImageStorage.class));
   }
 
   private static class RequestHandler extends UntypedActor {
+    private final AmazonS3Client s3Client;
+
+    public RequestHandler(AmazonS3Client s3Client) {
+      this.s3Client = s3Client;
+    }
+
     @Override
     public void onReceive(Object o) throws Exception {
       HttpRequest request = (HttpRequest) o;
@@ -106,7 +110,7 @@ public class ImageStorage {
         final String id = uri.path().substring(1); // skip first slash
         S3Object image;
         try {
-          image = instance.s3Client.getObject(BUCKET_NAME, id);
+          image = s3Client.getObject(BUCKET_NAME, id);
         }
         catch(AmazonS3Exception e) {
           image = null;
@@ -181,7 +185,7 @@ public class ImageStorage {
             putRequest.setMetadata(new ObjectMetadata());
             assert mime != null;
             putRequest.getMetadata().setContentType(mime.trim());
-            instance.s3Client.putObject(putRequest);
+            s3Client.putObject(putRequest);
             //noinspection ResultOfMethodCallIgnored
             tempFile.delete();
           }

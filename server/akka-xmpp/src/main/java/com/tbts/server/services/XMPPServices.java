@@ -15,7 +15,7 @@ import java.util.Map;
  * Date: 15.12.15
  * Time: 13:20
  */
-public class Services extends UntypedActorAdapter {
+public class XMPPServices extends UntypedActorAdapter {
   public void invoke(Iq<?> iq) {
     final String ns = iq.serviceNS();
     if (knownServices.containsKey(ns)) {

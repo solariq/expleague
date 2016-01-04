@@ -1,13 +1,11 @@
 package com.tbts.server;
 
-import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import akka.actor.UntypedActor;
-import com.tbts.server.dao.Archive;
 import com.tbts.server.agents.LaborExchange;
 import com.tbts.server.agents.XMPP;
-import com.tbts.server.services.Services;
+import com.tbts.server.dao.Archive;
+import com.tbts.server.services.XMPPServices;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -34,24 +32,19 @@ public class TBTSServer {
 
     final ActorSystem system = ActorSystem.create("TBTS", load);
 
-
-    final ActorRef actorRef = system.actorOf(Props.create(ConnectionManager.class));
+    // singletons
     system.actorOf(Props.create(XMPP.class), "xmpp");
-    system.actorOf(Props.create(Services.class), "services");
-    system.actorOf(Props.create(XMPPServer.class, actorRef), "comm");
-    system.actorOf(Props.create(BOSHServer.class), "bosh");
     system.actorOf(Props.create(LaborExchange.class), "labor-exchange");
+
+    // per node
+    system.actorOf(Props.create(XMPPServices.class), "services");
+    system.actorOf(Props.create(XMPPServer.class), "comm");
+    system.actorOf(Props.create(BOSHServer.class), "bosh");
+    system.actorOf(Props.create(ImageStorage.class), "image-storage");
   }
 
   public static synchronized Roster roster() {
     return users;
-  }
-
-  public static class ConnectionManager extends UntypedActor {
-    @Override
-    public void onReceive(Object o) throws Exception {
-      log.fine(String.valueOf(o));
-    }
   }
 
   public static Cfg config() {

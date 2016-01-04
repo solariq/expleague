@@ -1,7 +1,7 @@
 package com.tbts.xmpp.control.roster;
 
 import com.tbts.server.services.Roster;
-import com.tbts.server.services.Services;
+import com.tbts.server.services.XMPPServices;
 import com.tbts.xmpp.Item;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.control.XMPPQuery;
@@ -20,7 +20,7 @@ import java.util.List;
 @XmlRootElement(name = "query")
 public class Query extends XMPPQuery {
   static {
-    Services.register("jabber:iq:roster", Roster.class, "roster");
+    XMPPServices.register("jabber:iq:roster", Roster.class, "roster");
   }
   @XmlElements({
       @XmlElement(type = RosterItem.class, name = "item", namespace = "jabber:iq:roster")

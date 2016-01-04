@@ -8,6 +8,7 @@ import com.tbts.server.xmpp.XMPPClientConnection;
 import com.tbts.util.akka.UntypedActorAdapter;
 
 import java.net.InetSocketAddress;
+import java.util.logging.Logger;
 
 /**
  * User: solar
@@ -15,12 +16,7 @@ import java.net.InetSocketAddress;
  * Time: 14:47
  */
 public class XMPPServer extends UntypedActorAdapter {
-  final ActorRef manager;
-
-  public XMPPServer(ActorRef manager) {
-    this.manager = manager;
-  }
-
+  private static final Logger log = Logger.getLogger(XMPPServer.class.getName());
   @Override
   public void preStart() throws Exception {
     final ActorRef tcp = Tcp.get(getContext().system()).manager();
@@ -28,16 +24,10 @@ public class XMPPServer extends UntypedActorAdapter {
   }
 
   public void invoke(Tcp.Event msg) {
-    if (msg instanceof Tcp.Bound) {
-      manager.tell(msg, getSelf());
-    }
-    else if (msg instanceof Tcp.CommandFailed) {
+    log.fine(String.valueOf(msg));
+    if (msg instanceof Tcp.CommandFailed)
       getContext().stop(getSelf());
-    }
-    else if (msg instanceof Tcp.Connected) {
-      final Tcp.Connected conn = (Tcp.Connected) msg;
-      manager.tell(conn, getSelf());
+    else if (msg instanceof Tcp.Connected)
       getContext().actorOf(Props.create(XMPPClientConnection.class, getSender()));
-    }
   }
 }

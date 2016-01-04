@@ -18,7 +18,6 @@ import akka.util.Timeout;
 import com.spbsu.commons.JUnitIOCapture;
 import com.spbsu.commons.random.FastRandom;
 import com.tbts.util.akka.UntypedActorAdapter;
-import org.junit.Test;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
@@ -104,7 +103,7 @@ public class TestStreams extends JUnitIOCapture {
     }
   }
 
-  @Test
+//  @Test
   public void testFlows() throws InterruptedException {
     final ActorSystem system = ActorSystem.create("test-env");
     Materializer materializer = ActorMaterializer.create(system);
@@ -127,7 +126,7 @@ public class TestStreams extends JUnitIOCapture {
     Thread.sleep(100);
   }
 
-  @Test
+//  @Test
   public void testActorsSelection() throws Exception {
     final ActorSystem system = ActorSystem.create("test-env");
     for (int i = 0; i < 100; i++)
