@@ -47,8 +47,20 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
         .filter(m -> m.get(Message.Subject.class) != null)
         .findFirst();
     if (subject.isPresent()) {
-      final Message msg = subject.get();
-      LaborExchange.reference(context()).tell(new Offer(jid, msg.from(), msg.get(Message.Subject.class)), self());
+      final JID owner = subject.get().from();
+      boolean needToStart = false;
+      for (final Item item : snapshot) {
+        if (!(item instanceof Message))
+          continue;
+        if (((Message) item).from().bareEq(owner))
+          needToStart = true;
+        if (((Message) item).has(Operations.Done.class))
+          needToStart = false;
+      }
+      if (needToStart) {
+        final Message msg = subject.get();
+        LaborExchange.reference(context()).tell(new Offer(jid, msg.from(), msg.get(Message.Subject.class)), self());
+      }
     }
   }
 
