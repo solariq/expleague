@@ -9,6 +9,7 @@ import com.tbts.server.services.XMPPServices;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -28,7 +29,10 @@ public class TBTSServer {
     config = new Cfg(load);
     users = config.roster().newInstance();
     Archive.instance = config.archive().newInstance();
-    LogManager.getLogManager().readConfiguration(TBTSServer.class.getResourceAsStream("/logging.properties"));
+    if (System.getProperty("logger.config") == null)
+      LogManager.getLogManager().readConfiguration(TBTSServer.class.getResourceAsStream("/logging.properties"));
+    else
+      LogManager.getLogManager().readConfiguration(new FileInputStream(System.getProperty("logger.config")));
 
     final ActorSystem system = ActorSystem.create("TBTS", load);
 
