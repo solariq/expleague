@@ -3,6 +3,7 @@ package com.tbts.server;
 import akka.actor.ActorRef;
 import akka.actor.Cancellable;
 import akka.actor.Props;
+import akka.actor.Status;
 import akka.stream.Materializer;
 import akka.stream.OverflowStrategy;
 import akka.stream.javadsl.Sink;
@@ -21,6 +22,8 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * User: solar
@@ -28,6 +31,7 @@ import java.util.concurrent.TimeUnit;
  * Time: 19:56
  */
 public class BOSHSession extends UntypedActorAdapter {
+  private static final Logger log = Logger.getLogger(BOSHSession.class.getName());
   private final Materializer materializer;
   private ActorRef businesLogic;
   private String id;
@@ -89,6 +93,12 @@ public class BOSHSession extends UntypedActorAdapter {
     businesLogic.tell(new Open(), self());
   }
 
+  public void invoke(Status.Failure failure) {
+    if (failure.cause() != null)
+      log.log(Level.WARNING, "", failure.cause());
+    else
+      log.log(Level.WARNING, failure.toString());
+  }
   public void invoke(Timeout to) {
     if (connection != null) {
       connection.tell(new ArrayList<>(outgoing), self());
