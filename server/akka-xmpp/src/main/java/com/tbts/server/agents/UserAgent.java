@@ -12,6 +12,7 @@ import com.tbts.xmpp.stanza.Message;
 import com.tbts.xmpp.stanza.Presence;
 import com.tbts.xmpp.stanza.Stanza;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -93,7 +94,7 @@ public class UserAgent extends UntypedPersistentActor {
     else out(msg);
   }
 
-  public static class Delivered {
+  public static class Delivered implements Serializable {
     final String id;
     final String resource;
 

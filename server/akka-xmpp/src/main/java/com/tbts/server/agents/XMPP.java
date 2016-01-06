@@ -33,7 +33,7 @@ public class XMPP extends UntypedActorAdapter {
   }
 
   public void invoke(Stanza stanza) {
-    if (stanza.to() != null)
+    if (stanza.to() != null && !jid().bareEq(stanza.to()))
       allocate(stanza.to()).forward(stanza, getContext());
   }
 

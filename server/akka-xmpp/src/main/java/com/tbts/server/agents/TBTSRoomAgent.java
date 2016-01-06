@@ -29,7 +29,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   private final JID jid;
 
   public TBTSRoomAgent(JID jid) {
-    this.jid = jid;
+    this.jid = jid.bare();
     Archive.instance().visitMessages(jid.local(), new Archive.MessageVisitor() {
       @Override
       public boolean accept(String authorId, CharSequence message, long ts) {
@@ -89,7 +89,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   private void broadcast(Stanza stanza) {
     for (final JID jid : partisipants) {
       if (jid.bareEq(stanza.from()))
-        return;
+        continue;
 
       final Stanza copy = stanza.copy();
       copy.to(jid);
