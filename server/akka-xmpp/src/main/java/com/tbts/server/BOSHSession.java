@@ -15,11 +15,13 @@ import com.tbts.server.xmpp.phase.ConnectedPhase;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.BoshBody;
 import com.tbts.xmpp.Item;
+import com.tbts.xmpp.control.Close;
 import com.tbts.xmpp.control.Open;
 import scala.concurrent.duration.Duration;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -49,15 +51,22 @@ public class BOSHSession extends UntypedActorAdapter {
     if (this.connection != null)
       this.connection.tell(new ArrayList(), self());
     this.connection = sender();
-    if (!outgoing.isEmpty())
-      invoke(Timeout.zero());
-
-    // schedule answer in half an hour in case of no messages received
-    timeout = context().system().scheduler().scheduleOnce(
-        Duration.create(30, TimeUnit.MINUTES),
-        self(), Timeout.zero(), context().dispatcher(), self());
     for (final Item item : body.items()) {
       businesLogic.tell(item, self());
+    }
+    if (!body.terminate()) {
+      if (!outgoing.isEmpty())
+        invoke(Timeout.zero());
+
+      // schedule answer in half an hour in case of no messages received
+      timeout = context().system().scheduler().scheduleOnce(
+          Duration.create(30, TimeUnit.MINUTES),
+          self(), Timeout.zero(), context().dispatcher(), self());
+    }
+    else {
+      invoke(XMPPClientConnection.ConnectionState.CLOSED);
+      connection.tell(Collections.emptyList(), self());
+      connection = null;
     }
   }
 
@@ -87,6 +96,7 @@ public class BOSHSession extends UntypedActorAdapter {
         businesLogic = getContext().actorOf(Props.create(ConnectedPhase.class, id, self()));
         break;
       case CLOSED:
+        businesLogic.tell(new Close(), self());
         context().stop(self());
         return;
     }
@@ -99,6 +109,7 @@ public class BOSHSession extends UntypedActorAdapter {
     else
       log.log(Level.WARNING, failure.toString());
   }
+
   public void invoke(Timeout to) {
     if (connection != null) {
       connection.tell(new ArrayList<>(outgoing), self());

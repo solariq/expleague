@@ -63,4 +63,8 @@ public class BoshBody extends Item {
   public void type(String terminate) {
     this.type = terminate;
   }
+
+  public boolean terminate() {
+    return "terminame".equals(type);
+  }
 }
