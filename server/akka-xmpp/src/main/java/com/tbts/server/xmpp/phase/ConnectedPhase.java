@@ -2,8 +2,6 @@ package com.tbts.server.xmpp.phase;
 
 import akka.actor.ActorRef;
 import com.tbts.server.TBTSServer;
-import com.tbts.server.agents.LaborExchange;
-import com.tbts.server.agents.MailBoxAgent;
 import com.tbts.server.agents.UserAgent;
 import com.tbts.server.agents.XMPP;
 import com.tbts.server.services.XMPPServices;
@@ -18,15 +16,12 @@ import com.tbts.xmpp.stanza.Iq;
 import com.tbts.xmpp.stanza.Presence;
 import com.tbts.xmpp.stanza.Stanza;
 
-import java.util.logging.Logger;
-
 /**
  * User: solar
  * Date: 14.12.15
  * Time: 16:37
  */
 public class ConnectedPhase extends UntypedActorAdapter {
-  private static final Logger log = Logger.getLogger(ConnectedPhase.class.getName());
   private JID jid;
   private final ActorRef outFlow;
   private boolean bound = false;
@@ -37,6 +32,7 @@ public class ConnectedPhase extends UntypedActorAdapter {
     this.outFlow = outFlow;
   }
 
+  @SuppressWarnings("UnusedParameters")
   public void invoke(Open o) {
     outFlow.tell(new Features(new Bind(), new Session()), self());
   }
@@ -58,16 +54,8 @@ public class ConnectedPhase extends UntypedActorAdapter {
         }
         else if (iq.get() instanceof Session) {
           bound = true;
-          agent = XMPP.register(jid(), context());
-          final ActorRef role;
-          switch (jid().resource()) {
-            case "expert":
-              role = LaborExchange.registerExpert(jid.bare(), context());
-              break;
-            default:
-              role = null;
-          }
-          agent.tell(new UserAgent.Connected(self(), role), self());
+          agent = XMPP.register(jid().bare(), context());
+          agent.tell(new UserAgent.ConnStatus(true, jid.resource()), self());
           outFlow.tell(Iq.answer(iq, new Session()), self());
           break;
         }
@@ -86,10 +74,7 @@ public class ConnectedPhase extends UntypedActorAdapter {
       return;
     if (msg.to() != null && jid().bareEq(msg.to())) { // incoming
       outFlow.tell(msg, sender());
-      if (sender().path().name().equals(jid.bare().toString())) // TODO: remove this shit
-        sender().tell(new MailBoxAgent.Delivered(msg.id()), self());
-      else
-        log.warning("Message " + msg + " received from strange source: " + sender().path());
+      sender().tell(new UserAgent.Delivered(msg.id(), jid.resource()), self());
     }
     else { // outgoing
       msg.from(jid);
@@ -100,8 +85,10 @@ public class ConnectedPhase extends UntypedActorAdapter {
 
   @SuppressWarnings("UnusedParameters")
   public void invoke(Close close) throws Exception {
-    if (agent != null)
-    agent.tell(new Presence(jid, false), self());
+    if (agent != null) {
+      agent.tell(new Presence(jid, false), self());
+      agent.tell(new UserAgent.ConnStatus(false, jid.resource()), self());
+    }
   }
 
   public JID jid() {
