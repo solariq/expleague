@@ -62,7 +62,7 @@ public class BOSHServer extends UntypedActorAdapter {
   private class ProcessConnection implements Procedure<IncomingConnection> {
     @Override
     public void apply(IncomingConnection connection) throws Exception {
-      log.fine("Accepted new BOSH connection from " + connection.remoteAddress());
+//      log.fine("Accepted new BOSH connection from " + connection.remoteAddress());
       connection.handleWith(Flow.of(HttpRequest.class).take(1).map(request -> {
         if (request.method() == HttpMethods.OPTIONS)
           return HttpResponse.create()
@@ -102,9 +102,7 @@ public class BOSHServer extends UntypedActorAdapter {
                 boshBody.items().addAll(contents);
               }
             }
-            else {
-              boshBody.type("terminate");
-            }
+            else boshBody.type("terminate");
           }
           { // outgoing
             final ResponseEntity entity = HttpEntities.create(

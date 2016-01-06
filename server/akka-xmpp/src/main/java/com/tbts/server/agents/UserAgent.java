@@ -81,6 +81,8 @@ public class UserAgent extends UntypedPersistentActor {
   public void invoke(final Iq iq) {
     if (iq.from().bareEq(jid()))
       XMPP.send(iq, context());
+    else
+      in(iq);
   }
 
   public void invoke(final Message msg) {
