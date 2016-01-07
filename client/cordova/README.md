@@ -27,6 +27,8 @@ https://academy.appgyver.com/installwizard/steps#/home
 
 Выполнить комманду `steroids connect`
 
+В случае успеха: 
+
 Откроется браузер с QR-кодом
 
 Этот код нужно отсканировать в приложение AppGyver Scanner (телефон и компьютер должны быть в одной wifi-сети):
@@ -34,5 +36,27 @@ https://academy.appgyver.com/installwizard/steps#/home
 * Для Android - https://play.google.com/store/apps/details?id=com.appgyver.freshandroid
 
 Теперь если код проекта редактировать и сохранять, Scanner будет автоматически перезагружать приложение с обновленным кодом.
+
+В случае неуспеха:
+
+На этапе `steroids connect` - может выпадать ошибка вида:
+```
+npm WARN grunt-steroids@1.2.0 requires a peer of grunt-contrib-clean@0.6.0 but none was installed.
+npm WARN grunt-steroids@1.2.0 requires a peer of grunt-contrib-coffee@0.12.0 but none was installed.
+npm WARN grunt-steroids@1.2.0 requires a peer of grunt-contrib-concat@0.5.0 but none was installed.
+npm WARN grunt-steroids@1.2.0 requires a peer of grunt-contrib-copy@0.7.0 but none was installed.
+npm WARN grunt-steroids@1.2.0 requires a peer of grunt-contrib-sass@0.8.1 but none was installed.
+npm WARN grunt-steroids@1.2.0 requires a peer of grunt-extend-config@0.9.2 but none was installed.
+```
+
+Помогает выполнить поочередно команды:
+`npm install`
+
+`npm install grunt`
+
+`npm install grunt-contrib-clean grunt-contrib-coffee grunt-contrib-concat grunt-contrib-copy grunt-contrib-sass grunt-extend-config`
+
+После этого повторить команду `steroids connect`
+
 
 <!--- https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet -->
