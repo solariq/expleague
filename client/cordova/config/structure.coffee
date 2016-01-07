@@ -15,7 +15,7 @@ module.exports =
       location: "history#index"
     }
     {
-      title: "О приложение"
+      title: "О приложении"
       id: "about"
       location: "about#index"
     }

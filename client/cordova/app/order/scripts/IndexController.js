@@ -38,25 +38,25 @@ angular
       near: false,
       expert: false,
       urgency: 1
-    }
+    };
 
     // Возвращает имя значения urgency выбраного пользователем
     $scope.getCurrentUrgencyName = function(){
       return urgencyRange[$scope.order.urgency].name;
-    }
+    };
 
     // Общая цена поиска учитывающая срочность и превлечение эксперта
     $scope.getTotalPrice = function(){
       var urgencyPrice = urgencyRange[$scope.order.urgency].price;
       var expertPrice = ($scope.order.expert ? expertRate : 0);
       return urgencyPrice + expertPrice;
-    }
+    };
 
     $scope.submitOrder = function(){
       // Сохраняем результат введенный в поисковую форму в localStorage (tbtsHistory), чтобы получить к нему доступ на странице result
       var tbtsHistory = JSON.parse(localStorage.getItem(lsHistoryKeyName)) || [];
       var historyItem = {
-        id: tbtsHistory.length,
+        id: new Date().getTime(),
         text: $scope.order.text,
         near: $scope.order.near,
         expert: $scope.order.expert,
@@ -66,7 +66,7 @@ angular
         room: null,
         answerMode: 'chat',
         messages: []
-      }
+      };
       tbtsHistory.push(historyItem);
       localStorage.setItem(lsHistoryKeyName, JSON.stringify(tbtsHistory));
       // Отправляем history#index сообщение, что нужно обновить список истории
@@ -74,10 +74,10 @@ angular
       // Переключаемся на таб history
       steroids.tabBar.selectTab(1);
       // Показываем модальный экран result, если не задан параметр id, то показываем самый последний объект history
-      var modalView = new supersonic.ui.View('history#result');
+      var modalView = new supersonic.ui.View('history#result?id=' + historyItem.id);
       var options = {
         animate: false
-      }
+      };
       supersonic.ui.modal.show(modalView, options);
       // Очищаем форму, чтобы при возвращение на таб order можно было задавать новый запрос
       // TODO: избавиться от дублирования кода для очистки формы
@@ -86,12 +86,12 @@ angular
         near: false,
         expert: false,
         urgency: 1
-      }
+      };
       // Для корректной работы валидации, устанавливаем статус форму pristine
       $scope.orderForm.$setPristine();
       // Возвращаем floating-label в исходное состояние
       $('.input-label').removeClass('has-input');
-    }
+    };
 
     // Количество экспертов online
     $scope.expersOnline = null;

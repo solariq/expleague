@@ -4,10 +4,23 @@
   </super-navbar>
 
   <div class="list">
-    <div ng-repeat="item in history | orderBy: '-started'" class="item item-icon-right" ng-click="showResults(item.id)">
-      {{item.text}}
-      <div class="item-date">{{item.started | date:'d MMMM yyyy, HH:mm' | lowercase}}</div>
-      <div class="item-status">статус заказа</div>
+    <div ng-repeat="item in history | orderBy: '-started'" class="item item-icon-right" ng-swipe-left="showActions=true" ng-swipe-right="showActions=false">
+      <div ng-show="!showActions" ng-click="showResults(item.id)">
+        {{item.text}}
+        <div class="item-date">{{item.started | date:'d MMMM yyyy, HH:mm' | lowercase}}</div>
+        <div class="item-status">статус заказа</div>
+      </div>
+      <div ng-show="showActions" >
+        <div>
+          {{item.text}}
+          <div class="item-date">{{item.started | date:'d MMMM yyyy, HH:mm' | lowercase}}</div>
+          <div class="item-status">статус заказа</div>
+        </div>
+        <div ng-click="removeResults(item.id)" style="position: absolute; right: 0; top:0; height: 100%; background: red;">
+          <span style="position: relative; top: 40%; margin-left: 1em; margin-right: 1em; width: 100%;">Archive</span>
+        </div>
+      </div>
     </div>
+
   </div>
 </div>

@@ -8,9 +8,9 @@ angular
 
     var profileProduction = {
       profile: 'production',
-      bosh: 'http://toobusytosearch.net:5280/',
-      host: 'toobusytosearch.net',
-      muc: 'muc.toobusytosearch.net',
+      bosh: 'http://expleague.com/http-bind',
+      host: 'expleague.com',
+      muc: 'muc.expleague.com',
       debug: false
     };
 
@@ -24,8 +24,8 @@ angular
 
     var profileLocal = {
       profile: 'local',
-      bosh: 'http://77.88.2.245:5280/',
-      host: 'localhost/client',
+      bosh: 'http://172.21.211.153:5280/',
+      host: 'localhost',
       muc: 'muc.localhost',
       debug: true
     };

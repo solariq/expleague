@@ -56,6 +56,7 @@ public class BOSHServer extends UntypedActorAdapter {
         .withInputBuffer(1 << 6, 1 << 7);
     materializer = ActorMaterializer.create(settings, context());
     final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("localhost", 5280, materializer);
+//    final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("192.168.1.3", 5280, materializer);
     serverSource.to(Sink.foreach(new ProcessConnection())).run(materializer);
   }
 

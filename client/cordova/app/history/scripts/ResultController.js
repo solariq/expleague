@@ -11,8 +11,9 @@ angular
     var tbtsHistory = JSON.parse(localStorage.getItem(lsHistoryKeyName)) || [];
     // Ищем конкретную запись в массиве tbtsHistory по id, переданному в качестве параметра view,
     // если id не передали, берем последнюю запись в массиве
-    var tbtsHistoryItemId = steroids.view.params.id || (tbtsHistory.length - 1);
-    $scope.tbtsHistoryItem = tbtsHistory[tbtsHistoryItemId];
+    var tbtsHistoryItemId = steroids.view.params.id;
+    $scope.tbtsHistoryItem = tbtsHistory.filter(function(item){return item.id == tbtsHistoryItemId})[0];
+    supersonic.logger.log("Viewing element: " + $scope.tbtsHistoryItem);
 
     $scope.messages = $scope.tbtsHistoryItem.messages;
     // Формат message
@@ -136,7 +137,6 @@ angular
             function () {
               changeChatroomStatus('connected');
               connection.muc.setTopic(roomName, topic);
-              connection.addHandler(messageHandler, null, 'message', 'groupchat');
             },
             function (err) {
               alert('Chatroom configuration error: ' + err);
@@ -145,10 +145,11 @@ angular
         }
       }
       connection.muc.join(roomName, userAlias, onMessage, onPresence, onRoster);
+      connection.addHandler(messageHandler, null, 'message', 'groupchat')
     };
 
     var connection = new Strophe.Connection($scope.server.bosh);
-    connection.connect($scope.connection.jid, $scope.user.password, function (status) {
+    connection.connect($scope.connection.jid + "/results", $scope.user.password, function (status) {
       if (status === Strophe.Status.CONNECTING) {
         changeConnectionStatus('connecting');
       } else if (status === Strophe.Status.CONNECTED) {

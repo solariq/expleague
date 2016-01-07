@@ -9,8 +9,17 @@ angular
       var modalView = new supersonic.ui.View('history#result?id=' + id);
       var options = {
         animate: false
-      }
+      };
       supersonic.ui.modal.show(modalView, options);
+    };
+
+    $scope.removeResults = function(id) {
+      supersonic.logger.log("Removing: " + id);
+      $scope.history = $scope.history.filter(function(item){
+        return item.id !== id;
+      });
+      localStorage.setItem(lsHistoryKeyNamem, JSON.stringify($scope.history));
+      supersonic.logger.log("Left: " + JSON.stringify($scope.history));
     };
 
     $scope.history = JSON.parse(localStorage.getItem(lsHistoryKeyName)) || [];

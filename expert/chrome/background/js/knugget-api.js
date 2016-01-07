@@ -93,7 +93,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         if (this.host == 'localhost')
             this.connection = new Strophe.Connection('http://' + this.host + ':5280/');
         else
-            this.connection = new Strophe.Connection('https://' + this.host + '/http-bind');
+            this.connection = new Strophe.Connection('http://' + this.host + '/http-bind');
 
         this.register = function (regCallback) {
             conn = this.connection;
