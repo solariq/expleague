@@ -21,15 +21,16 @@ module.exports =
     }
   ]
 
+  preloads: [
+    {
+     id: "background"
+     location: "xmpp#xmpp"
+    }
+  ]
+
   # rootView:
   #   location: "example#getting-started"
 
-  # preloads: [
-  #   {
-  #     id: "result"
-  #     location: "history#result"
-  #   }
-  # ]
 
   # drawers:
   #   left:
