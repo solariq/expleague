@@ -1,0 +1,18 @@
+<div class="overlay dialog__overlay"></div>
+
+<div class="wrapper" show-question>
+    <div class="content contentex dialog__content collaboration">
+
+        <i class="close" ng-click="closeMap()"></i>
+
+        <div class="dialog-title">
+            <div class="header"><h2>Местоположение пользователя ({{readableTime(getLeftTime())}})</h2></div>
+            <div class="description">
+                <a>Открыть в новой вкладке</a>
+                <div class="space"></div>
+                <ui-gmap-google-map center='map.center' zoom='map.zoom' ng-if="hasMap()"></ui-gmap-google-map>
+            </div>
+        </div>
+    </div>
+</div>
+

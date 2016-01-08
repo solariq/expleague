@@ -1,0 +1,38 @@
+<div class="overlay dialog__overlay"></div>
+
+<div class="wrapper" show-question>
+    <div class="content contentex dialog__content collaboration" chat>
+
+        <i class="close" ng-click="closeDialog()"></i>
+
+        <div class="dialog-title">
+            <div class="header"><h2>Уютный чатик</h2></div>
+            <div class="description">
+
+                <div class="panel-container-inner">
+                    <div class="chatboard">
+                        <div ng-repeat="msg in getHistory()" class="{{getBubbleClass(msg)}}">
+                            {{msg.text}}
+                        </div>
+                    </div>
+
+
+                    <div class="clearfix"></div>
+                    <fieldset>
+                        <textarea type="text" id="chat_text" name="ChatText" wrap="soft" placeholder="Enter your text here" class="chat-input" ng-model="respText" auto-focus key-up key-up-esc="closeDialog()" />
+                    </fieldset>
+                    <scroll-helper type="folder"></scroll-helper>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls clearfix bgwhite">
+            <div class="short-url">
+                <div>
+                    <button class="lgreen full-width"  ng-click="comunicate()">Отправить</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
