@@ -129,7 +129,15 @@ KNUGGET.injector = {
 
             KNUGGET.storage.get('VisitedPages', function(vp) {
                 vp = vp ? JSON.parse(vp) : [];
-                vp.push(tabUrl);
+                var allreadyVisited = false;
+                for (var i = 0; !allreadyVisited && i < vp.length; i++) {
+                    if (vp[i] == tabUrl) {
+                        allreadyVisited = true;
+                    }
+                }
+                if (!allreadyVisited) {
+                    vp.push(tabUrl);
+                }
                 KNUGGET.storage.set("VisitedPages", JSON.stringify(vp));
             });
 
