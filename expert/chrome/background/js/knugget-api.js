@@ -553,7 +553,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             jabberClient.send({
                     to: data.request.room,
                     text: JSON.stringify({type: 'visitedPages', count: data.pages.length, links: data.pages})
-                }, 'groupchat', function () {
+                }, 'chat', function () {
                     defer.resolve({status: 200});
                 }
             );
