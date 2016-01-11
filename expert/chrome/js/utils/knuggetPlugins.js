@@ -962,12 +962,12 @@
                 var linkElement;
 
                 //Check if dragged image is contained in link element within 5 levels
-                for (var i = 0; i < 5; i++) {
-                    if (dragElmnt.parents().eq(i).is('a')) {
-                        linkElement = dragElmnt.parents().eq(i);
-                        break;
-                    }
-                };
+                //for (var i = 0; i < 5; i++) {
+                //    if (dragElmnt.parents().eq(i).is('a')) {
+                //        linkElement = dragElmnt.parents().eq(i);
+                //        break;
+                //    }
+                //};
 
                 if (linkElement) {
 
