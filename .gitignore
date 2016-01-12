@@ -20,3 +20,5 @@ server/logs
 client/ios/unSearch/Pods
 client/ios/unSearch/Frameworks
 client/ios/unSearch/Products
+client/ios/unSearch/Podfile.lock
+client/ios/unSearch/.idea/workspace.xml
