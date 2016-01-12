@@ -16,3 +16,7 @@ server/logs/*
 server/snapshots
 server/target
 server/logs
+
+client/ios/unSearch/Pods
+client/ios/unSearch/Frameworks
+client/ios/unSearch/Products
