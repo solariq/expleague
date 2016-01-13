@@ -121,15 +121,9 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
             }
         ).event(Operations.Cancel.class,
             (cancel, task) -> task.invited(JID.parse(sender().path().name())),
-            (cancel, task) -> {
-              final JID expert = task.next();
-              if (expert == null)
-                return goTo(State.STARVING);
-              LaborExchange.registerExpert(expert, context()).tell(new Operations.Invite(), self());
-              return stay();
-            }
+            (cancel, task) -> goTo(State.STARVING)
         ).event(Operations.Ok.class,
-            (ok, task) -> stay().using(task.candidate(JID.parse(sender().path().name())))
+            (ok, task) -> stay().replying(new Operations.Cancel())
         ).event(Offer.class,
             (offer, task) -> stay().replying(new Operations.Cancel())
         )
