@@ -12,9 +12,11 @@
 		688A50BC12A73F2E37A3EF75 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 688A5389D422FDF184F24FF8 /* LaunchScreen.storyboard */; };
 		688A535C37173628E8F51CDC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 688A54C1275EF718A177A20D /* Assets.xcassets */; };
 		688A5619AD7F8A01934BBA65 /* ELConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A5C9F1B04717A5433BD7D /* ELConnection.swift */; };
+		688A5675DA0F17BFB8A68FB2 /* ELOrdersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A5ECEAEA343319DDDED6E /* ELOrdersViewController.swift */; };
 		688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A58FFF35B86F1CBB41B6E /* AppDelegate.swift */; };
 		688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */; };
 		688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A57432F80F266C309E3F5 /* SettingsViewController.swift */; };
+		EE62BEEF1C452CA1004B6A42 /* ELMessagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEEE1C452CA1004B6A42 /* ELMessagesViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,7 +32,9 @@
 		688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderViewController.swift; sourceTree = "<group>"; };
 		688A5C9F1B04717A5433BD7D /* ELConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ELConnection.swift; sourceTree = "<group>"; };
 		688A5D254FAD2FD2CCCC8DF6 /* unSearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = unSearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		688A5ECEAEA343319DDDED6E /* ELOrdersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ELOrdersViewController.swift; sourceTree = "<group>"; };
 		D0806994D5FE374ABCB8A184 /* Pods_unSearch.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_unSearch.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		EE62BEEE1C452CA1004B6A42 /* ELMessagesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ELMessagesViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +69,8 @@
 				688A5C00876CA19A64E86FA1 /* unSearch-Bridging-Header.h */,
 				688A5C9F1B04717A5433BD7D /* ELConnection.swift */,
 				688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */,
+				EE62BEEE1C452CA1004B6A42 /* ELMessagesViewController.swift */,
+				688A5ECEAEA343319DDDED6E /* ELOrdersViewController.swift */,
 			);
 			path = unSearch;
 			sourceTree = "<group>";
@@ -212,10 +218,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EE62BEEF1C452CA1004B6A42 /* ELMessagesViewController.swift in Sources */,
 				688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */,
 				688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */,
 				688A5619AD7F8A01934BBA65 /* ELConnection.swift in Sources */,
 				688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */,
+				688A5675DA0F17BFB8A68FB2 /* ELOrdersViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

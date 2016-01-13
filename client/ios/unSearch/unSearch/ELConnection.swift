@@ -6,12 +6,16 @@
 import Foundation
 import XMPPFramework
 import UIKit
+import JSQMessagesViewController
 
 class ELOrder {
-    let roomId: String;
+    let roomId: String
+    let started: NSDate
     let topic: String, urgency: String, local: Bool, expert: Bool
+    var messages: [XMPPMessage] = [];
 
     init(_ roomId: String, topic: String, urgency: String, local: Bool, expert: Bool) {
+        self.started = NSDate();
         self.roomId = roomId.lowercaseString
         self.topic = topic
         self.urgency = urgency
@@ -35,8 +39,103 @@ class ELOrder {
         print("\(roomId)> \(presence)")
     }
 
+    var callbacks: [NSObject : () -> ()] = [:]
+    
+    func onChange(owner: NSObject, callback: () -> ()) {
+        callbacks[owner] = callback;
+    }
+    
+    func unbind(owner: NSObject) {
+        callbacks.removeValueForKey(owner)
+    }
+    
     func message(msg: XMPPMessage) {
-        print("\(roomId)> \(msg)")
+        if (msg.elementsForName("body").count > 0 && msg.body().containsString("Welcome to room \(roomId)")) { // initial message
+            let setup = XMPPMessage(type: "groupchat", to: jid(stream.hostName))
+            setup.addSubject(topic)
+            stream.sendElement(setup)
+            message(setup)
+        }
+        else {
+            if (msg.attributesAsDictionary()["time"] == nil) {
+                msg.addAttributeWithName("time", stringValue: NSDateFormatter().stringFromDate(NSDate()))
+            }
+            messages.append(msg)
+            callbacks.values.forEach({$0()})
+        }
+    }
+    
+    func send(msg: String) {
+        let message = XMPPMessage(type: "groupchat", to: jid(stream.hostName))
+        message.addBody(msg)
+        stream.sendElement(message)
+        self.message(message)
+    }
+    
+    var stream : XMPPStream {
+        get {
+            return ELConnection.instance.stream;
+        }
+    }
+    
+    func size() -> Int {
+        return messages.count
+    }
+    
+    class MyJSQMessage: NSObject, JSQMessageData {
+        let delegate: XMPPMessage
+        init(msg: XMPPMessage) {
+            delegate = msg;
+        }
+        
+        var incoming: Bool {
+            get {
+                return from != "me"
+            }
+        }
+        
+        var from: String {
+            get {
+                return delegate.attributesAsDictionary()["from"] != nil ? delegate.from().resource : "me"
+            }
+        }
+        
+        var avatar: JSQMessagesAvatarImage {
+            get {
+                return ELConnection.instance.avatar(from)
+            }
+        }
+        
+        func senderId() -> String! {
+            return incoming ? "me" : from
+        }
+        
+        func senderDisplayName() -> String! {
+            return incoming ? "Я" : from
+        }
+        
+        func date() -> NSDate! {
+            return NSDateFormatter().dateFromString(delegate.attributeStringValueForName("time"))
+        }
+
+        func isMediaMessage() -> Bool {
+            return false
+        }
+        
+        func messageHash() -> UInt {
+            return UInt(delegate.hash)
+        }
+        
+        func text() -> String! {
+            var textChildren = delegate.elementsForName("subject")
+            if (textChildren.count == 0) {
+                textChildren = delegate.elementsForName("body")
+            }
+            return textChildren.count > 0 ? textChildren[0].stringValue : ""
+        }
+    }
+    func messageAsJSQ(index: Int) -> MyJSQMessage {
+        return MyJSQMessage(msg: messages[index])
     }
 }
 
@@ -44,9 +143,10 @@ class ELConnection: NSObject {
     static let instance = ELConnection()
     
     let stream = XMPPStream()
-    var settings = SettingsSet(0, "")
+    var settings = SettingsSet.active()
     var orders : [String: ELOrder] = [:]
-
+    var avatars : [String: JSQMessagesAvatarImage] = [:]
+    
     override init() {
         super.init();
         stream.addDelegate(self, delegateQueue: dispatch_get_main_queue())
@@ -74,10 +174,39 @@ class ELConnection: NSObject {
         let presence = XMPPPresence(type: "available", to: order.jid(settings.host()));
         stream.sendElement(presence)
         orders[order.id()] = order
+        changeListeners.forEach({$0()})
         return order;
     }
+    
+    var incomingAvaWidth : UInt = 100;
+    var outgoingAvaWidth : UInt = 100;
+    
+    
+    func avatar(name: String) -> JSQMessagesAvatarImage {
+        if let avatar = avatars[name] {
+            return avatar
+        }
+        let diameter = name == "me" ? incomingAvaWidth : outgoingAvaWidth
+        
+        let rgbValue = name.hash
+        let r = CGFloat(Float((rgbValue & 0xFF0000) >> 16)/255.0)
+        let g = CGFloat(Float((rgbValue & 0xFF00) >> 8)/255.0)
+        let b = CGFloat(Float(rgbValue & 0xFF)/255.0)
+        let color = UIColor(red: r, green: g, blue: b, alpha: 0.5)
+        
+        let nameLength = name.characters.count
+        let initials : String? = name.substringToIndex(name.startIndex.advancedBy(min(3, nameLength)))
+        let userImage = JSQMessagesAvatarImageFactory.avatarImageWithUserInitials(initials!, backgroundColor: color, textColor: UIColor.blackColor(), font: UIFont.systemFontOfSize(CGFloat(13)), diameter: diameter)
+        
+        avatars[name] = userImage;
+        return userImage
+    }
 
-    private func start() {
+    internal func start() {
+        if (stream.isConnected() || stream.isConnecting()) {
+            return
+        }
+
         let host = settings.host()
         stream.hostName = host;
         stream.hostPort = settings.port()
@@ -89,6 +218,17 @@ class ELConnection: NSObject {
         catch {
             print(error);
         }
+    }
+
+    internal func stop() {
+        if (stream.isConnected()) {
+            stream.disconnect()
+        }
+    }
+    
+    var changeListeners: [() -> ()] = []
+    func onOrderCreate(callback: () -> ()) {
+        changeListeners.append(callback)
     }
 }
 
@@ -191,12 +331,11 @@ extension ELConnection: XMPPStreamDelegate {
     }
 
     func xmppStream(sender: XMPPStream!, didReceivePresence presence: XMPPPresence!) {
-        if let order = orders[presence.from().user] {
+        if let user = presence.from().user, let order = orders[user] {
             order.presence(presence)
         }
     }
 }
-
 
 final class SettingsSet : NSObject {
     static let MY_KEY = "unSearch.settings"

@@ -9,8 +9,12 @@ import UIKit
 class OrderViewController: UIViewController {
     @IBOutlet weak var orderDescription: UIView!
     @IBAction func fire(sender: AnyObject) {
+        let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
         let conn = ELConnection.instance
-        if (!conn.isConnected()) {
+        if (controller.orderText.text.isEmpty) {
+            controller.orderTextBackground.backgroundColor = controller.error_color
+        }
+        else if (!conn.isConnected()) {
             let controller = UIAlertController(
             title: "Experts League",
                     message: "No connection to the server: \(conn.settings.host())!",
@@ -18,13 +22,15 @@ class OrderViewController: UIViewController {
             controller.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default, handler: nil))
             presentViewController(controller, animated: true, completion: nil)
         } else {
-            let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
-            _ = ELConnection.instance.placeOrder(
+            let order = conn.placeOrder(
                     topic: controller.orderText.text,
                     urgency: Urgency.find(controller.urgency.value).type,
                     local: controller.isLocal.on,
                     prof: controller.needExpert.on
             );
+            controller.clear();
+            let delegate = UIApplication.sharedApplication().delegate as! AppDelegate
+            delegate.showOrder(order)
         }
     }
 
@@ -35,6 +41,7 @@ class OrderViewController: UIViewController {
 }
 
 class OrderDescriptionViewController: UITableViewController {
+    let error_color = UIColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 0.1)
     let rowHeight = 44;
     @IBOutlet weak var isLocal: UISwitch!
     @IBOutlet weak var needExpert: UISwitch!
@@ -47,29 +54,39 @@ class OrderDescriptionViewController: UITableViewController {
     }
 
     @IBOutlet weak var orderText: UITextView!
+    @IBOutlet weak var orderTextBackground: UIView!
 
+    var orderTextBGColor: UIColor?
     override func viewDidLoad() {
         super.viewDidLoad()
+        orderTextBGColor = orderTextBackground.backgroundColor
         urgencyChanged(urgency)
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "dismissKeyboard"))
     }
     
     func dismissKeyboard() {
+        orderTextBackground.backgroundColor = orderText.text.isEmpty ? error_color : orderTextBGColor
+        
         view.endEditing(true)
+    }
+    
+    internal func clear() {
+        isLocal.on = false
+        needExpert.on = false
+        urgency.value = Urgency.DURING_THE_DAY.value
+        orderText.text = ""
     }
 
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
         if (indexPath.item == 0 && indexPath.section == 0) {
             let sectionsHeight = 28 * 2 * 2;
-            return view.frame.height - CGFloat(5 * rowHeight + sectionsHeight);
+            return max(CGFloat(50), view.frame.height - CGFloat(5 * rowHeight + sectionsHeight));
         }
         if (indexPath.item == 0 && indexPath.section == 1) {
             return 64
         }
         return CGFloat(rowHeight);
     }
-
-
 }
 
 struct Urgency {

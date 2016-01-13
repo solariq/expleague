@@ -11,12 +11,22 @@ import UIKit
 import XMPPFramework
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, XMPPStreamDelegate {
-
-
+class AppDelegate: UIResponder {
     var window: UIWindow?
+    
     let connection = ELConnection.instance
+    let ordersViewController: ELOrdersViewController? = nil
+    
+    func showOrder(order: ELOrder) {
+        let tabs = window!.rootViewController as! UITabBarController
+        tabs.selectedIndex = 1
+        let history = tabs.viewControllers![1] as! UINavigationController
+        let selector = Selector(order.id())
+//        history.navigationController!.performSelector(selector)
+    }
+}
 
+extension AppDelegate: UIApplicationDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         return true
@@ -38,18 +48,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, XMPPStreamDelegate {
 
 
     func applicationWillEnterForeground(application: UIApplication) {
-    // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+        // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
     }
 
 
     func applicationDidBecomeActive(application: UIApplication) {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        connection.start()
     }
 
 
     func applicationWillTerminate(application: UIApplication) {
+        connection.stop()
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
-
-
 }
