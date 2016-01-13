@@ -83,4 +83,10 @@ public class AkkaTools {
       return null;
     }
   }
+
+  public static Cancellable scheduleTimeout(ActorContext context, FiniteDuration timeout, ActorRef to) {
+    return context.system().scheduler().scheduleOnce(timeout, () -> {
+      to.tell(Timeout.apply(timeout), to);
+    }, context.dispatcher());
+  }
 }

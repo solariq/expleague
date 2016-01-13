@@ -4,10 +4,12 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.io.Tcp;
 import akka.io.TcpMessage;
+import akka.io.TcpSO;
 import com.tbts.server.xmpp.XMPPClientConnection;
 import com.tbts.util.akka.UntypedActorAdapter;
 
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 /**
@@ -20,7 +22,7 @@ public class XMPPServer extends UntypedActorAdapter {
   @Override
   public void preStart() throws Exception {
     final ActorRef tcp = Tcp.get(getContext().system()).manager();
-    tcp.tell(TcpMessage.bind(getSelf(), new InetSocketAddress("0.0.0.0", 5222), 100), getSelf());
+    tcp.tell(TcpMessage.bind(getSelf(), new InetSocketAddress("0.0.0.0", 5222), 100, Arrays.asList(TcpSO.keepAlive(true)), false), getSelf());
   }
 
   public void invoke(Tcp.Event msg) {

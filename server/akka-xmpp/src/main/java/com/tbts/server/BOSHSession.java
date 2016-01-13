@@ -4,14 +4,13 @@ import akka.actor.ActorRef;
 import akka.actor.Cancellable;
 import akka.actor.Props;
 import akka.actor.Status;
-import akka.stream.Materializer;
-import akka.stream.OverflowStrategy;
-import akka.stream.javadsl.Sink;
-import akka.stream.javadsl.Source;
+import akka.io.TcpMessage;
 import akka.util.Timeout;
+import com.spbsu.commons.func.Action;
 import com.tbts.server.xmpp.XMPPClientConnection;
 import com.tbts.server.xmpp.phase.AuthorizationPhase;
 import com.tbts.server.xmpp.phase.ConnectedPhase;
+import com.tbts.util.akka.AkkaTools;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.BoshBody;
 import com.tbts.xmpp.Item;
@@ -34,7 +33,6 @@ import java.util.logging.Logger;
  */
 public class BOSHSession extends UntypedActorAdapter {
   private static final Logger log = Logger.getLogger(BOSHSession.class.getName());
-  private final Materializer materializer;
   private ActorRef businesLogic;
   private String id;
   private ActorRef connection;
@@ -42,8 +40,7 @@ public class BOSHSession extends UntypedActorAdapter {
   private Cancellable timeout;
   private boolean connected = false;
 
-  public BOSHSession(Materializer materializer) {
-    this.materializer = materializer;
+  public BOSHSession() {
     invoke(XMPPClientConnection.ConnectionState.AUTHORIZATION);
   }
 
@@ -59,9 +56,7 @@ public class BOSHSession extends UntypedActorAdapter {
         invoke(Timeout.zero());
 
       // schedule answer in half an hour in case of no messages received
-      timeout = context().system().scheduler().scheduleOnce(
-          Duration.create(1, TimeUnit.MINUTES),
-          self(), Timeout.zero(), context().dispatcher(), self());
+      timeout = AkkaTools.scheduleTimeout(context(), Duration.create(1, TimeUnit.MINUTES), self());
     }
     else {
       invoke(XMPPClientConnection.ConnectionState.CLOSED);
@@ -71,7 +66,7 @@ public class BOSHSession extends UntypedActorAdapter {
   }
 
   public void invoke(Item item) {
-    if (item instanceof BoshBody)
+    if (item instanceof BoshBody || item instanceof Open)
       return;
     if (timeout != null)
       timeout.cancel();
@@ -82,18 +77,18 @@ public class BOSHSession extends UntypedActorAdapter {
       invoke(Timeout.zero());
   }
 
+  @SuppressWarnings("UnusedParameters")
+  public void invoke(TcpMessage cmd) {}
+
   public void invoke(XMPPClientConnection.ConnectionState state) {
     switch (state) {
       case AUTHORIZATION:
-        businesLogic = Source.<Item>actorRef(64, OverflowStrategy.fail())
-            .transform(() -> new AuthorizationPhase(id -> BOSHSession.this.id = id))
-            .to(Sink.actorRef(self(), XMPPClientConnection.ConnectionState.CONNECTED))
-            .run(this.materializer);
+        businesLogic = context().actorOf(Props.create(AuthorizationPhase.class, self(), (Action<String>) id -> BOSHSession.this.id = id));
         break;
       case CONNECTED:
         connected = true;
         invoke(Timeout.zero());
-        businesLogic = getContext().actorOf(Props.create(ConnectedPhase.class, id, self()));
+        businesLogic = getContext().actorOf(Props.create(ConnectedPhase.class, self(), id));
         break;
       case CLOSED:
         businesLogic.tell(new Close(), self());
@@ -104,12 +99,14 @@ public class BOSHSession extends UntypedActorAdapter {
   }
 
   public void invoke(Status.Failure failure) {
+    //noinspection ThrowableResultOfMethodCallIgnored
     if (failure.cause() != null)
       log.log(Level.WARNING, "", failure.cause());
     else
       log.log(Level.WARNING, failure.toString());
   }
 
+  @SuppressWarnings("UnusedParameters")
   public void invoke(Timeout to) {
     if (connection != null) {
       connection.tell(new ArrayList<>(outgoing), self());
