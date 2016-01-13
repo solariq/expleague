@@ -220,11 +220,8 @@ OUTER:
         // The spec only really describes 11 of them.
         switch (event) {
           case XMLStreamConstants.START_DOCUMENT:
-            // nextTag doesn't correctly handle DTDs
             handleStartDocument(staxStreamReader.getNamespaceContext());
-            while(!staxStreamReader.isStartElement())
-              event = staxStreamReader.next();
-            continue OUTER;
+            break;
           case XMLStreamConstants.START_ELEMENT :
             handleStartElement();
             depth++;
@@ -238,7 +235,8 @@ OUTER:
           case XMLStreamConstants.CHARACTERS :
           case XMLStreamConstants.CDATA :
           case XMLStreamConstants.SPACE :
-            handleCharacters();
+            if (depth > 0)
+              handleCharacters();
             break;
           case XMLStreamConstants.END_DOCUMENT:
             handleEndDocument();
