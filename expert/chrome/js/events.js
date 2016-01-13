@@ -296,11 +296,19 @@ $(document)
 
         var injectTimer = setInterval(function() {
             try {
+
+                KNUGGET_SIDEBAR.injectSidebebar();
                 if (KNUGGET.sidebarController) {
-                    KNUGGET_SIDEBAR.injectSidebebar();
                     KNUGGET.sidebarController.hide(true, true);
-                    clearInterval(injectTimer);
+                } else {
+                    var sidebarTimer = setInterval(function () {
+                        if (KNUGGET.sidebarController) {
+                            KNUGGET.sidebarController.hide(true, true);
+                            clearInterval(sidebarTimer);
+                        }
+                    }, 100);
                 }
+                clearInterval(injectTimer);
             } catch (e) {
                 console.log(e);
             }
