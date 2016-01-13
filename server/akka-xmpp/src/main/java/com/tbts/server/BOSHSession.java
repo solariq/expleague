@@ -60,7 +60,7 @@ public class BOSHSession extends UntypedActorAdapter {
 
       // schedule answer in half an hour in case of no messages received
       timeout = context().system().scheduler().scheduleOnce(
-          Duration.create(30, TimeUnit.MINUTES),
+          Duration.create(1, TimeUnit.MINUTES),
           self(), Timeout.zero(), context().dispatcher(), self());
     }
     else {
