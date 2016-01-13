@@ -298,7 +298,7 @@ $(document)
             try {
 
                 KNUGGET_SIDEBAR.injectSidebebar();
-                if (KNUGGET.sidebarController) {
+                if (KNUGGET.sidebarController && KNUGGET.sidebarController.hide) {
                     KNUGGET.sidebarController.hide(true, true);
                 } else {
                     var sidebarTimer = setInterval(function () {
