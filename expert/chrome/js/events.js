@@ -306,7 +306,7 @@ $(document)
             if (!hasFailed) {
                 clearInterval(injectTimer);
             }
-        }, 100);
+        }, 250);
 
 
         if (window.location.href.indexOf("//www.youtube.com/") === -1 && window.location.href.indexOf("&list=") === -1) {
