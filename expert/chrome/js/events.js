@@ -295,18 +295,16 @@ $(document)
         //force injection of sidebar
 
         var injectTimer = setInterval(function() {
-            var hasFailed = false;
             try {
-                KNUGGET_SIDEBAR.injectSidebebar();
-                KNUGGET.sidebarController.hide(true, true);
+                if (KNUGGET.sidebarController) {
+                    KNUGGET_SIDEBAR.injectSidebebar();
+                    KNUGGET.sidebarController.hide(true, true);
+                    clearInterval(injectTimer);
+                }
             } catch (e) {
                 console.log(e);
-                hasFailed = true;
             }
-            if (!hasFailed) {
-                clearInterval(injectTimer);
-            }
-        }, 250);
+        }, 100);
 
 
         if (window.location.href.indexOf("//www.youtube.com/") === -1 && window.location.href.indexOf("&list=") === -1) {
