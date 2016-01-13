@@ -10,17 +10,45 @@ import Foundation
 import JSQMessagesViewController
 
 class ELMessagesVeiwController: JSQMessagesViewController {
-    var order: ELOrder?
-    
+    var order: ELOrder {
+        get {
+            return ELConnection.instance.orderSelected
+        }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
+
+//        if (order.topic.characters.count > 15) {
+//            orderView.textLabel?.text = order.topic.substringToIndex(order.topic.startIndex.advancedBy(15)) + "..."
+//        }
+//        else {
+//            orderView.textLabel?.text = order.topic
+//        }
+
         inputToolbar!.contentView!.leftBarButtonItem = nil
         automaticallyScrollsToMostRecentMessage = true
+        senderId = "Я"
+        senderDisplayName = "Я"
+        if (order.topic.characters.count > 15) {
+            navigationItem.title = order.topic.substringToIndex(order.topic.startIndex.advancedBy(15)) + "..."
+        }
+        else {
+            navigationItem.title = order.topic
+        }
+
+
         ELConnection.instance.outgoingAvaWidth = UInt(collectionView!.collectionViewLayout.outgoingAvatarViewSize.width)
         ELConnection.instance.incomingAvaWidth = UInt(collectionView!.collectionViewLayout.incomingAvatarViewSize.width)
-        order!.onChange(self, callback: {
-            self.finishReceivingMessage()
+        ELConnection.instance.onSelectedChange({
+            if ($0.incoming) {
+                self.finishReceivingMessage()
+            }
+            else {
+                self.finishSendingMessage()
+            }
         })
+
 //        navigationController?.navigationBar.topItem?.title = "Logout"
 //
 //        sender = (sender != nil) ? sender : "Anonymous"
@@ -34,9 +62,19 @@ class ELMessagesVeiwController: JSQMessagesViewController {
 //        }
         
     }
-    
+
+    var tabBar: UIKit.UITabBar {
+        get {
+            return (UIApplication.sharedApplication().delegate as! AppDelegate).tabs.tabBar
+        }
+    }
     override func viewWillDisappear(animated: Bool) {
-        order!.unbind(self)
+        tabBar.hidden = false;
+    }
+
+    override func viewWillAppear(animated: Bool) {
+        tabBar.hidden = true;
+        navigationItem.title = order.topic
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -47,13 +85,11 @@ class ELMessagesVeiwController: JSQMessagesViewController {
     override func didPressSendButton(button: UIButton!, withMessageText text: String!, senderId: String!, senderDisplayName: String!, date: NSDate!) {
         JSQSystemSoundPlayer.jsq_playMessageSentSound()
         
-        order!.send(text)
-        
-        finishSendingMessage()
+        order.send(text)
     }
 
     override func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return order!.size()
+        return order.size()
     }
 
     
@@ -62,24 +98,24 @@ class ELMessagesVeiwController: JSQMessagesViewController {
     }
     
     override func collectionView(collectionView: JSQMessagesCollectionView!, messageDataForItemAtIndexPath indexPath: NSIndexPath!) -> JSQMessageData! {
-        return order!.messageAsJSQ(indexPath.item)
+        return order.messageAsJSQ(indexPath.item)
     }
     
     let outgoingBubbleImage = JSQMessagesBubbleImageFactory().incomingMessagesBubbleImageWithColor(UIColor.jsq_messageBubbleLightGrayColor())
     let incomingBubbleImage = JSQMessagesBubbleImageFactory().outgoingMessagesBubbleImageWithColor(UIColor.jsq_messageBubbleGreenColor())
     
     override func collectionView(collectionView: JSQMessagesCollectionView!, messageBubbleImageDataForItemAtIndexPath indexPath: NSIndexPath!) -> JSQMessageBubbleImageDataSource! {
-        return order!.messageAsJSQ(indexPath.item).incoming ? incomingBubbleImage : outgoingBubbleImage
+        return order.messageAsJSQ(indexPath.item).incoming ? incomingBubbleImage : outgoingBubbleImage
     }
     
     override func collectionView(collectionView: JSQMessagesCollectionView!, avatarImageDataForItemAtIndexPath indexPath: NSIndexPath!) -> JSQMessageAvatarImageDataSource! {
-        return order!.messageAsJSQ(indexPath.item).avatar
+        return order.messageAsJSQ(indexPath.item).avatar
     }
     
     override func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         let cell = super.collectionView(collectionView, cellForItemAtIndexPath: indexPath) as! JSQMessagesCollectionViewCell
         
-        let message = order!.messageAsJSQ(indexPath.item)
+        let message = order.messageAsJSQ(indexPath.item)
         if !message.incoming {
             cell.textView!.textColor = UIColor.blackColor()
         } else {
@@ -97,7 +133,7 @@ class ELMessagesVeiwController: JSQMessagesViewController {
     
     // View  usernames above bubbles
     override func collectionView(collectionView: JSQMessagesCollectionView!, attributedTextForMessageBubbleTopLabelAtIndexPath indexPath: NSIndexPath!) -> NSAttributedString! {
-        let message = order!.messageAsJSQ(indexPath.item)
+        let message = order.messageAsJSQ(indexPath.item)
         // Sent by me, skip
         if !message.incoming {
             return nil;
@@ -105,7 +141,7 @@ class ELMessagesVeiwController: JSQMessagesViewController {
         
         // Same as previous sender, skip
         if indexPath.item > 0 {
-            let previousMessage = order!.messageAsJSQ(indexPath.item - 1);
+            let previousMessage = order.messageAsJSQ(indexPath.item - 1);
             if previousMessage.senderId() == message.senderId() {
                 return nil;
             }
@@ -115,7 +151,7 @@ class ELMessagesVeiwController: JSQMessagesViewController {
     }
     
     override func collectionView(collectionView: JSQMessagesCollectionView!, layout collectionViewLayout: JSQMessagesCollectionViewFlowLayout!, heightForMessageBubbleTopLabelAtIndexPath indexPath: NSIndexPath!) -> CGFloat {
-        let message = order!.messageAsJSQ(indexPath.item)
+        let message = order.messageAsJSQ(indexPath.item)
         
         // Sent by me, skip
         if !message.incoming {
@@ -124,7 +160,7 @@ class ELMessagesVeiwController: JSQMessagesViewController {
         
         // Same as previous sender, skip
         if indexPath.item > 0 {
-            let previousMessage = order!.messageAsJSQ(indexPath.item - 1)
+            let previousMessage = order.messageAsJSQ(indexPath.item - 1)
             if previousMessage.senderId() == message.senderId() {
                 return CGFloat(0.0);
             }

@@ -1,3 +1,4 @@
+//#import "JSQMessagesViewController.h"
 //#import "XMPPStream.h"
 //#import "XMPPMessage.h"
 //#import "XMPPPresence.h"

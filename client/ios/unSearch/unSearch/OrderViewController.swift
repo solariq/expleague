@@ -29,8 +29,14 @@ class OrderViewController: UIViewController {
                     prof: controller.needExpert.on
             );
             controller.clear();
+
             let delegate = UIApplication.sharedApplication().delegate as! AppDelegate
-            delegate.showOrder(order)
+            delegate.tabs.selectedIndex = 1
+
+            if delegate.navigation.viewControllers.count < 2 {
+                delegate.navigation.pushViewController(ELMessagesVeiwController(), animated: true)
+                showViewController(delegate.messagesView!, sender: self);
+            }
         }
     }
 

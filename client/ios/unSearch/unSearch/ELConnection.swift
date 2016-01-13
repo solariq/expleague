@@ -39,16 +39,6 @@ class ELOrder {
         print("\(roomId)> \(presence)")
     }
 
-    var callbacks: [NSObject : () -> ()] = [:]
-    
-    func onChange(owner: NSObject, callback: () -> ()) {
-        callbacks[owner] = callback;
-    }
-    
-    func unbind(owner: NSObject) {
-        callbacks.removeValueForKey(owner)
-    }
-    
     func message(msg: XMPPMessage) {
         if (msg.elementsForName("body").count > 0 && msg.body().containsString("Welcome to room \(roomId)")) { // initial message
             let setup = XMPPMessage(type: "groupchat", to: jid(stream.hostName))
@@ -61,7 +51,9 @@ class ELOrder {
                 msg.addAttributeWithName("time", stringValue: NSDateFormatter().stringFromDate(NSDate()))
             }
             messages.append(msg)
-            callbacks.values.forEach({$0()})
+            if (self === ELConnection.instance.orderSelected) {
+                ELConnection.instance.selectedChangedCallbacks.forEach({ $0(msg: MyJSQMessage(msg: msg)) })
+            }
         }
     }
     
@@ -82,60 +74,61 @@ class ELOrder {
         return messages.count
     }
     
-    class MyJSQMessage: NSObject, JSQMessageData {
-        let delegate: XMPPMessage
-        init(msg: XMPPMessage) {
-            delegate = msg;
-        }
-        
-        var incoming: Bool {
-            get {
-                return from != "me"
-            }
-        }
-        
-        var from: String {
-            get {
-                return delegate.attributesAsDictionary()["from"] != nil ? delegate.from().resource : "me"
-            }
-        }
-        
-        var avatar: JSQMessagesAvatarImage {
-            get {
-                return ELConnection.instance.avatar(from)
-            }
-        }
-        
-        func senderId() -> String! {
-            return incoming ? "me" : from
-        }
-        
-        func senderDisplayName() -> String! {
-            return incoming ? "Я" : from
-        }
-        
-        func date() -> NSDate! {
-            return NSDateFormatter().dateFromString(delegate.attributeStringValueForName("time"))
-        }
-
-        func isMediaMessage() -> Bool {
-            return false
-        }
-        
-        func messageHash() -> UInt {
-            return UInt(delegate.hash)
-        }
-        
-        func text() -> String! {
-            var textChildren = delegate.elementsForName("subject")
-            if (textChildren.count == 0) {
-                textChildren = delegate.elementsForName("body")
-            }
-            return textChildren.count > 0 ? textChildren[0].stringValue : ""
-        }
-    }
     func messageAsJSQ(index: Int) -> MyJSQMessage {
         return MyJSQMessage(msg: messages[index])
+    }
+}
+
+class MyJSQMessage: NSObject, JSQMessageData {
+    let delegate: XMPPMessage
+    init(msg: XMPPMessage) {
+        delegate = msg;
+    }
+
+    var incoming: Bool {
+        get {
+            return from != "me"
+        }
+    }
+
+    var from: String {
+        get {
+            return delegate.attributesAsDictionary()["from"] != nil ? delegate.from().resource : "me"
+        }
+    }
+
+    var avatar: JSQMessagesAvatarImage {
+        get {
+            return ELConnection.instance.avatar(from)
+        }
+    }
+
+    func senderId() -> String! {
+        return incoming ? "me" : from
+    }
+
+    func senderDisplayName() -> String! {
+        return incoming ? "Я" : from
+    }
+
+    func date() -> NSDate! {
+        return NSDateFormatter().dateFromString(delegate.attributeStringValueForName("time"))
+    }
+
+    func isMediaMessage() -> Bool {
+        return false
+    }
+
+    func messageHash() -> UInt {
+        return UInt(delegate.hash)
+    }
+
+    func text() -> String! {
+        var textChildren = delegate.elementsForName("subject")
+        if (textChildren.count == 0) {
+            textChildren = delegate.elementsForName("body")
+        }
+        return textChildren.count > 0 ? textChildren[0].stringValue : ""
     }
 }
 
@@ -146,6 +139,7 @@ class ELConnection: NSObject {
     var settings = SettingsSet.active()
     var orders : [String: ELOrder] = [:]
     var avatars : [String: JSQMessagesAvatarImage] = [:]
+    var orderSelected: ELOrder = ELOrder("empty", topic: "Заказ не выбран", urgency: "late", local: true, expert: true)
     
     override init() {
         super.init();
@@ -175,6 +169,7 @@ class ELConnection: NSObject {
         stream.sendElement(presence)
         orders[order.id()] = order
         changeListeners.forEach({$0()})
+        orderSelected = order
         return order;
     }
     
@@ -229,6 +224,12 @@ class ELConnection: NSObject {
     var changeListeners: [() -> ()] = []
     func onOrderCreate(callback: () -> ()) {
         changeListeners.append(callback)
+    }
+
+    var selectedChangedCallbacks: [(msg: MyJSQMessage) -> ()] = []
+
+    func onSelectedChange(callback: (msg: MyJSQMessage) -> ()) {
+        selectedChangedCallbacks.append(callback);
     }
 }
 

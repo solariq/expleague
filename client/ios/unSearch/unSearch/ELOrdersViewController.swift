@@ -6,7 +6,7 @@
 import Foundation
 import UIKit
 
-class ELOrdersViewController: UITableViewController {    
+class ELHistoryViewController: UITableViewController {
     private func order(index: Int) -> ELOrder {
         let keys : [(String, ELOrder)] = ELConnection.instance.orders.sort({$1.1.started.compare($0.1.started) == NSComparisonResult.OrderedAscending})
         return keys[index].1
@@ -33,12 +33,8 @@ class ELOrdersViewController: UITableViewController {
         return section == 0 ? ELConnection.instance.orders.count : 0;
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if (segue.identifier == "ViewOrder") {
-            let details = segue.destinationViewController as! ELMessagesVeiwController
-            details.senderId = "Я"
-            details.senderDisplayName = "Я"
-            details.order = order((self.view as! UITableView).indexPathForSelectedRow!.item)
-        }
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        ELConnection.instance.orderSelected = order(indexPath.item)
+        splitViewController!.showDetailViewController(ELMessagesVeiwController(), sender: nil)
     }
 }

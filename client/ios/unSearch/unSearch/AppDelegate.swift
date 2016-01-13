@@ -13,17 +13,29 @@ import XMPPFramework
 @UIApplicationMain
 class AppDelegate: UIResponder {
     var window: UIWindow?
+    var tabs: UITabBarController {
+        get {
+            return window!.rootViewController as! UITabBarController
+        }
+    }
+
+    var navigation: UINavigationController {
+        get {
+            let split = (tabs.viewControllers![1] as! UISplitViewController)
+            return (split.viewControllers[0] as! UINavigationController)
+        }
+    }
+
+    var messagesView: UIViewController? {
+        get {
+            return navigation.viewControllers.count > 1 ? navigation.viewControllers[1] : nil
+        }
+    }
     
     let connection = ELConnection.instance
-    let ordersViewController: ELOrdersViewController? = nil
-    
-    func showOrder(order: ELOrder) {
-        let tabs = window!.rootViewController as! UITabBarController
-        tabs.selectedIndex = 1
-        let history = tabs.viewControllers![1] as! UINavigationController
-        let selector = Selector(order.id())
-//        history.navigationController!.performSelector(selector)
-    }
+    let ordersViewController: ELHistoryViewController? = nil
+    var messagesViewController: ELMessagesVeiwController?
+    let splitDelegate = ELHistorySplitViewControllerDelegate()
 }
 
 extension AppDelegate: UIApplicationDelegate {
