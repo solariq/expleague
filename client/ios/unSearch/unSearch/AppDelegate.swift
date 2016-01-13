@@ -35,7 +35,6 @@ class AppDelegate: UIResponder {
     let connection = ELConnection.instance
     let ordersViewController: ELHistoryViewController? = nil
     var messagesViewController: ELMessagesVeiwController?
-    let splitDelegate = ELHistorySplitViewControllerDelegate()
 }
 
 extension AppDelegate: UIApplicationDelegate {
