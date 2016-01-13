@@ -306,13 +306,13 @@ $(document)
                             KNUGGET.sidebarController.hide(true, true);
                             clearInterval(sidebarTimer);
                         }
-                    }, 100);
+                    }, 200);
                 }
                 clearInterval(injectTimer);
             } catch (e) {
                 console.log(e);
             }
-        }, 100);
+        }, 200);
 
 
         if (window.location.href.indexOf("//www.youtube.com/") === -1 && window.location.href.indexOf("&list=") === -1) {
