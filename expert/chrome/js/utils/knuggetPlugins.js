@@ -297,6 +297,7 @@
     //@@ Get data about $("ELEMENET") like url, src, title, sitepage, ...
     $.fn.knuggetCollection = function (callback) {
 
+
         var dragElmnt = this;
         var collection = KNUGGET.Drag.Data;
 

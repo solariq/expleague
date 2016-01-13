@@ -1458,6 +1458,7 @@ Strophe = {
     /* jshint ignore:start */
     log: function (level, msg)
     {
+
         console.log("strophe:: " + level + "\t\t" + msg)
     },
     /* jshint ignore:end */

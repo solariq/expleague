@@ -252,7 +252,7 @@ window.chrome.contextMenus.create({
     'title': 'Добавить к ответу',
     'contexts': ['all'],
     'onclick': function (info) {
-        KNUGGET.storage.set("AddTrigger", {shouldAdd: true, salt: Math.random()});
+        KNUGGET.storage.set("AddTrigger", {shouldAdd: true, salt: Math.random() + '' + Math.random()});
     }
 });
 

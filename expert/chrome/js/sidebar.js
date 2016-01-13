@@ -26,7 +26,7 @@ var KNUGGET_SIDEBAR = {
         return el.closest("#" + KNUGGET_SIDEBAR_NAME).length ? 1 : 0;
     },
 
-    show: function (params) {
+    injectSidebebar: function(params) {
         var sidebar = $("#" + KNUGGET_SIDEBAR_NAME);
 
         if (!sidebar.length) {
@@ -52,7 +52,14 @@ var KNUGGET_SIDEBAR = {
                     }
                 }
             });
+        }
+    },
 
+    show: function (params) {
+        var sidebar = $("#" + KNUGGET_SIDEBAR_NAME);
+
+        if (!sidebar.length) {
+            KNUGGET_SIDEBAR.injectSidebebar(params);
         } else {
 
             //TODO: Refactor params execution to single function
