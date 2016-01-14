@@ -22,7 +22,7 @@ class OrderViewController: UIViewController {
             controller.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default, handler: nil))
             presentViewController(controller, animated: true, completion: nil)
         } else {
-            let order = conn.placeOrder(
+            _ = conn.placeOrder(
                     topic: controller.orderText.text,
                     urgency: Urgency.find(controller.urgency.value).type,
                     local: controller.isLocal.on,

@@ -5,12 +5,10 @@ import com.tbts.server.TBTSServer;
 import com.tbts.server.agents.UserAgent;
 import com.tbts.server.agents.XMPP;
 import com.tbts.server.services.XMPPServices;
-import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.Features;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.control.Bind;
 import com.tbts.xmpp.control.Close;
-import com.tbts.xmpp.control.Open;
 import com.tbts.xmpp.control.Session;
 import com.tbts.xmpp.stanza.Iq;
 import com.tbts.xmpp.stanza.Presence;
@@ -21,25 +19,23 @@ import com.tbts.xmpp.stanza.Stanza;
  * Date: 14.12.15
  * Time: 16:37
  */
-public class ConnectedPhase extends UntypedActorAdapter {
+public class ConnectedPhase extends XMPPPhase {
   private JID jid;
-  private final ActorRef outFlow;
   private boolean bound = false;
   private ActorRef agent;
 
-  public ConnectedPhase(String authId, ActorRef outFlow) {
+  public ConnectedPhase(ActorRef connection, String authId) {
+    super(connection);
     this.jid = JID.parse(authId + "@" + TBTSServer.config().domain());
-    this.outFlow = outFlow;
   }
 
-  @SuppressWarnings("UnusedParameters")
-  public void invoke(Open o) {
-    outFlow.tell(new Features(new Bind(), new Session()), self());
+  public void open() {
+    answer(new Features(new Bind(), new Session()));
   }
 
   public void invoke(Iq<?> iq) {
     if (jid().equals(iq.to())) { // incoming
-      outFlow.tell(iq, getSender());
+      answer(iq);
       return;
     }
     if (bound)
@@ -49,14 +45,14 @@ public class ConnectedPhase extends UntypedActorAdapter {
         if (iq.get() instanceof Bind) {
           bound = true;
           jid = jid.resource(((Bind) iq.get()).resource());
-          outFlow.tell(Iq.answer(iq, new Bind(jid())), getSelf());
+          answer(Iq.answer(iq, new Bind(jid())));
           break;
         }
         else if (iq.get() instanceof Session) {
           bound = true;
           agent = XMPP.register(jid().bare(), context());
           agent.tell(new UserAgent.ConnStatus(true, jid.resource()), self());
-          outFlow.tell(Iq.answer(iq, new Session()), self());
+          answer(Iq.answer(iq, new Session()));
           break;
         }
       }
@@ -73,7 +69,7 @@ public class ConnectedPhase extends UntypedActorAdapter {
     if (msg instanceof Iq)
       return;
     if (msg.to() != null && jid().bareEq(msg.to())) { // incoming
-      outFlow.tell(msg, sender());
+      answer(msg);
       sender().tell(new UserAgent.Delivered(msg.id(), jid.resource()), self());
     }
     else { // outgoing

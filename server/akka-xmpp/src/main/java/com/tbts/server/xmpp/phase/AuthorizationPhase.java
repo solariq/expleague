@@ -1,9 +1,10 @@
 package com.tbts.server.xmpp.phase;
 
+import akka.actor.ActorRef;
 import com.spbsu.commons.func.Action;
 import com.tbts.server.Roster;
+import com.tbts.server.xmpp.XMPPClientConnection;
 import com.tbts.xmpp.Features;
-import com.tbts.xmpp.control.Open;
 import com.tbts.xmpp.control.register.Query;
 import com.tbts.xmpp.control.register.Register;
 import com.tbts.xmpp.control.sasl.*;
@@ -30,17 +31,11 @@ public class AuthorizationPhase extends XMPPPhase {
   private final Action<String> authorizedCallback;
   private SaslServer sasl;
 
-  public AuthorizationPhase(Action<String> authorizedCallback) {
+  public AuthorizationPhase(ActorRef connection, Action<String> authorizedCallback) {
+    super(connection);
     this.authorizedCallback = authorizedCallback;
     auth = new Mechanisms();
     auth.fillKnownMechanisms();
-    answer(new Features(
-        auth,
-        new Register()
-    ));
-  }
-
-  public void invoke(Open open) {
   }
 
   public void invoke(Iq<Query> request) {
@@ -74,9 +69,7 @@ public class AuthorizationPhase extends XMPPPhase {
         answer(new Challenge(challenge));
       }
       else {
-        answer(new Success());
-        authorizedCallback.invoke(sasl.getAuthorizationID());
-        stop();
+        success();
       }
     }
     catch (SaslException e) {
@@ -116,7 +109,14 @@ public class AuthorizationPhase extends XMPPPhase {
 
   public void success() {
     authorizedCallback.invoke(sasl.getAuthorizationID());
-    answer(new Success());
-    stop();
+    last(new Success(), XMPPClientConnection.ConnectionState.CONNECTED);
+  }
+
+  @Override
+  public void open() {
+    answer(new Features(
+        auth,
+        new Register()
+    ));
   }
 }

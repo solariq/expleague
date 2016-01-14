@@ -3,29 +3,33 @@ package com.tbts.server.xmpp;
 import akka.actor.*;
 import akka.io.Tcp;
 import akka.io.TcpMessage;
-import akka.japi.function.Function;
-import akka.stream.ActorMaterializer;
-import akka.stream.ActorMaterializerSettings;
 import akka.stream.OverflowStrategy;
-import akka.stream.Supervision;
 import akka.stream.io.NegotiateNewSession;
-import akka.stream.javadsl.Flow;
-import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
+import akka.util.ByteString;
+import com.fasterxml.aalto.AsyncByteArrayFeeder;
+import com.fasterxml.aalto.AsyncXMLInputFactory;
+import com.fasterxml.aalto.AsyncXMLStreamReader;
+import com.fasterxml.aalto.stax.InputFactoryImpl;
+import com.spbsu.commons.func.Action;
+import com.spbsu.commons.io.StreamTools;
 import com.spbsu.commons.net.URLConnectionTools;
 import com.tbts.server.xmpp.phase.AuthorizationPhase;
 import com.tbts.server.xmpp.phase.ConnectedPhase;
 import com.tbts.server.xmpp.phase.HandshakePhase;
 import com.tbts.server.xmpp.phase.SSLHandshake;
 import com.tbts.util.akka.UntypedActorAdapter;
+import com.tbts.util.xml.AsyncJAXBStreamReader;
 import com.tbts.xmpp.Item;
+import com.tbts.xmpp.Stream;
 import com.tbts.xmpp.control.Close;
 import com.tbts.xmpp.control.Open;
-import scala.runtime.BoxedUnit;
+import org.xml.sax.SAXException;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
+import javax.xml.stream.XMLStreamException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,6 +40,7 @@ import java.util.logging.Logger;
  */
 @SuppressWarnings("unused")
 public class XMPPClientConnection extends UntypedActorAdapter {
+  public static final String XMPP_START = "<stream:stream xmlns:stream=\"http://etherx.jabber.org/streams\" version=\"1.0\" xmlns=\"jabber:client\" xml:lang=\"en\" xmlns:xml=\"http://www.w3.org/XML/1998/namespace\">";
   private static final Logger log = Logger.getLogger(XMPPClientConnection.class.getName());
 
   private ActorRef connection;
@@ -44,20 +49,11 @@ public class XMPPClientConnection extends UntypedActorAdapter {
   private boolean closed = false;
   private ActorRef businessLogic;
 
-  private final ActorMaterializer materializer;
   private String id;
+  private boolean opened = false;
 
   public XMPPClientConnection(ActorRef connection) {
     this.connection = connection;
-    this.materializer = ActorMaterializer.create(
-        ActorMaterializerSettings.create(getContext().system())
-            .withSupervisionStrategy((Function<Throwable, Supervision.Directive>) param -> {
-              log.log(Level.SEVERE, "Exception in the protocol flow", param);
-              return Supervision.stop();
-            })
-            .withDebugLogging(true)
-            .withInputBuffer(1<<6, 1<<7),
-        context());
     try {
       invoke(ConnectionState.HANDSHAKE);
     }
@@ -68,17 +64,59 @@ public class XMPPClientConnection extends UntypedActorAdapter {
   }
 
   public void invoke(Tcp.Received msgIn) {
-    if (currentState != ConnectionState.HANDSHAKE && currentState != ConnectionState.STARTTLS)
-      helper.decrypt(msgIn.data(), s -> businessLogic.tell(new Tcp.Received(s), self()));
-    else
+    if (currentState == ConnectionState.HANDSHAKE)
+      input(msgIn.data());
+    else if (currentState == ConnectionState.STARTTLS) {
       businessLogic.tell(msgIn, self());
+    }
+    else
+      helper.decrypt(msgIn.data(), this::input);
   }
 
-  public void invoke(Tcp.Command command) throws SSLException {
-    if (command instanceof Tcp.Write && currentState != ConnectionState.HANDSHAKE && currentState != ConnectionState.STARTTLS)
-      helper.encrypt(((Tcp.Write) command).data(), s -> connection.tell(TcpMessage.write(s), self()));
+  public void invoke(Tcp.Command cmd) {
+    connection.tell(cmd, self());
+  }
+
+  private AsyncXMLStreamReader<AsyncByteArrayFeeder> asyncXml;
+  private AsyncJAXBStreamReader reader;
+  {
+    final AsyncXMLInputFactory factory = new InputFactoryImpl();
+    asyncXml = factory.createAsyncForByteArray();
+    reader = new AsyncJAXBStreamReader(asyncXml, Stream.jaxb());
+  }
+
+  private void input(ByteString data) {
+    final byte[] copy = new byte[data.length()];
+    data.asByteBuffer().get(copy);
+    log.finest(">" + new String(copy, StreamTools.UTF));
+    try {
+      asyncXml.getInputFeeder().feedInput(copy, 0, copy.length);
+      if (!opened) {
+        businessLogic.tell(new Open(), self());
+        opened = true;
+      }
+      reader.drain((in) -> {
+        if (in instanceof Item)
+          businessLogic.tell(in, self());
+      });
+    }
+    catch (XMLStreamException | SAXException e) {
+      log.log(Level.SEVERE, "Exception during message parsing", e);
+    }
+  }
+
+  public void invoke(Item item) throws SSLException {
+    final String xml;
+    if (item instanceof Open)
+      xml = XMPP_START;
     else
-      connection.tell(command, getSelf());
+      xml = item.xmlString(false);
+    log.finest("<" + xml);
+    final ByteString data = ByteString.fromString(xml);
+    if (currentState != ConnectionState.HANDSHAKE && currentState != ConnectionState.STARTTLS)
+      helper.encrypt(data, s -> connection.tell(TcpMessage.write(s), self()));
+    else
+      connection.tell(TcpMessage.write(data), getSelf());
   }
 
   public void invoke(Status.Failure failure) {
@@ -105,23 +143,13 @@ public class XMPPClientConnection extends UntypedActorAdapter {
 
     if (closed)
       state = ConnectionState.CLOSED;
-    else if (state != ConnectionState.CONNECTED)
-      connection.tell(TcpMessage.suspendReading(), getSelf());
 
     final ConnectionState finalState = state;
-    final Flow<Tcp.Received, Item, BoxedUnit> inFlow = Flow.of(Tcp.Received.class).map(Tcp.Received::data).transform(() -> new XMPPInFlow(finalState.name()));
-    final Flow<Item, Tcp.Command, BoxedUnit> outFlow = Flow.of(Item.class).transform(XMPPOutFlow::new).map(TcpMessage::write);
-
     ActorRef newLogic = null;
     switch (state) {
       case HANDSHAKE: {
         final Source<Tcp.Received, ActorRef> source = Source.actorRef(1000, OverflowStrategy.fail());
-        newLogic = source
-            .via(inFlow)
-            .transform(HandshakePhase::new)
-            .via(outFlow)
-            .to(Sink.actorRef(getSelf(), ConnectionState.STARTTLS))
-            .run(materializer);
+        newLogic = context().actorOf(Props.create(HandshakePhase.class, self()), "handshake");
         break;
       }
       case STARTTLS: {
@@ -131,7 +159,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         sslEngine.setUseClientMode(false);
         sslEngine.setEnableSessionCreation(true);
         sslEngine.setWantClientAuth(false);
-        final ActorRef handshake = getContext().actorOf(Props.create(SSLHandshake.class, sslEngine, getSelf()));
+        final ActorRef handshake = getContext().actorOf(Props.create(SSLHandshake.class, self(), sslEngine));
         sslEngine.beginHandshake();
         helper = new SSLHelper(sslEngine);
         newLogic = handshake;
@@ -139,29 +167,11 @@ public class XMPPClientConnection extends UntypedActorAdapter {
       }
       case AUTHORIZATION: {
         businessLogic.tell(new Close(), self());
-        newLogic = Source.<Tcp.Received>actorRef(64, OverflowStrategy.fail())
-            .via(inFlow)
-            .transform(() -> new AuthorizationPhase(id -> {
-              XMPPClientConnection.this.id = id;
-              connection.tell(TcpMessage.suspendReading(), self());
-            }))
-            .via(outFlow)
-            .to(Sink.actorRef(self(), ConnectionState.CONNECTED))
-            .run(materializer);
+        newLogic = context().actorOf(Props.create(AuthorizationPhase.class, self(), (Action<String>) id -> XMPPClientConnection.this.id = id), "authorization");
         break;
       }
       case CONNECTED: {
-        final ActorRef inFlowActor = Source.<Item>actorRef(64, OverflowStrategy.fail())
-            .via(outFlow)
-            .to(Sink.actorRef(self(), ConnectionState.CLOSED))
-            .run(materializer);
-        final ActorRef connectionLogic = getContext().actorOf(Props.create(ConnectedPhase.class, id, inFlowActor));
-        newLogic = Source.<Tcp.Received>actorRef(1000, OverflowStrategy.fail())
-            .via(inFlow)
-            .to(Sink.actorRef(
-                connectionLogic, new Close()))
-            .run(materializer);
-        connectionLogic.tell(new Open(), getSelf());
+        newLogic = getContext().actorOf(Props.create(ConnectedPhase.class, self(), id), "connected");
         break;
       }
       case CLOSED: {
@@ -170,6 +180,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
       }
     }
     connection.tell(TcpMessage.resumeReading(), getSelf());
+    opened = false;
     businessLogic = newLogic;
     currentState = state;
     log.fine("Connection state changed to: " + state);

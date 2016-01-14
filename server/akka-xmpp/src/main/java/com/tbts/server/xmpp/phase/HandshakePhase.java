@@ -1,5 +1,7 @@
 package com.tbts.server.xmpp.phase;
 
+import akka.actor.ActorRef;
+import com.tbts.server.xmpp.XMPPClientConnection;
 import com.tbts.xmpp.Features;
 import com.tbts.xmpp.control.tls.Proceed;
 import com.tbts.xmpp.control.tls.StartTLS;
@@ -11,13 +13,17 @@ import com.tbts.xmpp.control.tls.StartTLS;
  */
 public class HandshakePhase extends XMPPPhase {
 
-  public HandshakePhase() {
-    answer(new Features(new StartTLS()));
+  protected HandshakePhase(ActorRef connection) {
+    super(connection);
   }
 
   @SuppressWarnings("UnusedParameters")
   public void invoke(StartTLS tls) {
-    answer(new Proceed());
-    stop();
+    last(new Proceed(), XMPPClientConnection.ConnectionState.STARTTLS);
+  }
+
+  @Override
+  public void open() {
+    answer(new Features(new StartTLS()));
   }
 }

@@ -22,11 +22,11 @@ import java.util.logging.Logger;
 public class SSLHandshake extends UntypedActorAdapter {
   private static final Logger log = Logger.getLogger(SSLHandshake.class.getName());
   private final SSLEngine sslEngine;
-  private final ActorRef conectionController;
+  private final ActorRef connection;
 
-  public SSLHandshake(SSLEngine sslEngine, ActorRef conectionController) {
+  public SSLHandshake(ActorRef connection, SSLEngine sslEngine) {
     this.sslEngine = sslEngine;
-    this.conectionController = conectionController;
+    this.connection = connection;
   }
 
   boolean finished = false;
@@ -58,7 +58,7 @@ public class SSLHandshake extends UntypedActorAdapter {
       switch (hsStatus) {
         case FINISHED:
           send();
-          conectionController.tell(XMPPClientConnection.ConnectionState.AUTHORIZATION, self());
+          connection.tell(XMPPClientConnection.ConnectionState.AUTHORIZATION, self());
           finished = true;
           if (out.position() != 0)
             throw new RuntimeException("Buffer overflow after handshake");
@@ -116,7 +116,7 @@ public class SSLHandshake extends UntypedActorAdapter {
     toSend.flip();
     final ByteString data = ByteString.fromByteBuffer(toSend);
 //    System.out.println("out: [" + data.mkString() + "]");
-    getSender().tell(TcpMessage.write(data), getSelf());
+    getSender().tell(TcpMessage.write(data), self());
     toSend.clear();
   }
 }

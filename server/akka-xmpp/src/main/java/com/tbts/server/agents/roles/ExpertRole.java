@@ -10,6 +10,7 @@ import com.tbts.model.Offer;
 import com.tbts.model.Operations;
 import com.tbts.server.agents.LaborExchange;
 import com.tbts.server.agents.XMPP;
+import com.tbts.util.akka.AkkaTools;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Message;
 import com.tbts.xmpp.stanza.Presence;
@@ -28,7 +29,7 @@ import java.util.logging.Logger;
 public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorRef>> {
   private static final Logger log = Logger.getLogger(ExpertRole.class.getName());
   public static final FiniteDuration CHECK_TIMEOUT = Duration.create(10, TimeUnit.SECONDS);
-  public static final FiniteDuration INVITE_TIMEOUT = Duration.create(1, TimeUnit.MINUTES);
+  public static final FiniteDuration INVITE_TIMEOUT = Duration.create(10, TimeUnit.SECONDS);
   private Cancellable timer;
 
   {
@@ -49,7 +50,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
             (offer, zero) -> zero == null,
             (offer, zero) -> {
               XMPP.send(new Message(XMPP.jid(), jid(), offer), context());
-              timer = context().system().scheduler().scheduleOnce(CHECK_TIMEOUT, self(), Timeout.zero(), context().dispatcher(), self());
+              timer = AkkaTools.scheduleTimeout(context(), CHECK_TIMEOUT, self());
               return goTo(State.CHECK).using(Pair.create(offer, sender()));
             }
         ).event(
@@ -85,7 +86,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
               final Message message = new Message(task.first.room(), jid(), task.first);
               invite.form(message, task.first);
               XMPP.send(message, context());
-              timer = context().system().scheduler().scheduleOnce(INVITE_TIMEOUT, self(), Timeout.zero(), context().dispatcher(), self());
+              timer = AkkaTools.scheduleTimeout(context(), INVITE_TIMEOUT, self());
               return goTo(State.INVITE);
             }
         ).event(

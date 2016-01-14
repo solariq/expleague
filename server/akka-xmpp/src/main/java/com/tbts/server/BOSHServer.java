@@ -91,7 +91,7 @@ public class BOSHServer extends UntypedActorAdapter {
             final String sid = Stanza.generateId().replace('/', 'b');
             boshBody.sid(sid);
             boshBody.requests(3);
-            context().actorOf(Props.create(BOSHSession.class, materializer), sid);
+            context().actorOf(Props.create(BOSHSession.class), sid);
           }
           else { // synchronous form
             final Option<ActorRef> sessionOpt = context().child(boshBody.sid());
