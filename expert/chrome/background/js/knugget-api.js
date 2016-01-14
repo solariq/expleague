@@ -60,6 +60,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
     }
 
     var ncache = new NotificationCache();
+    var latestOffer;
     function BanManager() {
         this.getBanList = function(callback) {
             KNUGGET.storage.get("BanList", function (value) {
@@ -159,6 +160,14 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
 
         this.addOfferListener = function(listener) {
             this.connection.addHandler(function(msg) {
+                //don't handle messages, that have something except 'offer' or 'cancel'
+                var children = msg.childNodes;
+                for (var i = 0; i < children.length; i++) {
+                    var name = children[i].tagName;
+                    if (!(name == 'offer' || name == 'cancel')) {
+                        return true;
+                    }
+                }
                 var offer = findByTagName(msg.childNodes, 'offer');
                 if (offer) {
                     offer = new Offer(offer);
@@ -211,6 +220,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                     invite.confirmExpireTime =  Date.now() + 965 * 1000;
                     invite.resolveExpireTime = Date.now() + 9150 * 1000;
                     invite.map = { center: { latitude: 59.977755, longitude: 30.3343742 }, zoom: 15};
+                    invite.offer = offer;
                     listener(invite);
                 }
                 return true;
@@ -250,6 +260,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
 
     debug = true;
     var banManager = new BanManager();
+
     var ExpertState = {
         READY: {
             value: 'ready',
@@ -313,6 +324,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                 if (!invite.subj) {
                     invite.subj = 'Question stub!';
                 }
+                latestOffer = invite.offer;
                 //todo kvv insert real img url
                 question = {
                     question: invite.subj,
@@ -414,7 +426,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         KNUGGET.storage.set("Requests", JSON.stringify([]));
         KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
         KNUGGET.storage.set("AllowToShow", false);
-
+        latestOffer = null;
         //$scope.board.update();
         //$scope.allowToShow.get(function(){});
         //$scope.activeRequest.get(function(){});
@@ -614,9 +626,18 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         Reject: function(data) {
             var defer = $q.defer();
             removeRequest(data.request, function() {
+                if (latestOffer) {
+                    var msg = $msg({to: jabberClient.host, from: jabberClient.connection.jid, type: 'chat'})
+                        .c('cancel')
+                        .attrs({xmlns: "http://expleague.com/scheme"})
+                        .up()
+                        .cnode(latestOffer.node);
+                    jabberClient.unsafeSend(msg, function(){});
+                    latestOffer = null;
+                }
+                stateController.setState(ExpertState.READY, null);
                 defer.resolve({status: 200});
             });
-            stateController.setState(ExpertState.READY, null);
             return defer.promise;
         },
 
