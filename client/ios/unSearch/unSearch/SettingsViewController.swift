@@ -51,8 +51,13 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         super.viewDidLoad()
         profileSelector.selectedSegmentIndex = settings.profile
         stream.addDelegate(self, delegateQueue: dispatch_get_main_queue())
-        
+        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "dismissKeyboard"))
+
         changeConfigType(self)
+    }
+    
+    func dismissKeyboard() {
+        view.endEditing(true)
     }
 
     override func viewDidDisappear(animated: Bool) {
@@ -70,9 +75,11 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     
     func log(msg: String) {
         logView.text = logView.text.stringByAppendingString(msg + "\n")
-        let bottomOffset = CGPointMake(0, logView.contentSize.height - 1);
-        print("\(bottomOffset)")
-        logView.setContentOffset(bottomOffset, animated:false);
+//        let bottomOffset = CGPointMake(0, logView.contentSize.height - 1);
+//        print("\(bottomOffset)")
+//        logView.setContentOffset(bottomOffset, animated:false);
+        let text = NSString(string: logView.text)
+        logView.scrollRangeToVisible(NSRange(location: text.length, length: 0))
     }
 }
 

@@ -2,7 +2,6 @@ package com.tbts.server.xmpp.phase;
 
 import akka.actor.ActorRef;
 import akka.io.TcpMessage;
-import com.spbsu.commons.system.RuntimeUtils;
 import com.tbts.server.xmpp.XMPPClientConnection;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.Item;
@@ -18,12 +17,10 @@ import java.util.logging.Logger;
  */
 public abstract class XMPPPhase extends UntypedActorAdapter {
   private static final Logger log = Logger.getLogger(XMPPPhase.class.getName());
-  private final RuntimeUtils.InvokeDispatcher dispatcher;
   private final ActorRef connection;
 
   protected XMPPPhase(ActorRef connection) {
     this.connection = connection;
-    dispatcher = new RuntimeUtils.InvokeDispatcher(getClass(), this::unhandled);
   }
 
   public void unhandled(Object msg) {

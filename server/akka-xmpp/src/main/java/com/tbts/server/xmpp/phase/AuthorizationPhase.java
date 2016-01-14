@@ -69,8 +69,7 @@ public class AuthorizationPhase extends XMPPPhase {
         answer(new Challenge(challenge));
       }
       else {
-        authorizedCallback.invoke(sasl.getAuthorizationID());
-        last(new Success(), XMPPClientConnection.ConnectionState.CONNECTED);
+        success();
       }
     }
     catch (SaslException e) {

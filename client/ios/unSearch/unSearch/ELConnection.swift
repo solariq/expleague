@@ -48,7 +48,11 @@ class ELOrder {
         }
         else {
             if (msg.attributesAsDictionary()["time"] == nil) {
-                msg.addAttributeWithName("time", stringValue: NSDateFormatter().stringFromDate(NSDate()))
+                let dateFormatter = NSDateFormatter()
+                dateFormatter.dateStyle = .ShortStyle
+                dateFormatter.timeStyle = .LongStyle
+
+                msg.addAttributeWithName("time", stringValue: dateFormatter.stringFromDate(NSDate()))
             }
             messages.append(msg)
             if (self === ELConnection.instance.orderSelected) {
@@ -112,7 +116,11 @@ class MyJSQMessage: NSObject, JSQMessageData {
     }
 
     func date() -> NSDate! {
-        return NSDateFormatter().dateFromString(delegate.attributeStringValueForName("time"))
+        let dateFormatter = NSDateFormatter()
+        dateFormatter.dateStyle = .ShortStyle
+        dateFormatter.timeStyle = .LongStyle
+
+        return dateFormatter.dateFromString(delegate.attributeStringValueForName("time"))
     }
 
     func isMediaMessage() -> Bool {
@@ -206,12 +214,14 @@ class ELConnection: NSObject {
         stream.hostName = host;
         stream.hostPort = settings.port()
         stream.startTLSPolicy = XMPPStreamStartTLSPolicy.Required
+        stream.keepAliveInterval = 30
+        stream.enableBackgroundingOnSocket = true
         stream.myJID = XMPPJID.jidWithString(settings.user() + "@" + host);
         do {
             try stream.connectWithTimeout(XMPPStreamTimeoutNone);
         }
         catch {
-            print(error);
+            log("\(error)");
         }
     }
 
@@ -236,42 +246,40 @@ class ELConnection: NSObject {
 extension ELConnection: XMPPStreamDelegate {
     @objc
     func xmppStreamDidConnect(sender: XMPPStream!) {
-        print("Connected")
+        log("Connected")
         do {
             let passwd = settings.passwd()
             try sender.authenticateWithPassword(passwd);
         }
         catch {
-            print(String(error))
+            log(String(error))
         }
     }
 
     @objc
     func xmppStreamConnectDidTimeout(sender: XMPPStream!) {
-        print("Timedout");
+        log("Timedout");
     }
 
     @objc
     func xmppStreamDidDisconnect(sender: XMPPStream!, withError error: NSError!) {
-        print("Disconnected" + (error != nil ? " with error:\n\(error)" : ""));
+        log("Disconnected" + (error != nil ? " with error:\n\(error)" : ""));
     }
 
     @objc
     func xmppStreamDidStartNegotiation(sender: XMPPStream!) {
-        print("Starting negotiations")
+        log("Starting negotiations")
     }
 
     @objc
     func xmppStream(sender: XMPPStream!, socketDidConnect socket: GCDAsyncSocket!) {
-        print("Socket opened");
+        log("Socket opened");
     }
 
     @objc
     func xmppStream(sender: XMPPStream!, willSecureWithSettings settings: NSMutableDictionary!) {
-        print("Configuring");
+        log("Configuring");
         settings.setValue(true, forKey: GCDAsyncSocketManuallyEvaluateTrust)
-//        settings.setValue(true, forKey: String(kCFStreamSSLValidatesCertificateChain))
-//        settings.setValue(<#T##value: AnyObject?##AnyObject?#>, forKey: <#T##String#>)
     }
 
     @objc
@@ -282,35 +290,35 @@ extension ELConnection: XMPPStreamDelegate {
                 let text = txt.stringValue()
                 if ("No such user" == String(text)) {
                     do {
-                        print("No such user, trying to register a new one.")
+                        log("No such user, trying to register a new one.")
                         try sender.registerWithPassword(settings.passwd())
                     }
                     catch {
-                        print("\(error)")
+                        log("\(error)")
                     }
                     return
                 }
             }
         }
-        print("Not authenticate \(error)")
+        log("Not authenticate \(error)")
     }
 
     @objc
     func xmppStreamDidRegister(sender: XMPPStream!) {
-        print("The new user has been registered! Restarting the xmpp stream.")
+        log("The new user has been registered! Restarting the xmpp stream.")
         do {
             sender.disconnect()
             try sender.connectWithTimeout(XMPPStreamTimeoutNone)
         }
         catch {
-            print(String(error))
+            log(String(error))
         }
     }
 
 
     @objc
     func xmppStreamDidAuthenticate(sender: XMPPStream!) {
-        print("Success!");
+        log("Success!");
     }
 
     @objc
@@ -335,6 +343,14 @@ extension ELConnection: XMPPStreamDelegate {
         if let user = presence.from().user, let order = orders[user] {
             order.presence(presence)
         }
+    }
+    
+    func log(msg: String) {
+        let dateFormatter = NSDateFormatter()
+        dateFormatter.dateStyle = .ShortStyle
+        dateFormatter.timeStyle = .LongStyle
+        
+        print(dateFormatter.stringFromDate(NSDate()) + ": " + msg)
     }
 }
 
