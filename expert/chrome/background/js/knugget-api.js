@@ -414,18 +414,30 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
 
     addChatMsg = function(msg) {
         console.log("add: " + JSON.stringify(msg));
-        KNUGGET.storage.get("ChatLog",function (value) {
-            var log = value ? JSON.parse(value) : [];
-            log.push(msg);
+        KNUGGET.storage.get('ChatLog',function (value) {
+            var log = value ? JSON.parse(value) : {history: [], unread: 0};
+            //for back capability
+            if (Array.isArray(log) || log == null) {
+                log = {history: [], unread: 0};
+            }
+            log.history.push(msg);
+            log.unread += msg.isOwn ? 0 : 1;
             KNUGGET.storage.set("ChatLog", JSON.stringify(log));
+            if (!msg.isOwn) {
+                var message = new Notification('Новое сообщение', {
+                    tag : 'chat',
+                    body : msg.text
+                });
+            }
         });
     };
 
     cleanAll = function() {
-        KNUGGET.storage.set("Board", JSON.stringify([]));
-        KNUGGET.storage.set("Requests", JSON.stringify([]));
-        KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
-        KNUGGET.storage.set("AllowToShow", false);
+        KNUGGET.storage.set('Board', JSON.stringify([]));
+        KNUGGET.storage.set('Requests', JSON.stringify([]));
+        KNUGGET.storage.set('VisitedPages', JSON.stringify([]));
+        KNUGGET.storage.set('AllowToShow', false);
+        KNUGGET.storage.set('ChatLog', {history:[], unread: 0});
         latestOffer = null;
         //$scope.board.update();
         //$scope.allowToShow.get(function(){});

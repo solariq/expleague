@@ -243,9 +243,12 @@ knuggetSidebarDirectives.directive("chat", ['dialogService', '$state', '$timeout
         controller: ['$scope', function ($scope) {
             $scope.getHistory = function() {
                 $scope.chatLog.get(function(log) {
-                    $scope.log = log;
+                    $scope.log = log.history;
                 });
-                $scope.chatLog.unread = 0;
+                if ($scope.chatLog.unread > 0) {
+                    $scope.chatLog.readall();
+                }
+                //todo set unread
                 return $scope.log ? $scope.log : [];
             };
 

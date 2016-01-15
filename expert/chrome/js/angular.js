@@ -379,7 +379,7 @@
                 $scope.forceCloseDialog(); //close question dialog
                 $scope.activeRequest.value = data.ActiveRequest.newValue;
             } else if (data.ChatLog) {
-                $scope.chatLog.update(data.ChatLog.oldValue, data.ChatLog.newValue);
+                $scope.chatLog.update(data.ChatLog.newValue);
             }
 
             $timeout(function () {
@@ -489,35 +489,24 @@
         value: null,
         unread: 0,
 
-        update: function(oldVal, newVal) {
-          if (newVal) {
-              var newVal = JSON.parse(newVal);
-              var oldVal = oldVal ? JSON.parse(oldVal) : [];
-
-              $scope.chatLog.value = newVal;
-
-              for (i = oldVal.length; i < newVal.length; i++) {
-                  var cur = newVal[i];
-                  if (!cur.isOwn && $scope.activeRequest.value) {
-                      KNUGGET.api("Notify", {id: i, tag: "chat", body: cur.text}, function (resp) {
-                      });
-                      $scope.chatLog.unread += 1;
-                  }
-              }
-          }
+        update: function(newVal) {
+        var actual = JSON.parse(newVal);
+          $scope.chatLog.value = actual.history;
+          $scope.chatLog.unread = actual.unread;
         },
 
         get: function(callback) {
             KNUGGET.storage.get('ChatLog', function(value) {
-                value = value ? JSON.parse(value) : [];
-                $scope.chatLog.value = value;
-                callback(value);
+                $scope.chatLog.update(value);
+                callback(JSON.parse(value));
             });
         },
 
-        add: function(msg) {
-            $scope.chatLog.value.push(msg);
-            KNUGGET.storage.set('ChatLog', activeRequest);
+        readall: function() {
+            //don't need to clean if all messages were read
+            if ($scope.chatLog.unread > 0) {
+                KNUGGET.storage.set('ChatLog', JSON.stringify({history: $scope.chatLog.value, unread: 0}));
+            }
         }
     };
 
