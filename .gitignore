@@ -17,8 +17,7 @@ server/snapshots
 server/target
 server/logs
 
-client/ios/unSearch/Pods
-client/ios/unSearch/Frameworks
-client/ios/unSearch/Products
+client/ios/unSearch/Pods/
 client/ios/unSearch/Podfile.lock
 client/ios/unSearch/.idea/workspace.xml
+client/ios/unSearch/unSearch.xcworkspace/xcuserdata/

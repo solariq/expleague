@@ -8,7 +8,7 @@ import UIKit
 import XMPPFramework
 import CloudKit
 
-class SettingsViewController: UIViewController, UITextFieldDelegate {
+class SettingsViewController: UIViewController, UITextFieldDelegate, UITextViewDelegate {
     @IBOutlet weak var hostField: UITextField!
     @IBOutlet weak var userField: UITextField!
     @IBOutlet weak var passwdField: UITextField!
@@ -16,15 +16,19 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var profileSelector: UISegmentedControl!
     @IBOutlet weak var logView: UITextView!
 
-    let stream = XMPPStream();
+    let stream = XMPPStream()
+    var testing: ExpLeagueProfile?
+    var profiles: [ExpLeagueProfile] {
+        return AppDelegate.instance.profiles!
+    }
     
     @IBAction func verifyButton(sender: AnyObject) {
         stream.disconnect();
         
-        stream.hostName = settings.host();
-        stream.hostPort = settings.port()
+        stream.hostName = testing!.domain
+        stream.hostPort = UInt16(testing!.port)
         stream.startTLSPolicy = XMPPStreamStartTLSPolicy.Required
-        stream.myJID = XMPPJID.jidWithString(settings.user() + "@" + settings.host() + "/settings");
+        stream.myJID = testing!.jid;
         do {
             try stream.connectWithTimeout(XMPPStreamTimeoutNone);
         }
@@ -35,51 +39,60 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
 
     @IBAction func changeConfigType(sender: AnyObject) {
         if let control = sender as? UISegmentedControl {
-            settings = SettingsSet.load(control.selectedSegmentIndex)
+            testing = profiles[control.selectedSegmentIndex]
         }
-        hostField.text = settings.host()
-        userField.text = settings.user()
-        passwdField.text = settings.passwd()
+        hostField.text = testing!.domain + ":" + String(testing!.port)
+        userField.text = testing!.login
+        passwdField.text = testing!.passwd
     }
     
     @IBAction func clearLog(sender: AnyObject) {
         logView.text.removeAll()
     }
-    var settings: SettingsSet = SettingsSet.active()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        profileSelector.selectedSegmentIndex = settings.profile
         stream.addDelegate(self, delegateQueue: dispatch_get_main_queue())
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "dismissKeyboard"))
-
-        changeConfigType(self)
     }
     
     func dismissKeyboard() {
         view.endEditing(true)
     }
 
+    override func viewWillAppear(animated: Bool) {
+        self.testing = AppDelegate.instance.activeProfile
+        profileSelector.selectedSegmentIndex = profiles.indexOf(testing!)!
+        changeConfigType(self)
+    }
     override func viewDidDisappear(animated: Bool) {
         super.viewDidDisappear(animated)
-        ELConnection.instance.reset(settings)
+        AppDelegate.instance.activate(testing!)
     }
 
 
     func textFieldDidEndEditing(textField: UITextField) {
-        settings.h = hostField.text!
-        settings.u = userField.text!
-        settings.p = passwdField.text!
-        settings.save()
+        let hostParts = hostField.text?.componentsSeparatedByString(":")
+        testing!.domain = hostParts![0]
+        testing!.login = userField.text!
+        testing!.passwd = passwdField.text!
+        testing!.port = hostParts!.count > 1 ? Int16(hostParts![1])! : Int16(5222)
+        do {
+            try testing!.managedObjectContext!.save()
+        }
+        catch {
+            self.log("Unable to save profile \(testing!.name) because of \(error)!")
+        }
     }
     
+    var timer: NSTimer?
     func log(msg: String) {
         logView.text = logView.text.stringByAppendingString(msg + "\n")
-//        let bottomOffset = CGPointMake(0, logView.contentSize.height - 1);
-//        print("\(bottomOffset)")
-//        logView.setContentOffset(bottomOffset, animated:false);
-        let text = NSString(string: logView.text)
-        logView.scrollRangeToVisible(NSRange(location: text.length, length: 0))
+        timer?.invalidate()
+        timer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: "scrollToBottom", userInfo: nil, repeats: false)
+    }
+    func scrollToBottom() {
+        logView.scrollRangeToVisible(NSRange(location: logView.text.characters.count, length: 0))
     }
 }
 
@@ -87,8 +100,7 @@ extension SettingsViewController: XMPPStreamDelegate {
     func xmppStreamDidConnect(sender: XMPPStream!) {
         log("Connected")
         do {
-            let passwd = settings.passwd()
-            try sender.authenticateWithPassword(passwd);
+            try sender.authenticateWithPassword(testing!.passwd);
         }
         catch {
             log(String(error))
@@ -126,7 +138,7 @@ extension SettingsViewController: XMPPStreamDelegate {
                 if ("No such user" == String(text)) {
                     do {
                         log("No such user, trying to register a new one.")
-                        try sender.registerWithPassword(settings.passwd())
+                        try sender.registerWithPassword(testing!.passwd)
                     }
                     catch {
                         log("\(error)")

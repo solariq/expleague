@@ -7,15 +7,19 @@ import Foundation
 import UIKit
 
 class ELHistoryViewController: UITableViewController {
-    private func order(index: Int) -> ELOrder {
-        let keys : [(String, ELOrder)] = ELConnection.instance.orders.sort({$1.1.started.compare($0.1.started) == NSComparisonResult.OrderedAscending})
-        return keys[index].1
+    private func order(index: Int) -> ExpLeagueOrder {
+        let orders = AppDelegate.instance.activeProfile!.orders
+        let keys = orders.sortedArrayUsingComparator({
+            let lhs = $0 as! ExpLeagueOrder
+            let rhs = $1 as! ExpLeagueOrder
+            
+            return lhs.started < rhs.started ? .OrderedAscending : (lhs.started > rhs.started  ? .OrderedDescending : .OrderedSame);
+            })
+        return keys[index] as! ExpLeagueOrder;
     }
     
     override func viewDidLoad() {
-        ELConnection.instance.onOrderCreate({
-            (self.view as! UITableView).reloadData()
-        })
+        AppDelegate.instance.activeProfile
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -30,11 +34,13 @@ class ELHistoryViewController: UITableViewController {
     }
     
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return section == 0 ? ELConnection.instance.orders.count : 0;
+        return section == 0 ? AppDelegate.instance.activeProfile!.orders.count : 0;
     }
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        ELConnection.instance.orderSelected = order(indexPath.item)
-        splitViewController!.showDetailViewController(ELMessagesVeiwController(), sender: nil)
+        let o = order(indexPath.item)
+        AppDelegate.instance.activeProfile!.selected = o
+        AppDelegate.instance.messagesView.order = o
+        splitViewController!.showDetailViewController(AppDelegate.instance.messagesView, sender: nil)
     }
 }

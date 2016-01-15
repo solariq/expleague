@@ -10,19 +10,18 @@ class OrderViewController: UIViewController {
     @IBOutlet weak var orderDescription: UIView!
     @IBAction func fire(sender: AnyObject) {
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
-        let conn = ELConnection.instance
         if (controller.orderText.text.isEmpty) {
             controller.orderTextBackground.backgroundColor = controller.error_color
         }
-        else if (!conn.isConnected()) {
+        else if (!AppDelegate.instance.stream.isConnected()) {
             let controller = UIAlertController(
             title: "Experts League",
-                    message: "No connection to the server: \(conn.settings.host())!",
+                    message: "No connection to the server: \(AppDelegate.instance.activeProfile!.domain)!",
                     preferredStyle: UIAlertControllerStyle.Alert)
             controller.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default, handler: nil))
             presentViewController(controller, animated: true, completion: nil)
         } else {
-            _ = conn.placeOrder(
+            let order = AppDelegate.instance.activeProfile!.placeOrder(
                     topic: controller.orderText.text,
                     urgency: Urgency.find(controller.urgency.value).type,
                     local: controller.isLocal.on,
@@ -31,12 +30,13 @@ class OrderViewController: UIViewController {
             controller.clear();
 
             let delegate = UIApplication.sharedApplication().delegate as! AppDelegate
-            delegate.tabs.selectedIndex = 1
 
-            if delegate.navigation.viewControllers.count < 2 {
-                delegate.navigation.pushViewController(ELMessagesVeiwController(), animated: true)
-                showViewController(delegate.messagesView!, sender: self);
+            while delegate.navigation.viewControllers.count > 2 {
+                delegate.navigation.popViewControllerAnimated(false)
             }
+            delegate.messagesView.order = order
+            delegate.navigation.pushViewController(delegate.messagesView, animated: true)
+            delegate.tabs.selectedIndex = 1
         }
     }
 
@@ -100,7 +100,7 @@ struct Urgency {
     var value: Float;
     var type: String;
 
-    static let ASAP = Urgency(caption: "срочно", value: 1.0, type: "urgent")
+    static let ASAP = Urgency(caption: "срочно", value: 1.0, type: "asap")
     static let DURING_THE_DAY = Urgency(caption: "в течении дня", value: 0.5, type: "day")
     static let DURING_THE_WEEK = Urgency(caption: "в течении недели", value: 0.0, type: "week")
 
