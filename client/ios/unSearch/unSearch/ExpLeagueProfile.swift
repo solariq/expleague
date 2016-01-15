@@ -167,6 +167,7 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
     }
     
     func xmppStream(sender: XMPPStream!, didReceiveMessage msg: XMPPMessage!) {
+        (AppDelegate.instance.historyView?.view as? UITableView)?.reloadData()
         log(String(msg))
         if let order = order(name: msg.from().user) {
             order.message(message: msg)
@@ -174,6 +175,7 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
     }
     
     func xmppStream(sender: XMPPStream!, didReceivePresence presence: XMPPPresence!) {
+        (AppDelegate.instance.historyView?.view as? UITableView)?.reloadData()
         log(String(presence))
         if let user = presence.from().user, let order = order(name: user) {
             order.presence(presence: presence)

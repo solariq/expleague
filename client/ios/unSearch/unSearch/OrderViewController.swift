@@ -31,11 +31,13 @@ class OrderViewController: UIViewController {
 
             let delegate = UIApplication.sharedApplication().delegate as! AppDelegate
 
-            while delegate.navigation.viewControllers.count > 2 {
-                delegate.navigation.popViewControllerAnimated(false)
+            if delegate.navigation.viewControllers.count > 0 {
+                while (delegate.navigation.viewControllers.count > 1) {
+                    delegate.navigation.popViewControllerAnimated(false)
+                }
+                delegate.messagesView!.order = order
+                delegate.navigation.pushViewController(delegate.messagesView!, animated: false)
             }
-            delegate.messagesView.order = order
-            delegate.navigation.pushViewController(delegate.messagesView, animated: true)
             delegate.tabs.selectedIndex = 1
         }
     }

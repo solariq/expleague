@@ -79,8 +79,8 @@ class AppDelegate: UIResponder {
         }
     }
 
-    let messagesView = ELMessagesVeiwController()
-    
+    var messagesView : MessagesVeiwController?
+    var historyView : HistoryViewController?
     
     let stream = XMPPStream()
     var dataController: DataController!

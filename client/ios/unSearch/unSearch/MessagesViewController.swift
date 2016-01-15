@@ -9,11 +9,12 @@
 import Foundation
 import JSQMessagesViewController
 
-class ELMessagesVeiwController: JSQMessagesViewController {
+class MessagesVeiwController: JSQMessagesViewController {
     var order : ExpLeagueOrder?
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        AppDelegate.instance.messagesView = self
         inputToolbar!.contentView!.leftBarButtonItem = nil
         automaticallyScrollsToMostRecentMessage = true
         senderId = "Я"
@@ -43,7 +44,14 @@ class ELMessagesVeiwController: JSQMessagesViewController {
 
     override func viewWillAppear(animated: Bool) {
         tabBar.hidden = true;
+        if (order == nil) {
+            let orders = AppDelegate.instance.activeProfile!.orders
+            order = orders[orders.count - 1] as? ExpLeagueOrder
+        }
+//        collectionView?.collectionViewLayout!.messageBubbleFont = UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
         collectionView?.dataSource = order
+
+        
         if (order?.topic.characters.count > 15) {
             navigationItem.title = order!.topic.substringToIndex(order!.topic.startIndex.advancedBy(15)) + "..."
         }
@@ -55,7 +63,7 @@ class ELMessagesVeiwController: JSQMessagesViewController {
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
-        collectionView!.collectionViewLayout.springinessEnabled = true
+        collectionView!.collectionViewLayout.springinessEnabled = false
     }
     
     override func didPressSendButton(button: UIButton!, withMessageText text: String!, senderId: String!, senderDisplayName: String!, date: NSDate!) {

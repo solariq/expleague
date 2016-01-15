@@ -55,7 +55,7 @@ class ExpLeagueOrder: NSManagedObject {
         } catch {
             fatalError("Failure to save context: \(error)")
         }
-        AppDelegate.instance.messagesView.onMessage(message)
+        AppDelegate.instance.messagesView?.onMessage(message)
     }
     
     func iq(iq iq: XMPPIQ) {
@@ -208,7 +208,6 @@ extension ExpLeagueOrder: JSQMessagesCollectionViewDataSource {
         }
         
         cell.textView!.dataDetectorTypes = .All
-        
         cell.backgroundColor = UIColor.clearColor();
         cell.layer.rasterizationScale = UIScreen.mainScreen().scale;
         cell.layer.shouldRasterize = true
