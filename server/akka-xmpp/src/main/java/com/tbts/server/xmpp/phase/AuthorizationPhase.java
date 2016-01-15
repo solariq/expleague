@@ -81,8 +81,13 @@ public class AuthorizationPhase extends XMPPPhase {
         answer(new Failure(Failure.Type.NOT_AUTHORIZED, e.getMessage()));
       }
       catch (SaslException e) {
-        log.log(Level.WARNING, "Exception during authorization", e);
-        throw new RuntimeException(e);
+        if (e.getCause() instanceof AuthenticationException) {
+          answer(new Failure(Failure.Type.NOT_AUTHORIZED, e.getCause().getMessage()));
+        }
+        else {
+          log.log(Level.WARNING, "Exception during authorization", e);
+          throw new RuntimeException(e);
+        }
       }
     }
     else {
