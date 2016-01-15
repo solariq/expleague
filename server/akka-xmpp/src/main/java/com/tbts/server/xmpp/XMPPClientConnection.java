@@ -159,7 +159,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         sslEngine.setUseClientMode(false);
         sslEngine.setEnableSessionCreation(true);
         sslEngine.setWantClientAuth(false);
-        final ActorRef handshake = getContext().actorOf(Props.create(SSLHandshake.class, self(), sslEngine));
+        final ActorRef handshake = getContext().actorOf(Props.create(SSLHandshake.class, self(), sslEngine), "starttls");
         sslEngine.beginHandshake();
         helper = new SSLHelper(sslEngine);
         newLogic = handshake;
