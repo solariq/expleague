@@ -123,7 +123,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     log(command);
     XMPP.send(Iq.answer(command), context());
     if (command.type() == Iq.IqType.SET)
-      invoke(new Message(jid, null, MessageType.GROUP_CHAT, "Room set up and unlocked."));
+      XMPP.send(new Message(jid, command.from(), "Room set up and unlocked."), context());
   }
 
   public void log(Stanza stanza) { // saving everything to archive

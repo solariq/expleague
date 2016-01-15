@@ -63,48 +63,39 @@ public class AuthorizationPhase extends XMPPPhase {
   public void invoke(Response response) {
     if (sasl == null)
       throw new IllegalStateException();
-    try {
-      if (response.data().length > 0 || !sasl.isComplete()) {
-        final byte[] challenge = sasl.evaluateResponse(response.data());
-        answer(new Challenge(challenge));
-      }
-      else {
-        success();
-      }
-    }
-    catch (SaslException e) {
-      if (e.getCause() instanceof AuthenticationException) {
-        answer(new Failure(Failure.Type.NOT_AUTHORIZED, e.getCause().getMessage()));
-      }
-      else {
-        log.log(Level.WARNING, "Exception during response evaluating", e);
-        throw new RuntimeException(e);
-      }
-    }
+    processAuth(response.data());
   }
 
   public void invoke(Auth auth) {
     sasl = this.auth.get(auth.mechanism());
-    if (!sasl.isComplete()) {
-      final byte[] challenge;
+    processAuth(auth.challenge());
+  }
+
+  public void processAuth(byte[] data) {
+    if (data.length > 0 || !sasl.isComplete()) {
       try {
-        challenge = sasl.evaluateResponse(auth.challenge());
-        if ((challenge != null && challenge.length > 0) || !sasl.isComplete()) {
-          answer(new Challenge(challenge));
-        }
-        else {
+        final byte[] challenge = sasl.evaluateResponse(data);
+        if (sasl.isComplete())
           success();
-        }
+        else
+          answer(new Challenge(challenge));
       }
       catch (AuthenticationException e) {
         answer(new Failure(Failure.Type.NOT_AUTHORIZED, e.getMessage()));
       }
       catch (SaslException e) {
-        log.log(Level.WARNING, "Exception during initial challenge generation", e);
-        throw new RuntimeException(e);
+        if (e.getCause() instanceof AuthenticationException) {
+          answer(new Failure(Failure.Type.NOT_AUTHORIZED, e.getCause().getMessage()));
+        }
+        else {
+          log.log(Level.WARNING, "Exception during authorization", e);
+          throw new RuntimeException(e);
+        }
       }
     }
-    else success();
+    else {
+      success();
+    }
   }
 
   public void success() {

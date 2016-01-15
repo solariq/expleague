@@ -11,12 +11,18 @@
 		688A50129DA897A87210231A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 688A5213E736003B8C9B9E8D /* Main.storyboard */; };
 		688A50BC12A73F2E37A3EF75 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 688A5389D422FDF184F24FF8 /* LaunchScreen.storyboard */; };
 		688A535C37173628E8F51CDC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 688A54C1275EF718A177A20D /* Assets.xcassets */; };
-		688A5619AD7F8A01934BBA65 /* ELConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A5C9F1B04717A5433BD7D /* ELConnection.swift */; };
-		688A5675DA0F17BFB8A68FB2 /* ELOrdersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A5ECEAEA343319DDDED6E /* ELOrdersViewController.swift */; };
+		688A5675DA0F17BFB8A68FB2 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A5ECEAEA343319DDDED6E /* HistoryViewController.swift */; };
 		688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A58FFF35B86F1CBB41B6E /* AppDelegate.swift */; };
 		688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */; };
 		688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A57432F80F266C309E3F5 /* SettingsViewController.swift */; };
-		EE62BEEF1C452CA1004B6A42 /* ELMessagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEEE1C452CA1004B6A42 /* ELMessagesViewController.swift */; };
+		EE1CB81A1C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1CB8181C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift */; };
+		EE1CB81B1C48449D0047DB03 /* ExpLeagueProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1CB8191C48449D0047DB03 /* ExpLeagueProfile.swift */; };
+		EE62BEEF1C452CA1004B6A42 /* MessagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEEE1C452CA1004B6A42 /* MessagesViewController.swift */; };
+		EE62BF011C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEFD1C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift */; };
+		EE62BF021C4802B2004B6A42 /* ExpLeagueMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEFE1C4802B2004B6A42 /* ExpLeagueMessage.swift */; };
+		EE62BF031C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEFF1C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift */; };
+		EE62BF041C4802B2004B6A42 /* ExpLeagueOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BF001C4802B2004B6A42 /* ExpLeagueOrder.swift */; };
+		EE6EA7CC1C48F79300692406 /* ProfileModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = EE6EA7CA1C48F79300692406 /* ProfileModel.xcdatamodeld */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,11 +36,17 @@
 		688A5A3874D7356869C00A6B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		688A5C00876CA19A64E86FA1 /* unSearch-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "unSearch-Bridging-Header.h"; sourceTree = "<group>"; };
 		688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderViewController.swift; sourceTree = "<group>"; };
-		688A5C9F1B04717A5433BD7D /* ELConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ELConnection.swift; sourceTree = "<group>"; };
 		688A5D254FAD2FD2CCCC8DF6 /* unSearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = unSearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		688A5ECEAEA343319DDDED6E /* ELOrdersViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ELOrdersViewController.swift; sourceTree = "<group>"; };
+		688A5ECEAEA343319DDDED6E /* HistoryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
 		D0806994D5FE374ABCB8A184 /* Pods_unSearch.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_unSearch.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		EE62BEEE1C452CA1004B6A42 /* ELMessagesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ELMessagesViewController.swift; sourceTree = "<group>"; };
+		EE1CB8181C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueProfile+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		EE1CB8191C48449D0047DB03 /* ExpLeagueProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueProfile.swift; sourceTree = "<group>"; };
+		EE62BEEE1C452CA1004B6A42 /* MessagesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessagesViewController.swift; sourceTree = "<group>"; };
+		EE62BEFD1C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueMessage+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		EE62BEFE1C4802B2004B6A42 /* ExpLeagueMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueMessage.swift; sourceTree = "<group>"; };
+		EE62BEFF1C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueOrder+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		EE62BF001C4802B2004B6A42 /* ExpLeagueOrder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueOrder.swift; sourceTree = "<group>"; };
+		EE6EA7CB1C48F79300692406 /* ProfileModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ProfileModel.xcdatamodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +72,7 @@
 		688A5994FE17EAF8576C2131 /* unSearch */ = {
 			isa = PBXGroup;
 			children = (
+				EE62BF051C48032D004B6A42 /* Data */,
 				688A572BF69C09B25F168A0A /* Info.plist */,
 				688A54C1275EF718A177A20D /* Assets.xcassets */,
 				688A5389D422FDF184F24FF8 /* LaunchScreen.storyboard */,
@@ -67,10 +80,9 @@
 				688A5213E736003B8C9B9E8D /* Main.storyboard */,
 				688A57432F80F266C309E3F5 /* SettingsViewController.swift */,
 				688A5C00876CA19A64E86FA1 /* unSearch-Bridging-Header.h */,
-				688A5C9F1B04717A5433BD7D /* ELConnection.swift */,
 				688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */,
-				EE62BEEE1C452CA1004B6A42 /* ELMessagesViewController.swift */,
-				688A5ECEAEA343319DDDED6E /* ELOrdersViewController.swift */,
+				EE62BEEE1C452CA1004B6A42 /* MessagesViewController.swift */,
+				688A5ECEAEA343319DDDED6E /* HistoryViewController.swift */,
 			);
 			path = unSearch;
 			sourceTree = "<group>";
@@ -100,6 +112,20 @@
 				D0806994D5FE374ABCB8A184 /* Pods_unSearch.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		EE62BF051C48032D004B6A42 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				EE6EA7CA1C48F79300692406 /* ProfileModel.xcdatamodeld */,
+				EE1CB8181C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift */,
+				EE1CB8191C48449D0047DB03 /* ExpLeagueProfile.swift */,
+				EE62BEFD1C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift */,
+				EE62BEFE1C4802B2004B6A42 /* ExpLeagueMessage.swift */,
+				EE62BEFF1C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift */,
+				EE62BF001C4802B2004B6A42 /* ExpLeagueOrder.swift */,
+			);
+			name = Data;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -218,12 +244,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EE62BEEF1C452CA1004B6A42 /* ELMessagesViewController.swift in Sources */,
+				EE62BEEF1C452CA1004B6A42 /* MessagesViewController.swift in Sources */,
+				EE6EA7CC1C48F79300692406 /* ProfileModel.xcdatamodeld in Sources */,
+				EE62BF031C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift in Sources */,
+				EE62BF041C4802B2004B6A42 /* ExpLeagueOrder.swift in Sources */,
+				EE62BF021C4802B2004B6A42 /* ExpLeagueMessage.swift in Sources */,
+				EE62BF011C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift in Sources */,
+				EE1CB81B1C48449D0047DB03 /* ExpLeagueProfile.swift in Sources */,
 				688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */,
 				688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */,
-				688A5619AD7F8A01934BBA65 /* ELConnection.swift in Sources */,
+				EE1CB81A1C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift in Sources */,
 				688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */,
-				688A5675DA0F17BFB8A68FB2 /* ELOrdersViewController.swift in Sources */,
+				688A5675DA0F17BFB8A68FB2 /* HistoryViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,6 +414,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		EE6EA7CA1C48F79300692406 /* ProfileModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				EE6EA7CB1C48F79300692406 /* ProfileModel.xcdatamodel */,
+			);
+			currentVersion = EE6EA7CB1C48F79300692406 /* ProfileModel.xcdatamodel */;
+			path = ProfileModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 688A5063BF773CB16A0CD55C /* Project object */;
 }

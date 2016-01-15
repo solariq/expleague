@@ -38,6 +38,7 @@ public abstract class XMPPPhase extends UntypedActorAdapter {
   public abstract void open();
 
   public void last(Item msg, XMPPClientConnection.ConnectionState state) {
+    log.finest("Finishing phase " + self().path().name());
     connection.tell(TcpMessage.suspendReading(), self());
     connection.tell(msg, self());
     connection.tell(state, self());

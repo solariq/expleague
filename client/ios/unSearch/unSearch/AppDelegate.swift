@@ -9,9 +9,62 @@
 
 import UIKit
 import XMPPFramework
+import CoreData
+
+class DataController: NSObject {
+    let managedObjectContext = NSManagedObjectContext(concurrencyType: .MainQueueConcurrencyType)
+    init(app: AppDelegate) {
+        super.init()
+        // This resource is the same name as your xcdatamodeld contained in your project.
+        guard let modelURL = NSBundle.mainBundle().URLForResource("ProfileModel", withExtension: "momd") else {
+            fatalError("Error loading model from bundle")
+        }
+        // The managed object model for the application. It is a fatal error for the application not to be able to find and load its model.
+        guard let mom = NSManagedObjectModel(contentsOfURL: modelURL) else {
+            fatalError("Error initializing mom from: \(modelURL)")
+        }
+        let psc = NSPersistentStoreCoordinator(managedObjectModel: mom)
+        self.managedObjectContext.persistentStoreCoordinator = psc
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
+            let urls = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)
+            let docURL = urls[urls.endIndex-1]
+            /* The directory the application uses to store the Core Data store file.
+            This code uses a file named "DataModel.sqlite" in the application's documents directory.
+            */
+            let storeURL = docURL.URLByAppendingPathComponent("ExpLeagueProfiles.sqlite")
+            do {
+                try psc.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: storeURL, options: nil)
+            } catch {
+                fatalError("Error migrating store: \(error)")
+            }
+            let profilesFetch = NSFetchRequest(entityName: "Profile")
+            
+            do {
+                try {
+                    let profiles = try self.managedObjectContext.executeFetchRequest(profilesFetch) as! [ExpLeagueProfile]
+                    app.profiles = profiles
+                    if (profiles.count < 3 || AppDelegate.instance.activeProfile == nil) {
+                        app.setupDefaultProfiles()
+                    }
+                }()
+                let localOrders = app.profiles![2].orders.mutableCopy() as! NSMutableOrderedSet
+                localOrders.removeAllObjects()
+                app.profiles![2].orders = localOrders.copy() as! NSOrderedSet
+                try self.managedObjectContext.save()
+                AppDelegate.instance.activate(AppDelegate.instance.activeProfile!)
+            } catch {
+                fatalError("Failed to fetch employees: \(error)")
+            }
+        }
+    }
+}
 
 @UIApplicationMain
 class AppDelegate: UIResponder {
+    @nonobjc static var instance: AppDelegate {
+        return (UIApplication.sharedApplication().delegate as! AppDelegate)
+    }
+    
     var window: UIWindow?
     var tabs: UITabBarController {
         get {
@@ -26,20 +79,95 @@ class AppDelegate: UIResponder {
         }
     }
 
-    var messagesView: UIViewController? {
-        get {
-            return navigation.viewControllers.count > 1 ? navigation.viewControllers[1] : nil
+    var messagesView : MessagesVeiwController?
+    var historyView : HistoryViewController?
+    
+    let stream = XMPPStream()
+    var dataController: DataController!
+    
+    var activeProfile : ExpLeagueProfile? {
+        let active = profiles?.filter({return $0.active})
+        return active?.count > 0 ? active![0] : nil
+    }
+    
+    var profiles : [ExpLeagueProfile]?;
+    
+    func connect() {
+        if (stream.isConnected() || stream.isConnecting() || activeProfile == nil) {
+            return
+        }
+        do {
+            stream.hostName = activeProfile!.domain;
+            stream.hostPort = UInt16(activeProfile!.port)
+            stream.myJID = activeProfile!.jid;
+
+            try stream.connectWithTimeout(XMPPStreamTimeoutNone)
+        }
+        catch {
+            activeProfile?.log("\(error)")
         }
     }
     
-    let connection = ELConnection.instance
-    let ordersViewController: ELHistoryViewController? = nil
-    var messagesViewController: ELMessagesVeiwController?
+    func disconnect() {
+        if (!stream.isDisconnected()) {
+            stream.disconnect()
+        }
+    }
+    
+    func setupDefaultProfiles() {
+        profiles = [];
+        let randString = NSUUID().UUIDString
+        let login = randString.substringToIndex(randString.startIndex.advancedBy(8))
+        let passwd = NSUUID().UUIDString
+
+        let production = ExpLeagueProfile("Production", domain: "expleague.com", login: login, passwd: passwd, port: 5222, context: dataController.managedObjectContext)
+        if (profiles!.count == 0) {
+            profiles!.append(production)
+        }
+        if (profiles!.count == 1) {
+            profiles!.append(ExpLeagueProfile("Test", domain: "test.expleague.com", login: login, passwd: passwd, port: 5222, context: dataController.managedObjectContext))
+        }
+        if (profiles!.count == 2) {
+            profiles!.append(ExpLeagueProfile("Local", domain: "localhost", login: login, passwd: passwd, port: 5222, context: dataController.managedObjectContext))
+        }
+        if (activeProfile == nil) {
+            activate(production);
+        }
+
+        do {
+            try dataController.managedObjectContext.save()
+        }
+        catch {
+            activeProfile!.log("\(error)")
+        }
+    }
+    
+    func activate(profile: ExpLeagueProfile) {
+        if (activeProfile != nil) {
+            disconnect();
+            stream.removeDelegate(activeProfile!)
+            activeProfile?.active = false
+        }
+        profile.active = true
+        stream.addDelegate(profile, delegateQueue: dispatch_get_main_queue())
+        do {
+            try dataController.managedObjectContext.save()
+        }
+        catch {
+            fatalError("Unable to save profiles")
+        }
+        connect()
+    }
 }
 
 extension AppDelegate: UIApplicationDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+        dataController = DataController(app: self)
+        stream.startTLSPolicy = XMPPStreamStartTLSPolicy.Required
+        stream.keepAliveInterval = 30
+        stream.enableBackgroundingOnSocket = true
+
         return true
     }
 
@@ -64,12 +192,11 @@ extension AppDelegate: UIApplicationDelegate {
 
 
     func applicationDidBecomeActive(application: UIApplication) {
-        connection.start()
+        connect()
     }
 
 
     func applicationWillTerminate(application: UIApplication) {
-        connection.stop()
-    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+        stream.disconnectAfterSending()
     }
 }

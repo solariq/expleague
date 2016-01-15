@@ -326,7 +326,7 @@
         <!--Messages Veiw Controller-->
         <scene sceneID="Vvb-u5-01U">
             <objects>
-                <viewController id="kVi-qQ-a6q" customClass="ELMessagesVeiwController" customModule="unSearch" sceneMemberID="viewController">
+                <viewController id="kVi-qQ-a6q" customClass="MessagesVeiwController" customModule="unSearch" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="ZTw-U4-6Xg"/>
                         <viewControllerLayoutGuide type="bottom" id="miG-DD-4tk"/>
@@ -344,7 +344,7 @@
         <!--История заказов-->
         <scene sceneID="SfJ-Uw-cHc">
             <objects>
-                <tableViewController clearsSelectionOnViewWillAppear="NO" id="sVA-DA-8kn" customClass="ELHistoryViewController" customModule="unSearch" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController clearsSelectionOnViewWillAppear="NO" id="sVA-DA-8kn" customClass="HistoryViewController" customModule="unSearch" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" id="9kg-d4-7G6">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -510,6 +510,9 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                <connections>
+                                    <outlet property="delegate" destination="pgI-cD-fMH" id="KTS-JO-YgL"/>
+                                </connections>
                             </textView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aPG-JI-dTG">
                                 <rect key="frame" x="170" y="562" width="36" height="30"/>

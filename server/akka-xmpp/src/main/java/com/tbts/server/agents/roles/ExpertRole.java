@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorRef>> {
   private static final Logger log = Logger.getLogger(ExpertRole.class.getName());
   public static final FiniteDuration CHECK_TIMEOUT = Duration.create(10, TimeUnit.SECONDS);
-  public static final FiniteDuration INVITE_TIMEOUT = Duration.create(10, TimeUnit.SECONDS);
+  public static final FiniteDuration INVITE_TIMEOUT = Duration.create(5, TimeUnit.MINUTES);
   private Cancellable timer;
 
   {
