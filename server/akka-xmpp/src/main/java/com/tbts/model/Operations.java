@@ -81,4 +81,7 @@ public class Operations {
 
   @XmlRootElement
   public static class Done extends Item {}
+
+  @XmlRootElement
+  public static class Suspend extends Item {}
 }

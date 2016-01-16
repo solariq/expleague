@@ -141,6 +141,10 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
             }
         ).event(Offer.class,
             (offer, task) -> stay().replying(new Operations.Cancel())
+        ).event(Operations.Suspend.class,
+          (suspend, task) -> stay()
+        ).event(Operations.Resume.class,
+            (suspend, task) -> stay()
         )
     );
 

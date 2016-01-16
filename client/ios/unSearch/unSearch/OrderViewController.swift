@@ -21,10 +21,11 @@ class OrderViewController: UIViewController {
                 let margin:CGFloat = 8.0
                 let rect = CGRectMake(margin, 74.0, alertView.view.frame.width - margin * 2.0 , 2.0)
                 let progressController = AppDelegate.instance.connectionProgressView
-                let progressView = UIProgressView(frame: rect)
+//                let progressView = UIProgressView(frame: rect)
                 progressController.completion = {
                     self.fire(self)
                 }
+                progressController.view.rect = 
                 alertView.view.addSubview(progressView)
                 progressController.progressBar = progressView
                 progressController.alert = alertView

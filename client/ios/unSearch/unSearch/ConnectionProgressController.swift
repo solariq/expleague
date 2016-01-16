@@ -9,10 +9,10 @@
 import Foundation
 import UIKit
 
-class ConnectionProgressController{
-    weak var progressBar: UIProgressView?
-    weak var progressLabel: UILabel?
-    
+class ConnectionProgressController: UIViewController {
+    @IBOutlet weak var progressBar: UIProgressView?
+    @IBOutlet weak var progressLabel: UILabel?
+ 
     var completion: (() -> Void)?
     var alert: UIAlertController?
     
@@ -29,7 +29,7 @@ class ConnectionProgressController{
             }
         }
     }
-     
+    
     func error(msg: String) {
         progressBar?.progress = 1.0
         progressBar?.progressTintColor = UIColor.redColor()

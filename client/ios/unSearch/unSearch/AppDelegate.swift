@@ -81,7 +81,7 @@ class AppDelegate: UIResponder {
 
     var messagesView: MessagesVeiwController?
     var historyView: HistoryViewController?
-    let connectionProgressView = ConnectionProgressController()
+    let connectionProgressView = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier("progressBar") as! ConnectionProgressController
     
     let stream = XMPPStream()
     var dataController: DataController!
