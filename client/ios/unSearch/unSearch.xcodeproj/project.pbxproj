@@ -17,6 +17,7 @@
 		688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A57432F80F266C309E3F5 /* SettingsViewController.swift */; };
 		EE1CB81A1C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1CB8181C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift */; };
 		EE1CB81B1C48449D0047DB03 /* ExpLeagueProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1CB8191C48449D0047DB03 /* ExpLeagueProfile.swift */; };
+		EE297ACC1C4A6C79002DE78B /* ConnectionProgressController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE297ACB1C4A6C79002DE78B /* ConnectionProgressController.swift */; };
 		EE62BEEF1C452CA1004B6A42 /* MessagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEEE1C452CA1004B6A42 /* MessagesViewController.swift */; };
 		EE62BF011C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEFD1C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift */; };
 		EE62BF021C4802B2004B6A42 /* ExpLeagueMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEFE1C4802B2004B6A42 /* ExpLeagueMessage.swift */; };
@@ -41,6 +42,7 @@
 		D0806994D5FE374ABCB8A184 /* Pods_unSearch.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_unSearch.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE1CB8181C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueProfile+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		EE1CB8191C48449D0047DB03 /* ExpLeagueProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueProfile.swift; sourceTree = "<group>"; };
+		EE297ACB1C4A6C79002DE78B /* ConnectionProgressController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionProgressController.swift; sourceTree = "<group>"; };
 		EE62BEEE1C452CA1004B6A42 /* MessagesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessagesViewController.swift; sourceTree = "<group>"; };
 		EE62BEFD1C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueMessage+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		EE62BEFE1C4802B2004B6A42 /* ExpLeagueMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueMessage.swift; sourceTree = "<group>"; };
@@ -83,6 +85,7 @@
 				688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */,
 				EE62BEEE1C452CA1004B6A42 /* MessagesViewController.swift */,
 				688A5ECEAEA343319DDDED6E /* HistoryViewController.swift */,
+				EE297ACB1C4A6C79002DE78B /* ConnectionProgressController.swift */,
 			);
 			path = unSearch;
 			sourceTree = "<group>";
@@ -252,6 +255,7 @@
 				EE62BF011C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift in Sources */,
 				EE1CB81B1C48449D0047DB03 /* ExpLeagueProfile.swift in Sources */,
 				688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */,
+				EE297ACC1C4A6C79002DE78B /* ConnectionProgressController.swift in Sources */,
 				688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */,
 				EE1CB81A1C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift in Sources */,
 				688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */,

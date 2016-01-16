@@ -8,6 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/unSearch/ExpLeagueOrder.swift" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/unSearch/Base.lproj/LaunchScreen.storyboard" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/unSearch/Base.lproj/Main.storyboard" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/unSearch/ConnectionProgressController.swift" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/unSearch/unSearch-Bridging-Header.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/unSearch/ProfileModel.xcdatamodeld/ProfileModel.xcdatamodel" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/unSearch/ExpLeagueOrder+CoreDataProperties.swift" isTestSource="false" />
