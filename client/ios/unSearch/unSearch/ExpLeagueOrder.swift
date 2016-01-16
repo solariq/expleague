@@ -100,10 +100,15 @@ extension ExpLeagueOrder: JSQMessagesCollectionViewDataSource {
         // must not happen
     }
     
-    @nonobjc static let topicBubbleImage = JSQMessagesBubbleImageFactory().outgoingMessagesBubbleImageWithColor(UIColor.jsq_messageBubbleBlueColor())
-    @nonobjc static let outgoingBubbleImage = JSQMessagesBubbleImageFactory().outgoingMessagesBubbleImageWithColor(UIColor.jsq_messageBubbleLightGrayColor())
-    @nonobjc static let incomingBubbleImage = JSQMessagesBubbleImageFactory().incomingMessagesBubbleImageWithColor(UIColor.jsq_messageBubbleGreenColor())
-    @nonobjc static let systemBubbleImage = JSQMessagesBubbleImageFactory().incomingMessagesBubbleImageWithColor(UIColor.jsq_messageBubbleRedColor())
+    @nonobjc static let systemColor = UIColor(red: 1.0, green: 0.2, blue: 0, alpha: 0.1)
+    @nonobjc static let clientColor = UIColor(red: 0, green: 0.2, blue: 1.0, alpha: 0.05)
+    @nonobjc static let expertColor = UIColor(red: 238.0/256.0, green: 238.0/256.0, blue: 238.0/256.0, alpha: 1)
+    @nonobjc static let topicColor = UIColor(red: 0, green: 1.0, blue: 0, alpha: 0.1)
+    
+    @nonobjc static let topicBubbleImage = JSQMessagesBubbleImageFactory().outgoingMessagesBubbleImageWithColor(ExpLeagueOrder.topicColor)
+    @nonobjc static let outgoingBubbleImage = JSQMessagesBubbleImageFactory().outgoingMessagesBubbleImageWithColor(ExpLeagueOrder.clientColor)
+    @nonobjc static let incomingBubbleImage = JSQMessagesBubbleImageFactory().incomingMessagesBubbleImageWithColor(ExpLeagueOrder.expertColor)
+    @nonobjc static let systemBubbleImage = JSQMessagesBubbleImageFactory().incomingMessagesBubbleImageWithColor(ExpLeagueOrder.systemColor)
     
     func collectionView(collectionView: JSQMessagesCollectionView!, messageBubbleImageDataForItemAtIndexPath indexPath: NSIndexPath!) -> JSQMessageBubbleImageDataSource! {
         switch (message(indexPath.item).type) {
@@ -212,11 +217,7 @@ extension ExpLeagueOrder: JSQMessagesCollectionViewDataSource {
         cell.layer.rasterizationScale = UIScreen.mainScreen().scale;
         cell.layer.shouldRasterize = true
         
-        if !message.incoming {
-            cell.textView!.textColor = UIColor.blackColor()
-        } else {
-            cell.textView!.textColor = UIColor.whiteColor()
-        }
+        cell.textView!.textColor = UIColor.blackColor()
         
         let attributes : [String:AnyObject] = [NSForegroundColorAttributeName:cell.textView!.textColor!, NSUnderlineStyleAttributeName: 1]
         cell.textView!.linkTextAttributes = attributes
