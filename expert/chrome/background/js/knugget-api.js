@@ -671,6 +671,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                         defer.resolve({status: 200});
                     }
                 );
+                stateController.setState(ExpertState.READY);
             });
             return defer.promise;
         },
