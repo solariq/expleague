@@ -419,32 +419,36 @@
                         <viewControllerLayoutGuide type="top" id="XrI-mG-CCJ"/>
                         <viewControllerLayoutGuide type="bottom" id="29W-lA-DkX"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="Pwd-Ru-hL6">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                    <view key="view" userInteractionEnabled="NO" contentMode="scaleToFill" id="Pwd-Ru-hL6">
+                        <rect key="frame" x="0.0" y="0.0" width="200" height="50"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Hyt-aT-g48">
-                                <rect key="frame" x="20" y="299" width="560" height="2"/>
+                                <rect key="frame" x="36" y="24" width="128" height="2"/>
                             </progressView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Disconnected" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iwe-gE-WCl">
-                                <rect key="frame" x="20" y="309" width="560" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Disconnected" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iwe-gE-WCl">
+                                <rect key="frame" x="36" y="26" width="128" height="24"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="9"/>
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="iwe-gE-WCl" firstAttribute="leading" secondItem="Pwd-Ru-hL6" secondAttribute="leadingMargin" id="YJX-6g-dcv"/>
-                            <constraint firstItem="iwe-gE-WCl" firstAttribute="trailing" secondItem="Hyt-aT-g48" secondAttribute="trailing" id="chk-Iu-34k"/>
-                            <constraint firstItem="iwe-gE-WCl" firstAttribute="trailing" secondItem="Pwd-Ru-hL6" secondAttribute="trailingMargin" id="e6e-kX-X7E"/>
-                            <constraint firstItem="iwe-gE-WCl" firstAttribute="top" secondItem="Hyt-aT-g48" secondAttribute="bottom" constant="8" symbolic="YES" id="g1b-1P-7dp"/>
-                            <constraint firstItem="Hyt-aT-g48" firstAttribute="leading" secondItem="iwe-gE-WCl" secondAttribute="leading" id="j7k-Pk-NY8"/>
+                            <constraint firstItem="iwe-gE-WCl" firstAttribute="leading" secondItem="Hyt-aT-g48" secondAttribute="leading" id="MDJ-bp-ifH"/>
+                            <constraint firstItem="iwe-gE-WCl" firstAttribute="trailing" secondItem="Hyt-aT-g48" secondAttribute="trailing" id="PfF-Fm-PBD"/>
+                            <constraint firstItem="29W-lA-DkX" firstAttribute="top" secondItem="iwe-gE-WCl" secondAttribute="bottom" id="YGQ-ge-0yG"/>
+                            <constraint firstItem="iwe-gE-WCl" firstAttribute="top" secondItem="Hyt-aT-g48" secondAttribute="bottom" id="g1b-1P-7dp"/>
+                            <constraint firstItem="iwe-gE-WCl" firstAttribute="leading" secondItem="Pwd-Ru-hL6" secondAttribute="leadingMargin" constant="20" id="hco-gS-sII"/>
                             <constraint firstItem="Hyt-aT-g48" firstAttribute="centerY" secondItem="Pwd-Ru-hL6" secondAttribute="centerY" id="myi-hm-2g8"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="Hyt-aT-g48" secondAttribute="trailing" constant="20" id="uqO-xy-1yI"/>
                         </constraints>
                     </view>
+                    <nil key="simulatedStatusBarMetrics"/>
+                    <nil key="simulatedTopBarMetrics"/>
+                    <nil key="simulatedBottomBarMetrics"/>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-                    <size key="freeformSize" width="600" height="600"/>
+                    <size key="freeformSize" width="200" height="50"/>
                     <connections>
                         <outlet property="progressBar" destination="Hyt-aT-g48" id="7es-GX-ohF"/>
                         <outlet property="progressLabel" destination="iwe-gE-WCl" id="iyX-nn-bwr"/>
@@ -452,7 +456,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="idn-cc-RHH" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1526" y="744"/>
+            <point key="canvasLocation" x="-1251" y="993"/>
         </scene>
         <!--Настройки-->
         <scene sceneID="guS-4T-0r4">

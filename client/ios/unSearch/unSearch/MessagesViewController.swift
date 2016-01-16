@@ -46,7 +46,7 @@ class MessagesVeiwController: JSQMessagesViewController {
         tabBar.hidden = true;
         if (order == nil) {
             let orders = AppDelegate.instance.activeProfile!.orders
-            order = orders[orders.count - 1] as? ExpLeagueOrder
+            order = orders.count > 0 ? orders[orders.count - 1] as? ExpLeagueOrder : nil
         }
 //        collectionView?.collectionViewLayout!.messageBubbleFont = UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
         collectionView?.dataSource = order
