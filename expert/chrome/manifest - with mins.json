@@ -97,10 +97,10 @@
         "128": "images/icons/icon_128.png"
     },
     "manifest_version": 2,
-    "homepage_url": "https://toobusytosearch.net",
+    "homepage_url": "http://expleague.com/",
     "name": "Knugget Expert",
     "permissions": [
-        "https://toobusytosearch.net/*",
+        "http://expleague.com//*",
         "http://*/*",
         "https://*/*",
         "<all_urls>",

@@ -678,10 +678,6 @@
 
             $timeout.cancel($scope.timeoutShow);
 
-            KNUGGET.sendMessage({
-                Type: "SendTrackData"
-            });
-
             KNUGGET_SIDEBAR.dragActive = false;
             $scope.active = false;
             $scope.expandedView = false;

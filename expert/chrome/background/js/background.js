@@ -325,13 +325,14 @@ KNUGGET.getMessage = function(request, sender, sendResponse) {
                 });
             }
 
-
             break;
         default:
 
             var senderId = String(sender.tab.windowId) + String(sender.tab.id);
 
             if (request.Type) {
+                console.log("request.Type:: " + request.Type);
+                console.log(request);
                 KNUGGET.api[request.Type](request, senderId).then(function(response) {
                     sendResponse('response');
                 });
