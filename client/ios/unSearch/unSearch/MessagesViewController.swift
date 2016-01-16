@@ -19,8 +19,13 @@ class MessagesVeiwController: JSQMessagesViewController {
         automaticallyScrollsToMostRecentMessage = true
         senderId = "Я"
         senderDisplayName = "Я"
+        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "dismissKeyboard"))
     }
     
+    func dismissKeyboard() {
+        view.endEditing(true)
+    }
+
     func onMessage(msg: ExpLeagueMessage) {
         if (msg.parent != order) {
             return
@@ -38,7 +43,8 @@ class MessagesVeiwController: JSQMessagesViewController {
             return (UIApplication.sharedApplication().delegate as! AppDelegate).tabs.tabBar
         }
     }
-    override func viewWillDisappear(animated: Bool) {
+    
+        override func viewWillDisappear(animated: Bool) {
         tabBar.hidden = false;
     }
 

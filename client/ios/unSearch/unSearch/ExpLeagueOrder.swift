@@ -163,27 +163,11 @@ extension ExpLeagueOrder: JSQMessagesCollectionViewDataSource {
         
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier(cellIdentifier, forIndexPath:indexPath) as! JSQMessagesCollectionViewCell
         cell.delegate = collectionView
+        cell.textView!.attributedText = messageItem.attributedText()
         
-        if (!isMediaMessage) {
-            cell.textView!.text = messageItem.text()
-            
-            if (UIDevice.jsq_isCurrentDeviceBeforeiOS8()) {
-                //  workaround for iOS 7 textView data detectors bug
-                cell.textView!.text = nil;
-                cell.textView!.attributedText = NSAttributedString(string: messageItem.text(), attributes: [
-                    NSFontAttributeName: collectionView.collectionViewLayout.messageBubbleFont
-                ]);
-            }
-            
-            let bubble = self.collectionView(collectionView, messageBubbleImageDataForItemAtIndexPath: indexPath)
-            cell.messageBubbleImageView!.image = bubble.messageBubbleImage()
-            cell.messageBubbleImageView!.highlightedImage = bubble.messageBubbleHighlightedImage()
-        }
-//        else {
-//            let messageMedia = messageItem.media()
-//            cell.mediaView = [messageMedia mediaView] ?: [messageMedia mediaPlaceholderView];
-//            NSParameterAssert(cell.mediaView != nil);
-//        }
+        let bubble = self.collectionView(collectionView, messageBubbleImageDataForItemAtIndexPath: indexPath)
+        cell.messageBubbleImageView!.image = bubble.messageBubbleImage()
+        cell.messageBubbleImageView!.highlightedImage = bubble.messageBubbleHighlightedImage()
         
         var needsAvatar = true;
         if (isOutgoingMessage && CGSizeEqualToSize(collectionView.collectionViewLayout.outgoingAvatarViewSize, CGSizeZero)) {
