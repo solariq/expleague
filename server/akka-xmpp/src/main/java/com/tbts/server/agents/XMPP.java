@@ -73,7 +73,7 @@ public class XMPP extends UntypedActorAdapter {
 
   public static ActorRef register(JID jid, ActorContext context) {
     final Future<Object> future = new AskableActorSelection(context.actorSelection(XMPP_ACTOR_PATH))
-        .ask(jid, Timeout.apply(Duration.create(1, TimeUnit.SECONDS)));
+        .ask(jid, Timeout.apply(Duration.create(60, TimeUnit.SECONDS)));
     try {
       return (ActorRef) Await.result(future, Duration.Inf());
     }
