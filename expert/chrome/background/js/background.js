@@ -3,7 +3,6 @@
 
 KNUGGET.storage.set("Requests",JSON.stringify([]));
 KNUGGET.storage.set("Board",JSON.stringify([]));
-KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
 KNUGGET.storage.set("ActiveRequest", null);
 // REGISTER API COMMAND LISTENER
 chrome.runtime.onConnect.addListener(function(port) {

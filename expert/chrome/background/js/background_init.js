@@ -127,21 +127,7 @@ KNUGGET.injector = {
             console.info("Inject at " + tabId, tabUrl);
 
 
-            KNUGGET.storage.get('VisitedPages', function(vp) {
-                vp = vp ? JSON.parse(vp) : [];
-                var allreadyVisited = false;
-                for (var i = 0; !allreadyVisited && i < vp.length; i++) {
-                    if (vp[i] == tabUrl) {
-                        allreadyVisited = true;
-                    }
-                }
-                if (!allreadyVisited) {
-                    vp.push(tabUrl);
-                }
-                KNUGGET.storage.set("VisitedPages", JSON.stringify(vp));
-            });
-
-
+            KNUGGET.api.PageVisited({tabUrl: tabUrl});
             //Add image icon
             KNUGGET.storage.get("userSettings", function(userSettings) {
 

@@ -98,7 +98,6 @@
         $scope.requests.clear();
         $scope.activeRequest.set(null);
         KNUGGET.storage.set("ChatLog", JSON.stringify([]));
-        KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
         KNUGGET.storage.set("AddTrigger", {shouldAdd: false});
     };
 
@@ -117,7 +116,6 @@
         console.log(request);
 
         $scope.board.clear();
-        KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
         KNUGGET.storage.set("ChatLog", JSON.stringify([]));
         KNUGGET.storage.set("AddTrigger", {shouldAdd: false});
         request.isUnconfirmed = false;
@@ -350,18 +348,6 @@
                     //alert('apply');
                     $scope.$apply();
                 }
-            } else if (data.VisitedPages) {
-                $scope.activeRequest.get(function (request) {
-                    console.log(request);
-                    console.log(data.VisitedPages.newValue);
-                    if (request) {
-                        KNUGGET.api("PageVisited", {
-                            request: request,
-                            pages: JSON.parse(data.VisitedPages.newValue)
-                        }, function () {
-                        });
-                    }
-                });
             } else if (data.AddTrigger) {
                 if (data.AddTrigger.newValue.shouldAdd) {
                     KNUGGET.storage.set('AddTrigger', {shouldAdd: false});
@@ -505,7 +491,7 @@
         readall: function() {
             //don't need to clean if all messages were read
             if ($scope.chatLog.unread > 0) {
-                KNUGGET.storage.set('ChatLog', JSON.stringify({history: $scope.chatLog.value, unread: 0}));
+                KNUGGET.api("ReadAllChat", {}, function () {});
             }
         }
     };
@@ -759,7 +745,6 @@
             $scope.requests.clear();
             $scope.activeRequest.set(null);
             KNUGGET.storage.set("ChatLog", JSON.stringify([]));
-            KNUGGET.storage.set("VisitedPages", JSON.stringify([]));
             KNUGGET.storage.set("AddTrigger", {shouldAdd: false});
         });
     };

@@ -264,9 +264,14 @@ knuggetSidebarDirectives.directive("chat", ['dialogService', '$state', '$timeout
 
 
             $scope.comunicate = function() {
-                KNUGGET.api('SengMsg', {request: $scope.activeRequest.value, text: $scope.respText}, function (response) {
-                    $scope.respText = '';
-                });
+                if ($scope.respText != '') {
+                    KNUGGET.api('SengMsg', {
+                        request: $scope.activeRequest.value,
+                        text: $scope.respText
+                    }, function (response) {
+                        $scope.respText = '';
+                    });
+                }
             };
 
             $scope.getUnreadCount = function() {

@@ -306,7 +306,7 @@ $(document)
                             KNUGGET.sidebarController.hide(true, true);
                             clearInterval(sidebarTimer);
                         }
-                    }, 200);
+                    }, 300);
                 }
                 clearInterval(injectTimer);
             } catch (e) {

@@ -391,8 +391,66 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         };
     }
 
+    function ChatController() {
+        this.msgQueue = [];
+
+        this.addChatMsg = function(msg) {
+            console.log("add: " + JSON.stringify(msg));
+            this.msgQueue.push({type: 'msg', msg: msg});
+        };
+
+        this.clear = function() {
+            this.msgQueue = [];
+        };
+
+        this.readAllChat = function() {
+            this.msgQueue.unshift({type: 'readall'});
+        };
+
+
+        var me = this;
+        $interval(function() {
+            if (me.msgQueue.length > 0) {
+                var cmd = me.msgQueue.shift();
+                if (cmd.type == 'msg') {
+                    var msg = cmd.msg;
+                    KNUGGET.storage.get('ChatLog', function (value) {
+                        var log = value ? JSON.parse(value) : {history: [], unread: 0};
+                        //for back capability
+                        if (Array.isArray(log) || log == null) {
+                            log = {history: [], unread: 0};
+                        }
+                        log.history.push(msg);
+                        log.unread += msg.isOwn ? 0 : 1;
+                        KNUGGET.storage.set("ChatLog", JSON.stringify(log));
+                        if (!msg.isOwn) {
+                            var message = new Notification('Новое сообщение', {
+                                tag: 'chat',
+                                body: msg.text
+                            });
+                        }
+                    });
+                } else if (cmd.type == 'readall') {
+                    KNUGGET.storage.get('ChatLog', function (value) {
+                        var log = value ? JSON.parse(value) : {history: [], unread: 0};
+                        //for back capability
+                        if (Array.isArray(log) || log == null) {
+                            log = {history: [], unread: 0};
+                        }
+                        log.unread = 0;
+                        KNUGGET.storage.set("ChatLog", JSON.stringify(log));
+                    });
+                } else {
+                    console.log('WARNING! UNEXPECTED CMD: ' + cmd);
+                }
+            }
+        }, 50);
+    }
+
     var jabberClient = null;
     var stateController = null;
+    var chatController = new ChatController();
+    var visitedPages = [];
 
     //var connection = new Strophe.Connection('http://localhost:5280/http-bind');
     //var connection = new Strophe.Connection('http://expleague.com:5280/http-bind');
@@ -412,33 +470,15 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         KNUGGET.storage.set("UserData", JSON.stringify({userLogin: login, userPassword: password}));
     };
 
-    addChatMsg = function(msg) {
-        console.log("add: " + JSON.stringify(msg));
-        KNUGGET.storage.get('ChatLog',function (value) {
-            var log = value ? JSON.parse(value) : {history: [], unread: 0};
-            //for back capability
-            if (Array.isArray(log) || log == null) {
-                log = {history: [], unread: 0};
-            }
-            log.history.push(msg);
-            log.unread += msg.isOwn ? 0 : 1;
-            KNUGGET.storage.set("ChatLog", JSON.stringify(log));
-            if (!msg.isOwn) {
-                var message = new Notification('Новое сообщение', {
-                    tag : 'chat',
-                    body : msg.text
-                });
-            }
-        });
-    };
 
     cleanAll = function() {
         KNUGGET.storage.set('Board', JSON.stringify([]));
         KNUGGET.storage.set('Requests', JSON.stringify([]));
-        KNUGGET.storage.set('VisitedPages', JSON.stringify([]));
         KNUGGET.storage.set('AllowToShow', false);
         KNUGGET.storage.set('ChatLog', {history:[], unread: 0});
+        chatController.clear();
         latestOffer = null;
+        visitedPages = [];
         //$scope.board.update();
         //$scope.allowToShow.get(function(){});
         //$scope.activeRequest.get(function(){});
@@ -567,21 +607,37 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                     defer.resolve({status: 200});
                 }
             );
-            addChatMsg({isOwn: true, text: data.text});
+            chatController.addChatMsg({isOwn: true, text: data.text});
             return defer.promise;
         },
 
         PageVisited: function(data) {
-            var defer = $q.defer();
+
             console.log(JSON.stringify(data));
-            jabberClient.send({
-                    to: data.request.room,
-                    text: JSON.stringify({type: 'visitedPages', count: data.pages.length, links: data.pages})
-                }, 'chat', function () {
-                    defer.resolve({status: 200});
+            var tabUrl = data.tabUrl;
+            KNUGGET.storage.get('ActiveRequest', function (request) {
+                if (request) {
+                    var allreadyVisited = false;
+                    for (var i = 0; !allreadyVisited && i < visitedPages.length; i++) {
+                        if (visitedPages[i] == tabUrl) {
+                            allreadyVisited = true;
+                        }
+                    }
+                    if (!allreadyVisited) {
+                        visitedPages.push(tabUrl);
+                        jabberClient.send({
+                                to: request.room,
+                                text: JSON.stringify({
+                                    type: 'visitedPages',
+                                    count: visitedPages.length,
+                                    links: visitedPages
+                                })
+                            }, 'chat', function () {}
+                        );
+
+                    }
                 }
-            );
-            return defer.promise;
+            });
         },
 
         Available: function(data) {
@@ -829,7 +885,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             //});
 
             jabberClient.addMessageListener(function(text, from) {
-                addChatMsg({isOwn: false, text: text});
+                chatController.addChatMsg({isOwn: false, text: text});
             });
 
             jabberClient.addInviteListener(function(invite) {
@@ -843,6 +899,14 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                 }
             });
             return future.promise;
+        },
+
+        ReadAllChat: function(data) {
+            var defer = $q.defer();
+            chatController.readAllChat();
+            defer.resolve({status : 200});
+
+            return defer.promise;
         },
 
         Logout: function(data) {
