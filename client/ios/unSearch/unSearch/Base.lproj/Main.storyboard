@@ -595,7 +595,7 @@
                             <constraint firstItem="lUS-0W-xs5" firstAttribute="leading" secondItem="pJn-RE-qv8" secondAttribute="trailing" constant="8" symbolic="YES" id="xxj-Ou-Dam"/>
                         </constraints>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Настройки" image="about" id="y9p-ok-ZgZ"/>
+                    <tabBarItem key="tabBarItem" title="Настройки" image="About" id="y9p-ok-ZgZ"/>
                     <connections>
                         <outlet property="hostField" destination="lUS-0W-xs5" id="o3u-cJ-eEd"/>
                         <outlet property="logView" destination="SN8-hW-1CQ" id="MHT-kO-NtB"/>
@@ -610,7 +610,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="about" width="24" height="24"/>
+        <image name="About" width="24" height="24"/>
         <image name="history" width="24" height="24"/>
         <image name="order" width="24" height="24"/>
     </resources>
