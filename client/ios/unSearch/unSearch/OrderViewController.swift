@@ -12,34 +12,55 @@ class OrderViewController: UIViewController {
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
         if (controller.orderText.text.isEmpty) {
             controller.orderTextBackground.backgroundColor = controller.error_color
+            return
         }
-        else if (!AppDelegate.instance.stream.isConnected()) {
-            let controller = UIAlertController(
-            title: "Experts League",
-                    message: "No connection to the server: \(AppDelegate.instance.activeProfile!.domain)!",
-                    preferredStyle: UIAlertControllerStyle.Alert)
-            controller.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default, handler: nil))
-            presentViewController(controller, animated: true, completion: nil)
-        } else {
-            let order = AppDelegate.instance.activeProfile!.placeOrder(
-                    topic: controller.orderText.text,
-                    urgency: Urgency.find(controller.urgency.value).type,
-                    local: controller.isLocal.on,
-                    prof: controller.needExpert.on
-            );
-            controller.clear();
-
-            let delegate = UIApplication.sharedApplication().delegate as! AppDelegate
-
-            if delegate.navigation.viewControllers.count > 0 {
-                while (delegate.navigation.viewControllers.count > 1) {
-                    delegate.navigation.popViewControllerAnimated(false)
+        if (!AppDelegate.instance.stream.isConnected()) {
+            let alertView = UIAlertController(title: "Experts League", message: "Connecting to server.", preferredStyle: .Alert)
+            let completion = {
+                //  Add your progressbar after alert is shown (and measured)
+                let margin:CGFloat = 8.0
+                let rect = CGRectMake(margin, 74.0, alertView.view.frame.width - margin * 2.0 , 2.0)
+                let progressController = AppDelegate.instance.connectionProgressView
+                let progressView = UIProgressView(frame: rect)
+                progressController.completion = {
+                    self.fire(self)
                 }
-                delegate.messagesView!.order = order
-                delegate.navigation.pushViewController(delegate.messagesView!, animated: false)
+                alertView.view.addSubview(progressView)
+                progressController.progressBar = progressView
+                progressController.alert = alertView
+                AppDelegate.instance.connect()
+                //                progressController.alert = alertView
             }
-            delegate.tabs.selectedIndex = 1
+            alertView.addAction(UIAlertAction(title: "Retry", style: .Default, handler: {(x: UIAlertAction) -> Void in
+                AppDelegate.instance.disconnect()
+                self.fire(self)
+            }))
+            alertView.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
+            
+            //  Show it to your users
+    
+            presentViewController(alertView, animated: true, completion: completion)
+            return
         }
+        
+        let order = AppDelegate.instance.activeProfile!.placeOrder(
+                topic: controller.orderText.text,
+                urgency: Urgency.find(controller.urgency.value).type,
+                local: controller.isLocal.on,
+                prof: controller.needExpert.on
+        );
+        controller.clear();
+
+        let delegate = UIApplication.sharedApplication().delegate as! AppDelegate
+
+        if delegate.navigation.viewControllers.count > 0 {
+            while (delegate.navigation.viewControllers.count > 1) {
+                delegate.navigation.popViewControllerAnimated(false)
+            }
+            delegate.messagesView!.order = order
+            delegate.navigation.pushViewController(delegate.messagesView!, animated: false)
+        }
+        delegate.tabs.selectedIndex = 1
     }
 
     override func viewDidLoad() {
