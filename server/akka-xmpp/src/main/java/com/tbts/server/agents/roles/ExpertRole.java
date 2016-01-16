@@ -110,8 +110,10 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
             (stanza, task) -> {
               if (task.getFirst().room().bareEq(stanza.to())) {
                 timer.cancel();
-                if (stanza instanceof Message && ((Message) stanza).has(Operations.Cancel.class))
+                if (stanza instanceof Message && ((Message) stanza).has(Operations.Cancel.class)) {
+                  task.second.tell(new Operations.Cancel(), self());
                   return goTo(State.READY).using(null);
+                }
                 else {
                   task.second.tell(new Operations.Start(), self());
                   XMPP.send(new Message(jid(), task.first.room(), new Operations.Start()), context());

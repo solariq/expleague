@@ -41,6 +41,10 @@ class ExpLeagueProfile: NSManagedObject {
         return XMPPJID.jidWithString(login + "@" + domain + "/unSearch");
     }
     
+    var progressBar: ConnectionProgressController? {
+        return AppDelegate.instance.connectionProgressView
+    }
+    
     func order(name name: String) -> ExpLeagueOrder? {
         let fit = orders.filter({
             let order = $0 as! ExpLeagueOrder
@@ -80,6 +84,8 @@ class ExpLeagueProfile: NSManagedObject {
 extension ExpLeagueProfile: XMPPStreamDelegate {
     @objc
     func xmppStreamDidConnect(sender: XMPPStream!) {
+        progressBar?.progress = .Connected
+        
         log("Connected")
         do {
             try sender.authenticateWithPassword(passwd);
@@ -91,26 +97,32 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
     
     @objc
     func xmppStreamConnectDidTimeout(sender: XMPPStream!) {
+        progressBar?.error("Timeout")
         log("Timedout");
     }
     
     @objc
     func xmppStreamDidDisconnect(sender: XMPPStream!, withError error: NSError!) {
-        log("Disconnected" + (error != nil ? " with error:\n\(error)" : ""));
+        let msg = "Disconnected" + (error != nil ? " with error:\n\(error)" : "")
+        progressBar?.error(msg)
+        log(msg);
     }
     
     @objc
     func xmppStreamDidStartNegotiation(sender: XMPPStream!) {
+        progressBar?.progress = .Negotiations
         log("Starting negotiations")
     }
     
     @objc
     func xmppStream(sender: XMPPStream!, socketDidConnect socket: GCDAsyncSocket!) {
+        progressBar?.progress = .SocketOpened
         log("Socket opened");
     }
     
     @objc
     func xmppStream(sender: XMPPStream!, willSecureWithSettings settings: NSMutableDictionary!) {
+        progressBar?.progress = .Configuring
         log("Configuring");
         settings.setValue(true, forKey: GCDAsyncSocketManuallyEvaluateTrust)
     }
@@ -133,6 +145,7 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
                 }
             }
         }
+        progressBar?.error("Can not authenticate: \(error)")
         log("Not authenticate \(error)")
     }
     
@@ -150,6 +163,7 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
     
     @objc
     func xmppStreamDidAuthenticate(sender: XMPPStream!) {
+        progressBar?.progress = .Connected
         log("Success!");
     }
     
