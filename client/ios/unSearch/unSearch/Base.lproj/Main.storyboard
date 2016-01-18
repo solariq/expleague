@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
@@ -190,7 +191,7 @@
                                         <rect key="frame" x="0.0" y="294" width="343" height="64"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Jeu-A9-TtG" id="7lp-Bg-Tbq">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="63.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="64"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Срочно" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hsO-a2-Ud4">
@@ -208,16 +209,36 @@
                                                         <action selector="urgencyChanged:" destination="9Xn-iC-3CX" eventType="valueChanged" id="9cy-fr-JBa"/>
                                                     </connections>
                                                 </slider>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="rocket" translatesAutoresizingMaskIntoConstraints="NO" id="MkI-wB-Ku0">
+                                                    <rect key="frame" x="319" y="1" width="24" height="24"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" secondItem="MkI-wB-Ku0" secondAttribute="height" multiplier="1:1" id="Rtv-nJ-NEB"/>
+                                                    </constraints>
+                                                </imageView>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="turtle" translatesAutoresizingMaskIntoConstraints="NO" id="e8Y-Hw-BwJ">
+                                                    <rect key="frame" x="0.0" y="0.0" width="24" height="24"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" secondItem="e8Y-Hw-BwJ" secondAttribute="height" multiplier="1:1" id="o6K-Zc-Fd9"/>
+                                                    </constraints>
+                                                </imageView>
+                                                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ghb-Wd-4Kb">
+                                                    <rect key="frame" x="248" y="8" width="30" height="30"/>
+                                                    <state key="normal" title="But"/>
+                                                </button>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="ZK2-Ms-XB4" firstAttribute="leading" secondItem="7lp-Bg-Tbq" secondAttribute="leadingMargin" id="ADk-Ce-vxK"/>
                                                 <constraint firstAttribute="bottomMargin" secondItem="ZK2-Ms-XB4" secondAttribute="bottom" id="Aty-rA-sIb"/>
                                                 <constraint firstAttribute="leadingMargin" secondItem="hsO-a2-Ud4" secondAttribute="leading" id="LmS-Ba-oan"/>
+                                                <constraint firstItem="MkI-wB-Ku0" firstAttribute="top" secondItem="hsO-a2-Ud4" secondAttribute="top" constant="-7" id="TsJ-vK-iAy"/>
+                                                <constraint firstItem="e8Y-Hw-BwJ" firstAttribute="leading" secondItem="7lp-Bg-Tbq" secondAttribute="leading" id="W3N-g0-ZKy"/>
                                                 <constraint firstItem="ZK2-Ms-XB4" firstAttribute="top" secondItem="hsO-a2-Ud4" secondAttribute="bottom" id="ZUU-q5-Avi"/>
+                                                <constraint firstItem="e8Y-Hw-BwJ" firstAttribute="top" secondItem="7lp-Bg-Tbq" secondAttribute="top" id="c7W-be-Gxp"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="hsO-a2-Ud4" secondAttribute="trailing" id="nrW-W5-ywM"/>
                                                 <constraint firstItem="ZK2-Ms-XB4" firstAttribute="trailing" secondItem="7lp-Bg-Tbq" secondAttribute="trailingMargin" id="s64-v5-eO9"/>
                                                 <constraint firstItem="hsO-a2-Ud4" firstAttribute="top" secondItem="7lp-Bg-Tbq" secondAttribute="topMargin" id="xx2-tV-EWy"/>
                                                 <constraint firstItem="hsO-a2-Ud4" firstAttribute="centerX" secondItem="ZK2-Ms-XB4" secondAttribute="centerX" id="y7W-nq-bNg"/>
+                                                <constraint firstItem="MkI-wB-Ku0" firstAttribute="trailing" secondItem="hsO-a2-Ud4" secondAttribute="trailing" constant="8" id="ySq-lF-UsF"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                         <color key="backgroundColor" red="0.93725490199999995" green="0.93725490199999995" blue="0.95686274510000002" alpha="1" colorSpace="calibratedRGB"/>
@@ -613,5 +634,7 @@
         <image name="About" width="24" height="24"/>
         <image name="history" width="24" height="24"/>
         <image name="order" width="24" height="24"/>
+        <image name="rocket" width="24" height="24"/>
+        <image name="turtle" width="24" height="24"/>
     </resources>
 </document>
