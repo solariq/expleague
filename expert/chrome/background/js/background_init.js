@@ -155,7 +155,7 @@ KNUGGET.injector = {
 
             //inject js files
             for (var j = 0; j < $this.JS.length; j++) {
-                console.log($this.JS[j]);
+                //console.log($this.JS[j]);
                 window.chrome.tabs.executeScript(tabId, {
                     file: $this.JS[j],
                     allFrames: false,

@@ -98,7 +98,7 @@
                                         <rect key="frame" x="0.0" y="28" width="343" height="150"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="DPA-SF-u4z" id="sfp-9M-b6n">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="149.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="150"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" verticalHuggingPriority="500" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="HmF-n6-bci">
@@ -127,7 +127,7 @@
                                         <rect key="frame" x="0.0" y="178" width="343" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Ajl-ur-GdS" id="PuB-mJ-lgr">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="43.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="рядом с моим местоположением" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="8" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kda-Km-ro5">
@@ -154,7 +154,7 @@
                                         <rect key="frame" x="0.0" y="222" width="343" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ofg-Mc-w4N" id="w7M-Qd-3gZ">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="43.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="привлечь эксперта по этому вопросу" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="8" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="m41-wn-rQG">
@@ -251,7 +251,7 @@
                                         <rect key="frame" x="0.0" y="386" width="343" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="center" tableViewCell="w2a-wI-Lf7" id="5qq-QH-KIm">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="43.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Цена услуги: 200" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" enabled="NO" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I8W-4g-MWG">
@@ -286,7 +286,7 @@
                                         <rect key="frame" x="0.0" y="430" width="343" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="center" tableViewCell="IhR-db-dPH" id="a73-4W-nU7">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="43.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="У вас на счету: 100500" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" enabled="NO" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="o56-QX-iD1">
@@ -435,37 +435,41 @@
         <!--Connection Progress Controller-->
         <scene sceneID="auN-PK-uw4">
             <objects>
-                <viewController id="K63-85-rqo" customClass="ConnectionProgressController" customModule="unSearch" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="progressBar" useStoryboardIdentifierAsRestorationIdentifier="YES" id="K63-85-rqo" customClass="ConnectionProgressController" customModule="unSearch" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="XrI-mG-CCJ"/>
                         <viewControllerLayoutGuide type="bottom" id="29W-lA-DkX"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="Pwd-Ru-hL6">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                    <view key="view" userInteractionEnabled="NO" contentMode="scaleToFill" id="Pwd-Ru-hL6">
+                        <rect key="frame" x="0.0" y="0.0" width="200" height="50"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Hyt-aT-g48">
-                                <rect key="frame" x="20" y="299" width="560" height="2"/>
+                                <rect key="frame" x="36" y="24" width="128" height="2"/>
                             </progressView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Disconnected" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iwe-gE-WCl">
-                                <rect key="frame" x="20" y="309" width="560" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Disconnected" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iwe-gE-WCl">
+                                <rect key="frame" x="36" y="26" width="128" height="24"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="9"/>
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="iwe-gE-WCl" firstAttribute="leading" secondItem="Pwd-Ru-hL6" secondAttribute="leadingMargin" id="YJX-6g-dcv"/>
-                            <constraint firstItem="iwe-gE-WCl" firstAttribute="trailing" secondItem="Hyt-aT-g48" secondAttribute="trailing" id="chk-Iu-34k"/>
-                            <constraint firstItem="iwe-gE-WCl" firstAttribute="trailing" secondItem="Pwd-Ru-hL6" secondAttribute="trailingMargin" id="e6e-kX-X7E"/>
-                            <constraint firstItem="iwe-gE-WCl" firstAttribute="top" secondItem="Hyt-aT-g48" secondAttribute="bottom" constant="8" symbolic="YES" id="g1b-1P-7dp"/>
-                            <constraint firstItem="Hyt-aT-g48" firstAttribute="leading" secondItem="iwe-gE-WCl" secondAttribute="leading" id="j7k-Pk-NY8"/>
+                            <constraint firstItem="iwe-gE-WCl" firstAttribute="leading" secondItem="Hyt-aT-g48" secondAttribute="leading" id="MDJ-bp-ifH"/>
+                            <constraint firstItem="iwe-gE-WCl" firstAttribute="trailing" secondItem="Hyt-aT-g48" secondAttribute="trailing" id="PfF-Fm-PBD"/>
+                            <constraint firstItem="29W-lA-DkX" firstAttribute="top" secondItem="iwe-gE-WCl" secondAttribute="bottom" id="YGQ-ge-0yG"/>
+                            <constraint firstItem="iwe-gE-WCl" firstAttribute="top" secondItem="Hyt-aT-g48" secondAttribute="bottom" id="g1b-1P-7dp"/>
+                            <constraint firstItem="iwe-gE-WCl" firstAttribute="leading" secondItem="Pwd-Ru-hL6" secondAttribute="leadingMargin" constant="20" id="hco-gS-sII"/>
                             <constraint firstItem="Hyt-aT-g48" firstAttribute="centerY" secondItem="Pwd-Ru-hL6" secondAttribute="centerY" id="myi-hm-2g8"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="Hyt-aT-g48" secondAttribute="trailing" constant="20" id="uqO-xy-1yI"/>
                         </constraints>
                     </view>
+                    <nil key="simulatedStatusBarMetrics"/>
+                    <nil key="simulatedTopBarMetrics"/>
+                    <nil key="simulatedBottomBarMetrics"/>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-                    <size key="freeformSize" width="600" height="600"/>
+                    <size key="freeformSize" width="200" height="50"/>
                     <connections>
                         <outlet property="progressBar" destination="Hyt-aT-g48" id="7es-GX-ohF"/>
                         <outlet property="progressLabel" destination="iwe-gE-WCl" id="iyX-nn-bwr"/>
@@ -473,7 +477,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="idn-cc-RHH" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1526" y="744"/>
+            <point key="canvasLocation" x="-1251" y="993"/>
         </scene>
         <!--Настройки-->
         <scene sceneID="guS-4T-0r4">

@@ -1,4 +1,4 @@
-angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$interval', 'fileBlob', function ($http, $q, $interval, $fileBlob) {
+angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$interval', '$timeout', 'fileBlob', function ($http, $q, $interval, $timeout, $fileBlob) {
 
     function findByTagName(nl, tag) {
         for (i = 0; i < nl.length; ++i) {
@@ -485,48 +485,53 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
     };
 
     newStyleResponce = function(callback) {
-        KNUGGET.storage.get("Board", function (value) {
-            result = [];
-            value = value ? JSON.parse(value) : [];
-            value.forEach(function(el, i) {
-                el = JSON.parse(el);
-                if (el.Type == 'link') {
-                    if (el.Base64Image != undefined) {
+        $timeout(function() {
+            KNUGGET.storage.get("Board", function (value) {
+                result = [];
+                value = value ? JSON.parse(value) : [];
+                value.forEach(function(el, i) {
+                    el = JSON.parse(el);
+                    if (el.Type == 'link') {
+                        if (el.Base64Image != undefined) {
+                            result.push({
+                                image: {
+                                    image: el.Base64Image,
+                                    title: el.Title,
+                                    referer: el.Referer
+                                }
+                            });
+                        } else {
+                            result.push({
+                                link: {
+                                    href: el.Href,
+                                    title: el.Title
+                                }
+                            });
+                        }
+                    } else if (el.Type == 'text') {
+                        result.push({
+                            text: {
+                                text: el.Text,
+                                title: el.Title,
+                                referer: el.Referer
+                            }
+                        });
+                    } else if (el.Type == 'picture' || el.Type == 'apicture') {
                         result.push({
                             image: {
-                                image: el.Base64Image,
+                                image: el.Image, //todo make base64
                                 title: el.Title,
                                 referer: el.Referer
                             }
                         });
                     } else {
-                        result.push({
-                            link: {
-                                href: el.Href,
-                                title: el.Title
-                            }
-                        });
+                        console.log('WARNING! UNEXPECTED RESPONCE ELEMENT TYPE: ' + el.Type);
+                        console.log(el);
                     }
-                } else if (el.Type == 'text') {
-                    result.push({
-                        text: {
-                            text: el.Text,
-                            title: el.Title,
-                            referer: el.Referer
-                        }
-                    });
-                } else if (el.Type == 'picture') {
-                    result.push({
-                        image: {
-                            image: el.Image, //todo make base64
-                            title: el.Title,
-                            referer: el.Referer
-                        }
-                    });
-                }
+                });
+                callback(result);
             });
-            callback(result);
-        });
+        }, 100);
     };
 
     addToBoardSync = function(answer, callback) {
@@ -696,7 +701,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             var defer = $q.defer();
             removeRequest(data.request, function() {
                 if (latestOffer) {
-                    var msg = $msg({to: jabberClient.host, from: jabberClient.connection.jid, type: 'chat'})
+                    var msg = $msg({to: latestOffer.room, from: jabberClient.connection.jid, type: 'chat'})
                         .c('cancel')
                         .attrs({xmlns: "http://expleague.com/scheme"})
                         .up()

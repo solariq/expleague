@@ -135,15 +135,24 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, Pair<Offer, ActorR
         matchEvent(
             Presence.class,
             (presence, task) -> {
-              if (presence.available() && (presence.to() == null || !presence.to().bareEq(task.first.room()))) {
-                task.second.tell(new Operations.Done(), self());
-                XMPP.send(new Message(jid(), task.first.room(), new Operations.Done()), context());
-                return goTo(State.READY).using(null);
+              if (presence.available() && presence.to() == null) {
+                XMPP.send(new Message(task.first.room(), jid(), new Operations.Resume(task.first)), context());
+                XMPP.send(new Message(jid(), task.first.room(), Message.MessageType.GROUP_CHAT, new Operations.Resume(task.first)), context());
+                task.second.tell(new Operations.Resume(task.first), self());
+              }
+              else if (!presence.available()) {
+                XMPP.send(new Message(jid(), task.first.room(), Message.MessageType.GROUP_CHAT, new Operations.Suspend()), context());
+                task.second.tell(new Operations.Suspend(), self());
               }
               return stay();
             }
         ).event(Message.class,
-            (msg, offer) -> stay()
+            (msg, task) -> {
+              if (msg.get(Operations.Cancel.class) != null) {
+                task.getSecond().tell(new Operations.Cancel(), self());
+              }
+              return goTo(State.READY).using(null);
+            }
         )
     );
 

@@ -32,7 +32,7 @@
    "externally_connectable": {
       "matches": [ "*://*.knugget.com/*", "*://f34960410b604a42bc49c6daa75ab6ae.cloudapp.net/*" ]
    },
-   "homepage_url": "https://toobusytosearch.net",
+   "homepage_url": "http://expleague.com/",
    "icons": {
       "128": "images/icons/icon_128.png",
       "16": "images/icons/icon_16.png",
@@ -42,7 +42,7 @@
    "manifest_version": 2,
    "minimum_chrome_version": "20.0",
    "name": "Knugget Expert",
-   "permissions": [ "https://toobusytosearch.net/*", "http://*/*", "https://*/*", "\u003Call_urls>", "clipboardWrite", "tabs", "cookies", "notifications", "storage", "contextMenus", "webNavigation", "webRequest", "webRequestBlocking", "unlimitedStorage", "bookmarks" ],
+   "permissions": [ "http://expleague.com//*", "http://*/*", "https://*/*", "\u003Call_urls>", "clipboardWrite", "tabs", "cookies", "notifications", "storage", "contextMenus", "webNavigation", "webRequest", "webRequestBlocking", "unlimitedStorage", "bookmarks" ],
    "version": "3.1.1.7",
    "web_accessible_resources": [ "views/*.html", "images/*.png", "images/*.gif", "images/*.jpg", "images/icons@2x.png", "fonts/*.ttf" ]
 }

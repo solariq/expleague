@@ -91,6 +91,64 @@ class ExpLeagueJSQTextMessage: NSObject, JSQMessageData {
         }
     }
     
+    func attributedText() -> NSAttributedString {
+        let doc = NSMutableAttributedString()
+        if (self.delegate.body!.hasPrefix("{")) {
+            do {
+                let json = try NSJSONSerialization.JSONObjectWithData(delegate.body!.dataUsingEncoding(NSUTF8StringEncoding)!, options: NSJSONReadingOptions.AllowFragments)
+                let content = json["content"] as! NSArray
+                for item in content {
+                    if let textItem = (item as! NSDictionary)["text"] as? NSDictionary {
+                        if let title = textItem["title"] as? String {
+                            doc.appendAttributedString(NSAttributedString(string: title, attributes: [
+                                NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleHeadline)
+                                ]))
+                        }
+                        if var text = textItem["text"] as? String {
+                            try! text = NSRegularExpression(pattern: "(\n)+", options: []).stringByReplacingMatchesInString(text, options: [], range: NSMakeRange(0, text.characters.count), withTemplate: "\n")
+                            text = text.stringByReplacingOccurrencesOfString("&nbsp;", withString: " ")
+                            try! text = NSRegularExpression(pattern: "( )+", options: []).stringByReplacingMatchesInString(text, options: [], range: NSMakeRange(0, text.characters.count), withTemplate: " ")
+                            text = text.stringByReplacingOccurrencesOfString("&lt;", withString: "<")
+                            text = text.stringByReplacingOccurrencesOfString("&gt;", withString: ">")
+                            text = text.stringByReplacingOccurrencesOfString("&quot;", withString: "\"")
+                            doc.appendAttributedString(NSAttributedString(string: "\n" + text, attributes: [
+                                NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
+                                ]))
+                        }
+                    }
+                    if let textItem = (item as! NSDictionary)["link"] as? NSDictionary {
+                        print("Reference: " + (textItem["href"] as! String))
+                        
+                        if let title = textItem["title"] as? String {
+                            if let href = NSURL(string: textItem["href"] as! String) {
+                                doc.appendAttributedString(NSAttributedString(string: title, attributes: [
+                                    NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody),
+                                    NSLinkAttributeName: href,
+                                    NSForegroundColorAttributeName: UIColor.blueColor()
+                                    ]))
+                            }
+                            else {
+                                doc.appendAttributedString(NSAttributedString(string: "\(title) (\(textItem["href"]!))", attributes: [
+                                    NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody),
+                                    ]))
+                            }
+                        }
+                    }
+                    
+                }
+            }
+            catch {
+                AppDelegate.instance.activeProfile!.log("\(error)")
+            }
+        }
+        else {
+            doc.appendAttributedString(NSAttributedString(string: delegate.body!, attributes: [
+                NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody),
+            ]))
+        }
+        return doc
+    }
+    
     var avatar: JSQMessageAvatarImageDataSource {
         get {
             var result = ExpLeagueJSQTextMessage.avatars[delegate.from]
@@ -136,6 +194,6 @@ class ExpLeagueJSQTextMessage: NSObject, JSQMessageData {
     }
     
     func text() -> String! {
-        return delegate.body
+        return attributedText().string
     }
 }
