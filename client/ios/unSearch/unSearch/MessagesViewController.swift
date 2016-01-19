@@ -44,7 +44,7 @@ class MessagesVeiwController: JSQMessagesViewController {
         }
     }
     
-        override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(animated: Bool) {
         tabBar.hidden = false;
     }
 

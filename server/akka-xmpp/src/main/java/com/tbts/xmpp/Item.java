@@ -6,7 +6,7 @@ import com.fasterxml.aalto.AsyncXMLStreamReader;
 import com.fasterxml.aalto.stax.InputFactoryImpl;
 import com.fasterxml.aalto.stax.OutputFactoryImpl;
 import com.spbsu.commons.io.StreamTools;
-import com.tbts.server.xmpp.XMPPOutFlow;
+import com.tbts.server.xmpp.XMPPClientConnection;
 import com.tbts.util.xml.AsyncJAXBStreamReader;
 import com.tbts.util.xml.BOSHNamespaceContext;
 import com.tbts.util.xml.LazyNSXMLStreamWriter;
@@ -142,7 +142,7 @@ public class Item implements Serializable, Cloneable {
       asyncXml = factory.createAsyncForByteArray();
       reader = new AsyncJAXBStreamReader(asyncXml, Stream.jaxb());
       try {
-        asyncXml.getInputFeeder().feedInput(XMPPOutFlow.XMPP_START.getBytes(), 0, XMPPOutFlow.XMPP_START.length());
+        asyncXml.getInputFeeder().feedInput(XMPPClientConnection.XMPP_START.getBytes(), 0, XMPPClientConnection.XMPP_START.length());
         reader.drain(o -> { });
       }
       catch (XMLStreamException | SAXException e) {
