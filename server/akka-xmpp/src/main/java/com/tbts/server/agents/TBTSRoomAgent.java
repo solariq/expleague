@@ -166,17 +166,22 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
       Status result = new Status();
       final List<JID> workers = new ArrayList<>();
       final JID owner = owner();
-
+      boolean lastActive = false;
       for (final Item item : snapshot) {
         if (item instanceof Message) {
           final Message msg = (Message) item;
           if (owner != null && "expert".equals(msg.from().resource())) {
             workers.add(msg.from());
           }
+          if (msg.contains(Operations.Start.class))
+            lastActive = true;
+          if (msg.contains(Operations.Done.class))
+            lastActive = false;
         }
       }
       result.open = isOpen();
       result.workers = workers.toArray(new JID[workers.size()]);
+      result.lastActive = lastActive;
       sender().tell(result, self());
     }
     else unhandled(c);
@@ -185,6 +190,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   public static class Status {
     private JID[] workers;
     private boolean open;
+    public boolean lastActive;
 
     public JID[] workers() {
       return workers;
@@ -197,6 +203,10 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
 
     public boolean isOpen() {
       return open;
+    }
+
+    public boolean isLastWorkerActive() {
+      return lastActive;
     }
   }
 }

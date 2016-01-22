@@ -89,7 +89,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
             (offer, zero) -> {
               final ActorRef agent = XMPP.register(offer.room(), context());
               final TBTSRoomAgent.Status status = AkkaTools.ask(agent, TBTSRoomAgent.Status.class);
-              if (status.isOpen()) {
+              if (status.isLastWorkerActive()) {
                 final ActorRef expert = LaborExchange.registerExpert(status.lastWorker(), context());
                 expert.tell(new Operations.Resume(offer), self());
                 final Task task = new Task(offer, status);
