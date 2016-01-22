@@ -65,6 +65,11 @@ public class ConnectedPhase extends XMPPPhase {
     }
   }
 
+  @Override
+  public void postStop() throws Exception {
+    agent.tell(new UserAgent.ConnStatus(false, jid.resource()), self());
+  }
+
   public void invoke(Stanza msg) {
     if (msg instanceof Iq)
       return;

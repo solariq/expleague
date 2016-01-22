@@ -100,8 +100,13 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
             .filter(s -> s instanceof Message).map(s -> (Message) s)
             .filter(m -> m.get(Message.Subject.class) != null)
             .findFirst();
-    if (subject.isPresent())
-      return new Offer(jid, subject.get().from(), subject.get().get(Message.Subject.class));
+    if (subject.isPresent()) {
+      final Offer offer = new Offer(jid, subject.get().from(), subject.get().get(Message.Subject.class));
+      final List<JID> workers = new ArrayList<>();
+      workers(workers);
+      workers.stream().forEach(offer::addWorker);
+      return offer;
+    }
     return null;
   }
 
@@ -165,26 +170,30 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     if (Status.class.equals(c)) {
       Status result = new Status();
       final List<JID> workers = new ArrayList<>();
-      final JID owner = owner();
-      boolean lastActive = false;
-      for (final Item item : snapshot) {
-        if (item instanceof Message) {
-          final Message msg = (Message) item;
-          if (owner != null && "expert".equals(msg.from().resource())) {
-            workers.add(msg.from());
-          }
-          if (msg.contains(Operations.Start.class))
-            lastActive = true;
-          if (msg.contains(Operations.Done.class))
-            lastActive = false;
-        }
-      }
-      result.open = isOpen();
+      boolean lastActive = workers(workers);
       result.workers = workers.toArray(new JID[workers.size()]);
+      result.open = isOpen();
       result.lastActive = lastActive;
       sender().tell(result, self());
     }
     else unhandled(c);
+  }
+
+  private boolean workers(List<JID> workers) {
+    boolean lastActive = false;
+    for (final Item item : snapshot) {
+      if (item instanceof Message) {
+        final Message msg = (Message) item;
+        if ("expert".equals(msg.from().resource())) {
+          workers.add(msg.from());
+        }
+        if (msg.contains(Operations.Start.class))
+          lastActive = true;
+        if (msg.contains(Operations.Done.class))
+          lastActive = false;
+      }
+    }
+    return lastActive;
   }
 
   public static class Status {
