@@ -121,7 +121,10 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
             }
         ).event(Operations.Ok.class,
             (ok, task) -> {
-              timeout.cancel();
+              if (timeout != null) {
+                timeout.cancel();
+                timeout = null;
+              }
               final JID expert = JID.parse(sender().path().name());
               if (interview(expert, task)) {
                 sender().tell(new Operations.Invite(), self());
