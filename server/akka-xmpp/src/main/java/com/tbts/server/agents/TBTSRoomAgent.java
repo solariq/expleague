@@ -12,6 +12,7 @@ import com.tbts.xmpp.stanza.Message.MessageType;
 import com.tbts.xmpp.stanza.Presence;
 import com.tbts.xmpp.stanza.Stanza;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -41,27 +42,39 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
       invoke(new Message(jid, null, MessageType.GROUP_CHAT, "Welcome to room " + jid));
   }
 
-  public void invoke(Operations.Resume resume) {
+  JID owner = null;
+  @Nullable
+  public JID owner() {
+    if (owner != null)
+      return owner;
+
     final Optional<Message> subject = snapshot.stream()
-        .filter(s -> s instanceof Message).map(s -> (Message) s)
-        .filter(m -> m.get(Message.Subject.class) != null)
-        .findFirst();
+            .filter(s -> s instanceof Message).map(s -> (Message) s)
+            .filter(m -> m.get(Message.Subject.class) != null)
+            .findFirst();
+
     if (subject.isPresent()) {
-      final JID owner = subject.get().from();
-      boolean needToStart = false;
-      for (final Item item : snapshot) {
-        if (!(item instanceof Message))
-          continue;
-        if (((Message) item).from().bareEq(owner))
-          needToStart = true;
-        if (((Message) item).has(Operations.Done.class))
-          needToStart = false;
-      }
-      if (needToStart) {
-        final Message msg = subject.get();
-        LaborExchange.reference(context()).tell(new Offer(jid, msg.from(), msg.get(Message.Subject.class)), self());
-      }
+      return owner = subject.get().from();
     }
+    return null;
+  }
+
+  public void invoke(Operations.Resume resume) {
+    if (isOpen())
+      LaborExchange.reference(context()).tell(offer(), self());
+  }
+
+  private boolean isOpen() {
+    boolean needToStart = false;
+    for (final Item item : snapshot) {
+      if (!(item instanceof Message))
+        continue;
+      if (((Message) item).has(Operations.Create.class))
+        needToStart = true;
+      if (((Message) item).has(Operations.Done.class))
+        needToStart = false;
+    }
+    return needToStart;
   }
 
   public void invoke(Message msg) {
@@ -71,8 +84,25 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     if (msg.type() == MessageType.GROUP_CHAT)
       broadcast(msg);
 
-    if (msg.get(Message.Subject.class) != null)
-      LaborExchange.reference(context()).tell(new Offer(jid, msg.from(), msg.get(Message.Subject.class)), self());
+
+    if (msg.from().bareEq(owner()) && !isOpen()) {
+      final Offer offer = offer();
+      if (offer != null) {
+        invoke(new Message(XMPP.jid(), jid, new Operations.Create(), offer));
+        LaborExchange.reference(context()).tell(offer, self());
+      }
+    }
+  }
+
+  @Nullable
+  private Offer offer() {
+    final Optional<Message> subject = snapshot.stream()
+            .filter(s -> s instanceof Message).map(s -> (Message) s)
+            .filter(m -> m.get(Message.Subject.class) != null)
+            .findFirst();
+    if (subject.isPresent())
+      return new Offer(jid, subject.get().from(), subject.get().get(Message.Subject.class));
+    return null;
   }
 
   public void invoke(Presence presence) {
@@ -134,27 +164,39 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   public void invoke(Class<?> c) {
     if (Status.class.equals(c)) {
       Status result = new Status();
-      JID onTask = null;
+      final List<JID> workers = new ArrayList<>();
+      final JID owner = owner();
+
       for (final Item item : snapshot) {
         if (item instanceof Message) {
           final Message msg = (Message) item;
-          if (msg.get(Operations.Start.class) != null)
-            onTask = msg.from();
-          else if (msg.get(Operations.Done.class) != null && msg.from().bareEq(onTask))
-            onTask = null;
+          if (owner != null && "expert".equals(msg.from().resource())) {
+            workers.add(msg.from());
+          }
         }
       }
-      result.worker = onTask;
+      result.open = isOpen();
+      result.workers = workers.toArray(new JID[workers.size()]);
       sender().tell(result, self());
     }
     else unhandled(c);
   }
 
   public static class Status {
-    private JID worker;
+    private JID[] workers;
+    private boolean open;
 
-    public JID worker() {
-      return worker;
+    public JID[] workers() {
+      return workers;
+    }
+
+    @Nullable
+    public JID lastWorker() {
+      return workers.length > 0 ? workers[workers.length - 1] : null;
+    }
+
+    public boolean isOpen() {
+      return open;
     }
   }
 }
