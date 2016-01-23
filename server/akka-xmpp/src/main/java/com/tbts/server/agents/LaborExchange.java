@@ -34,8 +34,13 @@ public class LaborExchange extends UntypedPersistentActor {
     XMPP.send(new Presence(XMPP.jid(), false, new ServiceStatus(0)), context());
   }
 
+  @Override
+  public void preStart() throws Exception {
+    super.preStart();
+    AkkaTools.getOrCreate("experts", context(), () -> Props.create(Dpt.class));
+  }
+
   public void invoke(Offer offer) {
-    experts();
     final Collection<ActorRef> children = JavaConversions.asJavaCollection(context().children());
     for (final ActorRef ref : children) {
       if (!"experts".equals(ref.path().name())) {
@@ -60,14 +65,6 @@ public class LaborExchange extends UntypedPersistentActor {
             ref.forward(expertAgent, context());
         }
     );
-  }
-
-  public void invoke(JID expert) {
-    experts().forward(expert, context());
-  }
-
-  private ActorRef experts() {
-    return AkkaTools.getOrCreate("experts", context(), () -> Props.create(Dpt.class));
   }
 
   public void invoke(Operations.Ok ok) {
@@ -114,7 +111,7 @@ public class LaborExchange extends UntypedPersistentActor {
   }
 
   public static ActorRef registerExpert(JID jid, ActorContext context) {
-    return AkkaTools.ask(reference(context), jid);
+    return AkkaTools.ask(experts(context), jid);
   }
 
   public static ActorSelection experts(ActorContext context) {

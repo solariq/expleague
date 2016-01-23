@@ -51,7 +51,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             Offer.class,
             (offer, task) -> {
               task.appendVariant(offer, sender());
-              if (task.immediate())
+              if (task.immediate() || offer.hasWorker(jid()))
                 task.choose();
               return goTo(State.CHECK);
             }
@@ -123,24 +123,42 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             (presence, task) -> stay()
         ).event(
             Offer.class,
-            (offer, task) -> stay().using(task.appendVariant(offer, sender()))
+            (offer, task) -> {
+              task.appendVariant(offer, sender());
+              if (offer.hasWorker(jid())){
+                stopTimer();
+                task.choose();
+              }
+              return stay();
+            }
         )
     );
     when(State.INVITE,
         matchEvent(
-            Stanza.class,
+            Presence.class,
+            (presence, task) -> presence.available() && task.offer().room().bareEq(presence.to()),
             (stanza, task) -> {
-              if (task.offer().room().bareEq(stanza.to())) {
+              if (task.offer().room().bareEq(stanza.to())) { // old way
                 stopTimer();
-                if (stanza instanceof Message && ((Message) stanza).has(Operations.Cancel.class)) {
-                  task.broker().tell(new Operations.Cancel(), self());
-                  return goTo(State.READY).using(new Task(true));
-                }
-                else {
-                  task.broker().tell(new Operations.Start(), self());
-                  XMPP.send(new Message(jid(), task.offer().room(), new Operations.Start()), context());
-                  return goTo(State.BUSY);
-                }
+                task.broker().tell(new Operations.Start(), self());
+                XMPP.send(new Message(jid(), task.offer().room(), new Operations.Start()), context());
+                return goTo(State.BUSY);
+              }
+              return stay();
+            }
+        ).event(
+            Message.class,
+            (message, task) -> {
+              if (message.has(Operations.Cancel.class)) {
+                stopTimer();
+                task.broker().tell(new Operations.Cancel(), self());
+                return goTo(State.READY).using(new Task(true));
+              }
+              if (message.has(Operations.Start.class)) {
+                stopTimer();
+                task.broker().tell(new Operations.Start(), self());
+                XMPP.send(new Message(jid(), task.offer().room(), new Operations.Start()), context());
+                return goTo(State.BUSY);
               }
               return stay();
             }
@@ -160,11 +178,11 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             (presence, task) -> {
               if (presence.available() && presence.to() == null) {
                 XMPP.send(new Message(task.offer().room(), jid(), new Operations.Resume(task.offer())), context());
-                XMPP.send(new Message(jid(), task.offer().room(), Message.MessageType.GROUP_CHAT, new Operations.Resume(task.offer())), context());
+                XMPP.send(new Message(jid(), task.offer().room(), new Operations.Resume(task.offer())), context());
                 task.broker().tell(new Operations.Resume(task.offer()), self());
               }
               else if (!presence.available()) {
-                XMPP.send(new Message(jid(), task.offer().room(), Message.MessageType.GROUP_CHAT, new Operations.Suspend()), context());
+                XMPP.send(new Message(jid(), task.offer().room(), new Operations.Suspend()), context());
                 task.broker().tell(new Operations.Suspend(), self());
               }
               return stay();
@@ -173,8 +191,14 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             (msg, task) -> {
               if (msg.get(Operations.Cancel.class) != null) {
                 task.broker().tell(new Operations.Cancel(), self());
+                XMPP.send(new Message(jid(), task.offer().room(), new Operations.Cancel()), context());
+                return goTo(State.READY).using(new Task(true));
               }
-              return goTo(State.READY).using(new Task(false));
+              if (msg.contains(Operations.Done.class) || msg.body().startsWith("{")){ // hack for answer
+                XMPP.send(new Message(jid(), task.offer().room(), new Operations.Done()), context());
+                return goTo(State.READY).using(new Task(false));
+              }
+              return stay();
             }
         )
     );

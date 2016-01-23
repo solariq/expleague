@@ -18,13 +18,6 @@
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble_blue" translatesAutoresizingMaskIntoConstraints="NO" id="8Nj-Pv-nQQ" userLabel="Bubble">
                         <rect key="frame" x="35" y="0.0" width="286" height="55"/>
                     </imageView>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yc3-PD-xYN">
-                        <rect key="frame" x="53" y="8" width="260" height="39"/>
-                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
-                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                        <nil key="highlightedColor"/>
-                        <color key="shadowColor" red="0.066666666666666666" green="0.54117647058823526" blue="0.87058823529411766" alpha="1" colorSpace="calibratedRGB"/>
-                    </label>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="GuruPlaceholder" translatesAutoresizingMaskIntoConstraints="NO" id="Ehc-KT-x6o" userLabel="Avatar">
                         <rect key="frame" x="0.0" y="12" width="35" height="35"/>
                         <constraints>
@@ -32,26 +25,29 @@
                             <constraint firstAttribute="width" constant="35" id="aQ3-33-mNJ"/>
                         </constraints>
                     </imageView>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Cbx-yh-ZRR">
+                        <rect key="frame" x="53" y="8" width="260" height="39"/>
+                    </view>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="yc3-PD-xYN" firstAttribute="bottom" secondItem="Nb7-0I-srg" secondAttribute="bottomMargin" id="2bn-D9-nps"/>
-                    <constraint firstItem="yc3-PD-xYN" firstAttribute="top" secondItem="Nb7-0I-srg" secondAttribute="topMargin" id="3Re-0i-Z4J"/>
+                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="trailing" secondItem="Nb7-0I-srg" secondAttribute="trailingMargin" id="6rN-G8-KGg"/>
                     <constraint firstAttribute="bottomMargin" secondItem="8Nj-Pv-nQQ" secondAttribute="bottom" constant="-8" id="HYg-c5-GDg"/>
-                    <constraint firstItem="yc3-PD-xYN" firstAttribute="trailing" secondItem="Nb7-0I-srg" secondAttribute="trailingMargin" id="SZZ-Xt-1YH"/>
                     <constraint firstItem="Ehc-KT-x6o" firstAttribute="leading" secondItem="Nb7-0I-srg" secondAttribute="leadingMargin" constant="-8" id="UhZ-D7-pEr"/>
                     <constraint firstAttribute="trailingMargin" secondItem="8Nj-Pv-nQQ" secondAttribute="trailing" constant="-8" id="Ukb-ad-bUF"/>
                     <constraint firstItem="8Nj-Pv-nQQ" firstAttribute="leading" secondItem="Nb7-0I-srg" secondAttribute="leadingMargin" constant="27" id="VjA-lh-EvN"/>
                     <constraint firstAttribute="bottomMargin" secondItem="Ehc-KT-x6o" secondAttribute="bottom" id="W5N-Ka-Dzv"/>
+                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="bottom" secondItem="Nb7-0I-srg" secondAttribute="bottomMargin" id="Wyr-X8-x9j"/>
+                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="leading" secondItem="Ehc-KT-x6o" secondAttribute="trailing" constant="18" id="YFT-kY-0lW"/>
                     <constraint firstItem="8Nj-Pv-nQQ" firstAttribute="top" secondItem="Nb7-0I-srg" secondAttribute="topMargin" constant="-8" id="jyj-Tw-ya7"/>
-                    <constraint firstItem="yc3-PD-xYN" firstAttribute="leading" secondItem="Ehc-KT-x6o" secondAttribute="trailing" constant="18" id="o0X-bG-Ty8"/>
+                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="top" secondItem="Nb7-0I-srg" secondAttribute="topMargin" id="nzB-3A-1pP"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>
                 <outlet property="avatar" destination="Ehc-KT-x6o" id="hb4-Ue-cBr"/>
                 <outlet property="bubble" destination="8Nj-Pv-nQQ" id="U6a-6R-ABl"/>
-                <outlet property="messageView" destination="yc3-PD-xYN" id="xuY-U6-TSc"/>
+                <outlet property="content" destination="Cbx-yh-ZRR" id="bTF-i3-3Ir"/>
             </connections>
-            <point key="canvasLocation" x="489.5" y="528"/>
+            <point key="canvasLocation" x="330.5" y="424"/>
         </tableViewCell>
     </objects>
     <resources>

@@ -94,6 +94,24 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     }
   }
 
+  public void invoke(Presence presence) {
+    log(presence);
+    final JID from = presence.from();
+    enterRoom(from);
+    final Presence.Status currentStatus = this.presence.get(from);
+    if (presence.status().equals(currentStatus))
+      return;
+    this.presence.put(from, presence.status());
+    broadcast(presence);
+  }
+
+  public void invoke(Iq command) {
+    log(command);
+    XMPP.send(Iq.answer(command), context());
+    if (command.type() == Iq.IqType.SET)
+      XMPP.send(new Message(jid, command.from(), "Room set up and unlocked."), context());
+  }
+
   @Nullable
   private Offer offer() {
     final Optional<Message> subject = snapshot.stream()
@@ -104,21 +122,10 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
       final Offer offer = new Offer(jid, subject.get().from(), subject.get().get(Message.Subject.class));
       final List<JID> workers = new ArrayList<>();
       workers(workers);
-      workers.stream().forEach(offer::addWorker);
+      workers.stream().map(JID::bare).forEach(offer::addWorker);
       return offer;
     }
     return null;
-  }
-
-  public void invoke(Presence presence) {
-    log(presence);
-    final JID from = presence.from();
-    enterRoom(from);
-    final Presence.Status currentStatus = this.presence.get(from);
-    if (presence.status().equals(currentStatus))
-      return;
-    this.presence.put(from, presence.status());
-    broadcast(presence);
   }
 
   private void broadcast(Stanza stanza) {
@@ -152,13 +159,6 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   @NotNull
   private JID roomAlias(JID from) {
     return new JID(this.jid.local(), this.jid.domain(), from.local());
-  }
-
-  public void invoke(Iq command) {
-    log(command);
-    XMPP.send(Iq.answer(command), context());
-    if (command.type() == Iq.IqType.SET)
-      XMPP.send(new Message(jid, command.from(), "Room set up and unlocked."), context());
   }
 
   public void log(Stanza stanza) { // saving everything to archive

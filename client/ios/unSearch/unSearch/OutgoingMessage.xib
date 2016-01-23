@@ -25,30 +25,28 @@
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble_white" translatesAutoresizingMaskIntoConstraints="NO" id="ZjN-mD-VMH">
                         <rect key="frame" x="0.0" y="0.0" width="287" height="53"/>
                     </imageView>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QCj-bW-DAk">
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0tF-CD-ELP">
                         <rect key="frame" x="8" y="8" width="261" height="37"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                        <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
-                        <nil key="highlightedColor"/>
-                    </label>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
                 </subviews>
                 <constraints>
                     <constraint firstAttribute="trailingMargin" secondItem="xYm-j6-wLH" secondAttribute="trailing" constant="-8" id="0zR-sA-cB6"/>
+                    <constraint firstItem="0tF-CD-ELP" firstAttribute="bottom" secondItem="pTU-4Q-ZpM" secondAttribute="bottomMargin" id="BPd-y7-Ykk"/>
                     <constraint firstAttribute="bottomMargin" secondItem="ZjN-mD-VMH" secondAttribute="bottom" constant="-8" id="Ce3-JR-TeH"/>
                     <constraint firstItem="ZjN-mD-VMH" firstAttribute="leading" secondItem="pTU-4Q-ZpM" secondAttribute="leadingMargin" constant="-8" id="K4O-V6-mXd"/>
-                    <constraint firstItem="xYm-j6-wLH" firstAttribute="leading" secondItem="QCj-bW-DAk" secondAttribute="trailing" constant="18" id="MAw-nR-843"/>
                     <constraint firstAttribute="trailingMargin" secondItem="ZjN-mD-VMH" secondAttribute="trailing" constant="27" id="Mmo-V4-qbt"/>
-                    <constraint firstItem="QCj-bW-DAk" firstAttribute="top" secondItem="pTU-4Q-ZpM" secondAttribute="topMargin" id="UhR-jW-93B"/>
+                    <constraint firstItem="0tF-CD-ELP" firstAttribute="top" secondItem="pTU-4Q-ZpM" secondAttribute="topMargin" id="WnA-zX-j5G"/>
                     <constraint firstAttribute="bottomMargin" secondItem="xYm-j6-wLH" secondAttribute="bottom" id="Z7t-Ak-v2x"/>
-                    <constraint firstItem="QCj-bW-DAk" firstAttribute="leading" secondItem="pTU-4Q-ZpM" secondAttribute="leadingMargin" id="kXz-zh-4ll"/>
+                    <constraint firstItem="0tF-CD-ELP" firstAttribute="leading" secondItem="pTU-4Q-ZpM" secondAttribute="leadingMargin" id="inZ-l0-xnb"/>
                     <constraint firstItem="ZjN-mD-VMH" firstAttribute="top" secondItem="pTU-4Q-ZpM" secondAttribute="topMargin" constant="-8" id="oql-qI-Xb2"/>
-                    <constraint firstItem="QCj-bW-DAk" firstAttribute="bottom" secondItem="pTU-4Q-ZpM" secondAttribute="bottomMargin" id="rUI-jv-YvF"/>
+                    <constraint firstItem="xYm-j6-wLH" firstAttribute="leading" secondItem="0tF-CD-ELP" secondAttribute="trailing" constant="18" id="xb7-xW-dMx"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>
                 <outlet property="avatar" destination="xYm-j6-wLH" id="S8X-pK-XOz"/>
                 <outlet property="bubble" destination="ZjN-mD-VMH" id="qUh-8B-gvV"/>
-                <outlet property="messageView" destination="QCj-bW-DAk" id="H9D-QR-Vmq"/>
+                <outlet property="content" destination="0tF-CD-ELP" id="Wh6-Sh-0sY"/>
             </connections>
             <point key="canvasLocation" x="197" y="58"/>
         </tableViewCell>

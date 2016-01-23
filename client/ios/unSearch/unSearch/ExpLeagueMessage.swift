@@ -46,6 +46,11 @@ class ExpLeagueMessage: NSManagedObject {
         }
     }
     
+    var isAnswer: Bool {
+//        return false
+        return body != nil && body!.hasPrefix("{")
+    }
+    
     var parent: ExpLeagueOrder {
         return parentRaw as! ExpLeagueOrder
     }
@@ -63,74 +68,37 @@ class ExpLeagueMessage: NSManagedObject {
         return self.type == .SystemMessage || self.type == .ExpertMessage
     }
     
-    func jsq() -> ExpLeagueJSQTextMessage {
-        return ExpLeagueJSQTextMessage(delegate: self)
-    }
-}
-
-enum ExpLeagueMessageType: Int16 {
-    case TopicStarter  = 0
-    case ExpertMessage = 1
-    case ClientMessage = 2
-    case SystemMessage = 3
-}
-
-class ExpLeagueJSQTextMessage: NSObject, JSQMessageData {
-    @nonobjc static var avatars : [String: JSQMessageAvatarImageDataSource] = [:]
-    @nonobjc static var incomingAvaWidth = UInt(20)
-    @nonobjc static var outgoingAvaWidth = UInt(20)
-    
-    let delegate: ExpLeagueMessage
-    
-    init(delegate: ExpLeagueMessage) {
-        self.delegate = delegate
-    }
-    var incoming: Bool {
-        get {
-            return delegate.from != "me"
-        }
-    }
-    
-    func attributedText() -> NSAttributedString {
-        let doc = NSMutableAttributedString()
-        if (self.delegate.body!.hasPrefix("{")) {
+    func visitParts(visitor: ExpLeagueMessageVisitor) {
+        if (body != nil && body!.hasPrefix("{")) {
             do {
-                let json = try NSJSONSerialization.JSONObjectWithData(delegate.body!.dataUsingEncoding(NSUTF8StringEncoding)!, options: NSJSONReadingOptions.AllowFragments)
+                let json = try NSJSONSerialization.JSONObjectWithData(body!.dataUsingEncoding(NSUTF8StringEncoding)!, options: NSJSONReadingOptions.AllowFragments)
                 let content = json["content"] as! NSArray
                 for item in content {
                     if let textItem = (item as! NSDictionary)["text"] as? NSDictionary {
-                        if let title = textItem["title"] as? String {
-                            doc.appendAttributedString(NSAttributedString(string: title, attributes: [
-                                NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleHeadline)
-                                ]))
-                        }
-                        if var text = textItem["text"] as? String {
+                        var text: String = ""
+                        if textItem["text"] != nil {
+                            text = textItem["text"] as! String
                             try! text = NSRegularExpression(pattern: "(\n)+", options: []).stringByReplacingMatchesInString(text, options: [], range: NSMakeRange(0, text.characters.count), withTemplate: "\n")
                             text = text.stringByReplacingOccurrencesOfString("&nbsp;", withString: " ")
                             try! text = NSRegularExpression(pattern: "( )+", options: []).stringByReplacingMatchesInString(text, options: [], range: NSMakeRange(0, text.characters.count), withTemplate: " ")
                             text = text.stringByReplacingOccurrencesOfString("&lt;", withString: "<")
                             text = text.stringByReplacingOccurrencesOfString("&gt;", withString: ">")
                             text = text.stringByReplacingOccurrencesOfString("&quot;", withString: "\"")
-                            doc.appendAttributedString(NSAttributedString(string: "\n" + text, attributes: [
-                                NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
-                                ]))
+                        }
+                        if let title = textItem["title"] as? String {
+                            visitor.message(self, title: title, text: text)
+                        }
+                        else {
+                            visitor.message(self, text: text)
                         }
                     }
                     if let textItem = (item as! NSDictionary)["link"] as? NSDictionary {
-                        print("Reference: " + (textItem["href"] as! String))
-                        
                         if let title = textItem["title"] as? String {
-                            if let href = NSURL(string: textItem["href"] as! String) {
-                                doc.appendAttributedString(NSAttributedString(string: title, attributes: [
-                                    NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody),
-                                    NSLinkAttributeName: href,
-                                    NSForegroundColorAttributeName: UIColor.blueColor()
-                                    ]))
+                            if let _ = NSURL(string: textItem["href"] as! String) {
+                                visitor.message(self, title: title, link: textItem["href"] as! String)
                             }
                             else {
-                                doc.appendAttributedString(NSAttributedString(string: "\(title) (\(textItem["href"]!))", attributes: [
-                                    NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody),
-                                    ]))
+                                visitor.message(self, text: title)
                             }
                         }
                     }
@@ -142,58 +110,20 @@ class ExpLeagueJSQTextMessage: NSObject, JSQMessageData {
             }
         }
         else {
-            doc.appendAttributedString(NSAttributedString(string: delegate.body!, attributes: [
-                NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody),
-            ]))
+            visitor.message(self, text: body!)
         }
-        return doc
     }
-    
-    var avatar: JSQMessageAvatarImageDataSource {
-        get {
-            var result = ExpLeagueJSQTextMessage.avatars[delegate.from]
-            if (result == nil) {
-                let name = delegate.from
-                let diameter = delegate.incoming ? ExpLeagueJSQTextMessage.incomingAvaWidth : ExpLeagueJSQTextMessage.outgoingAvaWidth
-                
-                let rgbValue = name.hash
-                let r = CGFloat(Float((rgbValue & 0xFF0000) >> 16)/255.0)
-                let g = CGFloat(Float((rgbValue & 0xFF00) >> 8)/255.0)
-                let b = CGFloat(Float(rgbValue & 0xFF)/255.0)
-                let color = UIColor(red: r, green: g, blue: b, alpha: 0.5)
-                
-                let nameLength = name.characters.count
-                let initials : String? = name.substringToIndex(name.startIndex.advancedBy(min(2, nameLength))).uppercaseString
-                result = JSQMessagesAvatarImageFactory.avatarImageWithUserInitials(initials!, backgroundColor: color, textColor: UIColor.blackColor(), font: UIFont.systemFontOfSize(CGFloat(13)), diameter: diameter)
-                
+}
 
-                ExpLeagueJSQTextMessage.avatars[delegate.from] = result
-            }
-            return result!
-        }
-    }
-    
-    func senderId() -> String! {
-        return incoming ? "me" : delegate.from
-    }
-    
-    func senderDisplayName() -> String! {
-        return incoming ? "Я" : delegate.from
-    }
-    
-    func date() -> NSDate! {
-        return NSDate(timeIntervalSince1970: delegate.time)
-    }
-    
-    func isMediaMessage() -> Bool {
-        return false
-    }
-    
-    func messageHash() -> UInt {
-        return delegate.hash >= 0 ? UInt(delegate.hash) : UInt(-delegate.hash)
-    }
-    
-    func text() -> String! {
-        return attributedText().string
-    }
+protocol ExpLeagueMessageVisitor {
+    func message(message: ExpLeagueMessage, text: String)
+    func message(message: ExpLeagueMessage, title: String, text: String)
+    func message(message: ExpLeagueMessage, title: String, link: String)
+}
+
+enum ExpLeagueMessageType: Int16 {
+    case TopicStarter  = 0
+    case ExpertMessage = 1
+    case ClientMessage = 2
+    case SystemMessage = 3
 }

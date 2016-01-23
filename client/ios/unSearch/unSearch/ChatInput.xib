@@ -24,7 +24,7 @@
                     </constraints>
                     <state key="normal" title="Attach" image="AttachButton"/>
                     <connections>
-                        <action selector="attach:" destination="-1" eventType="touchUpInside" id="xar-lM-5mY"/>
+                        <action selector="attach:" destination="-1" eventType="touchUpInside" id="hdI-6A-0zb"/>
                     </connections>
                 </button>
                 <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="R8b-EA-OS9">
@@ -35,8 +35,7 @@
                     </constraints>
                     <state key="normal" title="Send" image="SendButton"/>
                     <connections>
-                        <action selector="send:" destination="iN0-l3-epB" eventType="touchUpInside" id="JhV-YT-Tpg"/>
-                        <action selector="send:" destination="-1" eventType="touchUpInside" id="jpI-ye-lSk"/>
+                        <action selector="send:" destination="-1" eventType="touchUpInside" id="Qa7-CT-zqd"/>
                     </connections>
                 </button>
                 <textView clipsSubviews="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fEq-be-bR2">

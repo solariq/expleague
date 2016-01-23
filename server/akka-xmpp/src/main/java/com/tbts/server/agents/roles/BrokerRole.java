@@ -94,7 +94,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
                 expert.tell(new Operations.Resume(offer), self());
                 final Task task = new Task(offer, status);
                 task.onTask = status.lastWorker();
-                return goTo(State.WORK_TRACKING).using(task);
+                return goTo(State.WORK_TRACKING).using(task).replying(new Operations.Ok());
               }
               else {
                 final Task task = new Task(offer, status);
