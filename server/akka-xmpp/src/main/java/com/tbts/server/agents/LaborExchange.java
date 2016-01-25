@@ -110,10 +110,6 @@ public class LaborExchange extends UntypedPersistentActor {
     );
   }
 
-  public static ActorRef registerExpert(JID jid, ActorContext context) {
-    return AkkaTools.ask(experts(context), jid);
-  }
-
   public static ActorSelection experts(ActorContext context) {
     return context.actorSelection("/user/labor-exchange/experts");
   }
@@ -183,6 +179,10 @@ public class LaborExchange extends UntypedPersistentActor {
 
     public static JID jid(ActorRef ref) {
       return JID.parse(ref.path().name());
+    }
+
+    public static ActorRef agent(JID onTask, ActorContext context) {
+      return AkkaTools.ask(experts(context), onTask);
     }
   }
 }

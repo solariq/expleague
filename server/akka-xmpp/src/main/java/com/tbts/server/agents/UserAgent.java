@@ -58,7 +58,7 @@ public class UserAgent extends UntypedPersistentActor {
       if (put != null)
         log.warning("Concurrent connectors for the same resource: " + resource + " for " + jid() + "!");
       if ("expert".equals(resource))
-        expert = LaborExchange.registerExpert(jid(), context());
+        expert = LaborExchange.Experts.agent(jid(), context());
       final Collection<String> deliveredToResource = delivered.get(resource);
       messages.stream()
           .filter(msg -> !deliveredToResource.contains(msg.id()))
