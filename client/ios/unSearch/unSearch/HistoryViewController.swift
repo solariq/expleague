@@ -13,7 +13,7 @@ class HistoryViewController: UITableViewController {
             let lhs = $0 as! ExpLeagueOrder
             let rhs = $1 as! ExpLeagueOrder
             
-            return lhs.started < rhs.started ? .OrderedAscending : (lhs.started > rhs.started  ? .OrderedDescending : .OrderedSame);
+            return lhs.started < rhs.started ? .OrderedDescending : (lhs.started > rhs.started  ? .OrderedAscending : .OrderedSame);
             })
         return keys[index] as! ExpLeagueOrder;
     }

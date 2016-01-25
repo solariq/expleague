@@ -15,15 +15,20 @@
 		688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A58FFF35B86F1CBB41B6E /* AppDelegate.swift */; };
 		688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */; };
 		688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A57432F80F266C309E3F5 /* SettingsViewController.swift */; };
+		EE0FC7E11C503CB9006F6045 /* OutgoingMessage.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE0FC7E01C503CB9006F6045 /* OutgoingMessage.xib */; };
 		EE1CB81A1C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1CB8181C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift */; };
 		EE1CB81B1C48449D0047DB03 /* ExpLeagueProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1CB8191C48449D0047DB03 /* ExpLeagueProfile.swift */; };
 		EE297ACC1C4A6C79002DE78B /* ConnectionProgressController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE297ACB1C4A6C79002DE78B /* ConnectionProgressController.swift */; };
+		EE2DB1921C4E5AD800F9601D /* ChatInput.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE2DB1911C4E5AD800F9601D /* ChatInput.xib */; };
+		EE2DB1941C4E5E9000F9601D /* ChatInputViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE2DB1931C4E5E9000F9601D /* ChatInputViewController.swift */; };
 		EE62BEEF1C452CA1004B6A42 /* MessagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEEE1C452CA1004B6A42 /* MessagesViewController.swift */; };
 		EE62BF011C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEFD1C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift */; };
 		EE62BF021C4802B2004B6A42 /* ExpLeagueMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEFE1C4802B2004B6A42 /* ExpLeagueMessage.swift */; };
 		EE62BF031C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEFF1C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift */; };
 		EE62BF041C4802B2004B6A42 /* ExpLeagueOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BF001C4802B2004B6A42 /* ExpLeagueOrder.swift */; };
 		EE6EA7CC1C48F79300692406 /* ProfileModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = EE6EA7CA1C48F79300692406 /* ProfileModel.xcdatamodeld */; };
+		EEF7BB401C4F9B2700E1B7BD /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEF7BB3F1C4F9B2700E1B7BD /* MessageView.swift */; };
+		EEF7BB421C4F9B6000E1B7BD /* IncomingMessage.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEF7BB411C4F9B6000E1B7BD /* IncomingMessage.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,15 +45,20 @@
 		688A5D254FAD2FD2CCCC8DF6 /* unSearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = unSearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		688A5ECEAEA343319DDDED6E /* HistoryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
 		D0806994D5FE374ABCB8A184 /* Pods_unSearch.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_unSearch.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		EE0FC7E01C503CB9006F6045 /* OutgoingMessage.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OutgoingMessage.xib; sourceTree = "<group>"; };
 		EE1CB8181C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueProfile+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		EE1CB8191C48449D0047DB03 /* ExpLeagueProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueProfile.swift; sourceTree = "<group>"; };
 		EE297ACB1C4A6C79002DE78B /* ConnectionProgressController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionProgressController.swift; sourceTree = "<group>"; };
+		EE2DB1911C4E5AD800F9601D /* ChatInput.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ChatInput.xib; sourceTree = "<group>"; };
+		EE2DB1931C4E5E9000F9601D /* ChatInputViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatInputViewController.swift; sourceTree = "<group>"; };
 		EE62BEEE1C452CA1004B6A42 /* MessagesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessagesViewController.swift; sourceTree = "<group>"; };
 		EE62BEFD1C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueMessage+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		EE62BEFE1C4802B2004B6A42 /* ExpLeagueMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueMessage.swift; sourceTree = "<group>"; };
 		EE62BEFF1C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueOrder+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		EE62BF001C4802B2004B6A42 /* ExpLeagueOrder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueOrder.swift; sourceTree = "<group>"; };
 		EE6EA7CB1C48F79300692406 /* ProfileModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ProfileModel.xcdatamodel; sourceTree = "<group>"; };
+		EEF7BB3F1C4F9B2700E1B7BD /* MessageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageView.swift; sourceTree = "<group>"; };
+		EEF7BB411C4F9B6000E1B7BD /* IncomingMessage.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = IncomingMessage.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +85,7 @@
 			isa = PBXGroup;
 			children = (
 				EE62BF051C48032D004B6A42 /* Data */,
+				EE2DB18E1C4E5A0A00F9601D /* ResultView */,
 				688A572BF69C09B25F168A0A /* Info.plist */,
 				688A54C1275EF718A177A20D /* Assets.xcassets */,
 				688A5389D422FDF184F24FF8 /* LaunchScreen.storyboard */,
@@ -83,7 +94,6 @@
 				688A57432F80F266C309E3F5 /* SettingsViewController.swift */,
 				688A5C00876CA19A64E86FA1 /* unSearch-Bridging-Header.h */,
 				688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */,
-				EE62BEEE1C452CA1004B6A42 /* MessagesViewController.swift */,
 				688A5ECEAEA343319DDDED6E /* HistoryViewController.swift */,
 				EE297ACB1C4A6C79002DE78B /* ConnectionProgressController.swift */,
 			);
@@ -115,6 +125,19 @@
 				D0806994D5FE374ABCB8A184 /* Pods_unSearch.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		EE2DB18E1C4E5A0A00F9601D /* ResultView */ = {
+			isa = PBXGroup;
+			children = (
+				EE62BEEE1C452CA1004B6A42 /* MessagesViewController.swift */,
+				EE2DB1911C4E5AD800F9601D /* ChatInput.xib */,
+				EE2DB1931C4E5E9000F9601D /* ChatInputViewController.swift */,
+				EEF7BB3F1C4F9B2700E1B7BD /* MessageView.swift */,
+				EEF7BB411C4F9B6000E1B7BD /* IncomingMessage.xib */,
+				EE0FC7E01C503CB9006F6045 /* OutgoingMessage.xib */,
+			);
+			name = ResultView;
 			sourceTree = "<group>";
 		};
 		EE62BF051C48032D004B6A42 /* Data */ = {
@@ -163,6 +186,11 @@
 				LastSwiftUpdateCheck = 0710;
 				LastUpgradeCheck = 0710;
 				ORGANIZATIONNAME = "Experts League Inc.";
+				TargetAttributes = {
+					688A5EBB752445F69E4387AA = {
+						DevelopmentTeam = 726B9M57JK;
+					};
+				};
 			};
 			buildConfigurationList = 688A5F9E45F6BA96D364A232 /* Build configuration list for PBXProject "unSearch" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -187,7 +215,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				688A535C37173628E8F51CDC /* Assets.xcassets in Resources */,
+				EE0FC7E11C503CB9006F6045 /* OutgoingMessage.xib in Resources */,
+				EEF7BB421C4F9B6000E1B7BD /* IncomingMessage.xib in Resources */,
 				688A50BC12A73F2E37A3EF75 /* LaunchScreen.storyboard in Resources */,
+				EE2DB1921C4E5AD800F9601D /* ChatInput.xib in Resources */,
 				688A50129DA897A87210231A /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -251,7 +282,9 @@
 				EE6EA7CC1C48F79300692406 /* ProfileModel.xcdatamodeld in Sources */,
 				EE62BF031C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift in Sources */,
 				EE62BF041C4802B2004B6A42 /* ExpLeagueOrder.swift in Sources */,
+				EEF7BB401C4F9B2700E1B7BD /* MessageView.swift in Sources */,
 				EE62BF021C4802B2004B6A42 /* ExpLeagueMessage.swift in Sources */,
+				EE2DB1941C4E5E9000F9601D /* ChatInputViewController.swift in Sources */,
 				EE62BF011C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift in Sources */,
 				EE1CB81B1C48449D0047DB03 /* ExpLeagueProfile.swift in Sources */,
 				688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */,
@@ -290,10 +323,13 @@
 			baseConfigurationReference = 4D8195958D485AAAB1466469 /* Pods-unSearch.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = unSearch/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.expleague.unSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				USER_HEADER_SEARCH_PATHS = "\"${PROJECT_DIR}/Pods\"/**";
 			};
 			name = Release;
@@ -338,7 +374,7 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/unSearch/unSearch-Bridging-Header.h";
+				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -377,7 +413,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/unSearch/unSearch-Bridging-Header.h";
+				SWIFT_INSTALL_OBJC_HEADER = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -388,10 +424,13 @@
 			baseConfigurationReference = 61604C2A35AEDECEEB1173F8 /* Pods-unSearch.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = unSearch/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.expleague.unSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				USER_HEADER_SEARCH_PATHS = "\"${PROJECT_DIR}/Pods\"/**";
 			};
 			name = Debug;

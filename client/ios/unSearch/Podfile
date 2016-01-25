@@ -3,5 +3,6 @@ platform :ios, '8.0'
 use_frameworks!
 
 target 'unSearch' do
-  pod 'xmpp-messenger-ios'
+  pod 'XMPPFramework'
+  pod 'JSQMessagesViewController'
 end

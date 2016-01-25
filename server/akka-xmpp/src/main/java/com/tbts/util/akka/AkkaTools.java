@@ -23,16 +23,18 @@ import java.util.logging.Logger;
 public class AkkaTools {
   private static final Logger log = Logger.getLogger(AkkaTools.class.getName());
   public static final FiniteDuration AKKA_OPERATION_TIMEOUT = FiniteDuration.create(1, TimeUnit.MINUTES);
+  public static final FiniteDuration AKKA_CREATE_TIMEOUT = FiniteDuration.create(30, TimeUnit.SECONDS);
 
   public static ActorRef getOrCreate(String path, ActorRefFactory context, BiFunction<String, ActorRefFactory, ActorRef> factory) {
     final ActorSelection selection = context.actorSelection(path);
     try {
-      return Await.result(selection.resolveOne(AkkaTools.AKKA_OPERATION_TIMEOUT), Duration.Inf());
+      return Await.result(selection.resolveOne(AkkaTools.AKKA_CREATE_TIMEOUT), Duration.Inf());
     }
     catch (ActorNotFound anf) {
       return factory.apply(path, context);
     }
     catch (Exception e) {
+      log.log(Level.SEVERE, "Error during akka actor creation", e);
       throw new RuntimeException(e);
     }
   }
@@ -40,12 +42,13 @@ public class AkkaTools {
   public static ActorRef getOrCreate(String path, ActorRefFactory context, Supplier<Props> factory) {
     final ActorSelection selection = context.actorSelection(path);
     try {
-      return Await.result(selection.resolveOne(AkkaTools.AKKA_OPERATION_TIMEOUT), Duration.Inf());
+      return Await.result(selection.resolveOne(AkkaTools.AKKA_CREATE_TIMEOUT), Duration.Inf());
     }
     catch (ActorNotFound anf) {
       return context.actorOf(factory.get(), path);
     }
     catch (Exception e) {
+      log.log(Level.SEVERE, "Error during akka actor creation", e);
       throw new RuntimeException(e);
     }
   }

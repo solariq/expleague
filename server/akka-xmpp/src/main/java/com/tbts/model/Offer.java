@@ -5,7 +5,7 @@ import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Message;
 
 import javax.xml.bind.annotation.*;
-import java.util.Date;
+import java.util.*;
 
 /**
  * User: solar
@@ -22,6 +22,7 @@ public class Offer extends Item {
   @XmlAnyElement(lax = true)
   private Item description;
 
+  private Set<JID> workers = new HashSet<>();
   @XmlAttribute
   private Urgency type;
 
@@ -45,6 +46,14 @@ public class Offer extends Item {
     if (description instanceof Message.Subject)
       return ((Message.Subject) description).value();
     return description.toString();
+  }
+
+  public void addWorker(JID worker) {
+    workers.add(worker);
+  }
+
+  public boolean hasWorker(JID worker) {
+    return workers.contains(worker);
   }
 
   @XmlEnum

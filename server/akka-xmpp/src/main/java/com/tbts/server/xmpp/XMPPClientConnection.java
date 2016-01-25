@@ -153,7 +153,6 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         break;
       }
       case STARTTLS: {
-        final NegotiateNewSession firstSession = NegotiateNewSession.withDefaults().withProtocols("SSLv2Hello", "TLSv1", "TLSv1.1", "TLSv1.2");
         final SSLContext sslctxt = URLConnectionTools.prepareSSLContext4TLS();
         final SSLEngine sslEngine = sslctxt.createSSLEngine();
         sslEngine.setUseClientMode(false);

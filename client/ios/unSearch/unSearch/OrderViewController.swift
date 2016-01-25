@@ -15,18 +15,17 @@ class OrderViewController: UIViewController {
             return
         }
         if (!AppDelegate.instance.stream.isConnected()) {
-            let alertView = UIAlertController(title: "Experts League", message: "Connecting to server.", preferredStyle: .Alert)
+            let alertView = UIAlertController(title: "Experts League", message: "Connecting to server.\n\n", preferredStyle: .Alert)
             let completion = {
                 //  Add your progressbar after alert is shown (and measured)
-                let margin:CGFloat = 8.0
-                let rect = CGRectMake(margin, 74.0, alertView.view.frame.width - margin * 2.0 , 2.0)
                 let progressController = AppDelegate.instance.connectionProgressView
-                let progressView = UIProgressView(frame: rect)
+                let rect = CGRectMake(0, 54.0, alertView.view.frame.width, 50)
                 progressController.completion = {
                     self.fire(self)
                 }
-                alertView.view.addSubview(progressView)
-                progressController.progressBar = progressView
+                progressController.view.frame = rect
+                progressController.view.backgroundColor = alertView.view.backgroundColor
+                alertView.view.addSubview(progressController.view)
                 progressController.alert = alertView
                 AppDelegate.instance.connect()
                 //                progressController.alert = alertView
@@ -124,8 +123,8 @@ struct Urgency {
     var type: String;
 
     static let ASAP = Urgency(caption: "срочно", value: 1.0, type: "asap")
-    static let DURING_THE_DAY = Urgency(caption: "в течении дня", value: 0.5, type: "day")
-    static let DURING_THE_WEEK = Urgency(caption: "в течении недели", value: 0.0, type: "week")
+    static let DURING_THE_DAY = Urgency(caption: "в течение дня", value: 0.5, type: "day")
+    static let DURING_THE_WEEK = Urgency(caption: "в течение недели", value: 0.0, type: "week")
 
     static func find(value: Float) -> Urgency {
         if (value < 0.25) {

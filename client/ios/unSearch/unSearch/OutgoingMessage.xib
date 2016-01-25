@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9531" systemVersion="15C50" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="Outgoing" rowHeight="54" id="Rsw-WY-Q0D" customClass="MessageView" customModule="unSearch" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="322" height="54"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Rsw-WY-Q0D" id="pTU-4Q-ZpM">
+                <rect key="frame" x="0.0" y="0.0" width="322" height="53"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="UserPlaceholder" translatesAutoresizingMaskIntoConstraints="NO" id="xYm-j6-wLH" userLabel="avatar">
+                        <rect key="frame" x="287" y="10" width="35" height="35"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="35" id="8kN-P1-2yc"/>
+                            <constraint firstAttribute="height" constant="35" id="adJ-KY-a2x"/>
+                        </constraints>
+                    </imageView>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble_white" translatesAutoresizingMaskIntoConstraints="NO" id="ZjN-mD-VMH">
+                        <rect key="frame" x="0.0" y="0.0" width="287" height="53"/>
+                    </imageView>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0tF-CD-ELP">
+                        <rect key="frame" x="8" y="8" width="261" height="37"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailingMargin" secondItem="xYm-j6-wLH" secondAttribute="trailing" constant="-8" id="0zR-sA-cB6"/>
+                    <constraint firstItem="0tF-CD-ELP" firstAttribute="bottom" secondItem="pTU-4Q-ZpM" secondAttribute="bottomMargin" id="BPd-y7-Ykk"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="ZjN-mD-VMH" secondAttribute="bottom" constant="-8" id="Ce3-JR-TeH"/>
+                    <constraint firstItem="ZjN-mD-VMH" firstAttribute="leading" secondItem="pTU-4Q-ZpM" secondAttribute="leadingMargin" constant="-8" id="K4O-V6-mXd"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="ZjN-mD-VMH" secondAttribute="trailing" constant="27" id="Mmo-V4-qbt"/>
+                    <constraint firstItem="0tF-CD-ELP" firstAttribute="top" secondItem="pTU-4Q-ZpM" secondAttribute="topMargin" id="WnA-zX-j5G"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="xYm-j6-wLH" secondAttribute="bottom" id="Z7t-Ak-v2x"/>
+                    <constraint firstItem="0tF-CD-ELP" firstAttribute="leading" secondItem="pTU-4Q-ZpM" secondAttribute="leadingMargin" id="inZ-l0-xnb"/>
+                    <constraint firstItem="ZjN-mD-VMH" firstAttribute="top" secondItem="pTU-4Q-ZpM" secondAttribute="topMargin" constant="-8" id="oql-qI-Xb2"/>
+                    <constraint firstItem="xYm-j6-wLH" firstAttribute="leading" secondItem="0tF-CD-ELP" secondAttribute="trailing" constant="18" id="xb7-xW-dMx"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="avatar" destination="xYm-j6-wLH" id="S8X-pK-XOz"/>
+                <outlet property="bubble" destination="ZjN-mD-VMH" id="qUh-8B-gvV"/>
+                <outlet property="content" destination="0tF-CD-ELP" id="Wh6-Sh-0sY"/>
+            </connections>
+            <point key="canvasLocation" x="197" y="58"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="UserPlaceholder" width="40" height="40"/>
+        <image name="bubble_white" width="193" height="53"/>
+    </resources>
+</document>

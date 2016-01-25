@@ -91,6 +91,13 @@ public class Message extends Stanza {
     this.any.addAll(Arrays.asList(any));
   }
 
+  public Message(JID from, JID to, MessageType type, Item... any) {
+    this.from = from;
+    this.to = to;
+    this.type = type;
+    this.any.addAll(Arrays.asList(any));
+  }
+
   public Message(JID from, JID to, MessageType type, String str) {
     this.from = from;
     this.to = to;
@@ -116,10 +123,6 @@ public class Message extends Stanza {
       }
     }
     return null;
-  }
-
-  public boolean contains(Class<?> clazz) {
-    return any.stream().anyMatch(x -> clazz.isAssignableFrom(x.getClass()));
   }
 
   public String body() {

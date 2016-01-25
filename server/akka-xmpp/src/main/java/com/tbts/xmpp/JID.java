@@ -28,8 +28,8 @@ public class JID implements Serializable, Cloneable {
   }
 
   public JID(String local, String domain, String resource) {
-    this.bare = (local + "@" + domain).intern();
-    this.resource = resource;
+    this.bare = (local + "@" + domain).toLowerCase().intern();
+    this.resource = resource != null ? resource.toLowerCase() : null;
   }
 
   public URI asURI() {
@@ -52,6 +52,7 @@ public class JID implements Serializable, Cloneable {
 
   @SuppressWarnings("unused") // needed for unmarshaling inside JAXB
   public void setAddr(String addr) {
+    addr = addr.toLowerCase();
     //noinspection ResultOfMethodCallIgnored
     URI.create(addr); // check syntax
     final int resourceStart = addr.indexOf('/');
@@ -84,6 +85,7 @@ public class JID implements Serializable, Cloneable {
   }
 
   public static JID parse(String addr) {
+    addr = addr.toLowerCase();
     //noinspection ResultOfMethodCallIgnored
     URI.create(addr); // check syntax
     final int resourceStart = addr.indexOf('/');
@@ -93,7 +95,7 @@ public class JID implements Serializable, Cloneable {
   }
 
   public JID resource(String bind) {
-    return new JID(bare, bind);
+    return new JID(bare, bind.toLowerCase());
   }
 
   public boolean bareEq(JID to) {

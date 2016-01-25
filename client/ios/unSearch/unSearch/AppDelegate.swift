@@ -81,7 +81,7 @@ class AppDelegate: UIResponder {
 
     var messagesView: MessagesVeiwController?
     var historyView: HistoryViewController?
-    let connectionProgressView = ConnectionProgressController()
+    let connectionProgressView = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier("progressBar") as! ConnectionProgressController
     
     let stream = XMPPStream()
     var dataController: DataController!
@@ -168,7 +168,12 @@ extension AppDelegate: UIApplicationDelegate {
         stream.startTLSPolicy = XMPPStreamStartTLSPolicy.Required
         stream.keepAliveInterval = 30
         stream.enableBackgroundingOnSocket = true
-
+        navigation.navigationBar.barTintColor = UIColor(red: 17.0/256, green: 138.0/256, blue: 222.0/256, alpha: 1.0)
+        navigation.navigationBar.tintColor = UIColor.whiteColor()
+        navigation.navigationBar.titleTextAttributes = [
+            NSForegroundColorAttributeName: UIColor.whiteColor()
+        ]
+        UIApplication.sharedApplication().statusBarStyle = .LightContent
         return true
     }
 

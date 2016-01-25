@@ -17,7 +17,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Operations {
   public static final String NS = "http://expleague.com/scheme";
 
-  public static class Invite {
+  @XmlRootElement
+  public static class Invite extends Item {
     @XmlRootElement(name = "x", namespace = "http://jabber.org/protocol/muc#user")
     public static class Invitation extends Item {
       @XmlElementRef
@@ -77,8 +78,14 @@ public class Operations {
   }
 
   @XmlRootElement
+  public static class Create extends Item {}
+
+  @XmlRootElement
   public static class Start extends Item {}
 
   @XmlRootElement
   public static class Done extends Item {}
+
+  @XmlRootElement
+  public static class Suspend extends Item {}
 }
