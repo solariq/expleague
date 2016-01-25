@@ -40,6 +40,9 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     });
     if (snapshot.isEmpty())
       invoke(new Message(jid, null, MessageType.GROUP_CHAT, "Welcome to room " + jid));
+    if (owner() != null) {
+      partisipants.add(owner);
+    }
   }
 
   JID owner = null;
@@ -78,12 +81,21 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   }
 
   public void invoke(Message msg) {
+    if (owner() != null && !partisipant(msg.from())) {
+      XMPP.send(new Message(jid, msg.from(), MessageType.GROUP_CHAT, "Сообщение не доставленно. Вы не являетесь участником задания!"), context());
+      return;
+    }
     log(msg);
-    enterRoom(msg.from());
 
-    if (msg.type() == MessageType.GROUP_CHAT)
+    if (msg.type() == MessageType.GROUP_CHAT) {
       broadcast(msg);
-
+    }
+    else if (msg.has(Operations.Start.class)) {
+      enterRoom(msg.from());
+    }
+    else if (msg.has(Operations.Cancel.class) || msg.has(Operations.Done.class)) {
+      exitRoom(msg.from());
+    }
 
     if (msg.from().bareEq(owner()) && !isOpen()) {
       final Offer offer = offer();
@@ -95,9 +107,11 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   }
 
   public void invoke(Presence presence) {
+    if (owner() != null && !partisipant(presence.from()))
+      return;
+    enterRoom(presence.from());
     log(presence);
     final JID from = presence.from();
-    enterRoom(from);
     final Presence.Status currentStatus = this.presence.get(from);
     if (presence.status().equals(currentStatus))
       return;
@@ -146,14 +160,20 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     if (!partisipants.contains(jid.bare())) {
       partisipants.add(jid.bare());
       snapshot.stream().filter(s -> s instanceof Message && ((Message)s).type() == MessageType.GROUP_CHAT).map(s -> (Message)s).forEach(message -> {
-        if (jid.bareEq(message.from()))
-          return;
         final Message copy = message.copy();
         copy.to(jid);
         copy.from(roomAlias(message.from()));
         XMPP.send(copy, context());
       });
     }
+  }
+
+  private void exitRoom(JID jid) {
+    partisipants.remove(jid.bare());
+  }
+
+  private boolean partisipant(JID jid) {
+    return partisipants.contains(jid.bare());
   }
 
   @NotNull

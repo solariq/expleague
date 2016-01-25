@@ -9,6 +9,7 @@ import com.spbsu.commons.util.Pair;
 import com.tbts.model.ExpertManager;
 import com.tbts.model.Offer;
 import com.tbts.model.Operations;
+import com.tbts.model.Operations.Cancel;
 import com.tbts.server.agents.LaborExchange;
 import com.tbts.server.agents.TBTSRoomAgent;
 import com.tbts.server.agents.XMPP;
@@ -17,11 +18,12 @@ import com.tbts.xmpp.JID;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
-import java.util.ArrayDeque;
-import java.util.Optional;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+
+import static com.tbts.model.Operations.*;
+import static com.tbts.server.agents.LaborExchange.*;
 
 /**
  * User: solar
@@ -34,6 +36,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
     public final Offer offer;
     private final TBTSRoomAgent.Status roomStatus;
     private final Queue<JID> candidates = new ArrayDeque<>();
+    private final Set<JID> refused = new HashSet<>();
     private JID invited;
     private JID onTask;
 
@@ -77,6 +80,11 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
       }
       return false;
     }
+
+    public Task refused(JID jid) {
+      refused.add(jid);
+      return this;
+    }
   }
 
   public static final FiniteDuration RETRY_TIMEOUT = Duration.apply(2, TimeUnit.MINUTES);
@@ -91,28 +99,28 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
               final ActorRef agent = XMPP.register(offer.room(), context());
               final TBTSRoomAgent.Status status = AkkaTools.ask(agent, TBTSRoomAgent.Status.class);
               if (status.isLastWorkerActive()) {
-                final ActorRef expert = LaborExchange.registerExpert(status.lastWorker(), context());
-                expert.tell(new Operations.Resume(offer), self());
+                final ActorRef expert = registerExpert(status.lastWorker(), context());
+                expert.tell(new Resume(offer), self());
                 final Task task = new Task(offer, status);
                 task.onTask = status.lastWorker();
-                return goTo(State.WORK_TRACKING).using(task).replying(new Operations.Ok());
+                return goTo(State.WORK_TRACKING).using(task).replying(new Ok());
               }
               else {
                 final Task task = new Task(offer, status);
                 if (status.lastWorker() != null) {
                   timeout = AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT, self());
-                  final ActorRef expert = LaborExchange.registerExpert(status.lastWorker(), context());
+                  final ActorRef expert = registerExpert(status.lastWorker(), context());
                   expert.tell(offer, self());
-                  return goTo(State.STARVING).using(task).replying(new Operations.Ok());
+                  return goTo(State.STARVING).using(task).replying(new Ok());
                 }
-                else return lookForExpert(task).using(task).replying(new Operations.Ok());
+                else return lookForExpert(task).using(task).replying(new Ok());
               }
             }
         )
     );
 
     when(State.STARVING,
-        matchEvent(Operations.Ok.class,
+        matchEvent(Ok.class,
             (ok, task) -> {
               if (timeout != null) {
                 timeout.cancel();
@@ -120,62 +128,70 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
               }
               final JID expert = JID.parse(sender().path().name());
               if (interview(expert, task)) {
-                sender().tell(new Operations.Invite(), self());
+                sender().tell(new Invite(), self());
                 return goTo(State.INVITE).using(task.invite(expert));
               }
               else {
-                sender().tell(new Operations.Cancel(), self());
+                sender().tell(new Cancel(), self());
                 return stay();
               }
             }
         ).event(ActorRef.class,
             (expert, task) -> {
-              expert.tell(task.offer, self());
+              if (!task.refused.contains(Experts.jid(expert))) {
+                expert.tell(task.offer, self());
+              }
               return stay();
             }
         )
-        .event(Operations.Cancel.class,
-            (cancel, task) -> stay()
+        .event(Cancel.class,
+            (cancel, task) -> stay().using(task.refused(Experts.jid(sender())))
         ).event(Timeout.class,
             (to, task) -> lookForExpert(task)
         ).event(Offer.class,
-            (offer, task) -> stay().replying(new Operations.Cancel())
+            (offer, task) -> stay().replying(new Cancel())
         )
     );
 
     when(State.INVITE,
-        matchEvent(Operations.Start.class,
+        matchEvent(Start.class,
             (start, task) -> task.invited(JID.parse(sender().path().name())),
             (start, task) -> {
               JID expert;
               while ((expert = task.next()) != null)
-                context().actorSelection("/user/labor-exchange/experts-dpt/" + expert.getAddr()).tell(new Operations.Cancel(), self());
+                context().actorSelection("/user/labor-exchange/experts-dpt/" + expert.bare().toString()).tell(new Cancel(), self());
               return goTo(State.WORK_TRACKING).using(task.enter(task.invited));
             }
-        ).event(Operations.Cancel.class,
+        ).event(Cancel.class, // from invitation
             (cancel, task) -> task.invited(JID.parse(sender().path().name())),
             (cancel, task) -> lookForExpert(task)
-        ).event(Operations.Ok.class, // from check
-            (ok, task) -> stay().replying(new Operations.Cancel())
+        ).event(Cancel.class, // from check
+            (cancel, task) -> !task.invited(JID.parse(sender().path().name())),
+            (cancel, task) -> stay()
+        ).event(Ok.class, // from check
+            (ok, task) -> stay()
         ).event(Offer.class,
-            (offer, task) -> stay().replying(new Operations.Cancel())
+            (offer, task) -> stay().replying(new Cancel())
         )
     );
 
     when(State.WORK_TRACKING,
-        matchEvent(Operations.Done.class,
+        matchEvent(Done.class,
             (done, task) -> task.onTask(JID.parse(sender().path().name())),
-            (done, task) -> goTo(State.UNEMPLOYED).using(null)
-        ).event(Operations.Cancel.class,
+            (done, task) -> {
+              reference(context()).tell(Done.class, self());
+              return goTo(State.UNEMPLOYED).using(null);
+            }
+        ).event(Cancel.class,
             (cancel, task) -> task.onTask(JID.parse(sender().path().name())),
             (cancel, task) -> {
               return lookForExpert(task).using(task.enter(null));
             }
         ).event(Offer.class,
-            (offer, task) -> stay().replying(new Operations.Cancel())
-        ).event(Operations.Suspend.class,
+            (offer, task) -> stay().replying(new Cancel())
+        ).event(Suspend.class,
           (suspend, task) -> stay()
-        ).event(Operations.Resume.class,
+        ).event(Resume.class,
             (suspend, task) -> stay()
         )
     );
@@ -193,7 +209,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
   }
 
   private FSM.State<State, Task> lookForExpert(Task task) {
-    LaborExchange.experts(context()).tell(task.offer, self());
+    experts(context()).tell(task.offer, self());
     timeout = AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT, self());
     return stateName() != State.STARVING ? goTo(State.STARVING) : stay();
   }

@@ -1,13 +1,11 @@
 package com.tbts.server.agents;
 
-import akka.actor.ActorContext;
-import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
-import akka.actor.Props;
+import akka.actor.*;
 import akka.persistence.SaveSnapshotFailure;
 import akka.persistence.SaveSnapshotSuccess;
 import akka.persistence.SnapshotOffer;
 import akka.persistence.UntypedPersistentActor;
+import akka.util.Timeout;
 import com.spbsu.commons.system.RuntimeUtils;
 import com.tbts.model.Offer;
 import com.tbts.model.Operations;
@@ -20,8 +18,10 @@ import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Presence;
 import scala.collection.JavaConversions;
+import scala.concurrent.duration.Duration;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: solar
@@ -37,7 +37,7 @@ public class LaborExchange extends UntypedPersistentActor {
   @Override
   public void preStart() throws Exception {
     super.preStart();
-    AkkaTools.getOrCreate("experts", context(), () -> Props.create(Dpt.class));
+    AkkaTools.getOrCreate("experts", context(), () -> Props.create(Experts.class));
   }
 
   public void invoke(Offer offer) {
@@ -67,14 +67,14 @@ public class LaborExchange extends UntypedPersistentActor {
     );
   }
 
-  public void invoke(Operations.Ok ok) {
-    final JID jid = Dpt.jid(sender());
+  public void invoke(Operations.Done done) {
+    final JID jid = Experts.jid(sender());
     openPositions.remove(jid.local());
     saveSnapshot(new ArrayList<>(openPositions.keySet()));
   }
 
   public void invoke(Operations.Cancel cancel) {
-    final JID jid = Dpt.jid(sender());
+    final JID jid = Experts.jid(sender());
     openPositions.remove(jid.local()).forward(cancel, context());
     saveSnapshot(new ArrayList<>(openPositions.keySet()));
   }
@@ -89,7 +89,6 @@ public class LaborExchange extends UntypedPersistentActor {
         final ActorRef roomAgent = XMPP.register(room, context());
         roomAgent.tell(new Operations.Resume(), self());
       });
-      saveSnapshot(new ArrayList<>(openPositions.keySet()));
     }
   }
 
@@ -126,7 +125,7 @@ public class LaborExchange extends UntypedPersistentActor {
    * Date: 19.12.15
    * Time: 17:32
    */
-  public static class Dpt extends UntypedActorAdapter {
+  public static class Experts extends UntypedActorAdapter {
     public void invoke(JID jid) {
       sender().tell(AkkaTools.getOrCreate(jid.bare().toString(), context(), () -> Props.create(ExpertRole.class)), self());
     }
@@ -140,13 +139,26 @@ public class LaborExchange extends UntypedPersistentActor {
     }
 
     public int readyCount = 0;
-    Map<String, ExpertRole.State> states = new HashMap<>();
+    private Map<String, ExpertRole.State> states = new HashMap<>();
+    private Cancellable stateTimeout = null;
     public void invoke(ExpertRole.State next) {
       final String key = sender().path().name();
       final ExpertRole.State current = states.get(key);
       readyCount += increment(next) - increment(current);
       states.put(key, next);
+      sendState();
+    }
+
+    public void invoke(Timeout to) {
+      stateTimeout = null;
+      sendState();
+    }
+
+    public void sendState() {
+      if (stateTimeout != null)
+        return;
       XMPP.send(new Presence(XMPP.jid(), readyCount != 0, new ServiceStatus(readyCount)), context());
+      stateTimeout = AkkaTools.scheduleTimeout(context(), Duration.apply(10, TimeUnit.SECONDS), self());
     }
 
     private int increment(ExpertRole.State next) {
