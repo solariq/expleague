@@ -1,9 +1,6 @@
 package com.tbts.server.agents.roles;
 
-import akka.actor.AbstractFSM;
-import akka.actor.ActorRef;
-import akka.actor.Cancellable;
-import akka.actor.FSM;
+import akka.actor.*;
 import akka.util.Timeout;
 import com.tbts.model.ExpertManager;
 import com.tbts.model.Offer;
@@ -29,12 +26,17 @@ import static com.tbts.model.Operations.*;
  * Date: 17.12.15
  * Time: 14:16
  */
-public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
+public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.Task> {
   private static final Logger log = Logger.getLogger(ExpertRole.class.getName());
   public static final FiniteDuration CHOICE_TIMEOUT = Duration.create(60, TimeUnit.SECONDS);
   public static final FiniteDuration CHECK_TIMEOUT = Duration.create(10, TimeUnit.SECONDS);
   public static final FiniteDuration INVITE_TIMEOUT = Duration.create(5, TimeUnit.MINUTES);
   private Cancellable timer;
+
+  @Override
+  public int logDepth() {
+    return 5;
+  }
 
   {
     startWith(State.OFFLINE, new Task(true));
@@ -249,9 +251,9 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
         matchStop(Normal(),
             (state, data) -> log.fine("ExpertRole stopped")
         ).stop(Shutdown(),
-            (state, data) -> log.warning("ExpertRole shut down on " + data)
+            (state, data) -> log.warning("ExpertRole shut down on " + data + " events: " + getLog().mkString("\n\t"))
         ).stop(Failure.class,
-            (reason, data, state) -> log.warning("ExpertRole terminated on " + data + " in state " + state)
+            (reason, data, state) -> log.warning("ExpertRole terminated on " + data + " in state " + state + " events: " + getLog().mkString("\n\t"))
         )
     );
     initialize();
