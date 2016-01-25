@@ -42,7 +42,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
         matchEvent(
             Presence.class,
             (presence, task) -> presence.available(),
-            (presence, task) -> task.isEmpty() ? goTo(State.READY) : goTo(State.BUSY)
+            (presence, task) -> task.isEmpty() ? goTo(State.READY).using(new Task(true)) : goTo(State.BUSY)
         ).event(Operations.Resume.class,
             (resume, task) -> stay().using(task.appendVariant(resume.offer(), sender()))
         ));
@@ -76,15 +76,15 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
               stopTimer();
               return stay().using(task);
             }
-        ).event( // expert canceled check
-            (msg, task) -> msg instanceof Message && ((Message) msg).get(Operations.Cancel.class) != null,
+        ).event(
+            Message.class, // expert canceled check
+            (msg, task) -> msg.get(Operations.Cancel.class) != null,
             (msg, task) -> {
               task.broker().tell(new Operations.Cancel(), self());
               stopTimer();
               return goTo(State.READY).using(new Task(true));
             }
-        ).event( // expert canceled check
-            (msg, task) -> msg instanceof Timeout,
+        ).event(Timeout.class, // expert check timed out
             (msg, task) -> {
               timer = null;
               if (task.chosen()) { // CHECK_TIMEOUT
@@ -105,6 +105,12 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
               stopTimer();
               timer = AkkaTools.scheduleTimeout(context(), INVITE_TIMEOUT, self());
               return goTo(State.INVITE);
+            }
+        ).event( // broker canceled offer
+            Operations.Cancel.class,
+            (invite, task) -> task.broker().equals(sender()),
+            (invite, task) -> {
+              return goTo(State.READY).using(new Task(true));
             }
         ).event(
             Presence.class,
@@ -284,6 +290,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
       timer = AkkaTools.scheduleTimeout(context(), CHECK_TIMEOUT, self());
       offers = Collections.singletonList(offers.get(winner));
       brokers = Collections.singletonList(brokers.get(winner));
+      chosen = true;
       return offers.get(0);
     }
 

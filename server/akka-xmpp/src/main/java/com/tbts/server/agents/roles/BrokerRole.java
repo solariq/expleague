@@ -128,7 +128,13 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
                 return stay();
               }
             }
-        ).event(Operations.Cancel.class,
+        ).event(ActorRef.class,
+            (expert, task) -> {
+              expert.tell(task.offer, self());
+              return stay();
+            }
+        )
+        .event(Operations.Cancel.class,
             (cancel, task) -> stay()
         ).event(Timeout.class,
             (to, task) -> lookForExpert(task)
