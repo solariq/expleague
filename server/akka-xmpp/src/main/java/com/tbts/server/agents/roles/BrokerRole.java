@@ -220,6 +220,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
 
   private FSM.State<State, Task> lookForExpert(Task task) {
     log.fine(task.offer.room() + " is looking for experts in state: " + stateName());
+    task.refused.clear();
     experts(context()).tell(task.offer, self());
     timeout = AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT, self());
     return stateName() != State.STARVING ? goTo(State.STARVING) : stay();

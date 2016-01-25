@@ -178,6 +178,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             Timeout.class,
             (timeout, task) -> {
               timer = null;
+              log.fine("Expert timedout the invitation: " + timeout.duration());
               XMPP.send(new Message(XMPP.jid(), jid(), task.offer(), new Cancel()), context());
               task.broker().tell(new Cancel(), self());
               return goTo(State.READY).using(new Task(false));
