@@ -44,15 +44,17 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     when(State.OFFLINE,
         matchEvent(
             Presence.class,
-            (presence, task) -> presence.available(),
             (presence, task) -> {
-              stopTimer();
-              if (!task.isEmpty()){
-                task.broker().tell(new Resume(), self());
-                timer = AkkaTools.scheduleTimeout(context(), INVITE_TIMEOUT, self());
-                return goTo(State.INVITE);
-              }
-              return goTo(State.READY).using(new Task(true));
+                if (presence.available()) {
+                    stopTimer();
+                    if (!task.isEmpty()) {
+                        XMPP.send(new Message(XMPP.jid(), jid(), new Resume(task.offer())), context());
+                        timer = AkkaTools.scheduleTimeout(context(), INVITE_TIMEOUT, self());
+                        return goTo(State.INVITE);
+                    }
+                    return goTo(State.READY).using(new Task(true));
+                }
+                return stay();
             }
         ).event(Resume.class,
             (resume, task) -> stay().using(task.appendVariant(resume.offer(), sender()))
