@@ -183,6 +183,17 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               task.broker().tell(new Cancel(), self());
               return goTo(State.READY).using(new Task(false));
             }
+        ).event(
+            Presence.class,
+            (presence, task) -> {
+              if (!presence.available()) {
+                stopTimer();
+                XMPP.send(new Message(XMPP.jid(), jid(), task.offer(), new Cancel()), context());
+                task.broker().tell(new Cancel(), self());
+                return goTo(State.READY).using(new Task(true));
+              }
+              return stay();
+            }
         )
     );
     when(State.BUSY,

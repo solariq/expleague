@@ -182,7 +182,7 @@ class ChatAction: NSObject {
 }
 
 class ChatMessage {
-    let defaultFont: UIFont = UIFont(name: "Helvetica Neue", size: 12)!
+    let defaultFont: UIFont = UIFont(name: "Helvetica Neue", size: 14)!
     let separatorHeight: CGFloat = 8
     
     var author: String?
@@ -294,7 +294,8 @@ class ChatMessage {
                 CGSizeMake(width, CGFloat(MAXFLOAT)),
                 options: NSStringDrawingOptions.UsesLineFragmentOrigin,
                 attributes: [
-                    NSFontAttributeName : defaultFont],
+                    NSFontAttributeName : defaultFont
+                ],
                 context: nil).size
         }
         else if let richText = parts[index] as? NSAttributedString {

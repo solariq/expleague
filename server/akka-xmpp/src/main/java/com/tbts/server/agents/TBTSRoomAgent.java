@@ -40,6 +40,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     });
     if (snapshot.isEmpty())
       invoke(new Message(jid, null, MessageType.GROUP_CHAT, "Welcome to room " + jid));
+    partisipants.add(XMPP.jid());
     if (owner() != null) {
       partisipants.add(owner);
     }
@@ -81,6 +82,10 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   }
 
   public void invoke(Message msg) {
+    if (msg.has(Operations.Start.class)) {
+      enterRoom(msg.from());
+    }
+
     if (owner() != null && !partisipant(msg.from())) {
       final Message message = new Message(jid, msg.from(), MessageType.GROUP_CHAT, "Сообщение не доставленно. Вы не являетесь участником задания!");
       message.append(msg);
@@ -91,9 +96,6 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
 
     if (msg.type() == MessageType.GROUP_CHAT) {
       broadcast(msg);
-    }
-    else if (msg.has(Operations.Start.class)) {
-      enterRoom(msg.from());
     }
     else if (msg.has(Operations.Cancel.class) || msg.has(Operations.Done.class)) {
       exitRoom(msg.from());

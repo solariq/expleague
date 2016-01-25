@@ -46,6 +46,7 @@ public class LaborExchange extends UntypedPersistentActor {
       if (!"experts".equals(ref.path().name())) {
         if (AkkaTools.ask(ref, offer) instanceof Operations.Ok) {
           openPositions.put(offer.room().local(), ref);
+          saveSnapshot(new ArrayList<>(openPositions.keySet()));
           return;
         }
       }
@@ -131,7 +132,7 @@ public class LaborExchange extends UntypedPersistentActor {
     }
 
     public void invoke(Object o) {
-      if (o instanceof JID || o instanceof ExpertRole.State)
+      if (o instanceof JID || o instanceof ExpertRole.State || o instanceof Timeout)
         return;
       JavaConversions.asJavaCollection(context().children()).stream().forEach(
           expert -> expert.forward(o, context())
@@ -154,11 +155,15 @@ public class LaborExchange extends UntypedPersistentActor {
       sendState();
     }
 
+    int sentCount = 0;
     public void sendState() {
       if (stateTimeout != null)
         return;
-      XMPP.send(new Presence(XMPP.jid(), readyCount != 0, new ServiceStatus(readyCount)), context());
-      stateTimeout = AkkaTools.scheduleTimeout(context(), Duration.apply(10, TimeUnit.SECONDS), self());
+      if (sentCount != readyCount) {
+        sentCount = readyCount;
+        XMPP.send(new Presence(XMPP.jid(), readyCount != 0, new ServiceStatus(readyCount)), context());
+        stateTimeout = AkkaTools.scheduleTimeout(context(), Duration.apply(10, TimeUnit.SECONDS), self());
+      }
     }
 
     private int increment(ExpertRole.State next) {

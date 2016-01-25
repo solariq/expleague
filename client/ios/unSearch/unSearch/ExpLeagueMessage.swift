@@ -19,7 +19,7 @@ class ExpLeagueMessage: NSManagedObject {
     init(msg: XMPPMessage, parent: ExpLeagueOrder, context: NSManagedObjectContext) {
         super.init(entity: NSEntityDescription.entityForName("Message", inManagedObjectContext: context)!, insertIntoManagedObjectContext: context)
         let attrs = msg.attributesAsDictionary()
-        self.from = attrs["from"] != nil ? msg.from().resource : "me";
+        self.from = attrs["from"] != nil ? (msg.from().resource != nil ? msg.from().resource : "system") : "me";
         self.parentRaw = parent
         var textChildren = msg.elementsForName("subject")
         if (textChildren.count == 0) {
