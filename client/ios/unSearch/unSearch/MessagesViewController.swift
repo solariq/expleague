@@ -65,6 +65,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
             message.append(text: text, time: NSDate().timeIntervalSince1970)
             data?.messages.append(message)
             messagesView.reloadData()
+            scrollView.scrollRectToVisible(messagesView.frame, animated: true)
             dispatch_async(dispatch_get_main_queue(), {
                 self.data?.scrollToLastMessage(self.messagesView)
             })
@@ -79,6 +80,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
         data?.sync(msg.parent)
         messagesView.reloadData()
         data?.scrollToLastMessage(messagesView)
+        scrollView.scrollRectToVisible(messagesView.frame, animated: true)
     }
 
     var tabBar: UIKit.UITabBar {
@@ -351,6 +353,10 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         func message(message: ExpLeagueMessage, title: String, link: String) {
             parent.answerAppend("<a href=\"\(link)\">\(title)</a>")
         }
+        func message(message: ExpLeagueMessage, title: String, image: UIImage) {
+            let data = UIImageJPEGRepresentation(image, 1.0)!
+            parent.answerAppend("<h3>\(title)</h3><img align='middle' src='data:image/jpeg;base64,\(data.base64EncodedStringWithOptions([]))'/>")
+        }
     }
     
     class MessageVisitor: ExpLeagueMessageVisitor {
@@ -381,6 +387,17 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                         NSForegroundColorAttributeName: UIColor.blueColor()
                     ]),
                 time: message.time)
+        }
+        func message(message: ExpLeagueMessage, title: String, image: UIImage) {
+            model.append(
+                richText: NSAttributedString(
+                    string: title,
+                    attributes: [
+                        NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody),
+                        NSForegroundColorAttributeName: UIColor.blueColor()]),
+                time: message.time
+            )
+            model.append(image: image, time: message.time)
         }
     }
     

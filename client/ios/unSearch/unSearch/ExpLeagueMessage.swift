@@ -102,6 +102,18 @@ class ExpLeagueMessage: NSManagedObject {
                             }
                         }
                     }
+                    if let imageItem = (item as! NSDictionary)["image"] as? NSDictionary {
+                        if let title = imageItem["title"] as? String {
+                            if let url = NSURL(string: imageItem["image"] as! String),
+                               let data = NSData(contentsOfURL: url),
+                               let image = UIImage(data: data) {
+                                visitor.message(self, title: title, image: image)
+                            }
+                            else {
+                                visitor.message(self, title: title, text: imageItem["image"] as! String)
+                            }
+                        }
+                    }
                     
                 }
             }
@@ -119,6 +131,7 @@ protocol ExpLeagueMessageVisitor {
     func message(message: ExpLeagueMessage, text: String)
     func message(message: ExpLeagueMessage, title: String, text: String)
     func message(message: ExpLeagueMessage, title: String, link: String)
+    func message(message: ExpLeagueMessage, title: String, image: UIImage)
 }
 
 enum ExpLeagueMessageType: Int16 {
