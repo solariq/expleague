@@ -3,6 +3,7 @@ package com.tbts.server.agents.roles;
 import akka.actor.AbstractFSM;
 import akka.actor.ActorRef;
 import akka.actor.Cancellable;
+import akka.actor.FSM;
 import akka.util.Timeout;
 import com.tbts.model.ExpertManager;
 import com.tbts.model.Offer;
@@ -32,6 +33,12 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
   public static final FiniteDuration CHECK_TIMEOUT = Duration.create(10, TimeUnit.SECONDS);
   public static final FiniteDuration INVITE_TIMEOUT = Duration.create(5, TimeUnit.MINUTES);
   private Cancellable timer;
+
+  @Override
+  public void logTermination(Reason reason) {
+    super.logTermination(reason);
+    log.warning(reason.toString());
+  }
 
   {
     startWith(State.OFFLINE, new Task(true));
