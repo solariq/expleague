@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * User: solar
@@ -84,7 +85,8 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   public void invoke(Message msg) {
     if (msg.type() == MessageType.GROUP_CHAT) {
       if (owner() != null && !partisipant(msg.from())) {
-        final Message message = new Message(jid, msg.from(), MessageType.GROUP_CHAT, "Сообщение не доставленно. Вы не являетесь участником задания!");
+        final Message message = new Message(jid, msg.from(), MessageType.GROUP_CHAT, "Сообщение не доставленно. Вы не являетесь участником задания! Известные участники: "
+                + partisipants.stream().map(JID::toString).collect(Collectors.joining(", ")) + ".");
         message.append(msg);
         XMPP.send(message, context());
         return;
