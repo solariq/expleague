@@ -82,22 +82,21 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   }
 
   public void invoke(Message msg) {
-    if (msg.has(Operations.Start.class)) {
-      enterRoom(msg.from());
-    }
-
-    if (owner() != null && !partisipant(msg.from())) {
-      final Message message = new Message(jid, msg.from(), MessageType.GROUP_CHAT, "Сообщение не доставленно. Вы не являетесь участником задания!");
-      message.append(msg);
-      XMPP.send(message, context());
-      return;
+    if (msg.type() == MessageType.GROUP_CHAT) {
+      if (owner() != null && !partisipant(msg.from())) {
+        final Message message = new Message(jid, msg.from(), MessageType.GROUP_CHAT, "Сообщение не доставленно. Вы не являетесь участником задания!");
+        message.append(msg);
+        XMPP.send(message, context());
+        return;
+      }
+      broadcast(msg);
     }
     log(msg);
 
-    if (msg.type() == MessageType.GROUP_CHAT) {
-      broadcast(msg);
+    if (msg.has(Operations.Start.class)) {
+      enterRoom(msg.from());
     }
-    else if (msg.has(Operations.Cancel.class) || msg.has(Operations.Done.class)) {
+    if (msg.has(Operations.Cancel.class) || msg.has(Operations.Done.class)) {
       exitRoom(msg.from());
     }
 
