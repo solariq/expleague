@@ -4801,6 +4801,7 @@ Strophe.Bosh.prototype = {
                         }
                     }
                 }
+                console.log("req.xhr.send(req.data);:: " + req.data)
                 req.xhr.send(req.data);
             };
 

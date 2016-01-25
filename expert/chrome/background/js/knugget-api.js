@@ -171,7 +171,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                 var offer = findByTagName(msg.childNodes, 'offer');
                 if (offer) {
                     offer = new Offer(offer);
-                    isCanceled = findByTagName(msg.childNodes, 'cancel') != null;
+                      isCanceled = findByTagName(msg.childNodes, 'cancel') != null;
                     listener(msg.getAttribute('id'), msg.getAttribute('from'), offer, isCanceled);
                 }
                 return true;
@@ -229,13 +229,16 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
 
         this.leaveRoom = function(room, nick) {
             //todo this!
-            this.sendPres({to: room + '/' + nick, type: 'unavailable'});
+            //this.sendPres({to: room + '/' + nick, type: 'unavailable'});
+            //this.sendPres({to: jabberClient.host+ '/' + nick, type: 'unavailable'});
+            //this.sendPres({to: jabberClient.host+ '/' + nick, type: 'unavailable'});
             this.sendAvailable();
             //var pres = $pres({to: room + '/' + nick, type: 'unavailable'});
             //this.connection.send(pres.tree());
         };
 
         this.enterRoom = function(room, nick) {
+            console.log("entering in room: " + room + " with nick " + nick);
             this.sendPres({to: room + '/' + nick});
             //var pres = $pres({to: room + '/' + nick})
             //    .c('priority')
@@ -247,6 +250,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         this.sendPres = function(presence) {
             var pres = $pres(presence);
             this.connection.send(pres.tree());
+            this.connection.flush();
         };
 
         this.sendUnavailable = function() {
@@ -287,7 +291,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             validate: function(prevState, ctx) {
                 new BanManager().isBanned(ctx.user, function(isBanned) {
                     if (!isBanned) {
-                        var msg = $msg({to: ctx.to, from: jabberClient.connection.jid, type: 'chat'})
+                        //var msg = $msg({to: ctx.to, from: jabberClient.connection.jid, type: 'chat'})
+                        var msg = $msg({to: jabberClient.host, from: jabberClient.connection.jid, type: 'chat'})
                             .c('ok')
                             .attrs({xmlns: "http://expleague.com/scheme"})
                             .up()
@@ -301,7 +306,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                 return debug || prevState == ExpertState.READY;
             },
             onSet: function(presence) {
-                stateController.setState(ExpertState.STEADY, presence);
+                //stateController.setState(ExpertState.STEADY, presence);
             }
         },
         STEADY: {
@@ -310,7 +315,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                 return debug || prevState == ExpertState.CHECK;
             },
             onSet: function(presence) {
-                jabberClient.sendPres({to: presence.from, type: ExpertState.STEADY.value});
+                //jabberClient.sendPres({to: presence.from, type: ExpertState.STEADY.value});
+                jabberClient.sendPres({to: jabberClient.host, type: ExpertState.STEADY.value});
                 //todo handle timeout
             }
         },
@@ -472,12 +478,12 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
 
 
     cleanAll = function() {
+        latestOffer = null;
         KNUGGET.storage.set('Board', JSON.stringify([]));
         KNUGGET.storage.set('Requests', JSON.stringify([]));
         KNUGGET.storage.set('AllowToShow', false);
         KNUGGET.storage.set('ChatLog', {history:[], unread: 0});
         chatController.clear();
-        latestOffer = null;
         visitedPages = [];
         //$scope.board.update();
         //$scope.allowToShow.get(function(){});
@@ -584,6 +590,25 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         KNUGGET.storage.set("UserAvailable", isAvailable);
     };
 
+
+    if (window.chrome && window.chrome.storage) {
+        window.chrome.storage.onChanged.addListener(function (data) {
+            if (latestOffer && stateController.state == ExpertState.GO) {
+                for (var key in data) {
+                    var sync = {
+                        to: latestOffer.room,
+                        text: JSON.stringify({
+                            type: 'SYNCMSG',
+                            data: data[key]
+                        })
+                    };
+                    //jabberClient.send(sync, 'chat', function () {});
+                }
+                console.log(data.newValue);
+            }
+        });
+    }
+
     //timeLimit = $interval(function () {
     //    KNUGGET.storage.get('ActiveRequest', function (e) {
     //        if (e) {
@@ -683,9 +708,10 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
 
         Finish: function(data) {
             var defer = $q.defer();
-            //todo data.request
             //connection.send($pres().tree());
-            jabberClient.leaveRoom(data.request.room, 'expert');
+            if (data.request && data.request.room) {
+                jabberClient.leaveRoom(data.request.room, 'expert');
+            }
             defer.resolve({status: 200});
             return defer.promise;
         },
@@ -701,7 +727,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             var defer = $q.defer();
             removeRequest(data.request, function() {
                 if (latestOffer) {
-                    var msg = $msg({to: latestOffer.room, from: jabberClient.connection.jid, type: 'chat'})
+                    var msg = $msg({to: jabberClient.host, from: jabberClient.connection.jid, type: 'chat'})
                         .c('cancel')
                         .attrs({xmlns: "http://expleague.com/scheme"})
                         .up()
