@@ -125,10 +125,6 @@ public class Message extends Stanza {
     return null;
   }
 
-  public boolean contains(Class<?> clazz) {
-    return any.stream().anyMatch(x -> clazz.isAssignableFrom(x.getClass()));
-  }
-
   public String body() {
     final Body t = get(Body.class);
     return t != null ? t.value : "";

@@ -194,7 +194,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
                 XMPP.send(new Message(jid(), task.offer().room(), new Operations.Cancel()), context());
                 return goTo(State.READY).using(new Task(true));
               }
-              if (msg.contains(Operations.Done.class) || msg.body().startsWith("{")){ // hack for answer
+              if (msg.has(Operations.Done.class) || msg.body().startsWith("{")){ // hack for answer
                 XMPP.send(new Message(jid(), task.offer().room(), new Operations.Done()), context());
                 return goTo(State.READY).using(new Task(false));
               }

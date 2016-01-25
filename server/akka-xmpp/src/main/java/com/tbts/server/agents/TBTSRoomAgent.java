@@ -184,13 +184,18 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     for (final Item item : snapshot) {
       if (item instanceof Message) {
         final Message msg = (Message) item;
-        if ("expert".equals(msg.from().resource())) {
+        if (msg.has(Operations.Start.class)) {
           workers.add(msg.from());
-        }
-        if (msg.contains(Operations.Start.class))
           lastActive = true;
-        if (msg.contains(Operations.Done.class))
+        }
+        else if (msg.has(Operations.Done.class)) {
           lastActive = false;
+        }
+        else if (msg.has(Operations.Cancel.class)) {
+          //noinspection StatementWithEmptyBody
+          while(workers.remove(msg.from()));
+          lastActive = false;
+        }
       }
     }
     return lastActive;
