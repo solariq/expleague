@@ -34,12 +34,6 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
   public static final FiniteDuration INVITE_TIMEOUT = Duration.create(5, TimeUnit.MINUTES);
   private Cancellable timer;
 
-  @Override
-  public void logTermination(Reason reason) {
-    super.logTermination(reason);
-    log.warning(reason.toString());
-  }
-
   {
     startWith(State.OFFLINE, new Task(true));
 
@@ -244,6 +238,16 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
         LaborExchange.reference(context()).tell(self(), self());
       }
     });
+
+    onTermination(
+        matchStop(Normal(),
+            (state, data) -> log.fine("ExpertRole stopped")
+        ).stop(Shutdown(),
+            (state, data) -> log.warning("ExpertRole shut down on " + data)
+        ).stop(Failure.class,
+            (reason, data, state) -> log.warning("ExpertRole terminated on " + data + " in state " + state)
+        )
+    );
     initialize();
   }
 
