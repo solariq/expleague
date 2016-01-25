@@ -82,7 +82,9 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
 
   public void invoke(Message msg) {
     if (owner() != null && !partisipant(msg.from())) {
-      XMPP.send(new Message(jid, msg.from(), MessageType.GROUP_CHAT, "Сообщение не доставленно. Вы не являетесь участником задания!"), context());
+      final Message message = new Message(jid, msg.from(), MessageType.GROUP_CHAT, "Сообщение не доставленно. Вы не являетесь участником задания!");
+      message.append(msg);
+      XMPP.send(message, context());
       return;
     }
     log(msg);
