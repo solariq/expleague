@@ -205,6 +205,16 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
       log.fine(from + " -> " + to + (nextStateData() != null ? " " + nextStateData().offer : ""));
     });
 
+    onTermination(
+        matchStop(Normal(),
+            (state, data) -> log.fine("BrokerRole stopped" + data.offer)
+        ).stop(Shutdown(),
+            (state, data) -> log.warning("BrokerRole shut down on " + data.offer)
+        ).stop(Failure.class,
+            (reason, data, state) -> log.warning("ExpertRole terminated on " + data + " in state " + state)
+        )
+    );
+
     initialize();
   }
 
@@ -224,6 +234,12 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
         .filter(entry -> entry.getSecond() == ExpertRole.State.INVITE)
         .findAny();
     return !any.isPresent();
+  }
+
+  @Override
+  public void logTermination(Reason reason) {
+    super.logTermination(reason);
+    log.warning(reason.toString());
   }
 
   enum State {

@@ -22,6 +22,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import static com.tbts.model.Operations.*;
+
 /**
  * User: solar
  * Date: 17.12.15
@@ -42,8 +44,10 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             Presence.class,
             (presence, task) -> presence.available(),
             (presence, task) -> task.isEmpty() ? goTo(State.READY).using(new Task(true)) : goTo(State.BUSY)
-        ).event(Operations.Resume.class,
+        ).event(Resume.class,
             (resume, task) -> stay().using(task.appendVariant(resume.offer(), sender()))
+        ).event(Timeout.class,
+            (to, task) -> stay().using(new Task(true))
         ));
     when(State.READY,
         matchEvent(
@@ -57,7 +61,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
         ).event(
             Presence.class,
             (presence, task) -> presence.available() ? stay() : goTo(State.OFFLINE)
-        ).event(Operations.Resume.class,
+        ).event(Resume.class,
             (resume, zero) -> zero == null,
             (resume, zero) -> goTo(State.BUSY).using(new Task(true).appendVariant(resume.offer(), sender()))
         ).event(Timeout.class,
@@ -69,17 +73,17 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
     when(State.CHECK,
         matchEvent( // expert accepted check
             Message.class,
-            (msg, task) -> msg.get(Operations.Ok.class) != null,
+            (msg, task) -> msg.get(Ok.class) != null,
             (msg, task) -> {
-              task.broker().tell(new Operations.Ok(), self());
+              task.broker().tell(new Ok(), self());
               stopTimer();
               return stay().using(task);
             }
         ).event(
             Message.class, // expert canceled check
-            (msg, task) -> msg.get(Operations.Cancel.class) != null,
+            (msg, task) -> msg.get(Cancel.class) != null,
             (msg, task) -> {
-              task.broker().tell(new Operations.Cancel(), self());
+              task.broker().tell(new Cancel(), self());
               stopTimer();
               return goTo(State.READY).using(new Task(true));
             }
@@ -87,15 +91,15 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             (msg, task) -> {
               timer = null;
               if (task.chosen()) { // CHECK_TIMEOUT
-                XMPP.send(new Message(XMPP.jid(), jid(), task.offer(), new Operations.Cancel()), context());
-                task.broker().tell(new Operations.Cancel(), self());
+                XMPP.send(new Message(XMPP.jid(), jid(), task.offer(), new Cancel()), context());
+                task.broker().tell(new Cancel(), self());
                 return goTo(State.READY).using(new Task(false));
               }
               task.choose();
               return stay();
             }
         ).event( // broker sent invitation
-            Operations.Invite.class,
+            Invite.class,
             (invite, task) -> task.broker().equals(sender()),
             (invite, task) -> {
               final Message message = new Message(task.offer().room(), jid(), task.offer());
@@ -106,7 +110,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
               return goTo(State.INVITE);
             }
         ).event( // broker canceled offer
-            Operations.Cancel.class,
+            Cancel.class,
             (invite, task) -> task.broker().equals(sender()),
             (invite, task) -> {
               return goTo(State.READY).using(new Task(true));
@@ -117,7 +121,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             (presence, task) -> {
               if (!task.isEmpty()) {
                 task.choose();
-                task.broker().tell(new Operations.Cancel(), self());
+                task.broker().tell(new Cancel(), self());
               }
               stopTimer();
               return goTo(State.OFFLINE).using(new Task(true));
@@ -129,11 +133,14 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
         ).event(
             Offer.class,
             (offer, task) -> {
-              task.appendVariant(offer, sender());
-              if (offer.hasWorker(jid())){
-                stopTimer();
-                task.choose();
+              if (!task.chosen()) {
+                task.appendVariant(offer, sender());
+                if (offer.hasWorker(jid())){
+                  stopTimer();
+                  task.choose();
+                }
               }
+              else sender().tell(new Cancel(), self());
               return stay();
             }
         )
@@ -145,8 +152,8 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             (stanza, task) -> {
               if (task.offer().room().bareEq(stanza.to())) { // old way
                 stopTimer();
-                task.broker().tell(new Operations.Start(), self());
-                XMPP.send(new Message(jid(), task.offer().room(), new Operations.Start()), context());
+                task.broker().tell(new Start(), self());
+                XMPP.send(new Message(jid(), task.offer().room(), new Start()), context());
                 return goTo(State.BUSY);
               }
               return stay();
@@ -154,15 +161,15 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
         ).event(
             Message.class,
             (message, task) -> {
-              if (message.has(Operations.Cancel.class)) {
+              if (message.has(Cancel.class)) {
                 stopTimer();
-                task.broker().tell(new Operations.Cancel(), self());
+                task.broker().tell(new Cancel(), self());
                 return goTo(State.READY).using(new Task(true));
               }
-              if (message.has(Operations.Start.class)) {
+              if (message.has(Start.class)) {
                 stopTimer();
-                task.broker().tell(new Operations.Start(), self());
-                XMPP.send(new Message(jid(), task.offer().room(), new Operations.Start()), context());
+                task.broker().tell(new Start(), self());
+                XMPP.send(new Message(jid(), task.offer().room(), new Start()), context());
                 return goTo(State.BUSY);
               }
               return stay();
@@ -171,8 +178,8 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             Timeout.class,
             (timeout, task) -> {
               timer = null;
-              XMPP.send(new Message(XMPP.jid(), jid(), task.offer(), new Operations.Cancel()), context());
-              task.broker().tell(new Operations.Cancel(), self());
+              XMPP.send(new Message(XMPP.jid(), jid(), task.offer(), new Cancel()), context());
+              task.broker().tell(new Cancel(), self());
               return goTo(State.READY).using(new Task(false));
             }
         )
@@ -182,25 +189,25 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             Presence.class,
             (presence, task) -> {
               if (presence.available() && presence.to() == null) {
-                XMPP.send(new Message(task.offer().room(), jid(), new Operations.Resume(task.offer())), context());
-                XMPP.send(new Message(jid(), task.offer().room(), new Operations.Resume(task.offer())), context());
-                task.broker().tell(new Operations.Resume(task.offer()), self());
+                XMPP.send(new Message(task.offer().room(), jid(), new Resume(task.offer())), context());
+                XMPP.send(new Message(jid(), task.offer().room(), new Resume(task.offer())), context());
+                task.broker().tell(new Resume(task.offer()), self());
               }
               else if (!presence.available()) {
-                XMPP.send(new Message(jid(), task.offer().room(), new Operations.Suspend()), context());
-                task.broker().tell(new Operations.Suspend(), self());
+                XMPP.send(new Message(jid(), task.offer().room(), new Suspend()), context());
+                task.broker().tell(new Suspend(), self());
               }
               return stay();
             }
         ).event(Message.class,
             (msg, task) -> {
-              if (msg.get(Operations.Cancel.class) != null) {
-                task.broker().tell(new Operations.Cancel(), self());
-                XMPP.send(new Message(jid(), task.offer().room(), new Operations.Cancel()), context());
+              if (msg.get(Cancel.class) != null) {
+                task.broker().tell(new Cancel(), self());
+                XMPP.send(new Message(jid(), task.offer().room(), new Cancel()), context());
                 return goTo(State.READY).using(new Task(true));
               }
-              if (msg.has(Operations.Done.class) || msg.body().startsWith("{")){ // hack for answer
-                XMPP.send(new Message(jid(), task.offer().room(), new Operations.Done()), context());
+              if (msg.has(Done.class) || msg.body().startsWith("{")){ // hack for answer
+                XMPP.send(new Message(jid(), task.offer().room(), new Done()), context());
                 return goTo(State.READY).using(new Task(false));
               }
               return stay();
@@ -209,13 +216,13 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
     );
 
     whenUnhandled(
-        matchEvent(Operations.Resume.class,
+        matchEvent(Resume.class,
             (resume, task) -> {
-              XMPP.send(new Message(jid(), resume.offer().room(), new Operations.Done()), context());
-              return stay().replying(new Operations.Cancel());
+              XMPP.send(new Message(jid(), resume.offer().room(), new Done()), context());
+              return stay().replying(new Cancel());
             }
         ).event(Offer.class,
-            (offer, task) -> stay().replying(new Operations.Cancel())
+            (offer, task) -> stay().replying(new Cancel())
         )
     );
 
@@ -292,7 +299,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
       for (int i = 0; i < brokers.size(); i++) {
         if (i != winner) {
           final ActorRef looser = brokers.get(i);
-          looser.tell(new Operations.Cancel(), self());
+          looser.tell(new Cancel(), self());
         }
       }
       XMPP.send(new Message(XMPP.jid(), jid(), offers.get(winner)), context());
