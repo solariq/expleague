@@ -231,12 +231,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     );
 
     whenUnhandled(
-        matchEvent(Resume.class,
-            (resume, task) -> {
-              XMPP.send(new Message(jid(), resume.offer().room(), new Done()), context());
-              return stay().replying(new Cancel());
-            }
-        ).event(Offer.class,
+        matchEvent(Offer.class,
             (offer, task) -> stay().replying(new Cancel())
         )
     );
