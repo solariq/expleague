@@ -75,16 +75,16 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             Message.class,
             (msg, task) -> msg.get(Ok.class) != null,
             (msg, task) -> {
-              task.broker().tell(new Ok(), self());
               stopTimer();
+              task.broker().tell(new Ok(), self());
               return stay().using(task);
             }
         ).event(
             Message.class, // expert canceled check
             (msg, task) -> msg.get(Cancel.class) != null,
             (msg, task) -> {
-              task.broker().tell(new Cancel(), self());
               stopTimer();
+              task.broker().tell(new Cancel(), self());
               return goTo(State.READY).using(new Task(true));
             }
         ).event(Timeout.class, // expert check timed out
@@ -102,10 +102,10 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             Invite.class,
             (invite, task) -> task.broker().equals(sender()),
             (invite, task) -> {
+              stopTimer();
               final Message message = new Message(task.offer().room(), jid(), task.offer());
               invite.form(message, task.offer());
               XMPP.send(message, context());
-              stopTimer();
               timer = AkkaTools.scheduleTimeout(context(), INVITE_TIMEOUT, self());
               return goTo(State.INVITE);
             }
@@ -113,17 +113,18 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             Cancel.class,
             (invite, task) -> task.broker().equals(sender()),
             (invite, task) -> {
+              stopTimer();
               return goTo(State.READY).using(new Task(true));
             }
         ).event(
             Presence.class,
             (presence, task) -> !presence.available(),
             (presence, task) -> {
+              stopTimer();
               if (!task.isEmpty()) {
                 task.choose();
                 task.broker().tell(new Cancel(), self());
               }
-              stopTimer();
               return goTo(State.OFFLINE).using(new Task(true));
             }
         ).event(
@@ -150,13 +151,10 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             Presence.class,
             (presence, task) -> presence.available() && task.offer().room().bareEq(presence.to()),
             (stanza, task) -> {
-              if (task.offer().room().bareEq(stanza.to())) { // old way
-                stopTimer();
-                task.broker().tell(new Start(), self());
-                XMPP.send(new Message(jid(), task.offer().room(), new Start()), context());
-                return goTo(State.BUSY);
-              }
-              return stay();
+              stopTimer();
+              task.broker().tell(new Start(), self());
+              XMPP.send(new Message(jid(), task.offer().room(), new Start()), context());
+              return goTo(State.BUSY);
             }
         ).event(
             Message.class,
@@ -178,7 +176,7 @@ public class ExpertRole extends AbstractFSM<ExpertRole.State, ExpertRole.Task> {
             Timeout.class,
             (timeout, task) -> {
               timer = null;
-              log.fine("Expert timedout the invitation: " + timeout.duration());
+              log.fine("Expert timed out the invitation: " + timeout.duration());
               XMPP.send(new Message(XMPP.jid(), jid(), task.offer(), new Cancel()), context());
               task.broker().tell(new Cancel(), self());
               return goTo(State.READY).using(new Task(false));
