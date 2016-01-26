@@ -138,6 +138,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
                 return goTo(State.INVITE).using(task.invite(expert));
               }
               else {
+                task.refused.add(expert);
                 sender().tell(new Cancel(), self());
                 return stay();
               }
