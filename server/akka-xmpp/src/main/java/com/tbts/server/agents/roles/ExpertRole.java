@@ -223,7 +223,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 task.broker().tell(new Cancel(), self());
                 return goTo(State.READY).using(new Task(true));
               }
-              if (msg.has(Done.class)){
+              if (msg.has(Done.class) || (msg.body().startsWith("{") && msg.type() == Message.MessageType.GROUP_CHAT)){ // hack for answer
                 task.broker().tell(new Done(), self());
                 return goTo(State.READY).using(new Task(false));
               }
