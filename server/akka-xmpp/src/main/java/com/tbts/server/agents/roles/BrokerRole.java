@@ -35,7 +35,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
   private static final Logger log = Logger.getLogger(BrokerRole.class.getName());
   public static class Task {
     public final Offer offer;
-    private final TBTSRoomAgent.Status roomStatus;
+    private TBTSRoomAgent.Status roomStatus;
     private final Queue<JID> candidates = new ArrayDeque<>();
     private final Set<JID> refused = new HashSet<>();
     private JID invited;
@@ -260,6 +260,8 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
 
   private FSM.State<State, Task> lookForExpert(Task task) {
     log.fine(task.offer.room() + " is looking for experts in state: " + stateName());
+    final ActorRef roomAgent = XMPP.register(task.offer.room(), context());
+    task.roomStatus = AkkaTools.ask(roomAgent, TBTSRoomAgent.Status.class);
     task.refused.clear();
     experts(context()).tell(task.offer, self());
     timeout = AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT, self());
