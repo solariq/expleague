@@ -270,7 +270,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
       return true;
     final ExpertManager.Record record = ExpertManager.instance().record(expert.bare());
     final Optional<Pair<JID, ExpertRole.State>> any = record.entries()
-        .filter(entry -> task.offer.room().equals(entry.first))
+        .filter(entry -> task.offer.room().bareEq(entry.first))
         .filter(entry -> entry.getSecond() == ExpertRole.State.INVITE)
         .findAny();
     return !any.isPresent();
