@@ -4,6 +4,7 @@ import com.tbts.server.agents.XMPP;
 import com.tbts.xmpp.Item;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Message;
+import scala.concurrent.duration.FiniteDuration;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
@@ -19,6 +20,9 @@ public class Operations {
 
   @XmlRootElement
   public static class Invite extends Item {
+    @XmlAttribute
+    public Long timeout;
+
     @XmlRootElement(name = "x", namespace = "http://jabber.org/protocol/muc#user")
     public static class Invitation extends Item {
       @XmlElementRef
@@ -48,7 +52,7 @@ public class Operations {
       }
     }
     public void form(Message message, Offer offer) {
-      message.append(new Invitation(XMPP.jid())).append(new Reason(offer.description()));
+      message.append(new Invitation(XMPP.jid())).append(new Reason(offer.description())).append(this);
     }
   }
 
@@ -59,12 +63,20 @@ public class Operations {
 
   @XmlRootElement
   public static class Resume extends Item {
+    @XmlAttribute
+    private Long timeout;
+
     @XmlElementRef
     private Offer offer;
     public Resume() { }
 
     public Resume(Offer offer) {
       this.offer = offer;
+    }
+
+    public Resume(Offer offer, FiniteDuration inviteTimeout) {
+      this.offer = offer;
+      timeout = inviteTimeout.toMillis();
     }
 
     public Offer offer() {

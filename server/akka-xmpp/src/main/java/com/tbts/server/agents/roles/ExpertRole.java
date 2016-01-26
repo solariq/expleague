@@ -48,7 +48,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 if (presence.available()) {
                     stopTimer();
                     if (!task.isEmpty()) {
-                        XMPP.send(new Message(XMPP.jid(), jid(), new Resume(task.offer())), context());
+                        XMPP.send(new Message(XMPP.jid(), jid(), new Resume(task.offer(), INVITE_TIMEOUT)), context());
                         timer = AkkaTools.scheduleTimeout(context(), INVITE_TIMEOUT, self());
                         return goTo(State.INVITE);
                     }
@@ -77,6 +77,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
             (resume, zero) -> zero == null,
             (resume, zero) -> {
               stopTimer();
+              XMPP.send(new Message(XMPP.jid(), jid(), new Resume(resume.offer(), INVITE_TIMEOUT)), context());
               return goTo(State.BUSY).using(new Task(true).appendVariant(resume.offer(), sender()));
             }
         ).event(Timeout.class,
@@ -119,6 +120,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
             (invite, task) -> {
               stopTimer();
               final Message message = new Message(task.offer().room(), jid(), task.offer());
+              invite.timeout = INVITE_TIMEOUT.toMillis();
               invite.form(message, task.offer());
               XMPP.send(message, context());
               timer = AkkaTools.scheduleTimeout(context(), INVITE_TIMEOUT, self());
@@ -192,7 +194,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               log.fine("Expert timed out the invitation: " + timeout.duration());
               XMPP.send(new Message(XMPP.jid(), jid(), task.offer(), new Cancel()), context());
               task.broker().tell(new Cancel(), self());
-              return goTo(State.READY).using(new Task(false));
+              return goTo(State.READY).using(new Task(true));
             }
         ).event(
             Presence.class,
@@ -223,7 +225,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 task.broker().tell(new Cancel(), self());
                 return goTo(State.READY).using(new Task(true));
               }
-              if (msg.has(Done.class) || msg.body().startsWith("{")){ // hack for answer
+              if (msg.has(Done.class) || (msg.body().startsWith("{") && msg.type() == Message.MessageType.GROUP_CHAT)){ // hack for answer
                 task.broker().tell(new Done(), self());
                 return goTo(State.READY).using(new Task(false));
               }
@@ -248,7 +250,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     });
 
     onTransition((from, to) -> {
-      final Offer first = nextStateData() != null && nextStateData().chosen()? nextStateData().offer() : null;
+      final Offer first = nextStateData() != null && nextStateData().chosen() ? nextStateData().offer() : null;
       log.fine(from + " -> " + to + (first != null ? " " + first : ""));
     });
 
@@ -273,6 +275,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
   private void stopTimer() {
     if (timer != null)
       timer.cancel();
+    timer = null;
   }
 
   public JID jid() {
@@ -315,6 +318,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
         }
       }
       XMPP.send(new Message(XMPP.jid(), jid(), offers.get(winner)), context());
+      stopTimer();
       timer = AkkaTools.scheduleTimeout(context(), CHECK_TIMEOUT, self());
       offers = Collections.singletonList(offers.get(winner));
       brokers = Collections.singletonList(brokers.get(winner));

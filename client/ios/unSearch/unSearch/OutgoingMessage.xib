@@ -12,22 +12,21 @@
             <rect key="frame" x="0.0" y="0.0" width="322" height="54"/>
             <autoresizingMask key="autoresizingMask"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Rsw-WY-Q0D" id="pTU-4Q-ZpM">
-                <rect key="frame" x="0.0" y="0.0" width="322" height="53"/>
+                <rect key="frame" x="0.0" y="0.0" width="322" height="53.5"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="UserPlaceholder" translatesAutoresizingMaskIntoConstraints="NO" id="xYm-j6-wLH" userLabel="avatar">
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="client_icon_black" translatesAutoresizingMaskIntoConstraints="NO" id="xYm-j6-wLH" userLabel="avatar">
                         <rect key="frame" x="287" y="10" width="35" height="35"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="35" id="8kN-P1-2yc"/>
                             <constraint firstAttribute="height" constant="35" id="adJ-KY-a2x"/>
                         </constraints>
                     </imageView>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble_white" translatesAutoresizingMaskIntoConstraints="NO" id="ZjN-mD-VMH">
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble_blue_tail_right" translatesAutoresizingMaskIntoConstraints="NO" id="ZjN-mD-VMH">
                         <rect key="frame" x="0.0" y="0.0" width="287" height="53"/>
                     </imageView>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0tF-CD-ELP">
                         <rect key="frame" x="8" y="8" width="261" height="37"/>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                 </subviews>
                 <constraints>
@@ -52,7 +51,7 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="UserPlaceholder" width="40" height="40"/>
-        <image name="bubble_white" width="193" height="53"/>
+        <image name="bubble_blue_tail_right" width="190" height="49"/>
+        <image name="client_icon_black" width="637" height="637"/>
     </resources>
 </document>
