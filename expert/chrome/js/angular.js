@@ -1,4 +1,4 @@
-﻿﻿﻿knuggetSidebar.controller('KNUGGET_SIDEBAR_CTRL', ['$window', '$scope', '$interval', '$controller', '$timeout', '$rootScope', 'dataService', 'dialogService', function ($window, $scope, $interval, $controller, $timeout, $rootScope, dataService, dialogService) {
+﻿﻿﻿knuggetSidebar.controller('KNUGGET_SIDEBAR_CTRL', ['$window', '$scope', '$interval', '$controller', '$timeout', '$rootScope', 'dataService', 'dialogService', '$q', function ($window, $scope, $interval, $controller, $timeout, $rootScope, dataService, dialogService, $q) {
 
     //var mapOptions = {
     //    zoom: 4,
@@ -328,17 +328,27 @@
                     newVal.forEach(function(request) {
                         index = $scope.findRequest(oldVal, request);
                         if (index < 0) {
-                            console.log("send notification: " + request.question);
-                           KNUGGET.api("Notify", {id: request.id, owner: request.owner, tag: "new-request",body : request.question}, function (resp){
-                               req = $scope.requests.getSame(request);
-                               if (resp.status == 200) {
-                                   $scope.showQuestion(req);
-                               } else if (resp.status == 501) {
-                                   //$interval.cancel($scope.requests.confirmTimer);
-                                   $scope.rejectRequest(req);
-                               }
-                               $scope.$apply();
-                           });
+                            if (request.isResumed) {
+                                $scope.forceCloseDialog();
+                                $scope.activateRequest(request);
+                            } else {
+                                console.log("send notification: " + request.question);
+                                KNUGGET.api("Notify", {
+                                    id: request.id,
+                                    owner: request.owner,
+                                    tag: "new-request",
+                                    body: request.question
+                                }, function (resp) {
+                                    var req = $scope.requests.getSame(request);
+                                    if (resp.status == 200) {
+                                        $scope.showQuestion(req);
+                                    } else if (resp.status == 501) {
+                                        //$interval.cancel($scope.requests.confirmTimer);
+                                        $scope.rejectRequest(req);
+                                    }
+                                    $scope.$apply();
+                                });
+                            }
                        }
                     });
                 }
@@ -538,8 +548,9 @@
         available: true,
 
         makeUnavailable: function() {
-            $scope.finishRequest();
-            KNUGGET.api("Available", {isAvailable: false}, function () { });
+            $scope.finishRequest().then(function(responce) {
+                KNUGGET.api("Available", {isAvailable: false}, function () { });
+            });
         },
         makeAvailable: function() {
             KNUGGET.api("Available", {isAvailable: true}, function () { });
@@ -735,14 +746,18 @@
 
 
     $scope.finishRequest = function() {
+        var defer = $q.defer();
         $scope.activeRequest.get(function(request) {
-            KNUGGET.api("Finish", {request: request}, function () { });
-            $scope.board.clear();
-            $scope.requests.clear();
-            $scope.activeRequest.set(null);
-            KNUGGET.storage.set("ChatLog", JSON.stringify([]));
-            KNUGGET.storage.set("AddTrigger", {shouldAdd: false});
+            KNUGGET.api("Finish", {request: request}, function () {
+                $scope.board.clear();
+                $scope.requests.clear();
+                $scope.activeRequest.set(null);
+                KNUGGET.storage.set("ChatLog", JSON.stringify([]));
+                KNUGGET.storage.set("AddTrigger", {shouldAdd: false});
+                defer.resolve({status: 200});
+            });
         });
+        return defer.promise;
     };
 
     $scope.logout = function ($event) {

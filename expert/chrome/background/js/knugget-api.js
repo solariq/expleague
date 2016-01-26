@@ -158,6 +158,19 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             callback();
         };
 
+        this.addResumeListener = function(listener) {
+            this.connection.addHandler(function(msg) {
+                //don't handle messages, that have something except 'offer' or 'cancel'
+                var resume = findByTagName(msg.childNodes, 'resume');
+                if (resume) {
+                    var offer = findByTagName(resume.childNodes, 'offer');
+                    offer = new Offer(offer);
+                    listener(msg.getAttribute('id'), msg.getAttribute('from'), offer);
+                }
+                return true;
+            }, null, 'message', null, null, null);
+        };
+
         this.addOfferListener = function(listener) {
             this.connection.addHandler(function(msg) {
                 //don't handle messages, that have something except 'offer' or 'cancel'
@@ -332,7 +345,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                 }
                 latestOffer = invite.offer;
                 //todo kvv insert real img url
-                question = {
+                var question = {
                     question: invite.subj,
                     owner: invite.owner,
                     time: invite.time,
@@ -341,7 +354,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                     img: 'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg',
                     confirmExpireTime: Date.now() + 965 * 1000,
                     resolveExpireTime: Date.now() + 9150 * 1000,
-                    map: { center: { latitude: 59.977755, longitude: 30.3343742 }, zoom: 15}
+                    map: { center: { latitude: 59.977755, longitude: 30.3343742 }, zoom: 15},
+                    isResumed: invite.isResumed ? true : false
                 };
                 addQuestion(question, function(){});
             }
@@ -599,10 +613,11 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                         to: latestOffer.room,
                         text: JSON.stringify({
                             type: 'SYNCMSG',
+                            key: key,
                             data: data[key]
                         })
                     };
-                    //jabberClient.send(sync, 'chat', function () {});
+                    jabberClient.send(sync, 'chat', function () {});
                 }
                 console.log(data.newValue);
             }
@@ -701,6 +716,15 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                         defer.resolve({status: 200});
                     }
                 );
+                if (latestOffer) {
+                    var msg = $msg({to: jabberClient.host, from: jabberClient.connection.jid, type: 'chat'})
+                        .c('done')
+                        .attrs({xmlns: "http://expleague.com/scheme"})
+                        .up()
+                        .cnode(latestOffer.node);
+                    jabberClient.unsafeSend(msg, function(){});
+                    latestOffer = null;
+                }
                 stateController.setState(ExpertState.READY);
             });
             return defer.promise;
@@ -901,6 +925,23 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                 } else {
                     stateController.setState(ExpertState.READY, null);
                 }
+            });
+
+            jabberClient.addResumeListener(function(id, from, offer) {
+                //todo make function offer -> request
+                var invite = {};
+                invite.subj = offer.subj;
+                invite.owner = offer.client;
+                invite.room = offer.room.replace("/client", "");
+                invite.time= new Date().getTime();
+                invite.img = 'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg';
+                invite.confirmExpireTime =  Date.now() + 965 * 1000;
+                invite.resolveExpireTime = Date.now() + 9150 * 1000;
+                invite.map = { center: { latitude: 59.977755, longitude: 30.3343742 }, zoom: 15};
+                invite.offer = offer;
+                //set resuming prop
+                invite.isResumed = true;
+                stateController.setState(ExpertState.INVITE, invite);
             });
 
             //jabberClient.addMessageListener(function(body, msg) {
