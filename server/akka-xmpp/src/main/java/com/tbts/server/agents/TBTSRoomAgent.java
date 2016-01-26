@@ -43,7 +43,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
       invoke(new Message(jid, null, MessageType.GROUP_CHAT, "Welcome to room " + jid));
     partisipants.add(XMPP.jid().bare());
     if (owner() != null) {
-      partisipants.add(owner);
+      partisipants.add(owner.bare());
     }
   }
 
