@@ -12,10 +12,10 @@
             <rect key="frame" x="0.0" y="0.0" width="322" height="54"/>
             <autoresizingMask key="autoresizingMask"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Rsw-WY-Q0D" id="pTU-4Q-ZpM">
-                <rect key="frame" x="0.0" y="0.0" width="322" height="53"/>
+                <rect key="frame" x="0.0" y="0.0" width="322" height="53.5"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="UserPlaceholder" translatesAutoresizingMaskIntoConstraints="NO" id="xYm-j6-wLH" userLabel="avatar">
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="client_icon_black" translatesAutoresizingMaskIntoConstraints="NO" id="xYm-j6-wLH" userLabel="avatar">
                         <rect key="frame" x="287" y="10" width="35" height="35"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="35" id="8kN-P1-2yc"/>
@@ -51,7 +51,7 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="UserPlaceholder" width="40" height="40"/>
         <image name="bubble_blue_tail_right" width="190" height="49"/>
+        <image name="client_icon_black" width="637" height="637"/>
     </resources>
 </document>
