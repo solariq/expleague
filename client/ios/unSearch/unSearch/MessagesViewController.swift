@@ -58,6 +58,32 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
     
     func chatInput(chatInput: ChatInputViewController, didSend text: String) -> Bool {
         if (data?.order != nil) {
+            if (!AppDelegate.instance.stream.isConnected()) {
+                let alertView = UIAlertController(title: "Experts League", message: "Connecting to server.\n\n", preferredStyle: .Alert)
+                let completion = {
+                    //  Add your progressbar after alert is shown (and measured)
+                    let progressController = AppDelegate.instance.connectionProgressView
+                    let rect = CGRectMake(0, 54.0, alertView.view.frame.width, 50)
+                    progressController.completion = {
+                        self.input.send(self)
+                    }
+                    progressController.view.frame = rect
+                    progressController.view.backgroundColor = alertView.view.backgroundColor
+                    alertView.view.addSubview(progressController.view)
+                    progressController.alert = alertView
+                    AppDelegate.instance.connect()
+                    //                progressController.alert = alertView
+                }
+                alertView.addAction(UIAlertAction(title: "Retry", style: .Default, handler: {(x: UIAlertAction) -> Void in
+                    AppDelegate.instance.disconnect()
+                    self.input.send(self)
+                }))
+                alertView.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
+                presentViewController(alertView, animated: true, completion: completion)
+                return false
+            }
+
+            AppDelegate.instance.connect()
             data?.order?.send(text)
         }
         else {
