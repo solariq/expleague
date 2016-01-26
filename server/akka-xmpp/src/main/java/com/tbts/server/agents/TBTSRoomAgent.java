@@ -85,7 +85,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   public void invoke(Message msg) {
     if (msg.type() == MessageType.GROUP_CHAT) {
       if (owner() != null && !partisipant(msg.from())) {
-        final Message message = new Message(jid, msg.from(), MessageType.GROUP_CHAT, "Сообщение не доставленно. Вы не являетесь участником задания! Известные участники: "
+        final Message message = new Message(jid, msg.from(), MessageType.GROUP_CHAT, "Сообщение от " + msg.from() + " не доставленно. Вы не являетесь участником задания! Известные участники: "
                 + partisipants.stream().map(JID::toString).collect(Collectors.joining(", ")) + ".");
         message.append(msg);
         XMPP.send(message, context());
