@@ -276,7 +276,7 @@ class ChatMessage {
                     let label = UILabel()
                     label.text = text
                     label.font = defaultFont
-                    label.textColor = cell!.incoming ? UIColor.whiteColor() : UIColor.blackColor()
+                    label.textColor = cell!.incoming ? UIColor.blackColor() : UIColor.whiteColor()
                     label.lineBreakMode = .ByWordWrapping
                     label.textAlignment = .Left
                     label.numberOfLines = 0
@@ -285,7 +285,7 @@ class ChatMessage {
                 else if let richText = parts[i] as? NSAttributedString {
                     let label = UILabel()
                     label.attributedText = richText
-                    label.textColor = cell!.incoming ? UIColor.whiteColor() : UIColor.blackColor()
+                    label.textColor = cell!.incoming ? UIColor.blackColor() : UIColor.whiteColor()
                     label.lineBreakMode = .ByWordWrapping
                     label.textAlignment = .Left
                     label.numberOfLines = 0
@@ -299,7 +299,11 @@ class ChatMessage {
                 else if let action = parts[i] as? ChatAction {
                     let button = UIButton(type: .Custom)
                     button.setTitle(action.caption, forState: .Normal)
-                    button.addTarget(action, action: "push", forControlEvents: [.PrimaryActionTriggered])
+                    if #available(iOS 9.0, *) {
+                        button.addTarget(action, action: "push", forControlEvents: .PrimaryActionTriggered)
+                    } else {
+                        button.addTarget(action, action: "push", forControlEvents: .TouchUpInside)
+                    }
                     block = button
                 }
                 if (block != nil) {
