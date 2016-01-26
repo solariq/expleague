@@ -102,7 +102,7 @@ public class JID implements Serializable, Cloneable {
 //    if (to != null && this.bare.equals(to.bare) && this.bare != to.bare)
 //      System.out.println();
     //noinspection StringEquality
-    return to != null && this.bare == to.bare;
+    return to != null && this.bare.equals(to.bare);
   }
 
   public String local() {
