@@ -1,19 +1,8 @@
 {
   "images" : [
     {
-      "resizing" : {
-        "mode" : "3-part-vertical",
-        "center" : {
-          "mode" : "tile",
-          "height" : 405
-        },
-        "cap-insets" : {
-          "top" : 0,
-          "bottom" : 0
-        }
-      },
       "idiom" : "universal",
-      "filename" : "owl-icon_white.pdf",
+      "filename" : "blue_bubble_tail.png",
       "scale" : "1x"
     },
     {
