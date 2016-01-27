@@ -2,6 +2,7 @@ package com.tbts.server.agents;
 
 import akka.actor.ActorContext;
 import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
 import akka.actor.Props;
 import akka.pattern.AskableActorSelection;
 import akka.util.Timeout;
@@ -104,6 +105,10 @@ public class XMPP extends UntypedActorAdapter {
 
   public static void subscribe(JID forJid, ActorRef ref, ActorContext context) {
     context.actorSelection(XMPP_ACTOR_PATH).tell(new Subscribe(JID.parse(ref.path().name()), forJid), ref);
+  }
+
+  public static ActorSelection agent(JID room, ActorContext context) {
+    return context.actorSelection(XMPP_ACTOR_PATH + "/" + room.bare().toString());
   }
 
   public static class Subscribe {
