@@ -33,6 +33,11 @@ class ExpLeagueProfile: NSManagedObject {
         }
     }
     
+    private dynamic var listeners: NSMutableArray = []
+    func track(tracker: XMPPPresenceTracker) {
+        listeners.addObject(Weak(tracker))
+    }
+    
     override func awakeFromFetch() {
         orderSelected = Int16(orders.count - 1)
     }
@@ -193,6 +198,14 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
         log(String(presence))
         if let user = presence.from().user, let order = order(name: user) {
             order.presence(presence: presence)
+        }
+        for listenerRef in listeners.copy() as! NSArray {
+            if let listener = (listenerRef as! Weak<XMPPPresenceTracker>).value {
+                listener.onPresence?(presence: presence)
+            }
+            else {
+                listeners.removeObject(listenerRef)
+            }
         }
     }
     

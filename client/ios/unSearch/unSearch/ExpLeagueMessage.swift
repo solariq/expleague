@@ -27,7 +27,7 @@ class ExpLeagueMessage: NSManagedObject {
             if (self.from == "me") {
                 self.type = .ClientMessage
             }
-            else if (self.from.isEmpty) {
+            else if (self.from.isEmpty || (attrs["from"] != nil && msg.from().resource == nil)) {
                 self.type = .SystemMessage
             }
             else {
@@ -37,7 +37,32 @@ class ExpLeagueMessage: NSManagedObject {
         else {
             self.type = .TopicStarter
         }
-        self.body = textChildren.count > 0 ? textChildren[0].stringValue : nil
+        if (type == .SystemMessage) {
+            let properties = NSMutableDictionary()
+            if let element = msg.elementForName("expert", xmlns: "http://expleague.com/scheme") {
+                properties["type"] = "expert"
+                properties["login"] = element.attributeStringValueForName("login")
+                properties["name"] = element.attributeStringValueForName("name")
+                properties["tasks"] = element.attributeStringValueForName("tasks")
+            }
+            else if (!textChildren.isEmpty && textChildren[0].stringValue.hasPrefix("{\"type\":\"visitedPages\"")) {
+                do {
+                    let json = try NSJSONSerialization.JSONObjectWithData(textChildren[0].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!, options: NSJSONReadingOptions.AllowFragments)
+                    properties.addEntriesFromDictionary(json as! [NSObject : AnyObject])
+                }
+                catch {
+                    AppDelegate.instance.activeProfile?.log("\(error)")
+                }
+            }
+            let data = NSMutableData()
+            let archiver = NSKeyedArchiver(forWritingWithMutableData: data)
+            archiver.encodeObject(properties)
+            archiver.finishEncoding()
+            self.body = data.base64Encoded()
+        }
+        else {
+            self.body = textChildren.count > 0 ? textChildren[0].stringValue : nil
+        }
         self.time = attrs["time"] != nil ? Double(attrs["time"] as! String)!: CFAbsoluteTimeGetCurrent()
         do {
             try self.managedObjectContext!.save()
@@ -68,7 +93,19 @@ class ExpLeagueMessage: NSManagedObject {
         return self.type == .SystemMessage || self.type == .ExpertMessage
     }
     
+    var properties: NSDictionary {
+        if (self.type == .SystemMessage && self.body != nil) {
+            let data = NSData(base64EncodedString: self.body!, options: [])
+            let archiver = NSKeyedUnarchiver(forReadingWithData: data!)
+            return archiver.decodeObject() as! NSDictionary
+        }
+        return NSDictionary();
+    }
+    
     func visitParts(visitor: ExpLeagueMessageVisitor) {
+        if (type == .SystemMessage) {
+            return
+        }
         if (body != nil && body!.hasPrefix("{")) {
             do {
                 let json = try NSJSONSerialization.JSONObjectWithData(body!.dataUsingEncoding(NSUTF8StringEncoding)!, options: NSJSONReadingOptions.AllowFragments)
@@ -122,7 +159,9 @@ class ExpLeagueMessage: NSManagedObject {
             }
         }
         else {
-            visitor.message(self, text: body!)
+            if (body != nil) {
+                visitor.message(self, text: body!)
+            }
         }
     }
 }

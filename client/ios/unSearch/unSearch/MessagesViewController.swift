@@ -16,7 +16,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
     let scrollView = UIScrollView()
     let input = ChatInputViewController(nibName: "ChatInput", bundle: nil)
     let messagesView = UITableView();
-    private let answerView = UIWebView();
+    let answerView = UIWebView();
     var data: ChatMessagesModel?
     
     private var answerText: String = "<html><body>"
@@ -46,8 +46,13 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
         answerView.loadHTMLString("", baseURL: nil)
         messagesView.registerNib(UINib(nibName: "IncomingMessage", bundle: nil), forCellReuseIdentifier: String(CellType.Incoming))
         messagesView.registerNib(UINib(nibName: "OutgoingMessage", bundle: nil), forCellReuseIdentifier: String(CellType.Outgoing))
+        messagesView.registerNib(UINib(nibName: "LookingForExpert", bundle: nil), forCellReuseIdentifier: String(CellType.LookingForExpert))
+        messagesView.registerNib(UINib(nibName: "AnswerReceived", bundle: nil), forCellReuseIdentifier: String(CellType.AnswerReceived))
+        messagesView.registerNib(UINib(nibName: "ExpertInProgress", bundle: nil), forCellReuseIdentifier: String(CellType.ExpertInProgress))
+        messagesView.registerNib(UINib(nibName: "Setup", bundle: nil), forCellReuseIdentifier: String(CellType.Setup))
+        messagesView.registerNib(UINib(nibName: "Feedback", bundle: nil), forCellReuseIdentifier: String(CellType.Feedback))
         messagesView.separatorStyle = .None
-        messagesView.backgroundColor = UIColor(red: 218.0/256.0, green: 234.0/256.0, blue: 239.0/256.0, alpha: 1.0)
+        messagesView.backgroundColor = ChatCell.bgColor
         scrollView.backgroundColor = messagesView.backgroundColor
 
         messagesView.backgroundView = nil
@@ -87,9 +92,9 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
             data?.order?.send(text)
         }
         else {
-            let message = ChatMessage()
+            let message = ChatMessageModel(incoming: true, author: "me")
             message.append(text: text, time: NSDate().timeIntervalSince1970)
-            data?.messages.append(message)
+            data?.cells.append(message)
             messagesView.reloadData()
             scrollView.scrollRectToVisible(messagesView.frame, animated: true)
             dispatch_async(dispatch_get_main_queue(), {
@@ -133,12 +138,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
         super.viewWillAppear(animated)
         answerText = "<html><body>"
         answerAppend("")
-        if (order == nil) {
-            data = DemoChatMessagesModel(parent: self)
-        }
-        else {
-            data = ChatMessagesModel(order: order, parent: self)
-        }
+        data = ChatMessagesModel(order: order, parent: self)
         messagesView.dataSource = data
         messagesView.delegate = data
 
@@ -209,271 +209,85 @@ class ChatAction: NSObject {
     }
 }
 
-class ChatMessage {
-    let defaultFont: UIFont = UIFont(name: "Helvetica Neue", size: 14)!
-    let separatorHeight: CGFloat = 8
-    
-    var author: String?
-    
-    private var parts:[AnyObject] = []
-    private var timeStamps: [NSTimeInterval] = []
-    private var incoming = false
-    
-    func append(text text: String, time: NSTimeInterval) {
-        parts.append(text)
-        timeStamps.append(time)
-    }
-
-    func append(richText text: NSAttributedString, time: NSTimeInterval) {
-        parts.append(text)
-        timeStamps.append(time)
-    }
-
-    func append(image img: UIImage, time: NSTimeInterval) {
-        parts.append(img)
-        timeStamps.append(time)
-    }
-
-    func append(action run: () -> Void, caption: String, time: NSTimeInterval) {
-        parts.append(ChatAction(action: run, caption: caption))
-        timeStamps.append(time)
-    }
-
-    func size(width width: CGFloat) -> CGSize {
-        var size = CGSizeMake(0, 0)
-        for i in 0 ..< parts.count {
-            if (i > 0) {
-                size.height += separatorHeight
-            }
-            let blockSize = self.blockSize(width: width, index: i)
-            size.width = max(size.width, blockSize.width)
-            size.height += blockSize.height
-        }
-        return size;
-    }
-
-    private var cellInner: MessageView?
-    var cell: MessageView? {
-        get {
-            return cellInner
-        }
-        set(cell) {
-            for view in cell!.content.subviews{
-                view.removeFromSuperview()
-            }
-            cell!.content.autoresizesSubviews = false
-            cell!.content.autoresizingMask = .None
-            var height: CGFloat = 0.0
-            var width: CGFloat = 0.0
-            cell!.content.frame.size = size(width: cell!.contentWidth)
-
-            for i in 0 ..< parts.count {
-                if (i > 0) {
-                    height += separatorHeight
-                }
-                var block: UIView?
-                if let text = parts[i] as? String {
-                    let label = UILabel()
-                    label.text = text
-                    label.font = defaultFont
-                    label.textColor = cell!.incoming ? UIColor.blackColor() : UIColor.whiteColor()
-                    label.lineBreakMode = .ByWordWrapping
-                    label.textAlignment = .Left
-                    label.numberOfLines = 0
-                    block = label
-                }
-                else if let richText = parts[i] as? NSAttributedString {
-                    let label = UILabel()
-                    label.attributedText = richText
-                    label.textColor = cell!.incoming ? UIColor.blackColor() : UIColor.whiteColor()
-                    label.lineBreakMode = .ByWordWrapping
-                    label.textAlignment = .Left
-                    label.numberOfLines = 0
-                    block = label
-                }
-                else if let image = parts[i] as? UIImage {
-                    let imageView = UIImageView()
-                    imageView.image = image
-                    block = imageView
-                }
-                else if let action = parts[i] as? ChatAction {
-                    let button = UIButton(type: .Custom)
-                    button.setTitle(action.caption, forState: .Normal)
-                    if #available(iOS 9.0, *) {
-                        button.addTarget(action, action: "push", forControlEvents: .PrimaryActionTriggered)
-                    } else {
-                        button.addTarget(action, action: "push", forControlEvents: .TouchUpInside)
-                    }
-                    block = button
-                }
-                if (block != nil) {
-                    cell!.content.addSubview(block!)
-                    block!.frame.origin = CGPointMake(0, height)
-                    let blockSize = self.blockSize(width: cell!.contentWidth, index: i)
-                    block!.frame.size = blockSize
-                    height += blockSize.height
-                    width = max(width, blockSize.width)
-                }
-            }
-            cell!.contentSize = CGSizeMake(width, height)
-        }
-    }
-    
-    private func blockSize(width width: CGFloat, index: Int) -> CGSize {
-        let blockSize: CGSize
-        if let text = parts[index] as? String {
-            blockSize = text.boundingRectWithSize(
-                CGSizeMake(width, CGFloat(MAXFLOAT)),
-                options: NSStringDrawingOptions.UsesLineFragmentOrigin,
-                attributes: [
-                    NSFontAttributeName : defaultFont
-                ],
-                context: nil).size
-        }
-        else if let richText = parts[index] as? NSAttributedString {
-            blockSize = richText.boundingRectWithSize(
-                CGSizeMake(width, CGFloat(MAXFLOAT)),
-                options: NSStringDrawingOptions.UsesLineFragmentOrigin,
-                context: nil).size
-        }
-        else if let image = parts[index] as? UIImage {
-            var bs = image.size
-            bs.height *= bs.width / width
-            blockSize = bs
-        }
-        else if let _ = parts[index] as? ChatAction {
-            blockSize = CGSizeMake(width - 10, 40)
-        }
-        else {
-            blockSize = CGSizeMake(0, 0)
-        }
-        return blockSize
-    }
-}
-
 @objc
 class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
-    var lastKnownMessage: Int = 0
+    private var lastKnownMessage: Int = 0
+    private var haveActiveExpert = false
     let order: ExpLeagueOrder?
     let parent: MessagesVeiwController
     init(order: ExpLeagueOrder?, parent: MessagesVeiwController) {
         self.order = order
         self.parent = parent
         super.init()
-        if (order == nil) {
-            return
-        }
-        sync(order!)
-    }
-    
-    class AnswerVisitor: ExpLeagueMessageVisitor {
-        let parent: MessagesVeiwController
-        init(parent: MessagesVeiwController) {
-            self.parent = parent;
-        }
-        
-        func message(message: ExpLeagueMessage, text: String) {
-            parent.answerAppend("<p>\(text)</p>';")
-        }
-        
-        func message(message: ExpLeagueMessage, title: String, text: String) {
-            parent.answerAppend("<h3>\(title)</h3><p>\(text)</p>")
-        }
-        
-        func message(message: ExpLeagueMessage, title: String, link: String) {
-            parent.answerAppend("<a href=\"\(link)\">\(title)</a>")
-        }
-        func message(message: ExpLeagueMessage, title: String, image: UIImage) {
-            let data = UIImageJPEGRepresentation(image, 1.0)!
-            parent.answerAppend("<h3>\(title)</h3><img align='middle' src='data:image/jpeg;base64,\(data.base64EncodedStringWithOptions([]))'/>")
+        if (order != nil) {
+            sync(order!)
         }
     }
-    
-    class MessageVisitor: ExpLeagueMessageVisitor {
-        let model: ChatMessage
-        init(model: ChatMessage) {
-            self.model = model;
-        }
-        func message(message: ExpLeagueMessage, text: String) {
-            model.append(text: text, time: message.time)
-        }
-        
-        func message(message: ExpLeagueMessage, title: String, text: String) {
-            let result = NSMutableAttributedString()
-            result.appendAttributedString(NSAttributedString(string: title, attributes: [
-                NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleHeadline)
-                ]))
-            result.appendAttributedString(NSAttributedString(string: "\n" + text, attributes: [
-                NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
-                ]))
-            model.append(richText: result, time: message.time)
-        }
-        
-        func message(message: ExpLeagueMessage, title: String, link: String) {
-            model.append(
-                richText: NSAttributedString(string: title, attributes: [
-                        NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody),
-                        NSLinkAttributeName: link,
-                        NSForegroundColorAttributeName: UIColor.blueColor()
-                    ]),
-                time: message.time)
-        }
-        func message(message: ExpLeagueMessage, title: String, image: UIImage) {
-            model.append(
-                richText: NSAttributedString(
-                    string: title,
-                    attributes: [
-                        NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody),
-                        NSForegroundColorAttributeName: UIColor.blueColor()]),
-                time: message.time
-            )
-            model.append(image: image, time: message.time)
-        }
-    }
-    
+    var progressModel: ChatCellModel? = nil
     func sync(order: ExpLeagueOrder) {
-        var model: ChatMessage? = messages.last
+        if (cells.isEmpty) {
+            cells.append(SetupModel(order: order))
+        }
+        var model = cells.last!
         while (lastKnownMessage < order.count) {
             let msg = order.message(lastKnownMessage)
-            if (model == nil || model!.author != msg.from) {
-                model = ChatMessage()
-                model!.incoming = msg.incoming
-                model!.author = msg.from
-                messages.append(model!)
+            if (model is LookingForExpertModel || model is FeedbackModel) {
+                cells.removeLast();
+                model = cells.last!
             }
-            if (!msg.isAnswer) {
-                msg.visitParts(MessageVisitor(model: model!))
+            if (msg.type == .SystemMessage) {
+                if (progressModel == nil || !progressModel!.accept(msg)) {
+                    if (msg.properties["type"] as! NSString == "expert") {
+                        haveActiveExpert = true
+                        progressModel = ExpertInProgressModel()
+                        cells.append(progressModel!)
+                    }
+                }
+                else {
+                    lastKnownMessage++;
+                }
+            }
+            else if (!model.accept(msg)) { // switch model
+                if (msg.incoming) {
+                    if (msg.isAnswer) {
+                        model = AnswerReceivedModel(controller: parent)
+                        haveActiveExpert = false
+                        progressModel = nil
+                    }
+                    else {
+                        model = ChatMessageModel(incoming: true, author: msg.from)
+                    }
+                }
+                else {
+                    model = ChatMessageModel(incoming: false, author: "me")
+                    
+                }
+                cells.append(model)
             }
             else {
-                let id = "message-\(self.lastKnownMessage)"
-                self.parent.answerAppend("<div id=\"\(id)\"/>")
-                model!.append(
-                    action: {
-                        self.parent.scrollView.scrollRectToVisible(self.parent.answerView.frame, animated: true)
-                        self.parent.answerView.stringByEvaluatingJavaScriptFromString("document.getElementById('\(id)').scrollIntoView()")
-                    },
-                    caption: "Получен ответ",
-                    time: msg.time)
-
-                msg.visitParts(AnswerVisitor(parent: parent))
+                lastKnownMessage++
             }
-            lastKnownMessage++
+        }
+        if (!haveActiveExpert) {
+            if (model is AnswerReceivedModel) {
+                cells.append(FeedbackModel(controller: self.parent))
+            }
+            else {
+                cells.append(LookingForExpertModel(order: order))
+            }
         }
     }
 
-    var messages: [ChatMessage] = [];
+    var cells: [ChatCellModel] = [];
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return section > 0 ? 0 : messages.count;
+        return section > 0 ? 0 : cells.count;
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let message = messages[indexPath.item]
-        if (message.cell != nil) {
-            return message.cell!
-        }
-        let cell = tableView.dequeueReusableCellWithIdentifier(String(message.incoming ? CellType.Incoming : CellType.Outgoing), forIndexPath: indexPath) as! MessageView
-        message.cell = cell
+        let message = cells[indexPath.item]
+        let cell = tableView.dequeueReusableCellWithIdentifier(String(message.type), forIndexPath: indexPath) as! ChatCell
+        try! message.form(chatCell: cell)
         return cell
     }
     
@@ -482,52 +296,25 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         cell.contentView.backgroundColor = UIColor.clearColor()
     }
     
-    var models: [CellType: MessageView] = [:]
     func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        let message = messages[indexPath.item]
-        if (message.cell != nil) {
-            return message.cell!.frame.height
-        }
-        if (models[message.incoming ? .Incoming : .Outgoing] == nil) {
-            models[.Outgoing] = (tableView.dequeueReusableCellWithIdentifier(String(CellType.Outgoing)) as! MessageView)
-            models[.Incoming] = (tableView.dequeueReusableCellWithIdentifier(String(CellType.Incoming)) as! MessageView)
-        }
-        let model = models[message.incoming ? .Incoming : .Outgoing]!
-        let height = max(35 + 8, model.extraHeight + message.size(width: model.contentWidth).height)
-        //        let height = 24 + message.size(width: tableView.frame.size.width - 35 - 18 - 16).height
-        return height
+        let message = cells[indexPath.item]
+        return message.height(maxWidth: tableView.frame.size.width)
     }
 
     func scrollToLastMessage(tableView: UITableView) {
-        if (messages.count > 0) {
-            tableView.scrollToRowAtIndexPath(NSIndexPath(forItem: messages.count - 1, inSection: 0), atScrollPosition: .Top, animated: true)
+        if (cells.count > 0) {
+            tableView.scrollToRowAtIndexPath(NSIndexPath(forItem: cells.count - 1, inSection: 0), atScrollPosition: .Top, animated: true)
         }
-    }
-
-}
-
-
-@objc
-class DemoChatMessagesModel: ChatMessagesModel {
-    init(parent: MessagesVeiwController) {
-        super.init(order: nil, parent: parent)
-        var msg = ChatMessage()
-        msg.incoming = true;
-        msg.append(text: "Hello", time: NSDate().timeIntervalSince1970)
-        messages.append(msg)
-        msg = ChatMessage()
-        msg.incoming = false;
-        msg.append(richText: NSAttributedString(string: "Hello! Long long long text here, Long long long text here.", attributes: [
-            NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleHeadline)
-        ]), time: NSDate().timeIntervalSince1970)
-        messages.append(msg)
-        let title = "Well, come"
-        let text = "Come come come"
-        parent.answerAppend("<h3>\(title)</h3><p>\(text)</p>'")
     }
 }
 
 enum CellType: Int {
     case Incoming = 0
     case Outgoing = 1
+    case AnswerReceived = 2
+    case LookingForExpert = 3
+    case ExpertInProgress = 4
+    case Feedback = 5
+    case Setup = 6
+    case None = -1
 }

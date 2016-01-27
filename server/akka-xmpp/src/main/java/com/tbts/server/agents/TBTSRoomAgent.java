@@ -1,5 +1,7 @@
 package com.tbts.server.agents;
 
+import com.tbts.model.ExpertManager;
+import com.tbts.model.ExpertsProfile;
 import com.tbts.model.Offer;
 import com.tbts.model.Operations;
 import com.tbts.server.dao.Archive;
@@ -97,10 +99,15 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
 
     if (msg.has(Operations.Start.class)) {
       enterRoom(msg.from());
+      XMPP.send(new Message(jid, owner(), ExpertManager.instance().profile(msg.from().bare())), context());
     }
-    if (msg.has(Operations.Cancel.class) || msg.has(Operations.Done.class)) {
+    else if (msg.has(Operations.Cancel.class) || msg.has(Operations.Done.class)) {
       exitRoom(msg.from());
     }
+    else if (!msg.from().bareEq(owner()) && msg.body().startsWith("{\"type\":\"visitedPages\"")) {
+      XMPP.send(new Message(jid, owner(), msg.body()), context());
+    }
+
 
     if (msg.from().bareEq(owner()) && !isOpen()) {
       final Offer offer = offer();

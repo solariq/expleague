@@ -11,32 +11,55 @@ import CoreData
 import JSQMessagesViewController
 import XMPPFramework
 
-class ExpLeagueOrder: NSManagedObject {
-    override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
-        super.init(entity: entity, insertIntoManagedObjectContext: context)
-    }
-
-    init(_ roomId: String, topic: String, urgency: String, local: Bool, specific: Bool, context: NSManagedObjectContext) {
-        super.init(entity: NSEntityDescription.entityForName("Order", inManagedObjectContext: context)!, insertIntoManagedObjectContext: context)
-        self.started = CFAbsoluteTimeGetCurrent()
-        self.id = roomId.lowercaseString
-        self.topic = topic
-        self.flags |= local ? ExpLeagueOrderFlags.LocalTask.rawValue : 0
-        self.flags |= specific ? ExpLeagueOrderFlags.SpecificTask.rawValue : 0
-        self.flags += ExpLeagueOrder.urgencyDict[urgency]!
-        do {
-            try self.managedObjectContext!.save()
-        } catch {
-            fatalError("Failure to save context: \(error)")
-        }
-    }
+class Weak<T: AnyObject> {
+    weak var value: T?
     
+    init(_ value: T) {
+        self.value = value
+    }
+}
+
+@objc
+class XMPPPresenceTracker: NSObject {
+    let onPresence: ((presence: XMPPPresence) -> Void)?
+    init(onPresence: ((presence: XMPPPresence) -> Void)?) {
+        self.onPresence = onPresence
+    }
+}
+
+class ExpLeagueOrder: NSManagedObject {
     var stream: XMPPStream {
         return AppDelegate.instance.stream
     }
 
     var count: Int {
         return messagesRaw.count
+    }
+    
+    var isOpen: Bool {
+        return (self.flags & ExpLeagueOrderFlags.Closed.rawValue) == 0
+    }
+    
+    var before: NSTimeInterval {
+        var duration: NSTimeInterval = 0
+        ExpLeagueOrder.urgencyDict.forEach({
+            if($1 & self.flags != 0) {
+                switch($0){
+                case "asap":
+                    duration = 60 * 60
+                    break
+                case "day":
+                    duration = 24 * 60 * 60
+                    break
+                case "week":
+                    duration = 7 * 24 * 60 * 60
+                    break
+                default:
+                    duration = 0;
+                }
+            }
+        })
+        return started + duration
     }
     
     func message(index: Int) -> ExpLeagueMessage {
@@ -61,12 +84,24 @@ class ExpLeagueOrder: NSManagedObject {
         }
         AppDelegate.instance.messagesView?.onMessage(message)
     }
+
+    private dynamic var listeners: NSMutableArray = []
+    func track(tracker: XMPPPresenceTracker) {
+        listeners.addObject(Weak(tracker))
+    }
     
     func iq(iq iq: XMPPIQ) {
     }
     
     func presence(presence presence: XMPPPresence) {
-        
+        for listenerRef in listeners.copy() as! NSArray {
+            if let listener = (listenerRef as! Weak<XMPPPresenceTracker>).value {
+                listener.onPresence?(presence: presence)
+            }
+            else {
+                listeners.removeObject(listenerRef)
+            }
+        }
     }
     
     func send(text: String) {
@@ -85,9 +120,28 @@ class ExpLeagueOrder: NSManagedObject {
         "day" : 128,
         "week" : 0
     ]
+    override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
+        super.init(entity: entity, insertIntoManagedObjectContext: context)
+    }
+    
+    init(_ roomId: String, topic: String, urgency: String, local: Bool, specific: Bool, context: NSManagedObjectContext) {
+        super.init(entity: NSEntityDescription.entityForName("Order", inManagedObjectContext: context)!, insertIntoManagedObjectContext: context)
+        self.started = CFAbsoluteTimeGetCurrent()
+        self.id = roomId.lowercaseString
+        self.topic = topic
+        self.flags |= local ? ExpLeagueOrderFlags.LocalTask.rawValue : 0
+        self.flags |= specific ? ExpLeagueOrderFlags.SpecificTask.rawValue : 0
+        self.flags += ExpLeagueOrder.urgencyDict[urgency]!
+        do {
+            try self.managedObjectContext!.save()
+        } catch {
+            fatalError("Failure to save context: \(error)")
+        }
+    }
 }
 
 enum ExpLeagueOrderFlags: Int16 {
     case LocalTask = 16384
     case SpecificTask = 8196
+    case Closed = 4096
 }

@@ -8,25 +8,25 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="Incoming" rowHeight="56" id="Em6-Hl-a3b" customClass="MessageView" customModule="unSearch">
-            <rect key="frame" x="0.0" y="0.0" width="321" height="56"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="Incoming" rowHeight="304" id="Em6-Hl-a3b" customClass="MessageChatCell" customModule="unSearch">
+            <rect key="frame" x="0.0" y="0.0" width="367" height="304"/>
             <autoresizingMask key="autoresizingMask"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Em6-Hl-a3b" id="Nb7-0I-srg">
-                <rect key="frame" x="0.0" y="0.0" width="321" height="55"/>
+                <rect key="frame" x="0.0" y="0.0" width="367" height="303"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble_white_tail_left" translatesAutoresizingMaskIntoConstraints="NO" id="8Nj-Pv-nQQ" userLabel="Bubble">
-                        <rect key="frame" x="35" y="0.0" width="286" height="55"/>
+                        <rect key="frame" x="35" y="0.0" width="332" height="303"/>
                     </imageView>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="owl_white" translatesAutoresizingMaskIntoConstraints="NO" id="Ehc-KT-x6o" userLabel="Avatar">
-                        <rect key="frame" x="0.0" y="12" width="35" height="35"/>
+                        <rect key="frame" x="0.0" y="260" width="35" height="35"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="35" id="7hD-OL-iAF"/>
                             <constraint firstAttribute="width" constant="35" id="aQ3-33-mNJ"/>
                         </constraints>
                     </imageView>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Cbx-yh-ZRR">
-                        <rect key="frame" x="53" y="8" width="260" height="39"/>
+                        <rect key="frame" x="53" y="8" width="306" height="287"/>
                     </view>
                 </subviews>
                 <constraints>
@@ -43,11 +43,11 @@
                 </constraints>
             </tableViewCellContentView>
             <connections>
-                <outlet property="avatar" destination="Ehc-KT-x6o" id="hb4-Ue-cBr"/>
-                <outlet property="bubble" destination="8Nj-Pv-nQQ" id="U6a-6R-ABl"/>
-                <outlet property="content" destination="Cbx-yh-ZRR" id="bTF-i3-3Ir"/>
+                <outlet property="avatar" destination="Ehc-KT-x6o" id="Nki-CV-iMc"/>
+                <outlet property="bubble" destination="8Nj-Pv-nQQ" id="agr-LW-97S"/>
+                <outlet property="content" destination="Cbx-yh-ZRR" id="DCu-FH-Af5"/>
             </connections>
-            <point key="canvasLocation" x="330.5" y="424"/>
+            <point key="canvasLocation" x="353.5" y="548"/>
         </tableViewCell>
     </objects>
     <resources>
