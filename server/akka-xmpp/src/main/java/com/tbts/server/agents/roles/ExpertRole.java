@@ -203,7 +203,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 stopTimer();
                 XMPP.send(new Message(XMPP.jid(), jid(), task.offer(), new Cancel()), context());
                 task.broker().tell(new Cancel(), self());
-                return goTo(State.READY).using(new Task(true));
+                return goTo(State.OFFLINE).using(new Task(true));
               }
               return stay();
             }
