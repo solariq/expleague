@@ -1,9 +1,6 @@
 package com.tbts.server.agents.roles;
 
-import akka.actor.AbstractFSM;
-import akka.actor.ActorRef;
-import akka.actor.Cancellable;
-import akka.actor.FSM;
+import akka.actor.*;
 import akka.util.Timeout;
 import com.spbsu.commons.util.Pair;
 import com.tbts.model.ExpertManager;
@@ -260,7 +257,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
 
   private FSM.State<State, Task> lookForExpert(Task task) {
     log.fine(task.offer.room() + " is looking for experts in state: " + stateName());
-    final ActorRef roomAgent = XMPP.register(task.offer.room(), context());
+    final ActorSelection roomAgent = XMPP.agent(task.offer.room(), context());
     task.roomStatus = AkkaTools.ask(roomAgent, TBTSRoomAgent.Status.class);
     task.refused.clear();
     experts(context()).tell(task.offer, self());
