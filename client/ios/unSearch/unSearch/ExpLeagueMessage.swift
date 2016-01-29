@@ -143,8 +143,13 @@ class ExpLeagueMessage: NSManagedObject {
                         if let title = imageItem["title"] as? String {
                             let urlStr = imageItem["image"] as! String
                             let storageName = urlStr.stringByReplacingOccurrencesOfString("/", withString: "-")
-                            if (AppDelegate.instance.activeProfile!.hasImage(storageName)) {
-                                visitor.message(self, title: title, image: AppDelegate.instance.activeProfile!.loadImage(storageName))
+                            if AppDelegate.instance.activeProfile!.hasImage(storageName) {
+                                if let image = AppDelegate.instance.activeProfile!.loadImage(storageName) {
+                                    visitor.message(self, title: title, image: image)
+                                }
+                                else {
+                                    visitor.message(self, title: title, text: urlStr)
+                                }
                             }
                             else if let url = NSURL(string: urlStr),
                                let data = NSData(contentsOfURL: url),
@@ -153,7 +158,7 @@ class ExpLeagueMessage: NSManagedObject {
                                 AppDelegate.instance.activeProfile!.saveImage(storageName, image: image)
                             }
                             else {
-                                visitor.message(self, title: title, text: imageItem["image"] as! String)
+                                visitor.message(self, title: title, text: urlStr)
                             }
                         }
                     }

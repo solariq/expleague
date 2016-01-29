@@ -96,9 +96,9 @@ class ExpLeagueProfile: NSManagedObject {
         UIImageJPEGRepresentation(image, 100)!.writeToFile("\(root)/\(self.name)/images/\(id)", atomically: true)
     }
     
-    func loadImage(id: String) -> UIImage {
+    func loadImage(id: String) -> UIImage? {
         let root = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
-        return UIImage(contentsOfFile: "\(root)/\(self.name)/images/\(id)")!
+        return UIImage(contentsOfFile: "\(root)/\(self.name)/images/\(id)")
     }
     
     
