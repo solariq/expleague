@@ -264,7 +264,7 @@ class ChatMessageModel: CompositeCellModel {
         super.form(messageViewCell: cell)
     }
     override func accept(message: ExpLeagueMessage) -> Bool {
-        if (message.from != author) {
+        if (message.from != author || message.isAnswer) {
             return false
         }
         return super.accept(message)

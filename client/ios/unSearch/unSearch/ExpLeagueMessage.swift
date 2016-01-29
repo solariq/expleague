@@ -121,8 +121,7 @@ class ExpLeagueMessage: NSManagedObject {
     }
     
     var isAnswer: Bool {
-//        return false
-        return body != nil && body!.hasPrefix("{")
+        return body != nil && body!.hasPrefix("{\"type\":\"response\"")
     }
     
     var parent: ExpLeagueOrder {
