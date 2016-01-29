@@ -282,6 +282,10 @@ class SetupModel: CompositeCellModel {
             let json = try! NSJSONSerialization.JSONObjectWithData(order.topic.dataUsingEncoding(NSUTF8StringEncoding)!, options: []) as! [String: AnyObject]
             let attachments = (json["attachments"] as! String).componentsSeparatedByString(", ")
             for attachment in attachments {
+                if (attachment.isEmpty) {
+                    continue
+                }
+                
                 let image = AppDelegate.instance.activeProfile!.loadImage(attachment)
                 append(image: image!, time: order.started)
             }

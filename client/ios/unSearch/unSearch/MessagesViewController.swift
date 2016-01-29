@@ -10,7 +10,24 @@ import Foundation
 import UIKit
 
 class MessagesVeiwController: UIViewController, ChatInputDelegate {
-    var order : ExpLeagueOrder?
+    var order: ExpLeagueOrder? {
+        didSet {
+            answerText = "<html><body>"
+            answerAppend("")
+            data = ChatMessagesModel(order: order, parent: self)
+            messagesView.dataSource = data
+            messagesView.delegate = data
+            messagesView.reloadData()
+            
+            if (order?.text.characters.count > 15) {
+                self.title = order!.text.substringToIndex(order!.topic.startIndex.advancedBy(15)) + "..."
+            }
+            else {
+                self.title = order?.text
+            }
+            self.title = order?.text
+        }
+    }
     
     let placeHolder = UIView();
     let scrollView = UIScrollView()
@@ -121,11 +138,14 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
     }
     
     override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
         tabBar.hidden = false;
+        AppDelegate.instance.activeProfile!.selected = nil
         NSNotificationCenter.defaultCenter().removeObserver(self);
     }
     
     override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
         coordinator.animateAlongsideTransition({(context: UIViewControllerTransitionCoordinatorContext) -> Void in
                 self.adjustSizes()
                 self.messagesView.reloadData()
@@ -136,28 +156,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        answerText = "<html><body>"
-        answerAppend("")
-        data = ChatMessagesModel(order: order, parent: self)
-        messagesView.dataSource = data
-        messagesView.delegate = data
-
         tabBar.hidden = true;
-//        if (order == nil) {
-//            let orders = AppDelegate.instance.activeProfile!.orders
-//            order = orders.count > 0 ? orders[orders.count - 1] as? ExpLeagueOrder : nil
-//        }
-//        collectionView?.collectionViewLayout!.messageBubbleFont = UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
-//        collectionView?.dataSource = order
-
-        
-        if (order?.text.characters.count > 15) {
-            self.title = order!.text.substringToIndex(order!.topic.startIndex.advancedBy(15)) + "..."
-        }
-        else {
-            self.title = order?.text
-        }
-        self.title = order?.text
     }
     
     override func viewDidAppear(animated: Bool) {

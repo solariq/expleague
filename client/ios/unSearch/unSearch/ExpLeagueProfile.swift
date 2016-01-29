@@ -58,12 +58,12 @@ class ExpLeagueProfile: NSManagedObject {
         return fit.count > 0 ? (fit[0] as! ExpLeagueOrder) : nil
     }
     
-    var selected: ExpLeagueOrder  {
+    var selected: ExpLeagueOrder? {
         set (order) {
-            self.orderSelected = Int16(orders.indexOfObject(order))
+            self.orderSelected = order != nil ? Int16(orders.indexOfObject(order!)) : -1
         }
         get {
-            return orders[Int(self.orderSelected)] as! ExpLeagueOrder
+            return (self.orderSelected >= 0 && Int(self.orderSelected) < orders.count) ? orders[Int(self.orderSelected)] as? ExpLeagueOrder : nil
         }
     }
     
@@ -124,7 +124,7 @@ class ExpLeagueProfile: NSManagedObject {
         let order = ExpLeagueOrder("room-" + login + "-" + rand, topic: String(NSString(data: topicJson, encoding: NSUTF8StringEncoding)!), urgency: urgency, local: local, specific: prof, context: self.managedObjectContext!);
         let presence = XMPPPresence(type: "available", to: order.jid);
         AppDelegate.instance.stream.sendElement(presence)
-        orderSelected = Int16(orders.count - 1)
+        orderSelected = Int16(orders.count)
         let mutableItems = orders.mutableCopy() as! NSMutableOrderedSet
         mutableItems.addObject(order)
         orders = mutableItems.copy() as! NSOrderedSet

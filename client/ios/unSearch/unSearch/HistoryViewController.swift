@@ -7,19 +7,34 @@ import Foundation
 import UIKit
 
 class HistoryViewController: UITableViewController {
-    private func order(index: Int) -> ExpLeagueOrder {
+    var keys: [ExpLeagueOrder] {
         let orders = AppDelegate.instance.activeProfile!.orders
-        let keys = orders.sortedArrayUsingComparator({
+        return orders.sortedArrayUsingComparator({
             let lhs = $0 as! ExpLeagueOrder
             let rhs = $1 as! ExpLeagueOrder
             
             return lhs.started < rhs.started ? .OrderedDescending : (lhs.started > rhs.started  ? .OrderedAscending : .OrderedSame);
-            })
-        return keys[index] as! ExpLeagueOrder;
+        }) as! [ExpLeagueOrder]
+    }
+    
+    private func order(index: Int) -> ExpLeagueOrder {
+        return keys[index]
     }
     
     override func viewDidLoad() {
+        super.viewDidLoad()
+        splitViewController!.delegate = self
         AppDelegate.instance.historyView = self
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        if let order = AppDelegate.instance.activeProfile!.selected {
+            let table = (self.view as! UITableView)
+            let path = NSIndexPath(forRow: keys.indexOf(order)!, inSection: 0)
+            table.selectRowAtIndexPath(path, animated: false, scrollPosition: .Top)
+            self.tableView(table, didSelectRowAtIndexPath: path)
+        }
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -42,5 +57,29 @@ class HistoryViewController: UITableViewController {
         AppDelegate.instance.activeProfile!.selected = o
         AppDelegate.instance.messagesView!.order = o
         splitViewController!.showDetailViewController(AppDelegate.instance.messagesView!, sender: nil)
+    }
+}
+
+
+extension HistoryViewController: UISplitViewControllerDelegate {
+    func splitViewController(svc: UISplitViewController, willChangeToDisplayMode displayMode: UISplitViewControllerDisplayMode) {
+        print(displayMode)
+    }
+    
+    func splitViewController(splitViewController: UISplitViewController, showDetailViewController vc: UIViewController, sender: AnyObject?) -> Bool {
+        let mvc = vc as! MessagesVeiwController
+        mvc.order = AppDelegate.instance.activeProfile!.selected
+        return false
+    }
+    
+    func splitViewController(splitViewController: UISplitViewController, showViewController vc: UIViewController, sender: AnyObject?) -> Bool {
+        return true
+    }
+    
+    func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController: UIViewController, ontoPrimaryViewController primaryViewController: UIViewController) -> Bool {
+        let mvc = secondaryViewController as! MessagesVeiwController
+        mvc.order = AppDelegate.instance.activeProfile!.selected
+        mvc.viewWillAppear(false)
+        return mvc.order == nil
     }
 }

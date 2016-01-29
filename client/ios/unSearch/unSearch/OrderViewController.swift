@@ -45,7 +45,7 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
             return
         }
         
-        let order = AppDelegate.instance.activeProfile!.placeOrder(
+        AppDelegate.instance.activeProfile!.placeOrder(
                 topic: controller.orderText.text,
                 urgency: Urgency.find(controller.urgency.value).type,
                 local: controller.isLocal.on,
@@ -53,18 +53,10 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
                 location: self.location,
                 prof: controller.needExpert.on
         );
-        controller.clear();
+        controller.clear()
+        controller.attachments.clear()
 
-        let delegate = UIApplication.sharedApplication().delegate as! AppDelegate
-
-        if delegate.navigation.viewControllers.count > 0 {
-            while (delegate.navigation.viewControllers.count > 1) {
-                delegate.navigation.popViewControllerAnimated(false)
-            }
-            delegate.messagesView!.order = order
-            delegate.navigation.pushViewController(delegate.messagesView!, animated: false)
-        }
-        delegate.tabs.selectedIndex = 1
+        AppDelegate.instance.tabs.selectedIndex = 1
     }
 
     override func viewDidLoad() {
@@ -174,6 +166,13 @@ class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionV
         cells.removeAtIndex(index)
         ids.removeAtIndex(index)
         let _ = progress.removeAtIndex(index)
+        view?.reloadData()
+    }
+    
+    func clear() {
+        cells.removeAll()
+        progress.removeAll()
+        ids.removeAll()
         view?.reloadData()
     }
     

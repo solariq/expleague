@@ -150,6 +150,8 @@ class AppDelegate: UIResponder {
             activeProfile?.active = false
         }
         profile.active = true
+        profile.selected = nil
+
         stream.addDelegate(profile, delegateQueue: dispatch_get_main_queue())
         do {
             try dataController.managedObjectContext.save()
@@ -174,6 +176,19 @@ extension AppDelegate: UIApplicationDelegate {
             NSForegroundColorAttributeName: UIColor.whiteColor()
         ]
         UIApplication.sharedApplication().statusBarStyle = .LightContent
+        
+        application.registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil))
+        let action = UIMutableUserNotificationAction()
+        action.activationMode = .Background
+        action.title = "Перейти"
+        action.destructive = false
+        action.authenticationRequired = false
+        action.identifier = ExpLeagueMessage.GOTO_ORDER
+        let notificationCat = UIMutableUserNotificationCategory()
+        notificationCat.identifier = ExpLeagueMessage.EXPERT_FOUND_NOTIFICATION
+        notificationCat.setActions([action], forContext: .Minimal)
+        let settings = UIUserNotificationSettings(forTypes: .Alert, categories: [notificationCat])
+        application.registerUserNotificationSettings(settings)
         return true
     }
 
@@ -204,5 +219,36 @@ extension AppDelegate: UIApplicationDelegate {
 
     func applicationWillTerminate(application: UIApplication) {
         stream.disconnectAfterSending()
+    }
+    
+    func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
+        let state = application.applicationState
+        let order = notification.userInfo!["order"] as! String
+        if (state == .Inactive) {
+            print(order)
+            activeProfile?.selected = activeProfile?.order(name: order)
+            tabs.selectedIndex = 1
+            // Application was in the background when notification was delivered.
+        }
+        else {
+            print(notification.userInfo!["order"]!)
+            
+            // App was running in the foreground. Perhaps
+            // show a UIAlertView to ask them what they want to do?
+        }
+    }
+    
+    func application(application: UIApplication, handleActionWithIdentifier identifier: String?, forLocalNotification notification: UILocalNotification, completionHandler: () -> Void) {
+        let state = application.applicationState
+        if (state == .Inactive) {
+            print(notification.userInfo!["order"]!)
+            // Application was in the background when notification was delivered.
+        }
+        else {
+            print(notification.userInfo!["order"]!)
+
+            // App was running in the foreground. Perhaps
+            // show a UIAlertView to ask them what they want to do?
+        }
     }
 }
