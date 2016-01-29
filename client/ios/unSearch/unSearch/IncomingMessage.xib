@@ -12,10 +12,10 @@
             <rect key="frame" x="0.0" y="0.0" width="367" height="304"/>
             <autoresizingMask key="autoresizingMask"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Em6-Hl-a3b" id="Nb7-0I-srg">
-                <rect key="frame" x="0.0" y="0.0" width="367" height="303"/>
+                <rect key="frame" x="0.0" y="0.0" width="367" height="303.5"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble_white_tail_left" translatesAutoresizingMaskIntoConstraints="NO" id="8Nj-Pv-nQQ" userLabel="Bubble">
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble_white_tail_left_new" translatesAutoresizingMaskIntoConstraints="NO" id="8Nj-Pv-nQQ" userLabel="Bubble">
                         <rect key="frame" x="35" y="0.0" width="332" height="303"/>
                     </imageView>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="owl_white" translatesAutoresizingMaskIntoConstraints="NO" id="Ehc-KT-x6o" userLabel="Avatar">
@@ -51,7 +51,7 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="bubble_white_tail_left" width="190" height="49"/>
+        <image name="bubble_white_tail_left_new" width="571" height="149"/>
         <image name="owl_white" width="405" height="405"/>
     </resources>
 </document>
