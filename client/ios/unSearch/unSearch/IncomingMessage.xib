@@ -15,7 +15,7 @@
                 <rect key="frame" x="0.0" y="0.0" width="367" height="303.5"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble_white_tail_left_new" translatesAutoresizingMaskIntoConstraints="NO" id="8Nj-Pv-nQQ" userLabel="Bubble">
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble_white_tail_left" translatesAutoresizingMaskIntoConstraints="NO" id="8Nj-Pv-nQQ" userLabel="Bubble">
                         <rect key="frame" x="35" y="0.0" width="332" height="303"/>
                     </imageView>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="owl_white" translatesAutoresizingMaskIntoConstraints="NO" id="Ehc-KT-x6o" userLabel="Avatar">
@@ -25,8 +25,8 @@
                             <constraint firstAttribute="width" constant="35" id="aQ3-33-mNJ"/>
                         </constraints>
                     </imageView>
-                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Cbx-yh-ZRR">
-                        <rect key="frame" x="53" y="8" width="306" height="287"/>
+                    <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Cbx-yh-ZRR">
+                        <rect key="frame" x="43" y="8" width="316" height="287"/>
                     </view>
                 </subviews>
                 <constraints>
@@ -51,7 +51,7 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="bubble_white_tail_left_new" width="571" height="149"/>
+        <image name="bubble_white_tail_left" width="571" height="149"/>
         <image name="owl_white" width="405" height="405"/>
     </resources>
 </document>
