@@ -180,6 +180,9 @@ class CompositeCellModel: ChatCellModel {
                 mapView.setRegion(region, animated: false)
                 mapView.setCenterCoordinate(location.coordinate, animated: false)
                 mapView.userInteractionEnabled = false
+                let annotation = MKPointAnnotation()
+                annotation.coordinate = location.coordinate
+                mapView.addAnnotation(annotation)
                 block = mapView
             }
             else if let action = parts[i] as? ChatAction {
@@ -227,7 +230,7 @@ class CompositeCellModel: ChatCellModel {
             blockSize = bs
         }
         else if let _ = parts[index] as? CLLocation {
-            blockSize = CGSizeMake(width * 2.0/3.0, width * 2.0/3.0)
+            blockSize = CGSizeMake((width - 32), (width - 32))
         }
         else if let _ = parts[index] as? ChatAction {
             blockSize = CGSizeMake(width - 10, 40)
@@ -275,16 +278,18 @@ class SetupModel: CompositeCellModel {
         self.order = order
         super.init()
         append(text: order.text, time: order.started)
-        let json = try! NSJSONSerialization.JSONObjectWithData(order.topic.dataUsingEncoding(NSUTF8StringEncoding)!, options: []) as! [String: AnyObject]
-        let attachments = (json["attachments"] as! String).componentsSeparatedByString(", ")
-        for attachment in attachments {
-            let image = AppDelegate.instance.activeProfile!.loadImage(attachment)
-            append(image: image, time: order.started)
-        }
-        if (json["local"] as! Bool) {
-            let location = json["location"] as! [String: AnyObject]
-            self.location = CLLocationCoordinate2DMake(location["latitude"] as! CLLocationDegrees, location["longitude"] as! CLLocationDegrees)
-            append(location: CLLocation(latitude: self.location!.latitude, longitude: self.location!.longitude), time: order.started)
+        if (order.topic.hasPrefix("{")) {
+            let json = try! NSJSONSerialization.JSONObjectWithData(order.topic.dataUsingEncoding(NSUTF8StringEncoding)!, options: []) as! [String: AnyObject]
+            let attachments = (json["attachments"] as! String).componentsSeparatedByString(", ")
+            for attachment in attachments {
+                let image = AppDelegate.instance.activeProfile!.loadImage(attachment)
+                append(image: image, time: order.started)
+            }
+            if (json["local"] as! Bool) {
+                let location = json["location"] as! [String: AnyObject]
+                self.location = CLLocationCoordinate2DMake(location["latitude"] as! CLLocationDegrees, location["longitude"] as! CLLocationDegrees)
+                append(location: CLLocation(latitude: self.location!.latitude, longitude: self.location!.longitude), time: order.started)
+            }
         }
     }
     

@@ -116,8 +116,13 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     var text: String {
-        let json = try! NSJSONSerialization.JSONObjectWithData(topic.dataUsingEncoding(NSUTF8StringEncoding)!, options: []) as! [String: AnyObject]
-        return json["topic"] as! String
+        if (topic.hasPrefix("{")) {
+            let json = try! NSJSONSerialization.JSONObjectWithData(topic.dataUsingEncoding(NSUTF8StringEncoding)!, options: []) as! [String: AnyObject]
+            return json["topic"] as! String
+        }
+        else {
+            return topic
+        }
     }
     
     static let urgencyDict : [String: Int16] = [
