@@ -141,10 +141,16 @@ class ExpLeagueMessage: NSManagedObject {
                     }
                     if let imageItem = (item as! NSDictionary)["image"] as? NSDictionary {
                         if let title = imageItem["title"] as? String {
-                            if let url = NSURL(string: imageItem["image"] as! String),
+                            let urlStr = imageItem["image"] as! String
+                            let storageName = urlStr.stringByReplacingOccurrencesOfString("/", withString: "-")
+                            if (AppDelegate.instance.activeProfile!.hasImage(storageName)) {
+                                visitor.message(self, title: title, image: AppDelegate.instance.activeProfile!.loadImage(storageName))
+                            }
+                            else if let url = NSURL(string: urlStr),
                                let data = NSData(contentsOfURL: url),
                                let image = UIImage(data: data) {
                                 visitor.message(self, title: title, image: image)
+                                AppDelegate.instance.activeProfile!.saveImage(storageName, image: image)
                             }
                             else {
                                 visitor.message(self, title: title, text: imageItem["image"] as! String)

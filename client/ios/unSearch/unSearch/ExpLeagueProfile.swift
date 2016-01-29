@@ -72,9 +72,35 @@ class ExpLeagueProfile: NSManagedObject {
             return NSURL(string: "http://localhost:8067/\(imageId)")!
         }
         else {
-            return NSURL(string: "https://img.\(domain)/\(imageId)")!
+            return NSURL(string: "https://img.\(domain)/OSYpRdXPNGZgRvsY/\(imageId)")!
         }
     }
+    
+    var imageStorage: NSURL {
+        if (domain == "localhost") {
+            return NSURL(string: "http://localhost:8067/")!
+        }
+        else {
+            return NSURL(string: "https://img.\(domain)/OSYpRdXPNGZgRvsY/")!
+        }
+    }
+    
+    func hasImage(id: String) -> Bool {
+        let root = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
+        return NSFileManager.defaultManager().fileExistsAtPath("\(root)/\(self.name)/images/\(id)")
+    }
+    
+    func saveImage(id: String, image: UIImage) {
+        let root = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
+        try! NSFileManager.defaultManager().createDirectoryAtPath("\(root)/\(self.name)/images/", withIntermediateDirectories: true, attributes: nil)
+        UIImageJPEGRepresentation(image, 100)!.writeToFile("\(root)/\(self.name)/images/\(id)", atomically: true)
+    }
+    
+    func loadImage(id: String) -> UIImage {
+        let root = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
+        return UIImage(contentsOfFile: "\(root)/\(self.name)/images/\(id)")!
+    }
+    
     
     func placeOrder(topic topic: String, urgency: String, local: Bool, attachments: [String], location: CLLocationCoordinate2D?, prof: Bool) -> ExpLeagueOrder {
         var rand = NSUUID().UUIDString;

@@ -213,6 +213,7 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
         if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
             attachments.append(imageId!, image: image, progress: {
                 self.progressView = $0
+                AppDelegate.instance.activeProfile!.saveImage(self.imageId!, image: image)
                 self.uploadImage()
             })
             self.image = image
@@ -231,13 +232,7 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
 
 //        self.uploadButton.enabled = false
 
-        let uploadScriptUrl: NSURL
-        if ("localhost" == AppDelegate.instance.activeProfile!.domain) {
-            uploadScriptUrl = NSURL(string: "http://\(AppDelegate.instance.activeProfile!.domain):8067/")!
-        }
-        else {
-            uploadScriptUrl = NSURL(string: "http://img.\(AppDelegate.instance.activeProfile!.domain)/http-post-example-script/")!
-        }
+        let uploadScriptUrl = AppDelegate.instance.activeProfile!.imageStorage
         let request = NSMutableURLRequest(URL: uploadScriptUrl)
         
         let boundaryConstant = NSUUID().UUIDString
@@ -278,12 +273,21 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
     func URLSession(session: NSURLSession, task: NSURLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
         let uploadProgress:Float = Float(totalBytesSent) / Float(totalBytesExpectedToSend)
         progressView?.progress = uploadProgress
-        print("\(uploadProgress) \(totalBytesSent) of \(totalBytesExpectedToSend)")
+//        print("\(uploadProgress) \(totalBytesSent) of \(totalBytesExpectedToSend)")
     }
     
     func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveResponse response: NSURLResponse, completionHandler: (NSURLSessionResponseDisposition) -> Void) {
+        print("Loaded: " + imageId!)
         print(response);
 //        self.uploadButton.enabled = true
+    }
+    
+    func URLSession(session: NSURLSession, didReceiveChallenge challenge: NSURLAuthenticationChallenge, completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void) {
+        if (challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust) {
+            if (challenge.protectionSpace.host == "img." + AppDelegate.instance.activeProfile!.domain) {
+                completionHandler(.UseCredential, NSURLCredential(forTrust: challenge.protectionSpace.serverTrust!))
+            }
+        }
     }
 
     init(attachments: AttachmentsViewDelegate, picker: UIImagePickerController) {

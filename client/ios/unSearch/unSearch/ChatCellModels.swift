@@ -278,11 +278,8 @@ class SetupModel: CompositeCellModel {
         let json = try! NSJSONSerialization.JSONObjectWithData(order.topic.dataUsingEncoding(NSUTF8StringEncoding)!, options: []) as! [String: AnyObject]
         let attachments = (json["attachments"] as! String).componentsSeparatedByString(", ")
         for attachment in attachments {
-            let imageUrl = AppDelegate.instance.activeProfile!.imageUrl(attachment)
-            if  let data = NSData(contentsOfURL: imageUrl),
-                let image = UIImage(data: data) {
-                append(image: image, time: order.started)
-            }
+            let image = AppDelegate.instance.activeProfile!.loadImage(attachment)
+            append(image: image, time: order.started)
         }
         if (json["local"] as! Bool) {
             let location = json["location"] as! [String: AnyObject]
