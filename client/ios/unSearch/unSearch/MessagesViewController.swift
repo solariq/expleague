@@ -151,13 +151,13 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
 //        collectionView?.dataSource = order
 
         
-        if (order?.topic.characters.count > 15) {
-            self.title = order!.topic.substringToIndex(order!.topic.startIndex.advancedBy(15)) + "..."
+        if (order?.text.characters.count > 15) {
+            self.title = order!.text.substringToIndex(order!.topic.startIndex.advancedBy(15)) + "..."
         }
         else {
-            self.title = order?.topic
+            self.title = order?.text
         }
-        self.title = order?.topic
+        self.title = order?.text
     }
     
     override func viewDidAppear(animated: Bool) {

@@ -5,6 +5,7 @@
 
 import Foundation
 import UIKit
+import MapKit
 import XMPPFramework
 
 protocol ChatCellModel {
@@ -80,6 +81,11 @@ class CompositeCellModel: ChatCellModel {
 
     func append(image img: UIImage, time: NSTimeInterval) {
         parts.append(img)
+        timeStamps.append(time)
+    }
+
+    func append(location point: CLLocation, time: NSTimeInterval) {
+        parts.append(point)
         timeStamps.append(time)
     }
 
@@ -168,6 +174,14 @@ class CompositeCellModel: ChatCellModel {
                 imageView.image = image
                 block = imageView
             }
+            else if let location = parts[i] as? CLLocation {
+                let mapView = MKMapView()
+                let region = MKCoordinateRegionMake(location.coordinate, MKCoordinateSpanMake(0.005, 0.005))
+                mapView.setRegion(region, animated: false)
+                mapView.setCenterCoordinate(location.coordinate, animated: false)
+                mapView.userInteractionEnabled = false
+                block = mapView
+            }
             else if let action = parts[i] as? ChatAction {
                 let button = UIButton(type: .Custom)
                 button.setTitle(action.caption, forState: .Normal)
@@ -208,9 +222,12 @@ class CompositeCellModel: ChatCellModel {
         }
         else if let image = parts[index] as? UIImage {
             var bs = image.size
-            bs.height *= bs.width / (width - 16)
-            bs.width = (width - 16)
+            bs.height *= (width - 32)/bs.width
+            bs.width = (width - 32)
             blockSize = bs
+        }
+        else if let _ = parts[index] as? CLLocation {
+            blockSize = CGSizeMake(width * 2.0/3.0, width * 2.0/3.0)
         }
         else if let _ = parts[index] as? ChatAction {
             blockSize = CGSizeMake(width - 10, 40)
@@ -256,17 +273,37 @@ class SetupModel: CompositeCellModel {
     let order: ExpLeagueOrder
     init(order: ExpLeagueOrder) {
         self.order = order
+        super.init()
+        append(text: order.text, time: order.started)
+        let json = try! NSJSONSerialization.JSONObjectWithData(order.topic.dataUsingEncoding(NSUTF8StringEncoding)!, options: []) as! [String: AnyObject]
+        let attachments = (json["attachments"] as! String).componentsSeparatedByString(", ")
+        for attachment in attachments {
+            let imageUrl = AppDelegate.instance.activeProfile!.imageUrl(attachment)
+            if  let data = NSData(contentsOfURL: imageUrl),
+                let image = UIImage(data: data) {
+                append(image: image, time: order.started)
+            }
+        }
+        if (json["local"] as! Bool) {
+            let location = json["location"] as! [String: AnyObject]
+            self.location = CLLocationCoordinate2DMake(location["latitude"] as! CLLocationDegrees, location["longitude"] as! CLLocationDegrees)
+            append(location: CLLocation(latitude: self.location!.latitude, longitude: self.location!.longitude), time: order.started)
+        }
     }
+    
     override var type: CellType {
         return .Setup
     }
+    
+    var images: [UIImage] = []
+    var location: CLLocationCoordinate2D?
 
     override func height(maxWidth width: CGFloat) -> CGFloat {
         return SetupChatCell.height(contentHeight: super.height(maxWidth: width))
     }
     
     override func accept(message: ExpLeagueMessage) -> Bool {
-        return message.type == .TopicStarter && super.accept(message)
+        return message.type == .TopicStarter
     }
 
     func formatPeriodRussian(interval: NSTimeInterval) -> String {

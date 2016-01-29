@@ -8,17 +8,14 @@ import akka.http.javadsl.Http;
 import akka.http.javadsl.IncomingConnection;
 import akka.http.javadsl.ServerBinding;
 import akka.http.javadsl.model.*;
-import akka.http.scaladsl.model.MultipartMediaType;
-import akka.japi.JavaPartialFunction;
 import akka.japi.Option;
 import akka.japi.function.Function;
-import akka.japi.function.Procedure;
 import akka.pattern.Patterns;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
-import akka.util.ByteString;
+import akka.stream.javadsl.StreamConverters;
 import akka.util.Timeout;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -34,11 +31,10 @@ import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
 import java.io.File;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.nio.ByteBuffer;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -75,7 +71,7 @@ public class ImageStorage extends UntypedActor {
 
       log.fine("Accepted new connection from " + connection.remoteAddress());
       connection.handleWithAsyncHandler((Function<HttpRequest, Future<HttpResponse>>) httpRequest -> {
-        final Future ask = (Future) Patterns.ask(context().actorOf(Props.create(RequestHandler.class, s3Client)), httpRequest, Timeout.apply(Duration.create(30, TimeUnit.SECONDS)));
+        final Future ask = (Future) Patterns.ask(context().actorOf(Props.create(RequestHandler.class, s3Client)), httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
         //noinspection unchecked
         return (Future<HttpResponse>)ask;
       }, materializer);
@@ -103,7 +99,7 @@ public class ImageStorage extends UntypedActor {
 
       if (request.method() == HttpMethods.GET && uri.path().equals("/")) {
         response = HttpResponse.create().withEntity(
-            MediaTypes.TEXT_HTML.toContentType(),
+            MediaTypes.TEXT_HTML.toContentType(HttpCharsets.UTF_8),
             "<html><body><form enctype=\"multipart/form-data\" action=\".\" method=\"post\" type=><input name=\"id\" type=\"text\"><input name=\"image\" accept=\"image/jpeg\" type=\"file\" alt=\"Submit\"><input type=\"submit\"></form></body></html>");
       }
       else if (request.method() == HttpMethods.GET) {
@@ -119,7 +115,7 @@ public class ImageStorage extends UntypedActor {
           final String contentType = image.getObjectMetadata().getContentType();
           final byte[] contents = StreamTools.readByteStream(image.getObjectContent());
           final Option<MediaType> lookup = MediaTypes.lookup(contentType.split("/")[0], contentType.split("/")[1]);
-          response = HttpResponse.create().withEntity(lookup.get().toContentType(), contents);
+          response = HttpResponse.create().withEntity(ContentTypes.create((MediaType.Binary)lookup.get()), contents);
         }
         else
           response = HttpResponse.create().withStatus(404).withEntity("Page not found");
@@ -127,74 +123,60 @@ public class ImageStorage extends UntypedActor {
       else if (request.method() == HttpMethods.POST) {
         final ActorMaterializer materializer = ActorMaterializer.create(getContext());
         final RequestEntity entity = request.entity();
-        final MultipartMediaType mediaType = (MultipartMediaType) entity.contentType().mediaType();
+        MediaType.Multipart mediaType = (MediaType.Multipart) entity.getContentType().mediaType();
+        final InputStream is = entity.getDataBytes().runWith(StreamConverters.asInputStream(Duration.apply(10, TimeUnit.MINUTES)), materializer);
+        final String boundary = mediaType.toRange().getParams().get("boundary");
+        final MultipartStream multipartStream = new MultipartStream(is, boundary.getBytes(), 4096, null);
 
-        final PipedOutputStream output = new PipedOutputStream();
-        final PipedInputStream input = new PipedInputStream(output, entity.getContentLengthOption().get().intValue());
-        @SuppressWarnings("deprecation")
-        final MultipartStream multipartStream =
-            new MultipartStream(
-                input,
-                mediaType.params().get("boundary").get().getBytes());
-        entity.getDataBytes().collect(new JavaPartialFunction<ByteString, MultipartStream>() {
-          @Override
-          public MultipartStream apply(ByteString param, boolean isCheck) throws Exception {
-            if (isCheck)
-              return null;
-            final ByteBuffer copy = ByteBuffer.allocate(param.size());
-            param.copyToBuffer(copy);
-            output.write(copy.array());
-            return multipartStream;
-          }
-        }).to(Sink.foreach((Procedure<MultipartStream>) param -> {
-          boolean nextPart = multipartStream.skipPreamble();
-          final ByteArrayOutputStream contents = new ByteArrayOutputStream();
-          String id = null;
-          String name = null;
-          String mime = null;
+        boolean nextPart = multipartStream.skipPreamble();
+        final ByteArrayOutputStream contents = new ByteArrayOutputStream();
+        String id = null;
+        String name = null;
+        String mime = null;
+        try {
           while (nextPart) {
             final String header = multipartStream.readHeaders();
-            for(final String line : header.split("\n")) {
+            for (final String line : header.split("\n")) {
               if (line.startsWith("Content-Disposition: ")) {
                 final ParameterParser parser = new ParameterParser();
                 final Map<String, String> params = parser.parse(line.substring("Content-Disposition: ".length()), ';');
                 if (params.containsKey("name"))
                   name = params.get("name");
-              }
-              else if (line.startsWith("Content-Type: ")) {
+              } else if (line.startsWith("Content-Type: ")) {
                 mime = line.substring("Content-Type: ".length());
               }
             }
             if ("image".equals(name)) {
               multipartStream.readBodyData(contents);
-            }
-            else if ("id".equals(name)) {
+            } else if ("id".equals(name)) {
               final ByteArrayOutputStream out = new ByteArrayOutputStream();
               multipartStream.readBodyData(out);
               id = new String(out.toByteArray(), StreamTools.UTF);
             }
             nextPart = multipartStream.readBoundary();
           }
-          try {
-            final File tempFile = File.createTempFile("asdasd", "adsasd");
-            StreamTools.writeBytes(contents.toByteArray(), tempFile);
+        }
+        catch (Exception e) {
+          log.log(Level.WARNING, "Failed to upload attachment", e);
+        }
+        try {
+          final File tempFile = File.createTempFile("asdasd", "adsasd");
+          StreamTools.writeBytes(contents.toByteArray(), tempFile);
 //            final String streamMD5 = new String(Base64.encodeBase64(DigestUtils.md5(img.contents)));
 //            metadata.setContentMD5(streamMD5);
 
-            final PutObjectRequest putRequest = new PutObjectRequest(BUCKET_NAME, id, tempFile);
-            putRequest.setMetadata(new ObjectMetadata());
-            assert mime != null;
-            putRequest.getMetadata().setContentType(mime.trim());
-            s3Client.putObject(putRequest);
-            //noinspection ResultOfMethodCallIgnored
-            tempFile.delete();
-          }
-          catch(Exception e) {
-            e.printStackTrace();
-          }
-        })).run(materializer);
+          final PutObjectRequest putRequest = new PutObjectRequest(BUCKET_NAME, id, tempFile);
+          putRequest.setMetadata(new ObjectMetadata());
+          putRequest.getMetadata().setContentType(mime.trim());
+          s3Client.putObject(putRequest);
+          //noinspection ResultOfMethodCallIgnored
+          tempFile.delete();
+        }
+        catch(Exception e) {
+          log.log(Level.WARNING, "Failed to store attachment", e);
+        }
         response = HttpResponse.create().withEntity(
-            MediaTypes.TEXT_HTML.toContentType(),
+            ContentTypes.TEXT_HTML_UTF8,
             "<html><body>Done</body></html>");
       }
       else response = HttpResponse.create().withStatus(404).withEntity("Page not found");

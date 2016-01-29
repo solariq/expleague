@@ -25,7 +25,7 @@ class HistoryViewController: UITableViewController {
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let orderView = tableView.dequeueReusableCellWithIdentifier("orderCell", forIndexPath: indexPath)
         let order = self.order(indexPath.item);
-        orderView.textLabel?.text = order.topic
+        orderView.textLabel?.text = order.text
         return orderView
     }
     

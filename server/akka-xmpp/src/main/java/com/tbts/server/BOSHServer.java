@@ -107,7 +107,7 @@ public class BOSHServer extends UntypedActorAdapter {
           }
           { // outgoing
             final ResponseEntity entity = HttpEntities.create(
-                ContentType.create(MediaTypes.lookup("text", "xml").get(), HttpCharsets.UTF_8),
+                ContentTypes.create(MediaTypes.TEXT_XML, HttpCharsets.UTF_8),
                 boshBody.xmlString(true)
             );
 //          response.addHeader(Len)
@@ -118,7 +118,7 @@ public class BOSHServer extends UntypedActorAdapter {
         catch (Exception e) {
           log.log(Level.WARNING, "Exception during BOSH processing", e);
           response = response.withStatus(500).withEntity(
-              MediaTypes.TEXT_HTML.toContentType(),
+              ContentTypes.TEXT_HTML_UTF8,
               "<html><body>" + e.toString() + "</body></html>");
 
         }

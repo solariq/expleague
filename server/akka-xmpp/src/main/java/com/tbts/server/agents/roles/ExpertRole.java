@@ -1,21 +1,23 @@
 package com.tbts.server.agents.roles;
 
-import akka.actor.*;
+import akka.actor.AbstractLoggingFSM;
+import akka.actor.ActorRef;
+import akka.actor.Cancellable;
 import akka.util.Timeout;
 import com.tbts.model.ExpertManager;
 import com.tbts.model.Offer;
-import com.tbts.model.Operations;
 import com.tbts.server.agents.LaborExchange;
 import com.tbts.server.agents.XMPP;
 import com.tbts.util.akka.AkkaTools;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Message;
 import com.tbts.xmpp.stanza.Presence;
-import com.tbts.xmpp.stanza.Stanza;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 

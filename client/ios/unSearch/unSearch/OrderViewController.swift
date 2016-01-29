@@ -5,8 +5,9 @@
 
 import Foundation
 import UIKit
+import MapKit
 
-class OrderViewController: UIViewController {
+class OrderViewController: UIViewController, CLLocationManagerDelegate {
     @IBOutlet weak var orderDescription: UIView!
     @IBAction func fire(sender: AnyObject) {
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
@@ -28,17 +29,19 @@ class OrderViewController: UIViewController {
                 alertView.view.addSubview(progressController.view)
                 progressController.alert = alertView
                 AppDelegate.instance.connect()
-                //                progressController.alert = alertView
             }
             alertView.addAction(UIAlertAction(title: "Retry", style: .Default, handler: {(x: UIAlertAction) -> Void in
                 AppDelegate.instance.disconnect()
                 self.fire(self)
             }))
             alertView.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
-            
-            //  Show it to your users
-    
             presentViewController(alertView, animated: true, completion: completion)
+            return
+        }
+        if (controller.isLocal.on && location == nil) {
+            let alertView = UIAlertController(title: "Заказ", message: "На данный момент ваша геопозиция не найдена. Подождите несколько секунд, или отключите настройку \"рядом со мной\".", preferredStyle: .Alert)
+            alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+            presentViewController(alertView, animated: true, completion: nil)
             return
         }
         
@@ -46,6 +49,8 @@ class OrderViewController: UIViewController {
                 topic: controller.orderText.text,
                 urgency: Urgency.find(controller.urgency.value).type,
                 local: controller.isLocal.on,
+                attachments: controller.attachments.ids,
+                location: self.location,
                 prof: controller.needExpert.on
         );
         controller.clear();
@@ -64,10 +69,20 @@ class OrderViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.childViewControllers[0]
+        self.locationManager.requestWhenInUseAuthorization()
+        if CLLocationManager.locationServicesEnabled() {
+            locationManager.delegate = self
+            locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+            locationManager.startUpdatingLocation()
+        }
+    }
+    
+    let locationManager = CLLocationManager()
+    var location: CLLocationCoordinate2D?
+    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        location = manager.location?.coordinate
     }
 }
-
 class OrderDescriptionViewController: UITableViewController {
     let error_color = UIColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 0.1)
     let rowHeight = 44;
@@ -80,16 +95,36 @@ class OrderDescriptionViewController: UITableViewController {
         urgencyLabel.text = type.caption
         sender.value = type.value
     }
+    var picker: ImagePickerDelegate?
+
+    @IBAction func attach(sender: UIButton) {
+        let picker = UIImagePickerController()
+        self.picker = ImagePickerDelegate(attachments: attachments, picker: picker)
+        picker.delegate = self.picker
+        picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+        self.presentViewController(picker, animated: true, completion: nil)
+    }
 
     @IBOutlet weak var orderText: UITextView!
     @IBOutlet weak var orderTextBackground: UIView!
-
+    @IBOutlet weak var attachmentsView: UICollectionView!
+    let attachments = AttachmentsViewDelegate()
     var orderTextBGColor: UIColor?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         orderTextBGColor = orderTextBackground.backgroundColor
         urgencyChanged(urgency)
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "dismissKeyboard"))
+        attachmentsView.delegate = attachments
+        attachmentsView.dataSource = attachments
+        attachmentsView.userInteractionEnabled = true
+        attachmentsView.allowsSelection = true
+        attachmentsView.backgroundColor = UIColor.whiteColor()
+        attachmentsView.backgroundView = UIView(frame: CGRectZero);
+        attachmentsView.layoutMargins = UIEdgeInsetsZero
+        attachments.view = attachmentsView
+        attachments.parent = self
     }
     
     func dismissKeyboard() {
@@ -114,6 +149,146 @@ class OrderDescriptionViewController: UITableViewController {
             return 64
         }
         return CGFloat(rowHeight);
+    }
+}
+
+class ImageAttachment: UICollectionViewCell {
+    @IBOutlet weak var image: UIImageView!
+    @IBOutlet weak var progress: UIProgressView!
+}
+
+class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionViewDataSource {
+    var view: UICollectionView?
+    var cells: [UIImage] = []
+    var progress: [(UIProgressView)->Void] = []
+    var ids: [String] = []
+    
+    func append(id: String, image: UIImage, progress: (UIProgressView)->Void) {
+        cells.append(image)
+        ids.append(id)
+        self.progress.append(progress)
+        view?.reloadData()
+    }
+
+    func remove(index: Int) {
+        cells.removeAtIndex(index)
+        ids.removeAtIndex(index)
+        let _ = progress.removeAtIndex(index)
+        view?.reloadData()
+    }
+    
+    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return section > 0 ? 0 : cells.count
+    }
+    
+    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("ImageAttachment", forIndexPath: indexPath) as! ImageAttachment
+        progress[indexPath.item](cell.progress)
+        cell.image.image = cells[indexPath.item]
+        cell.addGestureRecognizer(UITapGestureRecognizer(trailingClosure: {
+            let alertView = UIAlertController(title: "Приложения", message: "Открепить картинку от заказа?", preferredStyle: .Alert)
+            alertView.addAction(UIAlertAction(title: "Да", style: .Default, handler: {(x: UIAlertAction) -> Void in
+                self.remove(indexPath.item)
+            }))
+            alertView.addAction(UIAlertAction(title: "Нет", style: .Cancel, handler: nil))
+            self.parent?.presentViewController(alertView, animated: true, completion: nil)
+            return
+        }))
+        return cell
+    }
+    
+    var parent: OrderDescriptionViewController?
+}
+
+class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate {
+    weak var progressView: UIProgressView?
+    let attachments: AttachmentsViewDelegate
+    let picker: UIImagePickerController
+    
+    var image: UIImage?
+    var imageId: String?
+    @objc
+    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+        imageId = NSUUID().UUIDString + ".jpeg";
+        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
+            attachments.append(imageId!, image: image, progress: {
+                self.progressView = $0
+                self.uploadImage()
+            })
+            self.image = image
+        }
+        picker.dismissViewControllerAnimated(true, completion: nil)
+    }
+
+    func uploadImage() {
+        if (image == nil) {
+            return
+        }
+        let imageData = UIImageJPEGRepresentation(image!, 1)
+        if(imageData == nil) {
+            return
+        }
+
+//        self.uploadButton.enabled = false
+
+        let uploadScriptUrl: NSURL
+        if ("localhost" == AppDelegate.instance.activeProfile!.domain) {
+            uploadScriptUrl = NSURL(string: "http://\(AppDelegate.instance.activeProfile!.domain):8067/")!
+        }
+        else {
+            uploadScriptUrl = NSURL(string: "http://img.\(AppDelegate.instance.activeProfile!.domain)/http-post-example-script/")!
+        }
+        let request = NSMutableURLRequest(URL: uploadScriptUrl)
+        
+        let boundaryConstant = NSUUID().UUIDString
+        let contentType = "multipart/form-data; boundary=" + boundaryConstant
+        let boundaryStart = "--\(boundaryConstant)\r\n"
+        let boundaryEnd = "--\(boundaryConstant)--\r\n"
+        
+        let requestBodyData : NSMutableData = NSMutableData()
+        requestBodyData.appendData(boundaryStart.dataUsingEncoding(NSUTF8StringEncoding)!)
+        requestBodyData.appendData("Content-Disposition: form-data; name=\"id\"\r\n\r\n\(imageId!)\r\n".dataUsingEncoding(NSUTF8StringEncoding)!)
+        requestBodyData.appendData(boundaryStart.dataUsingEncoding(NSUTF8StringEncoding)!)
+        requestBodyData.appendData("Content-Disposition: form-data; name=\"image\"; filename=\"\(imageId!)\"\r\n".dataUsingEncoding(NSUTF8StringEncoding)!)
+        requestBodyData.appendData("Content-Type: image/jpeg\r\n\r\n".dataUsingEncoding(NSUTF8StringEncoding)!)
+        requestBodyData.appendData(imageData!)
+        requestBodyData.appendData("\r\n".dataUsingEncoding(NSUTF8StringEncoding)!)
+        requestBodyData.appendData(boundaryEnd.dataUsingEncoding(NSUTF8StringEncoding)!)
+        
+        request.HTTPMethod = "POST"
+        request.setValue("Keep-Alive", forHTTPHeaderField: "Connection")
+        request.setValue(contentType, forHTTPHeaderField: "Content-Type")
+        request.HTTPBody = requestBodyData.copy() as? NSData
+
+        let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
+        let session = NSURLSession(configuration: configuration, delegate: self, delegateQueue: NSOperationQueue.mainQueue())
+
+        progressView?.progress = 0.0
+        let task = session.uploadTaskWithStreamedRequest(request)
+        task.resume()
+    }
+
+    func URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError error: NSError?) {
+        let myAlert = UIAlertView(title: "Ошибка", message: error?.localizedDescription, delegate: nil, cancelButtonTitle: "Ok")
+        myAlert.show()
+
+//        self.uploadButton.enabled = true
+    }
+    
+    func URLSession(session: NSURLSession, task: NSURLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
+        let uploadProgress:Float = Float(totalBytesSent) / Float(totalBytesExpectedToSend)
+        progressView?.progress = uploadProgress
+        print("\(uploadProgress) \(totalBytesSent) of \(totalBytesExpectedToSend)")
+    }
+    
+    func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveResponse response: NSURLResponse, completionHandler: (NSURLSessionResponseDisposition) -> Void) {
+        print(response);
+//        self.uploadButton.enabled = true
+    }
+
+    init(attachments: AttachmentsViewDelegate, picker: UIImagePickerController) {
+        self.attachments = attachments
+        self.picker = picker
     }
 }
 

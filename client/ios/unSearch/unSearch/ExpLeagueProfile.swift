@@ -67,10 +67,35 @@ class ExpLeagueProfile: NSManagedObject {
         }
     }
     
-    func placeOrder(topic topic: String, urgency: String, local: Bool, prof: Bool) -> ExpLeagueOrder {
+    func imageUrl(imageId: String) -> NSURL {
+        if (domain == "localhost") {
+            return NSURL(string: "http://localhost:8067/\(imageId)")!
+        }
+        else {
+            return NSURL(string: "https://img.\(domain)/\(imageId)")!
+        }
+    }
+    
+    func placeOrder(topic topic: String, urgency: String, local: Bool, attachments: [String], location: CLLocationCoordinate2D?, prof: Bool) -> ExpLeagueOrder {
         var rand = NSUUID().UUIDString;
         rand = rand.substringToIndex(rand.startIndex.advancedBy(8))
-        let order = ExpLeagueOrder("room-" + login + "-" + rand, topic: topic, urgency: urgency, local: local, specific: prof, context: self.managedObjectContext!);
+        var json: [String: NSObject] = [
+            "topic": topic,
+            "attachments": attachments.joinWithSeparator(", "),
+            "urgency": urgency,
+            "local": local,
+            "specific": prof,
+            "started": NSDate().timeIntervalSince1970
+        ]
+        if (location != nil) {
+            json["location"] = [
+                "latitude": location!.latitude,
+                "longitude": location!.longitude,
+            ]
+        }
+        
+        let topicJson = try! NSJSONSerialization.dataWithJSONObject(json, options: [])
+        let order = ExpLeagueOrder("room-" + login + "-" + rand, topic: String(NSString(data: topicJson, encoding: NSUTF8StringEncoding)!), urgency: urgency, local: local, specific: prof, context: self.managedObjectContext!);
         let presence = XMPPPresence(type: "available", to: order.jid);
         AppDelegate.instance.stream.sendElement(presence)
         orderSelected = Int16(orders.count - 1)

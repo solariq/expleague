@@ -115,6 +115,11 @@ class ExpLeagueOrder: NSManagedObject {
         return XMPPJID.jidWithString(id + "@muc." + AppDelegate.instance.activeProfile!.domain)
     }
     
+    var text: String {
+        let json = try! NSJSONSerialization.JSONObjectWithData(topic.dataUsingEncoding(NSUTF8StringEncoding)!, options: []) as! [String: AnyObject]
+        return json["topic"] as! String
+    }
+    
     static let urgencyDict : [String: Int16] = [
         "asap" : 256,
         "day" : 128,
