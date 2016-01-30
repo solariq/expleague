@@ -111,6 +111,10 @@ public class XMPP extends UntypedActorAdapter {
     return context.actorSelection(XMPP_ACTOR_PATH + "/" + room.bare().toString());
   }
 
+  public static JID jid(ActorRef ref) {
+    return JID.parse(ref.path().name());
+  }
+
   public static class Subscribe {
     private final JID forJid;
     private final JID from;

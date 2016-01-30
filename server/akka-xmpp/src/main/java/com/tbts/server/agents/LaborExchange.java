@@ -69,13 +69,13 @@ public class LaborExchange extends UntypedPersistentActor {
   }
 
   public void invoke(Operations.Done done) {
-    final JID jid = Experts.jid(sender());
+    final JID jid = XMPP.jid(sender());
     openPositions.remove(jid.local());
     saveSnapshot(new ArrayList<>(openPositions.keySet()));
   }
 
   public void invoke(Operations.Cancel cancel) {
-    final JID jid = Experts.jid(sender());
+    final JID jid = XMPP.jid(sender());
     openPositions.remove(jid.local()).forward(cancel, context());
     saveSnapshot(new ArrayList<>(openPositions.keySet()));
   }

@@ -19,7 +19,7 @@ public class Operations {
   public static final String NS = "http://expleague.com/scheme";
 
   @XmlRootElement
-  public static class Invite extends Item {
+  public static class Invite extends Command {
     @XmlAttribute
     public Long timeout;
 
@@ -62,7 +62,7 @@ public class Operations {
   }
 
   @XmlRootElement
-  public static class Resume extends Item {
+  public static class Resume extends Command {
     @XmlAttribute
     private Long timeout;
 
@@ -85,19 +85,21 @@ public class Operations {
   }
 
   @XmlRootElement
-  public static class Cancel extends Item {
+  public static class Cancel extends Command {
     public Cancel(){ }
   }
 
   @XmlRootElement
-  public static class Create extends Item {}
+  public static class Create extends Command {}
 
   @XmlRootElement
-  public static class Start extends Item {}
+  public static class Start extends Command {}
 
   @XmlRootElement
-  public static class Done extends Item {}
+  public static class Done extends Command {}
 
   @XmlRootElement
-  public static class Suspend extends Item {}
+  public static class Suspend extends Command {}
+
+  public static abstract class Command extends Item {}
 }

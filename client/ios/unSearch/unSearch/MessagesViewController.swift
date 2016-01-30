@@ -278,7 +278,7 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 cells.append(LookingForExpertModel(mvc: parent))
             }
         }
-        if(!order.isActive && (cells.last! is LookingForExpertModel) || (cells.last! is ExpertInProgressModel)) {
+        if(!order.isActive && (cells.last! is LookingForExpertModel || cells.last! is ExpertInProgressModel)) {
             cells.removeLast()
         }
     }
@@ -292,6 +292,7 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let message = cells[indexPath.item]
         let cell = tableView.dequeueReusableCellWithIdentifier(String(message.type), forIndexPath: indexPath) as! ChatCell
+        cell.frame.size.width = tableView.frame.width
         try! message.form(chatCell: cell)
         return cell
     }
@@ -301,9 +302,21 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         cell.contentView.backgroundColor = UIColor.clearColor()
     }
     
+    var modelCells: [CellType: ChatCell] = [:]
     func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        let message = cells[indexPath.item]
-        return message.height(maxWidth: tableView.frame.size.width)
+        let model = cells[indexPath.item]
+        var modelCell = modelCells[model.type]
+        if modelCell == nil {
+            modelCell = (tableView.dequeueReusableCellWithIdentifier(String(model.type)) as! ChatCell)
+            modelCells[model.type] = modelCell
+        }
+        modelCell?.frame.size.width = tableView.frame.width
+        if let compositeCell = modelCell as? CompositeChatCell {
+            return model.height(maxWidth: compositeCell.maxContentSize.width)
+        }
+        else {
+            return model.height(maxWidth: tableView.frame.width)
+        }
     }
 
     func scrollToLastMessage(tableView: UITableView) {

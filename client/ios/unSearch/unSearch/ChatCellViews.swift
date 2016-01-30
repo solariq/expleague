@@ -54,7 +54,7 @@ class CompositeChatCell: ChatCell {
     }
 
     final var maxContentSize: CGSize {
-        return CGSizeMake(frame.width - contentInsets.left - contentInsets.right, frame.height - contentInsets.top - contentInsets.bottom)
+        return CGSizeMake(frame.width - 16 - contentInsets.left - contentInsets.right, frame.height - contentInsets.top - contentInsets.bottom - 4)
     }
 
     override func layoutSubviews() {
@@ -64,13 +64,13 @@ class CompositeChatCell: ChatCell {
         )
         switch(align) {
         case .Left:
-            contentView.frame.origin = CGPointMake(8, 8)
+            contentView.frame.origin = CGPointMake(8, 4)
             break
         case .Right:
-            contentView.frame.origin = CGPointMake(frame.width - size.width - 8, 8)
+            contentView.frame.origin = CGPointMake(frame.width - size.width - 8, 4)
             break
         case .Center:
-            contentView.frame.origin = CGPointMake((frame.width - size.width) / 2, 8)
+            contentView.frame.origin = CGPointMake((frame.width - size.width) / 2 + 4, 4)
             break
         }
         contentView.frame.size = size
@@ -109,15 +109,15 @@ class MessageChatCell: CompositeChatCell {
     }
 
     override class var minSize: CGSize {
-        return CGSizeMake(MessageChatCell.avatarWidth + 32, MessageChatCell.avatarWidth + 24)
+        return CGSizeMake(MessageChatCell.avatarWidth + 32, MessageChatCell.avatarWidth + 8)
     }
 
     override var contentInsets: UIEdgeInsets {
         if (incoming) {
-            return UIEdgeInsetsMake(8, 8 + MessageChatCell.avatarWidth, 8, 16)
+            return UIEdgeInsetsMake(8, 16 + MessageChatCell.avatarWidth, 8, 16)
         }
         else {
-            return UIEdgeInsetsMake(8, 16, 8, 8 + MessageChatCell.avatarWidth)
+            return UIEdgeInsetsMake(8, 16, 8, 16 + MessageChatCell.avatarWidth)
         }
     }
 
@@ -145,9 +145,9 @@ class ExpertInProgressCell: SimpleChatCell {
     @IBOutlet weak var answerTypeIcon: UIImageView!
     @IBOutlet weak var name: UILabel!
     
-    var cancelAction: (() -> Void)?
+    var action: (() -> Void)?
     @IBAction func cancelTask(sender: UIButton) {
-        cancelAction?()
+        action?()
     }
 
     var pages: Int {
@@ -177,9 +177,11 @@ class ExpertInProgressCell: SimpleChatCell {
 class LookingForExpertCell: SimpleChatCell {
     @IBOutlet weak var status: UILabel!
     @IBOutlet weak var expertsOnline: UILabel!
+    
+    var action: (() -> Void)?
     @IBAction func cancelTask(sender: UIButton) {
+        action?()
     }
-
     static var heightFromNib: CGFloat = 120;
     override class var height: CGFloat {
         return LookingForExpertCell.heightFromNib;
@@ -220,8 +222,6 @@ class AnswerReceivedCell: ExpertInProgressCell {
         action?()
     }
     
-    var action: (() -> ())?
-
     override class var height: CGFloat {
         return AnswerReceivedCell.heightFromNib;
     }

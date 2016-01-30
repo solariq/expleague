@@ -203,7 +203,8 @@ class CompositeCellModel: ChatCellModel {
                 block!.frame.size = blockSize
             }
         }
-        cell.content.frame.size = CGSizeMake(width + 2, height + 2)
+        cell.content.frame.size = CGSizeMake(min(cell.maxContentSize.width, width), height + 2)
+        print("Cell: \(cell.dynamicType), content size: \(cell.content.frame.size), cell size: \(cell.frame.size)")
     }
 
     private func blockSize(width width: CGFloat, index: Int) -> CGSize {
@@ -238,7 +239,7 @@ class CompositeCellModel: ChatCellModel {
         else {
             blockSize = CGSizeMake(0, 0)
         }
-        return CGSizeMake(blockSize.width + 10, blockSize.height + 2)
+        return CGSizeMake(blockSize.width, blockSize.height + 2)
     }
 }
 
@@ -256,13 +257,14 @@ class ChatMessageModel: CompositeCellModel {
     }
 
     override func height(maxWidth width: CGFloat) -> CGFloat {
-        return MessageChatCell.height(contentHeight: super.height(maxWidth: width))
+        return MessageChatCell.height(contentHeight: super.height(maxWidth: width)) + 6
     }
     
     override func form(messageViewCell cell: CompositeChatCell) {
         (cell as! MessageChatCell).incoming = incoming
         super.form(messageViewCell: cell)
     }
+    
     override func accept(message: ExpLeagueMessage) -> Bool {
         if (message.from != author || message.isAnswer) {
             return false
@@ -387,7 +389,7 @@ class ExpertInProgressModel: ChatCellModel {
         if let pagesCount = expertProperties["count"] as? Int {
             eipCell.pages = Int(pagesCount)
         }
-        eipCell.cancelAction = {
+        eipCell.action = {
             let order = self.mvc.order!
             order.cancel()
             self.mvc.order = order
@@ -452,6 +454,11 @@ class LookingForExpertModel: ChatCellModel {
             throw ModelErrors.WrongCellType
         }
         self.cell = lfeCell
+        lfeCell.action = {
+            let order = self.mvc.order!
+            order.cancel()
+            self.mvc.order = order
+        }
     }
     
     func accept(message: ExpLeagueMessage) -> Bool {
@@ -525,7 +532,7 @@ class AnswerReceivedModel: ChatCellModel {
         }
         func message(message: ExpLeagueMessage, title: String, image: UIImage) {
             let data = UIImageJPEGRepresentation(image, 1.0)!
-            parent.answerAppend("<h3>\(title)</h3><img align='middle' src='data:image/jpeg;base64,\(data.base64EncodedStringWithOptions([]))'/>")
+            parent.answerAppend("<h3>\(title)</h3><img width='\(AppDelegate.instance.window!.frame.width - 20)' align='middle' src='data:image/jpeg;base64,\(data.base64EncodedStringWithOptions([]))'/>")
         }
     }
 
