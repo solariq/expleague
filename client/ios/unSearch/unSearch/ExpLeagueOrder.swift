@@ -36,8 +36,8 @@ class ExpLeagueOrder: NSManagedObject {
         return messagesRaw.count
     }
     
-    var isOpen: Bool {
-        return (self.flags & ExpLeagueOrderFlags.Closed.rawValue) == 0
+    var isActive: Bool {
+        return status == .Open || status == .Overtime
     }
     
     var before: NSTimeInterval {
@@ -125,6 +125,48 @@ class ExpLeagueOrder: NSManagedObject {
         }
     }
     
+    func cancel() {
+        flags = flags | ExpLeagueOrderFlags.Canceled.rawValue
+        let msg = XMPPMessage()
+        msg.addChild(DDXMLElement(name: "cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
+        stream.sendElement(msg)
+        do {
+            try self.managedObjectContext!.save()
+        } catch {
+            fatalError("Failure to save context: \(error)")
+        }
+    }
+    
+    func close(stars score: Int) {
+        flags = flags | ExpLeagueOrderFlags.Closed.rawValue
+        let msg = XMPPMessage()
+        msg.addChild(DDXMLElement(name: "done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
+        let feedback = DDXMLElement(name: "expert-feedback", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+        feedback.addAttributeWithName("stars", integerValue: score)
+        msg.addChild(feedback)
+        stream.sendElement(msg)
+        do {
+            try self.managedObjectContext!.save()
+        } catch {
+            fatalError("Failure to save context: \(error)")
+        }
+    }
+    
+    var status: ExpLeagueOrderStatus {
+        if (flags & ExpLeagueOrderFlags.Canceled.rawValue != 0) {
+            return .Canceled
+        }
+        else if (flags & ExpLeagueOrderFlags.Closed.rawValue != 0) {
+            return .Closed
+        }
+        else if (before - CFAbsoluteTimeGetCurrent() > 0){
+            return .Open
+        }
+        else {
+            return .Overtime
+        }
+    }
+    
     static let urgencyDict : [String: Int16] = [
         "asap" : 256,
         "day" : 128,
@@ -150,8 +192,16 @@ class ExpLeagueOrder: NSManagedObject {
     }
 }
 
+enum ExpLeagueOrderStatus: Int {
+    case Open = 0
+    case Closed = 1
+    case Overtime = 2
+    case Canceled = 3
+}
+
 enum ExpLeagueOrderFlags: Int16 {
     case LocalTask = 16384
     case SpecificTask = 8196
     case Closed = 4096
+    case Canceled = 2048
 }

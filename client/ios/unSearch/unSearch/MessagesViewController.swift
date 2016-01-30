@@ -222,7 +222,8 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             sync(order!)
         }
     }
-    var progressModel: ChatCellModel? = nil
+    var progressModel: ExpertInProgressModel? = nil
+    var progressCellIndex: Int?
     func sync(order: ExpLeagueOrder) {
         if (cells.isEmpty) {
             cells.append(SetupModel(order: order))
@@ -238,7 +239,8 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 if (progressModel == nil || !progressModel!.accept(msg)) {
                     if (msg.properties["type"] as! NSString == "expert") {
                         haveActiveExpert = true
-                        progressModel = ExpertInProgressModel()
+                        progressModel = ExpertInProgressModel(mvc: parent)
+                        progressCellIndex = cells.count
                         cells.append(progressModel!)
                     }
                 }
@@ -249,9 +251,10 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             else if (!model.accept(msg)) { // switch model
                 if (msg.incoming) {
                     if (msg.isAnswer) {
-                        model = AnswerReceivedModel(controller: parent)
-                        haveActiveExpert = false
+                        model = AnswerReceivedModel(controller: parent, progress: progressModel!)
                         progressModel = nil
+                        cells.removeAtIndex(progressCellIndex!)
+                        haveActiveExpert = false
                     }
                     else {
                         model = ChatMessageModel(incoming: true, author: msg.from)
@@ -267,13 +270,16 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 lastKnownMessage++
             }
         }
-        if (!haveActiveExpert) {
+        if (!haveActiveExpert && order.isActive) {
             if (model is AnswerReceivedModel) {
                 cells.append(FeedbackModel(controller: self.parent))
             }
             else {
-                cells.append(LookingForExpertModel(order: order))
+                cells.append(LookingForExpertModel(mvc: parent))
             }
+        }
+        if(!order.isActive && (cells.last! is LookingForExpertModel) || (cells.last! is ExpertInProgressModel)) {
+            cells.removeLast()
         }
     }
 
@@ -305,15 +311,4 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             tableView.scrollToRowAtIndexPath(NSIndexPath(forItem: cells.count - 1, inSection: 0), atScrollPosition: .Top, animated: true)
         }
     }
-}
-
-enum CellType: Int {
-    case Incoming = 0
-    case Outgoing = 1
-    case AnswerReceived = 2
-    case LookingForExpert = 3
-    case ExpertInProgress = 4
-    case Feedback = 5
-    case Setup = 6
-    case None = -1
 }

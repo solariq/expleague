@@ -46,7 +46,7 @@
                                 </connections>
                             </containerView>
                             <button opaque="NO" contentMode="scaleAspectFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="77e-ya-pIp">
-                                <rect key="frame" x="26" y="574" width="323" height="39"/>
+                                <rect key="frame" x="16" y="574" width="343" height="39"/>
                                 <color key="backgroundColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="39" id="08p-2G-smH"/>
@@ -66,9 +66,9 @@
                             <constraint firstItem="wb5-4s-rmD" firstAttribute="leading" secondItem="mzM-dt-DpJ" secondAttribute="leadingMargin" id="0HT-XG-Tce"/>
                             <constraint firstItem="77e-ya-pIp" firstAttribute="top" secondItem="wb5-4s-rmD" secondAttribute="bottom" id="CGi-M6-D0w"/>
                             <constraint firstAttribute="trailingMargin" secondItem="wb5-4s-rmD" secondAttribute="trailing" id="FHY-uj-D8f"/>
-                            <constraint firstItem="77e-ya-pIp" firstAttribute="leading" secondItem="mzM-dt-DpJ" secondAttribute="leadingMargin" constant="10" id="P7f-UX-Qsh"/>
+                            <constraint firstItem="77e-ya-pIp" firstAttribute="leading" secondItem="mzM-dt-DpJ" secondAttribute="leadingMargin" id="P7f-UX-Qsh"/>
                             <constraint firstItem="wb5-4s-rmD" firstAttribute="top" secondItem="c9E-uG-V7s" secondAttribute="bottom" id="a63-u0-lA1"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="77e-ya-pIp" secondAttribute="trailing" constant="10" id="bRE-aq-T8F"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="77e-ya-pIp" secondAttribute="trailing" id="bRE-aq-T8F"/>
                             <constraint firstItem="0wi-0y-Nlg" firstAttribute="top" secondItem="77e-ya-pIp" secondAttribute="bottom" constant="5" id="ftf-bf-T4H"/>
                         </constraints>
                     </view>

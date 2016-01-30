@@ -12,6 +12,7 @@ import JSQMessagesViewController
 import XMPPFramework
 
 class ExpLeagueMessage: NSManagedObject {
+    static let EXP_LEAGUE_SCHEME = "http://expleague.com/scheme"
     static let GOTO_ORDER = "ExpLeague_Go_To_Order"
     static let EXPERT_FOUND_NOTIFICATION = "ExpLeague_Expert_Found"
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
@@ -41,7 +42,7 @@ class ExpLeagueMessage: NSManagedObject {
         }
         if (type == .SystemMessage) {
             let properties = NSMutableDictionary()
-            if let element = msg.elementForName("expert", xmlns: "http://expleague.com/scheme") {
+            if let element = msg.elementForName("expert", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
                 properties["type"] = "expert"
                 properties["login"] = element.attributeStringValueForName("login")
                 properties["name"] = element.attributeStringValueForName("name")

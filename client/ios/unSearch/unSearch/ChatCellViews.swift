@@ -145,7 +145,9 @@ class ExpertInProgressCell: SimpleChatCell {
     @IBOutlet weak var answerTypeIcon: UIImageView!
     @IBOutlet weak var name: UILabel!
     
+    var cancelAction: (() -> Void)?
     @IBAction func cancelTask(sender: UIButton) {
+        cancelAction?()
     }
 
     var pages: Int {
@@ -160,7 +162,7 @@ class ExpertInProgressCell: SimpleChatCell {
         }
     }
     
-    static var heightFromNib: CGFloat = 120;
+    private static var heightFromNib: CGFloat = 120;
     override class var height: CGFloat {
         return ExpertInProgressCell.heightFromNib;
     }
@@ -170,6 +172,7 @@ class ExpertInProgressCell: SimpleChatCell {
         ExpertInProgressCell.heightFromNib = frame.height
     }
 }
+
 
 class LookingForExpertCell: SimpleChatCell {
     @IBOutlet weak var status: UILabel!
@@ -200,17 +203,25 @@ class LookingForExpertCell: SimpleChatCell {
     }
 }
 
-class AnswerReceivedCell: SimpleChatCell {
-    @IBOutlet weak var answerTypeIcon: UIImageView!
-    @IBOutlet weak var title: UILabel!
+class ExpertIdleCell: SimpleChatCell {
+    static var heightFromNib: CGFloat = 120;
+    override class var height: CGFloat {
+        return ExpertIdleCell.heightFromNib;
+    }
     
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        ExpertIdleCell.heightFromNib = frame.height
+    }
+}
+
+class AnswerReceivedCell: ExpertInProgressCell {
     @IBAction func fire(sender: UIButton) {
         action?()
     }
     
     var action: (() -> ())?
 
-    static var heightFromNib: CGFloat = 120;
     override class var height: CGFloat {
         return AnswerReceivedCell.heightFromNib;
     }
@@ -237,4 +248,17 @@ class FeedbackCell: SimpleChatCell {
         super.awakeFromNib()
         FeedbackCell.heightFromNib = frame.height
     }
+}
+
+
+enum CellType: Int {
+    case Incoming = 0
+    case Outgoing = 1
+    case AnswerReceived = 2
+    case LookingForExpert = 3
+    case ExpertInProgress = 4
+    case ExpertIdle = 5
+    case Feedback = 6
+    case Setup = 7
+    case None = -1
 }

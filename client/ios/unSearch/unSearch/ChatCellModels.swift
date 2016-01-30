@@ -338,19 +338,23 @@ class SetupModel: CompositeCellModel {
     func advanceTimer(timer: NSTimer) {
         let label = timer.userInfo as! UILabel
         let timeLeft = order.before - CFAbsoluteTimeGetCurrent()
-        if (order.isOpen) {
-            if (timeLeft > 0) {
-                label.textColor = UIColor.lightGrayColor()
-                label.text = "ОТКРЫТО. Осталось: " + formatPeriodRussian(timeLeft)
-            }
-            else {
-                label.textColor = UIColor.redColor()
-                label.text = "ПРОСРОЧЕНО НА: " + formatPeriodRussian(-timeLeft)
-            }
-        }
-        else {
+        switch(order.status) {
+        case .Open:
+            label.textColor = UIColor.lightGrayColor()
+            label.text = "ОТКРЫТО. Осталось: " + formatPeriodRussian(timeLeft)
+            break
+        case .Overtime:
+            label.textColor = UIColor.redColor()
+            label.text = "ПРОСРОЧЕНО НА: " + formatPeriodRussian(-timeLeft)
+            break
+        case .Canceled:
+            label.textColor = UIColor.yellowColor()
+            label.text = "ОТМЕНЕНО"
+            break
+        case .Closed:
             label.textColor = UIColor.greenColor()
             label.text = "ВЫПОЛНЕНО"
+            break
         }
     }
     override func form(chatCell cell: ChatCell) throws {
@@ -383,11 +387,20 @@ class ExpertInProgressModel: ChatCellModel {
         if let pagesCount = expertProperties["count"] as? Int {
             eipCell.pages = Int(pagesCount)
         }
+        eipCell.cancelAction = {
+            let order = self.mvc.order!
+            order.cancel()
+            self.mvc.order = order
+        }
     }
-    
     func accept(message: ExpLeagueMessage) -> Bool {
         expertProperties.addEntriesFromDictionary(message.properties as [NSObject : AnyObject])
         return message.type == .SystemMessage
+    }
+    
+    let mvc: MessagesVeiwController
+    init(mvc: MessagesVeiwController) {
+        self.mvc = mvc
     }
 }
 
@@ -405,18 +418,27 @@ class FeedbackModel: ChatCellModel {
         guard let feedbackCell = cell as? FeedbackCell else {
             throw ModelErrors.WrongCellType
         }
+        feedbackCell.action = {
+            let order = self.mvc.order!
+            order.close(stars: 5)
+            self.mvc.order = order
+        }
     }
     
     func accept(message: ExpLeagueMessage) -> Bool {
         return false
     }
     
+    let mvc: MessagesVeiwController
     init(controller: MessagesVeiwController) {
+        self.mvc = controller
     }
 }
 
 class LookingForExpertModel: ChatCellModel {
     weak var cell: LookingForExpertCell?
+    var active = true
+    
     var type: CellType {
         return .LookingForExpert
     }
@@ -437,7 +459,9 @@ class LookingForExpertModel: ChatCellModel {
     }
     
     var tracker: XMPPPresenceTracker?
-    init (order: ExpLeagueOrder){
+    let mvc: MessagesVeiwController
+    init (mvc: MessagesVeiwController){
+        self.mvc = mvc
         tracker = XMPPPresenceTracker(onPresence: {(presence: XMPPPresence) -> Void in
             let statuses = try! presence.nodesForXPath("//*[local-name()='status' and namespace-uri()='http://expleague.com/scheme']")
             if statuses.count > 0, let status = statuses[0] as? DDXMLElement {
@@ -445,11 +469,12 @@ class LookingForExpertModel: ChatCellModel {
             }
         })
         AppDelegate.instance.activeProfile?.track(tracker!)
-        order.track(tracker!)
+        mvc.order!.track(tracker!)
     }
 }
 
 class AnswerReceivedModel: ChatCellModel {
+    var expertProperties: NSDictionary?
     let controller: MessagesVeiwController
     var id: String?
     var type: CellType {
@@ -478,6 +503,7 @@ class AnswerReceivedModel: ChatCellModel {
             self.controller.scrollView.scrollRectToVisible(self.controller.answerView.frame, animated: true)
             self.controller.answerView.stringByEvaluatingJavaScriptFromString("document.getElementById('\(self.id!)').scrollIntoView()")
         }
+        try progress.form(chatCell: arCell)
     }
     
     class AnswerVisitor: ExpLeagueMessageVisitor {
@@ -503,7 +529,9 @@ class AnswerReceivedModel: ChatCellModel {
         }
     }
 
-    init(controller: MessagesVeiwController) {
+    let progress: ExpertInProgressModel
+    init(controller: MessagesVeiwController, progress: ExpertInProgressModel) {
         self.controller = controller
+        self.progress = progress
     }
 }
