@@ -171,10 +171,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                   task.choose();
                 }
               }
-              else {
-                explain(" while waiting the response from the expert. Cancelling it");
-                sender().tell(new Cancel(), self());
-              }
+              else explain(" while waiting the response from the expert. Cancelling it");
               return stay();
             }
         )
