@@ -35,6 +35,7 @@ class HistoryViewController: UITableViewController {
             table.selectRowAtIndexPath(path, animated: false, scrollPosition: .Top)
             self.tableView(table, didSelectRowAtIndexPath: path)
         }
+        AppDelegate.instance.tabs.tabBar.hidden = false
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
