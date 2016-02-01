@@ -63,6 +63,30 @@ public class Operations {
   }
 
   @XmlRootElement
+  public static class Sync extends Command {
+    @XmlAttribute
+    private String func;
+
+    @XmlAttribute
+    private String data;
+
+    public Sync() { }
+
+    public Sync(final String func, final String data) {
+      this.func = func;
+      this.data = data;
+    }
+
+    public String func() {
+      return func;
+    }
+
+    public String data() {
+      return data;
+    }
+  }
+
+  @XmlRootElement
   public static class Resume extends Command {
     @XmlAttribute
     private Long timeout;

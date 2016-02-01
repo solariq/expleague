@@ -6,6 +6,7 @@ import com.tbts.model.Offer;
 import com.tbts.model.Operations;
 import com.tbts.model.Operations.Cancel;
 import com.tbts.model.Operations.Done;
+import com.tbts.model.Operations.Sync;
 import com.tbts.model.Operations.Start;
 import com.tbts.server.dao.Archive;
 import com.tbts.util.akka.AkkaTools;
@@ -77,6 +78,9 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     }
     else if (!msg.from().bareEq(status.owner()) && msg.body().startsWith("{\"type\":\"visitedPages\"")) {
       XMPP.send(new Message(jid, status.owner(), msg.body()), context());
+    } else if (msg.has(Sync.class)) {
+      final Sync sync = msg.get(Sync.class);
+      System.out.println("sync event from expert: " + sync.func() + "\t" + sync.data());
     }
     log(msg);
 
@@ -131,6 +135,16 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     if (!status.isParticipant(jid)) {
       snapshot.stream().filter(s -> s instanceof Message && ((Message)s).type() == MessageType.GROUP_CHAT).map(s -> (Message)s).forEach(message -> {
         final Message copy = message.copy();
+        copy.to(jid);
+        copy.from(roomAlias(message.from()));
+        XMPP.send(copy, context());
+      });
+    }
+    //for test only
+    if (!"unsearch".equals(jid.resource())) {
+      snapshot.stream().filter(s -> s instanceof Message && ((Message) s).has(Operations.Sync.class)).map(s -> (Message) s).forEach(message -> {
+        final Message copy = message.copy();
+        copy.type(MessageType.CHAT);
         copy.to(jid);
         copy.from(roomAlias(message.from()));
         XMPP.send(copy, context());
