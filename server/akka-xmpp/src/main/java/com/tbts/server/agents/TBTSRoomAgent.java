@@ -207,9 +207,15 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
           open = true;
         }
         else if (msg.has(Done.class)) {
-          lastActive = false;
-          open = false;
-          participants.remove(bareSender);
+          if (msg.from().bareEq(owner())) {
+            open = false;
+            offer = null;
+          }
+          else {
+            lastActive = false;
+            open = false;
+            participants.remove(bareSender);
+          }
         }
         else if (msg.has(Cancel.class)) {
           if (msg.from().bareEq(owner())) {
