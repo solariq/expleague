@@ -191,6 +191,15 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             }, null, 'message', null, null, null);
         };
 
+        this.addSycListener = function(listener) {
+            this.connection.addHandler(function(msg) {
+                console.log("SYNE EVENT GOT::");
+                console.log(msg);
+                listener(msg);
+                return true;
+            }, null, 'message', 'sync', null, null);
+        };
+
         this.addMessageListener = function(listener) {
             this.connection.addHandler(function(msg) {
                 var to = msg.getAttribute('to');
@@ -225,10 +234,11 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                 if (elems && elems.length > 0) {
                     var offer = new Offer(msg.getElementsByTagName('offer')[0]);
                     var invite = {};
-                    invite.subj = offer.subj;
+                    var details = JSON.parse(offer.subj);
+                    invite.subj = details.topic;
                     invite.owner = offer.client;
                     invite.room = offer.room.replace("/client", "");
-                    invite.time= new Date().getTime();
+                    invite.time = new Date().getTime();
                     invite.img = 'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg';
                     invite.confirmExpireTime =  Date.now() + 965 * 1000;
                     invite.resolveExpireTime = Date.now() + 9150 * 1000;
@@ -605,24 +615,29 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
     };
 
 
-    if (window.chrome && window.chrome.storage) {
-        window.chrome.storage.onChanged.addListener(function (data) {
-            if (latestOffer && stateController.state == ExpertState.GO) {
-                for (var key in data) {
-                    var sync = {
-                        to: latestOffer.room,
-                        text: JSON.stringify({
-                            type: 'SYNCMSG',
-                            key: key,
-                            data: data[key]
-                        })
-                    };
-                    jabberClient.send(sync, 'chat', function () {});
-                }
-                console.log(data.newValue);
-            }
-        });
-    }
+    progress = function(func, data) {
+        if (latestOffer && stateController.state == ExpertState.GO) {
+            var sync = $msg({to: latestOffer.room, from: jabberClient.connection.jid, type: 'chat'})
+                .c('sync')
+                .attrs({xmlns: "http://expleague.com/scheme", func: func, data: JSON.stringify(data).replace(/"/g, '\'')});
+            console.log("store: " + func + "\t" + data);
+            jabberClient.unsafeSend(sync, function () {});
+        }
+    };
+
+    //if (window.chrome && window.chrome.storage) {
+    //    window.chrome.storage.onChanged.addListener(function (data) {
+    //        if (latestOffer && stateController.state == ExpertState.GO) {
+    //            for (var key in data) {
+    //                var sync = $msg({to: latestOffer.room, from: jabberClient.connection.jid, type: 'chat'})
+    //                    .c('sync')
+    //                    .attrs({xmlns: "http://expleague.com/scheme", name: key, value: JSON.stringify(data[key].newValue)});
+    //                console.log("store: " + key);
+    //                jabberClient.unsafeSend(sync, function () {});
+    //            }
+    //        }
+    //    });
+    //}
 
     //timeLimit = $interval(function () {
     //    KNUGGET.storage.get('ActiveRequest', function (e) {
@@ -635,7 +650,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
     // API METHODS
     return {
 
-        resetBoard: function (data) {
+            resetBoard: function (data) {
             var defer = $q.defer();
             KNUGGET.storage.set("Board", JSON.stringify([]));
             defer.resolve({status: 200});
@@ -770,6 +785,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         },
 
         Remove: function(data) {
+            progress('Remove', data);
             var defer = $q.defer();
             KNUGGET.storage.get("Board", function (value) {
                 value = value ? JSON.parse(value) : [];
@@ -786,6 +802,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         },
 
         Move: function(data) {
+            progress('Move', data);
             var defer = $q.defer();
             fromPos = data.fromPos;
             toPos = data.toPos;
@@ -813,6 +830,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         },
 
         ReplaceAnswer: function(data) {
+            progress('ReplaceAnswer', data);
             var defer = $q.defer();
             pos = data.pos;
             answer = data.answer;
@@ -835,6 +853,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         },
 
         InsertAnswer: function(data) {
+            progress('InsertAnswer', data);
             var defer = $q.defer();
             pos = data.pos;
             answer = data.answer;
@@ -857,6 +876,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         },
 
         addToBoard: function(data) {
+            progress('addToBoard', data);
             answer = data.answer;
             var defer = $q.defer();
             addToBoardSync(answer, function() {
@@ -930,7 +950,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             jabberClient.addResumeListener(function(id, from, offer) {
                 //todo make function offer -> request
                 var invite = {};
-                invite.subj = offer.subj;
+                var details = JSON.parse(offer.subj);
+                invite.subj = details.topic;
                 invite.owner = offer.client;
                 invite.room = offer.room.replace("/client", "");
                 invite.time= new Date().getTime();
