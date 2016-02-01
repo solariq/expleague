@@ -162,7 +162,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
                 explain("Have not seen him before, sending offer.");
                 task.candidate(jid);
               }
-              else explain("This candidate is already refused our invitation/check/failed interview. Ignoring.");
+              else explain("This candidate has already refused our invitation/check/failed interview. Ignoring.");
               return stay();
             }
         ).event(Cancel.class,
