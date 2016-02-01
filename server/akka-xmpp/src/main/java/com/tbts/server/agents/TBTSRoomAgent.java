@@ -1,9 +1,14 @@
 package com.tbts.server.agents;
 
+import akka.actor.ActorContext;
 import com.tbts.model.ExpertManager;
 import com.tbts.model.Offer;
 import com.tbts.model.Operations;
+import com.tbts.model.Operations.Cancel;
+import com.tbts.model.Operations.Done;
+import com.tbts.model.Operations.Start;
 import com.tbts.server.dao.Archive;
+import com.tbts.util.akka.AkkaTools;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.Item;
 import com.tbts.xmpp.JID;
@@ -27,107 +32,76 @@ import java.util.stream.Collectors;
 public class TBTSRoomAgent extends UntypedActorAdapter {
   private final List<Item> snapshot = new ArrayList<>();
 
-  private final Set<JID> partisipants = new HashSet<>();
   private final Map<JID, Presence.Status> presence = new HashMap<>();
   private final JID jid;
+  private final Status status = new Status();
 
   public TBTSRoomAgent(JID jid) {
     this.jid = jid.bare();
     Archive.instance().visitMessages(jid.local(), new Archive.MessageVisitor() {
       @Override
       public boolean accept(String authorId, CharSequence message, long ts) {
-        snapshot.add(Item.create(message));
+        final Item item = Item.create(message);
+        snapshot.add(item);
+        if (item instanceof Stanza)
+          status.accept((Stanza)item);
         return true;
       }
     });
     if (snapshot.isEmpty())
       invoke(new Message(jid, null, MessageType.GROUP_CHAT, "Welcome to room " + jid));
-    partisipants.add(XMPP.jid().bare());
-    if (owner() != null) {
-      partisipants.add(owner.bare());
-    }
-  }
-
-  JID owner = null;
-  @Nullable
-  public JID owner() {
-    if (owner != null)
-      return owner;
-
-    final Optional<Message> subject = snapshot.stream()
-            .filter(s -> s instanceof Message).map(s -> (Message) s)
-            .filter(m -> m.get(Message.Subject.class) != null)
-            .findFirst();
-
-    if (subject.isPresent()) {
-      return owner = subject.get().from();
-    }
-    return null;
   }
 
   public void invoke(Operations.Resume resume) {
-    if (isOpen())
-      LaborExchange.reference(context()).tell(offer(), self());
-  }
-
-  private boolean isOpen() {
-    boolean needToStart = false;
-    for (final Item item : snapshot) {
-      if (!(item instanceof Message))
-        continue;
-      if (((Message) item).has(Operations.Create.class))
-        needToStart = true;
-      if (((Message) item).has(Operations.Done.class))
-        needToStart = false;
-    }
-    return needToStart;
+    if (status.isOpen())
+      LaborExchange.reference(context()).tell(status.offer(), self());
   }
 
   public void invoke(Message msg) {
-    if (msg.type() == MessageType.GROUP_CHAT) {
-      if (owner() != null && !partisipant(msg.from())) {
-        final Message message = new Message(jid, msg.from(), MessageType.GROUP_CHAT, "Сообщение от " + msg.from() + " не доставленно. Вы не являетесь участником задания! Известные участники: "
-                + partisipants.stream().map(JID::toString).collect(Collectors.joining(", ")) + ".");
-        message.append(msg);
-        XMPP.send(message, context());
-        return;
+    if (msg.type() == MessageType.GROUP_CHAT && status.owner() != null && !status.isParticipant(msg.from())) {
+      final Message message = new Message(jid, msg.from(), MessageType.GROUP_CHAT, "Сообщение от " + msg.from() + " не доставленно. Вы не являетесь участником задания! Известные участники: "
+          + status.participants.stream().map(JID::toString).collect(Collectors.joining(", ")) + ".");
+      message.append(msg);
+      XMPP.send(message, context());
+      return;
+    }
+
+    if (msg.has(Start.class)) {
+      enterRoom(msg.from());
+      XMPP.send(new Message(jid, status.owner(), ExpertManager.instance().profile(msg.from().bare())), context());
+    }
+    else if (msg.has(Cancel.class) || msg.has(Done.class)) {
+      if (msg.from().bareEq(status.owner())) {
+        LaborExchange.reference(context()).tell(msg.get(Operations.Command.class), self());
       }
-      broadcast(msg);
+    }
+    else if (!msg.from().bareEq(status.owner()) && msg.body().startsWith("{\"type\":\"visitedPages\"")) {
+      XMPP.send(new Message(jid, status.owner(), msg.body()), context());
     }
     log(msg);
 
-    if (msg.has(Operations.Start.class)) {
-      enterRoom(msg.from());
-      XMPP.send(new Message(jid, owner(), ExpertManager.instance().profile(msg.from().bare())), context());
-    }
-    else if (msg.has(Operations.Cancel.class) || msg.has(Operations.Done.class)) {
-      if (msg.from().bareEq(owner())) {
-        LaborExchange.reference(context()).tell(msg.get(Operations.Command.class), self());
-      }
-      else exitRoom(msg.from());
-    }
-    else if (!msg.from().bareEq(owner()) && msg.body().startsWith("{\"type\":\"visitedPages\"")) {
-      XMPP.send(new Message(jid, owner(), msg.body()), context());
-    }
-    else if (msg.from().bareEq(owner()) && !isOpen()) {
-      final Offer offer = offer();
+    if (msg.from().bareEq(status.owner()) && !status.isOpen()) {
+      final Offer offer = status.offer();
       if (offer != null) {
         invoke(new Message(XMPP.jid(), jid, new Operations.Create(), offer));
         LaborExchange.reference(context()).tell(offer, self());
       }
     }
+    if (msg.type() == MessageType.GROUP_CHAT)
+      broadcast(msg);
   }
 
   public void invoke(Presence presence) {
-    if (owner() != null && !partisipant(presence.from()))
+    if (status.owner() == null)
+      enterRoom(presence.from());
+    else if (!status.isParticipant(presence.from()))
       return;
-    enterRoom(presence.from());
-    log(presence);
     final JID from = presence.from();
     final Presence.Status currentStatus = this.presence.get(from);
     if (presence.status().equals(currentStatus))
       return;
     this.presence.put(from, presence.status());
+    log(presence);
     broadcast(presence);
   }
 
@@ -136,26 +110,11 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     XMPP.send(Iq.answer(command), context());
     if (command.type() == Iq.IqType.SET)
       XMPP.send(new Message(jid, command.from(), "Room set up and unlocked."), context());
-  }
-
-  @Nullable
-  private Offer offer() {
-    final Optional<Message> subject = snapshot.stream()
-            .filter(s -> s instanceof Message).map(s -> (Message) s)
-            .filter(m -> m.get(Message.Subject.class) != null)
-            .findFirst();
-    if (subject.isPresent()) {
-      final Offer offer = new Offer(jid, subject.get().from(), subject.get().get(Message.Subject.class));
-      final List<JID> workers = new ArrayList<>();
-      workers(workers);
-      workers.stream().map(JID::bare).forEach(offer::addWorker);
-      return offer;
-    }
-    return null;
+    status.accept(command);
   }
 
   private void broadcast(Stanza stanza) {
-    for (final JID jid : partisipants) {
+    for (final JID jid : status.participants) {
       if (jid.bareEq(stanza.from()))
         continue;
 
@@ -169,8 +128,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   private void enterRoom(JID jid) {
     if (jid.bareEq(this.jid))
       return;
-    if (!partisipants.contains(jid.bare())) {
-      partisipants.add(jid.bare());
+    if (!status.isParticipant(jid)) {
       snapshot.stream().filter(s -> s instanceof Message && ((Message)s).type() == MessageType.GROUP_CHAT).map(s -> (Message)s).forEach(message -> {
         final Message copy = message.copy();
         copy.to(jid);
@@ -180,14 +138,6 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     }
   }
 
-  private void exitRoom(JID jid) {
-    partisipants.remove(jid.bare());
-  }
-
-  private boolean partisipant(JID jid) {
-    return partisipants.contains(jid.bare());
-  }
-
   @NotNull
   private JID roomAlias(JID from) {
     return new JID(this.jid.local(), this.jid.domain(), from.local());
@@ -195,56 +145,42 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
 
   public void log(Stanza stanza) { // saving everything to archive
     snapshot.add(stanza);
+    status.accept(stanza);
     Archive.instance().log(jid.local(), stanza.from().toString(), stanza.xmlString());
   }
 
   public void invoke(Class<?> c) {
     if (Status.class.equals(c)) {
-      Status result = new Status();
-      final List<JID> workers = new ArrayList<>();
-      boolean lastActive = workers(workers);
-      result.workers = workers.toArray(new JID[workers.size()]);
-      result.open = isOpen();
-      result.lastActive = lastActive;
-      sender().tell(result, self());
+      sender().tell(status.copy(), self());
     }
     else unhandled(c);
   }
 
-  private boolean workers(List<JID> workers) {
-    boolean lastActive = false;
-    for (final Item item : snapshot) {
-      if (item instanceof Message) {
-        final Message msg = (Message) item;
-        if (msg.has(Operations.Start.class)) {
-          workers.add(msg.from());
-          lastActive = true;
-        }
-        else if (msg.has(Operations.Done.class)) {
-          lastActive = false;
-        }
-        else if (msg.has(Operations.Cancel.class)) {
-          //noinspection StatementWithEmptyBody
-          while(workers.remove(msg.from()));
-          lastActive = false;
-        }
-      }
-    }
-    return lastActive;
+  public static Status status(JID roomJid, ActorContext context) {
+    return (Status) AkkaTools.ask(XMPP.agent(roomJid, context), Status.class);
   }
 
   public static class Status {
-    private JID[] workers;
+    private final Set<JID> workers = new HashSet<>();
+    private final Set<JID> slackers = new HashSet<>();
+    private final Set<JID> participants = new HashSet<>();
+    private JID owner = null;
+    private JID lastWorker = null;
     private boolean open;
     public boolean lastActive;
+    private Offer offer;
 
-    public JID[] workers() {
-      return workers;
+    public boolean isWorker(JID jid) {
+      return workers.contains(jid) && !slackers.contains(jid);
     }
 
     @Nullable
     public JID lastWorker() {
-      return workers.length > 0 ? workers[workers.length - 1] : null;
+      return lastWorker;
+    }
+
+    public JID owner() {
+      return owner;
     }
 
     public boolean isOpen() {
@@ -252,7 +188,73 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     }
 
     public boolean isLastWorkerActive() {
-      return lastActive;
+      return open && lastWorker != null && !slackers.contains(lastWorker);
+    }
+
+    public boolean isParticipant(JID jid) {
+      return jid.local().isEmpty() || participants.contains(jid.bare());
+    }
+
+    private void accept(Stanza item) {
+      if (item instanceof Message) {
+        final Message msg = (Message) item;
+        final JID bareSender = msg.from().bare();
+        if (msg.has(Start.class)) {
+          participants.add(bareSender);
+          lastWorker = bareSender;
+          workers.add(bareSender);
+          lastActive = true;
+          open = true;
+        }
+        else if (msg.has(Done.class)) {
+          lastActive = false;
+          open = false;
+          participants.remove(bareSender);
+        }
+        else if (msg.has(Cancel.class)) {
+          if (msg.from().bareEq(owner())) {
+            open = false;
+            offer = null;
+          }
+          else {
+            //noinspection StatementWithEmptyBody
+            slackers.add(bareSender);
+            lastActive = false;
+            participants.remove(bareSender);
+          }
+        }
+        else if (msg.has(Message.Subject.class)) {
+          owner = bareSender;
+          this.offer = new Offer(msg.to().bare(), owner, msg.get(Message.Subject.class));
+          participants.add(bareSender);
+        }
+      }
+    }
+
+    public boolean interview(JID worker) {
+      return !slackers.contains(worker);
+    }
+
+    public Offer offer() {
+      return offer;
+    }
+
+    public Status() {
+    }
+
+    private Status(JID owner, Offer offer, JID lastWorker, boolean open, boolean lastActive, Set<JID> workers, Set<JID> slackers, Set<JID> participants) {
+      this.owner = owner;
+      this.lastWorker = lastWorker;
+      this.open = open;
+      this.lastActive = lastActive;
+      this.workers.addAll(workers);
+      this.slackers.addAll(slackers);
+      this.offer = offer;
+      this.participants.addAll(participants);
+    }
+
+    public Status copy() {
+      return new Status(owner, offer, lastWorker, open, lastActive, workers, slackers, participants);
     }
   }
 }

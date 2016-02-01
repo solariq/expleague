@@ -9,6 +9,7 @@ import scala.concurrent.duration.FiniteDuration;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlValue;
 
 /**
  * User: solar
@@ -102,4 +103,14 @@ public class Operations {
   public static class Suspend extends Command {}
 
   public static abstract class Command extends Item {}
+
+  @XmlRootElement
+  public static class Token extends Item {
+    @XmlValue
+    private String value;
+
+    public String value() {
+      return value;
+    }
+  }
 }

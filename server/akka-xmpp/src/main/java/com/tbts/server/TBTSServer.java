@@ -6,6 +6,7 @@ import com.tbts.server.agents.LaborExchange;
 import com.tbts.server.agents.XMPP;
 import com.tbts.server.dao.Archive;
 import com.tbts.server.services.XMPPServices;
+import com.tbts.xmpp.control.sasl.Failure;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -60,6 +61,7 @@ public class TBTSServer {
     private final String domain;
     private final Class<? extends Archive> archive;
     private final Class<? extends Roster> roster;
+    private final Type type;
 
     public Cfg(Config load) throws ClassNotFoundException {
       final Config tbts = load.getConfig("tbts");
@@ -69,6 +71,7 @@ public class TBTSServer {
       archive = (Class<? extends Archive>) Class.forName(tbts.getString("archive"));
       //noinspection unchecked
       roster = (Class<? extends Roster>) Class.forName(tbts.getString("roster"));
+      type = Type.valueOf(tbts.getString("type").toUpperCase());
     }
 
     public String domain() {
@@ -85,6 +88,15 @@ public class TBTSServer {
 
     public Class<? extends Roster> roster() {
       return roster;
+    }
+
+    public Type type() {
+      return type;
+    }
+
+    public enum Type {
+      PRODUCTION,
+      TEST
     }
   }
 }

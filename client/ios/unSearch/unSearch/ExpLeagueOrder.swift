@@ -127,7 +127,7 @@ class ExpLeagueOrder: NSManagedObject {
     
     func cancel() {
         flags = flags | ExpLeagueOrderFlags.Canceled.rawValue
-        let msg = XMPPMessage()
+        let msg = XMPPMessage(type: "normal", to: jid)
         msg.addChild(DDXMLElement(name: "cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
         stream.sendElement(msg)
         do {
@@ -139,7 +139,7 @@ class ExpLeagueOrder: NSManagedObject {
     
     func close(stars score: Int) {
         flags = flags | ExpLeagueOrderFlags.Closed.rawValue
-        let msg = XMPPMessage()
+        let msg = XMPPMessage(type: "normal", to: jid)
         msg.addChild(DDXMLElement(name: "done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
         let feedback = DDXMLElement(name: "expert-feedback", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
         feedback.addAttributeWithName("stars", integerValue: score)

@@ -256,7 +256,10 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                     if (msg.isAnswer) {
                         model = AnswerReceivedModel(controller: parent, progress: progressModel!)
                         progressModel = nil
-                        cells.removeAtIndex(progressCellIndex!)
+                        if (progressCellIndex != nil) {
+                            cells.removeAtIndex(progressCellIndex!)
+                            progressCellIndex = nil
+                        }
                         haveActiveExpert = false
                     }
                     else {

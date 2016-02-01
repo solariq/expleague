@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import akka.actor.Cancellable;
 import akka.actor.Props;
 import akka.actor.Status;
+import akka.io.Tcp;
 import akka.io.TcpMessage;
 import akka.util.Timeout;
 import com.spbsu.commons.func.Action;
@@ -100,6 +101,7 @@ public class BOSHSession extends UntypedActorAdapter {
     businesLogic.tell(new Open(), self());
   }
 
+  public void invoke(Tcp.SuspendReading$ ignore) {}
   public void invoke(Status.Failure failure) {
     //noinspection ThrowableResultOfMethodCallIgnored
     if (failure.cause() != null)

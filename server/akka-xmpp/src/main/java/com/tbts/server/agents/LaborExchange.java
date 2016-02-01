@@ -1,12 +1,14 @@
 package com.tbts.server.agents;
 
 import akka.actor.*;
+import akka.japi.Option;
 import akka.persistence.SaveSnapshotFailure;
 import akka.persistence.SaveSnapshotSuccess;
 import akka.persistence.SnapshotOffer;
 import akka.persistence.UntypedPersistentActor;
 import akka.util.Timeout;
 import com.spbsu.commons.system.RuntimeUtils;
+import com.spbsu.commons.util.Pair;
 import com.tbts.model.Offer;
 import com.tbts.model.Operations;
 import com.tbts.model.ServiceStatus;
@@ -22,6 +24,7 @@ import scala.concurrent.duration.Duration;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * User: solar
@@ -29,6 +32,7 @@ import java.util.concurrent.TimeUnit;
  * Time: 15:18
  */
 public class LaborExchange extends UntypedPersistentActor {
+  private static final Logger log = Logger.getLogger(LaborExchange.class.getName());
   private final Map<String, ActorRef> openPositions = new HashMap<>();
   public LaborExchange() {
     XMPP.send(new Presence(XMPP.jid(), false, new ServiceStatus(0)), context());
@@ -41,6 +45,7 @@ public class LaborExchange extends UntypedPersistentActor {
   }
 
   public void invoke(Offer offer) {
+    log.fine("Labor exchange received offer " + offer.room().local() + " looking for broker");
     final Collection<ActorRef> children = JavaConversions.asJavaCollection(context().children());
     for (final ActorRef ref : children) {
       if (!"experts".equals(ref.path().name())) {
@@ -127,11 +132,13 @@ public class LaborExchange extends UntypedPersistentActor {
       sender().tell(AkkaTools.getOrCreate(jid.bare().toString(), context(), () -> Props.create(ExpertRole.class)), self());
     }
 
-    public void invoke(Object o) {
-      if (o instanceof JID || o instanceof ExpertRole.State || o instanceof Timeout)
-        return;
+    public void invoke(Offer offer) {
+      log.fine("Experts department received offer " + offer.room().local());
       JavaConversions.asJavaCollection(context().children()).stream().forEach(
-          expert -> expert.forward(o, context())
+          expert -> {
+            log.finest("Forwarding offer to " + Experts.jid(expert));
+            expert.forward(offer, context());
+          }
       );
     }
 
@@ -144,6 +151,17 @@ public class LaborExchange extends UntypedPersistentActor {
       readyCount += increment(next) - increment(current);
       states.put(key, next);
       sendState();
+    }
+
+    public void invoke(Pair<Object, JID> whisper) {
+      final ActorRef ref;
+      scala.Option<ActorRef> child = context().child(whisper.second.bare().toString());
+      if (child.isEmpty())
+        ref = context().actorOf(Props.create(ExpertRole.class), whisper.second.bare().toString());
+      else
+        ref = child.get();
+      if (whisper.first != null)
+        ref.forward(whisper.first, context());
     }
 
     public void invoke(Timeout to) {
@@ -181,8 +199,8 @@ public class LaborExchange extends UntypedPersistentActor {
       return JID.parse(ref.path().name());
     }
 
-    public static ActorRef agent(JID onTask, ActorContext context) {
-      return AkkaTools.ask(experts(context), onTask);
+    public static void tellTo(JID jid, Object o, ActorRef from, ActorContext context) {
+      experts(context).tell(Pair.create(o, jid), from);
     }
   }
 }

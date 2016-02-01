@@ -85,13 +85,18 @@ public class JID implements Serializable, Cloneable {
   }
 
   public static JID parse(String addr) {
-    addr = addr.toLowerCase();
-    //noinspection ResultOfMethodCallIgnored
-    URI.create(addr); // check syntax
-    final int resourceStart = addr.indexOf('/');
-    final String bare = resourceStart >= 0 ? addr.substring(0, resourceStart).intern() : addr.intern();
-    final String resource = resourceStart >= 0 ? addr.substring(resourceStart + 1) : null;
-    return new JID(bare, resource);
+    try {
+      addr = addr.toLowerCase();
+      //noinspection ResultOfMethodCallIgnored
+      URI.create(addr); // check syntax
+      final int resourceStart = addr.indexOf('/');
+      final String bare = resourceStart >= 0 ? addr.substring(0, resourceStart).intern() : addr.intern();
+      final String resource = resourceStart >= 0 ? addr.substring(resourceStart + 1) : null;
+      return new JID(bare, resource);
+    }
+    catch (Exception e) {
+      return null;
+    }
   }
 
   public JID resource(String bind) {
