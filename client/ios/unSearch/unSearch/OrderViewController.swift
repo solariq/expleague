@@ -87,13 +87,8 @@ class OrderDescriptionViewController: UITableViewController {
         urgencyLabel.text = type.caption
         sender.value = type.value
     }
-    var picker: ImagePickerDelegate?
 
     @IBAction func attach(sender: UIButton) {
-        let picker = UIImagePickerController()
-        self.picker = ImagePickerDelegate(attachments: attachments, picker: picker)
-        picker.delegate = self.picker
-        picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
         self.presentViewController(picker, animated: true, completion: nil)
     }
 
@@ -102,6 +97,7 @@ class OrderDescriptionViewController: UITableViewController {
     @IBOutlet weak var attachmentsView: UICollectionView!
     let attachments = AttachmentsViewDelegate()
     var orderTextBGColor: UIColor?
+    let picker = UIImagePickerController()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -117,6 +113,8 @@ class OrderDescriptionViewController: UITableViewController {
         attachmentsView.layoutMargins = UIEdgeInsetsZero
         attachments.view = attachmentsView
         attachments.parent = self
+        picker.delegate = ImagePickerDelegate(queue: attachments, picker: picker)
+        picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
     }
     
     func dismissKeyboard() {
@@ -149,7 +147,7 @@ class ImageAttachment: UICollectionViewCell {
     @IBOutlet weak var progress: UIProgressView!
 }
 
-class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionViewDataSource {
+class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionViewDataSource, ImageSenderQueue {
     var view: UICollectionView?
     var cells: [UIImage] = []
     var progress: [(UIProgressView)->Void] = []
@@ -199,9 +197,13 @@ class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionV
     var parent: OrderDescriptionViewController?
 }
 
+protocol ImageSenderQueue {
+    func append(id: String, image: UIImage, progress: (UIProgressView) -> Void)
+}
+
 class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate {
     weak var progressView: UIProgressView?
-    let attachments: AttachmentsViewDelegate
+    let queue: ImageSenderQueue
     let picker: UIImagePickerController
     
     var image: UIImage?
@@ -210,7 +212,7 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
         imageId = NSUUID().UUIDString + ".jpeg";
         if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
-            attachments.append(imageId!, image: image, progress: {
+            queue.append(imageId!, image: image, progress: {
                 self.progressView = $0
                 AppDelegate.instance.activeProfile!.saveImage(self.imageId!, image: image)
                 self.uploadImage()
@@ -289,8 +291,8 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
         }
     }
 
-    init(attachments: AttachmentsViewDelegate, picker: UIImagePickerController) {
-        self.attachments = attachments
+    init(queue: ImageSenderQueue, picker: UIImagePickerController) {
+        self.queue = queue
         self.picker = picker
     }
 }

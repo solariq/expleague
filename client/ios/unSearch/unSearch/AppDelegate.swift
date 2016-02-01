@@ -177,7 +177,6 @@ extension AppDelegate: UIApplicationDelegate {
         ]
         UIApplication.sharedApplication().statusBarStyle = .LightContent
         
-        application.registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil))
         let action = UIMutableUserNotificationAction()
         action.activationMode = .Background
         action.title = "Перейти"
@@ -187,8 +186,9 @@ extension AppDelegate: UIApplicationDelegate {
         let notificationCat = UIMutableUserNotificationCategory()
         notificationCat.identifier = ExpLeagueMessage.EXPERT_FOUND_NOTIFICATION
         notificationCat.setActions([action], forContext: .Minimal)
-        let settings = UIUserNotificationSettings(forTypes: .Alert, categories: [notificationCat])
+        let settings = UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: [notificationCat])
         application.registerUserNotificationSettings(settings)
+        application.registerForRemoteNotifications()
         return true
     }
 
@@ -250,5 +250,17 @@ extension AppDelegate: UIApplicationDelegate {
             // App was running in the foreground. Perhaps
             // show a UIAlertView to ask them what they want to do?
         }
+    }
+    
+    func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject]) {
+        
+    }
+    
+    func application(application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: NSData) {
+        print(deviceToken)
+    }
+    
+    func application(application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: NSError) {
+        print(error)
     }
 }

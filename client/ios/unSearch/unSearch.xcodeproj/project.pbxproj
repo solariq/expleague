@@ -23,6 +23,7 @@
 		EE2DB1921C4E5AD800F9601D /* ChatInput.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE2DB1911C4E5AD800F9601D /* ChatInput.xib */; };
 		EE2DB1941C4E5E9000F9601D /* ChatInputViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE2DB1931C4E5E9000F9601D /* ChatInputViewController.swift */; };
 		EE3EFCC31C5AA308000CC08E /* UIGestureRecognizerClosure.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3EFCC21C5AA308000CC08E /* UIGestureRecognizerClosure.swift */; };
+		EE5E59A01C5F70720040246E /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE5E599F1C5F70720040246E /* StoreKit.framework */; };
 		EE62BEEF1C452CA1004B6A42 /* MessagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEEE1C452CA1004B6A42 /* MessagesViewController.swift */; };
 		EE62BF011C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEFD1C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift */; };
 		EE62BF021C4802B2004B6A42 /* ExpLeagueMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEFE1C4802B2004B6A42 /* ExpLeagueMessage.swift */; };
@@ -60,6 +61,7 @@
 		EE2DB1911C4E5AD800F9601D /* ChatInput.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ChatInput.xib; sourceTree = "<group>"; };
 		EE2DB1931C4E5E9000F9601D /* ChatInputViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatInputViewController.swift; sourceTree = "<group>"; };
 		EE3EFCC21C5AA308000CC08E /* UIGestureRecognizerClosure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIGestureRecognizerClosure.swift; sourceTree = "<group>"; };
+		EE5E599F1C5F70720040246E /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		EE62BEEE1C452CA1004B6A42 /* MessagesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessagesViewController.swift; sourceTree = "<group>"; };
 		EE62BEFD1C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueMessage+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		EE62BEFE1C4802B2004B6A42 /* ExpLeagueMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueMessage.swift; sourceTree = "<group>"; };
@@ -81,6 +83,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1C25086F840FE7194FFFA6FF /* Pods_unSearch.framework in Frameworks */,
+				EE5E59A01C5F70720040246E /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,6 +140,7 @@
 		9C4570206917EC63AFB195ED /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EE5E599F1C5F70720040246E /* StoreKit.framework */,
 				D0806994D5FE374ABCB8A184 /* Pods_unSearch.framework */,
 			);
 			name = Frameworks;
@@ -210,6 +214,14 @@
 				TargetAttributes = {
 					688A5EBB752445F69E4387AA = {
 						DevelopmentTeam = 726B9M57JK;
+						SystemCapabilities = {
+							com.apple.InAppPurchase = {
+								enabled = 1;
+							};
+							com.apple.Push = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -355,7 +367,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = unSearch/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.expleague.unSearch;
+				PRODUCT_BUNDLE_IDENTIFIER = com.expleague.ios.unSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				USER_HEADER_SEARCH_PATHS = "\"${PROJECT_DIR}/Pods\"/**";
@@ -379,6 +391,7 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -425,6 +438,7 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -456,7 +470,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = unSearch/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.expleague.unSearch;
+				PRODUCT_BUNDLE_IDENTIFIER = com.expleague.ios.unSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				USER_HEADER_SEARCH_PATHS = "\"${PROJECT_DIR}/Pods\"/**";

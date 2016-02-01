@@ -34,6 +34,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
     let input = ChatInputViewController(nibName: "ChatInput", bundle: nil)
     let messagesView = UITableView();
     let answerView = UIWebView();
+    let picker = UIImagePickerController()
     var data: ChatMessagesModel?
     
     private var answerText: String = "<html><body>"
@@ -71,6 +72,8 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
         messagesView.separatorStyle = .None
         messagesView.backgroundColor = ChatCell.bgColor
         scrollView.backgroundColor = messagesView.backgroundColor
+//        picker.delegate = ImagePickerDelegate(queue: <#T##ImageSenderQueue#>, picker: picker)
+        picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
 
         messagesView.backgroundView = nil
         AppDelegate.instance.messagesView = self

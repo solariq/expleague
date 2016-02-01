@@ -506,11 +506,11 @@ class AnswerReceivedModel: ChatCellModel {
         guard let arCell = cell as? AnswerReceivedCell else {
             throw ModelErrors.WrongCellType
         }
+        try progress.form(chatCell: arCell)
         arCell.action = {
             self.controller.scrollView.scrollRectToVisible(self.controller.answerView.frame, animated: true)
             self.controller.answerView.stringByEvaluatingJavaScriptFromString("document.getElementById('\(self.id!)').scrollIntoView()")
         }
-        try progress.form(chatCell: arCell)
     }
     
     class AnswerVisitor: ExpLeagueMessageVisitor {
