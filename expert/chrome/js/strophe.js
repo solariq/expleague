@@ -1458,7 +1458,7 @@ Strophe = {
     /* jshint ignore:start */
     log: function (level, msg)
     {
-        //console.log("strophe:: " + level + "\t\t" + msg)
+        console.log("strophe:: " + level + "\t\t" + msg)
     },
     /* jshint ignore:end */
 
@@ -2196,7 +2196,7 @@ Strophe.Connection = function (service, options)
     this._sasl_challenge_handler = null;
 
     // Max retries before disconnecting
-    this.maxRetries = 5;
+    this.maxRetries = 15;
 
     // setup onIdle callback every 1/10th of a second
     this._idleTimeout = setTimeout(this._onIdle.bind(this), 100);
@@ -2976,12 +2976,12 @@ Strophe.Connection.prototype = {
      */
     _dataRecv: function (req, raw)
     {
-        console.log('_dataRecv::' + req.data);
-        Strophe.info("_dataRecv called");
+        //console.log('_dataRecv::' + req.data);
+        //Strophe.info("_dataRecv called");
         var elem = this._proto._reqToData(req);
         if (elem === null) { return; }
 
-        console.log('_dataRecv1::' + elem.outerHTML);
+        //console.log('_dataRecv1::' + elem.outerHTML);
         if (this.xmlInput !== Strophe.Connection.prototype.xmlInput) {
             if (elem.nodeName === this._proto.strip && elem.childNodes.length) {
                 this.xmlInput(elem.childNodes[0]);
