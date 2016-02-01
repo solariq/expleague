@@ -29,8 +29,9 @@ class HistoryViewController: UITableViewController {
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
+        let table = (self.view as! UITableView)
+        table.reloadData()
         if let order = AppDelegate.instance.activeProfile!.selected {
-            let table = (self.view as! UITableView)
             let path = NSIndexPath(forRow: keys.indexOf(order)!, inSection: 0)
             table.selectRowAtIndexPath(path, animated: false, scrollPosition: .Top)
             self.tableView(table, didSelectRowAtIndexPath: path)
