@@ -253,7 +253,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
 
     onTransition((from, to) -> {
       final Offer first = nextStateData() != null && nextStateData().chosen() ? nextStateData().offer() : null;
-      log.fine(from + " -> " + to + (first != null ? " " + first : ""));
+      log.fine("Expert " + jid() + " state change " + from + " -> " + to + (first != null ? " " + first : ""));
     });
 
     onTransition((from, to) -> {
