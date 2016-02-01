@@ -6,6 +6,8 @@ import akka.persistence.SaveSnapshotSuccess;
 import akka.persistence.UntypedPersistentActor;
 import com.spbsu.commons.system.RuntimeUtils;
 import com.spbsu.commons.util.MultiMap;
+import com.tbts.model.Operations;
+import com.tbts.util.ios.NotificationsManager;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Iq;
 import com.tbts.xmpp.stanza.Message;
@@ -15,6 +17,7 @@ import com.tbts.xmpp.stanza.Stanza;
 import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * User: solar
@@ -39,7 +42,6 @@ public class UserAgent extends UntypedPersistentActor {
     return bareJid;
   }
   private Map<String, ActorRef> connecters = new HashMap<>();
-  private ActorRef expert;
 
   public static class ConnStatus {
     final boolean connected;
@@ -57,8 +59,6 @@ public class UserAgent extends UntypedPersistentActor {
       final ActorRef put = connecters.put(resource, sender());
       if (put != null)
         log.warning("Concurrent connectors for the same resource: " + resource + " for " + jid() + "!");
-      if ("expert".equals(resource))
-        expert = LaborExchange.Experts.agent(jid(), context());
       final Collection<String> deliveredToResource = delivered.get(resource);
       messages.stream()
           .filter(msg -> !deliveredToResource.contains(msg.id()))
@@ -111,12 +111,24 @@ public class UserAgent extends UntypedPersistentActor {
 
   private void out(Stanza stanza) {
     XMPP.send(stanza, context());
-    if(expert != null)
-      expert.tell(stanza, self());
+    if("expert".equals(stanza.from().resource()))
+      LaborExchange.Experts.tellTo(jid(), stanza, self(), context());
+    if (stanza instanceof Message) {
+      final Message message = (Message) stanza;
+      if (message.has(Operations.Token.class)) {
+        if (appTokensCached != null)
+          appTokensCached.add(message.get(Operations.Token.class).value());
+      }
+    }
   }
 
   private void in(Stanza stanza) {
     connecters.values().stream().forEach(conn -> conn.tell(stanza, self()));
+    if (connecters.isEmpty()) {
+      Arrays.stream(appTokens()).forEach(
+          token -> NotificationsManager.instance().sendPush(stanza.from(), token)
+      );
+    }
   }
 
   @Override
@@ -128,6 +140,18 @@ public class UserAgent extends UntypedPersistentActor {
       final Delivered del = (Delivered) o;
       delivered.put(del.resource, del.id);
     }
+  }
+
+  private List<String> appTokensCached = null;
+  public String[] appTokens() {
+    if (appTokensCached == null) {
+      final List<String> tokens = messages.stream()
+          .filter(m -> m.has(Operations.Token.class))
+          .map(m -> m.get(Operations.Token.class).value())
+          .collect(Collectors.toCollection(ArrayList<String>::new));
+      appTokensCached = tokens;
+    }
+    return appTokensCached.toArray(new String[appTokensCached.size()]);
   }
 
   public void invoke(SaveSnapshotSuccess sss) {}

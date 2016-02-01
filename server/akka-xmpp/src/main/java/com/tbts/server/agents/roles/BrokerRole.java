@@ -1,16 +1,9 @@
 package com.tbts.server.agents.roles;
 
-import akka.actor.AbstractFSM;
-import akka.actor.ActorRef;
-import akka.actor.Cancellable;
-import akka.actor.FSM;
+import akka.actor.*;
 import akka.util.Timeout;
-import com.spbsu.commons.util.Pair;
-import com.tbts.model.ExpertManager;
 import com.tbts.model.Offer;
-import com.tbts.model.Operations;
-import com.tbts.model.Operations.Cancel;
-import com.tbts.server.agents.LaborExchange;
+import com.tbts.model.Operations.*;
 import com.tbts.server.agents.TBTSRoomAgent;
 import com.tbts.server.agents.XMPP;
 import com.tbts.util.akka.AkkaTools;
@@ -19,11 +12,13 @@ import com.tbts.xmpp.stanza.Message;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import static com.tbts.model.Operations.*;
 import static com.tbts.server.agents.LaborExchange.*;
 
 /**
@@ -33,7 +28,7 @@ import static com.tbts.server.agents.LaborExchange.*;
  */
 public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
   private static final Logger log = Logger.getLogger(BrokerRole.class.getName());
-  public static class Task {
+  public class Task {
     public final Offer offer;
     private TBTSRoomAgent.Status roomStatus;
     private final Queue<JID> candidates = new ArrayDeque<>();
@@ -48,11 +43,12 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
 
     public Task candidate(JID expert) {
       candidates.add(expert);
+      Experts.tellTo(expert, offer, self(), context());
       return this;
     }
 
     public Task enter(JID expert) {
-      invited = null;
+      invited = expert;
       onTask = expert;
       return this;
     }
@@ -71,15 +67,14 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
 
     public Task invite(JID expert) {
       invited = expert;
-      return this;
-    }
-
-    public boolean isWorker(JID expert) {
-      for (final JID jid : roomStatus.workers()) {
-        if (jid.bareEq(expert))
-          return true;
+      JID jid;
+      while((jid = next()) != null) {
+        if (!jid.bareEq(expert))
+          Experts.tellTo(jid, new Cancel(), self(), context());
       }
-      return false;
+      candidates.add(expert);
+      sender().tell(new Invite(), self());
+      return this;
     }
 
     public Task refused(JID jid) {
@@ -90,10 +85,24 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
     public JID jid() {
       return offer.room();
     }
+
+    public void refuse(JID expert) {
+      refused.add(expert);
+      sender().tell(new Cancel(), self());
+    }
+
+    public Task exit() {
+      invited = null;
+      onTask = null;
+      refused.clear();
+      candidates.clear();
+      return this;
+    }
   }
 
   public static final FiniteDuration RETRY_TIMEOUT = Duration.apply(2, TimeUnit.MINUTES);
 
+  private String explanation = "";
   private Cancellable timeout;
 
   {
@@ -101,22 +110,26 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
     when(State.UNEMPLOYED,
         matchEvent(Offer.class,
             (offer, zero) -> {
+              explain("Received new task: " + offer + ".");
               final ActorRef agent = XMPP.register(offer.room(), context());
               final TBTSRoomAgent.Status status = AkkaTools.ask(agent, TBTSRoomAgent.Status.class);
+              final JID lastWorker = status.lastWorker();
               if (status.isLastWorkerActive()) {
-                final ActorRef expert = Experts.agent(status.lastWorker(), context());
-                expert.tell(new Resume(offer), self());
+                //noinspection ConstantConditions
+                explain("Trying to get active worker " + lastWorker.local() + " back to the task.");
+                Experts.tellTo(lastWorker, new Resume(offer), self(), context());
                 final Task task = new Task(offer, status);
-                task.onTask = status.lastWorker();
-                return goTo(State.WORK_TRACKING).using(task).replying(new Ok());
+                task.onTask = lastWorker;
+                return goTo(State.WORK_TRACKING).using(task.candidate(lastWorker).invite(lastWorker).enter(lastWorker)).replying(new Ok());
               }
               else {
+                explain("No active work on task found.");
                 final Task task = new Task(offer, status);
-                if (status.lastWorker() != null) {
-                  timeout = AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT, self());
-                  final ActorRef expert = Experts.agent(status.lastWorker(), context());
-                  expert.tell(offer, self());
-                  return goTo(State.STARVING).using(task).replying(new Ok());
+                if (lastWorker != null) {
+                  explain("Trying to get the recent active worker (" + lastWorker + ") back to the task.");
+                  nextTimer(AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT, self()));
+                  task.candidate(lastWorker);
+                  return goTo(State.STARVING).using(task.candidate(lastWorker)).replying(new Ok());
                 }
                 else return lookForExpert(task).using(task).replying(new Ok());
               }
@@ -127,43 +140,43 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
     when(State.STARVING,
         matchEvent(Ok.class,
             (ok, task) -> {
-              if (timeout != null) {
-                timeout.cancel();
-                timeout = null;
-              }
+              nextTimer(null);
+              explain("Received agreement from expert " + Experts.jid(sender()).local());
               final JID expert = Experts.jid(sender());
               if (interview(expert, task)) {
+                explain("Expert passed interview, sending him an invitation.");
                 XMPP.send(new Message(expert, task.jid(), new Invite()), context());
-                sender().tell(new Invite(), self());
                 return goTo(State.INVITE).using(task.invite(expert));
               }
               else {
-                task.refused.add(expert);
-                sender().tell(new Cancel(), self());
+                explain("Expert failed interview, canceling.");
+                task.refuse(expert);
                 return stay();
               }
             }
         ).event(ActorRef.class,
             (expert, task) -> {
-              if (!task.refused.contains(Experts.jid(expert))) {
-                expert.tell(task.offer, self());
+              final JID jid = Experts.jid(expert);
+              explain("Labor exchange send us new candidate: " + jid + ".");
+              if (!task.refused.contains(jid)) {
+                explain("Have not seen him before, sending offer.");
+                task.candidate(jid);
               }
+              else explain("This candidate has already refused our invitation/check/failed interview. Ignoring.");
               return stay();
             }
         ).event(Cancel.class,
-            (cancel, task) -> stay().using(task.refused(Experts.jid(sender())))
-        ).event(Cancel.class, // from room
-            (cancel, task) -> task.jid().bareEq(JID.parse(sender().path().name())),
+            (cancel, task) -> !task.jid().bareEq(XMPP.jid(sender())),
             (cancel, task) -> {
-              JID expert;
-              while ((expert = task.next()) != null)
-                context().actorSelection("/user/labor-exchange/experts-dpt/" + expert.bare().toString()).tell(new Cancel(), self());
-              return goTo(State.UNEMPLOYED).using(null);
+              nextTimer(null);
+              explain("Expert " + Experts.jid(sender()) + " refused the check.");
+              return stay().using(task.refused(Experts.jid(sender())));
             }
+        ).event(Cancel.class,
+            (cancel, task) -> task.jid().bareEq(XMPP.jid(sender())),
+            (cancel, task) -> cancelTask(task)
         ).event(Timeout.class,
             (to, task) -> lookForExpert(task)
-        ).event(Offer.class,
-            (offer, task) -> stay().replying(new Cancel())
         )
     );
 
@@ -171,33 +184,31 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
         matchEvent(Start.class,
             (start, task) -> task.invited(Experts.jid(sender())),
             (start, task) -> {
+              explain("Expert " + Experts.jid(sender()) + " started working on task " + task.offer.room().local() + ".");
               XMPP.send(new Message(Experts.jid(sender()), task.jid(), new Start()), context());
-              JID expert;
-              while ((expert = task.next()) != null)
-                context().actorSelection("/user/labor-exchange/experts-dpt/" + expert.bare().toString()).tell(new Cancel(), self());
               return goTo(State.WORK_TRACKING).using(task.enter(task.invited));
             }
         ).event(Cancel.class, // from invitation
             (cancel, task) -> task.invited(Experts.jid(sender())),
             (cancel, task) -> {
+              explain("Expert " + Experts.jid(sender()) + " declined invitation");
               XMPP.send(new Message(Experts.jid(sender()), task.jid(), new Cancel()), context());
               return lookForExpert(task);
             }
         ).event(Cancel.class, // from check
-            (cancel, task) -> !task.invited(Experts.jid(sender())) && !task.jid().bareEq(JID.parse(sender().path().name())),
-            (cancel, task) -> stay().using(task.refused(Experts.jid(sender())))
-        ).event(Cancel.class, // from room
-            (cancel, task) -> task.jid().bareEq(JID.parse(sender().path().name())),
+            (cancel, task) -> !task.invited(Experts.jid(sender())) && !task.jid().bareEq(XMPP.jid(sender())),
             (cancel, task) -> {
-              JID expert;
-              while ((expert = task.next()) != null)
-                context().actorSelection("/user/labor-exchange/experts-dpt/" + expert.bare().toString()).tell(new Cancel(), self());
-              return goTo(State.UNEMPLOYED).using(null);
+              explain("Expert " + Experts.jid(sender()) + " is not ready");
+              return stay().using(task.refused(Experts.jid(sender())));
             }
+        ).event(Cancel.class, // from room
+            (cancel, task) -> task.jid().bareEq(XMPP.jid(sender())),
+            (cancel, task) -> cancelTask(task)
         ).event(Ok.class, // from check
-            (ok, task) -> stay()
-        ).event(Offer.class,
-            (offer, task) -> stay().replying(new Cancel())
+            (ok, task) -> {
+              explain("Check from " + Experts.jid(sender()) + " received when invitation is already sent to " + task.invited + ". Freeing candidate.");
+              return stay().replying(new Cancel());
+            }
         )
     );
 
@@ -205,6 +216,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
         matchEvent(Done.class,
             (done, task) -> task.onTask(Experts.jid(sender())),
             (done, task) -> {
+              explain("Expert has finished working on the " + task.offer.room().local() + ". Sending notification to the room.");
               XMPP.send(new Message(Experts.jid(sender()), task.jid(), done), context());
               reference(context()).tell(Done.class, self());
               return goTo(State.UNEMPLOYED).using(null);
@@ -212,24 +224,22 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
         ).event(Cancel.class, // cancel from expert
             (cancel, task) -> task.onTask(JID.parse(sender().path().name())),
             (cancel, task) -> {
+              explain("Expert canceled task. Looking for other worker.");
               XMPP.send(new Message(Experts.jid(sender()), task.jid(), cancel), context());
-              return lookForExpert(task).using(task.enter(null));
+              return lookForExpert(task).using(task.exit());
             }
         ).event(Cancel.class, // cancel from the room
             (cancel, task) -> task.jid().bareEq(JID.parse(sender().path().name())),
-            (cancel, task) -> {
-              Experts.agent(task.onTask, context()).tell(cancel, self());
-              return goTo(State.UNEMPLOYED).using(null);
-            }
-        ).event(Offer.class,
-            (offer, task) -> stay().replying(new Cancel())
+            (cancel, task) -> cancelTask(task)
         ).event(Suspend.class,
             (suspend, task) -> {
+              explain("Expert suspended his work. Sending notification to the room.");
               XMPP.send(new Message(Experts.jid(sender()), task.jid(), new Suspend()), context());
               return stay();
             }
         ).event(Resume.class,
             (suspend, task) -> {
+              explain("Expert resumed his work. Sending notification to the room.");
               XMPP.send(new Message(Experts.jid(sender()), task.jid(), new Resume()), context());
               return stay();
             }
@@ -238,12 +248,16 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
 
     whenUnhandled(matchEvent(
         ActorRef.class,
-        (expert, task) -> stay()
+        (expert, task) -> {
+          explain("Unemployed expert ignored in improper state");
+          return stay();
+        }
+    ).event(Offer.class,
+        (offer, task) -> {
+          explain("Already working on " + task.offer.room() + ".");
+          return stay().replying(new Cancel());
+        }
     ));
-
-    onTransition((from, to) -> {
-      log.fine(from + " -> " + to + (nextStateData() != null ? " " + nextStateData().offer : ""));
-    });
 
     onTermination(
         matchStop(Normal(),
@@ -258,25 +272,52 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
     initialize();
   }
 
+  @Override
+  public void processEvent(FSM.Event<Task> event, Object source) {
+    final State from = stateName();
+    super.processEvent(event, source);
+    final State to = stateName();
+    log.fine("Broker " + (stateData() != null ? "on task " + stateData().offer.room().local() + " " : "")
+        + from + " -> " + to
+        + ". " + explanation);
+    explanation = "";
+  }
+
+  private FSM.State<State, Task> cancelTask(Task task) {
+    nextTimer(null);
+    explain("The task was canceled by client. Sending all experts cancel.");
+
+    JID expert;
+    while ((expert = task.next()) != null)
+      Experts.tellTo(expert, new Cancel(), self(), context());
+    return goTo(State.UNEMPLOYED).using(null);
+  }
+
+  private void nextTimer(Cancellable timeout) {
+    if (this.timeout != null)
+      this.timeout.cancel();
+    this.timeout = timeout;
+  }
+
+  private void explain(String explanation) {
+    if (!explanation.isEmpty() && !explanation.startsWith(" "))
+      explanation += " ";
+    this.explanation += explanation;
+  }
+
   private FSM.State<State, Task> lookForExpert(Task task) {
-    log.fine(task.offer.room() + " is looking for experts in state: " + stateName());
-    final ActorRef roomAgent = XMPP.register(task.offer.room(), context());
+    explain("Going to labor exchange to find expert.");
+    final ActorSelection roomAgent = XMPP.agent(task.offer.room(), context());
     task.roomStatus = AkkaTools.ask(roomAgent, TBTSRoomAgent.Status.class);
     task.refused.clear();
     experts(context()).tell(task.offer, self());
-    timeout = AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT, self());
+    nextTimer(AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT, self()));
     return stateName() != State.STARVING ? goTo(State.STARVING) : stay();
   }
 
   private boolean interview(JID expert, Task task) {
-    if (task.isWorker(expert))
-      return true;
-    final ExpertManager.Record record = ExpertManager.instance().record(expert.bare());
-    final Optional<Pair<JID, ExpertRole.State>> any = record.entries()
-        .filter(entry -> task.offer.room().bareEq(entry.first))
-        .filter(entry -> entry.getSecond() == ExpertRole.State.INVITE)
-        .findAny();
-    return !any.isPresent();
+    task.roomStatus = TBTSRoomAgent.status(task.offer.room(), context());
+    return task.roomStatus.interview(expert);
   }
 
   @Override

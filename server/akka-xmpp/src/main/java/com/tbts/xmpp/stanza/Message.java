@@ -243,5 +243,9 @@ public class Message extends Stanza {
   @XmlEnum
   public enum MessageType {
     @XmlEnumValue(value = "groupchat") GROUP_CHAT,
+    @XmlEnumValue(value = "chat") CHAT,
+    @XmlEnumValue(value = "normal") NORMAL,
+    @XmlEnumValue(value = "error") ERROR,
+    @XmlEnumValue(value = "headline") HEADLINE,
   }
 }

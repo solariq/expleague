@@ -33,6 +33,11 @@ class ExpLeagueProfile: NSManagedObject {
         }
     }
     
+    private dynamic var listeners: NSMutableArray = []
+    func track(tracker: XMPPPresenceTracker) {
+        listeners.addObject(Weak(tracker))
+    }
+    
     override func awakeFromFetch() {
         orderSelected = Int16(orders.count - 1)
     }
@@ -53,22 +58,73 @@ class ExpLeagueProfile: NSManagedObject {
         return fit.count > 0 ? (fit[0] as! ExpLeagueOrder) : nil
     }
     
-    var selected: ExpLeagueOrder  {
+    var selected: ExpLeagueOrder? {
         set (order) {
-            self.orderSelected = Int16(orders.indexOfObject(order))
+            self.orderSelected = order != nil ? Int16(orders.indexOfObject(order!)) : -1
         }
         get {
-            return orders[Int(self.orderSelected)] as! ExpLeagueOrder
+            return (self.orderSelected >= 0 && Int(self.orderSelected) < orders.count) ? orders[Int(self.orderSelected)] as? ExpLeagueOrder : nil
         }
     }
     
-    func placeOrder(topic topic: String, urgency: String, local: Bool, prof: Bool) -> ExpLeagueOrder {
+    func imageUrl(imageId: String) -> NSURL {
+        if (domain == "localhost") {
+            return NSURL(string: "http://localhost:8067/\(imageId)")!
+        }
+        else {
+            return NSURL(string: "https://img.\(domain)/OSYpRdXPNGZgRvsY/\(imageId)")!
+        }
+    }
+    
+    var imageStorage: NSURL {
+        if (domain == "localhost") {
+            return NSURL(string: "http://localhost:8067/")!
+        }
+        else {
+            return NSURL(string: "https://img.\(domain)/OSYpRdXPNGZgRvsY/")!
+        }
+    }
+    
+    func hasImage(id: String) -> Bool {
+        let root = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
+        return NSFileManager.defaultManager().fileExistsAtPath("\(root)/\(self.name)/images/\(id)")
+    }
+    
+    func saveImage(id: String, image: UIImage) {
+        let root = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
+        try! NSFileManager.defaultManager().createDirectoryAtPath("\(root)/\(self.name)/images/", withIntermediateDirectories: true, attributes: nil)
+        UIImageJPEGRepresentation(image, 100)!.writeToFile("\(root)/\(self.name)/images/\(id)", atomically: true)
+    }
+    
+    func loadImage(id: String) -> UIImage? {
+        let root = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
+        return UIImage(contentsOfFile: "\(root)/\(self.name)/images/\(id)")
+    }
+    
+    
+    func placeOrder(topic topic: String, urgency: String, local: Bool, attachments: [String], location: CLLocationCoordinate2D?, prof: Bool) -> ExpLeagueOrder {
         var rand = NSUUID().UUIDString;
         rand = rand.substringToIndex(rand.startIndex.advancedBy(8))
-        let order = ExpLeagueOrder("room-" + login + "-" + rand, topic: topic, urgency: urgency, local: local, specific: prof, context: self.managedObjectContext!);
+        var json: [String: NSObject] = [
+            "topic": topic,
+            "attachments": attachments.joinWithSeparator(", "),
+            "urgency": urgency,
+            "local": local,
+            "specific": prof,
+            "started": NSDate().timeIntervalSince1970
+        ]
+        if (location != nil) {
+            json["location"] = [
+                "latitude": location!.latitude,
+                "longitude": location!.longitude,
+            ]
+        }
+        
+        let topicJson = try! NSJSONSerialization.dataWithJSONObject(json, options: [])
+        let order = ExpLeagueOrder("room-" + login + "-" + rand, topic: String(NSString(data: topicJson, encoding: NSUTF8StringEncoding)!), urgency: urgency, local: local, specific: prof, context: self.managedObjectContext!);
         let presence = XMPPPresence(type: "available", to: order.jid);
         AppDelegate.instance.stream.sendElement(presence)
-        orderSelected = Int16(orders.count - 1)
+        orderSelected = Int16(orders.count)
         let mutableItems = orders.mutableCopy() as! NSMutableOrderedSet
         mutableItems.addObject(order)
         orders = mutableItems.copy() as! NSOrderedSet
@@ -193,6 +249,14 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
         log(String(presence))
         if let user = presence.from().user, let order = order(name: user) {
             order.presence(presence: presence)
+        }
+        for listenerRef in listeners.copy() as! NSArray {
+            if let listener = (listenerRef as! Weak<XMPPPresenceTracker>).value {
+                listener.onPresence?(presence: presence)
+            }
+            else {
+                listeners.removeObject(listenerRef)
+            }
         }
     }
     

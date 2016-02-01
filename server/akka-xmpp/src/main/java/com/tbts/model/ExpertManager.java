@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -25,6 +27,13 @@ public class ExpertManager {
   public Record record(JID jid) {
     records.putIfAbsent(jid, new Record());
     return records.get(jid);
+  }
+
+  public ExpertsProfile profile(JID jid) {
+    final Record record = record(jid);
+    int invitations = record.entries().filter(r -> r.getSecond() == ExpertRole.State.INVITE).collect(Collectors.counting()).intValue();
+
+    return new ExpertsProfile("Иван Иванов", jid.local(), invitations);
   }
 
   public static class Record {
