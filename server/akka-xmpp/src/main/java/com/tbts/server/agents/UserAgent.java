@@ -126,9 +126,9 @@ public class UserAgent extends UntypedPersistentActor {
 
   private void in(Stanza stanza) {
     connecters.values().stream().forEach(conn -> conn.tell(stanza, self()));
-    if (connecters.isEmpty()) {
+    if (connecters.isEmpty() && stanza instanceof Message) {
       appTokens.stream().forEach(
-          token -> NotificationsManager.instance().sendPush(stanza.from(), token)
+          token -> NotificationsManager.instance().sendPush((Message)stanza, token)
       );
     }
   }
