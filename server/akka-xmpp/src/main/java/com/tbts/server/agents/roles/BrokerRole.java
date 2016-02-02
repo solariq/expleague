@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.tbts.server.agents.LaborExchange.*;
@@ -280,13 +281,18 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
 
   @Override
   public void processEvent(FSM.Event<Task> event, Object source) {
-    final State from = stateName();
-    super.processEvent(event, source);
-    final State to = stateName();
-    log.fine("Broker " + (stateData() != null ? "on task " + stateData().offer.room().local() + " " : "")
-        + from + " -> " + to
-        + ". " + explanation);
-    explanation = "";
+    try {
+      final State from = stateName();
+      super.processEvent(event, source);
+      final State to = stateName();
+      log.fine("Broker " + (stateData() != null ? "on task " + stateData().offer.room().local() + " " : "")
+          + from + " -> " + to
+          + ". " + explanation);
+      explanation = "";
+    }
+    catch (Exception e) {
+      log.log(Level.SEVERE, "Exception during event handling", e);
+    }
   }
 
   private FSM.State<State, Task> cancelTask(Task task) {
