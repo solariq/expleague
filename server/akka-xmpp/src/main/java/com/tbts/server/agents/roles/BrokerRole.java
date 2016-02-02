@@ -74,7 +74,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
           Experts.tellTo(jid, new Cancel(), self(), context());
       }
       candidates.add(expert);
-      sender().tell(new Invite(), self());
+      Experts.tellTo(expert, new Invite(), self(), context());
       return this;
     }
 
@@ -89,7 +89,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
 
     public void refuse(JID expert) {
       refused.add(expert);
-      sender().tell(new Cancel(), self());
+      Experts.tellTo(expert, new Cancel(), self(), context());
     }
 
     public Task exit() {
