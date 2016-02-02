@@ -115,13 +115,14 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
               final ActorRef agent = XMPP.register(offer.room(), context());
               final TBTSRoomAgent.Status status = AkkaTools.ask(agent, TBTSRoomAgent.Status.class);
               final JID lastWorker = status.lastWorker();
+              sender().tell(new Ok(), self());
               if (status.isLastWorkerActive()) {
                 //noinspection ConstantConditions
                 explain("Trying to get active worker " + lastWorker.local() + " back to the task.");
                 Experts.tellTo(lastWorker, new Resume(offer), self(), context());
                 final Task task = new Task(offer, status);
                 task.onTask = lastWorker;
-                return goTo(State.WORK_TRACKING).using(task.candidate(lastWorker).invite(lastWorker).enter(lastWorker)).replying(new Ok());
+                return goTo(State.WORK_TRACKING).using(task.candidate(lastWorker).invite(lastWorker).enter(lastWorker));
               }
               else {
                 explain("No active work on task found.");
@@ -130,9 +131,9 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
                   explain("Trying to get the recent active worker (" + lastWorker + ") back to the task.");
                   nextTimer(AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT, self()));
                   task.candidate(lastWorker);
-                  return goTo(State.STARVING).using(task.candidate(lastWorker)).replying(new Ok());
+                  return goTo(State.STARVING).using(task.candidate(lastWorker));
                 }
-                else return lookForExpert(task).using(task).replying(new Ok());
+                else return lookForExpert(task).using(task);
               }
             }
         )
