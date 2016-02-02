@@ -23,6 +23,10 @@ public class ExpertsProfile extends Item {
   @SuppressWarnings("unused")
   public ExpertsProfile() {}
 
+  public String login() {
+    return login;
+  }
+
   public ExpertsProfile(String name, String login, int tasksCount) {
     this.name = name;
     this.login = login;
