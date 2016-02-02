@@ -59,7 +59,7 @@ public class BOSHSession extends UntypedActorAdapter {
       // schedule answer in half an hour in case of no messages received
       if (timeout != null)
         timeout.cancel();
-      timeout = AkkaTools.scheduleTimeout(context(), Duration.create(5, TimeUnit.MINUTES), self());
+      timeout = AkkaTools.scheduleTimeout(context(), Duration.create(30, TimeUnit.SECONDS), self());
     }
     else {
       invoke(XMPPClientConnection.ConnectionState.CLOSED);
