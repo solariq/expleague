@@ -220,6 +220,13 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
     @objc
     func xmppStreamDidAuthenticate(sender: XMPPStream!) {
         progressBar?.progress = .Connected
+        if (AppDelegate.instance.token != nil) {
+            let msg = XMPPMessage(type: "normal")
+            let token = DDXMLElement(name: "token", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+            token.setStringValue(AppDelegate.instance.token)
+            msg.addChild(token)
+            sender.sendElement(msg)
+        }
         log("Success!");
     }
     

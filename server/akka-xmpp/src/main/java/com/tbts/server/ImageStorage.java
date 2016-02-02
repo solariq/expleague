@@ -60,7 +60,7 @@ public class ImageStorage extends UntypedActor {
   @Override
   public void preStart() throws Exception {
     materializer = ActorMaterializer.create(context());
-    final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("localhost", 8067, materializer);
+    final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("0.0.0.0", 8067, materializer);
     serverSource.to(Sink.actorRef(self(), PoisonPill.getInstance())).run(materializer);
   }
 

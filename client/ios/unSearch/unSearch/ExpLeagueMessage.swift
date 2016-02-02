@@ -13,8 +13,6 @@ import XMPPFramework
 
 class ExpLeagueMessage: NSManagedObject {
     static let EXP_LEAGUE_SCHEME = "http://expleague.com/scheme"
-    static let GOTO_ORDER = "ExpLeague_Go_To_Order"
-    static let EXPERT_FOUND_NOTIFICATION = "ExpLeague_Expert_Found"
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
@@ -47,22 +45,6 @@ class ExpLeagueMessage: NSManagedObject {
                 properties["login"] = element.attributeStringValueForName("login")
                 properties["name"] = element.attributeStringValueForName("name")
                 properties["tasks"] = element.attributeStringValueForName("tasks")
-                
-                let notification = UILocalNotification()
-                if #available(iOS 8.2, *) {
-                    notification.alertTitle = "Эксперт найден!"
-                    notification.alertBody = "Для задания \(parent.text)"
-                } else {
-                    notification.alertBody = "Эксперт для задания \(parent.text) найден!"
-                }
-                notification.applicationIconBadgeNumber = 1
-                notification.category = ExpLeagueMessage.EXPERT_FOUND_NOTIFICATION
-                notification.fireDate = NSDate()
-                notification.soundName = UILocalNotificationDefaultSoundName
-                notification.userInfo = [
-                    "order": parent.id
-                ]
-                UIApplication.sharedApplication().scheduleLocalNotification(notification)
             }
             else if (!textChildren.isEmpty && textChildren[0].stringValue.hasPrefix("{\"type\":\"visitedPages\"")) {
                 do {
@@ -87,37 +69,6 @@ class ExpLeagueMessage: NSManagedObject {
             try self.managedObjectContext!.save()
         } catch {
             fatalError("Failure to save context: \(error)")
-        }
-        
-        if (type == .ExpertMessage) {
-            let notification = UILocalNotification()
-            if (isAnswer) {
-                if #available(iOS 8.2, *) {
-                    notification.alertTitle = "Получен ответ"
-                    notification.alertBody = "Эксперт подготовил ответ по заданию \(parent.text)"
-                }
-                else {
-                    notification.alertBody = "Получен ответ от эксперта по заданию \(parent.text)"
-                }
-            }
-            else if (body != nil) {
-                if #available(iOS 8.2, *) {
-                    notification.alertTitle = "Сообщение"
-                    notification.alertBody = "От эксперта \(from): \(body!)"
-                }
-                else {
-                    notification.alertBody = "Сообщение от эксперта \(from): \(body!)"
-                }
-            }
-
-            notification.applicationIconBadgeNumber = 1
-            notification.category = ExpLeagueMessage.EXPERT_FOUND_NOTIFICATION
-            notification.fireDate = NSDate()
-            notification.soundName = UILocalNotificationDefaultSoundName
-            notification.userInfo = [
-                "order": parent.id
-            ]
-            UIApplication.sharedApplication().scheduleLocalNotification(notification)
         }
     }
     

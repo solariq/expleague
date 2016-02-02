@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import akka.persistence.SaveSnapshotFailure;
 import akka.persistence.SaveSnapshotSuccess;
 import akka.persistence.UntypedPersistentActor;
+import com.relayrides.pushy.apns.util.TokenUtil;
 import com.spbsu.commons.system.RuntimeUtils;
 import com.spbsu.commons.util.MultiMap;
 import com.tbts.model.Operations;
@@ -17,7 +18,6 @@ import com.tbts.xmpp.stanza.Stanza;
 import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * User: solar
@@ -62,7 +62,10 @@ public class UserAgent extends UntypedPersistentActor {
       final Collection<String> deliveredToResource = delivered.get(resource);
       messages.stream()
           .filter(msg -> !deliveredToResource.contains(msg.id()))
-          .forEach(msg -> sender().tell(msg, self()));
+          .forEach(msg -> {
+            if (!msg.from().bareEq(jid()))
+              sender().tell(msg, self());
+          });
       presenceMap.values().stream()
           .filter(Presence::available)
           .forEach(p -> sender().tell(p, self()));
@@ -87,8 +90,8 @@ public class UserAgent extends UntypedPersistentActor {
   }
 
   public void invoke(final Message msg) {
+    this.persist(msg, messages::add);
     if (!msg.from().bareEq(jid())) { // incoming
-      this.persist(msg, messages::add);
       in(msg);
     }
     else out(msg);
@@ -116,8 +119,7 @@ public class UserAgent extends UntypedPersistentActor {
     if (stanza instanceof Message) {
       final Message message = (Message) stanza;
       if (message.has(Operations.Token.class)) {
-        if (appTokensCached != null)
-          appTokensCached.add(message.get(Operations.Token.class).value());
+        appTokens.add(TokenUtil.sanitizeTokenString(message.get(Operations.Token.class).value()));
       }
     }
   }
@@ -125,7 +127,7 @@ public class UserAgent extends UntypedPersistentActor {
   private void in(Stanza stanza) {
     connecters.values().stream().forEach(conn -> conn.tell(stanza, self()));
     if (connecters.isEmpty()) {
-      Arrays.stream(appTokens()).forEach(
+      appTokens.stream().forEach(
           token -> NotificationsManager.instance().sendPush(stanza.from(), token)
       );
     }
@@ -134,7 +136,11 @@ public class UserAgent extends UntypedPersistentActor {
   @Override
   public void onReceiveRecover(Object o) throws Exception {
     if (o instanceof Message) {
-      messages.add((Message)o);
+      final Message message = (Message) o;
+      messages.add(message);
+      if (message.has(Operations.Token.class)) {
+        appTokens.add(TokenUtil.sanitizeTokenString(message.get(Operations.Token.class).value()));
+      }
     }
     if (o instanceof Delivered) {
       final Delivered del = (Delivered) o;
@@ -142,18 +148,12 @@ public class UserAgent extends UntypedPersistentActor {
     }
   }
 
-  private List<String> appTokensCached = null;
+  private Set<String> appTokens = new HashSet<>();
   public String[] appTokens() {
-    if (appTokensCached == null) {
-      final List<String> tokens = messages.stream()
-          .filter(m -> m.has(Operations.Token.class))
-          .map(m -> m.get(Operations.Token.class).value())
-          .collect(Collectors.toCollection(ArrayList<String>::new));
-      appTokensCached = tokens;
-    }
-    return appTokensCached.toArray(new String[appTokensCached.size()]);
+    return appTokens.toArray(new String[appTokens.size()]);
   }
 
+  @SuppressWarnings("UnusedParameters")
   public void invoke(SaveSnapshotSuccess sss) {}
 
   public void invoke(SaveSnapshotFailure ssf) {

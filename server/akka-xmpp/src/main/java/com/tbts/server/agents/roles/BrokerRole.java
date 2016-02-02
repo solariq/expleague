@@ -195,6 +195,12 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
               XMPP.send(new Message(Experts.jid(sender()), task.jid(), new Cancel()), context());
               return lookForExpert(task);
             }
+        ).event(Ignore.class, // from invitation
+            (cancel, task) -> task.invited(Experts.jid(sender())),
+            (cancel, task) -> {
+              explain("Expert " + Experts.jid(sender()) + " ignored invitation");
+              return lookForExpert(task);
+            }
         ).event(Cancel.class, // from check
             (cancel, task) -> !task.invited(Experts.jid(sender())) && !task.jid().bareEq(XMPP.jid(sender())),
             (cancel, task) -> {

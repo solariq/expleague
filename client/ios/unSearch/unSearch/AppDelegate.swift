@@ -85,6 +85,7 @@ class AppDelegate: UIResponder {
     
     let stream = XMPPStream()
     var dataController: DataController!
+    var token: String?
     
     var activeProfile : ExpLeagueProfile? {
         let active = profiles?.filter({return $0.active})
@@ -176,18 +177,6 @@ extension AppDelegate: UIApplicationDelegate {
             NSForegroundColorAttributeName: UIColor.whiteColor()
         ]
         UIApplication.sharedApplication().statusBarStyle = .LightContent
-        
-        let action = UIMutableUserNotificationAction()
-        action.activationMode = .Background
-        action.title = "Перейти"
-        action.destructive = false
-        action.authenticationRequired = false
-        action.identifier = ExpLeagueMessage.GOTO_ORDER
-        let notificationCat = UIMutableUserNotificationCategory()
-        notificationCat.identifier = ExpLeagueMessage.EXPERT_FOUND_NOTIFICATION
-        notificationCat.setActions([action], forContext: .Minimal)
-        let settings = UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: [notificationCat])
-        application.registerUserNotificationSettings(settings)
         application.registerForRemoteNotifications()
         return true
     }
@@ -201,14 +190,20 @@ extension AppDelegate: UIApplicationDelegate {
 
 
     func applicationDidEnterBackground(application: UIApplication) {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-
+        disconnect()
+    }
+    
+    func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject], fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
+        connect()
+        let order = userInfo["order"] as! String
+        activeProfile?.selected = activeProfile?.order(name: order)
+        tabs.selectedIndex = 1
+        completionHandler(.NewData)
     }
 
 
     func applicationWillEnterForeground(application: UIApplication) {
-        // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+        connect()
     }
 
 
@@ -218,7 +213,7 @@ extension AppDelegate: UIApplicationDelegate {
 
 
     func applicationWillTerminate(application: UIApplication) {
-        stream.disconnectAfterSending()
+        disconnect()
     }
     
     func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
@@ -231,7 +226,7 @@ extension AppDelegate: UIApplicationDelegate {
             // Application was in the background when notification was delivered.
         }
         else {
-            print(notification.userInfo!["order"]!)
+//            print(notification.userInfo!["order"]!)
             
             // App was running in the foreground. Perhaps
             // show a UIAlertView to ask them what they want to do?
@@ -253,11 +248,13 @@ extension AppDelegate: UIApplicationDelegate {
     }
     
     func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject]) {
-        
+        let order = userInfo["order"] as! String
+        activeProfile?.selected = activeProfile?.order(name: order)
+        tabs.selectedIndex = 1
     }
     
     func application(application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: NSData) {
-        print(deviceToken)
+        token = String(deviceToken)
     }
     
     func application(application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: NSError) {

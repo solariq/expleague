@@ -1,6 +1,7 @@
 package com.tbts.util.ios;
 
 import com.relayrides.pushy.apns.ApnsClient;
+import com.relayrides.pushy.apns.PushNotificationResponse;
 import com.relayrides.pushy.apns.util.SimpleApnsPushNotification;
 import com.tbts.server.TBTSServer;
 import com.tbts.xmpp.JID;
@@ -9,6 +10,7 @@ import io.netty.util.concurrent.Future;
 import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,17 +23,17 @@ public class NotificationsManager {
 
   public static synchronized NotificationsManager instance() {
     if (instance == null) {
-      instance = new NotificationsManager("certs/apns.p12", "");
+      instance = new NotificationsManager("certs/apns.p12", "tg30239");
     }
     return instance;
   }
 
   private static class UpdatePushNotification extends SimpleApnsPushNotification {
     public UpdatePushNotification(String token, JID from) {
-      super(token, "Update", "{" +
-          "\"alert\": \"Получено новое сообщение от " + from.local() + "\"," +
-          "\"badge\": 1" +
-          "}", tomorrow());
+      super(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
+          "\"alert\": \"Получено новое сообщение от " + from.resource() + "\", " +
+          "\"content-available\": 1"+
+          "}, \"order\": \"" + from.local() + "\"}", tomorrow());
     }
 
     static Date tomorrow() {
@@ -46,7 +48,7 @@ public class NotificationsManager {
     ApnsClient<UpdatePushNotification> client;
     try {
       client = new ApnsClient<>(new File(pathToCert), certPasswd);
-      Future<Void> connect = client.connect(TBTSServer.config().type() == TBTSServer.Cfg.Type.PRODUCTION ? ApnsClient.PRODUCTION_APNS_HOST : ApnsClient.DEVELOPMENT_APNS_HOST);
+        Future<Void> connect = client.connect(TBTSServer.config().type() == TBTSServer.Cfg.Type.PRODUCTION ? ApnsClient.PRODUCTION_APNS_HOST : ApnsClient.DEVELOPMENT_APNS_HOST);
       connect.await();
     }
     catch (Exception e) {
@@ -58,7 +60,14 @@ public class NotificationsManager {
 
   public void sendPush(JID jid, String token) {
     if (client != null) {
-      client.sendNotification(new UpdatePushNotification(token, jid));
+      log.info("Sending push notification from " + jid);
+      final Future<PushNotificationResponse<UpdatePushNotification>> future = client.sendNotification(new UpdatePushNotification(token, jid));
+      try {
+        future.await();
+        System.out.println(future.get().toString());
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      }
     }
     else log.warning("Unable to send push notification to " + jid.toString());
   }
