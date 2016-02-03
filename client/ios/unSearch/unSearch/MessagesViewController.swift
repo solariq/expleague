@@ -19,7 +19,14 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
             messagesView.delegate = data
             if (loaded) {
                 messagesView.reloadData()
-                scrollView.scrollRectToVisible(messagesView.frame, animated: true)
+
+                if (order != nil && order!.status == .Closed) {
+                    scrollView.scrollRectToVisible(answerView.frame, animated: false)
+                }
+                else {
+                    scrollView.scrollRectToVisible(messagesView.frame, animated: false)
+                }
+
             }
             
             if (order?.text.characters.count > 15) {
