@@ -73,5 +73,7 @@
     <orderEntry type="library" name="Maven: com.twitter:hpack:v1.0.1" level="project" />
     <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.5" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.6" level="project" />
+    <orderEntry type="library" name="Maven: io.netty:netty-tcnative:osx-x86_64:1.1.33.Fork9" level="project" />
+    <orderEntry type="library" name="Maven: org.eclipse.jetty.alpn:alpn-api:1.1.2.v20150522" level="project" />
   </component>
 </module>

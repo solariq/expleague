@@ -1,6 +1,7 @@
 package com.tbts.model;
 
 import com.tbts.server.agents.XMPP;
+import com.tbts.util.xml.Base64Adapter;
 import com.tbts.xmpp.Item;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Message;
@@ -10,6 +11,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * User: solar
@@ -111,7 +113,10 @@ public class Operations {
 
   @XmlRootElement
   public static class Cancel extends Command {
-    public Cancel(){ }
+  }
+
+  @XmlRootElement
+  public static class Ignore extends Command {
   }
 
   @XmlRootElement

@@ -6,6 +6,7 @@ import com.tbts.server.agents.LaborExchange;
 import com.tbts.server.agents.XMPP;
 import com.tbts.server.dao.Archive;
 import com.tbts.server.services.XMPPServices;
+import com.tbts.util.ios.NotificationsManager;
 import com.tbts.xmpp.control.sasl.Failure;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -37,6 +38,7 @@ public class TBTSServer {
 
     final ActorSystem system = ActorSystem.create("TBTS", load);
 
+    NotificationsManager.instance();
     // singletons
     system.actorOf(Props.create(XMPP.class), "xmpp");
     system.actorOf(Props.create(LaborExchange.class), "labor-exchange");

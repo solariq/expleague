@@ -98,6 +98,7 @@ class OrderDescriptionViewController: UITableViewController {
     let attachments = AttachmentsViewDelegate()
     var orderTextBGColor: UIColor?
     let picker = UIImagePickerController()
+    var pickerDelegate: ImagePickerDelegate?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -113,7 +114,8 @@ class OrderDescriptionViewController: UITableViewController {
         attachmentsView.layoutMargins = UIEdgeInsetsZero
         attachments.view = attachmentsView
         attachments.parent = self
-        picker.delegate = ImagePickerDelegate(queue: attachments, picker: picker)
+        pickerDelegate = ImagePickerDelegate(queue: attachments, picker: picker)
+        picker.delegate = pickerDelegate
         picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
     }
     
@@ -128,12 +130,13 @@ class OrderDescriptionViewController: UITableViewController {
         needExpert.on = false
         urgency.value = Urgency.DURING_THE_DAY.value
         orderText.text = ""
+        attachments.clear()
     }
 
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
         if (indexPath.item == 0 && indexPath.section == 0) {
             let sectionsHeight = 28 * 2 * 2;
-            return max(CGFloat(50), view.frame.height - CGFloat(5 * rowHeight + sectionsHeight));
+            return max(CGFloat(50), view.frame.height - CGFloat(6 * rowHeight + sectionsHeight));
         }
         if (indexPath.item == 0 && indexPath.section == 1) {
             return 64
@@ -212,9 +215,9 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
         imageId = NSUUID().UUIDString + ".jpeg";
         if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
+            AppDelegate.instance.activeProfile!.saveImage(self.imageId!, image: image)
             queue.append(imageId!, image: image, progress: {
                 self.progressView = $0
-                AppDelegate.instance.activeProfile!.saveImage(self.imageId!, image: image)
                 self.uploadImage()
             })
             self.image = image

@@ -8,7 +8,6 @@
 
 import Foundation
 import CoreData
-import JSQMessagesViewController
 import XMPPFramework
 
 class Weak<T: AnyObject> {
@@ -16,14 +15,6 @@ class Weak<T: AnyObject> {
     
     init(_ value: T) {
         self.value = value
-    }
-}
-
-@objc
-class XMPPPresenceTracker: NSObject {
-    let onPresence: ((presence: XMPPPresence) -> Void)?
-    init(onPresence: ((presence: XMPPPresence) -> Void)?) {
-        self.onPresence = onPresence
     }
 }
 
@@ -37,7 +28,23 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     var isActive: Bool {
-        return status == .Open || status == .Overtime
+        return status == .Open || status == .Overtime || status == .ExpertSearch
+    }
+    
+    var expert: String? {
+        var lastExpert: String? = nil
+        for i in 0 ..< count {
+            let msg = message(i)
+            if (msg.type == .SystemMessage) {
+                if msg.properties["type"] as! String == "expert" {
+                    lastExpert = msg.properties["login"] as? String
+                }
+            }
+            else if (msg.isAnswer) {
+                lastExpert = nil
+            }
+        }
+        return lastExpert
     }
     
     var before: NSTimeInterval {
@@ -60,6 +67,10 @@ class ExpLeagueOrder: NSManagedObject {
             }
         })
         return started + duration
+    }
+    
+    var timeLeft: NSTimeInterval {
+        return before - NSDate().timeIntervalSinceReferenceDate
     }
     
     func message(index: Int) -> ExpLeagueMessage {
@@ -86,7 +97,7 @@ class ExpLeagueOrder: NSManagedObject {
     }
 
     private dynamic var listeners: NSMutableArray = []
-    func track(tracker: XMPPPresenceTracker) {
+    func track(tracker: XMPPTracker) {
         listeners.addObject(Weak(tracker))
     }
     
@@ -95,7 +106,7 @@ class ExpLeagueOrder: NSManagedObject {
     
     func presence(presence presence: XMPPPresence) {
         for listenerRef in listeners.copy() as! NSArray {
-            if let listener = (listenerRef as! Weak<XMPPPresenceTracker>).value {
+            if let listener = (listenerRef as! Weak<XMPPTracker>).value {
                 listener.onPresence?(presence: presence)
             }
             else {
@@ -152,19 +163,59 @@ class ExpLeagueOrder: NSManagedObject {
         }
     }
     
+    func archive() {
+        if (isActive) {
+            cancel()
+        }
+        flags |= ExpLeagueOrderFlags.Archived.rawValue
+        do {
+            try self.managedObjectContext!.save()
+        } catch {
+            fatalError("Failure to save context: \(error)")
+        }
+    }
+    
     var status: ExpLeagueOrderStatus {
-        if (flags & ExpLeagueOrderFlags.Canceled.rawValue != 0) {
+        if (flags & ExpLeagueOrderFlags.Archived.rawValue != 0) {
+            return .Archived
+        }
+        else if (flags & ExpLeagueOrderFlags.Canceled.rawValue != 0) {
             return .Canceled
         }
         else if (flags & ExpLeagueOrderFlags.Closed.rawValue != 0) {
             return .Closed
         }
         else if (before - CFAbsoluteTimeGetCurrent() > 0){
-            return .Open
+            if (expert == nil) {
+                return .ExpertSearch
+            }
+            else {
+                return .Open
+            }
         }
         else {
             return .Overtime
         }
+    }
+    
+    var shortAnswer: String {
+        var result: String? = nil
+        for i in 0 ..< count {
+            let msg = message(i)
+            if (msg.isAnswer) {
+                result = msg.properties["short"] as? String
+            }
+        }
+        return result != nil ? result! : "Нет простого ответа"
+    }
+    
+    var unreadCount: Int {
+        var result = 0
+        for i in 0 ..< count {
+            let msg = message(i)
+            result += (msg.isRead) ? 0 : 1
+        }
+        return result
     }
     
     static let urgencyDict : [String: Int16] = [
@@ -197,6 +248,8 @@ enum ExpLeagueOrderStatus: Int {
     case Closed = 1
     case Overtime = 2
     case Canceled = 3
+    case Archived = 4
+    case ExpertSearch = 5
 }
 
 enum ExpLeagueOrderFlags: Int16 {
@@ -204,4 +257,5 @@ enum ExpLeagueOrderFlags: Int16 {
     case SpecificTask = 8196
     case Closed = 4096
     case Canceled = 2048
+    case Archived = 1024
 }

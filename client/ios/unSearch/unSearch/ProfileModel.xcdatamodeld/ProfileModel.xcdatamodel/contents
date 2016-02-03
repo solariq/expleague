@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="9525" systemVersion="15C50" minimumToolsVersion="Xcode 7.0">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="9525" systemVersion="15D21" minimumToolsVersion="Xcode 7.0">
     <entity name="Message" representedClassName=".ExpLeagueMessage" syncable="YES">
         <attribute name="body" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="from" attributeType="String" syncable="YES"/>
+        <attribute name="propertiesRaw" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="time" attributeType="Date" syncable="YES"/>
         <attribute name="typeRaw" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <relationship name="parentRaw" maxCount="1" deletionRule="Nullify" destinationEntity="Order" inverseName="messagesRaw" inverseEntity="Order" syncable="YES"/>
@@ -14,6 +15,7 @@
         <attribute name="started" attributeType="Date" syncable="YES"/>
         <attribute name="topic" attributeType="String" syncable="YES"/>
         <relationship name="messagesRaw" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Message" inverseName="parentRaw" inverseEntity="Message" spotlightIndexingEnabled="YES" syncable="YES"/>
+        <relationship name="parent" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Profile" inverseName="orders" inverseEntity="Profile" syncable="YES"/>
     </entity>
     <entity name="Profile" representedClassName="ExpLeagueProfile" syncable="YES">
         <attribute name="active" attributeType="Boolean" syncable="YES"/>
@@ -23,11 +25,11 @@
         <attribute name="orderSelected" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="passwd" attributeType="String" syncable="YES"/>
         <attribute name="port" attributeType="Integer 16" defaultValueString="5222" syncable="YES"/>
-        <relationship name="orders" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Order" syncable="YES"/>
+        <relationship name="orders" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Order" inverseName="parent" inverseEntity="Order" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Message" positionX="-63" positionY="-18" width="128" height="120"/>
-        <element name="Order" positionX="-261" positionY="-54" width="128" height="135"/>
+        <element name="Message" positionX="-63" positionY="-18" width="128" height="135"/>
+        <element name="Order" positionX="-261" positionY="-54" width="128" height="150"/>
         <element name="Profile" positionX="-162" positionY="-9" width="128" height="165"/>
     </elements>
 </model>

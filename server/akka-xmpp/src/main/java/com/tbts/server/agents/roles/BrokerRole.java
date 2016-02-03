@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.tbts.server.agents.LaborExchange.*;
@@ -73,7 +74,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
           Experts.tellTo(jid, new Cancel(), self(), context());
       }
       candidates.add(expert);
-      sender().tell(new Invite(), self());
+      Experts.tellTo(expert, new Invite(), self(), context());
       return this;
     }
 
@@ -88,7 +89,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
 
     public void refuse(JID expert) {
       refused.add(expert);
-      sender().tell(new Cancel(), self());
+      Experts.tellTo(expert, new Cancel(), self(), context());
     }
 
     public Task exit() {
@@ -114,13 +115,14 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
               final ActorRef agent = XMPP.register(offer.room(), context());
               final TBTSRoomAgent.Status status = AkkaTools.ask(agent, TBTSRoomAgent.Status.class);
               final JID lastWorker = status.lastWorker();
+              sender().tell(new Ok(), self());
               if (status.isLastWorkerActive()) {
                 //noinspection ConstantConditions
                 explain("Trying to get active worker " + lastWorker.local() + " back to the task.");
                 Experts.tellTo(lastWorker, new Resume(offer), self(), context());
                 final Task task = new Task(offer, status);
                 task.onTask = lastWorker;
-                return goTo(State.WORK_TRACKING).using(task.candidate(lastWorker).invite(lastWorker).enter(lastWorker)).replying(new Ok());
+                return goTo(State.WORK_TRACKING).using(task.candidate(lastWorker).invite(lastWorker).enter(lastWorker));
               }
               else {
                 explain("No active work on task found.");
@@ -129,9 +131,9 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
                   explain("Trying to get the recent active worker (" + lastWorker + ") back to the task.");
                   nextTimer(AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT, self()));
                   task.candidate(lastWorker);
-                  return goTo(State.STARVING).using(task.candidate(lastWorker)).replying(new Ok());
+                  return goTo(State.STARVING).using(task.candidate(lastWorker));
                 }
-                else return lookForExpert(task).using(task).replying(new Ok());
+                else return lookForExpert(task).using(task);
               }
             }
         )
@@ -193,6 +195,12 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
             (cancel, task) -> {
               explain("Expert " + Experts.jid(sender()) + " declined invitation");
               XMPP.send(new Message(Experts.jid(sender()), task.jid(), new Cancel()), context());
+              return lookForExpert(task);
+            }
+        ).event(Ignore.class, // from invitation
+            (cancel, task) -> task.invited(Experts.jid(sender())),
+            (cancel, task) -> {
+              explain("Expert " + Experts.jid(sender()) + " ignored invitation");
               return lookForExpert(task);
             }
         ).event(Cancel.class, // from check
@@ -274,13 +282,18 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
 
   @Override
   public void processEvent(FSM.Event<Task> event, Object source) {
-    final State from = stateName();
-    super.processEvent(event, source);
-    final State to = stateName();
-    log.fine("Broker " + (stateData() != null ? "on task " + stateData().offer.room().local() + " " : "")
-        + from + " -> " + to
-        + ". " + explanation);
-    explanation = "";
+    try {
+      final State from = stateName();
+      super.processEvent(event, source);
+      final State to = stateName();
+      log.fine("Broker " + (stateData() != null ? "on task " + stateData().offer.room().local() + " " : "")
+          + from + " -> " + to
+          + ". " + explanation);
+      explanation = "";
+    }
+    catch (Exception e) {
+      log.log(Level.SEVERE, "Exception during event handling", e);
+    }
   }
 
   private FSM.State<State, Task> cancelTask(Task task) {

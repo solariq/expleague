@@ -55,6 +55,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 if (!task.isEmpty()) {
                   explain(", resuming task " + task.offer().room());
                   XMPP.send(new Message(XMPP.jid(), jid(), new Resume(task.offer(), INVITE_TIMEOUT)), context());
+                  task.chosen = false;
                   timer = AkkaTools.scheduleTimeout(context(), INVITE_TIMEOUT, self());
                   return goTo(State.INVITE);
                 }
@@ -183,7 +184,11 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
             (stanza, task) -> {
               stopTimer();
               explain("Expert has shown in the room. Assuming he has accepted the invitation.");
-              task.broker().tell(new Start(), self());
+              if (task.chosen())
+                task.broker().tell(new Start(), self());
+              else
+                task.broker().tell(new Resume(), self());
+              task.chosen = true;
               return goTo(State.BUSY);
             }
         ).event( // broker sent invitation
@@ -230,19 +235,19 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
         ).event(
             Timeout.class,
             (timeout, task) -> {
-              explain("Timeout (" + timeout.duration() + ") received. Sending cancel to both expert and broker. Going to labor exchange.");
+              explain("Timeout (" + timeout.duration() + ") received. Sending ignore to broker and cancel to expert. Going to labor exchange.");
               timer = null;
               XMPP.send(new Message(XMPP.jid(), jid(), task.offer(), new Cancel()), context());
-              task.broker().tell(new Cancel(), self());
+              task.broker().tell(new Ignore(), self());
               return laborExchange();
             }
         ).event(
             Presence.class,
             (presence, task) -> {
               if (!presence.available()) {
-                explain("Expert has gone offline during invitation. Sending suspend to broker.");
+                explain("Expert has gone offline during invitation. Sending ignore to broker.");
                 stopTimer();
-                task.broker().tell(new Cancel(), self());
+                task.broker().tell(new Ignore(), self());
                 return goTo(State.OFFLINE).using(new Task(true));
               }
               return stay();

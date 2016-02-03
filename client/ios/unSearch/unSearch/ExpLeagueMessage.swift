@@ -8,13 +8,10 @@
 
 import Foundation
 import CoreData
-import JSQMessagesViewController
 import XMPPFramework
 
 class ExpLeagueMessage: NSManagedObject {
     static let EXP_LEAGUE_SCHEME = "http://expleague.com/scheme"
-    static let GOTO_ORDER = "ExpLeague_Go_To_Order"
-    static let EXPERT_FOUND_NOTIFICATION = "ExpLeague_Expert_Found"
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
@@ -24,6 +21,7 @@ class ExpLeagueMessage: NSManagedObject {
         let attrs = msg.attributesAsDictionary()
         self.from = attrs["from"] != nil ? (msg.from().resource != nil ? msg.from().resource : "system") : "me";
         self.parentRaw = parent
+        let properties = NSMutableDictionary()
         var textChildren = msg.elementsForName("subject")
         if (textChildren.count == 0) {
             textChildren = msg.elementsForName("body")
@@ -41,83 +39,60 @@ class ExpLeagueMessage: NSManagedObject {
             self.type = .TopicStarter
         }
         if (type == .SystemMessage) {
-            let properties = NSMutableDictionary()
             if let element = msg.elementForName("expert", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
                 properties["type"] = "expert"
                 properties["login"] = element.attributeStringValueForName("login")
                 properties["name"] = element.attributeStringValueForName("name")
                 properties["tasks"] = element.attributeStringValueForName("tasks")
-                
-                let notification = UILocalNotification()
-                if #available(iOS 8.2, *) {
-                    notification.alertTitle = "Эксперт найден!"
-                    notification.alertBody = "Для задания \(parent.text)"
-                } else {
-                    notification.alertBody = "Эксперт для задания \(parent.text) найден!"
-                }
-                notification.applicationIconBadgeNumber = 1
-                notification.category = ExpLeagueMessage.EXPERT_FOUND_NOTIFICATION
-                notification.fireDate = NSDate()
-                notification.soundName = UILocalNotificationDefaultSoundName
-                notification.userInfo = [
-                    "order": parent.id
-                ]
-                UIApplication.sharedApplication().scheduleLocalNotification(notification)
             }
             else if (!textChildren.isEmpty && textChildren[0].stringValue.hasPrefix("{\"type\":\"visitedPages\"")) {
                 do {
                     let json = try NSJSONSerialization.JSONObjectWithData(textChildren[0].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!, options: NSJSONReadingOptions.AllowFragments)
-                    properties.addEntriesFromDictionary(json as! [NSObject : AnyObject])
+                    properties.addEntriesFromDictionary(json as! [String : AnyObject])
                 }
                 catch {
                     AppDelegate.instance.activeProfile?.log("\(error)")
                 }
             }
-            let data = NSMutableData()
-            let archiver = NSKeyedArchiver(forWritingWithMutableData: data)
-            archiver.encodeObject(properties)
-            archiver.finishEncoding()
-            self.body = data.base64Encoded()
         }
         else {
             self.body = textChildren.count > 0 ? textChildren[0].stringValue : nil
+            if (isAnswer){
+                class Visitor: ExpLeagueMessageVisitor {
+                    var shortAnswer: String? = nil
+                    func message(message: ExpLeagueMessage, text: String) {
+                        if (shortAnswer == nil) {
+                            shortAnswer = text
+                        }
+                    }
+                    func message(message: ExpLeagueMessage, title: String, text: String) {
+                        shortAnswer = title
+                    }
+                    func message(message: ExpLeagueMessage, title: String, link: String) {}
+                    func message(message: ExpLeagueMessage, title: String, image: UIImage) {
+                        if (shortAnswer == nil) {
+                            shortAnswer = title
+                        }
+                    }
+                }
+                let visitor = Visitor()
+                visitParts(visitor)
+                if (visitor.shortAnswer != nil) {
+                    properties["short"] = visitor.shortAnswer
+                }
+            }
         }
         self.time = attrs["time"] != nil ? Double(attrs["time"] as! String)!: CFAbsoluteTimeGetCurrent()
+        let data = NSMutableData()
+        let archiver = NSKeyedArchiver(forWritingWithMutableData: data)
+        archiver.encodeObject(properties)
+        archiver.finishEncoding()
+        self.propertiesRaw = data.xmpp_base64Encoded()
+
         do {
             try self.managedObjectContext!.save()
         } catch {
             fatalError("Failure to save context: \(error)")
-        }
-        
-        if (type == .ExpertMessage) {
-            let notification = UILocalNotification()
-            if (isAnswer) {
-                if #available(iOS 8.2, *) {
-                    notification.alertTitle = "Получен ответ"
-                    notification.alertBody = "Эксперт подготовил ответ по заданию \(parent.text)"
-                }
-                else {
-                    notification.alertBody = "Получен ответ от эксперта по заданию \(parent.text)"
-                }
-            }
-            else if (body != nil) {
-                if #available(iOS 8.2, *) {
-                    notification.alertTitle = "Сообщение"
-                    notification.alertBody = "От эксперта \(from): \(body!)"
-                }
-                else {
-                    notification.alertBody = "Сообщение от эксперта \(from): \(body!)"
-                }
-            }
-
-            notification.applicationIconBadgeNumber = 1
-            notification.category = ExpLeagueMessage.EXPERT_FOUND_NOTIFICATION
-            notification.fireDate = NSDate()
-            notification.soundName = UILocalNotificationDefaultSoundName
-            notification.userInfo = [
-                "order": parent.id
-            ]
-            UIApplication.sharedApplication().scheduleLocalNotification(notification)
         }
     }
     
@@ -125,6 +100,10 @@ class ExpLeagueMessage: NSManagedObject {
         return body != nil && body!.hasPrefix("{\"type\":\"response\"")
     }
     
+    var isRead: Bool {
+        return properties["read"] as? String == "true"
+    }
+
     var parent: ExpLeagueOrder {
         return parentRaw as! ExpLeagueOrder
     }
@@ -142,17 +121,33 @@ class ExpLeagueMessage: NSManagedObject {
         return self.type == .SystemMessage || self.type == .ExpertMessage
     }
     
-    var properties: NSDictionary {
-        if (self.type == .SystemMessage && self.body != nil) {
-            let data = NSData(base64EncodedString: self.body!, options: [])
-            let archiver = NSKeyedUnarchiver(forReadingWithData: data!)
-            return archiver.decodeObject() as! NSDictionary
+    func setProperty(name: String, value: AnyObject) {
+        let properties = NSMutableDictionary()
+        properties.addEntriesFromDictionary(self.properties)
+        properties[name] = value
+        let data = NSMutableData()
+        let archiver = NSKeyedArchiver(forWritingWithMutableData: data)
+        archiver.encodeObject(properties.copy() as! NSDictionary)
+        archiver.finishEncoding()
+        self.propertiesRaw = data.xmpp_base64Encoded()
+        do {
+            try self.managedObjectContext!.save()
+        } catch {
+            fatalError("Failure to save context: \(error)")
         }
-        return NSDictionary();
+    }
+    
+    var properties: [String: AnyObject] {
+        if (self.propertiesRaw != nil) {
+            let data = NSData(base64EncodedString: self.propertiesRaw!, options: [])
+            let archiver = NSKeyedUnarchiver(forReadingWithData: data!)
+            return archiver.decodeObject() as! [String: AnyObject]
+        }
+        return [:];
     }
     
     func visitParts(visitor: ExpLeagueMessageVisitor) {
-        if (type == .SystemMessage) {
+        if (type == .SystemMessage || type == .TopicStarter) {
             return
         }
         if (body != nil && body!.hasPrefix("{")) {
@@ -189,8 +184,14 @@ class ExpLeagueMessage: NSManagedObject {
                         }
                     }
                     if let imageItem = (item as! NSDictionary)["image"] as? NSDictionary {
-                        if let title = imageItem["title"] as? String {
-                            let urlStr = imageItem["image"] as! String
+                        if let urlStr = imageItem["image"] as? String {
+                            let title: String
+                            if let t = imageItem["title"] as? String {
+                                title = t
+                            }
+                            else {
+                                title = "Вложение"
+                            }
                             let storageName = urlStr.stringByReplacingOccurrencesOfString("/", withString: "-")
                             if AppDelegate.instance.activeProfile!.hasImage(storageName) {
                                 if let image = AppDelegate.instance.activeProfile!.loadImage(storageName) {

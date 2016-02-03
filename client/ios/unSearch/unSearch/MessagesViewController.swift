@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-class MessagesVeiwController: UIViewController, ChatInputDelegate {
+class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQueue {
     var order: ExpLeagueOrder? {
         didSet {
             answerText = "<html><body>"
@@ -17,7 +17,9 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
             data = ChatMessagesModel(order: order, parent: self)
             messagesView.dataSource = data
             messagesView.delegate = data
-            messagesView.reloadData()
+            if (loaded) {
+                messagesView.reloadData()
+            }
             
             if (order?.text.characters.count > 15) {
                 self.title = order!.text.substringToIndex(order!.topic.startIndex.advancedBy(15)) + "..."
@@ -29,12 +31,14 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
         }
     }
     
+    var loaded = false
     let placeHolder = UIView();
     let scrollView = UIScrollView()
     let input = ChatInputViewController(nibName: "ChatInput", bundle: nil)
     let messagesView = UITableView();
     let answerView = UIWebView();
     let picker = UIImagePickerController()
+    let progress = UIProgressView()
     var data: ChatMessagesModel?
     
     private var answerText: String = "<html><body>"
@@ -43,7 +47,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
         answerText += text;
         answerView.loadHTMLString(answerText, baseURL: nil)
     }
-    
+    var pickerDelegate: ImagePickerDelegate?
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -53,6 +57,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
         input.didMoveToParentViewController(self)
         view.addSubview(scrollView)
         scrollView.addSubview(messagesView)
+        scrollView.addSubview(progress)
         scrollView.addSubview(input.view)
         scrollView.addSubview(answerView)
         scrollView.pagingEnabled = true
@@ -61,6 +66,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
         input.text.layer.borderColor = UIColor.lightGrayColor().CGColor
         input.text.layer.cornerRadius = 4
         input.delegate = self;
+        
         answerView.loadHTMLString("", baseURL: nil)
         messagesView.registerNib(UINib(nibName: "IncomingMessage", bundle: nil), forCellReuseIdentifier: String(CellType.Incoming))
         messagesView.registerNib(UINib(nibName: "OutgoingMessage", bundle: nil), forCellReuseIdentifier: String(CellType.Outgoing))
@@ -72,13 +78,14 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
         messagesView.separatorStyle = .None
         messagesView.backgroundColor = ChatCell.bgColor
         scrollView.backgroundColor = messagesView.backgroundColor
-//        picker.delegate = ImagePickerDelegate(queue: <#T##ImageSenderQueue#>, picker: picker)
+        pickerDelegate = ImagePickerDelegate(queue: self, picker: picker)
+        picker.delegate = pickerDelegate
         picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
 
         messagesView.backgroundView = nil
-        AppDelegate.instance.messagesView = self
         
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "dismissKeyboard"))
+        loaded = true
     }
     
     func chatInput(chatInput: ChatInputViewController, didSend text: String) -> Bool {
@@ -142,7 +149,8 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
     
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
-        tabBar.hidden = false;
+        tabBar.hidden = false
+        AppDelegate.instance.messagesView = nil
         AppDelegate.instance.activeProfile!.selected = nil
         NSNotificationCenter.defaultCenter().removeObserver(self);
     }
@@ -160,6 +168,11 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         tabBar.hidden = true;
+        if (order != nil) {
+            data?.sync(order!)
+            messagesView.reloadData()
+        }
+        AppDelegate.instance.messagesView = self
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -190,10 +203,20 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate {
         let inputHeight = input.view.frame.height
         scrollView.frame = CGRectMake(0, 0, view.frame.width, view.frame.height)
         let visibleSize = CGSizeMake(scrollView.frame.width - scrollView.contentInset.right - scrollView.contentInset.left, scrollView.frame.height - scrollView.contentInset.bottom - scrollView.contentInset.top)
-        messagesView.frame = CGRectMake(0, 0, visibleSize.width, visibleSize.height - inputHeight)
-        input.view.frame = CGRectMake(0, messagesView.frame.maxY, visibleSize.width, inputHeight)
+        messagesView.frame = CGRectMake(0, 0, visibleSize.width, visibleSize.height - inputHeight - 3)
+        progress.frame = CGRectMake(0, messagesView.frame.maxY, visibleSize.width, 3)
+        input.view.frame = CGRectMake(0, progress.frame.maxY, visibleSize.width, inputHeight)
         answerView.frame = CGRectMake(0, input.view.frame.maxY, visibleSize.width, visibleSize.height - inputHeight)
         scrollView.contentSize = CGSizeMake(scrollView.frame.width, messagesView.frame.height + answerView.frame.height + input.view.frame.height)
+    }
+    
+    func attach(input: ChatInputViewController) {
+        self.presentViewController(picker, animated: true, completion: nil)
+    }
+    
+    func append(id: String, image: UIImage, progress: (UIProgressView) -> Void) {
+        order?.send("{\"content\": [{\"image\": {\"image\": \"\(id)\"}}]}")
+        progress(self.progress)
     }
 }
 
@@ -234,6 +257,9 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         var model = cells.last!
         while (lastKnownMessage < order.count) {
             let msg = order.message(lastKnownMessage)
+            if (!msg.isRead) {
+                msg.setProperty("read", value: "true")
+            }
             if (model is LookingForExpertModel || model is FeedbackModel) {
                 cells.removeLast();
                 model = cells.last!
@@ -276,12 +302,14 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 lastKnownMessage++
             }
         }
-        if (!haveActiveExpert && order.isActive) {
-            if (model is AnswerReceivedModel) {
-                cells.append(FeedbackModel(controller: self.parent))
-            }
-            else {
-                cells.append(LookingForExpertModel(mvc: parent))
+        if (order.count > 0 && !haveActiveExpert && order.isActive) {
+            if !(cells.last! is AnswerReceivedModel || cells.last! is LookingForExpertModel) {
+                if (model is AnswerReceivedModel) {
+                    cells.append(FeedbackModel(controller: self.parent))
+                }
+                else {
+                    cells.append(LookingForExpertModel(mvc: parent))
+                }
             }
         }
         if(!order.isActive && (cells.last! is LookingForExpertModel || cells.last! is ExpertInProgressModel)) {

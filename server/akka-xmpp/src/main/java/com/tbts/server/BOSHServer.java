@@ -11,6 +11,7 @@ import akka.http.javadsl.model.headers.AccessControlAllowMethods;
 import akka.http.javadsl.model.headers.AccessControlAllowOrigin;
 import akka.http.javadsl.model.headers.HttpOriginRange;
 import akka.japi.function.Function;
+import akka.japi.function.Predicate;
 import akka.japi.function.Procedure;
 import akka.stream.ActorMaterializer;
 import akka.stream.ActorMaterializerSettings;
@@ -55,7 +56,7 @@ public class BOSHServer extends UntypedActorAdapter {
         .withDebugLogging(true)
         .withInputBuffer(1 << 6, 1 << 7);
     materializer = ActorMaterializer.create(settings, context());
-    final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("localhost", 5280, materializer);
+    final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("0.0.0.0", 5280, materializer);
 //    final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("192.168.1.3", 5280, materializer);
     serverSource.to(Sink.foreach(new ProcessConnection())).run(materializer);
   }
@@ -64,7 +65,14 @@ public class BOSHServer extends UntypedActorAdapter {
     @Override
     public void apply(IncomingConnection connection) throws Exception {
 //      log.fine("Accepted new BOSH connection from " + connection.remoteAddress());
-      connection.handleWith(Flow.of(HttpRequest.class).take(1).map(request -> {
+      connection.handleWith(Flow.of(HttpRequest.class).filter(new Predicate<HttpRequest>() {
+        int index = 0;
+        @Override
+        public boolean test(HttpRequest httpRequest) {
+          System.out.println(httpRequest);
+          return true;
+        }
+      }).map(request -> {
         if (request.method() == HttpMethods.OPTIONS)
           return HttpResponse.create()
               .addHeader(AccessControlAllowOrigin.create(HttpOriginRange.ALL))

@@ -5,63 +5,227 @@
 
 import Foundation
 import UIKit
+import JSCustomBadge
+import XMPPFramework
 
 class HistoryViewController: UITableViewController {
-    var keys: [ExpLeagueOrder] {
-        let orders = AppDelegate.instance.activeProfile!.orders
-        return orders.sortedArrayUsingComparator({
-            let lhs = $0 as! ExpLeagueOrder
-            let rhs = $1 as! ExpLeagueOrder
-            
-            return lhs.started < rhs.started ? .OrderedDescending : (lhs.started > rhs.started  ? .OrderedAscending : .OrderedSame);
-        }) as! [ExpLeagueOrder]
-    }
-    
-    private func order(index: Int) -> ExpLeagueOrder {
-        return keys[index]
-    }
+    var ongoing: [ExpLeagueOrder] = []
+    var finished: [ExpLeagueOrder] = []
+    var archived: [ExpLeagueOrder] = []
+    var tracker: XMPPTracker?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         splitViewController!.delegate = self
         AppDelegate.instance.historyView = self
+        self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        tracker = XMPPTracker(onMessage: {(message: XMPPMessage) -> Void in
+            if (message.from() != AppDelegate.instance.activeProfile!.jid) {
+                self.populate()
+                (self.view as! UITableView).reloadData()
+            }
+        })
+        (view as! UITableView).registerClass(UITableViewCell.self, forCellReuseIdentifier: "Empty")
+    }
+    
+    func populate() {
+        ongoing.removeAll()
+        finished.removeAll()
+        archived.removeAll()
+        let orders = AppDelegate.instance.activeProfile?.orders
+        for orderO in orders! {
+            let order = orderO as! ExpLeagueOrder
+            if (order.isActive) {
+                ongoing.append(order)
+            }
+            else if (order.status == .Archived){
+                archived.append(order)
+            }
+            else {
+                finished.append(order)
+            }
+        }
+        
+        ongoing.sortInPlace(comparator)
+        finished.sortInPlace(comparator)
+        archived.sortInPlace(comparator)
+    }
+    
+    func indexOf(order: ExpLeagueOrder) -> NSIndexPath? {
+        if let index = ongoing.indexOf(order) {
+            return NSIndexPath(forRow: index, inSection: 0)
+        }
+        else if let index = finished.indexOf(order) {
+            return NSIndexPath(forRow: index, inSection: 1)
+        }
+        return nil
+    }
+    
+    let comparator = {(lhs: ExpLeagueOrder, rhs: ExpLeagueOrder) -> Bool in
+        return lhs.started < rhs.started ? true : false;
     }
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
+        populate()
         let table = (self.view as! UITableView)
         table.reloadData()
-        if let order = AppDelegate.instance.activeProfile!.selected {
-            let path = NSIndexPath(forRow: keys.indexOf(order)!, inSection: 0)
-            table.selectRowAtIndexPath(path, animated: false, scrollPosition: .Top)
-            self.tableView(table, didSelectRowAtIndexPath: path)
+        table.editing = false
+        if let order = AppDelegate.instance.activeProfile!.selected, let index = indexOf(order) {
+            table.selectRowAtIndexPath(index, animated: false, scrollPosition: .Top)
+            self.tableView(table, didSelectRowAtIndexPath: index)
         }
         AppDelegate.instance.tabs.tabBar.hidden = false
+        AppDelegate.instance.activeProfile!.track(tracker!)
+    }
+
+    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return !(indexPath.section == 0 && indexPath.row == 0 && ongoing.isEmpty)
+    }
+    
+    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        switch(section) {
+        case 0:
+            return "ТЕКУЩИЕ"
+        case 1:
+            return "ВЫПОЛНЕННЫЕ"
+        default:
+            return nil
+        }
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let orderView = tableView.dequeueReusableCellWithIdentifier("orderCell", forIndexPath: indexPath)
-        let order = self.order(indexPath.item);
-        orderView.textLabel?.text = order.text
-        return orderView
+        switch(indexPath.section) {
+        case 0 where ongoing.isEmpty:
+            let cell = tableView.dequeueReusableCellWithIdentifier("Empty", forIndexPath: indexPath)
+            cell.textLabel!.text = "Нет заказов"
+            cell.textLabel!.textAlignment = .Center
+            cell.textLabel!.textColor = UIColor.lightGrayColor()
+            return cell
+        case 0 where !ongoing.isEmpty:
+            let o = ongoing[indexPath.row]
+            let cell = tableView.dequeueReusableCellWithIdentifier("OngoingOrder", forIndexPath: indexPath) as! OngoingOrderStateCell
+            cell.title.text = o.text
+            if (o.status == .Overtime) {
+                let formatter = NSDateFormatter()
+                formatter.timeStyle = .ShortStyle
+                formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0)
+                
+                cell.status.textColor = OngoingOrderStateCell.ERROR_COLOR
+                cell.status.text = "ПРОСРОЧЕН НА \(formatter.stringFromDate(NSDate(timeIntervalSince1970: -o.timeLeft))))"
+            }
+            else if (o.status == .ExpertSearch) {
+                if (o.count > 0 && o.message(o.count - 1).isAnswer) {
+                    cell.status.textColor = UIColor.greenColor()
+                    cell.status.text = "ОТВЕТ ГОТОВ"
+                }
+                else {
+                    cell.status.textColor = OngoingOrderStateCell.OK_COLOR
+                    cell.status.text = "ИЩЕМ ЭКСПЕРТА"
+                }
+            }
+            else if (o.status == .Open) {
+                cell.status.textColor = OngoingOrderStateCell.OK_COLOR
+                cell.status.text = "В РАБОТЕ: \(o.expert!)"
+            }
+            let formatter = NSDateFormatter()
+            formatter.dateStyle = .ShortStyle;
+            formatter.timeStyle = .ShortStyle;
+            
+            formatter.doesRelativeDateFormatting = true
+            cell.date.text = formatter.stringFromDate(NSDate(timeIntervalSinceReferenceDate: o.started))
+            for view in cell.contentView.subviews {
+                if (view is JSCustomBadge) {
+                    view.removeFromSuperview()
+                }
+            }
+            if (o.unreadCount > 0) {
+                let badge = JSCustomBadge(string: "\(o.unreadCount)")
+                let size = badge.frame.size
+                badge.frame = CGRectMake(cell.frame.maxX - size.width - 4, 4, size.width, size.height)
+                cell.contentView.addSubview(badge)
+            }
+            return cell
+        case 1:
+            let o = finished[indexPath.row]
+            let cell = tableView.dequeueReusableCellWithIdentifier("FinishedOrder", forIndexPath: indexPath) as! FinishedOrderStateCell
+            cell.title.text = o.text
+            cell.shortAnswer.text = (o.status == .Canceled) ? "ОТМЕНЕН" : o.shortAnswer
+            let formatter = NSDateFormatter()
+            formatter.dateStyle = .ShortStyle;
+            formatter.timeStyle = .ShortStyle;
+            formatter.doesRelativeDateFormatting = true
+            
+            cell.date.text = formatter.stringFromDate(NSDate(timeIntervalSinceReferenceDate: o.started))
+            return cell
+        default:
+            return UITableViewCell()
+        }
     }
     
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        return CGFloat(100);
+        return CGFloat(60+8+8);
     }
     
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return section == 0 ? AppDelegate.instance.activeProfile!.orders.count : 0;
+        switch(section) {
+        case 0:
+            return max(ongoing.count, 1)
+        case 1:
+            return finished.count
+        default:
+            return 0
+        }
     }
     
+    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+        return 2
+    }
+    
+    let messagesView = MessagesVeiwController()
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        let o = order(indexPath.item)
+        let o: ExpLeagueOrder
+        switch(indexPath.section) {
+        case 0 where ongoing.isEmpty:
+            return;
+        case 0 where !ongoing.isEmpty:
+            o = ongoing[indexPath.row]
+        case 1:
+            o = finished[indexPath.row]
+        default:
+            return
+        }
         AppDelegate.instance.activeProfile!.selected = o
-        AppDelegate.instance.messagesView!.order = o
-        splitViewController!.showDetailViewController(AppDelegate.instance.messagesView!, sender: nil)
+        messagesView.order = o
+        splitViewController!.showDetailViewController(messagesView, sender: nil)
+    }
+    
+    override func tableView(tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        (view as! UITableViewHeaderFooterView).textLabel!.textColor = UIColor.lightGrayColor()
+    }
+
+    override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return false
+    }
+
+    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+        if (editingStyle == .Delete) {
+            if (indexPath.section == 0) {
+                ongoing.removeAtIndex(indexPath.row).archive()
+                if (ongoing.isEmpty) {
+                    tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+                }
+                else {
+                    tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+                }
+            }
+            else if (indexPath.section == 1) {
+                finished.removeAtIndex(indexPath.row).archive()
+                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+            }
+        }
     }
 }
-
 
 extension HistoryViewController: UISplitViewControllerDelegate {
     func splitViewController(svc: UISplitViewController, willChangeToDisplayMode displayMode: UISplitViewControllerDisplayMode) {
@@ -84,4 +248,20 @@ extension HistoryViewController: UISplitViewControllerDelegate {
         mvc.viewWillAppear(false)
         return mvc.order == nil
     }
+}
+
+class OngoingOrderStateCell: UITableViewCell {
+    static let OK_COLOR = UIColor(red: 17.0/256, green: 138.0/256, blue: 222.0/256, alpha: 1.0)
+    static let ERROR_COLOR = UIColor.redColor()
+    @IBOutlet weak var contentTypeIcon: UIImageView!
+    @IBOutlet weak var title: UILabel!
+    @IBOutlet weak var status: UILabel!
+    @IBOutlet weak var date: UILabel!
+}
+
+class FinishedOrderStateCell: UITableViewCell {
+    @IBOutlet weak var contentTypeIcon: UIImageView!
+    @IBOutlet weak var title: UILabel!
+    @IBOutlet weak var shortAnswer: UILabel!
+    @IBOutlet weak var date: UILabel!
 }
