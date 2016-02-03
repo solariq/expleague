@@ -17,7 +17,9 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
             data = ChatMessagesModel(order: order, parent: self)
             messagesView.dataSource = data
             messagesView.delegate = data
-            messagesView.reloadData()
+            if (loaded) {
+                messagesView.reloadData()
+            }
             
             if (order?.text.characters.count > 15) {
                 self.title = order!.text.substringToIndex(order!.topic.startIndex.advancedBy(15)) + "..."
@@ -29,6 +31,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         }
     }
     
+    var loaded = false
     let placeHolder = UIView();
     let scrollView = UIScrollView()
     let input = ChatInputViewController(nibName: "ChatInput", bundle: nil)
@@ -82,6 +85,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         messagesView.backgroundView = nil
         
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "dismissKeyboard"))
+        loaded = true
     }
     
     func chatInput(chatInput: ChatInputViewController, didSend text: String) -> Bool {
@@ -145,7 +149,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
-        tabBar.hidden = false;
+        tabBar.hidden = false
         AppDelegate.instance.messagesView = nil
         AppDelegate.instance.activeProfile!.selected = nil
         NSNotificationCenter.defaultCenter().removeObserver(self);
