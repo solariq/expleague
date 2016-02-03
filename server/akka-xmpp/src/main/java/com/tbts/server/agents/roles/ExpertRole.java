@@ -55,6 +55,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 if (!task.isEmpty()) {
                   explain(", resuming task " + task.offer().room());
                   XMPP.send(new Message(XMPP.jid(), jid(), new Resume(task.offer(), INVITE_TIMEOUT)), context());
+                  task.chosen = false;
                   timer = AkkaTools.scheduleTimeout(context(), INVITE_TIMEOUT, self());
                   return goTo(State.INVITE);
                 }
