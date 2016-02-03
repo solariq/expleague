@@ -18,4 +18,5 @@ extension ExpLeagueOrder {
     @NSManaged var topic: String
     @NSManaged var flags: Int16
     @NSManaged var messagesRaw: NSOrderedSet
+    @NSManaged var parent: ExpLeagueProfile
 }

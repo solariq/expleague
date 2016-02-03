@@ -26,6 +26,7 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
         }
     }
     @IBAction func attach(sender: AnyObject) {
+        delegate?.attach(self)
     }
     
     var delegate: ChatInputDelegate?
@@ -65,4 +66,5 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
 
 protocol ChatInputDelegate {
     func chatInput(chatInput: ChatInputViewController, didSend text: String) -> Bool
+    func attach(chatInput: ChatInputViewController)
 }

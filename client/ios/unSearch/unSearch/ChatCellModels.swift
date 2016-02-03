@@ -342,7 +342,7 @@ class SetupModel: CompositeCellModel {
         let label = timer.userInfo as! UILabel
         let timeLeft = order.before - CFAbsoluteTimeGetCurrent()
         switch(order.status) {
-        case .Open:
+        case .Open, .ExpertSearch:
             label.textColor = UIColor.lightGrayColor()
             label.text = "ОТКРЫТО. Осталось: " + formatPeriodRussian(timeLeft)
             break
@@ -357,6 +357,8 @@ class SetupModel: CompositeCellModel {
         case .Closed:
             label.textColor = UIColor.greenColor()
             label.text = "ВЫПОЛНЕНО"
+            break
+        default:
             break
         }
     }
@@ -466,11 +468,11 @@ class LookingForExpertModel: ChatCellModel {
         return false
     }
     
-    var tracker: XMPPPresenceTracker?
+    var tracker: XMPPTracker?
     let mvc: MessagesVeiwController
     init (mvc: MessagesVeiwController){
         self.mvc = mvc
-        tracker = XMPPPresenceTracker(onPresence: {(presence: XMPPPresence) -> Void in
+        tracker = XMPPTracker(onPresence: {(presence: XMPPPresence) -> Void in
             let statuses = try! presence.nodesForXPath("//*[local-name()='status' and namespace-uri()='http://expleague.com/scheme']")
             if statuses.count > 0, let status = statuses[0] as? DDXMLElement {
                 self.cell?.online = status.attributeIntegerValueForName("experts-online", withDefaultValue: 0)

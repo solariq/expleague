@@ -10,6 +10,22 @@ import Foundation
 import CoreData
 import XMPPFramework
 
+
+@objc
+class XMPPTracker: NSObject {
+    let onPresence: ((presence: XMPPPresence) -> Void)?
+    let onMessage: ((message: XMPPMessage) -> Void)?
+    init(onPresence: ((presence: XMPPPresence) -> Void)?) {
+        self.onPresence = onPresence
+        self.onMessage = nil
+    }
+
+    init(onMessage: ((presence: XMPPMessage) -> Void)?) {
+        self.onPresence = nil
+        self.onMessage = onMessage
+    }
+}
+
 @objc(ExpLeagueProfile)
 class ExpLeagueProfile: NSManagedObject {
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
@@ -34,7 +50,7 @@ class ExpLeagueProfile: NSManagedObject {
     }
     
     private dynamic var listeners: NSMutableArray = []
-    func track(tracker: XMPPPresenceTracker) {
+    func track(tracker: XMPPTracker) {
         listeners.addObject(Weak(tracker))
     }
     
@@ -249,6 +265,14 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
         if let order = order(name: msg.from().user) {
             order.message(message: msg)
         }
+        for listenerRef in listeners.copy() as! NSArray {
+            if let listener = (listenerRef as! Weak<XMPPTracker>).value {
+                listener.onMessage?(message: msg)
+            }
+            else {
+                listeners.removeObject(listenerRef)
+            }
+        }
     }
     
     func xmppStream(sender: XMPPStream!, didReceivePresence presence: XMPPPresence!) {
@@ -258,7 +282,7 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
             order.presence(presence: presence)
         }
         for listenerRef in listeners.copy() as! NSArray {
-            if let listener = (listenerRef as! Weak<XMPPPresenceTracker>).value {
+            if let listener = (listenerRef as! Weak<XMPPTracker>).value {
                 listener.onPresence?(presence: presence)
             }
             else {

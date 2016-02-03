@@ -208,6 +208,7 @@ extension AppDelegate: UIApplicationDelegate {
 
 
     func applicationDidBecomeActive(application: UIApplication) {
+        application.applicationIconBadgeNumber = 0
         connect()
     }
 

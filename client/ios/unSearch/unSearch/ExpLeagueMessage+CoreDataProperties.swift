@@ -17,6 +17,6 @@ extension ExpLeagueMessage {
     @NSManaged var parentRaw: NSManagedObject
     @NSManaged var typeRaw: Int16
     @NSManaged var body: String?
+    @NSManaged var propertiesRaw: String?
     @NSManaged var time: NSTimeInterval
-
 }

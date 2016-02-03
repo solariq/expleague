@@ -5,3 +5,5 @@
 //#import "XMPPIQ.h"
 //#import "DDXMLDocument.h"
 //#import "AsyncSocket.h"
+//#import "JSCustomBadge.h"
+//#import "JSCustomBadge"
