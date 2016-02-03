@@ -101,6 +101,7 @@
                 <outlet property="expertAvatar" destination="hG0-IM-IUL" id="1Hp-AY-0uM"/>
                 <outlet property="name" destination="JSF-04-FQt" id="cr9-RB-LTr"/>
                 <outlet property="pagesCount" destination="qmE-ag-Htn" id="WiZ-MZ-Hjs"/>
+                <outlet property="progress" destination="HGB-FD-OoU" id="euE-ha-RAx"/>
             </connections>
             <point key="canvasLocation" x="479" y="486.5"/>
         </tableViewCell>

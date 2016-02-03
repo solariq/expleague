@@ -19,6 +19,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
             messagesView.delegate = data
             if (loaded) {
                 messagesView.reloadData()
+                scrollView.scrollRectToVisible(messagesView.frame, animated: true)
             }
             
             if (order?.text.characters.count > 15) {
@@ -182,7 +183,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     }
 
     func keyboardShown(notification: NSNotification) {
-        let kbSize = (notification.userInfo![UIKeyboardFrameBeginUserInfoKey] as! NSValue).CGRectValue().size
+        let kbSize = (notification.userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue).CGRectValue().size
         let insets = UIEdgeInsetsMake(scrollView.contentInset.top, scrollView.contentInset.left, kbSize.height, scrollView.contentInset.right)
         scrollView.contentInset = insets
         scrollView.scrollIndicatorInsets = insets

@@ -144,6 +144,7 @@ class ExpertInProgressCell: SimpleChatCell {
     @IBOutlet weak var answersCount: UILabel!
     @IBOutlet weak var answerTypeIcon: UIImageView!
     @IBOutlet weak var name: UILabel!
+    @IBOutlet weak var progress: UIActivityIndicatorView!
     
     var action: (() -> Void)?
     @IBAction func cancelTask(sender: UIButton) {
@@ -177,6 +178,7 @@ class ExpertInProgressCell: SimpleChatCell {
 class LookingForExpertCell: SimpleChatCell {
     @IBOutlet weak var status: UILabel!
     @IBOutlet weak var expertsOnline: UILabel!
+    @IBOutlet weak var progress: UIActivityIndicatorView!
     
     var action: (() -> Void)?
     @IBAction func cancelTask(sender: UIButton) {

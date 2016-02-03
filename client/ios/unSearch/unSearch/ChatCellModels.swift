@@ -68,6 +68,7 @@ class CompositeCellModel: ChatCellModel {
 
     private var parts:[AnyObject] = []
     private var timeStamps: [NSTimeInterval] = []
+    var textAlignment: NSTextAlignment = .Left
 
     func append(text text: String, time: NSTimeInterval) {
         parts.append(text)
@@ -152,6 +153,7 @@ class CompositeCellModel: ChatCellModel {
                 label.contentSize = blockSize
                 label.scrollEnabled = false
                 label.textContainer.lineFragmentPadding = 0
+                label.textAlignment = self.textAlignment
                 block = label
             }
             else if let richText = parts[i] as? NSAttributedString {
@@ -167,6 +169,7 @@ class CompositeCellModel: ChatCellModel {
                 label.contentSize = blockSize
                 label.scrollEnabled = false
                 label.textContainer.lineFragmentPadding = 0
+                label.textAlignment = self.textAlignment
                 block = label
             }
             else if let image = parts[i] as? UIImage {
@@ -203,6 +206,11 @@ class CompositeCellModel: ChatCellModel {
                 block!.frame.size = blockSize
             }
         }
+        for sub in cell.content.subviews {
+            if (sub is UITextView) {
+                sub.frame.size.width = min(cell.maxContentSize.width, width)
+            }
+        }
         cell.content.frame.size = CGSizeMake(min(cell.maxContentSize.width, width), height + 2)
         print("Cell: \(cell.dynamicType), content size: \(cell.content.frame.size), cell size: \(cell.frame.size)")
     }
@@ -226,8 +234,10 @@ class CompositeCellModel: ChatCellModel {
         }
         else if let image = parts[index] as? UIImage {
             var bs = image.size
-            bs.height *= (width - 32)/bs.width
-            bs.width = (width - 32)
+            if (bs.width > width - 32) {
+                bs.height *= (width - 32)/bs.width
+                bs.width = (width - 32)
+            }
             blockSize = bs
         }
         else if let _ = parts[index] as? CLLocation {
@@ -279,6 +289,7 @@ class SetupModel: CompositeCellModel {
     init(order: ExpLeagueOrder) {
         self.order = order
         super.init()
+        textAlignment = .Center
         append(text: order.text, time: order.started)
         if (order.topic.hasPrefix("{")) {
             let json = try! NSJSONSerialization.JSONObjectWithData(order.topic.dataUsingEncoding(NSUTF8StringEncoding)!, options: []) as! [String: AnyObject]
@@ -397,6 +408,13 @@ class ExpertInProgressModel: ChatCellModel {
             order.cancel()
             self.mvc.order = order
         }
+        if (eipCell.progress != nil) {
+            if (AppDelegate.instance.stream.isConnected()) {
+                eipCell.progress.startAnimating()
+            } else {
+                eipCell.progress.stopAnimating()
+            }
+        }
     }
     func accept(message: ExpLeagueMessage) -> Bool {
         expertProperties.addEntriesFromDictionary(message.properties as [NSObject : AnyObject])
@@ -461,6 +479,13 @@ class LookingForExpertModel: ChatCellModel {
             let order = self.mvc.order!
             order.cancel()
             self.mvc.order = order
+        }
+        if (lfeCell.progress != nil) {
+            if (AppDelegate.instance.stream.isConnected()) {
+                lfeCell.progress.startAnimating()
+            } else {
+                lfeCell.progress.stopAnimating()
+            }
         }
     }
     
@@ -535,7 +560,13 @@ class AnswerReceivedModel: ChatCellModel {
         }
         func message(message: ExpLeagueMessage, title: String, image: UIImage) {
             let data = UIImageJPEGRepresentation(image, 1.0)!
-            parent.answerAppend("<h3>\(title)</h3><img width='\(AppDelegate.instance.window!.frame.width - 20)' align='middle' src='data:image/jpeg;base64,\(data.base64EncodedStringWithOptions([]))'/>")
+            let screenWidth = AppDelegate.instance.window!.frame.width
+            if (image.size.width > screenWidth - 20) {
+                parent.answerAppend("<h3>\(title)</h3><img width='\(screenWidth - 20)' align='middle' src='data:image/jpeg;base64,\(data.base64EncodedStringWithOptions([]))'/>")
+            }
+            else {
+                parent.answerAppend("<h3>\(title)</h3><img align='middle' src='data:image/jpeg;base64,\(data.base64EncodedStringWithOptions([]))'/>")
+            }
         }
     }
 

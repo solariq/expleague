@@ -178,6 +178,7 @@ extension AppDelegate: UIApplicationDelegate {
         ]
         UIApplication.sharedApplication().statusBarStyle = .LightContent
         application.registerForRemoteNotifications()
+        application.idleTimerDisabled = false
         return true
     }
 
