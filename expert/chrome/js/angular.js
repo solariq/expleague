@@ -761,10 +761,10 @@
     };
 
     $scope.logout = function ($event) {
-
         $event.preventDefault();
         $scope.resetSidebar();
 
+        KNUGGET.api("Available", {isAvailable: true}, function () { });
         $scope.finishRequest();
 
         KNUGGET.api("Logout", {}, function () { });

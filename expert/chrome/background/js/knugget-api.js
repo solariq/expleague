@@ -83,6 +83,46 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         };
     }
 
+    function SyncMaster() {
+        this.queue = [];
+
+        this.progress = function(func, data) {
+            if (data.isSync) {
+                return;
+            }
+            if (latestOffer && stateController.state == ExpertState.GO) {
+                var sync = $msg({to: latestOffer.room, from: jabberClient.connection.jid, type: 'chat'})
+                    .c('sync')
+                    .attrs({xmlns: "http://expleague.com/scheme", func: func, data: JSON.stringify(data)});
+                //.replace(/"/g, '\'')
+                console.log("store: " + func + "\t" + data);
+                jabberClient.unsafeSend(sync, function () {});
+            }
+        };
+
+
+        this.sync = function(func, data) {
+            data['isSync'] = true;
+            this.queue.push({func: api[func], data: data});
+        };
+
+
+        var self = this;
+        var lock = false;
+        $interval(function() {
+            if (!lock && self.queue.length > 0) {
+                lock = true;
+                var sync = self.queue.shift();
+                sync.func(sync.data).then(function() {
+                    lock = false;
+                });
+            }
+        }, 100);
+
+
+    }
+
+
     function JabberClient(login, password, resource) {
         this.login = login;
         this.password = password;
@@ -191,11 +231,13 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             }, null, 'message', null, null, null);
         };
 
-        this.addSycListener = function(listener) {
+        this.addSyncListener = function(listener) {
             this.connection.addHandler(function(msg) {
-                console.log("SYNE EVENT GOT::");
-                console.log(msg);
-                listener(msg);
+                var sync = msg.getElementsByTagName('sync')[0]
+                var func = sync.getAttribute('func');
+                var data = JSON.parse(sync.getAttribute('data'));
+                data['isSync'] = true;
+                listener(func, data);
                 return true;
             }, null, 'message', 'sync', null, null);
         };
@@ -210,7 +252,9 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                 if (elems.length > 0) {
                     var body = elems[0];
                     //listener({text: Strophe.getText(body), from: from, time: new Date().getTime()});
-                    listener(Strophe.getText(body), from);
+                    from = from.split('/');
+                    from = from[from.length - 1];
+                    listener(Strophe.getText(body), from + '@' + jabberClient.host);
                 }
                 return true;
             }, null, 'message', 'groupchat', null, null);
@@ -239,7 +283,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                     invite.owner = offer.client;
                     invite.room = offer.room.replace("/client", "");
                     invite.time = new Date().getTime();
-                    invite.img = 'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg';
+                    invite.img = null;//'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg';
                     invite.confirmExpireTime =  Date.now() + 965 * 1000;
                     invite.resolveExpireTime = Date.now() + 9150 * 1000;
                     invite.map = { center: { latitude: 59.977755, longitude: 30.3343742 }, zoom: 15};
@@ -361,7 +405,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                     time: invite.time,
                     id: invite.time,
                     room: invite.room,
-                    img: 'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg',
+                    img: null,//'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg',
                     confirmExpireTime: Date.now() + 965 * 1000,
                     resolveExpireTime: Date.now() + 9150 * 1000,
                     map: { center: { latitude: 59.977755, longitude: 30.3343742 }, zoom: 15},
@@ -377,6 +421,13 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             },
             onSet: function(data) {
                 //jabberClient.sendPres(data.request.room, 'expert');
+                //toda place start here
+
+                var msg = $msg({to: jabberClient.host, from: jabberClient.connection.jid, type: 'chat'})
+                .c(data.request.isResumed ? 'resume' : 'start')
+                    .attrs({xmlns: "http://expleague.com/scheme"});
+                jabberClient.unsafeSend(msg, function(){});
+
                 jabberClient.enterRoom(data.request.room, 'expert');
                 //todo remove this
                 stateController.setState(ExpertState.GO);
@@ -480,6 +531,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
     var jabberClient = null;
     var stateController = null;
     var chatController = new ChatController();
+    var syncMaster = new SyncMaster();
     var visitedPages = [];
 
     //var connection = new Strophe.Connection('http://localhost:5280/http-bind');
@@ -615,15 +667,6 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
     };
 
 
-    progress = function(func, data) {
-        if (latestOffer && stateController.state == ExpertState.GO) {
-            var sync = $msg({to: latestOffer.room, from: jabberClient.connection.jid, type: 'chat'})
-                .c('sync')
-                .attrs({xmlns: "http://expleague.com/scheme", func: func, data: JSON.stringify(data).replace(/"/g, '\'')});
-            console.log("store: " + func + "\t" + data);
-            jabberClient.unsafeSend(sync, function () {});
-        }
-    };
 
     //if (window.chrome && window.chrome.storage) {
     //    window.chrome.storage.onChanged.addListener(function (data) {
@@ -648,7 +691,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
     //}, 1000);
 
     // API METHODS
-    return {
+    api = {
 
             resetBoard: function (data) {
             var defer = $q.defer();
@@ -785,7 +828,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         },
 
         Remove: function(data) {
-            progress('Remove', data);
+            syncMaster.progress('Remove', data);
             var defer = $q.defer();
             KNUGGET.storage.get("Board", function (value) {
                 value = value ? JSON.parse(value) : [];
@@ -802,7 +845,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         },
 
         Move: function(data) {
-            progress('Move', data);
+            syncMaster.progress('Move', data);
             var defer = $q.defer();
             fromPos = data.fromPos;
             toPos = data.toPos;
@@ -830,7 +873,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         },
 
         ReplaceAnswer: function(data) {
-            progress('ReplaceAnswer', data);
+            syncMaster.progress('ReplaceAnswer', data);
             var defer = $q.defer();
             pos = data.pos;
             answer = data.answer;
@@ -853,7 +896,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         },
 
         InsertAnswer: function(data) {
-            progress('InsertAnswer', data);
+            syncMaster.progress('InsertAnswer', data);
             var defer = $q.defer();
             pos = data.pos;
             answer = data.answer;
@@ -876,7 +919,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         },
 
         addToBoard: function(data) {
-            progress('addToBoard', data);
+            syncMaster.progress('addToBoard', data);
             answer = data.answer;
             var defer = $q.defer();
             addToBoardSync(answer, function() {
@@ -955,7 +998,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                 invite.owner = offer.client;
                 invite.room = offer.room.replace("/client", "");
                 invite.time= new Date().getTime();
-                invite.img = 'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg';
+                invite.img = null;//'http://3.bp.blogspot.com/_f3d3llNlZKQ/SxrJWGZywvI/AAAAAAAABg0/2rV7MNks1lw/s400/Prova.jpg';
                 invite.confirmExpireTime =  Date.now() + 965 * 1000;
                 invite.resolveExpireTime = Date.now() + 9150 * 1000;
                 invite.map = { center: { latitude: 59.977755, longitude: 30.3343742 }, zoom: 15};
@@ -979,7 +1022,14 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
             //});
 
             jabberClient.addMessageListener(function(text, from) {
-                chatController.addChatMsg({isOwn: false, text: text});
+
+                chatController.addChatMsg({isOwn: latestOffer ? from != latestOffer.client : false, text: text});
+            });
+
+            jabberClient.addSyncListener(function(func, data) {
+                console.log('call sync ' + func + '\t\t' + data);
+                syncMaster.sync(func, data);
+
             });
 
             jabberClient.addInviteListener(function(invite) {
@@ -1049,4 +1099,6 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         },
 
     };
+
+    return api;
 }]);
