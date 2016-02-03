@@ -9,6 +9,7 @@
         <option value="$PROJECT_DIR$/server/commons/pom.xml" />
         <option value="$PROJECT_DIR$/server/xmpp-bots/pom.xml" />
         <option value="$PROJECT_DIR$/server/pom.xml" />
+        <option value="$PROJECT_DIR$/expert/browser/pom.xml" />
       </list>
     </option>
   </component>

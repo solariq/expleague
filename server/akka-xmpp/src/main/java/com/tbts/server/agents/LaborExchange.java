@@ -45,6 +45,8 @@ public class LaborExchange extends UntypedPersistentActor {
   }
 
   public void invoke(Offer offer) {
+    if (openPositions.containsKey(offer.room().local()))
+      return;
     log.fine("Labor exchange received offer " + offer.room().local() + " looking for broker");
     final Collection<ActorRef> children = JavaConversions.asJavaCollection(context().children());
     for (final ActorRef ref : children) {
