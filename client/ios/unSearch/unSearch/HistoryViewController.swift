@@ -134,6 +134,11 @@ class HistoryViewController: UITableViewController {
             
             formatter.doesRelativeDateFormatting = true
             cell.date.text = formatter.stringFromDate(NSDate(timeIntervalSinceReferenceDate: o.started))
+            for view in cell.contentView.subviews {
+                if (view is JSCustomBadge) {
+                    view.removeFromSuperview()
+                }
+            }
             if (o.unreadCount > 0) {
                 let badge = JSCustomBadge(string: "\(o.unreadCount)")
                 let size = badge.frame.size
@@ -181,7 +186,9 @@ class HistoryViewController: UITableViewController {
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let o: ExpLeagueOrder
         switch(indexPath.section) {
-        case 0:
+        case 0 where ongoing.isEmpty:
+            return;
+        case 0 where !ongoing.isEmpty:
             o = ongoing[indexPath.row]
         case 1:
             o = finished[indexPath.row]

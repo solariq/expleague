@@ -303,13 +303,13 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             }
         }
         if (order.count > 0 && !haveActiveExpert && order.isActive) {
-            if (model is AnswerReceivedModel) {
-                if !(cells.last is FeedbackModel) {
+            if !(cells.last! is AnswerReceivedModel || cells.last! is LookingForExpertModel) {
+                if (model is AnswerReceivedModel) {
                     cells.append(FeedbackModel(controller: self.parent))
                 }
-            }
-            else if !(cells.last is LookingForExpertModel) {
-                cells.append(LookingForExpertModel(mvc: parent))
+                else {
+                    cells.append(LookingForExpertModel(mvc: parent))
+                }
             }
         }
         if(!order.isActive && (cells.last! is LookingForExpertModel || cells.last! is ExpertInProgressModel)) {
