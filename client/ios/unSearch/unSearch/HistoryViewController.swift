@@ -25,6 +25,7 @@ class HistoryViewController: UITableViewController {
                 (self.view as! UITableView).reloadData()
             }
         })
+        (view as! UITableView).registerClass(UITableViewCell.self, forCellReuseIdentifier: "Empty")
     }
     
     func populate() {
@@ -69,6 +70,7 @@ class HistoryViewController: UITableViewController {
         populate()
         let table = (self.view as! UITableView)
         table.reloadData()
+        table.editing = false
         if let order = AppDelegate.instance.activeProfile!.selected, let index = indexOf(order) {
             table.selectRowAtIndexPath(index, animated: false, scrollPosition: .Top)
             self.tableView(table, didSelectRowAtIndexPath: index)
@@ -78,7 +80,7 @@ class HistoryViewController: UITableViewController {
     }
 
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        return true
+        return !(indexPath.section == 0 && indexPath.row == 0 && ongoing.isEmpty)
     }
     
     override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -94,7 +96,13 @@ class HistoryViewController: UITableViewController {
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         switch(indexPath.section) {
-        case 0:
+        case 0 where ongoing.isEmpty:
+            let cell = tableView.dequeueReusableCellWithIdentifier("Empty", forIndexPath: indexPath)
+            cell.textLabel!.text = "Нет заказов"
+            cell.textLabel!.textAlignment = .Center
+            cell.textLabel!.textColor = UIColor.lightGrayColor()
+            return cell
+        case 0 where !ongoing.isEmpty:
             let o = ongoing[indexPath.row]
             let cell = tableView.dequeueReusableCellWithIdentifier("OngoingOrder", forIndexPath: indexPath) as! OngoingOrderStateCell
             cell.title.text = o.text
@@ -107,8 +115,14 @@ class HistoryViewController: UITableViewController {
                 cell.status.text = "ПРОСРОЧЕН НА \(formatter.stringFromDate(NSDate(timeIntervalSince1970: -o.timeLeft))))"
             }
             else if (o.status == .ExpertSearch) {
-                cell.status.textColor = OngoingOrderStateCell.OK_COLOR
-                cell.status.text = "ИЩЕМ ЭКСПЕРТА"
+                if (o.count > 0 && o.message(o.count - 1).isAnswer) {
+                    cell.status.textColor = UIColor.greenColor()
+                    cell.status.text = "ОТВЕТ ГОТОВ"
+                }
+                else {
+                    cell.status.textColor = OngoingOrderStateCell.OK_COLOR
+                    cell.status.text = "ИЩЕМ ЭКСПЕРТА"
+                }
             }
             else if (o.status == .Open) {
                 cell.status.textColor = OngoingOrderStateCell.OK_COLOR
@@ -131,7 +145,7 @@ class HistoryViewController: UITableViewController {
             let o = finished[indexPath.row]
             let cell = tableView.dequeueReusableCellWithIdentifier("FinishedOrder", forIndexPath: indexPath) as! FinishedOrderStateCell
             cell.title.text = o.text
-            cell.shortAnswer.text = (o.status == .Canceled) ? "ОТМЕНЕНА" : o.shortAnswer
+            cell.shortAnswer.text = (o.status == .Canceled) ? "ОТМЕНЕН" : o.shortAnswer
             let formatter = NSDateFormatter()
             formatter.dateStyle = .ShortStyle;
             formatter.timeStyle = .ShortStyle;
@@ -151,7 +165,7 @@ class HistoryViewController: UITableViewController {
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch(section) {
         case 0:
-            return ongoing.count
+            return max(ongoing.count, 1)
         case 1:
             return finished.count
         default:
@@ -160,15 +174,7 @@ class HistoryViewController: UITableViewController {
     }
     
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        var result = 1;
-//        if (ongoing.count > 0) {
-//            result++
-//        }
-        if (finished.count > 0) {
-            result++
-        }
-        
-        return result
+        return 2
     }
     
     let messagesView = MessagesVeiwController()
@@ -199,11 +205,17 @@ class HistoryViewController: UITableViewController {
         if (editingStyle == .Delete) {
             if (indexPath.section == 0) {
                 ongoing.removeAtIndex(indexPath.row).archive()
+                if (ongoing.isEmpty) {
+                    tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+                }
+                else {
+                    tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+                }
             }
             else if (indexPath.section == 1) {
                 finished.removeAtIndex(indexPath.row).archive()
+                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
             }
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
         }
     }
 }

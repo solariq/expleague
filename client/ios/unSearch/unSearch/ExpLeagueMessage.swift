@@ -147,7 +147,7 @@ class ExpLeagueMessage: NSManagedObject {
     }
     
     func visitParts(visitor: ExpLeagueMessageVisitor) {
-        if (type == .SystemMessage) {
+        if (type == .SystemMessage || type == .TopicStarter) {
             return
         }
         if (body != nil && body!.hasPrefix("{")) {

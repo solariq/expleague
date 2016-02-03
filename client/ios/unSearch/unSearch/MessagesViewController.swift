@@ -168,6 +168,10 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         tabBar.hidden = true;
+        if (order != nil) {
+            data?.sync(order!)
+            messagesView.reloadData()
+        }
         AppDelegate.instance.messagesView = self
     }
     
@@ -298,11 +302,13 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 lastKnownMessage++
             }
         }
-        if (!haveActiveExpert && order.isActive) {
+        if (order.count > 0 && !haveActiveExpert && order.isActive) {
             if (model is AnswerReceivedModel) {
-                cells.append(FeedbackModel(controller: self.parent))
+                if !(cells.last is FeedbackModel) {
+                    cells.append(FeedbackModel(controller: self.parent))
+                }
             }
-            else {
+            else if !(cells.last is LookingForExpertModel) {
                 cells.append(LookingForExpertModel(mvc: parent))
             }
         }
