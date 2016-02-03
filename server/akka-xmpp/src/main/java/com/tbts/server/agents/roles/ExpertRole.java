@@ -183,7 +183,11 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
             (stanza, task) -> {
               stopTimer();
               explain("Expert has shown in the room. Assuming he has accepted the invitation.");
-              task.broker().tell(new Start(), self());
+              if (task.chosen())
+                task.broker().tell(new Start(), self());
+              else
+                task.broker().tell(new Resume(), self());
+              task.chosen = true;
               return goTo(State.BUSY);
             }
         ).event( // broker sent invitation
