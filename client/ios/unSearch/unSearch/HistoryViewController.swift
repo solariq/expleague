@@ -225,6 +225,13 @@ class HistoryViewController: UITableViewController {
             }
         }
     }
+    
+    override func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        if (indexPath.section == 0 && indexPath.row == 0) {
+            return !ongoing.isEmpty
+        }
+        return true
+    }
 }
 
 extension HistoryViewController: UISplitViewControllerDelegate {
