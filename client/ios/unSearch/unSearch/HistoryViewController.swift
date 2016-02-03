@@ -171,6 +171,7 @@ class HistoryViewController: UITableViewController {
         return result
     }
     
+    let messagesView = MessagesVeiwController()
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let o: ExpLeagueOrder
         switch(indexPath.section) {
@@ -182,8 +183,8 @@ class HistoryViewController: UITableViewController {
             return
         }
         AppDelegate.instance.activeProfile!.selected = o
-        AppDelegate.instance.messagesView!.order = o
-        splitViewController!.showDetailViewController(AppDelegate.instance.messagesView!, sender: nil)
+        messagesView.order = o
+        splitViewController!.showDetailViewController(messagesView, sender: nil)
     }
     
     override func tableView(tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
