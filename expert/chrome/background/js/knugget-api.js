@@ -96,7 +96,7 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                     .attrs({xmlns: "http://expleague.com/scheme", func: func, data: JSON.stringify(data)});
                 //.replace(/"/g, '\'')
                 console.log("store: " + func + "\t" + data);
-                jabberClient.unsafeSend(sync, function () {});
+                //jabberClient.unsafeSend(sync, function () {});
             }
         };
 
