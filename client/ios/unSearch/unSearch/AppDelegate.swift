@@ -178,6 +178,8 @@ extension AppDelegate: UIApplicationDelegate {
         ]
         UIApplication.sharedApplication().statusBarStyle = .LightContent
         application.registerForRemoteNotifications()
+        let settings = UIUserNotificationSettings(forTypes: [.Alert, .Sound], categories: [])
+        application.registerUserNotificationSettings(settings)
         application.idleTimerDisabled = false
         return true
     }
