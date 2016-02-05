@@ -76,9 +76,14 @@ public class LaborExchange extends UntypedPersistentActor {
   }
 
   public void invoke(Operations.Done done) {
-    final JID jid = XMPP.jid(sender());
-    openPositions.remove(jid.local());
-    saveSnapshot(new ArrayList<>(openPositions.keySet()));
+    final Optional<Map.Entry<String, ActorRef>> first = openPositions.entrySet().stream().filter(entry -> entry.getValue().equals(sender())).findFirst();
+    if (first.isPresent()) {
+      openPositions.remove(first.get().getKey());
+      saveSnapshot(new ArrayList<>(openPositions.keySet()));
+    }
+    else {
+      log.warning("Was unable to find broker, that has finished his job: " + sender().path() + "!");
+    }
   }
 
   public void invoke(Operations.Cancel cancel) {

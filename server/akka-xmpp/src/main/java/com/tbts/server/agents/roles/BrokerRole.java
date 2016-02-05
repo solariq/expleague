@@ -226,7 +226,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
             (done, task) -> {
               explain("Expert has finished working on the " + task.offer.room().local() + ". Sending notification to the room.");
               XMPP.send(new Message(Experts.jid(sender()), task.jid(), done), context());
-              reference(context()).tell(Done.class, self());
+              reference(context()).tell(new Done(), self());
               return goTo(State.UNEMPLOYED).using(null);
             }
         ).event(Cancel.class, // cancel from expert
@@ -237,7 +237,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
               return lookForExpert(task).using(task.exit());
             }
         ).event(Cancel.class, // cancel from the room
-            (cancel, task) -> task.jid().bareEq(JID.parse(sender().path().name())),
+            (cancel, task) -> task.jid().bareEq(XMPP.jid(sender())),
             (cancel, task) -> cancelTask(task)
         ).event(Suspend.class,
             (suspend, task) -> {
