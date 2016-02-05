@@ -110,7 +110,7 @@ class HistoryViewController: UITableViewController {
                 let formatter = NSDateFormatter()
                 formatter.timeStyle = .ShortStyle
                 formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0)
-                formatter.dateFormat = "H:mm"
+                formatter.dateFormat = "H'ч 'mm'м'"
                 
                 cell.status.textColor = OngoingOrderStateCell.ERROR_COLOR
                 cell.status.text = "ПРОСРОЧЕН НА \(formatter.stringFromDate(NSDate(timeIntervalSince1970: -o.timeLeft)))"
