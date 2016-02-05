@@ -327,7 +327,7 @@ class SetupModel: CompositeCellModel {
 
     func formatPeriodRussian(interval: NSTimeInterval) -> String {
         let formatter = NSDateFormatter()
-        formatter.dateFormat = "H:mm:ss"
+        formatter.dateFormat = "HH:mm:ss"
         formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0)
         let days = Int(floor(interval / (24 * 60 * 60)))
         let ending = days % 10
