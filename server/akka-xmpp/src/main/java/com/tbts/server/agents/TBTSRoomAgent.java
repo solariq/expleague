@@ -69,11 +69,14 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
 
     if (msg.has(Start.class) || msg.has(Operations.Resume.class)) {
       enterRoom(msg.from());
-      XMPP.send(new Message(jid, status.owner(), ExpertManager.instance().profile(msg.from().bare())), context());
+      XMPP.send(new Message(jid, status.owner(), msg.get(Operations.Command.class), ExpertManager.instance().profile(msg.from().bare())), context());
     }
     else if (msg.has(Cancel.class) || msg.has(Done.class)) {
       if (msg.from().bareEq(status.owner())) {
         LaborExchange.reference(context()).tell(msg.get(Operations.Command.class), self());
+      }
+      else if (msg.has(Cancel.class)) {
+        XMPP.send(new Message(jid, status.owner(), msg.get(Operations.Command.class), ExpertManager.instance().profile(msg.from().bare())), context());
       }
     }
     else if (!msg.from().bareEq(status.owner()) && msg.body().startsWith("{\"type\":\"visitedPages\"")) {

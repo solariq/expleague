@@ -278,11 +278,18 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             }
             if (msg.type == .SystemMessage) {
                 if (progressModel == nil || !progressModel!.accept(msg)) {
-                    if (msg.properties["type"] as! NSString == "expert") {
-                        haveActiveExpert = true
-                        progressModel = ExpertInProgressModel(mvc: parent)
-                        progressCellIndex = cells.count
-                        cells.append(progressModel!)
+                    if (msg.properties["type"] as! String == "expert") {
+                        if (msg.properties["operation"] as! String != "cancel") {
+                            haveActiveExpert = true
+                            progressModel = ExpertInProgressModel(mvc: parent)
+                            progressCellIndex = cells.count
+                            cells.append(progressModel!)
+                        }
+                        else {
+                            progressModel = nil
+                            progressCellIndex = nil
+                            cells.removeAtIndex(progressCellIndex!)
+                        }
                     }
                 }
                 else {

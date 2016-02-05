@@ -45,7 +45,11 @@ class ExpLeagueMessage: NSManagedObject {
                 properties["name"] = element.attributeStringValueForName("name")
                 properties["tasks"] = element.attributeStringValueForName("tasks")
             }
-            else if (!textChildren.isEmpty && textChildren[0].stringValue.hasPrefix("{\"type\":\"visitedPages\"")) {
+            if let _ = msg.elementForName("expert", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+                properties["command"] = "cancel"
+            }
+            
+            if (!textChildren.isEmpty && textChildren[0].stringValue.hasPrefix("{\"type\":\"visitedPages\"")) {
                 do {
                     let json = try NSJSONSerialization.JSONObjectWithData(textChildren[0].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!, options: NSJSONReadingOptions.AllowFragments)
                     properties.addEntriesFromDictionary(json as! [String : AnyObject])
