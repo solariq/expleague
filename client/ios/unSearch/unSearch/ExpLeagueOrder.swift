@@ -37,7 +37,12 @@ class ExpLeagueOrder: NSManagedObject {
             let msg = message(i)
             if (msg.type == .SystemMessage) {
                 if msg.properties["type"] as! String == "expert" {
-                    lastExpert = msg.properties["login"] as? String
+                    if (msg.properties["operation"] as? String != "canel") {
+                        lastExpert = msg.properties["login"] as? String
+                    }
+                    else {
+                        lastExpert = nil
+                    }
                 }
             }
             else if (msg.isAnswer) {
