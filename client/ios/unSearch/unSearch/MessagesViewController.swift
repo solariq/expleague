@@ -279,7 +279,7 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             if (msg.type == .SystemMessage) {
                 if (progressModel == nil || !progressModel!.accept(msg)) {
                     if (msg.properties["type"] as! String == "expert") {
-                        if (msg.properties["operation"] as! String != "cancel") {
+                        if (msg.properties["operation"] as? String != "cancel") {
                             haveActiveExpert = true
                             progressModel = ExpertInProgressModel(mvc: parent)
                             progressCellIndex = cells.count
