@@ -322,12 +322,12 @@ class SetupModel: CompositeCellModel {
     }
     
     override func accept(message: ExpLeagueMessage) -> Bool {
-        return message.type == .TopicStarter
+        return message.type == .Topic
     }
 
     func formatPeriodRussian(interval: NSTimeInterval) -> String {
         let formatter = NSDateFormatter()
-        formatter.dateFormat = "H:mm"
+        formatter.dateFormat = "H:mm:ss"
         formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0)
         let days = Int(floor(interval / (24 * 60 * 60)))
         let ending = days % 10
@@ -418,7 +418,7 @@ class ExpertInProgressModel: ChatCellModel {
     }
     func accept(message: ExpLeagueMessage) -> Bool {
         expertProperties.addEntriesFromDictionary(message.properties as [NSObject : AnyObject])
-        return message.type == .SystemMessage
+        return message.type == .ExpertProgress || message.type == .ExpertAssignment
     }
     
     let mvc: MessagesVeiwController

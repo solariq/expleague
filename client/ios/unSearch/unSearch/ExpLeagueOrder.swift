@@ -35,17 +35,10 @@ class ExpLeagueOrder: NSManagedObject {
         var lastExpert: String? = nil
         for i in 0 ..< count {
             let msg = message(i)
-            if (msg.type == .SystemMessage) {
-                if msg.properties["type"] as! String == "expert" {
-                    if (msg.properties["operation"] as? String != "canel") {
-                        lastExpert = msg.properties["login"] as? String
-                    }
-                    else {
-                        lastExpert = nil
-                    }
-                }
+            if (msg.type == .ExpertAssignment ){
+                lastExpert = msg.properties["login"] as? String
             }
-            else if (msg.isAnswer) {
+            else if (msg.type == .ExpertCancel || msg.type == .Answer) {
                 lastExpert = nil
             }
         }
@@ -218,7 +211,9 @@ class ExpLeagueOrder: NSManagedObject {
         var result = 0
         for i in 0 ..< count {
             let msg = message(i)
-            result += (msg.isRead) ? 0 : 1
+            if (msg.type == .ExpertMessage || msg.type == .Answer) {
+                result += (msg.isRead) ? 0 : 1
+            }
         }
         return result
     }

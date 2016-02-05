@@ -62,7 +62,7 @@ class HistoryViewController: UITableViewController {
     }
     
     let comparator = {(lhs: ExpLeagueOrder, rhs: ExpLeagueOrder) -> Bool in
-        return lhs.started < rhs.started ? true : false;
+        return lhs.started > rhs.started ? true : false;
     }
     
     override func viewWillAppear(animated: Bool) {

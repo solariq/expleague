@@ -276,25 +276,27 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 cells.removeLast();
                 model = cells.last!
             }
-            if (msg.type == .SystemMessage) {
+            if (msg.type == .ExpertAssignment) {
                 if (progressModel == nil || !progressModel!.accept(msg)) {
                     if (msg.properties["type"] as! String == "expert") {
-                        if (msg.properties["operation"] as? String != "cancel") {
-                            haveActiveExpert = true
-                            progressModel = ExpertInProgressModel(mvc: parent)
-                            progressCellIndex = cells.count
-                            cells.append(progressModel!)
-                        }
-                        else {
-                            progressModel = nil
-                            progressCellIndex = nil
-                            cells.removeAtIndex(progressCellIndex!)
-                        }
+                        haveActiveExpert = true
+                        progressModel = ExpertInProgressModel(mvc: parent)
+                        progressCellIndex = cells.count
+                        cells.append(progressModel!)
                     }
                 }
                 else {
                     lastKnownMessage++;
                 }
+            }
+            else if (msg.type == .ExpertCancel) {
+                if (progressCellIndex != nil) {
+                    cells.removeAtIndex(progressCellIndex!)
+                }
+                haveActiveExpert = false
+                progressModel = nil
+                progressCellIndex = nil
+                lastKnownMessage++;
             }
             else if (!model.accept(msg)) { // switch model
                 if (msg.incoming) {
