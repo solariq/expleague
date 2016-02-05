@@ -18,6 +18,7 @@ import com.tbts.xmpp.Item;
 import com.tbts.xmpp.control.Close;
 import com.tbts.xmpp.control.Open;
 import scala.concurrent.duration.Duration;
+import scala.util.Failure;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -106,6 +107,14 @@ public class BOSHSession extends UntypedActorAdapter {
     //noinspection ThrowableResultOfMethodCallIgnored
     if (failure.cause() != null)
       log.log(Level.WARNING, "", failure.cause());
+    else
+      log.log(Level.WARNING, failure.toString());
+  }
+
+  public void invoke(Failure failure) {
+    //noinspection ThrowableResultOfMethodCallIgnored
+    if (failure.exception() != null)
+      log.log(Level.WARNING, "", failure.exception());
     else
       log.log(Level.WARNING, failure.toString());
   }

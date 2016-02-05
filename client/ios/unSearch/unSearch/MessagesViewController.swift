@@ -12,6 +12,9 @@ import UIKit
 class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQueue {
     var order: ExpLeagueOrder? {
         didSet {
+            if (order == nil) {
+                return
+            }
             answerText = "<html><body>"
             answerAppend("")
             data = ChatMessagesModel(order: order, parent: self)
@@ -20,22 +23,23 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
             if (loaded) {
                 messagesView.reloadData()
 
-                if (order != nil && order!.status == .Closed) {
+                if (order!.status == .Closed) {
                     scrollView.scrollRectToVisible(answerView.frame, animated: false)
                 }
                 else {
                     scrollView.scrollRectToVisible(messagesView.frame, animated: false)
+                    messagesView.scrollToRowAtIndexPath(NSIndexPath(forRow: data!.cells.count - 1, inSection: 0), atScrollPosition: .Bottom, animated: false)
                 }
 
             }
             
-            if (order?.text.characters.count > 15) {
+            if (order!.text.characters.count > 15) {
                 self.title = order!.text.substringToIndex(order!.topic.startIndex.advancedBy(15)) + "..."
             }
             else {
-                self.title = order?.text
+                self.title = order!.text
             }
-            self.title = order?.text
+            self.title = order!.text
         }
     }
     
@@ -311,7 +315,7 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             }
         }
         if (order.count > 0 && !haveActiveExpert && order.isActive) {
-            if !(cells.last! is AnswerReceivedModel || cells.last! is LookingForExpertModel) {
+            if !(cells.last! is FeedbackModel || cells.last! is LookingForExpertModel) {
                 if (model is AnswerReceivedModel) {
                     cells.append(FeedbackModel(controller: self.parent))
                 }
