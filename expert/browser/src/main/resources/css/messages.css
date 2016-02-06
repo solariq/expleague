@@ -1,0 +1,32 @@
+.messages-pane {
+    -fx-background-color: rgb(218, 234, 239);
+}
+
+.incoming-message {
+    -fx-background-image: url("/images/blue_bubble_tail.png");
+    -fx-background-repeat: stretch;
+    -fx-background-position: top left;
+    -fx-background-size: stretch;
+    -fx-padding: 4px;
+}
+
+.incoming-message .label {
+    -fx-text-fill: white
+}
+
+.outgoing-message {
+    -fx-background-image: url("/images/White_Tail_bubble_new.pdf");
+    -fx-background-repeat: stretch;
+    -fx-background-position: top right;
+    -fx-background-size: stretch;
+    -fx-padding: 4px;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.message-item {
+    -fx-background-color: transparent;
+    -fx-padding: 5px;
+}

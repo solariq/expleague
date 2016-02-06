@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.collections.FXCollections?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.HTMLEditor?>
+<?import javafx.scene.web.WebView?>
+<?import java.lang.String?>
+<HBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+  <children>
+    <HTMLEditor HBox.hgrow="ALWAYS"/>
+    <AnchorPane HBox.hgrow="NEVER">
+       <children>
+         <ComboBox prefHeight="35" prefWidth="320" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+           <items>
+             <FXCollections fx:factory="observableArrayList">
+               <String fx:value="Любимый шаблон 1" />
+               <String fx:value="Любимый шаблон 2" />
+               <String fx:value="Любимый шаблон 3" />
+             </FXCollections>
+           </items>
+           <value>
+             <String fx:value="Шаблон не выбрат"/>
+           </value>
+         </ComboBox>
+         <WebView prefWidth="320" AnchorPane.bottomAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="35" />
+       </children>
+    </AnchorPane>
+  </children>
+</HBox>

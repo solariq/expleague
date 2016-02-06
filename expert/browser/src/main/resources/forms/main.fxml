@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.collections.ObservableList?>
+
+<?import javafx.scene.Group?>
+<BorderPane prefHeight="800" prefWidth="800" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller="com.expleague.expert.forms.MainController">
+  <fx:define>
+    <fx:include source="vault.fxml" fx:id="vault"/>
+    <fx:include source="dialogue.fxml" fx:id="dialogue"/>
+  </fx:define>
+  <top>
+    <HBox prefHeight="100">
+      <children>
+        <fx:include source="tools.fxml" HBox.hgrow="ALWAYS"/>
+        <fx:include source="status.fxml" HBox.hgrow="NEVER" prefWidth="100" />
+      </children>
+    </HBox>
+  </top>
+  <center>
+    <SplitPane orientation="HORIZONTAL" fx:id="horizontalSplit">
+      <items>
+        <SplitPane orientation="VERTICAL" fx:id="verticalSplit" SplitPane.resizableWithParent="true">
+          <TabPane maxWidth="Infinity" SplitPane.resizableWithParent="true">
+            <tabs>
+              <Tab text="Ответ">
+                <content>
+                  <fx:include source="answer.fxml" />
+                </content>
+              </Tab>
+            </tabs>
+          </TabPane>
+        </SplitPane>
+      </items>
+    </SplitPane>
+  </center>
+  <bottom>
+    <ToolBar orientation="HORIZONTAL">
+      <items>
+        <Group>
+          <children>
+            <Button text="Подвал" onAction="#hideShowVault"/>
+          </children>
+        </Group>
+      </items>
+    </ToolBar>
+  </bottom>
+  <right>
+    <ToolBar orientation="VERTICAL">
+      <items>
+        <Group>
+          <children>
+            <Button rotate="90" text="Диалог" onAction="#hideShowDialogue"/>
+          </children>
+        </Group>
+      </items>
+    </ToolBar>
+  </right>
+</BorderPane>
