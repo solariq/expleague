@@ -18,6 +18,7 @@ class HistoryViewController: UITableViewController {
         super.viewDidLoad()
         splitViewController!.delegate = self
         AppDelegate.instance.historyView = self
+
         self.navigationItem.rightBarButtonItem = self.editButtonItem()
         tracker = XMPPTracker(onMessage: {(message: XMPPMessage) -> Void in
             if (message.from() != AppDelegate.instance.activeProfile!.jid) {

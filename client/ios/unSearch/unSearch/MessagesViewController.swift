@@ -190,7 +190,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
             messagesView.reloadData()
         }
         AppDelegate.instance.messagesView = self
-        answerUpdateTimer = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: "updateAnswerText", userInfo: nil, repeats: true)
+        answerUpdateTimer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: "updateAnswerText", userInfo: nil, repeats: true)
     }
     
     var prevAnswerText: String?
