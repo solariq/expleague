@@ -10,7 +10,7 @@
 <?import javafx.collections.ObservableList?>
 
 <?import javafx.scene.Group?>
-<BorderPane prefHeight="800" prefWidth="800" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller="com.expleague.expert.forms.MainController">
+<BorderPane prefHeight="1000" prefWidth="800" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller="com.expleague.expert.forms.MainController">
   <fx:define>
     <fx:include source="vault.fxml" fx:id="vault"/>
     <fx:include source="dialogue.fxml" fx:id="dialogue"/>
