@@ -312,6 +312,10 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 progressCellIndex = nil
                 lastKnownMessage++;
             }
+            else if (msg.type == .ExpertProgress) {
+                progressModel?.accept(msg)
+                lastKnownMessage++
+            }
             else if (!model.accept(msg)) { // switch model
                 if (msg.type == .Answer) {
                     model = AnswerReceivedModel(controller: parent, progress: progressModel!)
