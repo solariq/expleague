@@ -129,10 +129,6 @@ class ExpLeagueMessage: NSManagedObject {
         }
     }
     
-    var incoming: Bool {
-        return isSystem || self.type == .ExpertMessage
-    }
-    
     func setProperty(name: String, value: AnyObject) {
         let properties = NSMutableDictionary()
         properties.addEntriesFromDictionary(self.properties)

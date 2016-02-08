@@ -10,13 +10,13 @@ import Foundation
 import UIKit
 
 class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQueue {
+    static let INITIAL_WEBVIEW_CONTENT = "<html><body></body></html>"
     var order: ExpLeagueOrder? {
         didSet {
             if (order == nil) {
                 return
             }
-            answerText = "<html><body>"
-            answerAppend("")
+            answerText = MessagesVeiwController.INITIAL_WEBVIEW_CONTENT
             data = ChatMessagesModel(order: order, parent: self)
             messagesView.dataSource = data
             messagesView.delegate = data
@@ -24,7 +24,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
                 messagesView.reloadData()
 
                 if (order!.status == .Closed) {
-                    scrollView.scrollRectToVisible(answerView.frame, animated: false)
+                    scrollView.scrollRectToVisible(answerView!.frame, animated: false)
                 }
                 else {
                     scrollView.scrollRectToVisible(messagesView.frame, animated: false)
@@ -44,21 +44,24 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     }
     
     var loaded = false
-    let placeHolder = UIView();
+    let placeHolder = UIView()
     let scrollView = UIScrollView()
     let input = ChatInputViewController(nibName: "ChatInput", bundle: nil)
-    let messagesView = UITableView();
-    let answerView = UIWebView();
+    let messagesView = UITableView()
+    var answerView : UIWebView? = nil
     let picker = UIImagePickerController()
     let progress = UIProgressView()
     var data: ChatMessagesModel?
+    var answerUpdateTimer: NSTimer?
     
-    private var answerText: String = "<html><body>"
+    private var answerText: String = INITIAL_WEBVIEW_CONTENT
     
     func answerAppend(text: String) {
-        answerText += text;
-        answerView.loadHTMLString(answerText, baseURL: nil)
+        answerText = answerText.substringToIndex(answerText.endIndex.advancedBy(-"</body></html>".characters.count))
+        answerText += text + "</body></html>";
+//        print("answerText changed: \(answerText)")
     }
+    
     var pickerDelegate: ImagePickerDelegate?
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -71,7 +74,8 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         scrollView.addSubview(messagesView)
         scrollView.addSubview(progress)
         scrollView.addSubview(input.view)
-        scrollView.addSubview(answerView)
+        answerView = UIWebView()
+        scrollView.addSubview(answerView!)
         scrollView.pagingEnabled = true
         scrollView.clipsToBounds = false
         input.text.layer.borderWidth = 2
@@ -79,7 +83,6 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         input.text.layer.cornerRadius = 4
         input.delegate = self;
         
-        answerView.loadHTMLString("", baseURL: nil)
         messagesView.registerNib(UINib(nibName: "IncomingMessage", bundle: nil), forCellReuseIdentifier: String(CellType.Incoming))
         messagesView.registerNib(UINib(nibName: "OutgoingMessage", bundle: nil), forCellReuseIdentifier: String(CellType.Outgoing))
         messagesView.registerNib(UINib(nibName: "LookingForExpert", bundle: nil), forCellReuseIdentifier: String(CellType.LookingForExpert))
@@ -162,6 +165,8 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
         tabBar.hidden = false
+        answerUpdateTimer?.invalidate()
+        answerUpdateTimer = nil
         AppDelegate.instance.messagesView = nil
         AppDelegate.instance.activeProfile!.selected = nil
         NSNotificationCenter.defaultCenter().removeObserver(self);
@@ -185,6 +190,15 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
             messagesView.reloadData()
         }
         AppDelegate.instance.messagesView = self
+        answerUpdateTimer = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: "updateAnswerText", userInfo: nil, repeats: true)
+    }
+    
+    var prevAnswerText: String?
+    func updateAnswerText() {
+        if (prevAnswerText == nil || prevAnswerText! != answerText) {
+            answerView?.loadHTMLString(answerText, baseURL: nil)
+            prevAnswerText = answerText
+        }
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -218,8 +232,8 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         messagesView.frame = CGRectMake(0, 0, visibleSize.width, visibleSize.height - inputHeight - 3)
         progress.frame = CGRectMake(0, messagesView.frame.maxY, visibleSize.width, 3)
         input.view.frame = CGRectMake(0, progress.frame.maxY, visibleSize.width, inputHeight)
-        answerView.frame = CGRectMake(0, input.view.frame.maxY, visibleSize.width, visibleSize.height - inputHeight)
-        scrollView.contentSize = CGSizeMake(scrollView.frame.width, messagesView.frame.height + answerView.frame.height + input.view.frame.height)
+        answerView!.frame = CGRectMake(0, input.view.frame.maxY, visibleSize.width, visibleSize.height - inputHeight)
+        scrollView.contentSize = CGSizeMake(scrollView.frame.width, messagesView.frame.height + answerView!.frame.height + input.view.frame.height)
     }
     
     func attach(input: ChatInputViewController) {
@@ -299,23 +313,20 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 lastKnownMessage++;
             }
             else if (!model.accept(msg)) { // switch model
-                if (msg.incoming) {
-                    if (msg.isAnswer) {
-                        model = AnswerReceivedModel(controller: parent, progress: progressModel!)
-                        progressModel = nil
-                        if (progressCellIndex != nil) {
-                            cells.removeAtIndex(progressCellIndex!)
-                            progressCellIndex = nil
-                        }
-                        haveActiveExpert = false
+                if (msg.type == .Answer) {
+                    model = AnswerReceivedModel(controller: parent, progress: progressModel!)
+                    progressModel = nil
+                    if (progressCellIndex != nil) {
+                        cells.removeAtIndex(progressCellIndex!)
+                        progressCellIndex = nil
                     }
-                    else {
-                        model = ChatMessageModel(incoming: true, author: msg.from)
-                    }
+                    haveActiveExpert = false
+                }
+                else if (msg.type == .ExpertMessage) {
+                    model = ChatMessageModel(incoming: true, author: msg.from)
                 }
                 else {
                     model = ChatMessageModel(incoming: false, author: "me")
-                    
                 }
                 cells.append(model)
             }

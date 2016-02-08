@@ -536,8 +536,8 @@ class AnswerReceivedModel: ChatCellModel {
         }
         try progress.form(chatCell: arCell)
         arCell.action = {
-            self.controller.scrollView.scrollRectToVisible(self.controller.answerView.frame, animated: true)
-            self.controller.answerView.stringByEvaluatingJavaScriptFromString("document.getElementById('\(self.id!)').scrollIntoView()")
+            self.controller.scrollView.scrollRectToVisible(self.controller.answerView!.frame, animated: true)
+            self.controller.answerView!.stringByEvaluatingJavaScriptFromString("document.getElementById('\(self.id!)').scrollIntoView()")
         }
     }
     
