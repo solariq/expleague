@@ -30,3 +30,15 @@
     -fx-background-color: transparent;
     -fx-padding: 5px;
 }
+
+.outgoing-bubble {
+    -fx-background-radius: 8px;
+    -fx-background-color: white;
+    -fx-padding: 5;
+}
+
+.incoming-bubble {
+    -fx-background-radius: 8px;
+    -fx-background-color: #1991e3;
+    -fx-padding: 5;
+}

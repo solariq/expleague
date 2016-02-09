@@ -11,7 +11,7 @@
   </padding>
   <children>
     <VBox style="-fx-padding: 2px">
-      <Button prefHeight="96">
+      <Button prefHeight="56">
         <text>Отослать</text>
       </Button>
     </VBox>

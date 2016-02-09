@@ -1,34 +1,13 @@
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.Group?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TextField?>
-<VBox stylesheets="/css/messages.css">
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.VBox?>
+<VBox stylesheets="/css/messages.css" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.ChatViewController">
   <children>
-    <ScrollPane VBox.vgrow="ALWAYS" styleClass="messages-pane" fitToHeight="true" fitToWidth="true">
+    <ScrollPane VBox.vgrow="ALWAYS" styleClass="messages-pane" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" fx:id="scroll">
       <content>
-        <VBox style="-fx-background-color: transparent">
-          <HBox>
-            <Region minWidth="16" HBox.hgrow="ALWAYS"/>
-            <VBox HBox.hgrow="NEVER" styleClass="incoming-message">
-              <children>
-                <Label text="Hello world" styleClass="message-item"/>
-              </children>
-            </VBox>
-          </HBox>
-          <HBox>
-            <VBox HBox.hgrow="NEVER" styleClass="outgoing-message">
-              <children>
-                <Label text="Hello world" styleClass="message-item"/>
-              </children>
-            </VBox>
-            <Region minWidth="16" HBox.hgrow="ALWAYS"/>
-          </HBox>
-        </VBox>
+        <VBox fx:id="messagesView"/>
       </content>
     </ScrollPane>
-    <TextField VBox.vgrow="NEVER"/>
+    <TextArea VBox.vgrow="NEVER" minHeight="27" prefHeight="27" maxHeight="27" fx:id="input" text="Введите сообщение" onKeyPressed="#catchEnter"/>
   </children>
 </VBox>

@@ -4,15 +4,15 @@
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.Region?>
-<GridPane xmlns:fx="http://javafx.com/fxml/1" hgap="10" vgap="10" fx:controller="com.expleague.expert.forms.Register" prefWidth="400">
+<GridPane xmlns:fx="http://javafx.com/fxml/1" hgap="10" vgap="10" fx:controller="com.expleague.expert.forms.Register" prefWidth="500" prefHeight="300">
   <fx:define>
     <ToggleGroup fx:id="registerType"/>
   </fx:define>
   <padding><Insets top="25" right="25" bottom="25" left="25"/></padding>
   <children>
-    <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="Пользователь Лиги Экспертов не найден.&#10;Что будем делать?"/>
+    <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="Пользователь Лиги Экспертов не найден. Что будем делать?"/>
     <Region GridPane.columnIndex="0" GridPane.rowIndex="1"/>
     <RadioButton selected="true" GridPane.columnIndex="0" GridPane.rowIndex="2" text="Создавать нового пользователя" toggleGroup="$registerType" id="new"/>
-    <RadioButton GridPane.columnIndex="0" GridPane.rowIndex="3" text="Подключать этот компьютер к уже&#10;существующему профайлу" toggleGroup="$registerType" id="old"/>
+    <RadioButton GridPane.columnIndex="0" GridPane.rowIndex="3" text="Подключать этот компьютер к уже существующему профайлу" toggleGroup="$registerType" id="old"/>
   </children>
 </GridPane>

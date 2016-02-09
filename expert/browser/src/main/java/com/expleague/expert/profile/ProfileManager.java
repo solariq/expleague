@@ -1,0 +1,113 @@
+package com.expleague.expert.profile;
+
+import com.expleague.expert.vk.VkUtils;
+import com.expleague.expert.xmpp.ExpLeagueConnection;
+import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
+import com.spbsu.commons.io.StreamTools;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
+/**
+ * Experts League
+ * Created by solar on 09/02/16.
+ */
+public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
+  private static final Logger log = Logger.getLogger(ProfileManager.class.getName());
+  public static final String ACTIVE_PROFILE_FILENAME = "active";
+  private static ProfileManager instance;
+
+  public static synchronized ProfileManager instance() {
+    if (instance == null) {
+      try {
+        instance = new ProfileManager(new File(System.getenv("HOME") + "/.expleague"));
+      }
+      catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return instance;
+  }
+
+  private String activeProfileName;
+  private final Map<String, UserProfile> knownProfiles = new HashMap<>();
+  private final File root;
+  public ProfileManager(File home) throws IOException {
+    root = home;
+    if (home.listFiles() == null)
+      return;
+
+    String first = null;
+    //noinspection ConstantConditions
+    for (final File file : home.listFiles()) {
+      if (file.isDirectory()) {
+        if (first == null)
+          first = file.getName();
+        final UserProfile value = new UserProfile(file);
+        if (!value.get(UserProfile.Key.EXP_LEAGUE_ID).equals(file.getName())) {
+          log.warning("Profile in directory " + file.getAbsolutePath() + " is invalid. Skipping it");
+          continue;
+        }
+        knownProfiles.put(file.getName(), value);
+      }
+      else if (ACTIVE_PROFILE_FILENAME.equals(file.getName())) {
+        activeProfileName = StreamTools.readFile(file).toString().trim();
+      }
+    }
+    if (activeProfileName == null) {
+      activeProfileName = first;
+    }
+  }
+
+  public UserProfile[] profiles() {
+    return knownProfiles.values().toArray(new UserProfile[knownProfiles.values().size()]);
+  }
+
+  public UserProfile active() {
+    return knownProfiles.get(activeProfileName);
+  }
+
+  public UserProfile register(UserProfile profile) {
+    final UserProfile userProfile;
+    try {
+      if (!profile.has(UserProfile.Key.EXP_LEAGUE_ID)) {
+        if (!profile.has(UserProfile.Key.EXP_LEAGUE_DOMAIN))
+          throw new IllegalArgumentException("ExpLeague domain was not set");
+        if (profile.has(UserProfile.Key.VK_TOKEN)) {
+          log.info("Registering user by vk profile");
+          VkUtils.fillProfile(profile);
+          profile.set(UserProfile.Key.EXP_LEAGUE_USER, "vk-" + profile.get(UserProfile.Key.VK_USER_ID));
+          ExpLeagueConnection.instance().register(profile);
+        }
+      }
+      final String profileId = profile.get(UserProfile.Key.EXP_LEAGUE_ID);
+      userProfile = new UserProfile(new File(root, profileId));
+      userProfile.copy(profile);
+      knownProfiles.put(profileId, userProfile);
+      return userProfile;
+    }
+    catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void activate(UserProfile profile) {
+    if (!knownProfiles.containsValue(profile))
+      throw new IllegalArgumentException("Unknown profile");
+    final String id = profile.get(UserProfile.Key.EXP_LEAGUE_ID);
+    if (id == null)
+      throw new IllegalArgumentException("Profile is not registered");
+    activeProfileName = id;
+    try {
+      StreamTools.writeChars(activeProfileName, new File(root, ACTIVE_PROFILE_FILENAME));
+    }
+    catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    ExpLeagueConnection.instance().start(profile);
+    invoke(profile);
+  }
+}

@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.PasswordField?>
-<GridPane xmlns:fx="http://javafx.com/fxml/1" hgap="10" vgap="10" fx:controller="com.expleague.expert.forms.Register">
+<GridPane xmlns:fx="http://javafx.com/fxml/1" hgap="10" vgap="10" fx:controller="com.expleague.expert.forms.Register"  prefWidth="500" prefHeight="300">
   <fx:define>
     <ToggleGroup fx:id="socialNetworkType"/>
   </fx:define>

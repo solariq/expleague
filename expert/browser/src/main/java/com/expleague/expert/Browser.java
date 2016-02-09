@@ -1,13 +1,20 @@
 package com.expleague.expert;
 
 import com.expleague.expert.forms.Register;
+import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
+import com.expleague.expert.xmpp.ExpLeagueConnection;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.mortbay.jetty.Server;
+import org.mortbay.jetty.handler.AbstractHandler;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -19,14 +26,7 @@ import java.util.logging.Logger;
 public class Browser extends Application {
   private static final Logger log = Logger.getLogger(Browser.class.getName());
 
-  private UserProfile profile;
-
   public Browser() {
-    try {
-      profile = new UserProfile(new File(System.getenv("HOME") + "/.expleague"));
-    } catch (IOException e) {
-      log.log(Level.CONFIG, "Unable to create root directory for user profile!", e);
-    }
   }
 
   @Override
@@ -36,12 +36,21 @@ public class Browser extends Application {
 //    scene.getStylesheets().add(getClass().getResource("/Test.css").toExternalForm());
     stage.setScene(scene);
     stage.show();
-    if (!profile.isRegistered()) {
-      Register.register(stage);
-    }
+    final UserProfile active = ProfileManager.instance().active();
+    if (active == null)
+      Register.register();
+    else
+      ExpLeagueConnection.instance().start(active);
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
+    final Server server = new Server(8080);
+    server.addHandler(new AbstractHandler() {
+      @Override
+      public void handle(String s, HttpServletRequest request, HttpServletResponse response, int i) throws IOException, ServletException {
+      }
+    });
+    server.start();
     launch(args);
   }
 }

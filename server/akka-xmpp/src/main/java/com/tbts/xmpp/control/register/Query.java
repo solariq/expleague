@@ -168,15 +168,31 @@ public class Query {
   }
 
   public String name() {
-    if (name != null && !name.isEmpty())
-      return name;
-    else {
-      final int dogIndex = username.indexOf('@');
-      return dogIndex >= 0 ? username.substring(0, dogIndex) : username;
-    }
+    return name;
   }
 
   public String passwd() {
     return password;
+  }
+
+  public void username(String name) {
+    username = name;
+  }
+
+  public String username() {
+    final int dogIndex = username.indexOf('@');
+    return dogIndex >= 0 ? username.substring(0, dogIndex) : username;
+  }
+
+  public String avatar() {
+    return misc;
+  }
+
+  public String city() {
+    return city;
+  }
+
+  public String country() {
+    return state;
   }
 }

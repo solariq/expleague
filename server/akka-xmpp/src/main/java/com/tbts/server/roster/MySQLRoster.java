@@ -25,18 +25,20 @@ public class MySQLRoster extends MySQLOps implements Roster {
 
   @Override
   public Query required() {
-    final Query query = new Query();
-    query.name("");
-    query.passwd("");
-    return query;
+    return Query.requiredFields();
   }
 
   @Override
   public void register(Query query) throws Exception {
-    log.log(Level.FINE, "Registering user " + query.name());
-    try (final PreparedStatement register = createStatement("register", "INSERT INTO tbts.Users SET id = ?, passwd = ?;")) {
-      register.setString(1, query.name());
+    log.log(Level.FINE, "Registering user " + query.username());
+    try (final PreparedStatement register = createStatement("register",
+        "INSERT INTO tbts.Users SET id = ?, passwd = ?, country = ?, city = ?, realName = ?, avatarUrl = ?;")) {
+      register.setString(1, query.username());
       register.setString(2, query.passwd());
+      register.setString(3, query.country());
+      register.setString(4, query.city());
+      register.setString(5, query.name());
+      register.setString(6, query.avatar());
       register.execute();
     }
   }
@@ -46,8 +48,17 @@ public class MySQLRoster extends MySQLOps implements Roster {
     try (final PreparedStatement byName = createStatement("byName", "SELECT * FROM tbts.Users WHERE id = ?;")) {
       byName.setString(1,  name);
       final ResultSet resultSet = byName.executeQuery();
-      if (resultSet.next())
-        return new JabberUser(name, resultSet.getString(2));
+      if (resultSet.next()) {
+
+        return new JabberUser(
+            name,
+            resultSet.getString(2),
+            resultSet.getString(3),
+            resultSet.getString(4),
+            resultSet.getString(6),
+            resultSet.getString(5)
+        );
+      }
       else
         return null;
     }
