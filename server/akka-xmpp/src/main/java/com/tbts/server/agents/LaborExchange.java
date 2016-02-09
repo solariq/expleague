@@ -88,7 +88,9 @@ public class LaborExchange extends UntypedPersistentActor {
 
   public void invoke(Operations.Cancel cancel) {
     final JID jid = XMPP.jid(sender());
-    openPositions.remove(jid.local()).forward(cancel, context());
+    final ActorRef remove = openPositions.remove(jid.local());
+    if (remove != null)
+      remove.forward(cancel, context());
     saveSnapshot(new ArrayList<>(openPositions.keySet()));
   }
 
