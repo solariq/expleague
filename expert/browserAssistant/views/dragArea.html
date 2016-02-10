@@ -1,0 +1,25 @@
+<div folder-droppable="1" class="workboard" id="workboard">
+    <div class="question-section" ng-click="showQuestion()" show-question>
+        {{activeRequest.value.question}}
+    </div>
+
+    <div  ng-model="board.list">
+        <div edit-answer ng-repeat="answer in board.list track by $index" class="answer-block">
+            <!--{{$index}} &#45;&#45; {{printableAnswer(answer)}}-->
+            <!--<i class="close" ng-click="removeFromBorder($index)"></i>-->
+            <!--<a class="link" href="{{answer.Referer}}"></a>-->
+            <div>
+                <a ng-href="{{answer.Referer}}">{{truncateTitle(answer.Title)}}</a>
+                <div ng-if="answer.Base64Image != undefined">
+                    <img src="{{answer.Base64Image}}">
+                </div>
+                <div ng-if="answer.Image != undefined && answer.Base64Image == undefined">
+                    <img src="{{answer.Image}}">
+                </div>
+                <div ng-if="answer.Type == 'text'">
+                    {{printableAnswer(answer)}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,7 @@
+﻿<div class="error" ng-class="{loading: IsReconnecting}">
+    <h2 ng-hide="IsReconnecting">Connection lost</h2>
+    <h2 ng-show="IsReconnecting">Wait a sec.<br>Trying to reconnect...</h2>
+    <h3 ng-hide="IsReconnecting">Check your internet connection<br/>and click Refresh</h3>
+    <a ng-hide="IsReconnecting" href="#" class="error-btn" prevent-click ng-click="Reconnect()">Refresh</a>
+    <a ng-hide="IsReconnecting" href="{{Domain}}contact" class="help" target="_blank">Get in touch</a>
+</div>

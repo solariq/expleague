@@ -1,0 +1,134 @@
+{
+    "version": "2.2.0.11",
+    "background": {
+        "page": "background/background.html"
+    },
+    "browser_action": {
+        "default_icon": "images/icons/icon_16.png",
+        "default_title": "Knugget"
+    },
+    "content_scripts": [
+        {
+            "all_frames": false,
+            "js": [
+                "config/sidebar-config.min.js",
+                "js/lib/jquery/jquery-2.1.1.min.js",
+                "js/lib/jquery/jquery-ui-1.10.3.custom.min.js",
+                "js/lib/jquery/jquery.mousewheel.js",
+                "js/lib/jquery/jquery.nearest.js",
+                "js/lib/jquery/jquery.scrollTo.js",
+                "js/lib/angular/angular_mod.js",
+                "js/lib/angular/angular.sortable.js",
+                "js/lib/angular/angular-animate.js",
+                "js/lib/ng-tags-input.min.js",
+                "js/lib/antiscroll.min.js",
+                "js/lib/dragster.min.js",
+                "js/utils/tracker.min.js",
+                "js/utils/utils.min.js",
+                "js/utils/knuggetPlugins.min.js",
+                "js/sidebar.min.js",
+
+                "config/sidebar-app.min.js",
+
+                "js/angular.min.js",
+                "js/extension.min.js",
+                "js/events.min.js",
+
+                "js/factories/foldersSystem.min.js",
+                "js/factories/utils.min.js",
+                "js/factories/collaboration.min.js",
+                "js/factories/dialog.min.js",
+                "js/factories/fakemodules.min.js",
+
+                "js/services/services.min.js",
+
+                "js/directives/loginRegister.min.js",
+                "js/directives/dragdrop.min.js",
+                "js/directives/foldersSystem.min.js",
+                "js/directives/dialog.min.js",
+                "js/directives/collaboration.min.js",
+                "js/directives/onboarding.min.js",
+                "js/directives/utils.min.js"
+            ],
+            "css": [
+                "css/main.min.css"
+            ],
+            "matches": [
+                "http://*/*",
+                "https://*/*"
+            ],
+            "exclude_matches": [
+                "http://*/*",
+                "https://*/*"
+            ],
+            "exclude_globs": [
+                "https://*bank*"
+            ],
+            "run_at": "document_start"
+        },
+        {
+            "matches": [
+                "https://*.knugget.com/*"
+            ],
+            "js": [
+                "js/lib/jquery/jquery-2.1.1.min.js",
+                "config/sidebar-config.min.js",
+                "js/extensionIsInstalled.min.js"
+            ],
+            "run_at": "document_start"
+        },
+        {
+            "matches": [
+                "http://*/*",
+                "https://*/*"
+            ],
+            "js": [
+                "js/lib/jquery/jquery-2.1.1.min.js",
+                "js/eventsForIframe.min.js"
+            ],
+            "all_frames": true
+        }
+    ],
+    "content_security_policy": "script-src 'self' 'unsafe-eval' https://www.google-analytics.com; object-src 'self'",
+    "description": "Станьте экспертом! Начните помогать людям сегодня",
+    "icons": {
+        "16": "images/icons/icon_16.png",
+        "48": "images/icons/icon_48.png",
+        "128": "images/icons/icon_128.png"
+    },
+    "manifest_version": 2,
+    "homepage_url": "http://expleague.com/",
+    "name": "Knugget Expert",
+    "permissions": [
+        "http://expleague.com//*",
+        "http://*/*",
+        "https://*/*",
+        "<all_urls>",
+        "clipboardWrite",
+        "tabs",
+        "cookies",
+        "notifications",
+        "storage",
+        "contextMenus",
+        "webNavigation",
+        "webRequest",
+        "webRequestBlocking",
+        "unlimitedStorage",
+        "bookmarks"
+    ],
+    "update_url": "https://clients2.google.com/service/update2/crx",
+    "web_accessible_resources": [
+        "views/*.html",
+        "images/*.png",
+        "images/*.gif",
+        "images/*.jpg",
+        "images/icons@2x.png",
+        "fonts/*.ttf"
+    ],
+    "minimum_chrome_version": "20.0",
+    "omnibox": { "keyword": "knugget.com" },
+    "externally_connectable": {
+        "matches": [
+        ]
+    }
+}

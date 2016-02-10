@@ -1,0 +1,33 @@
+﻿<!--<div class="sidebar-container first-time" scroll-preventer render-complete>-->
+<div class="sidebar-container first-time" render-complete>
+
+
+    <div class="dialog" edit-dialog="" dialog>
+        <!--<div class="dialog" dialog ng-if="isDialogActive()">-->
+        <div class="dialog-container" ui-view="sidebar_dialog"></div>
+        <div class="dialog-container" ng-include="dialogTemplate()"></div>
+    </div>
+
+    <!-- MENU AND USER AVATAR -->
+    <div class="menu" ng-class="{active: menu.active, overTop: blockMoveUp}">
+        <!--<a class="user" ng-class="{reconnecting: isReconnecting}" toggle-menu>-->
+        <a class="user" toggle-menu>
+            <img avatar image="user.avatar" ng-src="{{user.avatar}}" />
+            <span>{{user.username}}</span>
+        </a>
+
+        <span class="icon icon-closeSidebar" ng-click="closeSidebar()" tooltip-hover>
+            <span class="tooltip repositioned right-bottom">Свернуть плагин</span>
+        </span>
+
+
+
+        <ul>
+            <li><a ng-click="logout($event)">Выйти</a></li>
+        </ul>
+    </div>
+
+    <!--<div id="map" style="position: relative; overflow: hidden; transform: translateZ(0px); background-color: rgb(229, 227, 223);"></div>-->
+    <!--<ui-gmap-google-map center='map.center' zoom='map.zoom'></ui-gmap-google-map>-->
+    <span ng-include="sidebarContent()"></span>
+</div>
