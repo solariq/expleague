@@ -2,7 +2,6 @@ package com.expleague.expert.forms;
 
 import com.expleague.expert.forms.chat.CompositeMessageViewController;
 import com.expleague.expert.xmpp.ExpLeagueConnection;
-import com.expleague.expert.xmpp.ExpLeagueExpert;
 import com.expleague.expert.xmpp.ExpertEvent;
 import com.expleague.expert.xmpp.events.MessageEvent;
 import com.spbsu.commons.func.Action;

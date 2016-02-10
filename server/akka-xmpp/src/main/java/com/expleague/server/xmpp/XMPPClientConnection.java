@@ -39,7 +39,6 @@ import java.util.logging.Logger;
  */
 @SuppressWarnings("unused")
 public class XMPPClientConnection extends UntypedActorAdapter {
-  public static final String XMPP_START = "<stream:stream xmlns:stream=\"http://etherx.jabber.org/streams\" version=\"1.0\" xmlns=\"jabber:client\" xml:lang=\"en\" xmlns:xml=\"http://www.w3.org/XML/1998/namespace\">";
   private static final Logger log = Logger.getLogger(XMPPClientConnection.class.getName());
 
   private ActorRef connection;
@@ -107,7 +106,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
   public void invoke(Item item) throws SSLException {
     final String xml;
     if (item instanceof Open)
-      xml = XMPP_START;
+      xml = Item.XMPP_START;
     else
       xml = item.xmlString(false);
     log.finest("<" + xml);

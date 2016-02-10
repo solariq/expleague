@@ -5,7 +5,8 @@ import akka.actor.ActorRef;
 import akka.actor.Cancellable;
 import akka.actor.FSM;
 import akka.util.Timeout;
-import com.expleague.model.ExpertManager;
+import com.expleague.model.Operations;
+import com.expleague.server.ExpertManager;
 import com.expleague.model.Offer;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
@@ -54,7 +55,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 stopTimer();
                 if (!task.isEmpty()) {
                   explain(", resuming task " + task.offer().room());
-                  XMPP.send(new Message(XMPP.jid(), jid(), new Resume(task.offer(), INVITE_TIMEOUT)), context());
+                  XMPP.send(new Message(XMPP.jid(), jid(), new Resume(task.offer(), INVITE_TIMEOUT.toSeconds())), context());
                   task.chosen = false;
                   timer = AkkaTools.scheduleTimeout(context(), INVITE_TIMEOUT, self());
                   return goTo(State.INVITE);
@@ -96,7 +97,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
             (resume, zero) -> {
               explain("Resume command received from " + sender() + " sending resume command to the expert");
               stopTimer();
-              XMPP.send(new Message(XMPP.jid(), jid(), new Resume(resume.offer(), INVITE_TIMEOUT)), context());
+              XMPP.send(new Message(XMPP.jid(), jid(), new Resume(resume.offer(), INVITE_TIMEOUT.toSeconds())), context());
               return goTo(State.INVITE).using(new Task(true).appendVariant(resume.offer(), sender()));
             }
         ).event(Timeout.class,
@@ -201,7 +202,9 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               stopTimer();
               final Message message = new Message(task.offer().room(), jid(), task.offer());
               invite.timeout = INVITE_TIMEOUT.toMillis();
-              invite.form(message, task.offer());
+              message.append(new Invite.Invitation(XMPP.jid()))
+                  .append(new Operations.Invite.Reason(task.offer().description()))
+                  .append(invite);
               XMPP.send(message, context());
               timer = AkkaTools.scheduleTimeout(context(), INVITE_TIMEOUT, self());
               return stay();

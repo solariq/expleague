@@ -1,8 +1,8 @@
-package com.expleague.model;
+package com.expleague.server;
 
+import com.expleague.model.ExpertsProfile;
+import com.expleague.model.Offer;
 import com.spbsu.commons.util.Pair;
-import com.expleague.server.JabberUser;
-import com.expleague.server.Roster;
 import com.expleague.server.agents.roles.ExpertRole;
 import com.expleague.xmpp.JID;
 

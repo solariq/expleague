@@ -6,7 +6,6 @@ import com.fasterxml.aalto.AsyncXMLStreamReader;
 import com.fasterxml.aalto.stax.InputFactoryImpl;
 import com.fasterxml.aalto.stax.OutputFactoryImpl;
 import com.spbsu.commons.io.StreamTools;
-import com.expleague.server.xmpp.XMPPClientConnection;
 import com.expleague.util.xml.AsyncJAXBStreamReader;
 import com.expleague.util.xml.BOSHNamespaceContext;
 import com.expleague.util.xml.LazyNSXMLStreamWriter;
@@ -32,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @XmlTransient
 public class Item implements Serializable, Cloneable {
+  public static final String XMPP_START = "<stream:stream xmlns:stream=\"http://etherx.jabber.org/streams\" version=\"1.0\" xmlns=\"jabber:client\" xml:lang=\"en\" xmlns:xml=\"http://www.w3.org/XML/1998/namespace\">";
   public static Item EMPTY = new Item();
   private static ThreadLocal<XmlOutputter> tlWriter = new ThreadLocal<XmlOutputter>() {
     @Override
@@ -142,7 +142,7 @@ public class Item implements Serializable, Cloneable {
       asyncXml = factory.createAsyncForByteArray();
       reader = new AsyncJAXBStreamReader(asyncXml, Stream.jaxb());
       try {
-        asyncXml.getInputFeeder().feedInput(XMPPClientConnection.XMPP_START.getBytes(), 0, XMPPClientConnection.XMPP_START.length());
+        asyncXml.getInputFeeder().feedInput(XMPP_START.getBytes(), 0, XMPP_START.length());
         reader.drain(o -> { });
       }
       catch (XMLStreamException | SAXException e) {

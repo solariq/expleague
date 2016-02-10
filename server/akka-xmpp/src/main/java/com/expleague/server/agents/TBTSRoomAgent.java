@@ -1,7 +1,7 @@
 package com.expleague.server.agents;
 
 import akka.actor.ActorContext;
-import com.expleague.model.ExpertManager;
+import com.expleague.server.ExpertManager;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
 import com.expleague.model.Operations.Cancel;

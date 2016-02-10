@@ -1,10 +1,8 @@
 package com.expleague.model;
 
-import com.expleague.server.agents.XMPP;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
-import scala.concurrent.duration.FiniteDuration;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
@@ -52,9 +50,6 @@ public class Operations {
         reason = subj;
       }
     }
-    public void form(Message message, Offer offer) {
-      message.append(new Invitation(XMPP.jid())).append(new Reason(offer.description())).append(this);
-    }
   }
 
   @XmlRootElement
@@ -99,9 +94,9 @@ public class Operations {
       this.offer = offer;
     }
 
-    public Resume(Offer offer, FiniteDuration inviteTimeout) {
+    public Resume(Offer offer, long inviteTimeout) {
       this.offer = offer;
-      timeout = inviteTimeout.toMillis();
+      timeout = inviteTimeout;
     }
 
     public Offer offer() {
