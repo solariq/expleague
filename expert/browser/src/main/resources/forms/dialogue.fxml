@@ -1,0 +1,13 @@
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.VBox?>
+<VBox stylesheets="/css/messages.css" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.ChatViewController">
+  <children>
+    <ScrollPane VBox.vgrow="ALWAYS" styleClass="messages-pane" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" fx:id="scroll">
+      <content>
+        <VBox fx:id="messagesView"/>
+      </content>
+    </ScrollPane>
+    <TextArea VBox.vgrow="NEVER" minHeight="27" prefHeight="27" maxHeight="27" fx:id="input" text="Введите сообщение" onKeyPressed="#catchEnter"/>
+  </children>
+</VBox>

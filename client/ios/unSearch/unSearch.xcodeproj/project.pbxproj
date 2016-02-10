@@ -60,6 +60,7 @@
 		EE297ACB1C4A6C79002DE78B /* ConnectionProgressController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionProgressController.swift; sourceTree = "<group>"; };
 		EE2DB1911C4E5AD800F9601D /* ChatInput.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ChatInput.xib; sourceTree = "<group>"; };
 		EE2DB1931C4E5E9000F9601D /* ChatInputViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatInputViewController.swift; sourceTree = "<group>"; };
+		EE3731AB1C689414007F55B0 /* unSearch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = unSearch.entitlements; sourceTree = "<group>"; };
 		EE3EFCC21C5AA308000CC08E /* UIGestureRecognizerClosure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIGestureRecognizerClosure.swift; sourceTree = "<group>"; };
 		EE5E599F1C5F70720040246E /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		EE62BEEE1C452CA1004B6A42 /* MessagesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessagesViewController.swift; sourceTree = "<group>"; };
@@ -101,6 +102,7 @@
 		688A5994FE17EAF8576C2131 /* unSearch */ = {
 			isa = PBXGroup;
 			children = (
+				EE3731AB1C689414007F55B0 /* unSearch.entitlements */,
 				EE62BF051C48032D004B6A42 /* Data */,
 				EE2DB18E1C4E5A0A00F9601D /* ResultView */,
 				688A572BF69C09B25F168A0A /* Info.plist */,
@@ -219,6 +221,9 @@
 								enabled = 1;
 							};
 							com.apple.Push = {
+								enabled = 1;
+							};
+							com.apple.SafariKeychain = {
 								enabled = 1;
 							};
 						};
@@ -363,6 +368,7 @@
 			baseConfigurationReference = 4D8195958D485AAAB1466469 /* Pods-unSearch.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = unSearch/unSearch.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = unSearch/Info.plist;
@@ -370,6 +376,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.expleague.ios.unSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				TARGETED_DEVICE_FAMILY = 1;
 				USER_HEADER_SEARCH_PATHS = "\"${PROJECT_DIR}/Pods\"/**";
 			};
 			name = Release;
@@ -466,6 +473,7 @@
 			baseConfigurationReference = 61604C2A35AEDECEEB1173F8 /* Pods-unSearch.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = unSearch/unSearch.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = unSearch/Info.plist;
@@ -473,6 +481,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.expleague.ios.unSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				TARGETED_DEVICE_FAMILY = 1;
 				USER_HEADER_SEARCH_PATHS = "\"${PROJECT_DIR}/Pods\"/**";
 			};
 			name = Debug;

@@ -45,6 +45,8 @@ public class LaborExchange extends UntypedPersistentActor {
   }
 
   public void invoke(Offer offer) {
+    if (openPositions.containsKey(offer.room().local()))
+      return;
     log.fine("Labor exchange received offer " + offer.room().local() + " looking for broker");
     final Collection<ActorRef> children = JavaConversions.asJavaCollection(context().children());
     for (final ActorRef ref : children) {
@@ -74,14 +76,21 @@ public class LaborExchange extends UntypedPersistentActor {
   }
 
   public void invoke(Operations.Done done) {
-    final JID jid = XMPP.jid(sender());
-    openPositions.remove(jid.local());
-    saveSnapshot(new ArrayList<>(openPositions.keySet()));
+    final Optional<Map.Entry<String, ActorRef>> first = openPositions.entrySet().stream().filter(entry -> entry.getValue().equals(sender())).findFirst();
+    if (first.isPresent()) {
+      openPositions.remove(first.get().getKey());
+      saveSnapshot(new ArrayList<>(openPositions.keySet()));
+    }
+    else {
+      log.warning("Was unable to find broker, that has finished his job: " + sender().path() + "!");
+    }
   }
 
   public void invoke(Operations.Cancel cancel) {
     final JID jid = XMPP.jid(sender());
-    openPositions.remove(jid.local()).forward(cancel, context());
+    final ActorRef remove = openPositions.remove(jid.local());
+    if (remove != null)
+      remove.forward(cancel, context());
     saveSnapshot(new ArrayList<>(openPositions.keySet()));
   }
 

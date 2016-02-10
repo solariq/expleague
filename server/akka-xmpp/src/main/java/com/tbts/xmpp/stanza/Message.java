@@ -247,5 +247,6 @@ public class Message extends Stanza {
     @XmlEnumValue(value = "normal") NORMAL,
     @XmlEnumValue(value = "error") ERROR,
     @XmlEnumValue(value = "headline") HEADLINE,
+    @XmlEnumValue(value = "sync") SYNC,
   }
 }

@@ -3,6 +3,7 @@ package com.tbts.model;
 import com.tbts.xmpp.Item;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -20,6 +21,9 @@ public class ExpertsProfile extends Item {
   @XmlAttribute
   private Integer tasksCount;
 
+  @XmlElement
+  private String avatar;
+
   @SuppressWarnings("unused")
   public ExpertsProfile() {}
 
@@ -27,9 +31,10 @@ public class ExpertsProfile extends Item {
     return login;
   }
 
-  public ExpertsProfile(String name, String login, int tasksCount) {
+  public ExpertsProfile(String name, String login, String avatar, int tasksCount) {
     this.name = name;
     this.login = login;
+    this.avatar = avatar;
     this.tasksCount = tasksCount;
   }
 }

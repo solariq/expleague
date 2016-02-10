@@ -1,6 +1,8 @@
 package com.tbts.model;
 
 import com.spbsu.commons.util.Pair;
+import com.tbts.server.JabberUser;
+import com.tbts.server.Roster;
 import com.tbts.server.agents.roles.ExpertRole;
 import com.tbts.xmpp.JID;
 
@@ -32,8 +34,9 @@ public class ExpertManager {
   public ExpertsProfile profile(JID jid) {
     final Record record = record(jid);
     int invitations = record.entries().filter(r -> r.getSecond() == ExpertRole.State.INVITE).collect(Collectors.counting()).intValue();
+    final JabberUser user = Roster.instance().byName(jid.local());
 
-    return new ExpertsProfile("Иван Иванов", jid.local(), invitations);
+    return new ExpertsProfile(user.realName(), jid.local(), user.avatar(), invitations);
   }
 
   public static class Record {

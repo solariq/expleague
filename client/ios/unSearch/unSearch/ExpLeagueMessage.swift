@@ -29,23 +29,30 @@ class ExpLeagueMessage: NSManagedObject {
                 self.type = .ClientMessage
             }
             else if (self.from.isEmpty || (attrs["from"] != nil && msg.from().resource == nil)) {
-                self.type = .SystemMessage
+                self.type = .System
             }
             else {
                 self.type = .ExpertMessage
             }
         }
         else {
-            self.type = .TopicStarter
+            self.type = .Topic
         }
-        if (type == .SystemMessage) {
+        if (type == .System) {
             if let element = msg.elementForName("expert", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
                 properties["type"] = "expert"
                 properties["login"] = element.attributeStringValueForName("login")
                 properties["name"] = element.attributeStringValueForName("name")
                 properties["tasks"] = element.attributeStringValueForName("tasks")
+                type = .ExpertAssignment
             }
-            else if (!textChildren.isEmpty && textChildren[0].stringValue.hasPrefix("{\"type\":\"visitedPages\"")) {
+            if let _ = msg.elementForName("cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+                properties["command"] = "cancel"
+                type = .ExpertCancel
+            }
+            
+            if (!textChildren.isEmpty && textChildren[0].stringValue.hasPrefix("{\"type\":\"visitedPages\"")) {
+                type = .ExpertProgress
                 do {
                     let json = try NSJSONSerialization.JSONObjectWithData(textChildren[0].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!, options: NSJSONReadingOptions.AllowFragments)
                     properties.addEntriesFromDictionary(json as! [String : AnyObject])
@@ -57,7 +64,8 @@ class ExpLeagueMessage: NSManagedObject {
         }
         else {
             self.body = textChildren.count > 0 ? textChildren[0].stringValue : nil
-            if (isAnswer){
+            if (body!.hasPrefix("{\"type\":\"response\"")){
+                type = .Answer
                 class Visitor: ExpLeagueMessageVisitor {
                     var shortAnswer: String? = nil
                     func message(message: ExpLeagueMessage, text: String) {
@@ -95,6 +103,10 @@ class ExpLeagueMessage: NSManagedObject {
             fatalError("Failure to save context: \(error)")
         }
     }
+
+    var isSystem: Bool {
+        return type == .System || type == .ExpertAssignment || type == .ExpertProgress
+    }
     
     var isAnswer: Bool {
         return body != nil && body!.hasPrefix("{\"type\":\"response\"")
@@ -115,10 +127,6 @@ class ExpLeagueMessage: NSManagedObject {
         set (val) {
             self.typeRaw = val.rawValue
         }
-    }
-    
-    var incoming: Bool {
-        return self.type == .SystemMessage || self.type == .ExpertMessage
     }
     
     func setProperty(name: String, value: AnyObject) {
@@ -147,7 +155,7 @@ class ExpLeagueMessage: NSManagedObject {
     }
     
     func visitParts(visitor: ExpLeagueMessageVisitor) {
-        if (type == .SystemMessage || type == .TopicStarter) {
+        if (type == .System || type == .Topic) {
             return
         }
         if (body != nil && body!.hasPrefix("{")) {
@@ -235,8 +243,12 @@ protocol ExpLeagueMessageVisitor {
 }
 
 enum ExpLeagueMessageType: Int16 {
-    case TopicStarter  = 0
+    case Topic = 0
     case ExpertMessage = 1
     case ClientMessage = 2
-    case SystemMessage = 3
+    case System = 3
+    case Answer = 4
+    case ExpertProgress = 5
+    case ExpertAssignment = 6
+    case ExpertCancel = 7
 }

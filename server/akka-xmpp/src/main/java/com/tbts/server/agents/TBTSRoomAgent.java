@@ -6,8 +6,8 @@ import com.tbts.model.Offer;
 import com.tbts.model.Operations;
 import com.tbts.model.Operations.Cancel;
 import com.tbts.model.Operations.Done;
-import com.tbts.model.Operations.Sync;
 import com.tbts.model.Operations.Start;
+import com.tbts.model.Operations.Sync;
 import com.tbts.server.dao.Archive;
 import com.tbts.util.akka.AkkaTools;
 import com.tbts.util.akka.UntypedActorAdapter;
@@ -67,13 +67,16 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
       return;
     }
 
-    if (msg.has(Start.class)) {
+    if (msg.has(Start.class) || msg.has(Operations.Resume.class)) {
       enterRoom(msg.from());
-      XMPP.send(new Message(jid, status.owner(), ExpertManager.instance().profile(msg.from().bare())), context());
+      XMPP.send(new Message(jid, status.owner(), msg.get(Operations.Command.class), ExpertManager.instance().profile(msg.from().bare())), context());
     }
     else if (msg.has(Cancel.class) || msg.has(Done.class)) {
       if (msg.from().bareEq(status.owner())) {
         LaborExchange.reference(context()).tell(msg.get(Operations.Command.class), self());
+      }
+      else if (msg.has(Cancel.class)) {
+        XMPP.send(new Message(jid, status.owner(), msg.get(Operations.Command.class), ExpertManager.instance().profile(msg.from().bare())), context());
       }
     }
     else if (!msg.from().bareEq(status.owner()) && msg.body().startsWith("{\"type\":\"visitedPages\"")) {
@@ -132,7 +135,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   private void enterRoom(JID jid) {
     if (jid.bareEq(this.jid))
       return;
-    if (!status.isParticipant(jid)) {
+    if (!status.isParticipant(jid) || status.isWorker(jid)) {
       snapshot.stream().filter(s -> s instanceof Message && ((Message)s).type() == MessageType.GROUP_CHAT).map(s -> (Message)s).forEach(message -> {
         final Message copy = message.copy();
         copy.to(jid);
@@ -140,11 +143,11 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
         XMPP.send(copy, context());
       });
     }
-    //for test only
-    if (!"unsearch".equals(jid.resource())) {
+
+    if (status.isWorker(jid)) {
       snapshot.stream().filter(s -> s instanceof Message && ((Message) s).has(Operations.Sync.class)).map(s -> (Message) s).forEach(message -> {
         final Message copy = message.copy();
-        copy.type(MessageType.CHAT);
+        copy.type(MessageType.SYNC);
         copy.to(jid);
         copy.from(roomAlias(message.from()));
         XMPP.send(copy, context());

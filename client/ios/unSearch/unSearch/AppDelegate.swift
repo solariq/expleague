@@ -47,9 +47,9 @@ class DataController: NSObject {
                         app.setupDefaultProfiles()
                     }
                 }()
-                let localOrders = app.profiles![2].orders.mutableCopy() as! NSMutableOrderedSet
-                localOrders.removeAllObjects()
-                app.profiles![2].orders = localOrders.copy() as! NSOrderedSet
+//                let localOrders = app.profiles![2].orders.mutableCopy() as! NSMutableOrderedSet
+//                localOrders.removeAllObjects()
+//                app.profiles![2].orders = localOrders.copy() as! NSOrderedSet
                 try self.managedObjectContext.save()
                 AppDelegate.instance.activate(AppDelegate.instance.activeProfile!)
             } catch {
@@ -178,6 +178,9 @@ extension AppDelegate: UIApplicationDelegate {
         ]
         UIApplication.sharedApplication().statusBarStyle = .LightContent
         application.registerForRemoteNotifications()
+        let settings = UIUserNotificationSettings(forTypes: [.Alert, .Sound], categories: [])
+        application.registerUserNotificationSettings(settings)
+        application.idleTimerDisabled = false
         return true
     }
 

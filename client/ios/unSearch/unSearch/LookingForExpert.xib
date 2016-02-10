@@ -79,6 +79,7 @@
             </tableViewCellContentView>
             <connections>
                 <outlet property="expertsOnline" destination="iqJ-oE-LTd" id="MLB-sH-FlF"/>
+                <outlet property="progress" destination="8Jg-fK-vMb" id="JGX-PW-zyR"/>
                 <outlet property="status" destination="QpK-Lv-Y3F" id="Atc-Dk-xjX"/>
             </connections>
             <point key="canvasLocation" x="479" y="485"/>

@@ -1,0 +1,11 @@
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.chat.CompositeMessageViewController" fx:id="parent" stylesheets="/css/messages.css">
+  <padding><Insets top="5" bottom="5" left="0" right="0"/></padding>
+  <ImageView AnchorPane.topAnchor="10" AnchorPane.rightAnchor="0" fitWidth="10" preserveRatio="true">
+    <Image url="/images/right_white_tail.png"/>
+  </ImageView>
+  <VBox AnchorPane.topAnchor="0" AnchorPane.rightAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="0" minHeight="25" fx:id="contents" styleClass="outgoing-bubble"/>
+</AnchorPane>

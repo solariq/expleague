@@ -1,0 +1,11 @@
+
+.status-button {
+    -fx-background-image: url('/images/disconnected.png');
+    -fx-background-repeat: stretch;
+    -fx-background-position: center;
+    -fx-background-size: stretch;
+}
+
+.toggle-button:selected {
+    -fx-background-image: url('/images/connected.png');
+}

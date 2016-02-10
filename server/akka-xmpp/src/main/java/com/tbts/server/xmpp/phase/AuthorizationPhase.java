@@ -72,13 +72,14 @@ public class AuthorizationPhase extends XMPPPhase {
   }
 
   public void processAuth(byte[] data) {
-    if (data.length > 0 || !sasl.isComplete()) {
+    if (!sasl.isComplete()) {
       try {
-        final byte[] challenge = sasl.evaluateResponse(data);
+        final byte[] challenge = sasl.evaluateResponse(data != null ? data : new byte[0]);
+        if (challenge.length > 0) {
+          answer(new Challenge(challenge));
+        }
         if (sasl.isComplete())
           success();
-        else
-          answer(new Challenge(challenge));
       }
       catch (AuthenticationException e) {
         answer(new Failure(Failure.Type.NOT_AUTHORIZED, e.getMessage()));

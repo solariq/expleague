@@ -83,6 +83,7 @@ public class NotificationsManager {
       super(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
           "\"alert\": \"Эксперт найден! Для Вас работает " + profile.login() + "!\", " +
           "\"content-available\": 1" +
+          "\"sound\": \"default\"" +
           "}, \"order\": \"" + from.local() + "\"}", tomorrow());
     }
   }
@@ -92,6 +93,7 @@ public class NotificationsManager {
       super(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
           "\"alert\": \"Получен ответ на задание от " + from.resource() + "\", " +
           "\"content-available\": 1" +
+          "\"sound\": \"default\"" +
           "}, \"order\": \"" + from.local() + "\"}", tomorrow());
     }
   }
@@ -99,8 +101,9 @@ public class NotificationsManager {
   private static class MessageReceivedNotification extends SimpleApnsPushNotification {
     public MessageReceivedNotification(String token, JID from, String message) {
       super(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
-          "\"alert\": \"Получено новое сообщение от " + from.resource() + ": '" + message + "'\", " +
+          "\"alert\": \"Получено новое сообщение от " + from.resource() + ": '" + message.replace("\"", "") + "'\", " +
           "\"content-available\": 1"+
+          "\"sound\": \"default\"" +
           "}, \"order\": \"" + from.local() + "\"}", tomorrow());
     }
   }

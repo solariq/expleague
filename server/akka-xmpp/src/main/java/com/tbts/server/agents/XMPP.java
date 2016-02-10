@@ -7,7 +7,6 @@ import akka.actor.Props;
 import akka.pattern.AskableActorSelection;
 import akka.util.Timeout;
 import com.tbts.server.TBTSServer;
-import com.tbts.util.akka.AkkaTools;
 import com.tbts.util.akka.UntypedActorAdapter;
 import com.tbts.xmpp.JID;
 import com.tbts.xmpp.stanza.Presence;
@@ -60,12 +59,17 @@ public class XMPP extends UntypedActorAdapter {
   }
 
   private ActorRef allocate(JID jid) {
-    return AkkaTools.getOrCreate(jid.bare().toString(), context(), () -> {
-      if (jid.domain().startsWith("muc."))
-        return Props.create(TBTSRoomAgent.class, jid);
-      else
-        return Props.create(UserAgent.class, jid);
-    });
+    String id = jid.bare().toString();
+    Optional<ActorRef> existing = JavaConversions.asJavaCollection(context().children()).stream().filter(actorRef -> actorRef.path().name().equals(id)).findFirst();
+    if (existing.isPresent())
+      return existing.get();
+    final Props props;
+    if (jid.domain().startsWith("muc."))
+      props = Props.create(TBTSRoomAgent.class, jid);
+    else
+      props = Props.create(UserAgent.class, jid);
+
+    return context().actorOf(props, id);
   }
 
   public static void send(Stanza message, ActorContext context) {

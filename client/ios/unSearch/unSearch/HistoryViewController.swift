@@ -18,6 +18,7 @@ class HistoryViewController: UITableViewController {
         super.viewDidLoad()
         splitViewController!.delegate = self
         AppDelegate.instance.historyView = self
+
         self.navigationItem.rightBarButtonItem = self.editButtonItem()
         tracker = XMPPTracker(onMessage: {(message: XMPPMessage) -> Void in
             if (message.from() != AppDelegate.instance.activeProfile!.jid) {
@@ -62,7 +63,7 @@ class HistoryViewController: UITableViewController {
     }
     
     let comparator = {(lhs: ExpLeagueOrder, rhs: ExpLeagueOrder) -> Bool in
-        return lhs.started < rhs.started ? true : false;
+        return lhs.started > rhs.started ? true : false;
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -110,9 +111,10 @@ class HistoryViewController: UITableViewController {
                 let formatter = NSDateFormatter()
                 formatter.timeStyle = .ShortStyle
                 formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0)
+                formatter.dateFormat = "H'ч 'mm'м'"
                 
                 cell.status.textColor = OngoingOrderStateCell.ERROR_COLOR
-                cell.status.text = "ПРОСРОЧЕН НА \(formatter.stringFromDate(NSDate(timeIntervalSince1970: -o.timeLeft))))"
+                cell.status.text = "ПРОСРОЧЕН НА \(formatter.stringFromDate(NSDate(timeIntervalSince1970: -o.timeLeft)))"
             }
             else if (o.status == .ExpertSearch) {
                 if (o.count > 0 && o.message(o.count - 1).isAnswer) {
@@ -224,6 +226,13 @@ class HistoryViewController: UITableViewController {
                 tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
             }
         }
+    }
+    
+    override func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        if (indexPath.section == 0 && indexPath.row == 0) {
+            return !ongoing.isEmpty
+        }
+        return true
     }
 }
 

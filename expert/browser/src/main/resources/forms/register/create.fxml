@@ -1,0 +1,19 @@
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.TextField?>
+<GridPane xmlns:fx="http://javafx.com/fxml/1" hgap="10" vgap="10" fx:controller="com.expleague.expert.forms.Register" prefWidth="500" prefHeight="300">
+  <fx:define>
+    <ToggleGroup fx:id="socialNetworkType"/>
+  </fx:define>
+  <padding><Insets top="25" right="25" bottom="25" left="25"/></padding>
+  <children>
+    <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="Сервер регистрации"/>
+    <TextField GridPane.columnIndex="1" GridPane.rowIndex="0" fx:id="server"/>
+    <Label GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1" text="Выберите социальную сеть, которая будет связана с пользователем Лиги"/>
+    <Region GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="2"/>
+    <RadioButton selected="true" GridPane.columnIndex="1" GridPane.rowIndex="3" text="ВКонтакте" toggleGroup="$socialNetworkType"/>
+  </children>
+</GridPane>

@@ -97,7 +97,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               explain("Resume command received from " + sender() + " sending resume command to the expert");
               stopTimer();
               XMPP.send(new Message(XMPP.jid(), jid(), new Resume(resume.offer(), INVITE_TIMEOUT)), context());
-              return goTo(State.BUSY).using(new Task(true).appendVariant(resume.offer(), sender()));
+              return goTo(State.INVITE).using(new Task(true).appendVariant(resume.offer(), sender()));
             }
         ).event(Timeout.class,
             (to, zero) -> {
@@ -186,8 +186,10 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               explain("Expert has shown in the room. Assuming he has accepted the invitation.");
               if (task.chosen())
                 task.broker().tell(new Start(), self());
-              else
+              else {
+                explain("The task seems to be suspended, sending Resume to broker.");
                 task.broker().tell(new Resume(), self());
+              }
               task.chosen = true;
               return goTo(State.BUSY);
             }
@@ -227,6 +229,12 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 explain("Expert started working on " + task.offer().room().local());
                 stopTimer();
                 task.broker().tell(new Start(), self());
+                return goTo(State.BUSY);
+              }
+              if (message.has(Resume.class)) {
+                explain("Expert resumed working on " + task.offer().room().local());
+                stopTimer();
+                task.broker().tell(new Resume(), self());
                 return goTo(State.BUSY);
               }
               explain("Ignoring message: " + message);

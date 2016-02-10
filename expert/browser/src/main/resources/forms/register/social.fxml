@@ -1,0 +1,15 @@
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.web.WebView?>
+<?import javafx.scene.control.Label?>
+<GridPane xmlns:fx="http://javafx.com/fxml/1" hgap="10" vgap="10" fx:controller="com.expleague.expert.forms.Register"  prefWidth="670" prefHeight="460">
+  <fx:define>
+    <ToggleGroup fx:id="socialNetworkType"/>
+  </fx:define>
+  <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+  <children>
+    <Label GridPane.columnIndex="0" GridPane.rowIndex="0" fx:id="token"/>
+    <WebView GridPane.columnIndex="0" GridPane.rowIndex="0" fx:id="web"/>
+  </children>
+</GridPane>

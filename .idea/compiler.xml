@@ -63,14 +63,29 @@
         <processorPath useClasspath="true" />
         <module name="akka-xmpp" />
       </profile>
+      <profile default="false" name="Annotation profile for browser" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="browser" />
+      </profile>
+      <profile default="false" name="Annotation profile for vk" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="akka-xmpp" target="1.8" />
+      <module name="browser" target="1.8" />
       <module name="commons" target="1.8" />
       <module name="fastxml" target="1.8" />
       <module name="model" target="1.8" />
       <module name="server" target="1.5" />
       <module name="tigase-component" target="1.8" />
+      <module name="vk" target="1.8" />
       <module name="xmpp" target="1.5" />
       <module name="xmpp-bots" target="1.8" />
     </bytecodeTargetLevel>
