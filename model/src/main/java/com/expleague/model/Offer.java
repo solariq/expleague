@@ -3,63 +3,168 @@ package com.expleague.model;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.spbsu.commons.seq.CharSeqTools;
 
 import javax.xml.bind.annotation.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * User: solar
  * Date: 17.12.15
  * Time: 16:38
  */
+
+@SuppressWarnings("unused")
 @XmlRootElement
 public class Offer extends Item {
+  private static final Logger log = Logger.getLogger(Offer.class.getName());
   @XmlAttribute
   private JID room;
   @XmlAttribute
   private JID client;
 
+  @XmlElement(namespace = Operations.NS)
+  private String topic;
+
   @XmlAnyElement(lax = true)
-  private Item description;
+  private List<Item> attachments;
 
-  private Set<JID> workers = new HashSet<>();
-  @XmlAttribute
-  private Urgency type;
+  @XmlAttribute(name = "local")
+  private Boolean isLocal;
+
+  @XmlAttribute(name = "specific")
+  private Boolean isSpecific;
 
   @XmlAttribute
-  private Date started;
+  private Urgency urgency;
+
+  @XmlElement(namespace = Operations.NS)
+  private Location location;
+
+  @XmlAttribute
+  private Double started;
+
+  @XmlElement(namespace = Operations.NS)
+  private Set<JID> workers;
+
+  @XmlElement(namespace = Operations.NS)
+  private Set<JID> slackers;
 
   public Offer() {
   }
 
-  public Offer(JID room, JID client, Item description) {
-    this.room = room;
-    this.client = client;
-    this.description = description;
+  public static Offer create(JID room, JID client, Message description) {
+    if (description.has(Offer.class))
+      return description.get(Offer.class);
+    if (description.has(Message.Subject.class)) {
+      final Offer result;
+      final Message.Subject subject = description.get(Message.Subject.class);
+      final String value = subject.value();
+      if (value.startsWith("{")) { // JSON
+        try {
+          final JsonNode node = tlObjectMapper.get().readTree(value);
+          result = new Offer();
+          result.client = client;
+          result.room = room;
+          result.topic = node.get("topic").asText();
+          result.urgency = node.has("urgency") ? Urgency.valueOf(node.get("urgency").asText().toUpperCase()) : null;
+          result.started = node.has("started") ? node.get("started").asDouble() : System.currentTimeMillis() / 1000.;
+          result.isLocal = node.has("local") && node.get("local").asBoolean();
+          result.isSpecific = node.has("specific") && node.get("specific").asBoolean();
+          result.location = node.has("location") ? new Location(
+              node.get("location").get("longitude").asDouble(),
+              node.get("location").get("latitude").asDouble()
+          ) : null;
+          if (node.has("attachments")) {
+            for (final CharSequence part: CharSeqTools.split(node.get("attachments").asText(), ",")) {
+              result.attachments = new ArrayList<>();
+              final String name = part.toString().trim();
+              if (name.endsWith(".jpeg")) {
+                result.attachments.add(new Image(name, client));
+              }
+            }
+          }
+        }
+        catch (IOException e) {
+          throw new IllegalArgumentException("Unable to parse JSON offer as tree!", e);
+        }
+      }
+      else {
+        result = new Offer();
+        result.client = client;
+        result.room = room;
+        result.topic = value;
+      }
+      return result;
+    }
+    throw new IllegalArgumentException("Unable to restore offer from: " + description);
   }
 
   public JID room() {
     return room;
   }
 
-  public String description() {
-    if (description instanceof Message.Subject)
-      return ((Message.Subject) description).value();
-    return description.toString();
+  public String topic() {
+    return topic;
   }
 
   public void addWorker(JID worker) {
+    if (workers == null)
+      workers = new HashSet<>();
     workers.add(worker);
   }
 
+  public void addSlacker(JID worker) {
+    if (slackers == null)
+      slackers = new HashSet<>();
+    slackers.add(worker);
+  }
+
   public boolean hasWorker(JID worker) {
-    return workers.contains(worker);
+    return workers != null && workers.contains(worker) && (slackers == null || slackers.contains(worker));
+  }
+
+  public boolean hasSlacker(JID worker) {
+    return slackers != null && slackers.contains(worker);
   }
 
   @XmlEnum
-  enum Urgency {
+  public enum Urgency {
     @XmlEnumValue("asap") ASAP,
     @XmlEnumValue("day") DAY,
-    @XmlEnumValue("na") NA,
+    @XmlEnumValue("week") WEEK,
+  }
+
+  @XmlRootElement
+  public static class Location extends Item {
+    @XmlAttribute
+    private double longitude;
+
+    @XmlAttribute
+    private double latitude;
+
+    public Location() {}
+    public Location(double longitude, double latitude) {
+      this.longitude = longitude;
+      this.latitude = latitude;
+    }
+  }
+
+  @XmlRootElement
+  public static class Image extends Item {
+    public static final String MAGIC_CONST = "OSYpRdXPNGZgRvsY";
+    @XmlAttribute
+    private String src;
+
+    public Image(){}
+    public Image(String src, JID from) {
+      this.src = "https://img." + from.domain() + "/" + MAGIC_CONST + "/" + src;
+    }
   }
 }

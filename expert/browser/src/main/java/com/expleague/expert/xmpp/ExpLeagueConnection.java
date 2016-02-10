@@ -2,9 +2,12 @@ package com.expleague.expert.xmpp;
 
 import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
+import com.expleague.xmpp.stanza.Message;
+import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.spbsu.commons.random.FastRandom;
 import org.jivesoftware.smack.*;
+import org.jivesoftware.smack.packet.PlainStreamElement;
 import org.jivesoftware.smack.sasl.SASLError;
 import org.jivesoftware.smack.sasl.SASLErrorException;
 import org.jivesoftware.smack.sasl.javax.SASLDigestMD5Mechanism;
@@ -193,6 +196,19 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
 
   public Status status() {
     return status;
+  }
+
+  public void send(Stanza stanza) {
+    if (connection.isConnected()) {
+      if (stanza instanceof Message) {
+        try {
+          connection.send(stanza::xmlString);
+        }
+        catch (SmackException.NotConnectedException e) {
+          log.log(Level.WARNING, "Unable to send message to server: " + e);
+        }
+      }
+    }
   }
 
   public enum Status {

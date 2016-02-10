@@ -54,8 +54,8 @@
       <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.spbsu</groupId>
-      <artifactId>commons</artifactId>
+      <groupId>com.expleague</groupId>
+      <artifactId>model</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>

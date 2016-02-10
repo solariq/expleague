@@ -5,12 +5,18 @@ import com.fasterxml.aalto.AsyncXMLInputFactory;
 import com.fasterxml.aalto.AsyncXMLStreamReader;
 import com.fasterxml.aalto.stax.InputFactoryImpl;
 import com.fasterxml.aalto.stax.OutputFactoryImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.spbsu.commons.io.StreamTools;
 import com.expleague.util.xml.AsyncJAXBStreamReader;
 import com.expleague.util.xml.BOSHNamespaceContext;
 import com.expleague.util.xml.LazyNSXMLStreamWriter;
 import com.expleague.util.xml.XMPPStreamNamespaceContext;
 import org.codehaus.stax2.XMLOutputFactory2;
+import org.jetbrains.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBException;
@@ -20,9 +26,12 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * User: solar
@@ -31,8 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @XmlTransient
 public class Item implements Serializable, Cloneable {
+  private static final Logger log = Logger.getLogger(Item.class.getName());
   public static final String XMPP_START = "<stream:stream xmlns:stream=\"http://etherx.jabber.org/streams\" version=\"1.0\" xmlns=\"jabber:client\" xml:lang=\"en\" xmlns:xml=\"http://www.w3.org/XML/1998/namespace\">";
-  public static Item EMPTY = new Item();
   private static ThreadLocal<XmlOutputter> tlWriter = new ThreadLocal<XmlOutputter>() {
     @Override
     protected XmlOutputter initialValue() {
@@ -51,9 +60,42 @@ public class Item implements Serializable, Cloneable {
       return new XmlInputter();
     }
   };
+  protected static ThreadLocal<ObjectMapper> tlObjectMapper = new ThreadLocal<ObjectMapper>() {
+    @Override
+    protected ObjectMapper initialValue() {
+      final ObjectMapper mapper = new ObjectMapper();
+      final AnnotationIntrospector introspector = new JaxbAnnotationIntrospector(TypeFactory.defaultInstance());
+      mapper.getDeserializationConfig().with(introspector);
+      mapper.getSerializationConfig().with(introspector);
+      return mapper;
+    }
+  };
 
   public static Item create(CharSequence str) {
     return tlReader.get().deserialize(str.toString());
+  }
+
+  @Nullable
+  public static <T extends Item> T createJson(CharSequence str, Class<T> clazz) {
+    try {
+      return tlObjectMapper.get().readValue(str.toString(), clazz);
+    }
+    catch (IOException e) {
+      log.log(Level.WARNING, "Unable to read item of type " + clazz.getName() + " from JSON", e);
+    }
+    return null;
+  }
+
+  @Nullable
+  public String jsonString() {
+    final ObjectMapper mapper = tlObjectMapper.get();
+    try {
+      return mapper.writeValueAsString(this);
+    }
+    catch (JsonProcessingException e) {
+      log.log(Level.WARNING, "Unable to convert item to JSON", e);
+      return null;
+    }
   }
 
   public String xmlString() {

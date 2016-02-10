@@ -4,6 +4,7 @@ import com.expleague.expert.forms.Register;
 import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
 import com.expleague.expert.xmpp.ExpLeagueConnection;
+import com.spbsu.commons.io.StreamTools;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -50,6 +51,9 @@ public class Browser extends Application {
     server.addHandler(new AbstractHandler() {
       @Override
       public void handle(String s, HttpServletRequest request, HttpServletResponse response, int i) throws IOException, ServletException {
+        System.out.println(StreamTools.readStream(request.getInputStream()));
+        response.getOutputStream().close();
+        response.setStatus(200);
       }
     });
     server.start();

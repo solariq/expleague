@@ -57,13 +57,6 @@
         <processorPath useClasspath="true" />
         <module name="akka-xmpp" />
       </profile>
-      <profile default="false" name="Annotation profile for browser" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="true" />
-        <module name="browser" />
-      </profile>
       <profile default="false" name="Annotation profile for vk" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />

@@ -1,7 +1,7 @@
 package com.expleague.expert.xmpp.events;
 
 import com.expleague.expert.xmpp.ExpertEvent;
-import org.jivesoftware.smack.packet.Stanza;
+import com.expleague.xmpp.stanza.Stanza;
 
 /**
  * Experts League

@@ -203,7 +203,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               final Message message = new Message(task.offer().room(), jid(), task.offer());
               invite.timeout = INVITE_TIMEOUT.toMillis();
               message.append(new Invite.Invitation(XMPP.jid()))
-                  .append(new Operations.Invite.Reason(task.offer().description()))
+                  .append(new Operations.Invite.Reason(task.offer().topic()))
                   .append(invite);
               XMPP.send(message, context());
               timer = AkkaTools.scheduleTimeout(context(), INVITE_TIMEOUT, self());

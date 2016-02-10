@@ -1,13 +1,13 @@
 package com.expleague.server.agents;
 
 import akka.actor.ActorContext;
-import com.expleague.server.ExpertManager;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
 import com.expleague.model.Operations.Cancel;
 import com.expleague.model.Operations.Done;
 import com.expleague.model.Operations.Start;
 import com.expleague.model.Operations.Sync;
+import com.expleague.server.ExpertManager;
 import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.AkkaTools;
 import com.expleague.util.akka.UntypedActorAdapter;
@@ -91,7 +91,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
       final Offer offer = status.offer();
       if (offer != null) {
         invoke(new Message(XMPP.jid(), jid, new Operations.Create(), offer));
-        LaborExchange.reference(context()).tell(offer, self());
+        LaborExchange.reference(context()).tell(offer.copy(), self());
       }
     }
     if (msg.type() == MessageType.GROUP_CHAT)
@@ -143,16 +143,6 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
         XMPP.send(copy, context());
       });
     }
-
-    if (status.isWorker(jid)) {
-      snapshot.stream().filter(s -> s instanceof Message && ((Message) s).has(Operations.Sync.class)).map(s -> (Message) s).forEach(message -> {
-        final Message copy = message.copy();
-        copy.type(MessageType.SYNC);
-        copy.to(jid);
-        copy.from(roomAlias(message.from()));
-        XMPP.send(copy, context());
-      });
-    }
   }
 
   @NotNull
@@ -178,8 +168,6 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
   }
 
   public static class Status {
-    private final Set<JID> workers = new HashSet<>();
-    private final Set<JID> slackers = new HashSet<>();
     private final Set<JID> participants = new HashSet<>();
     private JID owner = null;
     private JID lastWorker = null;
@@ -188,7 +176,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     private Offer offer;
 
     public boolean isWorker(JID jid) {
-      return workers.contains(jid) && !slackers.contains(jid);
+      return offer != null && offer.hasWorker(jid);
     }
 
     @Nullable
@@ -205,7 +193,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     }
 
     public boolean isLastWorkerActive() {
-      return open && lastWorker != null && !slackers.contains(lastWorker);
+      return open && lastWorker != null && !offer.hasSlacker(lastWorker);
     }
 
     public boolean isParticipant(JID jid) {
@@ -219,8 +207,11 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
         if (msg.has(Start.class)) {
           participants.add(bareSender);
           lastWorker = bareSender;
-          workers.add(bareSender);
+          offer.addWorker(bareSender);
           lastActive = true;
+          open = true;
+        }
+        if (msg.has(Operations.Create.class)) {
           open = true;
         }
         else if (msg.has(Done.class)) {
@@ -241,21 +232,21 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
           }
           else {
             //noinspection StatementWithEmptyBody
-            slackers.add(bareSender);
+            offer.addSlacker(bareSender);
             lastActive = false;
             participants.remove(bareSender);
           }
         }
-        else if (msg.has(Message.Subject.class)) {
+        else if (msg.has(Message.Subject.class) || msg.has(Offer.class)) {
+          offer = Offer.create(msg.to().bare(), bareSender, msg);
           owner = bareSender;
-          this.offer = new Offer(msg.to().bare(), owner, msg.get(Message.Subject.class));
           participants.add(bareSender);
         }
       }
     }
 
     public boolean interview(JID worker) {
-      return !slackers.contains(worker);
+      return !offer.hasSlacker(worker);
     }
 
     public Offer offer() {
@@ -265,19 +256,17 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     public Status() {
     }
 
-    private Status(JID owner, Offer offer, JID lastWorker, boolean open, boolean lastActive, Set<JID> workers, Set<JID> slackers, Set<JID> participants) {
+    private Status(JID owner, Offer offer, JID lastWorker, boolean open, boolean lastActive, Set<JID> participants) {
       this.owner = owner;
       this.lastWorker = lastWorker;
       this.open = open;
       this.lastActive = lastActive;
-      this.workers.addAll(workers);
-      this.slackers.addAll(slackers);
       this.offer = offer;
       this.participants.addAll(participants);
     }
 
     public Status copy() {
-      return new Status(owner, offer, lastWorker, open, lastActive, workers, slackers, participants);
+      return new Status(owner, offer, lastWorker, open, lastActive, participants);
     }
   }
 }
