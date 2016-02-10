@@ -2,7 +2,6 @@ package com.expleague.model;
 
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
-import com.expleague.xmpp.stanza.Message;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
