@@ -54,7 +54,7 @@ public class AuthorizationPhase extends XMPPPhase {
         }
         catch (Exception e) {
           log.log(Level.FINEST, "Exception during user registration", e);
-          answer(Iq.answer(request, new Err(Err.Cause.INSTERNAL_SERVER_ERROR, Err.ErrType.AUTH, e.getMessage())));
+          answer(Iq.answer(request, new Err(Err.Cause.INTERNAL_SERVER_ERROR, Err.ErrType.AUTH, e.getMessage())));
         }
       }
     }

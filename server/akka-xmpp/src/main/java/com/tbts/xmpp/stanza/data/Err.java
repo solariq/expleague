@@ -96,7 +96,7 @@ public class Err extends Item {
   @XmlEnum
   public enum Cause {
     CONFLICT,
-    INSTERNAL_SERVER_ERROR;
+    INTERNAL_SERVER_ERROR;
     public static class CauseAdapter extends XmlAdapter<JAXBElement<?>, Cause> {
       @Override
       public Cause unmarshal(JAXBElement<?> v) throws Exception {
