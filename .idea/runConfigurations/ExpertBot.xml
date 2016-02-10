@@ -2,11 +2,11 @@
   <configuration default="false" name="ExpertBot" type="Application" factoryName="Application" nameIsGenerated="true">
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
       <pattern>
-        <option name="PATTERN" value="com.tbts.bots.*" />
+        <option name="PATTERN" value="com.expleague.bots.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
-    <option name="MAIN_CLASS_NAME" value="com.tbts.bots.ExpertBot" />
+    <option name="MAIN_CLASS_NAME" value="com.expleague.bots.ExpertBot" />
     <option name="VM_PARAMETERS" value="" />
     <option name="PROGRAM_PARAMETERS" value="" />
     <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />

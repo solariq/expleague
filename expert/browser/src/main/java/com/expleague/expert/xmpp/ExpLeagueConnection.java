@@ -2,7 +2,6 @@ package com.expleague.expert.xmpp;
 
 import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
-import com.spbsu.commons.func.WeakListenerHolder;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.spbsu.commons.random.FastRandom;
 import org.jivesoftware.smack.*;
@@ -15,7 +14,8 @@ import org.jivesoftware.smack.util.TLSUtils;
 import org.jivesoftware.smackx.caps.EntityCapsManager;
 import org.jivesoftware.smackx.iqregister.AccountManager;
 
-import javax.net.ssl.*;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;

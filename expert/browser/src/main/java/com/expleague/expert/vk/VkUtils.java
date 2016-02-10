@@ -1,16 +1,12 @@
 package com.expleague.expert.vk;
 
 import com.expleague.expert.profile.UserProfile;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spbsu.commons.io.StreamTools;
-import com.sun.tools.internal.ws.processor.model.Response;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

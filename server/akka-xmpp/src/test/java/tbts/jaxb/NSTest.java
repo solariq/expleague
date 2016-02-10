@@ -1,7 +1,7 @@
 package tbts.jaxb;
 
-import com.tbts.xmpp.Features;
-import com.tbts.xmpp.control.Bind;
+import com.expleague.xmpp.Features;
+import com.expleague.xmpp.control.Bind;
 import org.junit.Assert;
 import org.junit.Test;
 
