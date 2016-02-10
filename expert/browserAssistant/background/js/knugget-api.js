@@ -1,53 +1,43 @@
 angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$interval', '$timeout', 'fileBlob', function ($http, $q, $interval, $timeout, $fileBlob) {
 
-    var newStyleResponce = function(callback) {
-        $timeout(function() {
-            KNUGGET.storage.get("Board", function (value) {
-                result = [];
-                value = value ? JSON.parse(value) : [];
-                value.forEach(function(el, i) {
-                    el = JSON.parse(el);
-                    if (el.Type == 'link') {
-                        if (el.Base64Image != undefined) {
-                            result.push({
-                                image: {
-                                    image: el.Base64Image,
-                                    title: el.Title,
-                                    referer: el.Referer
-                                }
-                            });
-                        } else {
-                            result.push({
-                                link: {
-                                    href: el.Href,
-                                    title: el.Title
-                                }
-                            });
-                        }
-                    } else if (el.Type == 'text') {
-                        result.push({
-                            text: {
-                                text: el.Text,
-                                title: el.Title,
-                                referer: el.Referer
-                            }
-                        });
-                    } else if (el.Type == 'picture' || el.Type == 'apicture') {
-                        result.push({
-                            image: {
-                                image: el.Image, //todo make base64
-                                title: el.Title,
-                                referer: el.Referer
-                            }
-                        });
-                    } else {
-                        console.log('WARNING! UNEXPECTED RESPONCE ELEMENT TYPE: ' + el.Type);
-                        console.log(el);
+    var convert = function(el) {
+        if (el.Type == 'link') {
+            if (el.Base64Image != undefined) {
+                return {
+                    image: {
+                        image: el.Base64Image,
+                        title: el.Title,
+                        referer: el.Referer
                     }
-                });
-                callback(result);
-            });
-        }, 100);
+                };
+            } else {
+                return {
+                    link: {
+                        href: el.Href,
+                        title: el.Title
+                    }
+                };
+            }
+        } else if (el.Type == 'text') {
+            return {
+                text: {
+                    text: el.Text,
+                    title: el.Title,
+                    referer: el.Referer
+                }
+            };
+        } else if (el.Type == 'picture' || el.Type == 'apicture') {
+            return {
+                image: {
+                    image: el.Image, //todo make base64
+                    title: el.Title,
+                    referer: el.Referer
+                }
+            };
+        } else {
+            console.log('WARNING! UNEXPECTED RESPONCE ELEMENT TYPE: ' + el.Type);
+            console.log(el);
+        }
     };
 
     var sync = function(type, data, callback) {
@@ -120,10 +110,10 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
 
 
         addToBoard: function(data) {
-            var answer = data.answer;
+            var answer = typeof(data.answer) == 'string' ? JSON.parse(data.answer) : data.answer;
             var defer = $q.defer();
             addToBoardSync(answer, function() {
-                sync("newItem", data, function(status) {
+                sync("newItem", convert(answer), function(status) {
                     defer.resolve({status: status});
                 });
             });
