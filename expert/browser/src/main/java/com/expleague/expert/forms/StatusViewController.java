@@ -4,18 +4,25 @@ import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
 import com.expleague.expert.xmpp.ExpLeagueConnection;
 import com.spbsu.commons.func.Action;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Experts League
@@ -87,10 +94,46 @@ public class StatusViewController {
     ProfileManager.instance().addListener(activeProfile);
   }
 
+  boolean shown = false;
   public void showConnectionMenu(MouseEvent event) {
-    final ContextMenu menu = new ContextMenu(new MenuItem("Connect"), new MenuItem("Disconnect"));
+    if (shown)
+      return;
+    shown = true;
+    final ExpLeagueConnection connection = ExpLeagueConnection.instance();
+    final ContextMenu menu = new ContextMenu(
+        createMenuItem("online", "подключиться", evt -> connection.start(), connection.status() == ExpLeagueConnection.Status.CONNECTED),
+        createMenuItem("offline", "отключиться", evt -> connection.stop(), connection.status() == ExpLeagueConnection.Status.DISCONNECTED)
+    );
     menu.setPrefWidth(150);
     menu.show(status, event.getScreenX() - 150, event.getScreenY());
+    highlightStatus(event);
+    menu.setOnHiding(evt -> {
+      shown = false;
+      unhighlightStatus(evt);
+    });
+  }
+
+  @NotNull
+  private MenuItem createMenuItem(final String imageName, String caption, EventHandler<ActionEvent> handler, boolean disable) {
+    HBox graphics = new HBox();
+    graphics.setPrefHeight(18);
+    final ImageView imageView = new ImageView(new Image("/images/status/" + imageName + ".png"));
+    imageView.setFitHeight(17);
+    imageView.setPreserveRatio(true);
+    final Region region = new Region();
+    HBox.setHgrow(region, Priority.ALWAYS);
+    graphics.getChildren().addAll(imageView, region, new Label(caption));
+    graphics.setOnMouseEntered(evt -> {
+      imageView.setImage(new Image("/images/status/" + imageName + "_h.png"));
+    });
+    graphics.setOnMouseExited(evt -> {
+      imageView.setImage(new Image("/images/status/" + imageName + ".png"));
+    });
+    graphics.setPrefWidth(130);
+    final MenuItem item = new MenuItem("", graphics);
+    item.setOnAction(handler);
+    item.setDisable(disable);
+    return item;
   }
 
   public void highlightStatus(Event event) {
@@ -98,6 +141,7 @@ public class StatusViewController {
   }
 
   public void unhighlightStatus(Event event) {
-    status.setImage(new Image(statusUrl));
+    if (!shown)
+      status.setImage(new Image(statusUrl));
   }
 }

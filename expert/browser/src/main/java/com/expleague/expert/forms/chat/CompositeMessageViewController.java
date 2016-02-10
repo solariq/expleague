@@ -40,7 +40,7 @@ public class CompositeMessageViewController {
   }
 
   private VBox findRoot(Node node) {
-    while (!"dialogue".equals(node.getId())) {
+    while (node != null && !"dialogue".equals(node.getId())) {
       node = node.getParent();
     }
     return (VBox)node;
@@ -50,10 +50,12 @@ public class CompositeMessageViewController {
   public void initialize() {
     parent.parentProperty().addListener((o, oldParent, newParent) -> {
       final VBox root = findRoot(newParent);
-      root.widthProperty().addListener((observable, oldValue, newValue) -> {
-        parent.setPrefWidth(newValue.doubleValue());
-      });
-      parent.setPrefWidth(root.getWidth());
+      if (root != null) {
+        root.widthProperty().addListener((observable, oldValue, newValue) -> {
+          parent.setPrefWidth(newValue.doubleValue());
+        });
+        parent.setPrefWidth(root.getWidth());
+      }
     });
   }
 }

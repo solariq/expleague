@@ -1,5 +1,6 @@
 package com.expleague.expert.xmpp;
 
+import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
 import com.spbsu.commons.func.WeakListenerHolder;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
@@ -11,6 +12,7 @@ import org.jivesoftware.smack.sasl.javax.SASLDigestMD5Mechanism;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smack.util.TLSUtils;
+import org.jivesoftware.smackx.caps.EntityCapsManager;
 import org.jivesoftware.smackx.iqregister.AccountManager;
 
 import javax.net.ssl.*;
@@ -32,6 +34,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
   private static ExpLeagueConnection instance;
   private SSLContext sslctx;
   private FastRandom fastRandom = new FastRandom();
+  private final ExpLeagueExpert expert = new ExpLeagueExpert();
 
   public ExpLeagueConnection(SSLContext sslctx) {
     this.sslctx = sslctx;
@@ -70,12 +73,16 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
             .setServiceName(domain)
             .setHost(domain)
             .setPort(5222)
+            .setResource("expert")
             .setHostnameVerifier((s, sslSession) -> true)
             .setCustomSSLContext(sslctx)
             .setUsernameAndPassword(profile.get(UserProfile.Key.EXP_LEAGUE_USER), profile.get(UserProfile.Key.EXP_LEAGUE_PASSWORD))
             .build();
     connection = new XMPPTCPConnection(config);
     connection.addConnectionListener(this);
+    connection.addAsyncStanzaListener(expert, null);
+    final EntityCapsManager mgr = EntityCapsManager.getInstanceFor(connection);
+    mgr.disableEntityCaps();
     try {
       connection.connect();
       try {
@@ -92,6 +99,10 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
     catch (SmackException | IOException | XMPPException e) {
       log.log(Level.WARNING, "Unable to connect to " + connection.getHost() + " by " + config.getUsername());
     }
+  }
+
+  public ExpLeagueExpert expert() {
+    return expert;
   }
 
   @Override
@@ -161,6 +172,27 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
     catch (XMPPException | IOException | SmackException e) {
       throw new RuntimeException("Unable to register new user at domain: " + profile.get(UserProfile.Key.EXP_LEAGUE_DOMAIN), e);
     }
+  }
+
+  public void start() {
+    final UserProfile active = ProfileManager.instance().active();
+    if (active != null)
+      start(active, true);
+  }
+
+  public void stop() {
+    connection.disconnect();
+  }
+
+  private Status status = Status.DISCONNECTED;
+  @Override
+  protected void invoke(Status e) {
+    status = e;
+    super.invoke(e);
+  }
+
+  public Status status() {
+    return status;
   }
 
   public enum Status {

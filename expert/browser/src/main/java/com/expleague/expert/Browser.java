@@ -11,13 +11,12 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.AbstractHandler;
+import org.mortbay.thread.QueuedThreadPool;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -45,6 +44,9 @@ public class Browser extends Application {
 
   public static void main(String[] args) throws Exception {
     final Server server = new Server(8080);
+    final QueuedThreadPool threadPool = new QueuedThreadPool(4);
+    threadPool.setDaemon(true);
+    server.setThreadPool(threadPool);
     server.addHandler(new AbstractHandler() {
       @Override
       public void handle(String s, HttpServletRequest request, HttpServletResponse response, int i) throws IOException, ServletException {
