@@ -43,17 +43,12 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
       </profile>
-      <profile default="false" name="Annotation profile for model" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="true" />
-      </profile>
       <profile default="false" name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
+        <module name="model" />
         <module name="xmpp" />
       </profile>
       <profile default="false" name="Annotation profile for akka-xmpp" enabled="true">
@@ -82,7 +77,7 @@
       <module name="browser" target="1.8" />
       <module name="commons" target="1.8" />
       <module name="fastxml" target="1.8" />
-      <module name="model" target="1.8" />
+      <module name="model" target="1.5" />
       <module name="server" target="1.5" />
       <module name="tigase-component" target="1.8" />
       <module name="vk" target="1.8" />

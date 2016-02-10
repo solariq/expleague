@@ -17,7 +17,7 @@ import akka.stream.stage.SyncDirective;
 import akka.util.Timeout;
 import com.spbsu.commons.JUnitIOCapture;
 import com.spbsu.commons.random.FastRandom;
-import com.tbts.util.akka.UntypedActorAdapter;
+import com.expleague.util.akka.UntypedActorAdapter;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;

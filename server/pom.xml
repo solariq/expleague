@@ -11,6 +11,7 @@
 
   <modules>
     <module>commons</module>
+    <module>../model</module>
     <module>akka-xmpp</module>
   </modules>
 
