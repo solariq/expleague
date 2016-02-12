@@ -251,6 +251,13 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
               XMPP.send(new Message(Experts.jid(sender()), task.jid(), new Resume()), context());
               return stay();
             }
+        ).event(ActorRef.class,
+            (expert, task) -> task.onTask(Experts.jid(expert)),
+            (expert, task) -> {
+              explain("Worker returned online, sending resume.");
+              expert.tell(new Resume(task.offer), self());
+              return stay();
+            }
         )
     );
 

@@ -1,5 +1,6 @@
 package com.expleague.expert.profile;
 
+import com.expleague.expert.xmpp.ExpLeagueMember;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.spbsu.commons.io.StreamTools;
 
@@ -17,8 +18,12 @@ public class UserProfile extends WeakListenerHolderImpl<UserProfile.Key>{
   private static final Logger log = Logger.getLogger(UserProfile.class.getName());
   private final File propertiesFile;
   private Properties userProperties = new Properties();
+  private final File profileDirectory;
 
+  private final ExpLeagueMember expert;
   public UserProfile(File profileDirectory) throws IOException {
+    this.expert = new ExpLeagueMember(this);
+    this.profileDirectory = profileDirectory;
     if (profileDirectory == null) {
       propertiesFile = null;
       userProperties.load(new InputStreamReader(getClass().getResourceAsStream("/default-user.properties"), StreamTools.UTF));
@@ -83,6 +88,19 @@ public class UserProfile extends WeakListenerHolderImpl<UserProfile.Key>{
 
   public String name() {
     return get(Key.NAME);
+  }
+
+  public File allocateTaskDir(String name) {
+    return new File(profileDirectory.getAbsolutePath() + "/tasks/" + name);
+  }
+
+  public File[] tasks() {
+    final File[] tasks = new File(profileDirectory, "tasks").listFiles();
+    return tasks != null ? tasks : new File[0];
+  }
+
+  public ExpLeagueMember expert() {
+    return expert;
   }
 
   public enum Key {

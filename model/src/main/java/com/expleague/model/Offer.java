@@ -8,10 +8,8 @@ import com.spbsu.commons.seq.CharSeqTools;
 
 import javax.xml.bind.annotation.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -134,11 +132,33 @@ public class Offer extends Item {
     return slackers != null && slackers.contains(worker);
   }
 
+  public Date expires() {
+    return new Date((long) (started() * 1000 + urgency().time()));
+  }
+
+  private double started() {
+    return started = (started != null ? started : System.currentTimeMillis() / 1000.);
+  }
+
+  public Urgency urgency() {
+    return urgency != null ? urgency : Urgency.ASAP;
+  }
+
   @XmlEnum
   public enum Urgency {
-    @XmlEnumValue("asap") ASAP,
-    @XmlEnumValue("day") DAY,
-    @XmlEnumValue("week") WEEK,
+    @XmlEnumValue("asap") ASAP(0),
+    @XmlEnumValue("day") DAY(TimeUnit.DAYS.toMillis(1)),
+    @XmlEnumValue("week") WEEK(TimeUnit.DAYS.toMillis(7)),;
+
+    private final long time;
+
+    Urgency(long time) {
+      this.time = time;
+    }
+
+    public long time() {
+      return time;
+    }
   }
 
   @XmlRootElement

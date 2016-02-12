@@ -1,18 +1,19 @@
 package com.expleague.expert.xmpp.events;
 
 import com.expleague.expert.xmpp.ExpertEvent;
-import com.expleague.model.Operations;
+import com.expleague.expert.xmpp.ExpertTask;
 import com.expleague.xmpp.stanza.Message;
 
 /**
  * Experts League
  * Created by solar on 10/02/16.
  */
-public class CommandEvent extends ExpertEvent {
-  private final Operations.Command command;
-  public CommandEvent(Message source) {
-    super(source);
-    command = source.get(Operations.Command.class);
+public class ChatMessageEvent extends ExpertTaskEvent {
+  private final boolean incoming;
+
+  public ChatMessageEvent(ExpertTask task, Message source, boolean incoming) {
+    super(source, task);
+    this.incoming = incoming;
   }
 
   public void visitParts(PartsVisitor visitor) {

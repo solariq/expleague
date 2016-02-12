@@ -19,36 +19,7 @@ public class Operations {
   @XmlRootElement
   public static class Invite extends Command {
     @XmlAttribute
-    public Long timeout;
-
-    @XmlRootElement(name = "x", namespace = "http://jabber.org/protocol/muc#user")
-    public static class Invitation extends Item {
-      @XmlElementRef
-      private I invite;
-
-      public Invitation(){}
-      public Invitation(JID from) {
-        invite = new I();
-        invite.from = from;
-      }
-
-      @XmlRootElement(name = "invite", namespace = "http://jabber.org/protocol/muc#user")
-      public static final class I extends Item {
-        @XmlAttribute
-        private JID from;
-      }
-    }
-
-    @XmlRootElement(name = "x", namespace = "jabber:x:conference")
-    public static class Reason extends Item {
-      @XmlAttribute
-      private String reason;
-
-      public Reason() {}
-      public Reason(String subj) {
-        reason = subj;
-      }
-    }
+    public double timeout;
   }
 
   @XmlRootElement
@@ -82,20 +53,12 @@ public class Operations {
 
   @XmlRootElement
   public static class Resume extends Command {
-    @XmlAttribute
-    private Long timeout;
-
     @XmlElementRef
     private Offer offer;
     public Resume() { }
 
     public Resume(Offer offer) {
       this.offer = offer;
-    }
-
-    public Resume(Offer offer, long inviteTimeout) {
-      this.offer = offer;
-      timeout = inviteTimeout;
     }
 
     public Offer offer() {

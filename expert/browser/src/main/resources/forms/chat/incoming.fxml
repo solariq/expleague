@@ -7,5 +7,5 @@
   <ImageView AnchorPane.topAnchor="15" AnchorPane.leftAnchor="0" fitWidth="10" preserveRatio="true">
     <Image url="/images/left_blue_tail.png"/>
   </ImageView>
-  <VBox AnchorPane.topAnchor="0" AnchorPane.rightAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="0" minHeight="25" fx:id="contents" styleClass="incoming-bubble"/>
+  <VBox AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="0" minHeight="25" fx:id="contents" styleClass="incoming-bubble"/>
 </AnchorPane>

@@ -1,34 +1,46 @@
-.messages-pane {
-    -fx-background-color: rgb(218, 234, 239);
-}
 
-.incoming-message {
-    -fx-background-image: url("/images/blue_bubble_tail.png");
-    -fx-background-repeat: stretch;
-    -fx-background-position: top left;
-    -fx-background-size: stretch;
-    -fx-padding: 4px;
-}
-
-.incoming-message .label {
-    -fx-text-fill: white
-}
-
-.outgoing-message {
-    -fx-background-image: url("/images/White_Tail_bubble_new.pdf");
-    -fx-background-repeat: stretch;
-    -fx-background-position: top right;
-    -fx-background-size: stretch;
-    -fx-padding: 4px;
-}
-
-.scroll-pane > .viewport {
+.text-area {
     -fx-background-color: transparent;
+    -fx-border-style: none;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
 }
 
-.message-item {
+.text-area .scroll-pane {
     -fx-background-color: transparent;
-    -fx-padding: 5px;
+    -fx-border-style: none;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
+
+.text-area .scroll-pane .viewport{
+    -fx-background-color: transparent;
+    -fx-border-style: none;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
+
+
+.text-area .scroll-pane .content{
+    -fx-background-color: transparent;
+    -fx-border-style: none;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
+
+.task *.text {
+    -fx-text-alignment: center;
+}
+
+.outgoing {
+}
+
+.incoming {
+    -fx-text-fill: white;
 }
 
 .outgoing-bubble {

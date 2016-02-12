@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 
 /**
@@ -32,7 +34,6 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
     return instance;
   }
 
-  private String activeProfileName;
   private final Map<String, UserProfile> knownProfiles = new HashMap<>();
   private final File root;
   public ProfileManager(File home) throws IOException {
@@ -40,25 +41,26 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
     if (home.listFiles() == null)
       return;
 
-    String first = null;
+    UserProfile first = null;
     //noinspection ConstantConditions
     for (final File file : home.listFiles()) {
       if (file.isDirectory()) {
-        if (first == null)
-          first = file.getName();
         final UserProfile value = new UserProfile(file);
+        if (first == null)
+          first = value;
         if (!value.get(UserProfile.Key.EXP_LEAGUE_ID).equals(file.getName())) {
           log.warning("Profile in directory " + file.getAbsolutePath() + " is invalid. Skipping it");
           continue;
         }
         knownProfiles.put(file.getName(), value);
       }
-      else if (ACTIVE_PROFILE_FILENAME.equals(file.getName())) {
-        activeProfileName = StreamTools.readFile(file).toString().trim();
-      }
     }
-    if (activeProfileName == null) {
-      activeProfileName = first;
+    final File activeProfileFile = new File(root, ACTIVE_PROFILE_FILENAME);
+    if (activeProfileFile.exists()) {
+      activate(knownProfiles.get(StreamTools.readFile(activeProfileFile).toString()));
+    }
+    if (active == null) {
+      activate(first);
     }
   }
 
@@ -66,8 +68,9 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
     return knownProfiles.values().toArray(new UserProfile[knownProfiles.values().size()]);
   }
 
+  private UserProfile active;
   public UserProfile active() {
-    return knownProfiles.get(activeProfileName);
+    return active;
   }
 
   public UserProfile register(UserProfile profile) {
@@ -100,14 +103,19 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
     final String id = profile.get(UserProfile.Key.EXP_LEAGUE_ID);
     if (id == null)
       throw new IllegalArgumentException("Profile is not registered");
-    activeProfileName = id;
+    active = profile;
     try {
-      StreamTools.writeChars(activeProfileName, new File(root, ACTIVE_PROFILE_FILENAME));
+      StreamTools.writeChars(id, new File(root, ACTIVE_PROFILE_FILENAME));
     }
     catch (IOException e) {
       throw new RuntimeException(e);
     }
-    ExpLeagueConnection.instance().start(profile);
     invoke(profile);
+//    new Timer().schedule(new TimerTask() {
+//      @Override
+//      public void run() {
+//        ExpLeagueConnection.instance().start(profile);
+//      }
+//    }, 1000);
   }
 }

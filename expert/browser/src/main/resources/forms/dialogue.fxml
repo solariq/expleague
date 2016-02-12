@@ -1,13 +1,34 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.VBox?>
-<VBox stylesheets="/css/messages.css" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.ChatViewController">
-  <children>
-    <ScrollPane VBox.vgrow="ALWAYS" styleClass="messages-pane" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" fx:id="scroll">
-      <content>
-        <VBox fx:id="messagesView"/>
-      </content>
+<?import javafx.scene.control.Accordion?>
+
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.geometry.Insets?>
+<VBox stylesheets="/css/dialogue.css" fx:id="root" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.chat.DialogueController">
+  <Accordion fx:id="taskFolder" VBox.vgrow="NEVER">
+    <panes>
+      <TitledPane expanded="true">
+        <text>Задание</text>
+        <content>
+          <VBox fx:id="taskViewParent">
+            <VBox VBox.vgrow="ALWAYS" fx:id="taskView"/>
+          </VBox>
+        </content>
+      </TitledPane>
+    </panes>
+  </Accordion>
+  <VBox VBox.vgrow="ALWAYS">
+    <ScrollPane VBox.vgrow="ALWAYS" styleClass="messages-pane" hbarPolicy="NEVER" vbarPolicy="NEVER">
+      <AnchorPane>
+        <VBox fx:id="messagesView" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0"/>
+      </AnchorPane>
     </ScrollPane>
     <TextArea VBox.vgrow="NEVER" minHeight="27" prefHeight="27" maxHeight="27" fx:id="input" text="Введите сообщение" onKeyPressed="#catchEnter"/>
-  </children>
+  </VBox>
 </VBox>

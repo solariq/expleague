@@ -1,61 +1,93 @@
 package com.expleague.expert.forms.chat;
 
-import com.expleague.expert.forms.ChatViewController;
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+
+import java.util.Date;
 
 /**
  * Experts League
  * Created by solar on 09/02/16.
  */
 public class CompositeMessageViewController {
-  private final ChatViewController.MessageType type;
+  private final VBox root;
+  private final DialogueController.MessageType type;
   public VBox contents;
   public AnchorPane parent;
 
-  public CompositeMessageViewController(ChatViewController.MessageType type) {
+  public CompositeMessageViewController(VBox root, DialogueController.MessageType type) {
+    this.root = root;
     this.type = type;
   }
 
-  public ChatViewController.MessageType type() {
+  public DialogueController.MessageType type() {
     return type;
   }
 
-  public void addText(String text) {
-    final Text label = new Text();
-    label.setTextAlignment(TextAlignment.LEFT);
-    parent.prefWidthProperty().addListener((observable, oldValue, newValue) -> {
-      final double trueWidth = newValue.doubleValue();
-      label.setWrappingWidth(trueWidth - 35);
-    });
-    if (parent.getPrefWidth() > 0) {
-      label.setWrappingWidth(parent.getPrefWidth() - 35);
+  public void addTimeout(Date expires) {
+    final Label timerLabel = new Label();
+    timerLabel.setStyle(timerLabel.getStyle() + " -fx-text-fill: lightgray;");
+    if (type == DialogueController.MessageType.TASK) {
+      contents.getChildren().add(makeCenter(timerLabel));
     }
-    label.setText(text);
-    contents.getChildren().add(label);
+    else contents.getChildren().add(timerLabel);
+    TimeoutUtil.setTimer(timerLabel, expires, false);
   }
 
-  private VBox findRoot(Node node) {
-    while (node != null && !"dialogue".equals(node.getId())) {
-      node = node.getParent();
-    }
-    return (VBox)node;
-  }
-  @SuppressWarnings("unused")
-  @FXML
-  public void initialize() {
-    parent.parentProperty().addListener((o, oldParent, newParent) -> {
-      final VBox root = findRoot(newParent);
-      if (root != null) {
-        root.widthProperty().addListener((observable, oldValue, newValue) -> {
-          parent.setPrefWidth(newValue.doubleValue());
-        });
-        parent.setPrefWidth(root.getWidth());
+  private SimpleDoubleProperty trueWidth = new SimpleDoubleProperty();
+  public void addText(String text) {
+    final TextArea label = new TextArea();
+    final Text labelModel = new Text(text);
+    label.getStyleClass().add(type.cssClass());
+    label.setText(text);
+    label.setEditable(false);
+    label.setWrapText(true);
+//    label.setTextFormatter(labelModel.getTextFormatter());
+    labelModel.layoutBoundsProperty().addListener(o -> {
+      final int value = (int)Math.ceil(labelModel.getLayoutBounds().getHeight() / labelModel.getFont().getSize() / 1.3333);
+
+      if (value > 0) {
+        label.setPrefRowCount(value);
+        label.setMaxHeight(value * label.getFont().getSize() * 1.3333);
       }
     });
+
+//    setTextAlignment(type.alignment());
+    final InvalidationListener listener = observable -> {
+      labelModel.setWrappingWidth(trueWidth.get() - 30);
+      label.setMaxWidth(trueWidth.get() - 30);
+    };
+    trueWidth.addListener(listener);
+    listener.invalidated(trueWidth);
+    if (type.alignment() == TextAlignment.CENTER)
+      contents.getChildren().add(makeCenter(label));
+    else
+      contents.getChildren().add(label);
+//    contents.getChildren().add(labelModel);
+  }
+
+  private Node makeCenter(Node flow) {
+    final Region left = new Region();
+    final Region right = new Region();
+    HBox box = new HBox(left, flow, right);
+    HBox.setHgrow(left, Priority.ALWAYS);
+    HBox.setHgrow(right, Priority.ALWAYS);
+    HBox.setHgrow(flow, Priority.NEVER);
+    return box;
+  }
+
+  @FXML
+  public void initialize() {
+    root.widthProperty().addListener((observable, oldValue, newValue) -> {
+      trueWidth.set(newValue.doubleValue());
+    });
+    trueWidth.setValue(root.getWidth());
   }
 }

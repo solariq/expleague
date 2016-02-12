@@ -13,7 +13,7 @@
       <padding><Insets top="5" right="60" bottom="5" left="5"/></padding>
       <VBox>
         <Region VBox.vgrow="ALWAYS"/>
-        <Label text="Нет заданий"/>
+        <VBox fx:id="task"/>
         <Region VBox.vgrow="ALWAYS"/>
       </VBox>
     </HBox>
@@ -28,7 +28,7 @@
     </AnchorPane>
     <AnchorPane>
       <children>
-        <ImageView AnchorPane.rightAnchor="8" AnchorPane.topAnchor="36" fitWidth="18" fitHeight="18" styleClass="status-button" onMouseClicked="#showConnectionMenu" fx:id="status" onMouseEntered="#highlightStatus" onMouseExited="#unhighlightStatus">
+        <ImageView AnchorPane.rightAnchor="8" AnchorPane.topAnchor="36" fitWidth="18" fitHeight="18" styleClass="status-button" onMouseClicked="#showConnectionMenu" fx:id="statusView" onMouseEntered="#highlightStatus" onMouseExited="#unhighlightStatus">
           <image>
             <Image url="/images/status/disconnect.png"/>
           </image>

@@ -39,8 +39,6 @@ public class Browser extends Application {
     final UserProfile active = ProfileManager.instance().active();
     if (active == null)
       Register.register();
-    else
-      ExpLeagueConnection.instance().start(active);
   }
 
   public static void main(String[] args) throws Exception {
@@ -48,6 +46,7 @@ public class Browser extends Application {
     final QueuedThreadPool threadPool = new QueuedThreadPool(4);
     threadPool.setDaemon(true);
     server.setThreadPool(threadPool);
+
     server.addHandler(new AbstractHandler() {
       @Override
       public void handle(String s, HttpServletRequest request, HttpServletResponse response, int i) throws IOException, ServletException {

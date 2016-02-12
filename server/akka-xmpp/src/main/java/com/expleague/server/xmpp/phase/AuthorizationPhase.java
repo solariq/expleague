@@ -63,22 +63,25 @@ public class AuthorizationPhase extends XMPPPhase {
   public void invoke(Response response) {
     if (sasl == null)
       throw new IllegalStateException();
-    processAuth(response.data());
+    processAuth(response.data(), false);
   }
 
   public void invoke(Auth auth) {
     sasl = this.auth.get(auth.mechanism());
-    processAuth(auth.challenge());
+    processAuth(auth.challenge(), true);
   }
 
-  public void processAuth(byte[] data) {
+  public void processAuth(byte[] data, boolean start) {
     if (!sasl.isComplete()) {
       try {
-        final byte[] challenge = sasl.evaluateResponse(data != null ? data : new byte[0]);
-        if (challenge != null && challenge.length > 0) {
-          answer(new Challenge(challenge));
+        if (!sasl.isComplete()) {
+          final byte[] challenge = sasl.evaluateResponse(data != null ? data : new byte[0]);
+          if (challenge != null && challenge.length > 0) {
+            answer(new Challenge(challenge));
+          }
         }
-        if (sasl.isComplete())
+        else success();
+        if (start && sasl.isComplete())
           success();
       }
       catch (AuthenticationException e) {

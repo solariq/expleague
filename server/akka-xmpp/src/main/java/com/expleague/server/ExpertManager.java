@@ -25,12 +25,12 @@ public class ExpertManager {
   }
 
   private final Map<JID, Record> records = new ConcurrentHashMap<>();
-  public Record record(JID jid) {
+  public synchronized Record record(JID jid) {
     records.putIfAbsent(jid, new Record());
     return records.get(jid);
   }
 
-  public ExpertsProfile profile(JID jid) {
+  public synchronized ExpertsProfile profile(JID jid) {
     final Record record = record(jid);
     int invitations = record.entries().filter(r -> r.getSecond() == ExpertRole.State.INVITE).collect(Collectors.counting()).intValue();
     final JabberUser user = Roster.instance().byName(jid.local());

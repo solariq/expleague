@@ -70,7 +70,10 @@ public class UserAgent extends UntypedPersistentActor {
           .filter(Presence::available)
           .forEach(p -> sender().tell(p, self()));
     }
-    else connecters.remove(resource);
+    else {
+      connecters.remove(resource);
+      invoke(new Presence(new JID(jid().local(), jid().domain(), resource), false));
+    }
   }
 
   public void invoke(final Presence presence) {

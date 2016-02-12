@@ -1,0 +1,7 @@
+.messages-pane {
+    -fx-background-color: rgb(218, 234, 239);
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}

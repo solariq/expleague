@@ -81,9 +81,6 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     }
     else if (!msg.from().bareEq(status.owner()) && msg.body().startsWith("{\"type\":\"visitedPages\"")) {
       XMPP.send(new Message(jid, status.owner(), msg.body()), context());
-    } else if (msg.has(Sync.class)) {
-      final Sync sync = msg.get(Sync.class);
-      System.out.println("sync event from expert: " + sync.func() + "\t" + sync.data());
     }
     log(msg);
 

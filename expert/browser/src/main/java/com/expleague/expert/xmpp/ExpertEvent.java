@@ -1,19 +1,19 @@
 package com.expleague.expert.xmpp;
 
-import com.expleague.xmpp.stanza.Stanza;
+import com.expleague.xmpp.Item;
 
 /**
  * Experts League
  * Created by solar on 10/02/16.
  */
 public class ExpertEvent {
-  private final Stanza source;
+  private final Item source;
 
-  public ExpertEvent(Stanza source) {
+  public ExpertEvent(Item source) {
     this.source = source;
   }
 
-  public Stanza source() {
+  public Item source() {
     return source;
   }
 }
