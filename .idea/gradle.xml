@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="distributionType" value="LOCAL" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/expert/browser/markdown-writer-fx" />
+        <option name="gradleHome" value="/usr/local/opt/gradle/libexec" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/expert/browser/markdown-writer-fx" />
+          </set>
+        </option>
+        <option name="myModules">
+          <set>
+            <option value="$PROJECT_DIR$/expert/browser/markdown-writer-fx" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

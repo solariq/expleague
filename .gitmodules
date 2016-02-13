@@ -4,3 +4,6 @@
 [submodule "server/fastxml"]
 	path = server/fastxml
 	url = git@github.com:solariq/fastxml.git
+[submodule "expert/browser/markdown-writer-fx"]
+	path = expert/browser/markdown-writer-fx
+	url = /expert/browser/markdown-writer-fx

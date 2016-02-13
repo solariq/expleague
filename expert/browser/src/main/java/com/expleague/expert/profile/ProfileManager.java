@@ -9,8 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Logger;
 
 /**
@@ -59,7 +57,7 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
     if (activeProfileFile.exists()) {
       activate(knownProfiles.get(StreamTools.readFile(activeProfileFile).toString()));
     }
-    if (active == null) {
+    if (active == null && first != null) {
       activate(first);
     }
   }
@@ -82,7 +80,9 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
         if (profile.has(UserProfile.Key.VK_TOKEN)) {
           log.info("Registering user by vk profile");
           VkUtils.fillProfile(profile);
-          profile.set(UserProfile.Key.EXP_LEAGUE_USER, "vk-" + profile.get(UserProfile.Key.VK_USER_ID));
+          final String userName = "vk-" + profile.get(UserProfile.Key.VK_USER_ID);
+          profile.set(UserProfile.Key.EXP_LEAGUE_USER, userName);
+          profile.set(UserProfile.Key.EXP_LEAGUE_ID, profile.get(UserProfile.Key.EXP_LEAGUE_USER) + "@" + profile.get(UserProfile.Key.EXP_LEAGUE_DOMAIN));
           ExpLeagueConnection.instance().register(profile);
         }
       }

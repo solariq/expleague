@@ -18,8 +18,8 @@
         <processorPath useClasspath="true" />
       </profile>
       <profile default="false" name="Annotation profile for commons" enabled="true">
-        <sourceOutputDir name="../server/commons/target/generated-sources/annotations" />
-        <sourceTestOutputDir name="../server/commons/target/generated-test-sources/test-annotations" />
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
         <module name="commons" />
@@ -76,6 +76,7 @@
       <module name="browser" target="1.8" />
       <module name="commons" target="1.8" />
       <module name="fastxml" target="1.8" />
+      <module name="markdown-writer-fx" target="1.8" />
       <module name="model" target="1.8" />
       <module name="server" target="1.5" />
       <module name="tigase-component" target="1.8" />
