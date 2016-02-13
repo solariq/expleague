@@ -47,6 +47,7 @@ public class VkUtils {
     public City city;
     public Country country;
     public String photo_max;
+    public int hidden;
   }
 
   private static class City {
