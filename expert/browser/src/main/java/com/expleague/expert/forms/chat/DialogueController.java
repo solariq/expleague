@@ -130,10 +130,10 @@ public class DialogueController implements Action<ExpertEvent> {
 
   ExpertTask task;
   public void accept(TaskStartedEvent taskEvt) {
-    this.task = taskEvt.task();
     Platform.runLater(() -> {
       final ObservableList<Node> children = taskView.getChildren();
       try {
+        this.task = taskEvt.task();
         final Offer offer = task.offer();
         final CompositeMessageViewController viewController = MessageType.TASK.newInstance(root);
         children.clear();

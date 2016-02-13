@@ -1,15 +1,13 @@
 package com.expleague.expert.xmpp;
 
-import com.expleague.expert.xmpp.chat.ChatItem;
 import com.expleague.expert.xmpp.events.*;
+import com.expleague.model.Answer;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.io.StreamTools;
-import javafx.beans.property.SimpleListProperty;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
+import com.spbsu.commons.util.FileThrottler;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -46,13 +44,6 @@ public class ExpertTask {
     else
       state(State.SUSPEND);
     communicationLog = new FileWriter(new File(root, "communication.log"), true);
-    items.filtered(ChatItem::outgoing).addListener((ListChangeListener<ChatItem>) c -> {
-      final Message msg = new Message(owner.jid(), offer.room(), Message.MessageType.GROUP_CHAT);
-      c.getAddedSubList().stream().map(ChatItem::toMessage).forEach(msg::append);
-      ExpLeagueConnection.instance().send(msg);
-      log(msg);
-      eventsReceiver.accept(new ChatMessageEvent(this, msg, false));
-    });
   }
 
   public void processCommand(Operations.Command command) {
@@ -79,11 +70,6 @@ public class ExpertTask {
       state(State.BUSY);
       ExpLeagueConnection.instance().send(new Message(owner.jid(), owner.system(), new Operations.Resume()));
     }
-  }
-
-  private ObservableList<ChatItem> items = new SimpleListProperty<>();
-  public ObservableList<ChatItem> itemsProperty() {
-    return items;
   }
 
   public Offer offer() {
@@ -115,6 +101,18 @@ public class ExpertTask {
     state(State.SUSPEND);
     eventsReceiver.accept(new TaskSuspendedEvent(suspend, this));
     log(suspend);
+  }
+
+  public void send(String msg) {
+    ExpLeagueConnection.instance().send(new Message(owner.jid(), offer.room(), Message.MessageType.GROUP_CHAT, msg));
+  }
+
+  public void answer() {
+    final Answer answer = new Answer(patchwork());
+    ExpLeagueConnection.instance().send(new Message(owner.jid(), offer.room(), Message.MessageType.GROUP_CHAT, answer));
+    state(State.CLOSED);
+    eventsReceiver.accept(new TaskClosedEvent(answer, this));
+    log(answer);
   }
 
   private State state;
@@ -151,10 +149,31 @@ public class ExpertTask {
     }
   }
 
+  private String patchwork = "";
+
+  public void patchwork(String newValue) {
+    patchwork = newValue;
+    final File file = new File(root, "patchwork.md");
+    throttler.schedule(file, 1000, () -> {
+      try {
+        StreamTools.writeChars(patchwork, file);
+      }
+      catch (IOException e) {
+        log.log(Level.SEVERE, "Unable to save patchwork: " + file + ".");
+      }
+    });
+  }
+
+  public String patchwork() {
+    return patchwork;
+  }
+
   enum State {
     INVITE,
     BUSY,
     SUSPEND,
     CLOSED,
   }
+
+  private static FileThrottler throttler = new FileThrottler();
 }

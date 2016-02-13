@@ -5,6 +5,7 @@ import akka.actor.ActorRef;
 import akka.actor.Cancellable;
 import akka.actor.FSM;
 import akka.util.Timeout;
+import com.expleague.model.Answer;
 import com.expleague.server.ExpertManager;
 import com.expleague.model.Offer;
 import com.expleague.server.agents.LaborExchange;
@@ -278,7 +279,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 task.broker().tell(new Cancel(), self());
                 return laborExchange();
               }
-              if (msg.has(Done.class) || (msg.body().startsWith("{") && msg.type() == Message.MessageType.GROUP_CHAT)){ // hack for answer
+              if (msg.has(Done.class) || msg.has(Answer.class)){ // hack for answer
                 explain("Expert has finished task execution. Notifying broker and going to labor exchange with slight suspension to let user send a message to restart the task.");
                 task.broker().tell(new Done(), self());
                 return goTo(State.READY).using(new Task(false));

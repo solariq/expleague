@@ -3,12 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/commons" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/commons" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/commons" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/expert/browser/markdown-writer-fx" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/expert/browser/markdown-writer-fx" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/expert/browser/markdown-writer-fx" vcs="Git" />
   </component>
 </project>

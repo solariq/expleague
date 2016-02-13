@@ -49,7 +49,6 @@ public class CompositeMessageViewController {
     label.setText(text);
     label.setEditable(false);
     label.setWrapText(true);
-//    label.setTextFormatter(labelModel.getTextFormatter());
     labelModel.layoutBoundsProperty().addListener(o -> {
       final int value = (int)Math.ceil(labelModel.getLayoutBounds().getHeight() / labelModel.getFont().getSize() / 1.3333);
 
@@ -59,7 +58,6 @@ public class CompositeMessageViewController {
       }
     });
 
-//    setTextAlignment(type.alignment());
     final InvalidationListener listener = observable -> {
       labelModel.setWrappingWidth(trueWidth.get() - 30);
       label.setMaxWidth(trueWidth.get() - 30);
@@ -70,7 +68,6 @@ public class CompositeMessageViewController {
       contents.getChildren().add(makeCenter(label));
     else
       contents.getChildren().add(label);
-//    contents.getChildren().add(labelModel);
   }
 
   private Node makeCenter(Node flow) {

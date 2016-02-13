@@ -1,12 +1,22 @@
 package com.expleague.expert.forms;
 
+import com.expleague.expert.profile.ProfileManager;
+import com.expleague.expert.profile.UserProfile;
+import com.expleague.expert.xmpp.ExpertEvent;
+import com.expleague.expert.xmpp.ExpertTask;
+import com.expleague.expert.xmpp.events.TaskStartedEvent;
+import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.ToolBar;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
 import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
@@ -16,19 +26,22 @@ import org.markdownwriterfx.util.ActionUtils;
 
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
 
+
 /**
+ * Experts League
  * Created by solar on 04.02.16.
  */
-public class AnswerViewController {
-  public VBox preview;
-
-//  public HtmlEditorListener listener;
+public class AnswerViewController implements com.spbsu.commons.func.Action<ExpertEvent> {
   public VBox editor;
 
   private final MarkdownEditorPane editorPane = new MarkdownEditorPane();
-  private final MarkdownPreviewPane previewPane = new MarkdownPreviewPane();
   // 'canUndo' property
   private final BooleanProperty canUndo = new SimpleBooleanProperty();
+  private com.spbsu.commons.func.Action<UserProfile> profileAction = profile -> {
+    profile.expert().addListener(this);
+  };
+  private StyleClassedTextArea editorNode;
+
   BooleanProperty canUndoProperty() { return canUndo; }
 
   // 'canRedo' property
@@ -38,6 +51,7 @@ public class AnswerViewController {
 
   @FXML
   public void initialize() {
+    editor.setUserData(this);
     // Edit actions
     Action editUndoAction = new Action(Messages.get("MainWindow.editUndoAction"), "Shortcut+Z", UNDO,
         e -> editorPane.undo(),
@@ -123,15 +137,50 @@ public class AnswerViewController {
         insertUnorderedListAction,
         insertOrderedListAction);
 
-    previewPane.markdownASTProperty().bind(editorPane.markdownASTProperty());
-    previewPane.scrollYProperty().bind(editorPane.scrollYProperty());
     final UndoManager undoManager =  editorPane.getUndoManager();
     canUndo.bind(undoManager.undoAvailableProperty());
     canRedo.bind(undoManager.redoAvailableProperty());
-    final Node node = editorPane.getNode();
-    VBox.setVgrow(node, Priority.ALWAYS);
+    editorNode = (StyleClassedTextArea)editorPane.getNode();
+    VBox.setVgrow(editorNode, Priority.ALWAYS);
     VBox.setVgrow(toolBar, Priority.NEVER);
-    editor.getChildren().addAll(toolBar, node);
-    preview.getChildren().add(previewPane.getNode());
+    editor.getChildren().addAll(toolBar, editorNode);
+
+    ProfileManager.instance().addListener(profileAction);
+    final UserProfile active = ProfileManager.instance().active();
+    if (active != null) {
+      active.expert().addListener(this);
+    }
+    editorPane.markdownProperty().addListener((observable, oldValue, newValue) -> {
+      if (task != null)
+        task.patchwork(newValue);
+    });
+    ((StyleClassedTextArea) editorPane.getNode()).setEditable(false);
+  }
+
+  private ExpertTask task;
+  @Override
+  public void invoke(ExpertEvent expertEvent) {
+    Platform.runLater(() -> {
+      if (expertEvent instanceof TaskStartedEvent) {
+        final TaskStartedEvent startedEvent = (TaskStartedEvent) expertEvent;
+        task = startedEvent.task();
+        editorPane.setMarkdown(task.patchwork());
+        editorNode.setEditable(true);
+      }
+      else if (expertEvent instanceof TaskSuspendedEvent) {
+        task = null;
+        editorNode.setEditable(false);
+      }
+    });
+  }
+
+  public Node createPreview() {
+    final MarkdownPreviewPane previewPane = new MarkdownPreviewPane();
+    previewPane.markdownASTProperty().bind(editorPane.markdownASTProperty());
+    previewPane.scrollYProperty().bind(editorPane.scrollYProperty());
+    final TabPane node = (TabPane)previewPane.getNode();
+    node.setMaxWidth(320);
+    node.setMinWidth(320);
+    return node;
   }
 }
