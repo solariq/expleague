@@ -59,8 +59,8 @@ public class CompositeMessageViewController {
     });
 
     final InvalidationListener listener = observable -> {
-      labelModel.setWrappingWidth(trueWidth.get() - 30);
-      label.setMaxWidth(trueWidth.get() - 30);
+      labelModel.setWrappingWidth(trueWidth.get() - 35);
+      label.setMaxWidth(trueWidth.get() - 35);
     };
     trueWidth.addListener(listener);
     listener.invalidated(trueWidth);

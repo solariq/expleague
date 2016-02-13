@@ -4,13 +4,15 @@ import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
 import com.expleague.expert.xmpp.ExpertEvent;
 import com.expleague.expert.xmpp.ExpertTask;
-import com.expleague.expert.xmpp.events.*;
+import com.expleague.expert.xmpp.events.ChatMessageEvent;
+import com.expleague.expert.xmpp.events.TaskInviteEvent;
+import com.expleague.expert.xmpp.events.TaskStartedEvent;
+import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
 import com.expleague.model.Offer;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.system.RuntimeUtils;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -20,7 +22,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
@@ -90,6 +95,7 @@ public class DialogueController implements Action<ExpertEvent> {
   private final List<CompositeMessageViewController> controllers = new ArrayList<>();
   public void send(String text) {
     locateVCOfType(MessageType.OUTGOING).addText(text);
+    task.send(text);
   }
 
   private CompositeMessageViewController locateVCOfType(MessageType type) {

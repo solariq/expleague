@@ -7,6 +7,7 @@ import Foundation
 import UIKit
 import MapKit
 import XMPPFramework
+import MMMarkdown
 
 protocol ChatCellModel {
     var type: CellType {get}
@@ -273,12 +274,14 @@ class ChatMessageModel: CompositeCellModel {
     override func form(messageViewCell cell: CompositeChatCell) {
         (cell as! MessageChatCell).incoming = incoming
         super.form(messageViewCell: cell)
+        (cell as! MessageChatCell).avatar.image = AppDelegate.instance.activeProfile!.avatar(author, url: nil)
     }
     
     override func accept(message: ExpLeagueMessage) -> Bool {
-        if (message.from != author || message.isAnswer) {
+        if (message.from != author || message.type == .Answer) {
             return false
         }
+
         return super.accept(message)
     }
 }
@@ -403,6 +406,7 @@ class ExpertInProgressModel: ChatCellModel {
         if let pagesCount = expertProperties["count"] as? Int {
             eipCell.pages = Int(pagesCount)
         }
+        eipCell.expertAvatar.image = AppDelegate.instance.activeProfile!.avatar(expertProperties["login"] as! String, url: expertProperties["login"] as? String)
         eipCell.action = {
             let order = self.mvc.order!
             order.cancel()
@@ -521,12 +525,12 @@ class AnswerReceivedModel: ChatCellModel {
     }
     
     func accept(message: ExpLeagueMessage) -> Bool {
-        if (!message.isAnswer) {
+        guard message.type == .Answer else {
             return false
         }
         controller.answerAppend("<div id=\"\(id)\"/>")
         id = "message-\(message.hashValue)"
-        message.visitParts(AnswerVisitor(controller))
+        controller.answerAppend(message.body!);
         return true
     }
 
@@ -538,35 +542,6 @@ class AnswerReceivedModel: ChatCellModel {
         arCell.action = {
             self.controller.scrollView.scrollRectToVisible(self.controller.answerView!.frame, animated: true)
             self.controller.answerView!.stringByEvaluatingJavaScriptFromString("document.getElementById('\(self.id!)').scrollIntoView()")
-        }
-    }
-    
-    class AnswerVisitor: ExpLeagueMessageVisitor {
-        let parent: MessagesVeiwController
-        init(_ parent: MessagesVeiwController) {
-            self.parent = parent;
-        }
-        
-        func message(message: ExpLeagueMessage, text: String) {
-            parent.answerAppend("<p>\(text)</p>';")
-        }
-        
-        func message(message: ExpLeagueMessage, title: String, text: String) {
-            parent.answerAppend("<h3>\(title)</h3><p>\(text)</p>")
-        }
-        
-        func message(message: ExpLeagueMessage, title: String, link: String) {
-            parent.answerAppend("<a href=\"\(link)\">\(title)</a>")
-        }
-        func message(message: ExpLeagueMessage, title: String, image: UIImage) {
-            let data = UIImageJPEGRepresentation(image, 1.0)!
-            let screenWidth = AppDelegate.instance.window!.frame.width
-            if (image.size.width > screenWidth - 20) {
-                parent.answerAppend("<h3>\(title)</h3><img width='\(screenWidth - 20)' align='middle' src='data:image/jpeg;base64,\(data.base64EncodedStringWithOptions([]))'/>")
-            }
-            else {
-                parent.answerAppend("<h3>\(title)</h3><img align='middle' src='data:image/jpeg;base64,\(data.base64EncodedStringWithOptions([]))'/>")
-            }
         }
     }
 

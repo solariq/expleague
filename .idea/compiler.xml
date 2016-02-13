@@ -18,8 +18,8 @@
         <processorPath useClasspath="true" />
       </profile>
       <profile default="false" name="Annotation profile for commons" enabled="true">
-        <sourceOutputDir name="../server/commons/target/generated-sources/annotations" />
-        <sourceTestOutputDir name="../server/commons/target/generated-test-sources/test-annotations" />
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
         <module name="commons" />
@@ -80,6 +80,7 @@
       <module name="model" target="1.8" />
       <module name="server" target="1.5" />
       <module name="tigase-component" target="1.8" />
+      <module name="unsearch" target="1.8" />
       <module name="vk" target="1.8" />
       <module name="xmpp" target="1.5" />
       <module name="xmpp-bots" target="1.8" />

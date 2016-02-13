@@ -13,7 +13,6 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.ToolBar;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import org.fxmisc.richtext.StyleClassedTextArea;
@@ -169,6 +168,7 @@ public class AnswerViewController implements com.spbsu.commons.func.Action<Exper
       }
       else if (expertEvent instanceof TaskSuspendedEvent) {
         task = null;
+        editorPane.setMarkdown("");
         editorNode.setEditable(false);
       }
     });

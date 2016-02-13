@@ -21,7 +21,7 @@ public class ExpertsProfile extends Item {
   @XmlAttribute
   private Integer tasksCount;
 
-  @XmlElement
+  @XmlElement(namespace = Operations.NS)
   private String avatar;
 
   @SuppressWarnings("unused")

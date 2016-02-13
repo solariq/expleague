@@ -101,7 +101,7 @@ class SetupChatCell: CompositeChatCell {
 
 class MessageChatCell: CompositeChatCell {
     @IBOutlet weak var bubble: UIImageView!
-    @IBOutlet private var avatar: UIImageView!
+    @IBOutlet weak var avatar: UIImageView!
     var incoming: Bool = true
     static var avatarWidth = CGFloat(35)
     override class func height(contentHeight height: CGFloat) -> CGFloat {

@@ -118,9 +118,11 @@ public class MainController implements Action<ExpertEvent> {
   @Override
   public void invoke(ExpertEvent expertTaskEvent) {
     if (expertTaskEvent instanceof TaskStartedEvent) {
-      task = ((TaskStartedEvent) expertTaskEvent).task();
-      vertical.selectToggle(dialogueButton);
-      sendButton.setDisable(false);
+      Platform.runLater(() -> {
+        task = ((TaskStartedEvent) expertTaskEvent).task();
+        vertical.selectToggle(dialogueButton);
+        sendButton.setDisable(false);
+      });
     }
     else if (expertTaskEvent instanceof TaskInviteEvent) {
       final TaskInviteEvent inviteEvent = (TaskInviteEvent) expertTaskEvent;

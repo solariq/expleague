@@ -2,9 +2,7 @@ package com.expleague.expert.xmpp;
 
 import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
-import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
-import com.spbsu.commons.func.Action;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.spbsu.commons.random.FastRandom;
 import tigase.jaxmpp.core.client.*;
@@ -17,16 +15,15 @@ import tigase.jaxmpp.core.client.eventbus.EventHandler;
 import tigase.jaxmpp.core.client.eventbus.EventListener;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 import tigase.jaxmpp.core.client.xml.Element;
-import tigase.jaxmpp.core.client.xml.XMLException;
+import tigase.jaxmpp.core.client.xml.ElementFactory;
 import tigase.jaxmpp.core.client.xmpp.modules.AbstractStanzaModule;
 import tigase.jaxmpp.core.client.xmpp.modules.SessionEstablishmentModule;
 import tigase.jaxmpp.core.client.xmpp.modules.auth.AuthModule;
 import tigase.jaxmpp.core.client.xmpp.modules.auth.SaslModule;
-import tigase.jaxmpp.core.client.xmpp.modules.presence.PresenceModule;
 import tigase.jaxmpp.core.client.xmpp.modules.registration.InBandRegistrationModule;
 import tigase.jaxmpp.core.client.xmpp.modules.roster.RosterModule;
 import tigase.jaxmpp.core.client.xmpp.stanzas.IQ;
-import tigase.jaxmpp.j2se.J2SEPresenceStore;
+import tigase.jaxmpp.core.client.xmpp.stanzas.StanzaType;
 import tigase.jaxmpp.j2se.Jaxmpp;
 import tigase.jaxmpp.j2se.connectors.socket.SocketConnector;
 import tigase.jaxmpp.j2se.xml.J2seElement;
@@ -34,7 +31,6 @@ import tigase.xml.DefaultElementFactory;
 import tigase.xml.DomBuilderHandler;
 import tigase.xml.SimpleParser;
 
-import javax.net.ssl.SSLContext;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -151,7 +147,18 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
         (sessionObject, responseStanza) -> {
           try {
             final InBandRegistrationModule module = jaxmpp.getModule(InBandRegistrationModule.class);
-            module.register(jid, passwd, null, new AsyncCallback() {
+            IQ iq = IQ.create();
+            iq.setType(StanzaType.set);
+            iq.setTo(JID.jidInstance((String)profile.get(UserProfile.Key.EXP_LEAGUE_DOMAIN)));
+            Element q = ElementFactory.create("query", null, "jabber:iq:register");
+            iq.addChild(q);
+            q.addChild(ElementFactory.create("username", jid, null));
+            q.addChild(ElementFactory.create("password", passwd, null));
+            q.addChild(ElementFactory.create("misc", profile.get(UserProfile.Key.AVATAR_URL), null));
+            q.addChild(ElementFactory.create("name", profile.get(UserProfile.Key.NAME), null));
+            q.addChild(ElementFactory.create("city", profile.get(UserProfile.Key.CITY), null));
+            q.addChild(ElementFactory.create("state", profile.get(UserProfile.Key.COUNTRY), null));
+            jaxmpp.send(iq, new AsyncCallback() {
               @Override
               public void onError(tigase.jaxmpp.core.client.xmpp.stanzas.Stanza stanza, XMPPException.ErrorCondition errorCondition) throws JaxmppException {
                 log.log(Level.SEVERE, "Unable to register expert", errorCondition);
@@ -257,6 +264,11 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
       invoke(Status.DISCONNECTED);
     }
 //    System.out.println(event);
+  }
+
+  public void disconnect() throws JaxmppException{
+    if (jaxmpp != null && jaxmpp.isConnected())
+      jaxmpp.disconnect();
   }
 
   public enum Status {

@@ -23,10 +23,10 @@ import java.util.logging.Logger;
 /**
  * Created by solar on 03/02/16.
  */
-public class Browser extends Application {
-  private static final Logger log = Logger.getLogger(Browser.class.getName());
+public class doSearch extends Application {
+  private static final Logger log = Logger.getLogger(doSearch.class.getName());
 
-  public Browser() {
+  public doSearch() {
   }
 
   @Override
@@ -57,5 +57,6 @@ public class Browser extends Application {
     });
     server.start();
     launch(args);
+    ExpLeagueConnection.instance().disconnect();
   }
 }

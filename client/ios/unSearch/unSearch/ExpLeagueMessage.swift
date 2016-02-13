@@ -9,6 +9,7 @@
 import Foundation
 import CoreData
 import XMPPFramework
+import MMMarkdown
 
 class ExpLeagueMessage: NSManagedObject {
     static let EXP_LEAGUE_SCHEME = "http://expleague.com/scheme"
@@ -44,6 +45,10 @@ class ExpLeagueMessage: NSManagedObject {
                 properties["login"] = element.attributeStringValueForName("login")
                 properties["name"] = element.attributeStringValueForName("name")
                 properties["tasks"] = element.attributeStringValueForName("tasks")
+                if let ava = element.elementForName("avatar", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+                    properties["avatar"] = ava.stringValue()
+                    parent.parent.avatar(properties["login"] as! String, url: ava.stringValue())
+                }
                 type = .ExpertAssignment
             }
             if let _ = msg.elementForName("cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
@@ -62,33 +67,31 @@ class ExpLeagueMessage: NSManagedObject {
                 }
             }
         }
+        else if let answer = msg.elementForName("answer", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+            do {
+                var answerText = answer.stringValue()
+                if let firstLineEnd = answerText.rangeOfString("\n")?.startIndex {
+                    let shortAnswer = answerText.substringToIndex(firstLineEnd)
+                    answerText = answerText.substringFromIndex(firstLineEnd)
+                    properties["short"] = shortAnswer
+                }
+                
+                self.body = try MMMarkdown.HTMLStringWithMarkdown(answerText, extensions: [
+                    .AutolinkedURLs,
+                    .FencedCodeBlocks,
+                    .Tables,
+                    .UnderscoresInWords,
+                    .Strikethroughs,
+                    .GitHubFlavored
+                ])
+            }
+            catch {
+                parent.parent.log("\(error)")
+            }
+            type = .Answer
+        }
         else {
             self.body = textChildren.count > 0 ? textChildren[0].stringValue : nil
-            if (body!.hasPrefix("{\"type\":\"response\"")){
-                type = .Answer
-                class Visitor: ExpLeagueMessageVisitor {
-                    var shortAnswer: String? = nil
-                    func message(message: ExpLeagueMessage, text: String) {
-                        if (shortAnswer == nil) {
-                            shortAnswer = text
-                        }
-                    }
-                    func message(message: ExpLeagueMessage, title: String, text: String) {
-                        shortAnswer = title
-                    }
-                    func message(message: ExpLeagueMessage, title: String, link: String) {}
-                    func message(message: ExpLeagueMessage, title: String, image: UIImage) {
-                        if (shortAnswer == nil) {
-                            shortAnswer = title
-                        }
-                    }
-                }
-                let visitor = Visitor()
-                visitParts(visitor)
-                if (visitor.shortAnswer != nil) {
-                    properties["short"] = visitor.shortAnswer
-                }
-            }
         }
         self.time = attrs["time"] != nil ? Double(attrs["time"] as! String)!: CFAbsoluteTimeGetCurrent()
         let data = NSMutableData()
@@ -107,11 +110,7 @@ class ExpLeagueMessage: NSManagedObject {
     var isSystem: Bool {
         return type == .System || type == .ExpertAssignment || type == .ExpertProgress
     }
-    
-    var isAnswer: Bool {
-        return body != nil && body!.hasPrefix("{\"type\":\"response\"")
-    }
-    
+
     var isRead: Bool {
         return properties["read"] as? String == "true"
     }

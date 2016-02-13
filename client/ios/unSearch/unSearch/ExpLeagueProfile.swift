@@ -116,7 +116,20 @@ class ExpLeagueProfile: NSManagedObject {
         let root = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
         return UIImage(contentsOfFile: "\(root)/\(self.name)/images/\(id)")
     }
-    
+
+    func avatar(login: String, url: String?) -> UIImage {
+        let avaName = login + "-avatar"
+        if hasImage(avaName) {
+            return loadImage(avaName)!
+        }
+        else if let urlnz = url, let nsurl = NSURL(string: urlnz),
+        let data = NSData(contentsOfURL: nsurl),
+        let image = UIImage(data: data) {
+            saveImage(avaName, image: image)
+            return image
+        }
+        return UIImage(named: "owl_exp")!
+    }
     
     func placeOrder(topic topic: String, urgency: String, local: Bool, attachments: [String], location: CLLocationCoordinate2D?, prof: Bool) -> ExpLeagueOrder {
         var rand = NSUUID().UUIDString;

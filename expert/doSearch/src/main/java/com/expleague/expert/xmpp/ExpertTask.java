@@ -44,6 +44,10 @@ public class ExpertTask {
     else
       state(State.SUSPEND);
     communicationLog = new FileWriter(new File(root, "communication.log"), true);
+
+    final File patchworkFile = new File(root, "patchwork.md");
+    if (patchworkFile.exists())
+      patchwork = StreamTools.readFile(patchworkFile).toString();
   }
 
   public void processCommand(Operations.Command command) {

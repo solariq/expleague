@@ -200,7 +200,7 @@ class ExpLeagueOrder: NSManagedObject {
         var result: String? = nil
         for i in 0 ..< count {
             let msg = message(i)
-            if (msg.isAnswer) {
+            if (msg.type == .Answer) {
                 result = msg.properties["short"] as? String
             }
         }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.Group?>
 <?import javafx.scene.layout.*?>
 <VBox prefHeight="1000" prefWidth="800" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller="com.expleague.expert.forms.MainController">
   <fx:define>
@@ -22,10 +23,22 @@
         </TabPane>
       </SplitPane>
     </SplitPane>
-    <FlowPane prefWidth="20" HBox.hgrow="NEVER">
-        <ToggleButton selected="false" rotate="90" text="Диалог" fx:id="dialogueButton" toggleGroup="$vertical"/>
-        <ToggleButton selected="false" rotate="90" text="Ответ" fx:id="previewButton" toggleGroup="$vertical"/>
-    </FlowPane>
+    <VBox prefWidth="15" HBox.hgrow="NEVER">
+        <ToggleButton selected="false" maxWidth="15" contentDisplay="GRAPHIC_ONLY" fx:id="dialogueButton" toggleGroup="$vertical">
+          <graphic>
+            <Group>
+              <Label rotate="90" text="Диалог"/>
+            </Group>
+          </graphic>
+        </ToggleButton>
+        <ToggleButton selected="false" maxWidth="15" contentDisplay="GRAPHIC_ONLY" fx:id="previewButton" toggleGroup="$vertical">
+          <graphic>
+            <Group>
+              <Label rotate="90" text="Ответ"/>
+            </Group>
+          </graphic>
+        </ToggleButton>
+    </VBox>
   </HBox>
   <HBox VBox.vgrow="NEVER">
     <ToggleButton selected="false" text="Подвал" onAction="#hideShowVault"/>

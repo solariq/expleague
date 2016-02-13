@@ -117,7 +117,7 @@ class HistoryViewController: UITableViewController {
                 cell.status.text = "ПРОСРОЧЕН НА \(formatter.stringFromDate(NSDate(timeIntervalSince1970: -o.timeLeft)))"
             }
             else if (o.status == .ExpertSearch) {
-                if (o.count > 0 && o.message(o.count - 1).isAnswer) {
+                if (o.count > 0 && o.message(o.count - 1).type == .Answer) {
                     cell.status.textColor = UIColor.greenColor()
                     cell.status.text = "ОТВЕТ ГОТОВ"
                 }

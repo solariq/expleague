@@ -5,4 +5,5 @@ use_frameworks!
 target 'unSearch' do
   pod 'XMPPFramework'
   pod 'JSCustomBadge'
+  pod 'MMMarkdown'
 end

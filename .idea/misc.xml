@@ -10,6 +10,8 @@
         <option value="$PROJECT_DIR$/server/xmpp-bots/pom.xml" />
         <option value="$PROJECT_DIR$/server/pom.xml" />
         <option value="$PROJECT_DIR$/expert/browser/pom.xml" />
+        <option value="$PROJECT_DIR$/expert/doSearch/pom.xml" />
+        <option value="$PROJECT_DIR$/expert/doSearch/markdown-writer-fx/pom.xml" />
       </list>
     </option>
   </component>
