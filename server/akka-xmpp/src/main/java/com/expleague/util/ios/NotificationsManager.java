@@ -48,26 +48,27 @@ public class NotificationsManager {
   public void sendPush(Message message, String token) {
     if (client != null) {
       log.info("Sending push notification from " + message.from());
-      Future<PushNotificationResponse<SimpleApnsPushNotification>> future = null;
+      SimpleApnsPushNotification notification = null;
       if (message.from().resource().isEmpty()) { // system message
         if (message.has(ExpertsProfile.class)) {
-          future = client.sendNotification(new ExpertFoundNotification(token, message.from(), message.get(ExpertsProfile.class)));
+          notification = new ExpertFoundNotification(token, message.from(), message.get(ExpertsProfile.class));
         }
       }
       else {
         if (message.body().startsWith("{\"type\":\"response\"")) {
-          future = client.sendNotification(new ResponseReceivedNotification(token, message.from()));
+          notification = new ResponseReceivedNotification(token, message.from());
         }
         else if (!message.body().isEmpty()){
-          future = client.sendNotification(new MessageReceivedNotification(token, message.from(), message.body()));
+          notification = new MessageReceivedNotification(token, message.from(), message.body());
         }
       }
       try {
-        if (future == null)
+        if (notification == null)
           return;
+        Future<PushNotificationResponse<SimpleApnsPushNotification>> future = client.sendNotification(notification);
         final PushNotificationResponse<SimpleApnsPushNotification> now = future.get();
         if (now.isAccepted())
-          log.fine("Successfully have sent push notification to " + message.to().local() + ".");
+          log.fine("Successfully have sent push notification to " + message.to().local() + ". Text: " + notification.getTopic());
         else
           log.warning("Failed to sent push notification to " + message.to().local() + " with reason: " + now.getRejectionReason() + " token used: " + token);
       }
