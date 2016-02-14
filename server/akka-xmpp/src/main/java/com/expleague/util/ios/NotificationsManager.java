@@ -68,7 +68,7 @@ public class NotificationsManager {
         Future<PushNotificationResponse<SimpleApnsPushNotification>> future = client.sendNotification(notification);
         final PushNotificationResponse<SimpleApnsPushNotification> now = future.get();
         if (now.isAccepted())
-          log.fine("Successfully have sent push notification to " + message.to().local() + ". Text: " + notification.getTopic());
+          log.fine("Successfully have sent push notification to " + message.to().local() + ". Text: " + notification.getPayload());
         else
           log.warning("Failed to sent push notification to " + message.to().local() + " with reason: " + now.getRejectionReason() + " token used: " + token);
       }
