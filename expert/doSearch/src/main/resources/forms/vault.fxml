@@ -1,5 +1,5 @@
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.FlowPane?>
-<?import javafx.scene.control.Label?>
-<FlowPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.Vault">
-  <Label><text>Херня какая-то</text></Label>
-</FlowPane>
+<ScrollPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.Vault">
+  <FlowPane fx:id="vaultContainer" orientation="HORIZONTAL"/>
+</ScrollPane>

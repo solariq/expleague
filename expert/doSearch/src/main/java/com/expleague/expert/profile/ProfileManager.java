@@ -55,7 +55,7 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
     }
     final File activeProfileFile = new File(root, ACTIVE_PROFILE_FILENAME);
     if (activeProfileFile.exists()) {
-      activate(knownProfiles.get(StreamTools.readFile(activeProfileFile).toString()));
+      activate(knownProfiles.get(StreamTools.readFile(activeProfileFile).toString().trim()));
     }
     if (active == null && first != null) {
       activate(first);

@@ -111,6 +111,10 @@ public class ExpertTask {
     ExpLeagueConnection.instance().send(new Message(owner.jid(), offer.room(), Message.MessageType.GROUP_CHAT, msg));
   }
 
+  public void progress(String item) {
+    ExpLeagueConnection.instance().send(new Message(owner.jid(), offer.room(), item));
+  }
+
   public void answer() {
     final Answer answer = new Answer(patchwork());
     ExpLeagueConnection.instance().send(new Message(owner.jid(), offer.room(), Message.MessageType.GROUP_CHAT, answer));

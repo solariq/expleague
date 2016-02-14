@@ -48,7 +48,7 @@ public class MainController implements Action<ExpertEvent> {
   public ToggleButton dialogueButton;
   public ToggleButton previewButton;
   @FXML
-  private Parent vault;
+  private ScrollPane vault;
   @FXML
   private Parent dialogue;
   private Action<UserProfile> profileAction = profile -> profile.expert().addListener(MainController.this);
