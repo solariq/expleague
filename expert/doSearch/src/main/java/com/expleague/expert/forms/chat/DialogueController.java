@@ -9,6 +9,7 @@ import com.expleague.expert.xmpp.events.TaskInviteEvent;
 import com.expleague.expert.xmpp.events.TaskStartedEvent;
 import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
 import com.expleague.model.Offer;
+import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.system.RuntimeUtils;
 import javafx.application.Platform;
@@ -109,7 +110,7 @@ public class DialogueController implements Action<ExpertEvent> {
       final CompositeMessageViewController viewController = type.newInstance(root);
       final Node msg = FXMLLoader.load(type.fxml(), null, null, param -> viewController);
       final int size = children.size();
-      Platform.runLater(() -> children.add(size, msg));
+      Platform.runLater(() -> children.add(msg));
       controllers.add(viewController);
       return viewController;
     }
@@ -192,7 +193,9 @@ public class DialogueController implements Action<ExpertEvent> {
   }
 
   public void accept(ChatMessageEvent event) {
-    final CompositeMessageViewController finalVc = locateVCOfType(MessageType.INCOMING);
+    final Message source = event.source();
+
+    final CompositeMessageViewController finalVc = locateVCOfType(source.from().resource().equals(task.owner().local()) ? MessageType.OUTGOING : MessageType.INCOMING);
     event.visitParts(new ChatMessageEvent.PartsVisitor(){
       @Override
       public void accept(String text) {

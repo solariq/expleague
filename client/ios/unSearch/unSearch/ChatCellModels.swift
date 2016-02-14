@@ -274,7 +274,11 @@ class ChatMessageModel: CompositeCellModel {
     override func form(messageViewCell cell: CompositeChatCell) {
         (cell as! MessageChatCell).incoming = incoming
         super.form(messageViewCell: cell)
-        (cell as! MessageChatCell).avatar.image = AppDelegate.instance.activeProfile!.avatar(author, url: nil)
+        if (incoming) {
+            (cell as! MessageChatCell).avatar.image = AppDelegate.instance.activeProfile!.avatar(author, url: nil)
+            (cell as! MessageChatCell).avatar.layer.cornerRadius = (cell as! MessageChatCell).avatar.frame.size.width / 2;
+            (cell as! MessageChatCell).avatar.clipsToBounds = true;
+        }
     }
     
     override func accept(message: ExpLeagueMessage) -> Bool {
@@ -407,6 +411,9 @@ class ExpertInProgressModel: ChatCellModel {
             eipCell.pages = Int(pagesCount)
         }
         eipCell.expertAvatar.image = AppDelegate.instance.activeProfile!.avatar(expertProperties["login"] as! String, url: expertProperties["login"] as? String)
+        eipCell.expertAvatar.layer.cornerRadius = 10;
+        eipCell.expertAvatar.clipsToBounds = true;
+
         eipCell.action = {
             let order = self.mvc.order!
             order.cancel()

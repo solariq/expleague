@@ -22,7 +22,10 @@ public class XMPPServer extends UntypedActorAdapter {
   @Override
   public void preStart() throws Exception {
     final ActorRef tcp = Tcp.get(getContext().system()).manager();
-    tcp.tell(TcpMessage.bind(getSelf(), new InetSocketAddress("0.0.0.0", 5222), 100, Arrays.asList(TcpSO.keepAlive(true)), false), getSelf());
+    //noinspection ArraysAsListWithZeroOrOneArgument
+    tcp.tell(TcpMessage.bind(getSelf(), new InetSocketAddress("0.0.0.0", 5222), 100, Arrays.asList(
+        TcpSO.keepAlive(true)
+        ), false), getSelf());
   }
 
   public void invoke(Tcp.Event msg) {

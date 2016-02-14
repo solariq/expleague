@@ -6,7 +6,6 @@ import com.expleague.model.Operations;
 import com.expleague.model.Operations.Cancel;
 import com.expleague.model.Operations.Done;
 import com.expleague.model.Operations.Start;
-import com.expleague.model.Operations.Sync;
 import com.expleague.server.ExpertManager;
 import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.AkkaTools;
@@ -190,7 +189,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     }
 
     public boolean isLastWorkerActive() {
-      return open && lastWorker != null && !offer.hasSlacker(lastWorker);
+      return open && lastActive && lastWorker != null && !offer.hasSlacker(lastWorker);
     }
 
     public boolean isParticipant(JID jid) {

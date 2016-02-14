@@ -169,8 +169,8 @@ public class StatusViewController {
           createMenuItem("disconnect", "Отказаться от задания", evt -> task.cancel(), false)
       );
     }
-    menu.setPrefWidth(150);
-    menu.show(statusView, event.getScreenX() - 150, event.getScreenY());
+    menu.setPrefWidth(250);
+    menu.show(statusView, event.getScreenX() - 250, event.getScreenY());
     highlightStatus(event);
     menu.setOnHiding(evt -> {
       shown = false;
@@ -196,7 +196,7 @@ public class StatusViewController {
     graphics.setOnMouseExited(evt -> {
       imageView.setImage(icon);
     });
-    graphics.setPrefWidth(130);
+    graphics.setPrefWidth(230);
     final MenuItem item = new MenuItem("", graphics);
     item.setOnAction(handler);
     item.setDisable(disable);

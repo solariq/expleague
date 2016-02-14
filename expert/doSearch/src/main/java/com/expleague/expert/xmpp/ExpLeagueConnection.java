@@ -31,6 +31,7 @@ import tigase.xml.DefaultElementFactory;
 import tigase.xml.DomBuilderHandler;
 import tigase.xml.SimpleParser;
 
+import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,6 +43,7 @@ import java.util.logging.Logger;
 public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnection.Status> implements EventListener {
   private static final Logger log = Logger.getLogger(ExpLeagueConnection.class.getName());
   private static ExpLeagueConnection instance;
+  private static Timer ping;
   private ExpLeagueMember expert;
 
   public static synchronized ExpLeagueConnection instance() {
@@ -58,6 +60,20 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
 //        throw new RuntimeException(e);
 //      }
       instance = new ExpLeagueConnection();
+      ping = new Timer("XMPP ping", true);
+//      ping.schedule(new TimerTask() {
+//        @Override
+//        public void run() {
+//          final Jaxmpp jaxmpp = instance.jaxmpp;
+//          if (jaxmpp != null) {
+//            try {
+//              jaxmpp.getConnector().keepalive();
+//            } catch (JaxmppException e) {
+//              e.printStackTrace();
+//            }
+//          }
+//        }
+//      }, 0, TimeUnit.SECONDS.toMillis(30));
 //      SASLAuthentication.registerSASLMechanism(new SASLDigestMD5Mechanism());
     }
     return instance;
@@ -103,6 +119,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
       properties.setUserProperty(SessionObject.PASSWORD, profile.get(UserProfile.Key.EXP_LEAGUE_PASSWORD));
       properties.setUserProperty(SessionObject.RESOURCE, "expert");
 
+//      jaxmpp.getContext().getSessionObject().setProperty(Connector.EXTERNAL_KEEPALIVE_KEY, true);
       final EventBus eventBus = jaxmpp.getEventBus();
       eventBus.addListener(JaxmppCore.DisconnectedHandler.DisconnectedEvent.class, this);
       eventBus.addListener(SessionEstablishmentModule.SessionEstablishmentSuccessHandler.SessionEstablishmentSuccessEvent.class, this);

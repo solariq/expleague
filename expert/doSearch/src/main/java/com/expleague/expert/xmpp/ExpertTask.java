@@ -5,6 +5,7 @@ import com.expleague.model.Answer;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
 import com.expleague.xmpp.Item;
+import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.io.StreamTools;
 import com.spbsu.commons.util.FileThrottler;
@@ -174,6 +175,10 @@ public class ExpertTask {
 
   public String patchwork() {
     return patchwork;
+  }
+
+  public JID owner() {
+    return owner.jid();
   }
 
   enum State {
