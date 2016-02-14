@@ -394,6 +394,7 @@ class SetupModel: CompositeCellModel {
 class ExpertInProgressModel: ChatCellModel {
 //    let listener: OrderTracker
     var expertProperties = NSMutableDictionary()
+    var pagesCount = 0
     var type: CellType {
         return .ExpertInProgress
     }
@@ -406,10 +407,7 @@ class ExpertInProgressModel: ChatCellModel {
         guard let eipCell = cell as? ExpertInProgressCell else {
             throw ModelErrors.WrongCellType
         }
-        eipCell.name.text = expertProperties["name"] as? String
-        if let pagesCount = expertProperties["count"] as? Int {
-            eipCell.pages = Int(pagesCount)
-        }
+        eipCell.pages = pagesCount
         eipCell.expertAvatar.image = AppDelegate.instance.activeProfile!.avatar(expertProperties["login"] as! String, url: expertProperties["login"] as? String)
         eipCell.expertAvatar.layer.cornerRadius = 10;
         eipCell.expertAvatar.clipsToBounds = true;
@@ -429,6 +427,12 @@ class ExpertInProgressModel: ChatCellModel {
     }
     func accept(message: ExpLeagueMessage) -> Bool {
         expertProperties.addEntriesFromDictionary(message.properties as [NSObject : AnyObject])
+        if (message.type == .ExpertProgress) {
+            let type = message.properties["type"] as? String
+            if (type != nil && type! == "pageVisited") {
+                pagesCount++
+            }
+        }
         return message.type == .ExpertProgress || message.type == .ExpertAssignment
     }
     

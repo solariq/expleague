@@ -56,7 +56,7 @@ class ExpLeagueMessage: NSManagedObject {
                 type = .ExpertCancel
             }
             
-            if (!textChildren.isEmpty && textChildren[0].stringValue.hasPrefix("{\"type\":\"visitedPages\"")) {
+            if (!textChildren.isEmpty && textChildren[0].stringValue.hasPrefix("{\"type\":\"pageVisited\"")) {
                 type = .ExpertProgress
                 do {
                     let json = try NSJSONSerialization.JSONObjectWithData(textChildren[0].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!, options: NSJSONReadingOptions.AllowFragments)
