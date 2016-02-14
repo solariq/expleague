@@ -83,7 +83,7 @@ public class NotificationsManager {
     public ExpertFoundNotification(String token, JID from, ExpertsProfile profile) {
       super(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
           "\"alert\": \"Эксперт найден! Для Вас работает " + profile.login() + "!\", " +
-          "\"content-available\": 1" +
+          "\"content-available\": 1," +
           "\"sound\": \"default\"" +
           "}, \"order\": \"" + from.local() + "\"}", tomorrow());
     }
@@ -93,7 +93,7 @@ public class NotificationsManager {
     public ResponseReceivedNotification(String token, JID from) {
       super(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
           "\"alert\": \"Получен ответ на задание от " + from.resource() + "\", " +
-          "\"content-available\": 1" +
+          "\"content-available\": 1," +
           "\"sound\": \"default\"" +
           "}, \"order\": \"" + from.local() + "\"}", tomorrow());
     }
@@ -103,7 +103,7 @@ public class NotificationsManager {
     public MessageReceivedNotification(String token, JID from, String message) {
       super(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
           "\"alert\": \"Получено новое сообщение от " + from.resource() + ": '" + message.replace("\"", "") + "'\", " +
-          "\"content-available\": 1"+
+          "\"content-available\": 1,"+
           "\"sound\": \"default\"" +
           "}, \"order\": \"" + from.local() + "\"}", tomorrow());
     }
