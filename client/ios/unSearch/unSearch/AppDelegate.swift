@@ -198,8 +198,9 @@ extension AppDelegate: UIApplicationDelegate {
     
     func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject], fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
         connect()
-        let order = userInfo["order"] as! String
-        activeProfile?.selected = activeProfile?.order(name: order)
+        if let order = userInfo["order"] as? String {
+            activeProfile?.selected = activeProfile?.order(name: order)
+        }
         tabs.selectedIndex = 1
         completionHandler(.NewData)
     }
