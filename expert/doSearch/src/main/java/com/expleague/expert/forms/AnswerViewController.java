@@ -7,15 +7,21 @@ import com.expleague.expert.xmpp.ExpertTask;
 import com.expleague.expert.xmpp.events.TaskStartedEvent;
 import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
 import com.expleague.model.patch.Patch;
+import com.sun.javafx.scene.control.skin.TextAreaSkin;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.ToolBar;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import org.fxmisc.richtext.CharacterHit;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
 import org.markdownwriterfx.Messages;
@@ -155,6 +161,33 @@ public class AnswerViewController implements com.spbsu.commons.func.Action<Exper
         task.patchwork(newValue);
     });
     ((StyleClassedTextArea) editorPane.getNode()).setEditable(false);
+    editorNode.setOnDragOver(event -> {
+      if (event.getDragboard().hasString())
+        event.acceptTransferModes(TransferMode.COPY);
+      editorPane.requestFocus();
+      final CharacterHit hit = editorNode.hit(event.getX(), event.getY());
+      final int insertionIndex = hit.getInsertionIndex();
+      editorNode.positionCaret(insertionIndex);
+//      TextAreaSkin skin = (TextAreaSkin) editorNode.getSkin();
+//      int insertionPoint = skin.getInsertionPoint(event.getX(),  event.getY());
+//      editorNode.positionCaret( insertionPoint);
+
+      event.consume();
+    });
+    editorNode.setOnDragDropped(event -> {
+      Dragboard db = event.getDragboard();
+      boolean success = false;
+      editorPane.requestFocus();
+      if (db.hasString()) {
+        editorNode.replaceSelection(db.getString());
+        success = true;
+      }
+      final CharacterHit hit = editorNode.hit(event.getX(), event.getY());
+      final int insertionIndex = hit.getInsertionIndex();
+      editorNode.positionCaret(insertionIndex);
+      event.setDropCompleted(success);
+      event.consume();
+    });
   }
 
   private ExpertTask task;

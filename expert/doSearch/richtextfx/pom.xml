@@ -1,0 +1,69 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.fxmisc.richtext</groupId>
+  <artifactId>richtextfx</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
+    <java.version>1.8</java.version>
+    <jackson.version>2.5.3</jackson.version>
+  </properties>
+  <repositories>
+    <repository>
+      <id>central</id>
+      <url>https://repo1.maven.org/maven2</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.reactfx</groupId>
+      <artifactId>reactfx</artifactId>
+      <version>2.0-M4u1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.fxmisc.undo</groupId>
+      <artifactId>undofx</artifactId>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.fxmisc.flowless</groupId>
+      <artifactId>flowless</artifactId>
+      <version>0.4.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.fxmisc.wellbehaved</groupId>
+      <artifactId>wellbehavedfx</artifactId>
+      <version>0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -10,8 +10,11 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: org.fxmisc.undo:undofx:1.2" level="project" />
+    <orderEntry type="module" module-name="richtextfx" />
     <orderEntry type="library" name="Maven: org.reactfx:reactfx:2.0-M4u1" level="project" />
+    <orderEntry type="library" name="Maven: org.fxmisc.flowless:flowless:0.4.7" level="project" />
+    <orderEntry type="library" name="Maven: org.fxmisc.wellbehaved:wellbehavedfx:0.2" level="project" />
+    <orderEntry type="library" name="Maven: org.fxmisc.undo:undofx:1.2" level="project" />
     <orderEntry type="library" name="Maven: org.pegdown:pegdown:1.6.0" level="project" />
     <orderEntry type="library" name="Maven: org.parboiled:parboiled-java:1.1.7" level="project" />
     <orderEntry type="library" name="Maven: org.parboiled:parboiled-core:1.1.7" level="project" />
@@ -20,9 +23,6 @@
     <orderEntry type="library" name="Maven: org.ow2.asm:asm-analysis:5.0.3" level="project" />
     <orderEntry type="library" name="Maven: org.ow2.asm:asm-util:5.0.3" level="project" />
     <orderEntry type="library" name="Maven: de.jensd:fontawesomefx:8.9" level="project" />
-    <orderEntry type="library" name="Maven: org.fxmisc.richtext:richtextfx:0.6.10" level="project" />
-    <orderEntry type="library" name="Maven: org.fxmisc.flowless:flowless:0.4.5" level="project" />
-    <orderEntry type="library" name="Maven: org.fxmisc.wellbehaved:wellbehavedfx:0.1.1" level="project" />
     <orderEntry type="library" name="Maven: com.miglayout:miglayout-javafx:5.0" level="project" />
     <orderEntry type="library" name="Maven: com.miglayout:miglayout-core:5.0" level="project" />
   </component>

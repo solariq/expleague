@@ -78,6 +78,7 @@
       <module name="fastxml" target="1.8" />
       <module name="markdown-writer-fx" target="1.8" />
       <module name="model" target="1.8" />
+      <module name="richtextfx" target="1.8" />
       <module name="server" target="1.5" />
       <module name="tigase-component" target="1.8" />
       <module name="unsearch" target="1.8" />

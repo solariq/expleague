@@ -48,8 +48,8 @@ class WhitespaceOverlayFactory
 {
 	@Override
 	public Node[] createOverlayNodes(int paragraphIndex) {
-		ObservableList<Paragraph<Collection<String>>> paragraphs = getTextArea().getParagraphs();
-		Paragraph<Collection<String>> par = paragraphs.get(paragraphIndex);
+		final ObservableList<Paragraph<Collection<String>, Collection<String>>> paragraphs = getTextArea().getParagraphs();
+		final Paragraph<Collection<String>, Collection<String>> par = paragraphs.get(paragraphIndex);
 
 		ArrayList<Node> nodes = new ArrayList<>();
 		int segmentStart = 0;

@@ -24,8 +24,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.input.*;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -58,11 +57,8 @@ public class Vault implements Action<ExpertEvent> {
       active.expert().addListener(this);
     }
     vaultContainer.setUserData(this);
-    vaultScroll.widthProperty().addListener(new InvalidationListener() {
-      @Override
-      public void invalidated(Observable observable) {
-        vaultContainer.setPrefWidth(vaultScroll.getWidth() - 10);
-      }
+    vaultScroll.widthProperty().addListener(observable -> {
+      vaultContainer.setPrefWidth(vaultScroll.getWidth() - 10);
     });
     vaultScroll.parentProperty().addListener(observable -> {
       final StackPane parent = (StackPane)vaultScroll.parentProperty().get();
@@ -110,10 +106,18 @@ public class Vault implements Action<ExpertEvent> {
           final AnswerViewController editor = task.editor();
           if (editor != null)
             editor.insertAtCursor(patch);
+          event.consume();
         }
       });
-      vaultContainer.getChildren().add(load);
-
+      load.setOnDragDetected(event -> {
+        final Dragboard db = load.startDragAndDrop(TransferMode.ANY);
+        final ClipboardContent content = new ClipboardContent();
+        content.putString(patch.toMD());
+        db.setContent(content);
+        db.setDragView(load.snapshot(null, null), 50, 50);
+        event.consume();
+      });
+      vaultContainer.getChildren().add(0, load);
     }
     catch (IOException e) {
       log.log(Level.SEVERE, "Unable to load patch view for " + patch, e);

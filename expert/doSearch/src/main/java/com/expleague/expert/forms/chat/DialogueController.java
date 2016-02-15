@@ -9,6 +9,7 @@ import com.expleague.expert.xmpp.events.TaskInviteEvent;
 import com.expleague.expert.xmpp.events.TaskStartedEvent;
 import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
 import com.expleague.model.Offer;
+import com.expleague.xmpp.Item;
 import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.system.RuntimeUtils;
@@ -137,6 +138,7 @@ public class DialogueController implements Action<ExpertEvent> {
 
   ExpertTask task;
   public void accept(TaskStartedEvent taskEvt) {
+    this.task = taskEvt.task();
     Platform.runLater(() -> {
       final ObservableList<Node> children = taskView.getChildren();
       try {
@@ -147,6 +149,16 @@ public class DialogueController implements Action<ExpertEvent> {
         final Node taskView = FXMLLoader.load(MessageType.TASK.fxml(), null, null, param -> viewController);
         this.taskView.getChildren().add(taskView);
         viewController.addText(offer.topic());
+        if (offer.geoSpecific())
+          viewController.addLocation(offer.location());
+
+        for (int i = 0; i < offer.attachments().length; i++) {
+          final Item attachment = offer.attachments()[i];
+          if (attachment instanceof Offer.Image) {
+            viewController.addImage(((Offer.Image) attachment));
+          }
+        }
+
       }
       catch (IOException e) {
         throw new RuntimeException(e);
@@ -195,7 +207,9 @@ public class DialogueController implements Action<ExpertEvent> {
   public void accept(ChatMessageEvent event) {
     final Message source = event.source();
 
-    final CompositeMessageViewController finalVc = locateVCOfType(source.from().resource().equals(task.owner().local()) ? MessageType.OUTGOING : MessageType.INCOMING);
+    final CompositeMessageViewController finalVc = locateVCOfType(
+        task.owner().local().equals(source.from().resource()) ? MessageType.OUTGOING : MessageType.INCOMING
+    );
     event.visitParts(new ChatMessageEvent.PartsVisitor(){
       @Override
       public void accept(String text) {

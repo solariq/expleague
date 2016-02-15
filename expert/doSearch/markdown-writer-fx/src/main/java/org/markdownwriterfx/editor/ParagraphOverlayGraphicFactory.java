@@ -199,10 +199,10 @@ class ParagraphOverlayGraphicFactory
 			mGetChildren = Parent.class.getDeclaredMethod("getChildren");
 			mGetChildren.setAccessible(true);
 
-			Class<?> textFlowExtClass = Class.forName("org.fxmisc.richtext.skin.TextFlowExt");
-			mGetRangeShape = textFlowExtClass.getDeclaredMethod("getRangeShape", int.class, int.class);
-			mGetRangeShape.setAccessible(true);
-		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException ex) {
+//			Class<?> textFlowExtClass = Class.forName("org.fxmisc.richtext.skin.TextFlowExt");
+//			mGetRangeShape = textFlowExtClass.getDeclaredMethod("getRangeShape", int.class, int.class);
+//			mGetRangeShape.setAccessible(true);
+		} catch (NoSuchMethodException | SecurityException ex) {
 			throw new RuntimeException(ex);
 		}
 	}

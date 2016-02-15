@@ -15,6 +15,7 @@
         <option value="$PROJECT_DIR$/expert/browser/pom.xml" />
         <option value="$PROJECT_DIR$/expert/doSearch/pom.xml" />
         <option value="$PROJECT_DIR$/expert/doSearch/markdown-writer-fx/pom.xml" />
+        <option value="$PROJECT_DIR$/expert/doSearch/richtextfx/pom.xml" />
       </list>
     </option>
   </component>

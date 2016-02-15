@@ -112,6 +112,10 @@ public class Offer extends Item {
     return topic;
   }
 
+  public Item[] attachments() {
+    return attachments.toArray(new Item[attachments.size()]);
+  }
+
   public void addWorker(JID worker) {
     if (workers == null)
       workers = new HashSet<>();
@@ -144,6 +148,14 @@ public class Offer extends Item {
     return urgency != null ? urgency : Urgency.ASAP;
   }
 
+  public boolean geoSpecific() {
+    return isLocal;
+  }
+
+  public Location location() {
+    return location;
+  }
+
   @XmlEnum
   public enum Urgency {
     @XmlEnumValue("asap") ASAP(0),
@@ -174,6 +186,14 @@ public class Offer extends Item {
       this.longitude = longitude;
       this.latitude = latitude;
     }
+
+    public double longitude() {
+      return longitude;
+    }
+
+    public double latitude() {
+      return latitude;
+    }
   }
 
   @XmlRootElement
@@ -184,7 +204,15 @@ public class Offer extends Item {
 
     public Image(){}
     public Image(String src, JID from) {
-      this.src = "https://img." + from.domain() + "/" + MAGIC_CONST + "/" + src;
+      if ("localhost".equals(from.domain())) {
+        this.src = "http://localhost:8067/" + src;
+      }
+      else
+        this.src = "https://img." + from.domain() + "/" + MAGIC_CONST + "/" + src;
+    }
+
+    public String url() {
+      return src;
     }
   }
 }
