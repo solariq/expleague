@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/server/akka-xmpp/akka-xmpp.iml" filepath="$PROJECT_DIR$/server/akka-xmpp/akka-xmpp.iml" />
       <module fileurl="file://$PROJECT_DIR$/commons/commons.iml" filepath="$PROJECT_DIR$/commons/commons.iml" />
+      <module fileurl="file://$PROJECT_DIR$/expert/expert.iml" filepath="$PROJECT_DIR$/expert/expert.iml" />
       <module fileurl="file://$PROJECT_DIR$/expert/doSearch/markdown-writer-fx/markdown-writer-fx.iml" filepath="$PROJECT_DIR$/expert/doSearch/markdown-writer-fx/markdown-writer-fx.iml" />
       <module fileurl="file://$PROJECT_DIR$/model/model.iml" filepath="$PROJECT_DIR$/model/model.iml" />
       <module fileurl="file://$PROJECT_DIR$/expert/doSearch/richtextfx/richtextfx.iml" filepath="$PROJECT_DIR$/expert/doSearch/richtextfx/richtextfx.iml" />

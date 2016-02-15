@@ -70,11 +70,33 @@
         <processorPath useClasspath="true" />
         <module name="model" />
       </profile>
+      <profile default="false" name="Annotation profile for unsearch" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="unsearch" />
+      </profile>
+      <profile default="false" name="Annotation profile for markdown-writer-fx" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="markdown-writer-fx" />
+      </profile>
+      <profile default="false" name="Annotation profile for richtextfx" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="richtextfx" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="akka-xmpp" target="1.8" />
       <module name="browser" target="1.8" />
       <module name="commons" target="1.8" />
+      <module name="expert" target="1.5" />
       <module name="fastxml" target="1.8" />
       <module name="markdown-writer-fx" target="1.8" />
       <module name="model" target="1.8" />

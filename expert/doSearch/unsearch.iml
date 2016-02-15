@@ -21,9 +21,6 @@
     <orderEntry type="library" name="Maven: org.ow2.asm:asm-analysis:5.0.3" level="project" />
     <orderEntry type="library" name="Maven: org.ow2.asm:asm-util:5.0.3" level="project" />
     <orderEntry type="library" name="Maven: de.jensd:fontawesomefx:8.9" level="project" />
-    <orderEntry type="module" module-name="richtextfx" />
-    <orderEntry type="library" name="Maven: org.fxmisc.flowless:flowless:0.4.7" level="project" />
-    <orderEntry type="library" name="Maven: org.fxmisc.wellbehaved:wellbehavedfx:0.2" level="project" />
     <orderEntry type="library" name="Maven: tigase:jaxmpp-j2se:3.0.0" level="project" />
     <orderEntry type="library" name="Maven: tigase:tigase-xmltools:3.4.5" level="project" />
     <orderEntry type="library" name="Maven: dnsjava:dnsjava:2.1.1" level="project" />
@@ -57,6 +54,9 @@
     <orderEntry type="module" module-name="markdown-writer-fx" />
     <orderEntry type="library" name="Maven: com.miglayout:miglayout-javafx:5.0" level="project" />
     <orderEntry type="library" name="Maven: com.miglayout:miglayout-core:5.0" level="project" />
+    <orderEntry type="module" module-name="richtextfx" />
+    <orderEntry type="library" name="Maven: org.fxmisc.flowless:flowless:0.4.7" level="project" />
+    <orderEntry type="library" name="Maven: org.fxmisc.wellbehaved:wellbehavedfx:0.2" level="project" />
     <orderEntry type="library" name="Maven: com.lynden:GMapsFX:1.1.1" level="project" />
   </component>
 </module>

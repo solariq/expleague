@@ -5,7 +5,7 @@
   <groupId>org.markdownwriterfx</groupId>
   <artifactId>markdown-writer-fx</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
+  <packaging>jar</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
