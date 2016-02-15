@@ -80,7 +80,8 @@ public class CompositeMessageViewController {
   }
 
   public void addImage(Offer.Image image) {
-    final ImageView imageView = new ImageView(image.url());
+    final Image img = new Image(image.url());
+    final ImageView imageView = new ImageView(img);
     imageView.setPreserveRatio(true);
     imageView.setFitWidth(100);
     trueWidth.addListener((observable, oldValue, newValue) -> {

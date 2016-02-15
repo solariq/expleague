@@ -31,6 +31,11 @@ import tigase.xml.DefaultElementFactory;
 import tigase.xml.DomBuilderHandler;
 import tigase.xml.SimpleParser;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.GeneralSecurityException;
 import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
@@ -291,5 +296,30 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
   public enum Status {
     CONNECTED,
     DISCONNECTED,
+  }
+
+  static {
+    // Create a trust manager that does not validate certificate chains
+    TrustManager[] trustAllCerts = new TrustManager[] {
+        new X509TrustManager() {
+          public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return null;
+          }
+          public void checkClientTrusted(
+              java.security.cert.X509Certificate[] certs, String authType) {
+          }
+          public void checkServerTrusted(
+              java.security.cert.X509Certificate[] certs, String authType) {
+          }
+        }
+    };
+
+// Install the all-trusting trust manager
+    try {
+      SSLContext sc = SSLContext.getInstance("SSL");
+      sc.init(null, trustAllCerts, new java.security.SecureRandom());
+      HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+    } catch (GeneralSecurityException e) {
+    }
   }
 }
