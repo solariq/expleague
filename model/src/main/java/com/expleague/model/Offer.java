@@ -113,7 +113,7 @@ public class Offer extends Item {
   }
 
   public Item[] attachments() {
-    return attachments.toArray(new Item[attachments.size()]);
+    return attachments != null ? attachments.toArray(new Item[attachments.size()]) : new Item[0];
   }
 
   public void addWorker(JID worker) {
