@@ -1,5 +1,5 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.FlowPane?>
-<ScrollPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.Vault">
+<ScrollPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.Vault" fx:id="vaultScroll">
   <FlowPane fx:id="vaultContainer" orientation="HORIZONTAL"/>
 </ScrollPane>

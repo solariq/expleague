@@ -1,0 +1,11 @@
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.geometry.Insets?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.PatchController">
+  <padding><Insets top="2" left="2" bottom="2" right="2"/></padding>
+  <VBox maxHeight="110" maxWidth="110" styleClass="patch" stylesheets="/css/patches.css">
+    <Label fx:id="label"/>
+    <TextArea fx:id="text" editable="false" wrapText="true" style="-fx-text-fill: blue"/>
+  </VBox>
+</VBox>

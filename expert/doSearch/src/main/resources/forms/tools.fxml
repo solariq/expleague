@@ -14,7 +14,7 @@
       <!--<Region VBox.vgrow="ALWAYS" />-->
       <Button onAction="#sendAnswer" contentDisplay="TOP" fx:id="sendButton" style="-fx-font-size: 8pt">
         <graphic><ImageView fitHeight="35" preserveRatio="true"><Image url="/images/plane_send.png"/></ImageView></graphic>
-        <text>Отослать</text>
+        <text>Отправить</text>
       </Button>
       <!--<Region VBox.vgrow="ALWAYS" />-->
     </VBox>

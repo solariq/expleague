@@ -6,6 +6,7 @@ import com.expleague.expert.xmpp.ExpertEvent;
 import com.expleague.expert.xmpp.ExpertTask;
 import com.expleague.expert.xmpp.events.TaskStartedEvent;
 import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
+import com.expleague.model.patch.Patch;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -163,10 +164,12 @@ public class AnswerViewController implements com.spbsu.commons.func.Action<Exper
       if (expertEvent instanceof TaskStartedEvent) {
         final TaskStartedEvent startedEvent = (TaskStartedEvent) expertEvent;
         task = startedEvent.task();
+        task.editor(this);
         editorPane.setMarkdown(task.patchwork());
         editorNode.setEditable(true);
       }
       else if (expertEvent instanceof TaskSuspendedEvent) {
+        task.editor(null);
         task = null;
         editorPane.setMarkdown("");
         editorNode.setEditable(false);
@@ -182,5 +185,9 @@ public class AnswerViewController implements com.spbsu.commons.func.Action<Exper
     node.setMaxWidth(320);
     node.setMinWidth(320);
     return node;
+  }
+
+  public void insertAtCursor(Patch patch) {
+    editorNode.replaceSelection(patch.toMD() + "\n");
   }
 }

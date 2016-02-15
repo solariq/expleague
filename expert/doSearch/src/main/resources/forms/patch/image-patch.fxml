@@ -1,0 +1,18 @@
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.PatchController">
+  <padding><Insets top="2" left="2" bottom="2" right="2"/></padding>
+  <VBox VBox.vgrow="NEVER" maxHeight="110" maxWidth="110" styleClass="patch" stylesheets="/css/patches.css">
+    <Label fx:id="label"/>
+    <HBox VBox.vgrow="ALWAYS">
+      <Region HBox.hgrow="ALWAYS"/>
+      <ImageView fx:id="image" fitWidth="100" fitHeight="100" preserveRatio="true"/>
+      <Region HBox.hgrow="ALWAYS"/>
+    </HBox>
+  </VBox>
+</VBox>

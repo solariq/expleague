@@ -1,0 +1,49 @@
+.patch {
+    -fx-padding: 5 2 5 2;
+    -fx-border-width: 1px;
+    -fx-border-style: solid;
+    -fx-border-radius: 8px;
+    -fx-border-color: #1991e3;
+    -fx-background-color: white;
+    -fx-background-radius: 8px;
+}
+
+.label {
+    -fx-font-size: 8pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1991e3;
+}
+
+.text-area {
+    -fx-font-size: 8pt;
+    -fx-background-color: transparent;
+    -fx-border-style: none;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
+
+.text-area .scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-style: none;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
+
+.text-area .scroll-pane .viewport{
+    -fx-background-color: transparent;
+    -fx-border-style: none;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
+
+
+.text-area .scroll-pane .content{
+    -fx-background-color: transparent;
+    -fx-border-style: none;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}

@@ -1,6 +1,8 @@
 package com.expleague.expert.xmpp;
 
+import com.expleague.expert.forms.AnswerViewController;
 import com.expleague.expert.xmpp.events.*;
+import com.expleague.model.patch.Patch;
 import com.expleague.model.Answer;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
@@ -9,11 +11,16 @@ import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.io.StreamTools;
 import com.spbsu.commons.util.FileThrottler;
+import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -30,6 +37,7 @@ public class ExpertTask {
   private final Consumer<ExpertEvent> eventsReceiver;
   private final File root;
   private final Offer offer;
+  private ObservableList<Patch> patches = FXCollections.observableArrayList(new ArrayList<>());
 
   public ExpertTask(ExpLeagueMember owner, Consumer<ExpertEvent> eventsReceiver, File root, Offer offer) throws IOException {
     this.owner = owner;
@@ -49,6 +57,36 @@ public class ExpertTask {
     final File patchworkFile = new File(root, "patchwork.md");
     if (patchworkFile.exists())
       patchwork = StreamTools.readFile(patchworkFile).toString();
+
+    final File patchesRoot =  new File(root, "patches");
+    if (patchesRoot.exists()) {
+      //noinspection ConstantConditions
+      for (final File patchFile: patchesRoot.listFiles()) {
+        final CharSequence patchText = StreamTools.readFile(patchFile);
+        patches.add((Patch)Patch.create(patchText));
+      }
+    }
+    patchesRoot.mkdirs();
+    patches.addListener(new ListChangeListener<Patch>() {
+      @Override
+      public void onChanged(Change<? extends Patch> c) {
+        while(c.next()) {
+          if (c.wasAdded()) {
+            int index = c.getFrom();
+
+            for (Patch patch : c.getAddedSubList()) {
+              final File file = new File(patchesRoot, (index++) + ".xml");
+              try {
+                StreamTools.writeChars(patch.xmlString(), file);
+              }
+              catch (IOException e) {
+                log.log(Level.SEVERE, "Unable to save patch to: " + file.getAbsolutePath());
+              }
+            }
+          }
+        }
+      }
+    });
   }
 
   public void processCommand(Operations.Command command) {
@@ -137,6 +175,19 @@ public class ExpertTask {
 
   public State state() {
     return state;
+  }
+
+  public ObservableList<Patch> patchesProperty() {
+    return patches;
+  }
+
+  private AnswerViewController editor;
+  public AnswerViewController editor() {
+    return editor;
+  }
+
+  public void editor(AnswerViewController editor) {
+    this.editor = editor;
   }
 
   public void receive(Message message) {
