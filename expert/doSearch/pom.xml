@@ -129,8 +129,10 @@
         <version>8.2.0</version>
         <configuration>
           <mainClass>com.expleague.expert.doSearch</mainClass>
+          <identifier>com.expleague.expert.doSearch</identifier>
           <vendor>Experts League</vendor>
           <appName>doSearch</appName>
+          <bundler>ALL</bundler>
         </configuration>
         <dependencies>
           <dependency>

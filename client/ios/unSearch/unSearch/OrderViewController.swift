@@ -285,6 +285,7 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
         request.setValue("Keep-Alive", forHTTPHeaderField: "Connection")
         request.setValue(contentType, forHTTPHeaderField: "Content-Type")
         request.HTTPBody = requestBodyData.copy() as? NSData
+        request.timeoutInterval = 10 * 60
 
         let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
         let session = NSURLSession(configuration: configuration, delegate: self, delegateQueue: NSOperationQueue.mainQueue())
