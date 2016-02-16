@@ -28,7 +28,9 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
                 }
                 else {
                     scrollView.scrollRectToVisible(messagesView.frame, animated: false)
-                    messagesView.scrollToRowAtIndexPath(NSIndexPath(forRow: data!.cells.count - 1, inSection: 0), atScrollPosition: .Bottom, animated: false)
+                    if (data!.cell.count > 1) {
+                        messagesView.scrollToRowAtIndexPath(NSIndexPath(forRow: data!.cells.count - 1, inSection: 0), atScrollPosition: .Bottom, animated: false)
+                    }
                 }
 
             }
