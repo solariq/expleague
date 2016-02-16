@@ -44,6 +44,12 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
             presentViewController(alertView, animated: true, completion: nil)
             return
         }
+        if (!controller.attachments.complete()) {
+            let alertView = UIAlertController(title: "Заказ", message: "На данный момент не все прикрепленные объекты сохранены. Подождите несколько секунд.", preferredStyle: .Alert)
+            alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+            presentViewController(alertView, animated: true, completion: nil)
+            return
+        }
         
         AppDelegate.instance.activeProfile!.placeOrder(
                 topic: controller.orderText.text,
@@ -155,8 +161,10 @@ class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionV
     var cells: [UIImage] = []
     var progress: [(UIProgressView)->Void] = []
     var ids: [String] = []
+    var status: [Bool] = []
     
     func append(id: String, image: UIImage, progress: (UIProgressView)->Void) {
+        status.append(false)
         cells.append(image)
         ids.append(id)
         self.progress.append(progress)
@@ -164,6 +172,7 @@ class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionV
     }
 
     func remove(index: Int) {
+        status.removeAtIndex(index)
         cells.removeAtIndex(index)
         ids.removeAtIndex(index)
         let _ = progress.removeAtIndex(index)
@@ -174,11 +183,21 @@ class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionV
         cells.removeAll()
         progress.removeAll()
         ids.removeAll()
+        status.removeAll()
         view?.reloadData()
     }
     
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return section > 0 ? 0 : cells.count
+    }
+    
+    func complete() -> Bool {
+        for s in status {
+            if (!s) {
+                return false
+            }
+        }
+        return true
     }
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
@@ -197,11 +216,19 @@ class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionV
         return cell
     }
     
+    func report(id: String, status: Bool) {
+        let index = ids.indexOf(id)
+        if (index != nil) {
+            self.status[index!] = status
+        }
+    }
+    
     var parent: OrderDescriptionViewController?
 }
 
 protocol ImageSenderQueue {
     func append(id: String, image: UIImage, progress: (UIProgressView) -> Void)
+    func report(id: String, status: Bool);
 }
 
 class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate {
@@ -263,6 +290,7 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
         let session = NSURLSession(configuration: configuration, delegate: self, delegateQueue: NSOperationQueue.mainQueue())
 
         progressView?.progress = 0.0
+        progressView?.progressTintColor = UIColor.blueColor()
         let task = session.uploadTaskWithStreamedRequest(request)
         task.resume()
     }
@@ -281,6 +309,15 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
     }
     
     func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveResponse response: NSURLResponse, completionHandler: (NSURLSessionResponseDisposition) -> Void) {
+        if let httpResp = response as? NSHTTPURLResponse {
+            if httpResp.statusCode != 200 {
+                progressView?.progressTintColor = UIColor.redColor()
+            }
+            else {
+                progressView?.progressTintColor = UIColor.greenColor()
+                queue.report(imageId!, status: true)
+            }
+        }
         print("Loaded: " + imageId!)
         print(response);
 //        self.uploadButton.enabled = true

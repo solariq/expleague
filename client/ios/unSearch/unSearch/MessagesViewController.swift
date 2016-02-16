@@ -185,6 +185,8 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         tabBar.hidden = true;
+        progress.hidden = true
+
         if (order != nil) {
             data?.sync(order!)
             messagesView.reloadData()
@@ -238,11 +240,17 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     
     func attach(input: ChatInputViewController) {
         self.presentViewController(picker, animated: true, completion: nil)
+        progress.hidden = false
+        progress.tintColor = UIColor.blueColor()
     }
     
     func append(id: String, image: UIImage, progress: (UIProgressView) -> Void) {
         order?.send("{\"content\": [{\"image\": {\"image\": \"\(id)\"}}]}")
         progress(self.progress)
+    }
+    
+    func report(id: String, status: Bool) {
+        self.progress.tintColor = status ? UIColor.greenColor() : UIColor.redColor()
     }
 }
 
