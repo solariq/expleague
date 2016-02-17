@@ -157,6 +157,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         tabBarController?.tabBar.hidden = false
         AppDelegate.instance.activeProfile!.selected = nil
         NSNotificationCenter.defaultCenter().removeObserver(self)
+        data?.markAsRead()
     }
 
     
@@ -267,6 +268,16 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             }
         }
     }
+    
+    func markAsRead() {
+        for i in 0..<order.count {
+            let msg = order.message(i)
+            if (!msg.isRead) {
+                msg.setProperty("read", value: "true")
+            }
+        }
+    }
+    
     var progressModel: ExpertInProgressModel? = nil
     var progressCellIndex: Int?
     func sync() {
@@ -284,9 +295,6 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         var model = cells.last!
         while (lastKnownMessage < order.count) {
             let msg = order.message(lastKnownMessage)
-            if (!msg.isRead) {
-                msg.setProperty("read", value: "true")
-            }
             if (model is LookingForExpertModel || model is FeedbackModel) {
                 cells.removeLast();
                 model = cells.last!
