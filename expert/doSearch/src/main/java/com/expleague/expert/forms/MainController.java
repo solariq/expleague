@@ -170,8 +170,6 @@ public class MainController implements Action<ExpertEvent> {
     else if (expertTaskEvent instanceof TaskAcceptedEvent) {
       task = ((TaskAcceptedEvent) expertTaskEvent).task();
       Platform.runLater(() -> {
-        if (task == null)
-
         sendButton.setDisable(false);
         startEditor(new AnswerViewController(task), "answer", null);
         editorIndex--;

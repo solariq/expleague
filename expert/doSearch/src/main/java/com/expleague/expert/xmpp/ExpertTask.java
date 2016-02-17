@@ -110,6 +110,7 @@ public class ExpertTask {
     }
     else if (command instanceof Operations.Resume) {
       state(State.BUSY);
+      eventsReceiver.accept(new TaskResumedEvent(offer, this));
       ExpLeagueConnection.instance().send(new Message(owner.jid(), owner.system(), new Operations.Resume()));
     }
   }

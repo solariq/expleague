@@ -56,7 +56,7 @@ public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> {
             Offer offer = message.get(Offer.class);
             try {
               this.task = new ExpertTask(this, this::invoke, profile.allocateTaskDir(offer.room().local()), offer);
-              invoke(message.has(Operations.Invite.class) ? new TaskStartedEvent(offer, task) : new TaskResumedEvent(offer, task));
+              invoke(new TaskStartedEvent(offer, task));
             }
             catch (IOException e) {
               throw new RuntimeException(e);
