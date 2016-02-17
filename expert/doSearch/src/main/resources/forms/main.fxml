@@ -16,11 +16,7 @@
   <HBox VBox.vgrow="ALWAYS">
     <SplitPane HBox.hgrow="ALWAYS" orientation="HORIZONTAL" fx:id="horizontalSplit">
       <SplitPane orientation="VERTICAL" fx:id="verticalSplit" SplitPane.resizableWithParent="true">
-        <TabPane fx:id="tabs" maxWidth="Infinity" SplitPane.resizableWithParent="true">
-          <Tab text="Ответ">
-            <fx:include source="answer.fxml" />
-          </Tab>
-        </TabPane>
+        <TabPane fx:id="tabs" maxWidth="Infinity" SplitPane.resizableWithParent="true"/>
       </SplitPane>
     </SplitPane>
     <VBox prefWidth="15" HBox.hgrow="NEVER">

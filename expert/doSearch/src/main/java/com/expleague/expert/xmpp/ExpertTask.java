@@ -2,16 +2,15 @@ package com.expleague.expert.xmpp;
 
 import com.expleague.expert.forms.AnswerViewController;
 import com.expleague.expert.xmpp.events.*;
-import com.expleague.model.patch.Patch;
 import com.expleague.model.Answer;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
+import com.expleague.model.patch.Patch;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.io.StreamTools;
 import com.spbsu.commons.util.FileThrottler;
-import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -157,6 +156,7 @@ public class ExpertTask {
   public void answer() {
     final Answer answer = new Answer(patchwork());
     ExpLeagueConnection.instance().send(new Message(owner.jid(), offer.room(), Message.MessageType.GROUP_CHAT, answer));
+    patchwork("");
     state(State.CLOSED);
     eventsReceiver.accept(new TaskClosedEvent(answer, this));
     log(answer);

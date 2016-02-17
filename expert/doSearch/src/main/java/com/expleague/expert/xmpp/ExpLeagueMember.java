@@ -7,7 +7,6 @@ import com.expleague.expert.xmpp.events.TaskStartedEvent;
 import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
-import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
@@ -15,20 +14,15 @@ import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import org.jetbrains.annotations.Nullable;
-import tigase.jaxmpp.core.client.Connector;
-import tigase.jaxmpp.core.client.SessionObject;
-import tigase.jaxmpp.core.client.xml.XMLException;
-import tigase.jaxmpp.core.client.xmpp.stanzas.StreamPacket;
 
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Experts League
  * Created by solar on 10/02/16.
  */
-public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> implements Connector.StanzaReceivedHandler{
+public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> {
   private static final Logger log = Logger.getLogger(ExpLeagueMember.class.getName());
   private final UserProfile profile;
   private ExpertTask task;
@@ -52,6 +46,7 @@ public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> impleme
   }
 
   public void processPacket(Stanza packet) {
+    log.info(">" + packet.from());
     if (packet instanceof Iq)
       return;
     if (packet instanceof Message) {
@@ -98,19 +93,6 @@ public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> impleme
     super.invoke(e);
     if (e instanceof TaskSuspendedEvent) {
       task = null;
-    }
-  }
-
-  @Override
-  public void onStanzaReceived(SessionObject sessionObject, StreamPacket streamPacket) {
-    try {
-      final Item item = Item.create(streamPacket.getAsString());
-      if (item instanceof Stanza)
-        processPacket((Stanza) item);
-    }
-    catch (XMLException e) {
-      log.log(Level.SEVERE, "Unable to parse incoming message", e);
-      throw new RuntimeException(e);
     }
   }
 

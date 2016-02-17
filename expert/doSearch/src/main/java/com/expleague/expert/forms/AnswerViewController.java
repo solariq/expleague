@@ -1,22 +1,13 @@
 package com.expleague.expert.forms;
 
-import com.expleague.expert.profile.ProfileManager;
-import com.expleague.expert.profile.UserProfile;
-import com.expleague.expert.xmpp.ExpertEvent;
 import com.expleague.expert.xmpp.ExpertTask;
-import com.expleague.expert.xmpp.events.TaskStartedEvent;
-import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
 import com.expleague.model.patch.Patch;
-import com.sun.javafx.scene.control.skin.TextAreaSkin;
-import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.ToolBar;
-import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Priority;
@@ -37,15 +28,12 @@ import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
  * Experts League
  * Created by solar on 04.02.16.
  */
-public class AnswerViewController implements com.spbsu.commons.func.Action<ExpertEvent> {
+public class AnswerViewController {
   public VBox editor;
 
   private final MarkdownEditorPane editorPane = new MarkdownEditorPane();
   // 'canUndo' property
   private final BooleanProperty canUndo = new SimpleBooleanProperty();
-  private com.spbsu.commons.func.Action<UserProfile> profileAction = profile -> {
-    profile.expert().addListener(this);
-  };
   private StyleClassedTextArea editorNode;
 
   BooleanProperty canUndoProperty() { return canUndo; }
@@ -151,15 +139,6 @@ public class AnswerViewController implements com.spbsu.commons.func.Action<Exper
     VBox.setVgrow(toolBar, Priority.NEVER);
     editor.getChildren().addAll(toolBar, editorNode);
 
-    ProfileManager.instance().addListener(profileAction);
-    final UserProfile active = ProfileManager.instance().active();
-    if (active != null) {
-      active.expert().addListener(this);
-    }
-    editorPane.markdownProperty().addListener((observable, oldValue, newValue) -> {
-      if (task != null)
-        task.patchwork(newValue);
-    });
     ((StyleClassedTextArea) editorPane.getNode()).setEditable(false);
     editorNode.setOnDragOver(event -> {
       if (event.getDragboard().hasString())
@@ -168,10 +147,6 @@ public class AnswerViewController implements com.spbsu.commons.func.Action<Exper
       final CharacterHit hit = editorNode.hit(event.getX(), event.getY());
       final int insertionIndex = hit.getInsertionIndex();
       editorNode.positionCaret(insertionIndex);
-//      TextAreaSkin skin = (TextAreaSkin) editorNode.getSkin();
-//      int insertionPoint = skin.getInsertionPoint(event.getX(),  event.getY());
-//      editorNode.positionCaret( insertionPoint);
-
       event.consume();
     });
     editorNode.setOnDragDropped(event -> {
@@ -188,26 +163,30 @@ public class AnswerViewController implements com.spbsu.commons.func.Action<Exper
       event.setDropCompleted(success);
       event.consume();
     });
+    if (task != null) {
+      editorPane.setMarkdown(task.patchwork());
+      editorNode.setEditable(true);
+      editorPane.markdownProperty().addListener((observable, oldValue, newValue) -> {
+        task.patchwork(newValue);
+      });
+    }
+    else {
+      editorPane.setMarkdown(markdown);
+      editorNode.setEditable(false);
+    }
   }
 
-  private ExpertTask task;
-  @Override
-  public void invoke(ExpertEvent expertEvent) {
-    Platform.runLater(() -> {
-      if (expertEvent instanceof TaskStartedEvent) {
-        final TaskStartedEvent startedEvent = (TaskStartedEvent) expertEvent;
-        task = startedEvent.task();
-        task.editor(this);
-        editorPane.setMarkdown(task.patchwork());
-        editorNode.setEditable(true);
-      }
-      else if (expertEvent instanceof TaskSuspendedEvent) {
-        task.editor(null);
-        task = null;
-        editorPane.setMarkdown("");
-        editorNode.setEditable(false);
-      }
-    });
+  private final ExpertTask task;
+  private final String markdown;
+
+  public AnswerViewController(ExpertTask task) {
+    this.task = task;
+    this.markdown = null;
+  }
+
+  public AnswerViewController(String markdown) {
+    this.task = null;
+    this.markdown = markdown;
   }
 
   public Node createPreview() {

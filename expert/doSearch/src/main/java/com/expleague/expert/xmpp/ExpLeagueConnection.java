@@ -2,6 +2,7 @@ package com.expleague.expert.xmpp;
 
 import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
+import com.expleague.xmpp.Item;
 import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.spbsu.commons.random.FastRandom;
@@ -16,6 +17,7 @@ import tigase.jaxmpp.core.client.eventbus.EventListener;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 import tigase.jaxmpp.core.client.xml.Element;
 import tigase.jaxmpp.core.client.xml.ElementFactory;
+import tigase.jaxmpp.core.client.xml.XMLException;
 import tigase.jaxmpp.core.client.xmpp.modules.AbstractStanzaModule;
 import tigase.jaxmpp.core.client.xmpp.modules.SessionEstablishmentModule;
 import tigase.jaxmpp.core.client.xmpp.modules.auth.AuthModule;
@@ -24,6 +26,7 @@ import tigase.jaxmpp.core.client.xmpp.modules.registration.InBandRegistrationMod
 import tigase.jaxmpp.core.client.xmpp.modules.roster.RosterModule;
 import tigase.jaxmpp.core.client.xmpp.stanzas.IQ;
 import tigase.jaxmpp.core.client.xmpp.stanzas.StanzaType;
+import tigase.jaxmpp.core.client.xmpp.stanzas.StreamPacket;
 import tigase.jaxmpp.j2se.Jaxmpp;
 import tigase.jaxmpp.j2se.connectors.socket.SocketConnector;
 import tigase.jaxmpp.j2se.xml.J2seElement;
@@ -100,6 +103,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
         jaxmpp.disconnect();
       jaxmpp = new Jaxmpp();
       final XmppModulesManager modulesManager = jaxmpp.getModulesManager();
+      this.expert = profile.expert();
       modulesManager.register(new AbstractStanzaModule<tigase.jaxmpp.core.client.xmpp.stanzas.Stanza>() {
         @Override
         public Criteria getCriteria() {
@@ -128,8 +132,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
       final EventBus eventBus = jaxmpp.getEventBus();
       eventBus.addListener(JaxmppCore.DisconnectedHandler.DisconnectedEvent.class, this);
       eventBus.addListener(SessionEstablishmentModule.SessionEstablishmentSuccessHandler.SessionEstablishmentSuccessEvent.class, this);
-      eventBus.addHandler(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, profile.expert());
-      this.expert = profile.expert();
+      eventBus.addListener(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, this);
       if (tryToRegister) {
         eventBus.addHandler(AuthModule.AuthFailedHandler.AuthFailedEvent.class, (sessionObject, saslError) -> {
           if (saslError == SaslModule.SaslError.not_authorized) {
@@ -168,8 +171,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
         InBandRegistrationModule.ReceivedRequestedFieldsHandler.ReceivedRequestedFieldsEvent.class,
         (sessionObject, responseStanza) -> {
           try {
-            final InBandRegistrationModule module = jaxmpp.getModule(InBandRegistrationModule.class);
-            IQ iq = IQ.create();
+            final IQ iq = IQ.create();
             iq.setType(StanzaType.set);
             iq.setTo(JID.jidInstance((String)profile.get(UserProfile.Key.EXP_LEAGUE_DOMAIN)));
             Element q = ElementFactory.create("query", null, "jabber:iq:register");
@@ -250,27 +252,19 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
     final DomBuilderHandler handler = new DomBuilderHandler(new DefaultElementFactory());
     parser.parse(handler, xmlString.toCharArray(), 0, xmlString.length());
     try {
+      log.info("<" + stanza.xmlString());
       jaxmpp.send(tigase.jaxmpp.core.client.xmpp.stanzas.Stanza.create(new J2seElement(handler.getParsedElements().peek())));
     }
     catch (JaxmppException e) {
       e.printStackTrace();
     }
-//    if (jaxmpp.isConnected()) {
-//      if (stanza instanceof Message) {
-//        try {
-//          jaxmpp.send(stanza::xmlString);
-//        }
-//        catch (SmackException.NotConnectedException e) {
-//          log.log(Level.WARNING, "Unable to send message to server: " + e);
-//        }
-//      }
-//    }
   }
 
   @Override
   public void onEvent(Event<? extends EventHandler> event) {
+    log.info(event.toString());
     if (event instanceof SessionEstablishmentModule.SessionEstablishmentSuccessHandler.SessionEstablishmentSuccessEvent) {
-      log.fine("Authenticated as " + expert.jid());
+      log.info("Authenticated as " + expert.jid());
       status = Status.CONNECTED;
       invoke(Status.CONNECTED);
       try {
@@ -282,8 +276,20 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
     }
     else if (event instanceof JaxmppCore.DisconnectedHandler.DisconnectedEvent) {
       status = Status.DISCONNECTED;
-      final ExpertTask task = expert.task();
       invoke(Status.DISCONNECTED);
+    }
+    else if (event instanceof Connector.StanzaReceivedHandler.StanzaReceivedEvent) {
+      final StreamPacket streamPacket = ((Connector.StanzaReceivedHandler.StanzaReceivedEvent) event).getStanza();
+      try {
+        log.info(">" + streamPacket.getAsString());
+        final Item item = Item.create(streamPacket.getAsString());
+        if (item instanceof Stanza)
+          expert.processPacket((Stanza) item);
+      }
+      catch (XMLException e) {
+        log.log(Level.SEVERE, "Unable to parse incoming message", e);
+        throw new RuntimeException(e);
+      }
     }
 //    System.out.println(event);
   }

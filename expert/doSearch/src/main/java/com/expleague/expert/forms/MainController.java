@@ -5,10 +5,14 @@ import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
 import com.expleague.expert.xmpp.ExpertEvent;
 import com.expleague.expert.xmpp.ExpertTask;
+import com.expleague.expert.xmpp.events.ChatMessageEvent;
 import com.expleague.expert.xmpp.events.TaskInviteEvent;
 import com.expleague.expert.xmpp.events.TaskStartedEvent;
 import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
+import com.expleague.model.Answer;
 import com.expleague.model.Offer;
+import com.expleague.xmpp.JID;
+import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.func.Action;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -25,6 +29,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 import org.controlsfx.control.Notifications;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -86,7 +91,9 @@ public class MainController implements Action<ExpertEvent> {
       }
       else if (toggle == previewButton){
         if (preview == null) {
-          final Node editor = tabs.lookup("#editor");
+          Node editor = tabs.getSelectionModel().selectedItemProperty().get().getContent().lookup("#editor");
+          if (editor == null)
+            editor = tabs.lookup("#editor");
           final AnswerViewController answerVC = (AnswerViewController) editor.getUserData();
           preview = answerVC.createPreview();
           SplitPane.setResizableWithParent(preview, false);
@@ -118,16 +125,22 @@ public class MainController implements Action<ExpertEvent> {
   @Override
   public void invoke(ExpertEvent expertTaskEvent) {
     if (expertTaskEvent instanceof TaskStartedEvent) {
+      task = ((TaskStartedEvent) expertTaskEvent).task();
       Platform.runLater(() -> {
-        task = ((TaskStartedEvent) expertTaskEvent).task();
+        if (task == null)
+          return;
+
         vertical.selectToggle(dialogueButton);
         sendButton.setDisable(false);
+        startEditor(null, new AnswerViewController(task));
       });
     }
     else if (expertTaskEvent instanceof TaskInviteEvent) {
       final TaskInviteEvent inviteEvent = (TaskInviteEvent) expertTaskEvent;
 
       Platform.runLater(() -> {
+        if (task == null)
+          return;
         final Offer offer = inviteEvent.task().offer();
         final HBox iconView = new HBox(new ImageView(new Image("/images/avatar.png")));
         iconView.setPadding(new Insets(10, 10, 10, 10));
@@ -145,14 +158,42 @@ public class MainController implements Action<ExpertEvent> {
     else if (expertTaskEvent instanceof TaskSuspendedEvent) {
       sendButton.setDisable(true);
       task = null;
+      Platform.runLater(() -> {
+        tabs.getTabs().remove(0, editorIndex + 1);
+        editorIndex = 0;
+      });
     }
+    else if (expertTaskEvent instanceof ChatMessageEvent) {
+      final ChatMessageEvent messageEvent = (ChatMessageEvent) expertTaskEvent;
+      final Message message = messageEvent.source();
+      if (message.has(Answer.class)) {
+        final AnswerViewController controller = new AnswerViewController(message.get(Answer.class).value());
+        startEditor(message.from(), controller);
+      }
+    }
+  }
+
+  int editorIndex = 0;
+  private void startEditor(@Nullable JID from, AnswerViewController answerController) {
+    final Tab tab = new Tab("Ответ " + (from != null ? from.resource() : ""));
+    Platform.runLater(() -> {
+      if (task == null)
+        return;
+      try {
+        tab.setContent(FXMLLoader.load(getClass().getResource("/forms/answer.fxml"), null, null, param -> answerController));
+      }
+      catch (IOException e) {
+        log.log(Level.SEVERE, "Unable to load editor!", e);
+      }
+      tabs.getTabs().add(editorIndex++, tab);
+    });
   }
 
   public void sendAnswer(ActionEvent ignore) {
     final Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
     alert.setTitle("Лига Экспертов");
-    alert.setHeaderText("Закончить работу?");
-    alert.setContentText("Уверены, что хотите отослать результат и закончить работу?");
+    alert.setHeaderText("Закончить работу");
+    alert.setContentText("Уверены, что хотите отослать результат и закончить работу над заданием?");
 
     Optional<ButtonType> result = alert.showAndWait();
     if (result.get() == ButtonType.OK){
