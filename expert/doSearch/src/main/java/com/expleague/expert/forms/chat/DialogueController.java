@@ -1,5 +1,6 @@
 package com.expleague.expert.forms.chat;
 
+import com.expleague.expert.forms.MainController;
 import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
 import com.expleague.expert.xmpp.ExpertEvent;
@@ -15,6 +16,8 @@ import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.system.RuntimeUtils;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -22,6 +25,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -93,6 +97,9 @@ public class DialogueController implements Action<ExpertEvent> {
         input.setMinHeight(textHolder.getLayoutBounds().getHeight() + 12);
         input.setMaxHeight(textHolder.getLayoutBounds().getHeight() + 12);
       }
+    });
+    messagesView.prefWidthProperty().addListener((observable, oldValue, newValue) -> {
+      root.setPrefWidth((Double)newValue - 5);
     });
   }
   private final List<CompositeMessageViewController> controllers = new ArrayList<>();
@@ -215,9 +222,12 @@ public class DialogueController implements Action<ExpertEvent> {
     final MessageType type = task.owner().local().equals(source.from().resource()) ? MessageType.OUTGOING : MessageType.INCOMING;
     final CompositeMessageViewController finalVc = locateVCOfType(type);
     if (source.has(Answer.class)) {
-      Platform.runLater(() -> finalVc.addAction("Перейти к ответу", () -> {
-
-      }));
+      Platform.runLater(() -> {
+        finalVc.addText("Получен ответ от " + source.from().resource());
+        finalVc.addAction("Перейти к ответу", () -> {
+          MainController.instance().selectEditor(source.id(), false, true);
+        });
+      });
     }
     else {
       event.visitParts(new ChatMessageEvent.PartsVisitor() {

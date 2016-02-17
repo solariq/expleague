@@ -54,6 +54,7 @@ public class CompositeMessageViewController {
   private SimpleDoubleProperty trueWidth = new SimpleDoubleProperty();
   public void addText(String text) {
     final TextArea label = new TextArea();
+    final Text labelModel2 = new Text(text);
     final Text labelModel = new Text(text);
     label.getStyleClass().add(type.cssClass());
     label.setText(text);
@@ -61,16 +62,20 @@ public class CompositeMessageViewController {
     label.setWrapText(true);
     labelModel.layoutBoundsProperty().addListener(o -> {
       final int value = (int)Math.ceil(labelModel.getLayoutBounds().getHeight() / labelModel.getFont().getSize() / 1.3333);
-
       if (value > 0) {
         label.setPrefRowCount(value);
         label.setMaxHeight(value * label.getFont().getSize() * 1.3333);
+        if (value == 1) {
+          label.setMaxWidth(labelModel2.getLayoutBounds().getWidth());
+        }
+        else {
+          label.setMaxWidth(trueWidth.get() - 35);
+        }
       }
     });
 
     final InvalidationListener listener = observable -> {
       labelModel.setWrappingWidth(trueWidth.get() - 35);
-      label.setMaxWidth(trueWidth.get() - 35);
     };
     trueWidth.addListener(listener);
     listener.invalidated(trueWidth);
@@ -154,6 +159,9 @@ public class CompositeMessageViewController {
   public void initialize() {
     root.widthProperty().addListener((observable, oldValue, newValue) -> {
       trueWidth.set(newValue.doubleValue());
+    });
+    trueWidth.addListener((observable, oldValue, newValue) -> {
+      root.setPrefWidth((Double)newValue - 2);
     });
     trueWidth.setValue(root.getWidth());
   }
