@@ -1,10 +1,7 @@
 package com.expleague.expert.xmpp;
 
 import com.expleague.expert.profile.UserProfile;
-import com.expleague.expert.xmpp.events.CheckEvent;
-import com.expleague.expert.xmpp.events.TaskResumedEvent;
-import com.expleague.expert.xmpp.events.TaskStartedEvent;
-import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
+import com.expleague.expert.xmpp.events.*;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
 import com.expleague.xmpp.JID;
@@ -45,6 +42,7 @@ public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> {
     return JID.parse(id);
   }
 
+  boolean check = false;
   public void processPacket(Stanza packet) {
     log.info(">" + packet.from());
     if (packet instanceof Iq)
@@ -53,6 +51,7 @@ public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> {
       final Message message = (Message)packet;
       if (message.has(Offer.class) || message.has(Operations.Command.class)) {
         if (message.has(Operations.Invite.class) || message.has(Operations.Resume.class)) {
+          check = false;
           if (task == null){
             Offer offer = message.get(Offer.class);
             try {
@@ -69,9 +68,13 @@ public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> {
         else if (!message.has(Operations.Command.class)){
           invoke(new CheckEvent(message));
           ExpLeagueConnection.instance().send(new Message(jid(), system(), new Operations.Ok()));
+          check = true;
         }
         else if (task != null) {
           task.processCommand(message.get(Operations.Command.class));
+        }
+        else if (check && message.has(Operations.Cancel.class)) {
+          invoke(new CheckCanceledEvent(message));
         }
         else {
           log.severe("Command received: "+ message.get(Operations.Command.class) + " while no active tasks exist");

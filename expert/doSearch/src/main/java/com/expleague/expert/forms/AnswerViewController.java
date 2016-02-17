@@ -181,6 +181,7 @@ public class AnswerViewController {
 
   public AnswerViewController(ExpertTask task) {
     this.task = task;
+    task.editor(this);
     this.markdown = null;
   }
 
