@@ -8,62 +8,35 @@
 
 import Foundation
 import UIKit
+import XMPPFramework
 
 class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQueue {
-    static let INITIAL_WEBVIEW_CONTENT = "<html><body></body></html>"
-    var order: ExpLeagueOrder? {
-        didSet {
-            if (order == nil) {
-                return
-            }
-            answerText = MessagesVeiwController.INITIAL_WEBVIEW_CONTENT
-            data = ChatMessagesModel(order: order, parent: self)
-            messagesView.dataSource = data
-            messagesView.delegate = data
-            if (loaded) {
-                messagesView.reloadData()
-
-                if (order!.status == .Closed) {
-                    scrollView.scrollRectToVisible(answerView!.frame, animated: false)
-                }
-                else {
-                    scrollView.scrollRectToVisible(messagesView.frame, animated: false)
-                    if (data!.cells.count > 1) {
-                        messagesView.scrollToRowAtIndexPath(NSIndexPath(forRow: data!.cells.count - 1, inSection: 0), atScrollPosition: .Bottom, animated: false)
-                    }
-                }
-
-            }
-            
-            if (order!.text.characters.count > 15) {
-                self.title = order!.text.substringToIndex(order!.topic.startIndex.advancedBy(15)) + "..."
-            }
-            else {
-                self.title = order!.text
-            }
-            self.title = order!.text
-        }
-    }
-    
     var loaded = false
     let placeHolder = UIView()
     let scrollView = UIScrollView()
     let input = ChatInputViewController(nibName: "ChatInput", bundle: nil)
     let messagesView = UITableView()
-    var answerView : UIWebView? = nil
+    var answerView: UIWebView? = nil
+    var answerDelegate: AnswerDelegate?
     let picker = UIImagePickerController()
     let progress = UIProgressView()
-    var data: ChatMessagesModel?
-    var answerUpdateTimer: NSTimer?
-    
-    private var answerText: String = INITIAL_WEBVIEW_CONTENT
-    
-    func answerAppend(text: String) {
-        answerText = answerText.substringToIndex(answerText.endIndex.advancedBy(-"</body></html>".characters.count))
-        answerText += text + "</body></html>";
-//        print("answerText changed: \(answerText)")
+    var data: ChatMessagesModel? {
+        didSet {
+            data!.controller = self
+            messagesView.delegate = data
+            messagesView.dataSource = data
+            answerText = data!.answer
+        }
     }
-    
+
+    var answerText: String = "" {
+        willSet (newValue){
+            if (answerText != newValue) {
+                answerView?.loadHTMLString("<html><body>\(newValue)</body></html>", baseURL: nil)
+            }
+        }
+    }
+
     var pickerDelegate: ImagePickerDelegate?
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -77,6 +50,11 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         scrollView.addSubview(progress)
         scrollView.addSubview(input.view)
         answerView = UIWebView()
+        if (!answerText.isEmpty) {
+            answerView!.loadHTMLString("<html><body>\(answerText)</body></html>", baseURL: nil)
+        }
+        answerDelegate = AnswerDelegate(parent: self)
+        answerView?.delegate = answerDelegate
         scrollView.addSubview(answerView!)
         scrollView.pagingEnabled = true
         scrollView.clipsToBounds = false
@@ -84,7 +62,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         input.text.layer.borderColor = UIColor.lightGrayColor().CGColor
         input.text.layer.cornerRadius = 4
         input.delegate = self;
-        
+        progress.hidden = true
         messagesView.registerNib(UINib(nibName: "IncomingMessage", bundle: nil), forCellReuseIdentifier: String(CellType.Incoming))
         messagesView.registerNib(UINib(nibName: "OutgoingMessage", bundle: nil), forCellReuseIdentifier: String(CellType.Outgoing))
         messagesView.registerNib(UINib(nibName: "LookingForExpert", bundle: nil), forCellReuseIdentifier: String(CellType.LookingForExpert))
@@ -106,74 +84,34 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     }
     
     func chatInput(chatInput: ChatInputViewController, didSend text: String) -> Bool {
-        if (data?.order != nil) {
-            if (!AppDelegate.instance.stream.isConnected()) {
-                let alertView = UIAlertController(title: "Experts League", message: "Connecting to server.\n\n", preferredStyle: .Alert)
-                let completion = {
-                    //  Add your progressbar after alert is shown (and measured)
-                    let progressController = AppDelegate.instance.connectionProgressView
-                    let rect = CGRectMake(0, 54.0, alertView.view.frame.width, 50)
-                    progressController.completion = {
-                        self.input.send(self)
-                    }
-                    progressController.view.frame = rect
-                    progressController.view.backgroundColor = alertView.view.backgroundColor
-                    alertView.view.addSubview(progressController.view)
-                    progressController.alert = alertView
-                    AppDelegate.instance.connect()
-                    //                progressController.alert = alertView
-                }
-                alertView.addAction(UIAlertAction(title: "Retry", style: .Default, handler: {(x: UIAlertAction) -> Void in
-                    AppDelegate.instance.disconnect()
+        if (!AppDelegate.instance.stream.isConnected()) {
+            let alertView = UIAlertController(title: "Experts League", message: "Connecting to server.\n\n", preferredStyle: .Alert)
+            let completion = {
+                //  Add your progressbar after alert is shown (and measured)
+                let progressController = AppDelegate.instance.connectionProgressView
+                let rect = CGRectMake(0, 54.0, alertView.view.frame.width, 50)
+                progressController.completion = {
                     self.input.send(self)
-                }))
-                alertView.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
-                presentViewController(alertView, animated: true, completion: completion)
-                return false
+                }
+                progressController.view.frame = rect
+                progressController.view.backgroundColor = alertView.view.backgroundColor
+                alertView.view.addSubview(progressController.view)
+                progressController.alert = alertView
+                AppDelegate.instance.connect()
             }
-
-            AppDelegate.instance.connect()
-            data?.order?.send(text)
+            alertView.addAction(UIAlertAction(title: "Retry", style: .Default, handler: {(x: UIAlertAction) -> Void in
+                AppDelegate.instance.disconnect()
+                self.input.send(self)
+            }))
+            alertView.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
+            presentViewController(alertView, animated: true, completion: completion)
+            return false
         }
-        else {
-            let message = ChatMessageModel(incoming: true, author: "me")
-            message.append(text: text, time: NSDate().timeIntervalSince1970)
-            data?.cells.append(message)
-            messagesView.reloadData()
-            scrollView.scrollRectToVisible(messagesView.frame, animated: true)
-            dispatch_async(dispatch_get_main_queue(), {
-                self.data?.scrollToLastMessage(self.messagesView)
-            })
-        }
+        AppDelegate.instance.connect()
+        data!.order.send(text: text)
         return true
     }
 
-    func onMessage(msg: ExpLeagueMessage) {
-        if (msg.parent != order) {
-            return
-        }
-        data?.sync(msg.parent)
-        messagesView.reloadData()
-        data?.scrollToLastMessage(messagesView)
-        scrollView.scrollRectToVisible(messagesView.frame, animated: true)
-    }
-
-    var tabBar: UIKit.UITabBar {
-        get {
-            return (UIApplication.sharedApplication().delegate as! AppDelegate).tabs.tabBar
-        }
-    }
-    
-    override func viewWillDisappear(animated: Bool) {
-        super.viewWillDisappear(animated)
-        tabBar.hidden = false
-        answerUpdateTimer?.invalidate()
-        answerUpdateTimer = nil
-        AppDelegate.instance.messagesView = nil
-        AppDelegate.instance.activeProfile!.selected = nil
-        NSNotificationCenter.defaultCenter().removeObserver(self);
-    }
-    
     override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
         coordinator.animateAlongsideTransition({(context: UIViewControllerTransitionCoordinatorContext) -> Void in
@@ -186,29 +124,45 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        tabBar.hidden = true;
-        progress.hidden = true
+        tabBarController?.tabBar.hidden = true
+        adjustSizes()
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardShown:", name: UIKeyboardDidShowNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardHidden:", name: UIKeyboardDidHideNotification, object: nil)
 
-        if (order != nil) {
-            data?.sync(order!)
-            messagesView.reloadData()
-        }
-        AppDelegate.instance.messagesView = self
-        answerUpdateTimer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: "updateAnswerText", userInfo: nil, repeats: true)
-    }
-    
-    var prevAnswerText: String?
-    func updateAnswerText() {
-        if (prevAnswerText == nil || prevAnswerText! != answerText) {
-            answerView?.loadHTMLString(answerText, baseURL: nil)
-            prevAnswerText = answerText
-        }
+        super.viewWillAppear(animated)
     }
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardShown:", name: UIKeyboardDidShowNotification, object: nil)
+//        adjustSizes()
+        if (data!.order.isActive) {
+            scrollView.scrollRectToVisible(messagesView.frame, animated: false)
+        }
+        else {
+            scrollView.scrollRectToVisible(answerView!.frame, animated: false)
+        }
+        if (data!.order.text.characters.count > 15) {
+            self.title = data!.order.text.substringToIndex(data!.order.topic.startIndex.advancedBy(15)) + "..."
+        }
+        else {
+            self.title = data!.order.text
+        }
+    }
+
+    override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
+        tabBarController?.tabBar.hidden = false
+        AppDelegate.instance.activeProfile!.selected = nil
+        NSNotificationCenter.defaultCenter().removeObserver(self)
+    }
+
+    
+    func keyboardHidden(notification: NSNotification) {
+        let insets = UIEdgeInsetsMake(scrollView.contentInset.top, scrollView.contentInset.left, 0, scrollView.contentInset.right)
+        scrollView.contentInset = insets
+        scrollView.scrollIndicatorInsets = insets
         adjustSizes()
+        scrollView.scrollRectToVisible(messagesView.frame, animated: false)
     }
 
     func keyboardShown(notification: NSNotification) {
@@ -217,21 +171,19 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         scrollView.contentInset = insets
         scrollView.scrollIndicatorInsets = insets
         adjustSizes()
-        scrollView.scrollRectToVisible(messagesView.frame, animated: true)
+        scrollView.scrollRectToVisible(messagesView.frame, animated: false)
     }
+    
     
     func dismissKeyboard() {
         view.endEditing(true)
-//        let kbSize = (notification.userInfo![UIKeyboardFrameBeginUserInfoKey] as! NSValue).CGRectValue().size
-        let insets = UIEdgeInsetsMake(scrollView.contentInset.top, scrollView.contentInset.left, 0, scrollView.contentInset.right)
-        scrollView.contentInset = insets
-        scrollView.scrollIndicatorInsets = insets
-        adjustSizes()
     }
 
     func adjustSizes() {
         let inputHeight = input.view.frame.height
-        scrollView.frame = CGRectMake(0, 0, view.frame.width, view.frame.height)
+        let frame = view.window != nil ? view.window!.frame : view.frame
+        print("\(frame) \(view.window) \(navigationController)")
+        scrollView.frame = CGRectMake(0, 0, frame.width, frame.height - (navigationController != nil ? navigationController!.navigationBar.frame.maxY : 64))
         let visibleSize = CGSizeMake(scrollView.frame.width - scrollView.contentInset.right - scrollView.contentInset.left, scrollView.frame.height - scrollView.contentInset.bottom - scrollView.contentInset.top)
         messagesView.frame = CGRectMake(0, 0, visibleSize.width, visibleSize.height - inputHeight - 3)
         progress.frame = CGRectMake(0, messagesView.frame.maxY, visibleSize.width, 3)
@@ -247,12 +199,39 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     }
     
     func append(id: String, image: UIImage, progress: (UIProgressView) -> Void) {
-        order?.send("{\"content\": [{\"image\": {\"image\": \"\(id)\"}}]}")
+        let img = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+        img.setStringValue(id)
+        data!.order.send(xml: img)
         progress(self.progress)
     }
     
     func report(id: String, status: Bool) {
         self.progress.tintColor = status ? UIColor.greenColor() : UIColor.redColor()
+    }
+}
+
+class AnswerDelegate: NSObject, UIWebViewDelegate {
+    func webView(webView: UIWebView, shouldStartLoadWithRequest request: NSURLRequest, navigationType: UIWebViewNavigationType) -> Bool {
+        
+        if let url = request.URL where url.scheme == "unsearch" {
+            if (url.path == "/chat-messages") {
+                if let indexStr = url.fragment, index = Int(indexStr) {
+                    parent.messagesView.scrollToRowAtIndexPath(NSIndexPath(forItem: index, inSection: 0), atScrollPosition: .Middle, animated: false)
+                    parent.scrollView.scrollRectToVisible(parent.messagesView.frame, animated: true)
+                }
+            }
+            return false
+        }
+        else if let url = request.URL where url.scheme.hasPrefix("http") {
+            UIApplication.sharedApplication().openURL(url)
+        }
+
+        return true
+    }
+    
+    let parent: MessagesVeiwController
+    init(parent: MessagesVeiwController) {
+        self.parent = parent
     }
 }
 
@@ -274,22 +253,30 @@ class ChatAction: NSObject {
 class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     private var lastKnownMessage: Int = 0
     private var haveActiveExpert = false
-    let order: ExpLeagueOrder?
-    let parent: MessagesVeiwController
-    init(order: ExpLeagueOrder?, parent: MessagesVeiwController) {
-        self.order = order
-        self.parent = parent
-        super.init()
-        if (order != nil) {
-            sync(order!)
+    let order: ExpLeagueOrder
+    let lock: dispatch_queue_t
+
+    weak var controller: MessagesVeiwController?
+    var answer: String = "" {
+        didSet {
+            if let controller = self.controller {
+                controller.answerText = answer
+            }
         }
     }
     var progressModel: ExpertInProgressModel? = nil
     var progressCellIndex: Int?
-    func sync(order: ExpLeagueOrder) {
+    func sync() {
+        dispatch_sync(lock){
+            self.syncInner()
+        }
+    }
+    
+    private func syncInner() {
         if (cells.isEmpty) {
             cells.append(SetupModel(order: order))
         }
+        let startedFrom = lastKnownMessage
         var model = cells.last!
         while (lastKnownMessage < order.count) {
             let msg = order.message(lastKnownMessage)
@@ -304,7 +291,7 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 if (progressModel == nil || !progressModel!.accept(msg)) {
                     if (msg.properties["type"] as! String == "expert") {
                         haveActiveExpert = true
-                        progressModel = ExpertInProgressModel(mvc: parent)
+                        progressModel = ExpertInProgressModel(order: order)
                         progressCellIndex = cells.count
                         cells.append(progressModel!)
                     }
@@ -328,7 +315,12 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             }
             else if (!model.accept(msg)) { // switch model
                 if (msg.type == .Answer) {
-                    model = AnswerReceivedModel(controller: parent, progress: progressModel!)
+                    let id = "message-\(msg.hashValue)"
+                    answer += "\n<div id=\"\(id)\"/>\n"
+                    answer += (msg.body!);
+                    answer += "\n<a href='unSearch:///chat-messages#\(cells.count)'>Обратно в чат</a>\n"
+
+                    model = AnswerReceivedModel(id: id, progress: progressModel!)
                     progressModel = nil
                     if (progressCellIndex != nil) {
                         cells.removeAtIndex(progressCellIndex!)
@@ -351,15 +343,20 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         if (order.count > 0 && !haveActiveExpert && order.isActive) {
             if !(cells.last! is FeedbackModel || cells.last! is LookingForExpertModel) {
                 if (model is AnswerReceivedModel) {
-                    cells.append(FeedbackModel(controller: self.parent))
+                    cells.append(FeedbackModel(order: order))
                 }
                 else {
-                    cells.append(LookingForExpertModel(mvc: parent))
+                    cells.append(LookingForExpertModel(order: order))
                 }
             }
         }
         if(!order.isActive && (cells.last! is LookingForExpertModel || cells.last! is ExpertInProgressModel)) {
             cells.removeLast()
+        }
+        if (startedFrom != lastKnownMessage && controller != nil) {
+            controller!.answerText = answer
+            controller!.messagesView.reloadData()
+            scrollToLastMessage(controller!.messagesView)
         }
     }
 
@@ -372,6 +369,7 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let message = cells[indexPath.item]
         let cell = tableView.dequeueReusableCellWithIdentifier(String(message.type), forIndexPath: indexPath) as! ChatCell
+        cell.controller = controller
         cell.frame.size.width = tableView.frame.width
         try! message.form(chatCell: cell)
         return cell
@@ -401,7 +399,15 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
 
     func scrollToLastMessage(tableView: UITableView) {
         if (cells.count > 0) {
-            tableView.scrollToRowAtIndexPath(NSIndexPath(forItem: cells.count - 1, inSection: 0), atScrollPosition: .Top, animated: true)
+            tableView.scrollToRowAtIndexPath(NSIndexPath(forItem: cells.count - 1, inSection: 0), atScrollPosition: .Bottom, animated: true)
         }
+    }
+    
+    init(order: ExpLeagueOrder) {
+        self.order = order
+        self.lock = dispatch_queue_create("com.expleague.LockQueue\(order.jid.user)", nil)
+        super.init()
+        order.model = self
+        sync()
     }
 }

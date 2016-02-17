@@ -62,6 +62,7 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
         controller.clear()
         controller.attachments.clear()
 
+        AppDelegate.instance.tabs.tabBar.hidden = true
         AppDelegate.instance.tabs.selectedIndex = 1
     }
 

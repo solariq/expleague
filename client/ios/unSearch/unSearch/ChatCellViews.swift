@@ -17,6 +17,7 @@ enum CellAlignment: Int {
 
 class ChatCell: UITableViewCell {
     static let bgColor = UIColor(red: 218.0/256.0, green: 234.0/256.0, blue: 239.0/256.0, alpha: 1.0)
+    var controller: MessagesVeiwController?
     override func awakeFromNib() {
         super.awakeFromNib()
         backgroundColor = UIColor.clearColor()
@@ -220,8 +221,11 @@ class ExpertIdleCell: SimpleChatCell {
 }
 
 class AnswerReceivedCell: ExpertInProgressCell {
+    var id: String?
+    
     @IBAction func fire(sender: UIButton) {
-        action?()
+        self.controller!.scrollView.scrollRectToVisible(self.controller!.answerView!.frame, animated: true)
+        self.controller!.answerView!.stringByEvaluatingJavaScriptFromString("document.getElementById('\(self.id!)').scrollIntoView()")
     }
     
     override class var height: CGFloat {

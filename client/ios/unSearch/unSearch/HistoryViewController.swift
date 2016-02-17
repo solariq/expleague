@@ -16,9 +16,8 @@ class HistoryViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        splitViewController!.delegate = self
         AppDelegate.instance.historyView = self
-
+        AppDelegate.instance.split.delegate = self
         self.navigationItem.rightBarButtonItem = self.editButtonItem()
         tracker = XMPPTracker(onMessage: {(message: XMPPMessage) -> Void in
             if (message.from() != AppDelegate.instance.activeProfile!.jid) {
@@ -183,6 +182,17 @@ class HistoryViewController: UITableViewController {
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 2
     }
+
+    private var models: [String: ChatMessagesModel] = [:]
+    
+    func model(order: ExpLeagueOrder) -> ChatMessagesModel{
+        var model = models[order.jid.user]
+        if (model == nil) {
+            model = ChatMessagesModel(order: order)
+            models[order.jid.user] = model
+        }
+        return model!
+    }
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let o: ExpLeagueOrder
@@ -196,11 +206,11 @@ class HistoryViewController: UITableViewController {
         default:
             return
         }
+        AppDelegate.instance.tabs.tabBar.hidden = true;
+
         AppDelegate.instance.activeProfile!.selected = o
         let messagesView = MessagesVeiwController()
-        messagesView.order = o
-
-//        navigationController!.pushViewController(messagesView, animated: false)
+        messagesView.data = model(o)
         splitViewController!.showDetailViewController(messagesView, sender: nil)
     }
     
@@ -239,25 +249,48 @@ class HistoryViewController: UITableViewController {
 }
 
 extension HistoryViewController: UISplitViewControllerDelegate {
-    func splitViewController(svc: UISplitViewController, willChangeToDisplayMode displayMode: UISplitViewControllerDisplayMode) {
-        print(displayMode)
+    var selected: ExpLeagueOrder? {
+        return AppDelegate.instance.activeProfile!.selected
     }
     
+//    func primaryViewControllerForCollapsingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
+//        if (selected == nil) {
+//            return self
+//        }
+//        else {
+//            let mvc = MessagesVeiwController()
+//            mvc.data = model(selected!)
+//            return mvc
+//        }
+//    }
+//    
+//    func primaryViewControllerForExpandingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
+//        return primaryViewControllerForCollapsingSplitViewController(splitViewController)
+//    }
+//    
+//    func splitViewController(svc: UISplitViewController, willChangeToDisplayMode displayMode: UISplitViewControllerDisplayMode) {
+//        print(displayMode)
+//    }
+//    
     func splitViewController(splitViewController: UISplitViewController, showDetailViewController vc: UIViewController, sender: AnyObject?) -> Bool {
         let mvc = vc as! MessagesVeiwController
-        mvc.order = AppDelegate.instance.activeProfile!.selected
+        if (selected != nil) {
+            mvc.data = model(selected!)
+        }
         return false
     }
-    
-    func splitViewController(splitViewController: UISplitViewController, showViewController vc: UIViewController, sender: AnyObject?) -> Bool {
-        return true
-    }
+//
+//    func splitViewController(splitViewController: UISplitViewController, showViewController vc: UIViewController, sender: AnyObject?) -> Bool {
+//        return true
+//    }
     
     func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController: UIViewController, ontoPrimaryViewController primaryViewController: UIViewController) -> Bool {
         let mvc = secondaryViewController as! MessagesVeiwController
-        mvc.order = AppDelegate.instance.activeProfile!.selected
-        mvc.viewWillAppear(false)
-        return mvc.order == nil
+        if (selected != nil) {
+            mvc.data = model(selected!)
+            return false
+        }
+        return true
     }
 }
 

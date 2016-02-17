@@ -413,9 +413,7 @@ class ExpertInProgressModel: ChatCellModel {
         eipCell.expertAvatar.clipsToBounds = true;
 
         eipCell.action = {
-            let order = self.mvc.order!
-            order.cancel()
-            self.mvc.order = order
+            self.order.cancel()
         }
         if (eipCell.progress != nil) {
             if (AppDelegate.instance.stream.isConnected()) {
@@ -436,9 +434,9 @@ class ExpertInProgressModel: ChatCellModel {
         return message.type == .ExpertProgress || message.type == .ExpertAssignment
     }
     
-    let mvc: MessagesVeiwController
-    init(mvc: MessagesVeiwController) {
-        self.mvc = mvc
+    let order: ExpLeagueOrder
+    init(order: ExpLeagueOrder) {
+        self.order = order
     }
 }
 
@@ -457,9 +455,7 @@ class FeedbackModel: ChatCellModel {
             throw ModelErrors.WrongCellType
         }
         feedbackCell.action = {
-            let order = self.mvc.order!
-            order.close(stars: 5)
-            self.mvc.order = order
+            self.order.close(stars: 5)
         }
     }
     
@@ -467,9 +463,9 @@ class FeedbackModel: ChatCellModel {
         return false
     }
     
-    let mvc: MessagesVeiwController
-    init(controller: MessagesVeiwController) {
-        self.mvc = controller
+    let order: ExpLeagueOrder
+    init(order: ExpLeagueOrder) {
+        self.order = order
     }
 }
 
@@ -491,9 +487,7 @@ class LookingForExpertModel: ChatCellModel {
         }
         self.cell = lfeCell
         lfeCell.action = {
-            let order = self.mvc.order!
-            order.cancel()
-            self.mvc.order = order
+            self.order.cancel()
         }
         if (lfeCell.progress != nil) {
             if (AppDelegate.instance.stream.isConnected()) {
@@ -509,24 +503,22 @@ class LookingForExpertModel: ChatCellModel {
     }
     
     var tracker: XMPPTracker?
-    let mvc: MessagesVeiwController
-    init (mvc: MessagesVeiwController){
-        self.mvc = mvc
+    let order: ExpLeagueOrder
+    init (order: ExpLeagueOrder){
+        self.order = order
         tracker = XMPPTracker(onPresence: {(presence: XMPPPresence) -> Void in
             let statuses = try! presence.nodesForXPath("//*[local-name()='status' and namespace-uri()='http://expleague.com/scheme']")
             if statuses.count > 0, let status = statuses[0] as? DDXMLElement {
                 self.cell?.online = status.attributeIntegerValueForName("experts-online", withDefaultValue: 0)
             }
         })
-        AppDelegate.instance.activeProfile?.track(tracker!)
-        mvc.order!.track(tracker!)
+        order.parent.track(tracker!)
     }
 }
 
 class AnswerReceivedModel: ChatCellModel {
     var expertProperties: NSDictionary?
-    let controller: MessagesVeiwController
-    var id: String?
+    let id: String
     var type: CellType {
         return .AnswerReceived
     }
@@ -539,9 +531,6 @@ class AnswerReceivedModel: ChatCellModel {
         guard message.type == .Answer else {
             return false
         }
-        controller.answerAppend("<div id=\"\(id)\"/>")
-        id = "message-\(message.hashValue)"
-        controller.answerAppend(message.body!);
         return true
     }
 
@@ -550,15 +539,12 @@ class AnswerReceivedModel: ChatCellModel {
             throw ModelErrors.WrongCellType
         }
         try progress.form(chatCell: arCell)
-        arCell.action = {
-            self.controller.scrollView.scrollRectToVisible(self.controller.answerView!.frame, animated: true)
-            self.controller.answerView!.stringByEvaluatingJavaScriptFromString("document.getElementById('\(self.id!)').scrollIntoView()")
-        }
+        arCell.id = id
     }
 
     let progress: ExpertInProgressModel
-    init(controller: MessagesVeiwController, progress: ExpertInProgressModel) {
-        self.controller = controller
+    init(id: String, progress: ExpertInProgressModel) {
+        self.id = id
         self.progress = progress
     }
 }

@@ -19,6 +19,7 @@ class Weak<T: AnyObject> {
 }
 
 class ExpLeagueOrder: NSManagedObject {
+
     var stream: XMPPStream {
         return AppDelegate.instance.stream
     }
@@ -91,31 +92,27 @@ class ExpLeagueOrder: NSManagedObject {
         } catch {
             fatalError("Failure to save context: \(error)")
         }
-        AppDelegate.instance.messagesView?.onMessage(message)
+        model?.sync()
     }
 
-    private dynamic var listeners: NSMutableArray = []
-    func track(tracker: XMPPTracker) {
-        listeners.addObject(Weak(tracker))
-    }
+    dynamic weak var model: ChatMessagesModel?
     
     func iq(iq iq: XMPPIQ) {
     }
     
     func presence(presence presence: XMPPPresence) {
-        for listenerRef in listeners.copy() as! NSArray {
-            if let listener = (listenerRef as! Weak<XMPPTracker>).value {
-                listener.onPresence?(presence: presence)
-            }
-            else {
-                listeners.removeObject(listenerRef)
-            }
-        }
     }
     
-    func send(text: String) {
+    func send(text text: String) {
         let msg = XMPPMessage(type: "groupchat", to: jid)
         msg.addBody(text)
+        message(message:msg)
+        stream.sendElement(msg)
+    }
+    
+    func send(xml xml: DDXMLElement) {
+        let msg = XMPPMessage(type: "groupchat", to: jid)
+        msg.addChild(xml)
         message(message:msg)
         stream.sendElement(msg)
     }

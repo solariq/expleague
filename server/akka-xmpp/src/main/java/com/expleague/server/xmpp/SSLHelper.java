@@ -21,8 +21,8 @@ public class SSLHelper {
   }
   private SSLEngine sslEngine;
 
-  private ByteBuffer inDst = ByteBuffer.allocate(4096);
-  private ByteBuffer inSrc = ByteBuffer.allocate(4096);
+  private ByteBuffer inDst = ByteBuffer.allocate(1024 * 1024);
+  private ByteBuffer inSrc = ByteBuffer.allocate(1024 * 1024);
   public void decrypt(ByteString msgIn, Consumer<ByteString> consumer) {
     try {
       inSrc.put(msgIn.asByteBuffer());
