@@ -11,22 +11,16 @@ import com.expleague.expert.xmpp.events.TaskStartedEvent;
 import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
 import com.expleague.model.Answer;
 import com.expleague.model.Offer;
-import com.expleague.xmpp.Item;
 import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.system.RuntimeUtils;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Accordion;
-import javafx.scene.control.Button;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
@@ -56,6 +50,7 @@ public class DialogueController implements Action<ExpertEvent> {
   public VBox root;
   public Accordion taskFolder;
   public VBox taskViewParent;
+  public ScrollPane scroll;
   private String placeHolder = "Напишите клиенту";
   private Text textHolder = new Text();
   private double oldHeight = 0;
@@ -98,8 +93,8 @@ public class DialogueController implements Action<ExpertEvent> {
         input.setMaxHeight(textHolder.getLayoutBounds().getHeight() + 12);
       }
     });
-    messagesView.prefWidthProperty().addListener((observable, oldValue, newValue) -> {
-      root.setPrefWidth((Double)newValue - 5);
+    root.prefWidthProperty().addListener((observable, oldValue, newValue) -> {
+      messagesView.setPrefWidth((Double)newValue);
     });
   }
   private final List<CompositeMessageViewController> controllers = new ArrayList<>();
@@ -119,7 +114,10 @@ public class DialogueController implements Action<ExpertEvent> {
       final CompositeMessageViewController viewController = type.newInstance(root);
       final Node msg = FXMLLoader.load(type.fxml(), null, null, param -> viewController);
       final int size = children.size();
-      Platform.runLater(() -> children.add(msg));
+      Platform.runLater(() -> {
+        children.add(msg);
+        Platform.runLater(() -> scroll.setVvalue(scroll.getVmax()));
+      });
       controllers.add(viewController);
       return viewController;
     }
@@ -154,19 +152,7 @@ public class DialogueController implements Action<ExpertEvent> {
         final Offer offer = task.offer();
         final CompositeMessageViewController viewController = MessageType.TASK.newInstance(root);
         children.clear();
-        final Node taskView = FXMLLoader.load(MessageType.TASK.fxml(), null, null, param -> viewController);
-        this.taskView.getChildren().add(taskView);
-        viewController.addText(offer.topic());
-        if (offer.geoSpecific())
-          viewController.addLocation(offer.location());
-
-        for (int i = 0; i < offer.attachments().length; i++) {
-          final Item attachment = offer.attachments()[i];
-          if (attachment instanceof Offer.Image) {
-            viewController.addImage(((Offer.Image) attachment));
-          }
-        }
-
+        this.taskView.getChildren().add(viewController.loadOffer(offer));
       }
       catch (IOException e) {
         throw new RuntimeException(e);

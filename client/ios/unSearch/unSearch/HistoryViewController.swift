@@ -106,7 +106,11 @@ class HistoryViewController: UITableViewController {
             let o = ongoing[indexPath.row]
             let cell = tableView.dequeueReusableCellWithIdentifier("OngoingOrder", forIndexPath: indexPath) as! OngoingOrderStateCell
             cell.title.text = o.text
-            if (o.status == .Overtime) {
+            if (o.status == .ExpertSearch && o.count > 0 && o.message(o.count - 1).type == .Answer) {
+                cell.status.textColor = UIColor.greenColor()
+                cell.status.text = "ОТВЕТ ГОТОВ"
+            }
+            else if (o.status == .Overtime) {
                 let formatter = NSDateFormatter()
                 formatter.timeStyle = .ShortStyle
                 formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0)
@@ -116,14 +120,8 @@ class HistoryViewController: UITableViewController {
                 cell.status.text = "ПРОСРОЧЕН НА \(formatter.stringFromDate(NSDate(timeIntervalSince1970: -o.timeLeft)))"
             }
             else if (o.status == .ExpertSearch) {
-                if (o.count > 0 && o.message(o.count - 1).type == .Answer) {
-                    cell.status.textColor = UIColor.greenColor()
-                    cell.status.text = "ОТВЕТ ГОТОВ"
-                }
-                else {
-                    cell.status.textColor = OngoingOrderStateCell.OK_COLOR
-                    cell.status.text = "ИЩЕМ ЭКСПЕРТА"
-                }
+                cell.status.textColor = OngoingOrderStateCell.OK_COLOR
+                cell.status.text = "ИЩЕМ ЭКСПЕРТА"
             }
             else if (o.status == .Open) {
                 cell.status.textColor = OngoingOrderStateCell.OK_COLOR

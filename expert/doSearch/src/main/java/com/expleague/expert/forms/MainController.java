@@ -1,5 +1,7 @@
 package com.expleague.expert.forms;
 
+import com.expleague.expert.forms.chat.CompositeMessageViewController;
+import com.expleague.expert.forms.chat.DialogueController;
 import com.expleague.expert.forms.chat.TimeoutUtil;
 import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
@@ -29,6 +31,8 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import org.controlsfx.control.Notifications;
 import org.jetbrains.annotations.Nullable;
@@ -65,7 +69,7 @@ public class MainController implements Action<ExpertEvent> {
   private Action<UserProfile> profileAction = profile -> profile.expert().addListener(MainController.this);
 
   boolean initialized = false;
-  private Node preview;
+  private VBox preview;
 
   @SuppressWarnings("unused")
   @FXML
@@ -213,9 +217,22 @@ public class MainController implements Action<ExpertEvent> {
         if (preview != null)
           items.remove(preview);
         if (showPreview || preview != null) {
-          preview = answerVC.createPreview();
-          items.add(preview);
-          SplitPane.setResizableWithParent(preview, false);
+          preview = new VBox();
+          final CompositeMessageViewController controller = DialogueController.MessageType.TASK.newInstance(preview);
+          try {
+            final Accordion task = new Accordion(new TitledPane("Задание", controller.loadOffer(this.task.offer())));
+            final Node pw = answerVC.createPreview();
+            preview.getChildren().addAll(task, pw);
+            VBox.setVgrow(task, Priority.NEVER);
+            VBox.setVgrow(pw, Priority.ALWAYS);
+            preview.setMaxWidth(320);
+            preview.setMinWidth(320);
+            items.add(this.preview);
+            SplitPane.setResizableWithParent(this.preview, false);
+          }
+          catch (IOException e) {
+            log.log(Level.SEVERE, "Unable to create task view", e);
+          }
         }
         break;
       }

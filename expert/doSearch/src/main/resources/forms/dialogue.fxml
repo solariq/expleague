@@ -24,7 +24,7 @@
     </panes>
   </Accordion>
   <VBox VBox.vgrow="ALWAYS">
-    <ScrollPane VBox.vgrow="ALWAYS" styleClass="messages-pane" hbarPolicy="NEVER" vbarPolicy="NEVER">
+    <ScrollPane fx:id="scroll" VBox.vgrow="ALWAYS" styleClass="messages-pane" hbarPolicy="NEVER" vbarPolicy="NEVER">
       <VBox fx:id="messagesView"/>
     </ScrollPane>
     <TextArea VBox.vgrow="NEVER" minHeight="27" prefHeight="27" maxHeight="27" fx:id="input" text="Введите сообщение" onKeyPressed="#catchEnter"/>

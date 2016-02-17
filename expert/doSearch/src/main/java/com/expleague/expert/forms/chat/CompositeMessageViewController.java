@@ -1,6 +1,7 @@
 package com.expleague.expert.forms.chat;
 
 import com.expleague.model.Offer;
+import com.expleague.xmpp.Item;
 import com.lynden.gmapsfx.GoogleMapView;
 import com.lynden.gmapsfx.MapComponentInitializedListener;
 import com.lynden.gmapsfx.javascript.object.*;
@@ -10,6 +11,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -20,6 +22,7 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
+import java.io.IOException;
 import java.util.Date;
 
 /**
@@ -35,6 +38,21 @@ public class CompositeMessageViewController {
   public CompositeMessageViewController(VBox root, DialogueController.MessageType type) {
     this.root = root;
     this.type = type;
+  }
+
+  public Node loadOffer(Offer offer) throws IOException {
+    final Node taskView = FXMLLoader.load(DialogueController.MessageType.TASK.fxml(), null, null, param -> this);
+    addText(offer.topic());
+    if (offer.geoSpecific())
+      addLocation(offer.location());
+
+    for (int i = 0; i < offer.attachments().length; i++) {
+      final Item attachment = offer.attachments()[i];
+      if (attachment instanceof Offer.Image) {
+        addImage(((Offer.Image) attachment));
+      }
+    }
+    return taskView;
   }
 
   public DialogueController.MessageType type() {
@@ -60,6 +78,8 @@ public class CompositeMessageViewController {
     label.setText(text);
     label.setEditable(false);
     label.setWrapText(true);
+    labelModel.setFont(label.getFont());
+    labelModel.setLineSpacing(2);
     labelModel.layoutBoundsProperty().addListener(o -> {
       final int value = (int)Math.ceil(labelModel.getLayoutBounds().getHeight() / labelModel.getFont().getSize() / 1.3333);
       if (value > 0) {
@@ -69,13 +89,13 @@ public class CompositeMessageViewController {
           label.setMaxWidth(labelModel2.getLayoutBounds().getWidth());
         }
         else {
-          label.setMaxWidth(trueWidth.get() - 35);
+          label.setMaxWidth(trueWidth.get() - 30);
         }
       }
     });
 
     final InvalidationListener listener = observable -> {
-      labelModel.setWrappingWidth(trueWidth.get() - 35);
+      labelModel.setWrappingWidth(trueWidth.get() - 30);
     };
     trueWidth.addListener(listener);
     listener.invalidated(trueWidth);

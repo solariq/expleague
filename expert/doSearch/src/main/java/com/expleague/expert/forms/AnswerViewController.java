@@ -195,10 +195,7 @@ public class AnswerViewController {
     final MarkdownPreviewPane previewPane = new MarkdownPreviewPane();
     previewPane.markdownASTProperty().bind(editorPane.markdownASTProperty());
     previewPane.scrollYProperty().bind(editorPane.scrollYProperty());
-    final TabPane node = (TabPane)previewPane.getNode();
-    node.setMaxWidth(320);
-    node.setMinWidth(320);
-    return node;
+    return previewPane.getNode();
   }
 
   public void insertAtCursor(Patch patch) {
