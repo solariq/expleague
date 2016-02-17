@@ -98,7 +98,7 @@ public class ExpertTask {
     else if (command instanceof Operations.Cancel) {
       switch (state) {
         case INVITE:
-          eventsReceiver.accept(new TaskSuspendedEvent(command, this));
+          eventsReceiver.accept(new TaskInviteCanceledEvent(command, this));
           state(State.SUSPEND);
           break;
         case SUSPEND:

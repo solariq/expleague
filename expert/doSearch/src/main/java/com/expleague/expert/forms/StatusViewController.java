@@ -64,6 +64,10 @@ public class StatusViewController {
     else if (expertEvent instanceof CheckCanceledEvent) {
       status.set(ExpertStatus.WAITING);
     }
+    else if (expertEvent instanceof TaskInviteCanceledEvent) {
+      status.set(ExpertStatus.WAITING);
+      Platform.runLater(() -> this.task.getChildren().clear());
+    }
     else if (expertEvent instanceof TaskAcceptedEvent || expertEvent instanceof TaskResumedEvent) {
       status.set(ExpertStatus.BUSY);
       Platform.runLater(() -> {

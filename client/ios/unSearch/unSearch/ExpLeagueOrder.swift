@@ -139,6 +139,9 @@ class ExpLeagueOrder: NSManagedObject {
         do {
             try self.managedObjectContext!.save()
             model?.sync()
+            if let h = AppDelegate.instance.historyView, tableView = h.view as? UITableView{
+                tableView.reloadData()
+            }
         } catch {
             fatalError("Failure to save context: \(error)")
         }
@@ -152,9 +155,12 @@ class ExpLeagueOrder: NSManagedObject {
         feedback.addAttributeWithName("stars", integerValue: score)
         msg.addChild(feedback)
         stream.sendElement(msg)
-        model?.sync()
         do {
             try self.managedObjectContext!.save()
+            model?.sync()
+            if let h = AppDelegate.instance.historyView, tableView = h.view as? UITableView{
+                tableView.reloadData()
+            }
         } catch {
             fatalError("Failure to save context: \(error)")
         }

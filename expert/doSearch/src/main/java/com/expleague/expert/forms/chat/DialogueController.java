@@ -5,10 +5,7 @@ import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
 import com.expleague.expert.xmpp.ExpertEvent;
 import com.expleague.expert.xmpp.ExpertTask;
-import com.expleague.expert.xmpp.events.ChatMessageEvent;
-import com.expleague.expert.xmpp.events.TaskInviteEvent;
-import com.expleague.expert.xmpp.events.TaskStartedEvent;
-import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
+import com.expleague.expert.xmpp.events.*;
 import com.expleague.model.Answer;
 import com.expleague.model.Offer;
 import com.expleague.xmpp.stanza.Message;
@@ -162,6 +159,12 @@ public class DialogueController implements Action<ExpertEvent> {
     });
   }
 
+  public void accept(TaskInviteCanceledEvent cancel) {
+    Platform.runLater(() -> {
+      taskViewParent.getChildren().clear();
+    });
+  }
+
   public void accept(TaskInviteEvent invite) {
     final HBox box = new HBox();
     VBox.setVgrow(box, Priority.NEVER);
@@ -182,7 +185,7 @@ public class DialogueController implements Action<ExpertEvent> {
     });
     decline.setOnAction(action -> {
       task.cancel();
-      taskViewParent.getChildren().remove(box);
+      taskViewParent.getChildren().clear();
     });
     Platform.runLater(() -> taskViewParent.getChildren().add(box));
   }
