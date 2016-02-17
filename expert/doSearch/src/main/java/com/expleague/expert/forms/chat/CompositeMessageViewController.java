@@ -11,6 +11,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
@@ -132,6 +133,12 @@ public class CompositeMessageViewController {
       contents.getChildren().add(mapView);
   }
 
+
+  public void addAction(String name, Runnable action) {
+    final Button button = new Button(name);
+    button.setOnAction(event -> action.run());
+    contents.getChildren().add(button);
+  }
 
   private Node makeCenter(Node flow) {
     final Region left = new Region();

@@ -133,6 +133,7 @@ public class MainController implements Action<ExpertEvent> {
         vertical.selectToggle(dialogueButton);
         sendButton.setDisable(false);
         startEditor(null, new AnswerViewController(task));
+        editorIndex--;
       });
     }
     else if (expertTaskEvent instanceof TaskInviteEvent) {
@@ -168,7 +169,7 @@ public class MainController implements Action<ExpertEvent> {
       final Message message = messageEvent.source();
       if (message.has(Answer.class)) {
         final AnswerViewController controller = new AnswerViewController(message.get(Answer.class).value());
-        startEditor(message.from(), controller);
+        Platform.runLater(() -> startEditor(message.from(), controller));
       }
     }
   }
@@ -176,17 +177,16 @@ public class MainController implements Action<ExpertEvent> {
   int editorIndex = 0;
   private void startEditor(@Nullable JID from, AnswerViewController answerController) {
     final Tab tab = new Tab("Ответ " + (from != null ? from.resource() : ""));
-    Platform.runLater(() -> {
-      if (task == null)
-        return;
-      try {
-        tab.setContent(FXMLLoader.load(getClass().getResource("/forms/answer.fxml"), null, null, param -> answerController));
-      }
-      catch (IOException e) {
-        log.log(Level.SEVERE, "Unable to load editor!", e);
-      }
-      tabs.getTabs().add(editorIndex++, tab);
-    });
+    tab.setClosable(false);
+    if (task == null)
+      return;
+    try {
+      tab.setContent(FXMLLoader.load(getClass().getResource("/forms/answer.fxml"), null, null, param -> answerController));
+    }
+    catch (IOException e) {
+      log.log(Level.SEVERE, "Unable to load editor!", e);
+    }
+    tabs.getTabs().add(editorIndex++, tab);
   }
 
   public void sendAnswer(ActionEvent ignore) {

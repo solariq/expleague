@@ -8,6 +8,7 @@ import com.expleague.expert.xmpp.events.ChatMessageEvent;
 import com.expleague.expert.xmpp.events.TaskInviteEvent;
 import com.expleague.expert.xmpp.events.TaskStartedEvent;
 import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
+import com.expleague.model.Answer;
 import com.expleague.model.Offer;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.stanza.Message;
@@ -164,7 +165,6 @@ public class DialogueController implements Action<ExpertEvent> {
         throw new RuntimeException(e);
       }
 
-      input.setEditable(true);
       taskFolder.setExpandedPane(taskFolder.getPanes().get(0));
     });
   }
@@ -206,18 +206,32 @@ public class DialogueController implements Action<ExpertEvent> {
 
   public void accept(ChatMessageEvent event) {
     final Message source = event.source();
+    if (source.from().resource().isEmpty() || // system messages
+        event.task().offer().room().local().equals(source.from().resource()) ||
+        source.has(Message.Subject.class) // topic started
+        ) { // system messages
+      return;
+    }
+    final MessageType type = task.owner().local().equals(source.from().resource()) ? MessageType.OUTGOING : MessageType.INCOMING;
+    final CompositeMessageViewController finalVc = locateVCOfType(type);
+    if (source.has(Answer.class)) {
+      Platform.runLater(() -> finalVc.addAction("Перейти к ответу", () -> {
 
-    final CompositeMessageViewController finalVc = locateVCOfType(
-        task.owner().local().equals(source.from().resource()) ? MessageType.OUTGOING : MessageType.INCOMING
-    );
-    event.visitParts(new ChatMessageEvent.PartsVisitor(){
-      @Override
-      public void accept(String text) {
-        final String trim = text.trim();
-        if(!trim.isEmpty())
-          Platform.runLater(() -> finalVc.addText(trim));
+      }));
+    }
+    else {
+      event.visitParts(new ChatMessageEvent.PartsVisitor() {
+        @Override
+        public void accept(String text) {
+          final String trim = text.trim();
+          if (!trim.isEmpty())
+            Platform.runLater(() -> finalVc.addText(trim));
+        }
+      });
+      if (type == MessageType.INCOMING) { // incomming message from client
+        input.setEditable(true);
       }
-    });
+    }
   }
 
   private static RuntimeUtils.InvokeDispatcher dispatcher = new RuntimeUtils.InvokeDispatcher(DialogueController.class, obj -> {
