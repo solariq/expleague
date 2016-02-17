@@ -138,6 +138,7 @@ class ExpLeagueOrder: NSManagedObject {
         stream.sendElement(msg)
         do {
             try self.managedObjectContext!.save()
+            model?.sync()
         } catch {
             fatalError("Failure to save context: \(error)")
         }
@@ -151,6 +152,7 @@ class ExpLeagueOrder: NSManagedObject {
         feedback.addAttributeWithName("stars", integerValue: score)
         msg.addChild(feedback)
         stream.sendElement(msg)
+        model?.sync()
         do {
             try self.managedObjectContext!.save()
         } catch {

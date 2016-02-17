@@ -128,6 +128,9 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         adjustSizes()
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardShown:", name: UIKeyboardDidShowNotification, object: nil)
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardHidden:", name: UIKeyboardDidHideNotification, object: nil)
+        if (data != nil) {
+            data?.scrollToLastMessage(messagesView)
+        }
 
         super.viewWillAppear(animated)
     }
@@ -276,6 +279,7 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         if (cells.isEmpty) {
             cells.append(SetupModel(order: order))
         }
+        let cellsCount = cells.count
         let startedFrom = lastKnownMessage
         var model = cells.last!
         while (lastKnownMessage < order.count) {
@@ -353,7 +357,11 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         if(!order.isActive && (cells.last! is LookingForExpertModel || cells.last! is ExpertInProgressModel)) {
             cells.removeLast()
         }
-        if (startedFrom != lastKnownMessage && controller != nil) {
+        if(order.status == .Closed && cells.last! is FeedbackModel) {
+            cells.removeLast()
+        }
+
+        if ((startedFrom != lastKnownMessage || cells.count != cellsCount) && controller != nil) {
             controller!.answerText = answer
             controller!.messagesView.reloadData()
             scrollToLastMessage(controller!.messagesView)
