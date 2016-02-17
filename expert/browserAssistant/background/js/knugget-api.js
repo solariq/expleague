@@ -14,7 +14,8 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
                 return {
                     link: {
                         href: el.Href,
-                        title: el.Title
+                        title: el.Title,
+                        referer: el.Referer
                     }
                 };
             }
