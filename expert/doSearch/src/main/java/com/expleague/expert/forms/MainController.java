@@ -115,7 +115,7 @@ public class MainController implements Action<ExpertEvent> {
     });
 
     tabs.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-      if (newValue.getContent().lookup("#editor") != null) {
+      if (newValue != null && newValue.getContent().lookup("#editor") != null) {
         selectEditor(newValue.getId(), false, false);
       }
     });
