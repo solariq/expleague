@@ -136,6 +136,7 @@ public class MainController implements Action<ExpertEvent> {
   }
 
   private ExpertTask task;
+  private int editorIndex = 0;
   @Override
   public void invoke(ExpertEvent expertTaskEvent) {
     if (expertTaskEvent instanceof TaskStartedEvent) {
@@ -171,15 +172,15 @@ public class MainController implements Action<ExpertEvent> {
       task = ((TaskAcceptedEvent) expertTaskEvent).task();
       Platform.runLater(() -> {
         sendButton.setDisable(false);
-        startEditor(new AnswerViewController(task), "answer", null);
-        editorIndex--;
+        startEditor(new AnswerViewController(task), "answer", 0, null);
+        editorIndex++;
       });
     }
     else if (expertTaskEvent instanceof TaskSuspendedEvent) {
       sendButton.setDisable(true);
       task = null;
       Platform.runLater(() -> {
-        tabs.getTabs().remove(0, editorIndex + 1);
+        tabs.getTabs().remove(0, editorIndex);
         editorIndex = 0;
       });
     }
@@ -188,13 +189,12 @@ public class MainController implements Action<ExpertEvent> {
       final Message message = messageEvent.source();
       if (message.has(Answer.class)) {
         final AnswerViewController controller = new AnswerViewController(message.get(Answer.class).value());
-        Platform.runLater(() -> startEditor(controller, message.id(), message.from()));
+        Platform.runLater(() -> startEditor(controller, message.id(), editorIndex++ - 1, message.from()));
       }
     }
   }
 
-  int editorIndex = 0;
-  private void startEditor(AnswerViewController answerController, String id, @Nullable JID from) {
+  private void startEditor(AnswerViewController answerController, String id, int index, @Nullable JID from) {
     final Tab tab = new Tab("Ответ " + (from != null ? from.resource() : ""));
     tab.setId(id);
     tab.setClosable(false);
@@ -206,7 +206,7 @@ public class MainController implements Action<ExpertEvent> {
     catch (IOException e) {
       log.log(Level.SEVERE, "Unable to load editor!", e);
     }
-    tabs.getTabs().add(editorIndex++, tab);
+    tabs.getTabs().add(index, tab);
   }
 
   public void selectEditor(String id, boolean showPreview, boolean focus) {

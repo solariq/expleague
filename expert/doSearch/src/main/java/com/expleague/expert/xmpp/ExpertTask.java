@@ -133,6 +133,7 @@ public class ExpertTask {
     final Operations.Cancel cancel = new Operations.Cancel();
     ExpLeagueConnection.instance().send(new Message(owner.jid(), owner.system(), cancel));
     state(State.CLOSED);
+    eventsReceiver.accept(new TaskInviteCanceledEvent(cancel, this));
     eventsReceiver.accept(new TaskClosedEvent(cancel, this));
     log(cancel);
   }

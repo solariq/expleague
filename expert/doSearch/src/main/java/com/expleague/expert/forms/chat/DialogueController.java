@@ -161,7 +161,8 @@ public class DialogueController implements Action<ExpertEvent> {
 
   public void accept(TaskInviteCanceledEvent cancel) {
     Platform.runLater(() -> {
-      taskViewParent.getChildren().clear();
+      taskView.getChildren().clear();
+      taskViewParent.getChildren().remove(1);
     });
   }
 
@@ -185,7 +186,8 @@ public class DialogueController implements Action<ExpertEvent> {
     });
     decline.setOnAction(action -> {
       task.cancel();
-      taskViewParent.getChildren().clear();
+      taskView.getChildren().clear();
+      taskViewParent.getChildren().remove(box);
     });
     Platform.runLater(() -> taskViewParent.getChildren().add(box));
   }

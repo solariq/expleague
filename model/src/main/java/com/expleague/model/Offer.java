@@ -158,7 +158,7 @@ public class Offer extends Item {
 
   @XmlEnum
   public enum Urgency {
-    @XmlEnumValue("asap") ASAP(0),
+    @XmlEnumValue("asap") ASAP(TimeUnit.HOURS.toMillis(1)),
     @XmlEnumValue("day") DAY(TimeUnit.DAYS.toMillis(1)),
     @XmlEnumValue("week") WEEK(TimeUnit.DAYS.toMillis(7)),;
 

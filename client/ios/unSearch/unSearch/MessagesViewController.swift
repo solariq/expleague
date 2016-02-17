@@ -22,7 +22,9 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     let progress = UIProgressView()
     var data: ChatMessagesModel? {
         didSet {
-            data!.controller = self
+            if (loaded) {
+                data!.controller = self
+            }
             messagesView.delegate = data
             messagesView.dataSource = data
             answerText = data!.answer
@@ -81,6 +83,9 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "dismissKeyboard"))
         loaded = true
+        if (data != nil) {
+            data?.controller = self
+        }
     }
     
     func chatInput(chatInput: ChatInputViewController, didSend text: String) -> Bool {
