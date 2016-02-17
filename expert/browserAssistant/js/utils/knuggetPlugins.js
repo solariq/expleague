@@ -795,7 +795,7 @@
                         var len;
                         for (i = 0, len = sel.rangeCount; i < len; i++) {
                             var a = sel.getRangeAt(i).cloneContents();
-                            if (/h[0-9]/.test(a.firstChild.tagName.toLowerCase())) {
+                            if (a && a.firstChild && a.firstChild.tagName && /h[0-9]/.test(a.firstChild.tagName.toLowerCase())) {
                                 collection.Title = a.firstChild.textContent;
                             }
                             container.appendChild(a);
