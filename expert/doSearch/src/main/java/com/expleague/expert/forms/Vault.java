@@ -4,6 +4,7 @@ import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
 import com.expleague.expert.xmpp.ExpertEvent;
 import com.expleague.expert.xmpp.ExpertTask;
+import com.expleague.expert.xmpp.events.TaskAcceptedEvent;
 import com.expleague.expert.xmpp.events.TaskStartedEvent;
 import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
 import com.expleague.model.patch.ImagePatch;
@@ -70,8 +71,8 @@ public class Vault implements Action<ExpertEvent> {
 
   @Override
   public void invoke(ExpertEvent expertEvent) {
-    if (expertEvent instanceof TaskStartedEvent) {
-      task = ((TaskStartedEvent) expertEvent).task();
+    if (expertEvent instanceof TaskAcceptedEvent) {
+      task = ((TaskAcceptedEvent) expertEvent).task();
       Platform.runLater(() -> task.patchesProperty().stream().forEach(this::addPatch));
       task.patchesProperty().addListener((ListChangeListener<Patch>) c -> {
         while (c.next()) {

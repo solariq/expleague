@@ -7,10 +7,7 @@ import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
 import com.expleague.expert.xmpp.ExpertEvent;
 import com.expleague.expert.xmpp.ExpertTask;
-import com.expleague.expert.xmpp.events.ChatMessageEvent;
-import com.expleague.expert.xmpp.events.TaskInviteEvent;
-import com.expleague.expert.xmpp.events.TaskStartedEvent;
-import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
+import com.expleague.expert.xmpp.events.*;
 import com.expleague.model.Answer;
 import com.expleague.model.Offer;
 import com.expleague.xmpp.JID;
@@ -148,9 +145,6 @@ public class MainController implements Action<ExpertEvent> {
           return;
 
         vertical.selectToggle(dialogueButton);
-        sendButton.setDisable(false);
-        startEditor(new AnswerViewController(task), "answer", null);
-        editorIndex--;
       });
     }
     else if (expertTaskEvent instanceof TaskInviteEvent) {
@@ -171,6 +165,16 @@ public class MainController implements Action<ExpertEvent> {
             .hideAfter(Duration.seconds(30))
             .position(Pos.TOP_RIGHT)
             .show();
+      });
+    }
+    else if (expertTaskEvent instanceof TaskAcceptedEvent) {
+      task = ((TaskAcceptedEvent) expertTaskEvent).task();
+      Platform.runLater(() -> {
+        if (task == null)
+
+        sendButton.setDisable(false);
+        startEditor(new AnswerViewController(task), "answer", null);
+        editorIndex--;
       });
     }
     else if (expertTaskEvent instanceof TaskSuspendedEvent) {

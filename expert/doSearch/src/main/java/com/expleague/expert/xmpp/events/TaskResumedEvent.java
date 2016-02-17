@@ -7,7 +7,7 @@ import com.expleague.xmpp.Item;
  * Experts League
  * Created by solar on 11/02/16.
  */
-public class TaskResumedEvent extends TaskStartedEvent {
+public class TaskResumedEvent extends TaskAcceptedEvent {
   public TaskResumedEvent(Item source, ExpertTask task) {
     super(source, task);
   }
