@@ -139,31 +139,32 @@ public class AnswerViewController {
     VBox.setVgrow(toolBar, Priority.NEVER);
     editor.getChildren().addAll(toolBar, editorNode);
 
-    ((StyleClassedTextArea) editorPane.getNode()).setEditable(false);
-    editorNode.setOnDragOver(event -> {
-      if (event.getDragboard().hasString())
-        event.acceptTransferModes(TransferMode.COPY);
-      editorPane.requestFocus();
-      final CharacterHit hit = editorNode.hit(event.getX(), event.getY());
-      final int insertionIndex = hit.getInsertionIndex();
-      editorNode.positionCaret(insertionIndex);
-      event.consume();
-    });
-    editorNode.setOnDragDropped(event -> {
-      Dragboard db = event.getDragboard();
-      boolean success = false;
-      editorPane.requestFocus();
-      if (db.hasString()) {
-        editorNode.replaceSelection(db.getString());
-        success = true;
-      }
-      final CharacterHit hit = editorNode.hit(event.getX(), event.getY());
-      final int insertionIndex = hit.getInsertionIndex();
-      editorNode.positionCaret(insertionIndex);
-      event.setDropCompleted(success);
-      event.consume();
-    });
     if (task != null) {
+      ((StyleClassedTextArea) editorPane.getNode()).setEditable(false);
+      editorNode.setOnDragOver(event -> {
+        if (event.getDragboard().hasString())
+          event.acceptTransferModes(TransferMode.COPY);
+        editorPane.requestFocus();
+        final CharacterHit hit = editorNode.hit(event.getX(), event.getY());
+        final int insertionIndex = hit.getInsertionIndex();
+        editorNode.positionCaret(insertionIndex);
+        event.consume();
+      });
+      editorNode.setOnDragDropped(event -> {
+        Dragboard db = event.getDragboard();
+        boolean success = false;
+        editorPane.requestFocus();
+        if (db.hasString()) {
+          editorNode.replaceSelection(db.getString());
+          success = true;
+        }
+        final CharacterHit hit = editorNode.hit(event.getX(), event.getY());
+        final int insertionIndex = hit.getInsertionIndex();
+        editorNode.positionCaret(insertionIndex);
+        event.setDropCompleted(success);
+        event.consume();
+      });
+
       editorPane.setMarkdown(task.patchwork());
       editorNode.setEditable(true);
       editorPane.markdownProperty().addListener((observable, oldValue, newValue) -> {

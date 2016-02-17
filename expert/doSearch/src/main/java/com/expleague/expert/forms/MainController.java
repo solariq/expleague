@@ -15,6 +15,8 @@ import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.func.Action;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -42,6 +44,10 @@ import java.util.logging.Logger;
  */
 @SuppressWarnings("Duplicates")
 public class MainController implements Action<ExpertEvent> {
+  private static MainController instance;
+  public static MainController instance() {
+    return instance;
+  }
   private static final Logger log = Logger.getLogger(MainController.class.getName());
   @FXML
   public ToggleGroup vertical;
@@ -67,6 +73,8 @@ public class MainController implements Action<ExpertEvent> {
     if (initialized)
       return;
     initialized = true;
+    instance = this;
+
     try {
       toolsPane.getChildren().add(FXMLLoader.load(getClass().getResource("/forms/tools.fxml"), null, null, clazz -> this));
       sendButton.setDisable(true);
@@ -79,9 +87,10 @@ public class MainController implements Action<ExpertEvent> {
     if (active != null) profileAction.invoke(active);
     vertical.selectedToggleProperty().addListener((obs, prev, next) -> {
       final ObservableList<Node> items = horizontalSplit.getItems();
-      if (prev != null)
+      if (horizontalSplit.getDividerPositions().length > 0)
         prev.setUserData(horizontalSplit.getDividerPositions()[0]);
       items.remove(1, items.size());
+      preview = null;
       final Toggle toggle = vertical.getSelectedToggle();
       if (toggle == dialogueButton) {
         SplitPane.setResizableWithParent(dialogue, false);
@@ -90,16 +99,20 @@ public class MainController implements Action<ExpertEvent> {
         horizontalSplit.setDividerPosition(0, divider != null ? divider : 0.7);
       }
       else if (toggle == previewButton){
-        if (preview == null) {
-          Node editor = tabs.getSelectionModel().selectedItemProperty().get().getContent().lookup("#editor");
-          if (editor == null)
-            editor = tabs.lookup("#editor");
-          final AnswerViewController answerVC = (AnswerViewController) editor.getUserData();
-          preview = answerVC.createPreview();
-          SplitPane.setResizableWithParent(preview, false);
+        final Tab tab = tabs.getSelectionModel().getSelectedItem();
+        if (tab != null && tab.getContent().lookup("#editor") != null) {
+          selectEditor(tab.getId(), true, false);
         }
-        items.add(preview);
+        else {
+          selectEditor("answer", true, false);
+        }
         horizontalSplit.setDividerPosition(0, 1.);
+      }
+    });
+
+    tabs.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+      if (newValue.getContent().lookup("#editor") != null) {
+        selectEditor(newValue.getId(), false, false);
       }
     });
   }
@@ -132,7 +145,7 @@ public class MainController implements Action<ExpertEvent> {
 
         vertical.selectToggle(dialogueButton);
         sendButton.setDisable(false);
-        startEditor(null, new AnswerViewController(task));
+        startEditor(new AnswerViewController(task), "answer", null);
         editorIndex--;
       });
     }
@@ -169,14 +182,15 @@ public class MainController implements Action<ExpertEvent> {
       final Message message = messageEvent.source();
       if (message.has(Answer.class)) {
         final AnswerViewController controller = new AnswerViewController(message.get(Answer.class).value());
-        Platform.runLater(() -> startEditor(message.from(), controller));
+        Platform.runLater(() -> startEditor(controller, message.id(), message.from()));
       }
     }
   }
 
   int editorIndex = 0;
-  private void startEditor(@Nullable JID from, AnswerViewController answerController) {
+  private void startEditor(AnswerViewController answerController, String id, @Nullable JID from) {
     final Tab tab = new Tab("Ответ " + (from != null ? from.resource() : ""));
+    tab.setId(id);
     tab.setClosable(false);
     if (task == null)
       return;
@@ -187,6 +201,25 @@ public class MainController implements Action<ExpertEvent> {
       log.log(Level.SEVERE, "Unable to load editor!", e);
     }
     tabs.getTabs().add(editorIndex++, tab);
+  }
+
+  public void selectEditor(String id, boolean showPreview, boolean focus) {
+    for (final Tab tab : tabs.getTabs()) {
+      if (tab.getId().equals(id)) {
+        if (focus)
+          tabs.getSelectionModel().select(tab);
+        final AnswerViewController answerVC = (AnswerViewController)tab.getContent().getUserData();
+        final ObservableList<Node> items = horizontalSplit.getItems();
+        if (preview != null)
+          items.remove(preview);
+        if (showPreview || preview != null) {
+          preview = answerVC.createPreview();
+          items.add(preview);
+          SplitPane.setResizableWithParent(preview, false);
+        }
+        break;
+      }
+    }
   }
 
   public void sendAnswer(ActionEvent ignore) {
