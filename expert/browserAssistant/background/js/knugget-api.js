@@ -63,6 +63,9 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
     };
 
     var addToBoardSync = function(answer, callback) {
+        if (answer.Base64Image != undefined) {
+            return;
+        }
         KNUGGET.storage.get("Board", function (value) {
             value = value ? JSON.parse(value) : [];
             if (typeof answer == 'string') {
