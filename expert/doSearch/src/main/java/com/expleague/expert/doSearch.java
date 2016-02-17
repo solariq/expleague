@@ -64,6 +64,7 @@ public class doSearch extends Application {
       public void handle(String s, HttpServletRequest request, HttpServletResponse response, int i) throws IOException, ServletException {
         final String item = StreamTools.readStream(request.getInputStream()).toString();
         response.setStatus(200);
+        System.out.println(item);
         final UserProfile active = ProfileManager.instance().active();
         final ExpertTask task = active != null ? active.expert().task() : null;
         if (item.startsWith("{\"type\":\"pageVisited\"")) {
@@ -101,7 +102,6 @@ public class doSearch extends Application {
         }
 
         response.getOutputStream().close();
-        System.out.println(item);
       }
     });
     server.start();
