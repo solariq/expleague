@@ -121,6 +121,19 @@
                     //alert('apply');
                     $scope.$apply();
                 }
+            } else if (data.AddTrigger) {
+                if (data.AddTrigger.newValue.shouldAdd) {
+                    KNUGGET.storage.set('AddTrigger', {shouldAdd: false});
+                    if (KNUGGET.Drag.Clicked) {
+                        KNUGGET.Drag.Clicked.knuggetCollection(function (data) {
+                            var answer = JSON.stringify(data);
+                            KNUGGET.api('addToBoard', {answer: answer}, function (response) {
+                            });
+                        });
+                        KNUGGET.Drag.Clicked = null;
+                    }
+                }
+
             }
             $timeout(function () {
                 if (!$scope.$$phase) {

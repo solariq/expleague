@@ -210,7 +210,7 @@ $(document).on('keypress', function(e){
     if (e.which == 2) { //Ctrl + b
         var answer = {
             Referer: window.location.href,
-            Title: document.title,
+            Title: (document.title && document.title != "") ? document.title : document.URL,
             Text: getSelectionText(),
             Type: 'text'
         };

@@ -794,7 +794,11 @@
                         container = document.createElement("div");
                         var len;
                         for (i = 0, len = sel.rangeCount; i < len; i++) {
-                            container.appendChild(sel.getRangeAt(i).cloneContents());
+                            var a = sel.getRangeAt(i).cloneContents();
+                            if (/h[0-9]/.test(a.firstChild.tagName.toLowerCase())) {
+                                collection.Title = a.firstChild.textContent;
+                            }
+                            container.appendChild(a);
                         }
                         selection = container.innerHTML;
                     }
@@ -868,7 +872,11 @@
                 }
 
                 if (!collection.Title) {
-                    collection.Title = document.title;
+                    if (document.title && document.title != "") {
+                        collection.Title = document.title;
+                    } else {
+                        collection.Title = document.URL;
+                    }
                 }
 
                 if (!collection.Referer) {

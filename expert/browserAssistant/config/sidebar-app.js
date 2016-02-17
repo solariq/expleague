@@ -5,7 +5,6 @@ var knuggetSidebar = angular.module('knuggetSidebar', [
     'ui.sortable',
     'ngTagsInput',
     'ngAnimate',
-    'ngImgCrop',
     'ngFileUpload',
     'knuggetSidebarDirectives'
 ]);
