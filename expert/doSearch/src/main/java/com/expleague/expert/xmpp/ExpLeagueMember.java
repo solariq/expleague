@@ -63,7 +63,7 @@ public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> {
             }
             task.processCommand(message.get(Operations.Command.class));
           }
-          else log.severe("New task received while having active: " + task + " ignoring invitation!");
+          else log.severe("New task received while having active: " + task.offer() + " ignoring invitation!");
         }
         else if (!message.has(Operations.Command.class)){
           invoke(new CheckEvent(message));

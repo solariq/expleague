@@ -49,7 +49,7 @@ class ExpLeagueOrder: NSManagedObject {
     var before: NSTimeInterval {
         var duration: NSTimeInterval = 0
         ExpLeagueOrder.urgencyDict.forEach({
-            if($1 == self.flags & 0xFF) {
+            if($1 == (self.flags & 0x1FF)) {
                 switch($0){
                 case "asap":
                     duration = 60 * 60
