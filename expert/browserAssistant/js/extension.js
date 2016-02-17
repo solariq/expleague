@@ -196,22 +196,78 @@ $(document).on("ready", function () {
 
 });
 
-function getSelectionText() {
-    var text = "";
-    if (window.getSelection) {
-        text = window.getSelection().toString();
-    } else if (document.selection && document.selection.type != "Control") {
-        text = document.selection.createRange().text;
-    }
-    return text;
+function stripTags(str, allow) {
+
+    allow = (((allow || "") + "").toLowerCase().match(/<[a-z][a-z0-9]*>/g) || []).join('');
+    var tags = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi;
+    var commentsAndPhpTags = /<!--[\s\S]*?-->|<\?(?:php)?[\s\S]*?\?>/gi;
+    return str.replace(commentsAndPhpTags, '').replace(tags, function ($0, $1) {
+        return allow.indexOf('<' + $1.toLowerCase() + '>') > -1 ? $0 : '';
+    });
 }
 
-$(document).on('keypress', function(e){
+function getSelectionText() {
+    var selection = "";
+    var sel;
+    var container;
+    var title;
+    var i;
+    var text = "";
+    //if (window.getSelection) {
+    //    text = window.getSelection().toString();
+    //} else if (document.selection && document.selection.type != "Control") {
+    //    text = document.selection.createRange().text;
+    //}
+    if (typeof window.getSelection != "undefined") {
+        sel = window.getSelection();
+
+        if (sel.rangeCount) {
+            container = document.createElement("div");
+            var len;
+            for (i = 0, len = sel.rangeCount; i < len; i++) {
+                var a = sel.getRangeAt(i).cloneContents();
+                if (a && a.firstChild && a.firstChild.tagName && /h[0-9]/.test(a.firstChild.tagName.toLowerCase())) {
+                    title = a.firstChild.textContent;
+                }
+                container.appendChild(a);
+            }
+            selection = container.innerHTML;
+        }
+    } else if (typeof document.selection != "undefined") {
+        if (document.selection.type == "Text") {
+            selection = document.selection.createRange().htmlText;
+        }
+    }
+
+    var htmlSelection = $("<div>").html(selection);
+    htmlSelection.find("script,noscript").remove();
+    htmlSelection.find("font").each(function () {
+        $(this).replaceWith("<div>" + $(this).html() + "</div>");
+    });
+    htmlSelection.html($.trim(htmlSelection.html())); //rremove multisplaces
+    htmlSelection.html(htmlSelection.html().replace(/(<br\s*\/?>){2,}/gi, '<br>')); //rremove multi br
+    htmlSelection.find("*").filter(function () {
+        var spaces = (this.nodeType == 3 && !/\S/.test(this.nodeValue));
+        var emptyTags = $.trim($(this).html()) == ''; //rremove empty tags
+        return spaces || emptyTags;
+    }).remove();
+
+
+    title = title ? title : (document.title && document.title != "") ? document.title : document.URL;
+    return {
+        text: stripTags(htmlSelection.html(), ''),
+        title: title
+    };
+
+}
+
+$(document).on('keypress', function(e) {
+    var part = getSelectionText();
     if (e.which == 2) { //Ctrl + b
         var answer = {
             Referer: window.location.href,
-            Title: (document.title && document.title != "") ? document.title : document.URL,
-            Text: getSelectionText(),
+            Title: part.title,
+            Text: part.text,
             Type: 'text'
         };
         KNUGGET.api("addToBoard", {answer: answer});
