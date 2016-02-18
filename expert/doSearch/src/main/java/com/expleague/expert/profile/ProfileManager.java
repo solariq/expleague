@@ -7,6 +7,7 @@ import com.spbsu.commons.io.StreamTools;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -23,7 +24,7 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
   public static synchronized ProfileManager instance() {
     if (instance == null) {
       try {
-        instance = new ProfileManager(new File(System.getenv("HOME") + "/.expleague"));
+        instance = new ProfileManager(new File(System.getProperty("user.home") + "/.expleague"));
       }
       catch (IOException e) {
         throw new RuntimeException(e);
@@ -80,7 +81,7 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
         if (profile.has(UserProfile.Key.VK_TOKEN)) {
           log.info("Registering user by vk profile");
           VkUtils.fillProfile(profile);
-          final String userName = "vk-" + profile.get(UserProfile.Key.VK_USER_ID);
+          final String userName = "vk-" + profile.get(UserProfile.Key.VK_USER_ID) + InetAddress.getLocalHost().getHostName();
           profile.set(UserProfile.Key.EXP_LEAGUE_USER, userName);
           profile.set(UserProfile.Key.EXP_LEAGUE_ID, profile.get(UserProfile.Key.EXP_LEAGUE_USER) + "@" + profile.get(UserProfile.Key.EXP_LEAGUE_DOMAIN));
           ExpLeagueConnection.instance().register(profile);

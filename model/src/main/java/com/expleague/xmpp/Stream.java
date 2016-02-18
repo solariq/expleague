@@ -57,7 +57,7 @@ public class Stream {
           .filter(p -> p.endsWith(".class"))
           .map(resource -> {
             try {
-              final String name = resource.substring(0, resource.length() - ".class".length()).replace('/', '.');
+              final String name = resource.substring(0, resource.length() - ".class".length()).replace('/', '.').replace('\\', '.');
 //              log.finest("Loading " + name + " to JAXB context");
               return Class.forName(name);
             }

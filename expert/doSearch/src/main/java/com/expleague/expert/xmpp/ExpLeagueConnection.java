@@ -145,8 +145,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
       try {
         jaxmpp.login();
       }
-      catch (Exception e) {
-        e.printStackTrace();
+      catch (Exception ignore) {
       }
     }
     catch (JaxmppException e) {
