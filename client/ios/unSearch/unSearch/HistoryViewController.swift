@@ -107,7 +107,7 @@ class HistoryViewController: UITableViewController {
             let cell = tableView.dequeueReusableCellWithIdentifier("OngoingOrder", forIndexPath: indexPath) as! OngoingOrderStateCell
             cell.title.text = o.text
             if (o.status == .ExpertSearch && o.count > 0 && o.message(o.count - 1).type == .Answer) {
-                cell.status.textColor = UIColor.greenColor()
+                cell.status.textColor = OngoingOrderStateCell.GREEN_COLOR
                 cell.status.text = "ОТВЕТ ГОТОВ"
             }
             else if (o.status == .Overtime) {
@@ -294,7 +294,8 @@ extension HistoryViewController: UISplitViewControllerDelegate {
 
 class OngoingOrderStateCell: UITableViewCell {
     static let OK_COLOR = UIColor(red: 17.0/256, green: 138.0/256, blue: 222.0/256, alpha: 1.0)
-    static let ERROR_COLOR = UIColor.redColor()
+    static let ERROR_COLOR = UIColor(red: 194.0/256, green: 60.0/256, blue: 60.0/256, alpha: 1.0)
+    static let GREEN_COLOR = UIColor(red: 132.0/256, green: 194.0/256, blue: 11.0/256, alpha: 1.0)
     @IBOutlet weak var contentTypeIcon: UIImageView!
     @IBOutlet weak var title: UILabel!
     @IBOutlet weak var status: UILabel!
