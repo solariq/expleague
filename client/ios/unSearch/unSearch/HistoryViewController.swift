@@ -13,9 +13,12 @@ class HistoryViewController: UITableViewController {
     var finished: [ExpLeagueOrder] = []
     var archived: [ExpLeagueOrder] = []
     var tracker: XMPPTracker?
+    var cellHeight = CGFloat(0.0)
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        let cell = (view as! UITableView).dequeueReusableCellWithIdentifier("OngoingOrder") as! OngoingOrderStateCell
+        cellHeight = cell.frame.height
         AppDelegate.instance.historyView = self
         AppDelegate.instance.split.delegate = self
         self.navigationItem.rightBarButtonItem = self.editButtonItem()
@@ -163,7 +166,7 @@ class HistoryViewController: UITableViewController {
     }
     
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        return CGFloat(60+8+8);
+        return cellHeight;
     }
     
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

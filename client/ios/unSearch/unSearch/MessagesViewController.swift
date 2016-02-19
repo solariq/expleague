@@ -20,14 +20,20 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     var answerDelegate: AnswerDelegate?
     let picker = UIImagePickerController()
     let progress = UIProgressView()
+    var messagesViewHConstraint: NSLayoutConstraint?
+    var answerViewHConstraint: NSLayoutConstraint?
+    var inputViewHConstraint: NSLayoutConstraint?
+    var scrollViewBottom: NSLayoutConstraint?
+
     var data: ChatMessagesModel? {
         didSet {
-            if (loaded) {
-                data!.controller = self
-            }
             messagesView.delegate = data
             messagesView.dataSource = data
             answerText = data!.answer
+            if (loaded) {
+                data!.controller = self
+                messagesView.reloadData()
+            }
         }
     }
 
@@ -60,6 +66,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         scrollView.addSubview(answerView!)
         scrollView.pagingEnabled = true
         scrollView.clipsToBounds = false
+//        scrollView.delegate = self
         input.text.layer.borderWidth = 2
         input.text.layer.borderColor = UIColor.lightGrayColor().CGColor
         input.text.layer.cornerRadius = 4
@@ -75,10 +82,41 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         messagesView.separatorStyle = .None
         messagesView.backgroundColor = ChatCell.bgColor
         scrollView.backgroundColor = messagesView.backgroundColor
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        answerView!.translatesAutoresizingMaskIntoConstraints = false
+        messagesView.translatesAutoresizingMaskIntoConstraints = false
+        input.view!.translatesAutoresizingMaskIntoConstraints = false
+        progress.translatesAutoresizingMaskIntoConstraints = false
+        messagesViewHConstraint = NSLayoutConstraint(item: messagesView, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant:  -input.view.frame.height - 2)
+        answerViewHConstraint = NSLayoutConstraint(item: answerView!, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant:  -input.view.frame.height - 2)
+        scrollViewBottom = NSLayoutConstraint(item: scrollView, attribute: .Bottom, relatedBy: .Equal, toItem: view, attribute: .BottomMargin, multiplier: 1, constant: 0)
+
+        inputViewHConstraint = NSLayoutConstraint(item: input.view!, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: input.view.frame.height)
+        NSLayoutConstraint.activateConstraints([
+            NSLayoutConstraint(item: scrollView, attribute: .Top, relatedBy: .Equal, toItem: view, attribute: .TopMargin, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: scrollView, attribute: .Width, relatedBy: .Equal, toItem: view, attribute: .Width, multiplier: 1, constant: 0),
+            scrollViewBottom!,
+
+            NSLayoutConstraint(item: messagesView, attribute: .Top, relatedBy: .Equal, toItem: scrollView, attribute: .Top, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: messagesView, attribute: .Width, relatedBy: .Equal, toItem: view, attribute: .Width, multiplier: 1, constant: 0),
+            messagesViewHConstraint!,
+            NSLayoutConstraint(item: messagesView, attribute: .Bottom, relatedBy: .Equal, toItem: progress, attribute: .Top, multiplier: 1, constant: 0),
+
+            NSLayoutConstraint(item: progress, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: 2),
+            NSLayoutConstraint(item: progress, attribute: .Width, relatedBy: .Equal, toItem: view, attribute: .Width, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: progress, attribute: .Bottom, relatedBy: .Equal, toItem: input.view, attribute: .Top, multiplier: 1, constant: 0),
+
+            inputViewHConstraint!,
+            NSLayoutConstraint(item: input.view, attribute: .Width, relatedBy: .Equal, toItem: view, attribute: .Width, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: input.view, attribute: .Bottom, relatedBy: .Equal, toItem: answerView, attribute: .Top, multiplier: 1, constant: 0),
+
+            answerViewHConstraint!,
+            NSLayoutConstraint(item: answerView!, attribute: .Width, relatedBy: .Equal, toItem: view, attribute: .Width, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: answerView!, attribute: .Bottom, relatedBy: .Equal, toItem: scrollView, attribute: .Bottom, multiplier: 1, constant: 0),
+        ])
         pickerDelegate = ImagePickerDelegate(queue: self, picker: picker)
         picker.delegate = pickerDelegate
         picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-
         messagesView.backgroundView = nil
         
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "dismissKeyboard"))
@@ -130,9 +168,8 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         tabBarController?.tabBar.hidden = true
-        adjustSizes()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardShown:", name: UIKeyboardDidShowNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardHidden:", name: UIKeyboardDidHideNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardShown:", name: UIKeyboardWillShowNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardHidden:", name: UIKeyboardWillHideNotification, object: nil)
         if (data != nil) {
             data?.scrollToLastMessage(messagesView)
         }
@@ -142,7 +179,6 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
-//        adjustSizes()
         if (data!.order.isActive) {
             scrollView.scrollRectToVisible(messagesView.frame, animated: false)
         }
@@ -167,20 +203,24 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
 
     
     func keyboardHidden(notification: NSNotification) {
-        let insets = UIEdgeInsetsMake(scrollView.contentInset.top, scrollView.contentInset.left, 0, scrollView.contentInset.right)
-        scrollView.contentInset = insets
-        scrollView.scrollIndicatorInsets = insets
-        adjustSizes()
-        scrollView.scrollRectToVisible(messagesView.frame, animated: false)
+        let duration = notification.userInfo![UIKeyboardAnimationDurationUserInfoKey] as! NSTimeInterval;
+        let curve = notification.userInfo![UIKeyboardAnimationCurveUserInfoKey] as! UInt
+        let options: UIViewAnimationOptions = [.BeginFromCurrentState, UIViewAnimationOptions(rawValue: (UIViewAnimationOptions.CurveEaseIn.rawValue << curve))]
+        self.scrollViewBottom!.constant = 0
+        UIView.animateWithDuration(duration, delay: 0, options: options, animations: { () -> Void in
+            self.view.layoutIfNeeded()
+        }, completion: nil)
     }
 
     func keyboardShown(notification: NSNotification) {
         let kbSize = (notification.userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue).CGRectValue().size
-        let insets = UIEdgeInsetsMake(scrollView.contentInset.top, scrollView.contentInset.left, kbSize.height, scrollView.contentInset.right)
-        scrollView.contentInset = insets
-        scrollView.scrollIndicatorInsets = insets
-        adjustSizes()
-        scrollView.scrollRectToVisible(messagesView.frame, animated: false)
+        let duration = notification.userInfo![UIKeyboardAnimationDurationUserInfoKey] as! NSTimeInterval;
+        let curve = notification.userInfo![UIKeyboardAnimationCurveUserInfoKey] as! UInt
+        let options: UIViewAnimationOptions = [.BeginFromCurrentState, UIViewAnimationOptions(rawValue: (UIViewAnimationOptions.CurveEaseIn.rawValue << curve))]
+        self.scrollViewBottom!.constant = -kbSize.height
+        UIView.animateWithDuration(duration, delay: 0, options: options, animations: { () -> Void in
+            self.view.layoutIfNeeded()
+        }, completion: nil)
     }
     
     
@@ -189,16 +229,12 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     }
 
     func adjustSizes() {
-        let inputHeight = input.view.frame.height
-        let frame = view.window != nil ? view.window!.frame : view.frame
-        print("\(frame) \(view.window) \(navigationController)")
-        scrollView.frame = CGRectMake(0, 0, frame.width, frame.height - (navigationController != nil ? navigationController!.navigationBar.frame.maxY : 64))
-        let visibleSize = CGSizeMake(scrollView.frame.width - scrollView.contentInset.right - scrollView.contentInset.left, scrollView.frame.height - scrollView.contentInset.bottom - scrollView.contentInset.top)
-        messagesView.frame = CGRectMake(0, 0, visibleSize.width, visibleSize.height - inputHeight - 3)
-        progress.frame = CGRectMake(0, messagesView.frame.maxY, visibleSize.width, 3)
-        input.view.frame = CGRectMake(0, progress.frame.maxY, visibleSize.width, inputHeight)
-        answerView!.frame = CGRectMake(0, input.view.frame.maxY, visibleSize.width, visibleSize.height - inputHeight)
-        scrollView.contentSize = CGSizeMake(scrollView.frame.width, messagesView.frame.height + answerView!.frame.height + input.view.frame.height)
+        let inputHeight = input.view.frame.height + 2
+        let constant = -inputHeight;
+        messagesViewHConstraint!.constant = constant
+        answerViewHConstraint!.constant = constant
+//        scrollView.contentSize = CGSizeMake(scrollView.frame.width, 2 * (view.frame.height + scrollViewBottom!.constant) - inputHeight)
+        print("root: \(view.frame.size), scroll: \(scrollView.frame.size), messages: \(messagesView.frame), input: \(input.view!.frame), answer: \(answerView!.frame), content: \(scrollView.contentSize), constant: \(constant)")
     }
     
     func attach(input: ChatInputViewController) {
@@ -218,6 +254,38 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         self.progress.tintColor = status ? UIColor.greenColor() : UIColor.redColor()
     }
 }
+
+//extension MessagesVeiwController: UIScrollViewDelegate {
+//    func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool)
+//    {
+//        if !decelerate
+//        {
+//            let currentIndex = floor(scrollView.contentOffset.x / scrollView.bounds.size.width);
+//            
+//            let offset = CGPointMake(scrollView.bounds.size.width * currentIndex, 0)
+//            
+//            scrollView.setContentOffset(offset, animated: true)
+//        }
+//    }
+//    
+//    func scrollViewWillEndDragging(scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>)
+//    {
+//        //This is the index of the "page" that we will be landing at
+//        let nearestIndex = Int(CGFloat(targetContentOffset.memory.x) / scrollView.bounds.size.width + 0.5)
+//        
+//        //Just to make sure we don't scroll past your content
+//        let clampedIndex = max( min( nearestIndex, yourPagesArray.count - 1 ), 0 )
+//        
+//        //This is the actual x position in the scroll view
+//        var xOffset = CGFloat(clampedIndex) * scrollView.bounds.size.width
+//        
+//        //I've found that scroll views will "stick" unless this is done
+//        xOffset = xOffset == 0.0 ? 1.0 : xOffset
+//        
+//        //Tell the scroll view to land on our page
+//        targetContentOffset.memory.x = xOffset
+//    }
+//}
 
 class AnswerDelegate: NSObject, UIWebViewDelegate {
     func webView(webView: UIWebView, shouldStartLoadWithRequest request: NSURLRequest, navigationType: UIWebViewNavigationType) -> Bool {

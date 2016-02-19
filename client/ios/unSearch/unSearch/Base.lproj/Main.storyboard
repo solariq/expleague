@@ -476,6 +476,11 @@
                                         <constraint firstItem="ooJ-uj-TeV" firstAttribute="top" secondItem="yx5-WV-ac3" secondAttribute="topMargin" id="umr-MQ-n6G"/>
                                         <constraint firstItem="INr-K8-fey" firstAttribute="trailing" secondItem="yx5-WV-ac3" secondAttribute="trailingMargin" id="xqa-X6-Tuf"/>
                                     </constraints>
+                                    <variation key="default">
+                                        <mask key="constraints">
+                                            <exclude reference="HQW-bV-pc1"/>
+                                        </mask>
+                                    </variation>
                                 </tableViewCellContentView>
                                 <connections>
                                     <outlet property="contentTypeIcon" destination="NzD-Ak-qfr" id="Dhg-Pq-KDs"/>
@@ -531,6 +536,11 @@
                                         <constraint firstItem="Nt8-AV-T6G" firstAttribute="leading" secondItem="ivc-sg-Kqc" secondAttribute="trailing" constant="20" id="rSK-dl-UTA"/>
                                         <constraint firstItem="a1u-Or-pFQ" firstAttribute="trailing" secondItem="E5k-dW-qOY" secondAttribute="trailingMargin" id="z29-Ao-qTf"/>
                                     </constraints>
+                                    <variation key="default">
+                                        <mask key="constraints">
+                                            <exclude reference="D5q-cM-I4a"/>
+                                        </mask>
+                                    </variation>
                                 </tableViewCellContentView>
                                 <connections>
                                     <outlet property="contentTypeIcon" destination="ivc-sg-Kqc" id="CLa-Ux-3bl"/>
