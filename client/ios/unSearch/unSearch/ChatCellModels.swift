@@ -365,7 +365,7 @@ class SetupModel: CompositeCellModel {
             label.text = "ОТКРЫТО. Осталось: " + formatPeriodRussian(timeLeft)
             break
         case .Overtime:
-            label.textColor = UIColor.redColor()
+            label.textColor = OngoingOrderStateCell.ERROR_COLOR
             label.text = "ПРОСРОЧЕНО НА: " + formatPeriodRussian(-timeLeft)
             break
         case .Canceled:
@@ -373,7 +373,7 @@ class SetupModel: CompositeCellModel {
             label.text = "ОТМЕНЕНО"
             break
         case .Closed:
-            label.textColor = UIColor.greenColor()
+            label.textColor = OngoingOrderStateCell.GREEN_COLOR
             label.text = "ВЫПОЛНЕНО"
             break
         default:
