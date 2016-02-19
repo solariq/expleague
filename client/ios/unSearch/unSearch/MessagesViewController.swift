@@ -40,7 +40,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     var answerText: String = "" {
         willSet (newValue){
             if (answerText != newValue) {
-                answerView?.loadHTMLString("<html><body>\(newValue)</body></html>", baseURL: nil)
+                answerView?.loadHTMLString("<html><style type=\"text/css\">img {max-width: 100%;}</style><body>\(newValue)</body></html>", baseURL: nil)
             }
         }
     }
@@ -59,7 +59,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         scrollView.addSubview(input.view)
         answerView = UIWebView()
         if (!answerText.isEmpty) {
-            answerView!.loadHTMLString("<html><body>\(answerText)</body></html>", baseURL: nil)
+            answerView!.loadHTMLString("<html><style type=\"text/css\">img {max-width: 100%;}</style><body>\(answerText)</body></html>", baseURL: nil)
         }
         answerDelegate = AnswerDelegate(parent: self)
         answerView?.delegate = answerDelegate
