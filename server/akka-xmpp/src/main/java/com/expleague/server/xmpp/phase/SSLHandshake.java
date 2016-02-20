@@ -71,6 +71,10 @@ public class SSLHandshake extends UntypedActorAdapter {
           break;
 
         case NEED_UNWRAP:
+          if (in.position() == 0) {
+            send();
+            return;
+          }
           in.flip();
           res = sslEngine.unwrap(in, out);
           final SSLEngineResult.Status status = res.getStatus();

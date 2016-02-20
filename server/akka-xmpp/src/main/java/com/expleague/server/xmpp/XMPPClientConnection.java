@@ -6,10 +6,12 @@ import akka.io.TcpMessage;
 import akka.stream.OverflowStrategy;
 import akka.stream.javadsl.Source;
 import akka.util.ByteString;
+import com.expleague.server.ExpLeagueServer;
 import com.fasterxml.aalto.AsyncByteArrayFeeder;
 import com.fasterxml.aalto.AsyncXMLInputFactory;
 import com.fasterxml.aalto.AsyncXMLStreamReader;
 import com.fasterxml.aalto.stax.InputFactoryImpl;
+import com.relayrides.pushy.apns.P12Util;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.io.StreamTools;
 import com.spbsu.commons.net.URLConnectionTools;
@@ -23,12 +25,25 @@ import com.expleague.xmpp.Item;
 import com.expleague.xmpp.Stream;
 import com.expleague.xmpp.control.Close;
 import com.expleague.xmpp.control.Open;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.handler.codec.http2.Http2SecurityUtil;
+import io.netty.handler.ssl.*;
 import org.xml.sax.SAXException;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 import javax.xml.stream.XMLStreamException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -151,15 +166,40 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         break;
       }
       case STARTTLS: {
-        final SSLContext sslctxt = URLConnectionTools.prepareSSLContext4TLS();
-        final SSLEngine sslEngine = sslctxt.createSSLEngine();
-        sslEngine.setUseClientMode(false);
-        sslEngine.setEnableSessionCreation(true);
-        sslEngine.setWantClientAuth(false);
-        final ActorRef handshake = getContext().actorOf(Props.create(SSLHandshake.class, self(), sslEngine), "starttls");
-        sslEngine.beginHandshake();
-        helper = new SSLHelper(sslEngine);
-        newLogic = handshake;
+        try {
+          final String domain = ExpLeagueServer.config().domain();
+          final File file = new File("./certs/" + domain + ".p12");
+          if (!file.exists()) {
+            synchronized (XMPPClientConnection.class) {
+              if (!file.exists()) {
+                final File script = File.createTempFile("create-self-signed", ".sh");
+                StreamTools.transferData(getClass().getResourceAsStream("/create-self-signed.sh"), new FileOutputStream(script));
+                //noinspection ResultOfMethodCallIgnored
+                file.getParentFile().mkdirs();
+                final Process exec = Runtime.getRuntime().exec("/bin/bash");
+                final PrintStream bash = new PrintStream(exec.getOutputStream());
+                bash.println("cd " + file.getParentFile().getAbsolutePath());
+                bash.println("bash " + script.getAbsolutePath() + " " + domain);
+                exec.getOutputStream().close();
+                exec.waitFor();
+                log.info(StreamTools.readStream(exec.getInputStream()).toString());
+                log.warning(StreamTools.readStream(exec.getErrorStream()).toString());
+              }
+            }
+          }
+          final SslContext context = getSslContextWithP12File(file, "");
+          final SSLEngine sslEngine = context.newEngine(ByteBufAllocator.DEFAULT);
+          sslEngine.setUseClientMode(false);
+//          sslEngine.setEnableSessionCreation(true);
+          sslEngine.setWantClientAuth(false);
+          final ActorRef handshake = getContext().actorOf(Props.create(SSLHandshake.class, self(), sslEngine), "starttls");
+          sslEngine.beginHandshake();
+          helper = new SSLHelper(sslEngine);
+          newLogic = handshake;
+        }
+        catch (IOException | InterruptedException ioe) {
+          log.log(Level.SEVERE, "Unable to create SSL context", ioe);
+        }
         break;
       }
       case AUTHORIZATION: {
@@ -182,6 +222,35 @@ public class XMPPClientConnection extends UntypedActorAdapter {
     currentState = state;
     log.fine("Connection state changed to: " + state);
     log.finest("BL changed to: " + newLogic.path());
+  }
+
+  private static SslContext getSslContextWithP12File(final File p12File, final String password) throws SSLException {
+    final X509Certificate x509Certificate;
+    final PrivateKey privateKey;
+
+    try {
+      final KeyStore.PrivateKeyEntry privateKeyEntry = P12Util.getPrivateKeyEntryFromP12File(p12File, password);
+
+      final Certificate certificate = privateKeyEntry.getCertificate();
+
+      if (!(certificate instanceof X509Certificate)) {
+        throw new KeyStoreException("Found a certificate in the provided PKCS#12 file, but it was not an X.509 certificate.");
+      }
+
+      x509Certificate = (X509Certificate) certificate;
+      privateKey = privateKeyEntry.getPrivateKey();
+    } catch (final KeyStoreException | IOException | CertificateException | UnrecoverableEntryException | NoSuchAlgorithmException e) {
+      throw new SSLException(e);
+    }
+
+    return getSslContextWithCertificateAndPrivateKey(x509Certificate, privateKey, password);
+  }
+
+  private static SslContext getSslContextWithCertificateAndPrivateKey(final X509Certificate certificate, final PrivateKey privateKey, final String privateKeyPassword) throws SSLException {
+    return SslContextBuilder.forServer(privateKey, privateKeyPassword, certificate)
+        .sslProvider(SslProvider.OPENSSL)
+        .ciphers(Http2SecurityUtil.CIPHERS, SupportedCipherSuiteFilter.INSTANCE)
+        .build();
   }
 
   public enum ConnectionState {
