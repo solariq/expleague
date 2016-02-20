@@ -21,48 +21,61 @@ public class SSLHelper {
   }
   private SSLEngine sslEngine;
 
-  private ByteBuffer inDst = ByteBuffer.allocate(1024 * 1024);
-  private ByteBuffer inSrc = ByteBuffer.allocate(1024 * 1024);
+  private ByteBuffer inDst = ByteBuffer.allocate(4 * 4096);
+  private ByteBuffer inSrc = ByteBuffer.allocate(4 * 4096);
   public void decrypt(ByteString msgIn, Consumer<ByteString> consumer) {
     try {
-      inSrc.put(msgIn.asByteBuffer());
-      while (inSrc.position() > 0) {
-        inSrc.flip();
-        final SSLEngineResult r = sslEngine.unwrap(inSrc, inDst);
-        switch (r.getStatus()) {
-          case BUFFER_OVERFLOW: {
-            // Could attempt to drain the dst buffer of any already obtained
-            // data, but we'll just increase it to the size needed.
-            int appSize = sslEngine.getSession().getApplicationBufferSize();
-            final ByteBuffer b = ByteBuffer.allocate(appSize + inDst.position());
-            inDst.flip();
-            b.put(inDst);
-            inDst = b;
-            // retry the operation.
-            decrypt(msgIn, consumer);
-            break;
-          }
-          case BUFFER_UNDERFLOW: {
-            int netSize = sslEngine.getSession().getPacketBufferSize();
-            // Resize buffer if needed.
-            if (netSize > inDst.capacity()) {
-              final ByteBuffer b = ByteBuffer.allocate(netSize);
-              inSrc.flip();
-              b.put(inSrc);
-              inSrc = b;
+      final ByteBuffer incoming = msgIn.asByteBuffer();
+      while (incoming.remaining() > 0) {
+        if (incoming.remaining() > inSrc.remaining()) {
+          final ByteBuffer slice = incoming.slice();
+          slice.limit(inSrc.remaining());
+          incoming.position(slice.position());
+          inSrc.put(slice);
+        }
+        else inSrc.put(incoming);
+        do {
+          inSrc.flip();
+          final SSLEngineResult r = sslEngine.unwrap(inSrc, inDst);
+          switch (r.getStatus()) {
+            case BUFFER_OVERFLOW: {
+              // Could attempt to drain the dst buffer of any already obtained
+              // data, but we'll just increase it to the size needed.
+              int appSize = sslEngine.getSession().getApplicationBufferSize();
+              final ByteBuffer b = ByteBuffer.allocate(appSize + inDst.position());
+              inDst.flip();
+              b.put(inDst);
+              inDst = b;
+              inSrc.compact();
+              continue;
             }
-            // Obtain more inbound network data for inSrc,
-            // then retry the operation.
-            return;
-            // other cases: CLOSED, OK.
+            case BUFFER_UNDERFLOW: {
+              int netSize = sslEngine.getSession().getPacketBufferSize();
+              // Resize buffer if needed.
+              if (netSize > inDst.capacity()) {
+                final ByteBuffer b = ByteBuffer.allocate(netSize);
+                inSrc.flip();
+                b.put(inSrc);
+                inSrc = b;
+              }
+              // Obtain more inbound network data for inSrc,
+              // then retry the operation.
+              return;
+              // other cases: CLOSED, OK.
+            }
           }
+          inDst.flip();
+          inSrc.compact();
+          if (inDst.limit() > 0) {
+            consumer.accept(ByteString.fromByteBuffer(inDst));
+            inDst.clear();
+          }
+          else if (r.bytesConsumed() == 0)
+            break;
+          if (inSrc.position() > 0)
+            break;
         }
-        inDst.flip();
-        if (inDst.limit() > 0) {
-          consumer.accept(ByteString.fromByteBuffer(inDst));
-          inDst.clear();
-        }
-        inSrc.compact();
+        while (true);
       }
     }
     catch (SSLException e) {
