@@ -224,7 +224,7 @@ class AnswerReceivedCell: ExpertInProgressCell {
     var id: String?
     
     @IBAction func fire(sender: UIButton) {
-        self.controller!.scrollView.scrollRectToVisible(self.controller!.answerView!.frame, animated: true)
+        self.controller!.scrollView.setContentOffset(self.controller!.progress.frame.origin, animated: true)
         self.controller!.answerView!.stringByEvaluatingJavaScriptFromString("document.getElementById('\(self.id!)').scrollIntoView()")
     }
     

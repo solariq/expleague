@@ -294,7 +294,7 @@ class AnswerDelegate: NSObject, UIWebViewDelegate {
             if (url.path == "/chat-messages") {
                 if let indexStr = url.fragment, index = Int(indexStr) {
                     parent.messagesView.scrollToRowAtIndexPath(NSIndexPath(forItem: index, inSection: 0), atScrollPosition: .Middle, animated: false)
-                    parent.scrollView.scrollRectToVisible(parent.messagesView.frame, animated: true)
+                    parent.scrollView.setContentOffset(parent.messagesView.frame.origin, animated: true)
                 }
             }
             return false
@@ -458,6 +458,7 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let message = cells[indexPath.item]
         let cell = tableView.dequeueReusableCellWithIdentifier(String(message.type), forIndexPath: indexPath) as! ChatCell
+        print ("Assigning controller: \(controller)")
         cell.controller = controller
         cell.frame.size.width = tableView.frame.width
         try! message.form(chatCell: cell)
