@@ -69,9 +69,9 @@ angular.module('knuggetApiFactory', []).factory('knuggetApi', ['$http', '$q', '$
         KNUGGET.storage.get("Board", function (value) {
             value = value ? JSON.parse(value) : [];
             if (typeof answer == 'string') {
-                value.push(answer);
+                value.splice(0, 0, answer);
             } else {
-                value.push(JSON.stringify(answer));
+                value.splice(0, 0, JSON.stringify(answer));
             }
             KNUGGET.storage.set("Board", JSON.stringify(value));
             console.log(JSON.stringify(value));
