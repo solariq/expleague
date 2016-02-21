@@ -152,6 +152,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         }
         AppDelegate.instance.connect()
         data!.order.send(text: text)
+        scrollView.setContentOffset(messagesView.frame.origin, animated: true)
         return true
     }
 
