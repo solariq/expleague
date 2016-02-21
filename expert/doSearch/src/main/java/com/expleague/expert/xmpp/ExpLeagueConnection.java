@@ -11,6 +11,8 @@ import javafx.scene.image.Image;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -54,6 +56,9 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Timer;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -338,12 +343,16 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
         0,
         0,
         null);
-    final CloseableHttpClient httpClient = HttpClients.createDefault();
-    final String imageId = (url == null ? rng.nextBase64String(10) : UUID.nameUUIDFromBytes(url.getBytes())) + ".jpeg";
-    final com.expleague.model.Image elImage = new com.expleague.model.Image(imageId, expert.jid());
-    final HttpPost uploadFile = new HttpPost(com.expleague.model.Image.storageByJid(expert.jid()));
 
     try {
+      final SSLContextBuilder ctxtBuilder = new SSLContextBuilder();
+      ctxtBuilder.loadTrustMaterial(null, (x509Certificates, s) -> true);
+      final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+          ctxtBuilder.build());
+      final CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
+      final String imageId = (url == null ? rng.nextBase64String(10) : UUID.nameUUIDFromBytes(url.getBytes())) + ".jpeg";
+      final com.expleague.model.Image elImage = new com.expleague.model.Image(imageId, expert.jid());
+      final HttpPost uploadFile = new HttpPost(com.expleague.model.Image.storageByJid(expert.jid()));
       final PipedOutputStream pipeIn = new PipedOutputStream();
       final PipedInputStream pipeOut = new PipedInputStream(pipeIn, 4096);
       new Thread(() -> {
@@ -372,7 +381,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
       response.close();
       return elImage.url();
     }
-    catch (IOException ioe) {
+    catch (IOException | NoSuchAlgorithmException | KeyStoreException | KeyManagementException ioe) {
       log.log(Level.WARNING, "Error uploading image", ioe);
       return "";
     }
