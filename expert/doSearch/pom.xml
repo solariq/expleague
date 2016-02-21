@@ -56,6 +56,21 @@
       <artifactId>fontawesomefx</artifactId>
       <version>8.9</version>
     </dependency>
+    <dependency>
+      <groupId>gov.nih.imagej</groupId>
+      <artifactId>imagej</artifactId>
+      <version>1.47</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.3.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpmime</artifactId>
+      <version>4.3.6</version>
+    </dependency>
 
     <dependency>
       <groupId>tigase</groupId>

@@ -1,13 +1,16 @@
 package com.expleague.expert.forms;
 
+import com.expleague.expert.xmpp.ExpLeagueConnection;
 import com.expleague.expert.xmpp.ExpertTask;
 import com.expleague.model.patch.Patch;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.ToolBar;
+import javafx.scene.image.Image;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Priority;
@@ -21,6 +24,9 @@ import org.markdownwriterfx.preview.MarkdownPreviewPane;
 import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
 
+import java.util.Collections;
+import java.util.logging.Logger;
+
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
 
 
@@ -29,6 +35,8 @@ import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
  * Created by solar on 04.02.16.
  */
 public class AnswerViewController {
+  private static final Logger log = Logger.getLogger(AnswerViewController.class.getName());
+
   public VBox editor;
 
   private final MarkdownEditorPane editorPane = new MarkdownEditorPane();
@@ -138,6 +146,7 @@ public class AnswerViewController {
     VBox.setVgrow(editorNode, Priority.ALWAYS);
     VBox.setVgrow(toolBar, Priority.NEVER);
     editor.getChildren().addAll(toolBar, editorNode);
+    editorPane.pasteAction = this::processClipboard;
 
     if (task != null) {
       ((StyleClassedTextArea) editorPane.getNode()).setEditable(false);
@@ -151,18 +160,16 @@ public class AnswerViewController {
         event.consume();
       });
       editorNode.setOnDragDropped(event -> {
-        Dragboard db = event.getDragboard();
-        boolean success = false;
-        editorPane.requestFocus();
-        if (db.hasString()) {
-          editorNode.replaceSelection(db.getString());
-          success = true;
+        final Dragboard clipboard = event.getDragboard();
+        boolean success = processClipboard(clipboard);
+        if (success) {
+          editorNode.replaceSelection(clipboard.getString());
+          final CharacterHit hit = editorNode.hit(event.getX(), event.getY());
+          final int insertionIndex = hit.getInsertionIndex();
+          editorNode.positionCaret(insertionIndex);
+          event.setDropCompleted(true);
+          event.consume();
         }
-        final CharacterHit hit = editorNode.hit(event.getX(), event.getY());
-        final int insertionIndex = hit.getInsertionIndex();
-        editorNode.positionCaret(insertionIndex);
-        event.setDropCompleted(success);
-        event.consume();
       });
 
       editorPane.setMarkdown(task.patchwork());
@@ -175,6 +182,29 @@ public class AnswerViewController {
       editorPane.setMarkdown(markdown);
       editorNode.setEditable(false);
     }
+  }
+
+  private boolean processClipboard(Clipboard db) {
+    editorPane.requestFocus();
+    String result = null;
+    if (db.hasUrl() && db.getUrl().startsWith("http") && !db.getUrl().startsWith("https://www.google.ru/imgres")) {
+      if (db.hasImage()) {
+        result= "![" + (db.hasString() ? db.getString() : "") + "](" + db.getUrl() + ")";
+      }
+      else {
+        result= "[" + (db.hasString() ? db.getString() : "") + "](" + db.getUrl() + ")";
+      }
+    }
+    else if (db.hasImage()) {
+      result = "![" + (db.hasString() ? db.getString() : "") + "](" +
+          ExpLeagueConnection.instance().uploadImage((Image)db.getContent(DataFormat.IMAGE), db.getUrl())
+          + ")";
+    }
+    if (result != null) {
+      db.setContent(Collections.singletonMap(DataFormat.PLAIN_TEXT, result));
+    }
+
+    return result != null;
   }
 
   private final ExpertTask task;

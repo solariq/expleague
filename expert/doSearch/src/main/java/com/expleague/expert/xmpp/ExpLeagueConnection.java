@@ -6,6 +6,15 @@ import com.expleague.xmpp.Item;
 import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.spbsu.commons.random.FastRandom;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.image.Image;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import tigase.jaxmpp.core.client.*;
 import tigase.jaxmpp.core.client.criteria.Criteria;
 import tigase.jaxmpp.core.client.criteria.ElementCriteria;
@@ -34,12 +43,19 @@ import tigase.xml.DefaultElementFactory;
 import tigase.xml.DomBuilderHandler;
 import tigase.xml.SimpleParser;
 
+import javax.imageio.ImageIO;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.security.GeneralSecurityException;
 import java.util.Timer;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +69,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
   private static ExpLeagueConnection instance;
   private static Timer ping;
   private ExpLeagueMember expert;
+  private FastRandom rng = new FastRandom();
 
   public static synchronized ExpLeagueConnection instance() {
     if (instance == null) {
@@ -297,6 +314,68 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
   public void disconnect() throws JaxmppException{
     if (jaxmpp != null && jaxmpp.isConnected())
       jaxmpp.disconnect();
+  }
+
+  public String uploadImage(Image content, String url) {
+    if (expert == null)
+      return "";
+    final BufferedImage image =
+        SwingFXUtils.fromFXImage(
+            content,
+            null);
+
+// Remove alpha-channel from buffered image:
+    final BufferedImage imageRGB =
+        new BufferedImage(
+            image.getWidth(),
+            image.getHeight(),
+            BufferedImage.OPAQUE);
+
+    final Graphics2D graphics = imageRGB.createGraphics();
+
+    graphics.drawImage(
+        image,
+        0,
+        0,
+        null);
+    final CloseableHttpClient httpClient = HttpClients.createDefault();
+    final String imageId = (url == null ? rng.nextBase64String(10) : UUID.nameUUIDFromBytes(url.getBytes())) + ".jpeg";
+    final com.expleague.model.Image elImage = new com.expleague.model.Image(imageId, expert.jid());
+    final HttpPost uploadFile = new HttpPost(com.expleague.model.Image.storageByJid(expert.jid()));
+
+    try {
+      final PipedOutputStream pipeIn = new PipedOutputStream();
+      final PipedInputStream pipeOut = new PipedInputStream(pipeIn, 4096);
+      new Thread(() -> {
+        try {
+          ImageIO.write(imageRGB, "jpg", pipeIn);
+          pipeIn.close();
+        } catch (IOException e) {
+          log.log(Level.WARNING, "Error uploading image", e);
+        }
+      }).start();
+      graphics.dispose();
+
+      final MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+      builder.addTextBody("id", imageId, ContentType.TEXT_PLAIN);
+      builder.addBinaryBody("image", pipeOut, ContentType.create("image/jpeg"), "file.jpeg");
+      HttpEntity multipart = builder.build();
+
+      uploadFile.setEntity(multipart);
+
+      final CloseableHttpResponse response = httpClient.execute(uploadFile);
+      if (response.getStatusLine().getStatusCode() != 200) {
+        response.close();
+        log.log(Level.WARNING, "Error uploading image", response.getStatusLine().toString());
+        return "";
+      }
+      response.close();
+      return elImage.url();
+    }
+    catch (IOException ioe) {
+      log.log(Level.WARNING, "Error uploading image", ioe);
+      return "";
+    }
   }
 
   public enum Status {

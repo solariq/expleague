@@ -149,7 +149,7 @@ public class Offer extends Item {
   }
 
   public boolean geoSpecific() {
-    return isLocal;
+    return isLocal != null ? isLocal : false;
   }
 
   public Location location() {
@@ -196,23 +196,4 @@ public class Offer extends Item {
     }
   }
 
-  @XmlRootElement
-  public static class Image extends Item {
-    public static final String MAGIC_CONST = "OSYpRdXPNGZgRvsY";
-    @XmlAttribute
-    private String src;
-
-    public Image(){}
-    public Image(String src, JID from) {
-      if ("localhost".equals(from.domain())) {
-        this.src = "http://localhost:8067/" + src;
-      }
-      else
-        this.src = "https://img." + from.domain() + "/" + MAGIC_CONST + "/" + src;
-    }
-
-    public String url() {
-      return src;
-    }
-  }
 }

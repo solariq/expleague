@@ -1,15 +1,5 @@
 package org.fxmisc.richtext;
 
-import static javafx.scene.input.KeyCode.*;
-import static javafx.scene.input.KeyCombination.*;
-import static javafx.scene.input.KeyEvent.*;
-import static org.fxmisc.richtext.TwoDimensional.Bias.*;
-import static org.fxmisc.wellbehaved.event.EventPattern.*;
-import static org.reactfx.EventStreams.*;
-
-import java.util.Optional;
-import java.util.function.Predicate;
-
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
@@ -17,10 +7,9 @@ import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-
 import org.fxmisc.richtext.NavigationActions.SelectionPolicy;
-import org.fxmisc.richtext.TwoDimensional.Position;
 import org.fxmisc.richtext.ParagraphBox.CaretOffsetX;
+import org.fxmisc.richtext.TwoDimensional.Position;
 import org.fxmisc.wellbehaved.event.EventHandlerHelper;
 import org.fxmisc.wellbehaved.event.EventHandlerTemplate;
 import org.fxmisc.wellbehaved.skin.Behavior;
@@ -28,6 +17,16 @@ import org.reactfx.EventStream;
 import org.reactfx.Subscription;
 import org.reactfx.value.Val;
 import org.reactfx.value.Var;
+
+import java.util.Optional;
+import java.util.function.Predicate;
+
+import static javafx.scene.input.KeyCode.*;
+import static javafx.scene.input.KeyCombination.*;
+import static javafx.scene.input.KeyEvent.KEY_TYPED;
+import static org.fxmisc.richtext.TwoDimensional.Bias.Forward;
+import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
+import static org.reactfx.EventStreams.*;
 
 /**
  * Controller for StyledTextArea.
@@ -48,6 +47,7 @@ class StyledTextAreaBehavior implements Behavior {
     private static final EventHandlerTemplate<StyledTextAreaBehavior, ? super MouseEvent> MOUSE_DRAGGED_TEMPLATE;
     private static final EventHandlerTemplate<StyledTextAreaBehavior, ? super MouseEvent> DRAG_DETECTED_TEMPLATE;
     private static final EventHandlerTemplate<StyledTextAreaBehavior, ? super MouseEvent> MOUSE_RELEASED_TEMPLATE;
+
 
     static {
         SelectionPolicy selPolicy = isMac
@@ -88,49 +88,75 @@ class StyledTextAreaBehavior implements Behavior {
                 .on(keyPressed(KP_DOWN))  .act((b, e) -> b.nextLine(SelectionPolicy.CLEAR))
                 .on(keyPressed(PAGE_UP))  .act((b, e) -> b.prevPage(SelectionPolicy.CLEAR))
                 .on(keyPressed(PAGE_DOWN)).act((b, e) -> b.nextPage(SelectionPolicy.CLEAR))
-                // vertical selection
+                .on(keyPressed(UP, SHORTCUT_DOWN)).act((b, e) -> b.prevPage(SelectionPolicy.CLEAR))
+                .on(keyPressed(DOWN, SHORTCUT_DOWN)).act((b, e) -> b.nextPage(SelectionPolicy.CLEAR))
+            // vertical selection
                 .on(keyPressed(UP,        SHIFT_DOWN)).act((b, e) -> b.prevLine(SelectionPolicy.ADJUST))
                 .on(keyPressed(KP_UP,     SHIFT_DOWN)).act((b, e) -> b.prevLine(SelectionPolicy.ADJUST))
                 .on(keyPressed(DOWN,      SHIFT_DOWN)).act((b, e) -> b.nextLine(SelectionPolicy.ADJUST))
                 .on(keyPressed(KP_DOWN,   SHIFT_DOWN)).act((b, e) -> b.nextLine(SelectionPolicy.ADJUST))
                 .on(keyPressed(PAGE_UP,   SHIFT_DOWN)).act((b, e) -> b.prevPage(SelectionPolicy.ADJUST))
                 .on(keyPressed(PAGE_DOWN, SHIFT_DOWN)).act((b, e) -> b.nextPage(SelectionPolicy.ADJUST))
-
+                .on(keyPressed(UP,   SHORTCUT_DOWN, SHIFT_DOWN)).act((b, e) -> b.prevPage(SelectionPolicy.ADJUST))
+                .on(keyPressed(DOWN, SHORTCUT_DOWN, SHIFT_DOWN)).act((b, e) -> b.nextPage(SelectionPolicy.ADJUST))
                 .create();
 
-        EventHandlerTemplate<StyledTextAreaBehavior, KeyEvent> otherNavigation = EventHandlerTemplate
-                // caret movement
-                .on(keyPressed(RIGHT))   .act(StyledTextAreaBehavior::right)
-                .on(keyPressed(KP_RIGHT)).act(StyledTextAreaBehavior::right)
-                .on(keyPressed(LEFT))    .act(StyledTextAreaBehavior::left)
-                .on(keyPressed(KP_LEFT)) .act(StyledTextAreaBehavior::left)
-                .on(keyPressed(HOME))    .act((b, e) -> b.model.lineStart(SelectionPolicy.CLEAR))
-                .on(keyPressed(END))     .act((b, e) -> b.model.lineEnd(SelectionPolicy.CLEAR))
-                .on(keyPressed(RIGHT,    SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksForwards(2, SelectionPolicy.CLEAR))
-                .on(keyPressed(KP_RIGHT, SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksForwards(2, SelectionPolicy.CLEAR))
-                .on(keyPressed(LEFT,     SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksBackwards(2, SelectionPolicy.CLEAR))
-                .on(keyPressed(KP_LEFT,  SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksBackwards(2, SelectionPolicy.CLEAR))
-                .on(keyPressed(HOME,     SHORTCUT_DOWN)).act((b, e) -> b.model.start(SelectionPolicy.CLEAR))
-                .on(keyPressed(END,      SHORTCUT_DOWN)).act((b, e) -> b.model.end(SelectionPolicy.CLEAR))
+        EventHandlerTemplate.Builder<StyledTextAreaBehavior, KeyEvent> actionsTimplate = EventHandlerTemplate
+            // caret movement
+            .on(keyPressed(RIGHT)).act(StyledTextAreaBehavior::right)
+            .on(keyPressed(KP_RIGHT)).act(StyledTextAreaBehavior::right)
+            .on(keyPressed(LEFT)).act(StyledTextAreaBehavior::left)
+            .on(keyPressed(KP_LEFT)).act(StyledTextAreaBehavior::left)
+            .on(keyPressed(HOME)).act((b, e) -> b.model.lineStart(SelectionPolicy.CLEAR))
+            .on(keyPressed(END)).act((b, e) -> b.model.lineEnd(SelectionPolicy.CLEAR));
+        if (isMac) {
+            actionsTimplate = actionsTimplate
+                .on(keyPressed(RIGHT, ALT_DOWN)).act((b, e) -> b.model.wordBreaksForwards(2, SelectionPolicy.CLEAR))
+                .on(keyPressed(KP_RIGHT, ALT_DOWN)).act((b, e) -> b.model.wordBreaksForwards(2, SelectionPolicy.CLEAR))
+                .on(keyPressed(RIGHT, SHORTCUT_DOWN)).act((b, e) -> b.model.lineEnd(SelectionPolicy.CLEAR))
+                .on(keyPressed(KP_RIGHT, SHORTCUT_DOWN)).act((b, e) -> b.model.lineEnd(SelectionPolicy.CLEAR))
+                .on(keyPressed(LEFT, ALT_DOWN)).act((b, e) -> b.model.wordBreaksBackwards(2, SelectionPolicy.CLEAR))
+                .on(keyPressed(KP_LEFT, ALT_DOWN)).act((b, e) -> b.model.wordBreaksBackwards(2, SelectionPolicy.CLEAR))
+                .on(keyPressed(LEFT, SHORTCUT_DOWN)).act((b, e) -> b.model.lineStart(SelectionPolicy.CLEAR))
+                .on(keyPressed(KP_LEFT, SHORTCUT_DOWN)).act((b, e) -> b.model.lineStart(SelectionPolicy.CLEAR))
                 // selection
-                .on(keyPressed(RIGHT,    SHIFT_DOWN)).act(StyledTextAreaBehavior::selectRight)
-                .on(keyPressed(KP_RIGHT, SHIFT_DOWN)).act(StyledTextAreaBehavior::selectRight)
-                .on(keyPressed(LEFT,     SHIFT_DOWN)).act(StyledTextAreaBehavior::selectLeft)
-                .on(keyPressed(KP_LEFT,  SHIFT_DOWN)).act(StyledTextAreaBehavior::selectLeft)
-                .on(keyPressed(HOME,     SHIFT_DOWN)).act((b, e) -> b.model.lineStart(selPolicy))
-                .on(keyPressed(END,      SHIFT_DOWN)).act((b, e) -> b.model.lineEnd(selPolicy))
-                .on(keyPressed(HOME,     SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.start(selPolicy))
-                .on(keyPressed(END,      SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.end(selPolicy))
-                .on(keyPressed(LEFT,     SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksBackwards(2, selPolicy))
-                .on(keyPressed(KP_LEFT,  SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksBackwards(2, selPolicy))
-                .on(keyPressed(RIGHT,    SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksForwards(2, selPolicy))
-                .on(keyPressed(KP_RIGHT, SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksForwards(2, selPolicy))
-                .on(keyPressed(A, SHORTCUT_DOWN)).act((b, e) -> b.model.selectAll())
-
-                .create();
+                .on(keyPressed(RIGHT, SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.lineEnd(selPolicy))
+                .on(keyPressed(KP_RIGHT, SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.lineEnd(selPolicy))
+                .on(keyPressed(RIGHT, SHIFT_DOWN, ALT_DOWN)).act((b, e) -> b.model.wordBreaksForwards(2, selPolicy))
+                .on(keyPressed(KP_RIGHT, SHIFT_DOWN, ALT_DOWN)).act((b, e) -> b.model.wordBreaksForwards(2, selPolicy))
+                .on(keyPressed(LEFT, SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.lineStart(selPolicy))
+                .on(keyPressed(KP_LEFT, SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.lineStart(selPolicy))
+                .on(keyPressed(LEFT, SHIFT_DOWN, ALT_DOWN)).act((b, e) -> b.model.wordBreaksBackwards(2, selPolicy))
+                .on(keyPressed(KP_LEFT, SHIFT_DOWN, ALT_DOWN)).act((b, e) -> b.model.wordBreaksBackwards(2, selPolicy));
+        }
+        else {
+            actionsTimplate = actionsTimplate
+                .on(keyPressed(RIGHT, SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksForwards(2, SelectionPolicy.CLEAR))
+                .on(keyPressed(KP_RIGHT, SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksForwards(2, SelectionPolicy.CLEAR))
+                .on(keyPressed(LEFT, SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksBackwards(2, SelectionPolicy.CLEAR))
+                .on(keyPressed(KP_LEFT, SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksBackwards(2, SelectionPolicy.CLEAR))
+                // selection
+                .on(keyPressed(LEFT, SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksBackwards(2, selPolicy))
+                .on(keyPressed(KP_LEFT, SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksBackwards(2, selPolicy))
+                .on(keyPressed(RIGHT, SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksForwards(2, selPolicy))
+                .on(keyPressed(KP_RIGHT, SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.wordBreaksForwards(2, selPolicy));
+        }
+        actionsTimplate = actionsTimplate
+            .on(keyPressed(RIGHT, SHIFT_DOWN)).act(StyledTextAreaBehavior::selectRight)
+            .on(keyPressed(KP_RIGHT, SHIFT_DOWN)).act(StyledTextAreaBehavior::selectRight)
+            .on(keyPressed(LEFT, SHIFT_DOWN)).act(StyledTextAreaBehavior::selectLeft)
+            .on(keyPressed(KP_LEFT, SHIFT_DOWN)).act(StyledTextAreaBehavior::selectLeft)
+            .on(keyPressed(HOME, SHORTCUT_DOWN)).act((b, e) -> b.model.start(SelectionPolicy.CLEAR))
+            .on(keyPressed(END, SHORTCUT_DOWN)).act((b, e) -> b.model.end(SelectionPolicy.CLEAR))
+            .on(keyPressed(HOME, SHIFT_DOWN)).act((b, e) -> b.model.lineStart(selPolicy))
+            .on(keyPressed(END, SHIFT_DOWN)).act((b, e) -> b.model.lineEnd(selPolicy))
+            .on(keyPressed(HOME, SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.start(selPolicy))
+            .on(keyPressed(END, SHIFT_DOWN, SHORTCUT_DOWN)).act((b, e) -> b.model.end(selPolicy))
+            .on(keyPressed(A, SHORTCUT_DOWN)).act((b, e) -> b.model.selectAll());
+        EventHandlerTemplate<StyledTextAreaBehavior, KeyEvent> otherNavigation = actionsTimplate.create();
 
         EventHandlerTemplate<StyledTextAreaBehavior, KeyEvent> otherActions = EventHandlerTemplate
-                .<StyledTextAreaBehavior, KeyEvent, KeyEvent>
+            .<StyledTextAreaBehavior, KeyEvent, KeyEvent>
                 // copy
                 on(keyPressed(COPY))                 .act((b, e) -> b.view.copy())
                 .on(keyPressed(C,      SHORTCUT_DOWN)).act((b, e) -> b.view.copy())
@@ -402,6 +428,12 @@ class StyledTextAreaBehavior implements Behavior {
 
             // update model
             model.moveTo(hit.getInsertionIndex(), selectionPolicy);
+        }
+        else if (nLines > 0){
+            model.end(selectionPolicy);
+        }
+        else if (nLines < 0) {
+            model.start(selectionPolicy);
         }
     }
 

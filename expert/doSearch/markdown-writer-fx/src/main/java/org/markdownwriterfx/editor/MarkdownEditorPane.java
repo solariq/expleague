@@ -27,25 +27,15 @@
 
 package org.markdownwriterfx.editor;
 
-import static javafx.scene.input.KeyCode.*;
-import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
-
-import java.nio.file.Path;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.ReadOnlyDoubleWrapper;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.input.Clipboard;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import org.fxmisc.richtext.StyleClassedTextArea;
@@ -57,6 +47,14 @@ import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.Utils;
 import org.pegdown.PegDownProcessor;
 import org.pegdown.ast.RootNode;
+
+import java.nio.file.Path;
+import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static javafx.scene.input.KeyCode.*;
+import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 
 /**
  * Markdown editor pane.
@@ -76,9 +74,17 @@ public class MarkdownEditorPane
 	private PegDownProcessor pegDownProcessor;
 	private final InvalidationListener optionsListener;
 	private String lineSeparator = getLineSeparatorOrDefault();
+	public Consumer<Clipboard> pasteAction;
 
 	public MarkdownEditorPane() {
-		textArea = new StyleClassedTextArea(false);
+		textArea = new StyleClassedTextArea(false) {
+			@Override
+			public void paste() {
+				if (pasteAction != null)
+					pasteAction.accept(Clipboard.getSystemClipboard());
+				super.paste();
+			}
+		};
 		textArea.setWrapText(true);
 		textArea.getStyleClass().add("markdown-editor");
 		textArea.getStylesheets().add("org/markdownwriterfx/editor/MarkdownEditor.css");

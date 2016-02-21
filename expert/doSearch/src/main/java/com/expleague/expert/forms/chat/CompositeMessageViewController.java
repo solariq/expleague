@@ -3,13 +3,9 @@ package com.expleague.expert.forms.chat;
 import com.expleague.model.Offer;
 import com.expleague.xmpp.Item;
 import com.lynden.gmapsfx.GoogleMapView;
-import com.lynden.gmapsfx.MapComponentInitializedListener;
 import com.lynden.gmapsfx.javascript.object.*;
-import com.sun.prism.PhongMaterial;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -48,8 +44,8 @@ public class CompositeMessageViewController {
 
     for (int i = 0; i < offer.attachments().length; i++) {
       final Item attachment = offer.attachments()[i];
-      if (attachment instanceof Offer.Image) {
-        addImage(((Offer.Image) attachment));
+      if (attachment instanceof com.expleague.model.Image) {
+        addImage(((com.expleague.model.Image) attachment));
       }
     }
     return taskView;
@@ -105,7 +101,7 @@ public class CompositeMessageViewController {
       contents.getChildren().add(label);
   }
 
-  public void addImage(Offer.Image image) {
+  public void addImage(com.expleague.model.Image image) {
     final Image img = new Image(image.url());
     final ImageView imageView = new ImageView(img);
     imageView.setPreserveRatio(true);
