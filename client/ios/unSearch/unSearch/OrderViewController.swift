@@ -239,11 +239,29 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
     
     var image: UIImage?
     var imageId: String?
+    var imageData: NSData?
+    var imageUrl: NSURL?
+    
     @objc
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
-        imageId = NSUUID().UUIDString + ".jpeg";
+        if let referenceUrl = info[UIImagePickerControllerReferenceURL] as? NSURL {
+            imageId = "\(ExpLeagueProfile.active.jid.user)-\(referenceUrl.hash).jpeg";
+        }
+        else {
+            imageId = "\(NSUUID().UUIDString).jpeg"
+        }
         if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
-            AppDelegate.instance.activeProfile!.saveImage(self.imageId!, image: image)
+            self.image = image
+            imageData = UIImageJPEGRepresentation(image, 1)
+            self.imageUrl = AppDelegate.instance.activeProfile!.imageUrl(imageId!)
+            EVURLCache.storeCachedResponse(
+                NSCachedURLResponse(
+                    response: NSURLResponse(URL: imageUrl!, MIMEType: "image/jpeg", expectedContentLength: imageData!.length, textEncodingName: "UTF-8"),
+                    data: self.imageData!
+                ),
+                forRequest: NSURLRequest(URL: imageUrl!)
+            )
+            
             queue.append(imageId!, image: image, progress: {
                 self.progressView = $0
                 self.uploadImage()
@@ -254,15 +272,9 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
     }
 
     func uploadImage() {
-        if (image == nil) {
+        if (image == nil || imageData == nil) {
             return
         }
-        let imageData = UIImageJPEGRepresentation(image!, 1)
-        if(imageData == nil) {
-            return
-        }
-
-//        self.uploadButton.enabled = false
 
         let uploadScriptUrl = AppDelegate.instance.activeProfile!.imageStorage
         let request = NSMutableURLRequest(URL: uploadScriptUrl)
@@ -287,6 +299,7 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
         request.setValue(contentType, forHTTPHeaderField: "Content-Type")
         request.HTTPBody = requestBodyData.copy() as? NSData
         request.timeoutInterval = 10 * 60
+        request.cachePolicy = .ReloadIgnoringLocalCacheData
 
         let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
         let session = NSURLSession(configuration: configuration, delegate: self, delegateQueue: NSOperationQueue.mainQueue())

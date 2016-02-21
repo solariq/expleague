@@ -90,6 +90,9 @@ class ExpLeagueMessage: NSManagedObject {
             }
             type = .Answer
         }
+        else if let image = msg.elementForName("image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+            properties["image"] = image.stringValue()
+        }
         else {
             self.body = textChildren.count > 0 ? textChildren[0].stringValue : nil
         }
@@ -157,79 +160,22 @@ class ExpLeagueMessage: NSManagedObject {
         if (type == .System || type == .Topic) {
             return
         }
-        if (body != nil && body!.hasPrefix("{")) {
+        if (properties["image"] != nil) {
             do {
-                let json = try NSJSONSerialization.JSONObjectWithData(body!.dataUsingEncoding(NSUTF8StringEncoding)!, options: NSJSONReadingOptions.AllowFragments)
-                let content = json["content"] as! NSArray
-                for item in content {
-                    if let textItem = (item as! NSDictionary)["text"] as? NSDictionary {
-                        var text: String = ""
-                        if textItem["text"] != nil {
-                            text = textItem["text"] as! String
-                            try! text = NSRegularExpression(pattern: "(\n)+", options: []).stringByReplacingMatchesInString(text, options: [], range: NSMakeRange(0, text.characters.count), withTemplate: "\n")
-                            text = text.stringByReplacingOccurrencesOfString("&nbsp;", withString: " ")
-                            try! text = NSRegularExpression(pattern: "( )+", options: []).stringByReplacingMatchesInString(text, options: [], range: NSMakeRange(0, text.characters.count), withTemplate: " ")
-                            text = text.stringByReplacingOccurrencesOfString("&lt;", withString: "<")
-                            text = text.stringByReplacingOccurrencesOfString("&gt;", withString: ">")
-                            text = text.stringByReplacingOccurrencesOfString("&quot;", withString: "\"")
-                        }
-                        if let title = textItem["title"] as? String {
-                            visitor.message(self, title: title, text: text)
-                        }
-                        else {
-                            visitor.message(self, text: text)
-                        }
-                    }
-                    if let textItem = (item as! NSDictionary)["link"] as? NSDictionary {
-                        if let title = textItem["title"] as? String {
-                            if let _ = NSURL(string: textItem["href"] as! String) {
-                                visitor.message(self, title: title, link: textItem["href"] as! String)
-                            }
-                            else {
-                                visitor.message(self, text: title)
-                            }
-                        }
-                    }
-                    if let imageItem = (item as! NSDictionary)["image"] as? NSDictionary {
-                        if let urlStr = imageItem["image"] as? String {
-                            let title: String
-                            if let t = imageItem["title"] as? String {
-                                title = t
-                            }
-                            else {
-                                title = "Вложение"
-                            }
-                            let storageName = urlStr.stringByReplacingOccurrencesOfString("/", withString: "-")
-                            if AppDelegate.instance.activeProfile!.hasImage(storageName) {
-                                if let image = AppDelegate.instance.activeProfile!.loadImage(storageName) {
-                                    visitor.message(self, title: title, image: image)
-                                }
-                                else {
-                                    visitor.message(self, title: title, text: urlStr)
-                                }
-                            }
-                            else if let url = NSURL(string: urlStr),
-                               let data = NSData(contentsOfURL: url),
-                               let image = UIImage(data: data) {
-                                visitor.message(self, title: title, image: image)
-                                AppDelegate.instance.activeProfile!.saveImage(storageName, image: image)
-                            }
-                            else {
-                                visitor.message(self, title: title, text: urlStr)
-                            }
-                        }
-                    }
+                let imageUrl = NSURL(string: properties["image"] as! String)!
+                let request = NSURLRequest(URL: imageUrl)
+                let imageData = try NSURLConnection.sendSynchronousRequest(request, returningResponse: nil)
                     
+                if let image = UIImage(data: imageData) {
+                    visitor.message(self, title: "Приложение", image: image)
                 }
             }
             catch {
-                AppDelegate.instance.activeProfile!.log("\(error)")
+                ExpLeagueProfile.active.log("Unable to load image \(properties["image"]): \(error)");
             }
         }
-        else {
-            if (body != nil) {
-                visitor.message(self, text: body!)
-            }
+        if (body != nil) {
+            visitor.message(self, text: body!)
         }
     }
 }

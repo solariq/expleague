@@ -169,6 +169,13 @@ class AppDelegate: UIResponder {
 extension AppDelegate: UIApplicationDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+        EVURLCache.LOGGING = true
+        EVURLCache.MAX_FILE_SIZE = 26
+        EVURLCache.MAX_CACHE_SIZE = 30
+        EVURLCache.MAX_AGE = "\(3.0 * 365 * 24 * 60 * 60 * 1000)"
+        EVURLCache.FORCE_LOWERCASE = true // is already the default. You also have to put all files int he PreCache using lowercase names
+        EVURLCache.activate()
+        
         dataController = DataController(app: self)
         stream.startTLSPolicy = XMPPStreamStartTLSPolicy.Required
         stream.keepAliveInterval = 30

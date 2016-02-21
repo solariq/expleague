@@ -30,6 +30,7 @@
 		EE62BF031C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEFF1C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift */; };
 		EE62BF041C4802B2004B6A42 /* ExpLeagueOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BF001C4802B2004B6A42 /* ExpLeagueOrder.swift */; };
 		EE6EA7CC1C48F79300692406 /* ProfileModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = EE6EA7CA1C48F79300692406 /* ProfileModel.xcdatamodeld */; };
+		EE70A5341C79C02C00174674 /* EVURLCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE70A5331C79C02C00174674 /* EVURLCache.swift */; };
 		EE755C551C57E9110018AF12 /* Setup.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE755C541C57E9110018AF12 /* Setup.xib */; };
 		EE755C571C591B220018AF12 /* Feedback.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE755C561C591B220018AF12 /* Feedback.xib */; };
 		EE94599C1C57A5FC000796ED /* AnswerReceived.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE94599A1C57A5FC000796ED /* AnswerReceived.xib */; };
@@ -69,6 +70,7 @@
 		EE62BEFF1C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueOrder+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		EE62BF001C4802B2004B6A42 /* ExpLeagueOrder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueOrder.swift; sourceTree = "<group>"; };
 		EE6EA7CB1C48F79300692406 /* ProfileModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ProfileModel.xcdatamodel; sourceTree = "<group>"; };
+		EE70A5331C79C02C00174674 /* EVURLCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EVURLCache.swift; sourceTree = "<group>"; };
 		EE755C541C57E9110018AF12 /* Setup.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Setup.xib; sourceTree = "<group>"; };
 		EE755C561C591B220018AF12 /* Feedback.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Feedback.xib; sourceTree = "<group>"; };
 		EE94599A1C57A5FC000796ED /* AnswerReceived.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AnswerReceived.xib; sourceTree = "<group>"; };
@@ -135,6 +137,7 @@
 			children = (
 				61604C2A35AEDECEEB1173F8 /* Pods-unSearch.debug.xcconfig */,
 				4D8195958D485AAAB1466469 /* Pods-unSearch.release.xcconfig */,
+				EE70A5331C79C02C00174674 /* EVURLCache.swift */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -334,6 +337,7 @@
 				688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */,
 				EE297ACC1C4A6C79002DE78B /* ConnectionProgressController.swift in Sources */,
 				688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */,
+				EE70A5341C79C02C00174674 /* EVURLCache.swift in Sources */,
 				EE1CB81A1C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift in Sources */,
 				688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */,
 				688A5675DA0F17BFB8A68FB2 /* HistoryViewController.swift in Sources */,

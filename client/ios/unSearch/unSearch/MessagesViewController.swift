@@ -157,12 +157,6 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
 
     override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
-        coordinator.animateAlongsideTransition({(context: UIViewControllerTransitionCoordinatorContext) -> Void in
-                self.adjustSizes()
-                self.messagesView.reloadData()
-            }, completion: nil
-        )
-        print("Transformation to new size: \(size)");
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -180,10 +174,10 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         if (data!.order.isActive) {
-            scrollView.scrollRectToVisible(messagesView.frame, animated: false)
+            scrollView.setContentOffset(messagesView.frame.origin, animated: false)
         }
         else {
-            scrollView.scrollRectToVisible(answerView!.frame, animated: false)
+            scrollView.setContentOffset(progress.frame.origin, animated: false)
         }
         if (data!.order.text.characters.count > 15) {
             self.title = data!.order.text.substringToIndex(data!.order.topic.startIndex.advancedBy(15)) + "..."
@@ -228,15 +222,6 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         view.endEditing(true)
     }
 
-    func adjustSizes() {
-        let inputHeight = input.view.frame.height + 2
-        let constant = -inputHeight;
-        messagesViewHConstraint!.constant = constant
-        answerViewHConstraint!.constant = constant
-//        scrollView.contentSize = CGSizeMake(scrollView.frame.width, 2 * (view.frame.height + scrollViewBottom!.constant) - inputHeight)
-        print("root: \(view.frame.size), scroll: \(scrollView.frame.size), messages: \(messagesView.frame), input: \(input.view!.frame), answer: \(answerView!.frame), content: \(scrollView.contentSize), constant: \(constant)")
-    }
-    
     func attach(input: ChatInputViewController) {
         self.presentViewController(picker, animated: true, completion: nil)
         progress.hidden = false
@@ -245,7 +230,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     
     func append(id: String, image: UIImage, progress: (UIProgressView) -> Void) {
         let img = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
-        img.setStringValue(id)
+        img.setStringValue(AppDelegate.instance.activeProfile!.imageUrl(id).absoluteString)
         data!.order.send(xml: img)
         progress(self.progress)
     }
@@ -255,45 +240,13 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     }
 }
 
-//extension MessagesVeiwController: UIScrollViewDelegate {
-//    func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool)
-//    {
-//        if !decelerate
-//        {
-//            let currentIndex = floor(scrollView.contentOffset.x / scrollView.bounds.size.width);
-//            
-//            let offset = CGPointMake(scrollView.bounds.size.width * currentIndex, 0)
-//            
-//            scrollView.setContentOffset(offset, animated: true)
-//        }
-//    }
-//    
-//    func scrollViewWillEndDragging(scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>)
-//    {
-//        //This is the index of the "page" that we will be landing at
-//        let nearestIndex = Int(CGFloat(targetContentOffset.memory.x) / scrollView.bounds.size.width + 0.5)
-//        
-//        //Just to make sure we don't scroll past your content
-//        let clampedIndex = max( min( nearestIndex, yourPagesArray.count - 1 ), 0 )
-//        
-//        //This is the actual x position in the scroll view
-//        var xOffset = CGFloat(clampedIndex) * scrollView.bounds.size.width
-//        
-//        //I've found that scroll views will "stick" unless this is done
-//        xOffset = xOffset == 0.0 ? 1.0 : xOffset
-//        
-//        //Tell the scroll view to land on our page
-//        targetContentOffset.memory.x = xOffset
-//    }
-//}
-
 class AnswerDelegate: NSObject, UIWebViewDelegate {
     func webView(webView: UIWebView, shouldStartLoadWithRequest request: NSURLRequest, navigationType: UIWebViewNavigationType) -> Bool {
         
         if let url = request.URL where url.scheme == "unsearch" {
             if (url.path == "/chat-messages") {
                 if let indexStr = url.fragment, index = Int(indexStr) {
-                    parent.messagesView.scrollToRowAtIndexPath(NSIndexPath(forItem: index, inSection: 0), atScrollPosition: .Middle, animated: false)
+                    parent.messagesView.scrollToRowAtIndexPath(NSIndexPath(forItem: index - 1, inSection: 0), atScrollPosition: .Middle, animated: false)
                     parent.scrollView.setContentOffset(parent.messagesView.frame.origin, animated: true)
                 }
             }
@@ -301,6 +254,7 @@ class AnswerDelegate: NSObject, UIWebViewDelegate {
         }
         else if let url = request.URL where url.scheme.hasPrefix("http") {
             UIApplication.sharedApplication().openURL(url)
+            return false
         }
 
         return true
@@ -458,7 +412,6 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let message = cells[indexPath.item]
         let cell = tableView.dequeueReusableCellWithIdentifier(String(message.type), forIndexPath: indexPath) as! ChatCell
-        print ("Assigning controller: \(controller)")
         cell.controller = controller
         cell.frame.size.width = tableView.frame.width
         try! message.form(chatCell: cell)

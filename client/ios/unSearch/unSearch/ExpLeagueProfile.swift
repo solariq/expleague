@@ -28,6 +28,10 @@ class XMPPTracker: NSObject {
 
 @objc(ExpLeagueProfile)
 class ExpLeagueProfile: NSManagedObject {
+    static var active: ExpLeagueProfile {
+        return AppDelegate.instance.activeProfile!
+    }
+    
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
@@ -101,33 +105,21 @@ class ExpLeagueProfile: NSManagedObject {
         }
     }
     
-    func hasImage(id: String) -> Bool {
-        let root = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
-        return NSFileManager.defaultManager().fileExistsAtPath("\(root)/\(self.name)/images/\(id)")
-    }
-    
-    func saveImage(id: String, image: UIImage) {
-        let root = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
-        try! NSFileManager.defaultManager().createDirectoryAtPath("\(root)/\(self.name)/images/", withIntermediateDirectories: true, attributes: nil)
-        UIImageJPEGRepresentation(image, 100)!.writeToFile("\(root)/\(self.name)/images/\(id)", atomically: true)
-    }
-    
-    func loadImage(id: String) -> UIImage? {
-        let root = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
-        return UIImage(contentsOfFile: "\(root)/\(self.name)/images/\(id)")
-    }
+    func avatar(login: String, url urlStr: String?) -> UIImage {
+        if let u = urlStr, let url = NSURL(string: u) {
+            let request = NSURLRequest(URL: url)
+            do {
+                let imageData = try NSURLConnection.sendSynchronousRequest(request, returningResponse: nil)
+            
+                if let image = UIImage(data: imageData) {
+                    return image
+                }
+            }
+            catch {
+                ExpLeagueProfile.active.log("Unable to load avatar \(url): \(error)");
+            }
+        }
 
-    func avatar(login: String, url: String?) -> UIImage {
-        let avaName = login + "-avatar"
-        if hasImage(avaName) {
-            return loadImage(avaName)!
-        }
-        else if let urlnz = url, let nsurl = NSURL(string: urlnz),
-        let data = NSData(contentsOfURL: nsurl),
-        let image = UIImage(data: data) {
-            saveImage(avaName, image: image)
-            return image
-        }
         return UIImage(named: "owl_exp")!
     }
     

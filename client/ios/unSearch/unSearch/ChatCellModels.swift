@@ -306,8 +306,18 @@ class SetupModel: CompositeCellModel {
                     continue
                 }
                 
-                let image = AppDelegate.instance.activeProfile!.loadImage(attachment)
-                append(image: image!, time: order.started)
+                let imageUrl = AppDelegate.instance.activeProfile!.imageUrl(attachment)
+                let request = NSURLRequest(URL: imageUrl)
+                do {
+                    let imageData = try NSURLConnection.sendSynchronousRequest(request, returningResponse: nil)
+                
+                    if let image = UIImage(data: imageData) {
+                        append(image: image, time: order.started)
+                    }
+                }
+                catch {
+                    ExpLeagueProfile.active.log("Unable to load image \(imageUrl.absoluteString): \(error)");
+                }
             }
             if (json["local"] as! Bool) {
                 let location = json["location"] as! [String: AnyObject]
