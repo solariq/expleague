@@ -204,7 +204,7 @@ public class AnswerViewController {
       db.setContent(Collections.singletonMap(DataFormat.PLAIN_TEXT, result));
     }
 
-    return result != null;
+    return db.hasString();
   }
 
   private final ExpertTask task;
