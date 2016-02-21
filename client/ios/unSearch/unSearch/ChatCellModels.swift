@@ -419,7 +419,7 @@ class ExpertInProgressModel: ChatCellModel {
         }
         eipCell.pages = pagesCount
         eipCell.name.text = expertProperties["name"] as? String
-        eipCell.expertAvatar.image = AppDelegate.instance.activeProfile!.avatar(expertProperties["login"] as! String, url: expertProperties["login"] as? String)
+        eipCell.expertAvatar.image = ExpLeagueProfile.active.avatar(expertProperties["login"] as! String, url: expertProperties["avatar"] as? String)
         eipCell.expertAvatar.layer.cornerRadius = 10;
         eipCell.expertAvatar.clipsToBounds = true;
 
