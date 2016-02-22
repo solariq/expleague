@@ -45,12 +45,13 @@ public class TextStreamReader implements Reader {
 
   @Override
   public int read(char[] cbuf) throws IOException {
-    inputStream.read(buf);
+    final int read = inputStream.read(buf);
+
     final CharBuffer cb = CharBuffer.wrap(cbuf);
     buf.flip();
     decoder.decode(buf, cb, false);
     buf.compact();
     cb.flip();
-    return cb.remaining();
+    return cb.remaining() > 0 ? cb.remaining() : (read < 0 ? -1 : 0);
   }
 }
