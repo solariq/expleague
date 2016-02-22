@@ -105,8 +105,10 @@ class ExpLeagueProfile: NSManagedObject {
         }
     }
     
+    var avatars: [String: String] = [:]
     func avatar(login: String, url urlStr: String?) -> UIImage {
-        if let u = urlStr, let url = NSURL(string: u) {
+        if let u = urlStr ?? avatars[login], let url = NSURL(string: u) {
+            avatars[login] = u
             let request = NSURLRequest(URL: url)
             do {
                 let imageData = try NSURLConnection.sendSynchronousRequest(request, returningResponse: nil)
