@@ -109,7 +109,7 @@ class HistoryViewController: UITableViewController {
             let o = ongoing[indexPath.row]
             let cell = tableView.dequeueReusableCellWithIdentifier("OngoingOrder", forIndexPath: indexPath) as! OngoingOrderStateCell
             cell.title.text = o.text
-            if (o.status == .ExpertSearch && o.count > 0 && o.message(o.count - 1).type == .Answer) {
+            if (o.count > 0 && o.message(o.count - 1).type == .Answer) {
                 cell.status.textColor = OngoingOrderStateCell.GREEN_COLOR
                 cell.status.text = "ОТВЕТ ГОТОВ"
             }
