@@ -15,7 +15,6 @@ import java.util.function.Consumer;
  * Time: 22:01
  */
 public class SSLHelper {
-
   public SSLHelper(SSLEngine sslEngine) {
     this.sslEngine = sslEngine;
   }
@@ -24,55 +23,58 @@ public class SSLHelper {
   private ByteBuffer inDst = ByteBuffer.allocate(4 * 4096);
   private ByteBuffer inSrc = ByteBuffer.allocate(4 * 4096);
   public void decrypt(ByteString msgIn, Consumer<ByteString> consumer) {
+    inDst = sslPipe(msgIn, consumer, inSrc, inDst, true);
+  }
+
+  private ByteBuffer outDst = ByteBuffer.allocate(4 * 4096);
+  private ByteBuffer outSrc = ByteBuffer.allocate(4 * 4096);
+  public void encrypt(ByteString data, Consumer<ByteString> consumer) throws SSLException {
+    outDst = sslPipe(data, consumer, outSrc, outDst, false);
+  }
+
+  private ByteBuffer sslPipe(ByteString msgIn, Consumer<ByteString> consumer, ByteBuffer src, ByteBuffer dst, boolean incoming) {
     try {
-      final ByteBuffer incoming = msgIn.asByteBuffer();
-      while (incoming.remaining() > 0) {
-        if (incoming.remaining() > inSrc.remaining()) {
-          final ByteBuffer slice = incoming.slice();
-          slice.limit(inSrc.remaining());
-          incoming.position(slice.position());
-          inSrc.put(slice);
+      final ByteBuffer inBuffer = msgIn.asByteBuffer();
+      while (inBuffer.remaining() > 0) {
+        if (inBuffer.remaining() > src.remaining()) {
+          final ByteBuffer slice = inBuffer.slice();
+          slice.limit(src.remaining());
+          inBuffer.position(slice.position());
+          src.put(slice);
         }
-        else inSrc.put(incoming);
+        else src.put(inBuffer);
         do {
-          inSrc.flip();
-          final SSLEngineResult r = sslEngine.unwrap(inSrc, inDst);
+          src.flip();
+          final SSLEngineResult r = incoming ? sslEngine.unwrap(src, dst) : sslEngine.wrap(src, dst);
           switch (r.getStatus()) {
             case BUFFER_OVERFLOW: {
               // Could attempt to drain the dst buffer of any already obtained
               // data, but we'll just increase it to the size needed.
-              int appSize = sslEngine.getSession().getApplicationBufferSize();
-              final ByteBuffer b = ByteBuffer.allocate(appSize + inDst.position());
-              inDst.flip();
-              b.put(inDst);
-              inDst = b;
-              inSrc.compact();
+              dst = SSLHandshake.expandBuffer(dst, sslEngine.getSession().getApplicationBufferSize());
+              src.compact();
               continue;
             }
             case BUFFER_UNDERFLOW: {
               int netSize = sslEngine.getSession().getPacketBufferSize();
               // Resize buffer if needed.
-              if (netSize > inDst.capacity()) {
-                final ByteBuffer b = ByteBuffer.allocate(netSize);
-                inSrc.flip();
-                b.put(inSrc);
-                inSrc = b;
+              if (netSize > dst.capacity()) {
+                dst = SSLHandshake.expandBuffer(dst, netSize);
               }
               // Obtain more inbound network data for inSrc,
               // then retry the operation.
-              return;
+              return dst;
               // other cases: CLOSED, OK.
             }
           }
-          inDst.flip();
-          inSrc.compact();
-          if (inDst.limit() > 0) {
-            consumer.accept(ByteString.fromByteBuffer(inDst));
-            inDst.clear();
+          dst.flip();
+          src.compact();
+          if (dst.limit() > 0) {
+            consumer.accept(ByteString.fromByteBuffer(dst));
+            dst.clear();
           }
           else if (r.bytesConsumed() == 0)
             break;
-          if (inSrc.position() > 0)
+          if (src.position() > 0)
             break;
         }
         while (true);
@@ -81,33 +83,6 @@ public class SSLHelper {
     catch (SSLException e) {
       throw new RuntimeException(e);
     }
-  }
-
-
-  private ByteBuffer outDst = ByteBuffer.allocate(4096);
-  private ByteBuffer outSrc = ByteBuffer.allocate(4096);
-  public void encrypt(ByteString data, Consumer<ByteString> consumer) throws SSLException {
-    if (outSrc.remaining() < data.length())
-      outSrc = SSLHandshake.expandBuffer(outSrc, data.length());
-    data.copyToBuffer(outSrc);
-OUTER:
-    while (outSrc.position() > 0) {
-      outSrc.flip();
-      final SSLEngineResult result = sslEngine.wrap(outSrc, outDst);
-      outSrc.compact();
-      switch (result.getStatus()) {
-        case BUFFER_OVERFLOW:
-          outDst = SSLHandshake.expandBuffer(outDst, sslEngine.getSession().getPacketBufferSize());
-          break;
-        case BUFFER_UNDERFLOW:
-          throw new RuntimeException("Strange happened!");
-        default:
-          outDst.flip();
-          if (outDst.limit() == 0)
-            break OUTER;
-          consumer.accept(ByteString.fromByteBuffer(outDst));
-          outDst.clear();
-      }
-    }
+    return dst;
   }
 }
