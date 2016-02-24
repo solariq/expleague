@@ -27,8 +27,8 @@ public class VkUtils {
       final UsersGetResponse usersResponse = new ObjectMapper().readValue(contents.toString(), UsersGetResponse.class);
       final User user = usersResponse.response[0];
       profile.set(UserProfile.Key.NAME, user.first_name + " " + user.last_name);
-      profile.set(UserProfile.Key.CITY, user.city.title);
-      profile.set(UserProfile.Key.COUNTRY, user.country.title);
+      profile.set(UserProfile.Key.CITY, user.city != null ? user.city.title : "");
+      profile.set(UserProfile.Key.COUNTRY, user.country != null ? user.country.title : "");
       profile.set(UserProfile.Key.AVATAR_URL, user.photo_max);
     }
     catch (IOException e) {
