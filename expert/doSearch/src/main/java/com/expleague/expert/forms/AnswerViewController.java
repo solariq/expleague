@@ -5,6 +5,7 @@ import com.expleague.expert.xmpp.ExpertTask;
 import com.expleague.model.patch.Patch;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.ToolBar;
@@ -24,6 +25,12 @@ import org.markdownwriterfx.preview.MarkdownPreviewPane;
 import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
 
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Logger;
 
@@ -198,6 +205,16 @@ public class AnswerViewController {
         result= "[" + (db.hasString() ? db.getString() : "") + "](" + db.getUrl() + ")";
       }
     }
+    else if (db.hasFiles() && db.getFiles().size() == 1 && isImage(db.getFiles().get(0))) {
+      try {
+        result = "![" + (db.hasString() ? db.getString() : "") + "](" +
+            ExpLeagueConnection.instance().uploadImage(SwingFXUtils.toFXImage(ImageIO.read(new FileInputStream(db.getFiles().get(0))), null), db.getUrl())
+            + ")";
+      }
+      catch (IOException e) {
+        // ignore
+      }
+    }
     else if (db.hasImage()) {
       result = "![" + (db.hasString() ? db.getString() : "") + "](" +
           ExpLeagueConnection.instance().uploadImage((Image)db.getContent(DataFormat.IMAGE), db.getUrl())
@@ -208,6 +225,10 @@ public class AnswerViewController {
     }
 
     return db.hasString();
+  }
+
+  private boolean isImage(File file) {
+    return Arrays.stream(ImageIO.getReaderFileSuffixes()).anyMatch(suffix -> file.getName().endsWith(suffix));
   }
 
   private final ExpertTask task;
