@@ -7,6 +7,7 @@ import com.expleague.expert.xmpp.ExpertEvent;
 import com.expleague.expert.xmpp.ExpertTask;
 import com.expleague.expert.xmpp.events.*;
 import com.expleague.model.Answer;
+import com.expleague.model.Image;
 import com.expleague.model.Offer;
 import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.func.Action;
@@ -227,6 +228,10 @@ public class DialogueController implements Action<ExpertEvent> {
           final String trim = text.trim();
           if (!trim.isEmpty())
             Platform.runLater(() -> finalVc.addText(trim));
+        }
+        @Override
+        public void accept(Image image) {
+            Platform.runLater(() -> finalVc.addImage(image));
         }
       });
       if (type == MessageType.INCOMING) { // incomming message from client

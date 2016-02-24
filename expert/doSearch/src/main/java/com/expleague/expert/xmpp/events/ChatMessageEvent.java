@@ -2,6 +2,7 @@ package com.expleague.expert.xmpp.events;
 
 import com.expleague.expert.xmpp.ExpertEvent;
 import com.expleague.expert.xmpp.ExpertTask;
+import com.expleague.model.Image;
 import com.expleague.xmpp.stanza.Message;
 
 /**
@@ -18,6 +19,9 @@ public class ChatMessageEvent extends ExpertTaskEvent {
 
   public void visitParts(PartsVisitor visitor) {
     visitor.accept(source().body());
+    if (source().has(Image.class)) {
+      visitor.accept(source().get(Image.class));
+    }
   }
 
   @Override
@@ -27,5 +31,6 @@ public class ChatMessageEvent extends ExpertTaskEvent {
 
   public static class PartsVisitor {
     public void accept(String text) { }
+    public void accept(Image text) { }
   }
 }

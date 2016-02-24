@@ -230,14 +230,14 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     }
     
     func append(id: String, image: UIImage, progress: (UIProgressView) -> Void) {
-        let img = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
-        img.setStringValue(AppDelegate.instance.activeProfile!.imageUrl(id).absoluteString)
-        data!.order.send(xml: img)
         progress(self.progress)
     }
     
     func report(id: String, status: Bool) {
         self.progress.tintColor = status ? UIColor.greenColor() : UIColor.redColor()
+        let img = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+        img.setStringValue(AppDelegate.instance.activeProfile!.imageUrl(id).absoluteString)
+        data!.order.send(xml: img)
     }
 }
 
