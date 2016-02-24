@@ -6,6 +6,7 @@ import com.lynden.gmapsfx.GoogleMapView;
 import com.lynden.gmapsfx.javascript.object.*;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -14,6 +15,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
@@ -108,6 +110,14 @@ public class CompositeMessageViewController {
     imageView.setFitWidth(100);
     trueWidth.addListener((observable, oldValue, newValue) -> {
       imageView.setFitWidth((Double)newValue - 50);
+    });
+    imageView.setOnMouseClicked(event -> {
+      try {
+        Runtime.getRuntime().exec("open " + image.url());
+      }
+      catch (IOException e) {
+        // ignore
+      }
     });
     if (type.alignment() == TextAlignment.CENTER)
       contents.getChildren().add(makeCenter(imageView));
