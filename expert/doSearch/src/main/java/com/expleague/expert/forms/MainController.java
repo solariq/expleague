@@ -179,6 +179,9 @@ public class MainController implements Action<ExpertEvent> {
     else if (expertTaskEvent instanceof TaskSuspendedEvent) {
       sendButton.setDisable(true);
       task = null;
+      if (preview != null) {
+        preview.getChildren().clear();
+      }
       Platform.runLater(() -> {
         tabs.getTabs().remove(0, editorIndex);
         editorIndex = 0;
