@@ -187,7 +187,10 @@ public class AnswerViewController {
   private boolean processClipboard(Clipboard db) {
     editorPane.requestFocus();
     String result = null;
-    if (db.hasUrl() && db.getUrl().startsWith("http") && !db.getUrl().startsWith("https://www.google.ru/imgres")) {
+    if (db.hasUrl() && db.getUrl().startsWith("http") && (
+        db.getUrl().endsWith(".jpg") || db.getUrl().endsWith(".jpeg") ||
+        db.getUrl().endsWith(".png") || db.getUrl().endsWith(".gif")
+    )) {
       if (db.hasImage()) {
         result= "![" + (db.hasString() ? db.getString() : "") + "](" + db.getUrl() + ")";
       }

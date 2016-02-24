@@ -14,8 +14,6 @@ import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.func.Action;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -30,6 +28,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
 import org.controlsfx.control.Notifications;
 import org.jetbrains.annotations.Nullable;
@@ -166,6 +166,8 @@ public class MainController implements Action<ExpertEvent> {
             .hideAfter(Duration.seconds(30))
             .position(Pos.TOP_RIGHT)
             .show();
+
+        playNotificationSound();
       });
     }
     else if (expertTaskEvent instanceof TaskAcceptedEvent) {
@@ -195,6 +197,12 @@ public class MainController implements Action<ExpertEvent> {
         Platform.runLater(() -> startEditor(controller, message.id(), editorIndex++ - 1, message.from()));
       }
     }
+  }
+
+  private void playNotificationSound() {
+    final Media someSound = new Media(getClass().getResource("/sounds/owl.mp3").toString());
+    final MediaPlayer mp = new MediaPlayer(someSound);
+    mp.play();
   }
 
   private void startEditor(AnswerViewController answerController, String id, int index, @Nullable JID from) {

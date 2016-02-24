@@ -324,10 +324,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
   public String uploadImage(Image content, String url) {
     if (expert == null)
       return "";
-    final BufferedImage image =
-        SwingFXUtils.fromFXImage(
-            content,
-            null);
+    final BufferedImage image = SwingFXUtils.fromFXImage(content, null);
 
 // Remove alpha-channel from buffered image:
     final BufferedImage imageRGB =
@@ -338,11 +335,9 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
 
     final Graphics2D graphics = imageRGB.createGraphics();
 
-    graphics.drawImage(
-        image,
-        0,
-        0,
-        null);
+    graphics.setBackground(Color.WHITE);
+    graphics.setColor(Color.WHITE);
+    graphics.drawImage(image, 0, 0, null);
 
     try {
       final SSLContextBuilder ctxtBuilder = new SSLContextBuilder();
@@ -350,14 +345,14 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
       final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
           ctxtBuilder.build());
       final CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
-      final String imageId = (url == null ? rng.nextBase64String(10) : UUID.nameUUIDFromBytes(url.getBytes())) + ".jpeg";
+      final String imageId = (url == null ? rng.nextBase64String(10) : UUID.nameUUIDFromBytes(url.getBytes())) + ".png";
       final com.expleague.model.Image elImage = new com.expleague.model.Image(imageId, expert.jid());
       final HttpPost uploadFile = new HttpPost(com.expleague.model.Image.storageByJid(expert.jid()));
       final PipedOutputStream pipeIn = new PipedOutputStream();
       final PipedInputStream pipeOut = new PipedInputStream(pipeIn, 4096);
       new Thread(() -> {
         try {
-          ImageIO.write(imageRGB, "jpg", pipeIn);
+          ImageIO.write(imageRGB, "png", pipeIn);
           pipeIn.close();
         } catch (IOException e) {
           log.log(Level.WARNING, "Error uploading image", e);
@@ -367,7 +362,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
 
       final MultipartEntityBuilder builder = MultipartEntityBuilder.create();
       builder.addTextBody("id", imageId, ContentType.TEXT_PLAIN);
-      builder.addBinaryBody("image", pipeOut, ContentType.create("image/jpeg"), "file.jpeg");
+      builder.addBinaryBody("image", pipeOut, ContentType.create("image/png"), "file.png");
       HttpEntity multipart = builder.build();
 
       uploadFile.setEntity(multipart);

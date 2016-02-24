@@ -147,6 +147,10 @@
           <identifier>com.expleague.expert.doSearch</identifier>
           <vendor>Experts League</vendor>
           <appName>doSearch</appName>
+          <jvmArgs>
+            <argument>-Xmx1g</argument>
+            <argument>-Dfile.encoding=UTF-8</argument>
+          </jvmArgs>
           <bundler>ALL</bundler>
         </configuration>
         <dependencies>
