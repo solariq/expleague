@@ -1,5 +1,6 @@
 package com.expleague.expert.forms.chat;
 
+import com.expleague.expert.forms.MainController;
 import com.expleague.model.Offer;
 import com.expleague.xmpp.Item;
 import com.lynden.gmapsfx.GoogleMapView;
@@ -126,7 +127,6 @@ public class CompositeMessageViewController {
   }
 
   public void addLocation(Offer.Location location) {
-
     final GoogleMapView mapView = new GoogleMapView();
     mapView.addMapInializedListener(() -> {
       //Set the initial properties of the map.
@@ -155,6 +155,7 @@ public class CompositeMessageViewController {
       map.addMarker(marker);
     });
     mapView.setMaxHeight(200);
+    mapView.setOnMouseClicked(event -> MainController.instance().openMap(location));
     trueWidth.addListener((observable, oldValue, newValue) -> {
       mapView.setMaxWidth((Double)newValue - 50);
     });

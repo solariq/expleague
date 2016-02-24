@@ -3,6 +3,7 @@ package com.expleague.expert.forms;
 import com.expleague.expert.forms.chat.CompositeMessageViewController;
 import com.expleague.expert.forms.chat.DialogueController;
 import com.expleague.expert.forms.chat.TimeoutUtil;
+import com.expleague.expert.map.GoogleMap;
 import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
 import com.expleague.expert.xmpp.ExpertEvent;
@@ -185,7 +186,8 @@ public class MainController implements Action<ExpertEvent> {
         preview.getChildren().clear();
       }
       Platform.runLater(() -> {
-        tabs.getTabs().remove(0, editorIndex);
+        tabs.getTabs().clear();
+//        tabs.getTabs().remove(0, editorIndex);
         editorIndex = 0;
       });
     }
@@ -250,6 +252,26 @@ public class MainController implements Action<ExpertEvent> {
         break;
       }
     }
+  }
+
+  public void openMap(Offer.Location location) {
+    Tab mapTab = null;
+    GoogleMap map = null;
+    for (final Tab tab : tabs.getTabs()) {
+      if (tab.getContent() instanceof GoogleMap) {
+        map = (GoogleMap) tab.getContent();
+        mapTab = tab;
+        break;
+      }
+    }
+    if (map == null) {
+      mapTab = new Tab("Карта");
+      tabs.getTabs().add(mapTab);
+      mapTab.setContent(map = new GoogleMap());
+    }
+    map.setMapCenter(location.latitude(), location.longitude());
+    map.setMarkerPosition(location.latitude(), location.longitude());
+    tabs.getSelectionModel().select(mapTab);
   }
 
   public void sendAnswer(ActionEvent ignore) {
