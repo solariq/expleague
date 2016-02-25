@@ -254,25 +254,31 @@ extension HistoryViewController: UISplitViewControllerDelegate {
         return AppDelegate.instance.activeProfile!.selected
     }
     
-//    func primaryViewControllerForCollapsingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
-//        if (selected == nil) {
-//            return self
-//        }
-//        else {
-//            let mvc = MessagesVeiwController()
-//            mvc.data = model(selected!)
-//            return mvc
-//        }
-//    }
-//    
-//    func primaryViewControllerForExpandingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
-//        return primaryViewControllerForCollapsingSplitViewController(splitViewController)
-//    }
-//    
-//    func splitViewController(svc: UISplitViewController, willChangeToDisplayMode displayMode: UISplitViewControllerDisplayMode) {
-//        print(displayMode)
-//    }
-//    
+    func primaryViewControllerForCollapsingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
+        if (selected == nil) {
+            AppDelegate.instance.tabs.tabBar.hidden = false
+            return navigationController ?? self
+        }
+        else {
+            if (navigationController != nil) {
+                return navigationController
+            }
+            let mvc = MessagesVeiwController()
+            mvc.data = model(selected!)
+            return mvc
+        }
+    }
+
+    func primaryViewControllerForExpandingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
+        return primaryViewControllerForCollapsingSplitViewController(splitViewController)
+    }
+    
+    func splitViewController(svc: UISplitViewController, willChangeToDisplayMode displayMode: UISplitViewControllerDisplayMode) {
+        if (displayMode != .AllVisible) {
+            AppDelegate.instance.tabs.tabBar.hidden = false
+        }
+    }
+
     func splitViewController(splitViewController: UISplitViewController, showDetailViewController vc: UIViewController, sender: AnyObject?) -> Bool {
         let mvc = vc as! MessagesVeiwController
         if (selected != nil) {

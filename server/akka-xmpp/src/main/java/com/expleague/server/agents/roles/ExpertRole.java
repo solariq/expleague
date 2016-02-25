@@ -288,6 +288,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               return stay();
             }
         ).event(Cancel.class,
+            (cancel, task) -> task.broker().equals(sender()),
             (cancel, task) -> {
               explain("Broker canceled task. Sending expert cancel.");
               XMPP.send(new Message(XMPP.jid(), jid(), new Cancel(), task.offer()), context());

@@ -162,7 +162,6 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        tabBarController?.tabBar.hidden = true
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardShown:", name: UIKeyboardWillShowNotification, object: nil)
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardHidden:", name: UIKeyboardWillHideNotification, object: nil)
         if (data != nil) {
@@ -174,6 +173,10 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
+        tabBarController?.tabBar.hidden = true
+        if (data == nil) {
+            return
+        }
         if (data!.order.isActive) {
             scrollView.setContentOffset(messagesView.frame.origin, animated: false)
         }
@@ -190,7 +193,6 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
 
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
-        tabBarController?.tabBar.hidden = false
         AppDelegate.instance.activeProfile!.selected = nil
         NSNotificationCenter.defaultCenter().removeObserver(self)
         data?.markAsRead()
