@@ -37,6 +37,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -138,6 +139,7 @@ public class MainController implements Action<ExpertEvent> {
 
   private ExpertTask task;
   private int editorIndex = 0;
+  private long lastEvent = 0;
   @Override
   public void invoke(ExpertEvent expertTaskEvent) {
     if (expertTaskEvent instanceof TaskStartedEvent) {
@@ -198,7 +200,24 @@ public class MainController implements Action<ExpertEvent> {
         final AnswerViewController controller = new AnswerViewController(message.get(Answer.class).value());
         Platform.runLater(() -> startEditor(controller, message.id(), editorIndex++ - 1, message.from()));
       }
+      if (System.currentTimeMillis() - lastEvent > TimeUnit.SECONDS.toMillis(10)) {
+        Platform.runLater(() -> {
+          if (task == null)
+            return;
+          final HBox iconView = new HBox(new ImageView(new Image("/images/avatar.png")));
+          iconView.setPadding(new Insets(10, 10, 10, 10));
+          Notifications.create()
+              .graphic(iconView)
+              .title("Лига Экспертов")
+              .text("Получено новое сообщение от клиента: '" + message.body() + "'\n")
+              .hideAfter(Duration.seconds(5))
+              .position(Pos.TOP_RIGHT)
+              .show();
+          playNotificationSound();
+        });
+      }
     }
+    lastEvent = System.currentTimeMillis();
   }
 
   private void playNotificationSound() {
