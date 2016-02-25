@@ -1,6 +1,7 @@
 package com.expleague.expert.profile;
 
 import com.expleague.expert.xmpp.ExpLeagueMember;
+import com.expleague.xmpp.JID;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.spbsu.commons.io.StreamTools;
 
@@ -101,6 +102,10 @@ public class UserProfile extends WeakListenerHolderImpl<UserProfile.Key>{
 
   public ExpLeagueMember expert() {
     return expert;
+  }
+
+  public JID jid() {
+    return JID.parse(get(Key.EXP_LEAGUE_ID));
   }
 
   public enum Key {

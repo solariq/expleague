@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Experts League
@@ -42,12 +43,13 @@ public class TimeoutUtil {
     Platform.runLater(() -> {
       if (interval > 0) {
         label.setText((!isShort ? "Осталось: " : "") + formatPeriodRussian(interval));
-        label.setStyle("-fx-text-fill: lightgray;");
       }
       else {
         label.setText((!isShort ? "Просрочено: " : "") + formatPeriodRussian(-interval));
-        label.setStyle("-fx-text-fill: red;");
       }
+      final double x = 211 * (interval / (TimeUnit.SECONDS.toMillis(60) + (double)interval));
+      final String hex = Integer.toHexString((int) x);
+      label.setStyle("-fx-text-fill: #d3" + hex + hex + ";");
     });
   }
 

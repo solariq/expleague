@@ -17,10 +17,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -147,7 +144,6 @@ public class StatusViewController {
     SnapshotParameters parameters = new SnapshotParameters();
     parameters.setFill(Color.TRANSPARENT);
     WritableImage image = avatar.snapshot(parameters, null);
-
     avatar.setClip(null);
     avatar.setEffect(new DropShadow(3, Color.BLACK));
     avatar.setImage(image);
