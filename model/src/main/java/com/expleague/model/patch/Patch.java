@@ -4,6 +4,7 @@ import com.expleague.xmpp.Item;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.File;
 
 /**
  * Experts League
@@ -26,4 +27,13 @@ public abstract class Patch extends Item {
   }
 
   public abstract String toMD();
+
+  private File file;
+  public void file(File file) {
+    this.file = file;
+  }
+
+  public File file() {
+    return file;
+  }
 }

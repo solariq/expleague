@@ -37,6 +37,7 @@ public class ExpertTask {
   private final File root;
   private final Offer offer;
   private ObservableList<Patch> patches = FXCollections.observableArrayList(new ArrayList<>());
+  private int patchIndex = 0;
 
   public ExpertTask(ExpLeagueMember owner, Consumer<ExpertEvent> eventsReceiver, File root, Offer offer) throws IOException {
     this.owner = owner;
@@ -62,7 +63,15 @@ public class ExpertTask {
       //noinspection ConstantConditions
       for (final File patchFile: patchesRoot.listFiles()) {
         final CharSequence patchText = StreamTools.readFile(patchFile);
-        patches.add((Patch)Patch.create(patchText));
+        final Patch patch = (Patch) Patch.create(patchText);
+        patch.file(patchFile);
+        patches.add(patch);
+        final String patchFileName = patchFile.getName();
+        final String index = patchFileName.substring(0, patchFileName.length() - ".xml".length());
+        try {
+          patchIndex = Math.max(patchIndex, Integer.parseInt(index) + 1);
+        }
+        catch (Exception ignored) {}
       }
     }
     patchesRoot.mkdirs();
@@ -71,10 +80,9 @@ public class ExpertTask {
       public void onChanged(Change<? extends Patch> c) {
         while(c.next()) {
           if (c.wasAdded()) {
-            int index = c.getFrom();
-
             for (Patch patch : c.getAddedSubList()) {
-              final File file = new File(patchesRoot, (index++) + ".xml");
+              final File file = new File(patchesRoot, (patchIndex++) + ".xml");
+              patch.file(file);
               try {
                 StreamTools.writeChars(patch.xmlString(), file);
               }
@@ -82,6 +90,9 @@ public class ExpertTask {
                 log.log(Level.SEVERE, "Unable to save patch to: " + file.getAbsolutePath());
               }
             }
+          }
+          else if (c.wasRemoved()) {
+            c.getRemoved().stream().forEach(p -> p.file().delete());
           }
         }
       }

@@ -5,10 +5,11 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
-<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.PatchController">
+<?import javafx.scene.image.Image?>
+<VBox fx:id="root" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.PatchController">
   <padding><Insets top="2" left="2" bottom="2" right="2"/></padding>
   <VBox VBox.vgrow="NEVER" maxHeight="110" maxWidth="110" styleClass="patch" stylesheets="/css/patches.css">
-    <Label fx:id="label"/>
+    <HBox><Label layoutY="2" fx:id="label"/><ImageView fitHeight="13" preserveRatio="true" onMouseClicked="#delete"><Image url="/images/cross.png"/></ImageView></HBox>
     <HBox VBox.vgrow="ALWAYS">
       <Region HBox.hgrow="ALWAYS"/>
       <ImageView fx:id="image" fitWidth="100" fitHeight="100" preserveRatio="true"/>
