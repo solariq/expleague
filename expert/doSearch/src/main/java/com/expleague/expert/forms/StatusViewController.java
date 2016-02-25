@@ -68,7 +68,7 @@ public class StatusViewController {
       status.set(ExpertStatus.WAITING);
       Platform.runLater(() -> this.task.getChildren().clear());
     }
-    else if (expertEvent instanceof TaskAcceptedEvent || expertEvent instanceof TaskResumedEvent) {
+    else if (expertEvent instanceof TaskAcceptedEvent) {
       status.set(ExpertStatus.BUSY);
       Platform.runLater(() -> {
         final ExpertTask task = ((ExpertTaskEvent)expertEvent).task();

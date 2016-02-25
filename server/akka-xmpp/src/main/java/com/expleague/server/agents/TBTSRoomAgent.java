@@ -203,7 +203,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
         if (msg.has(Start.class)) {
           participants.add(bareSender);
           lastWorker = bareSender;
-          offer.addWorker(bareSender);
+          offer.addWorker(ExpertManager.instance().profile(bareSender));
           lastActive = true;
           open = true;
         }

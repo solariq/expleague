@@ -7,8 +7,10 @@ import com.expleague.expert.xmpp.ExpertEvent;
 import com.expleague.expert.xmpp.ExpertTask;
 import com.expleague.expert.xmpp.events.*;
 import com.expleague.model.Answer;
+import com.expleague.model.ExpertsProfile;
 import com.expleague.model.Image;
 import com.expleague.model.Offer;
+import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.system.RuntimeUtils;
@@ -52,9 +54,7 @@ public class DialogueController implements Action<ExpertEvent> {
   private String placeHolder = "Напишите клиенту";
   private Text textHolder = new Text();
   private double oldHeight = 0;
-  private Action<UserProfile> profileChangeListener = profile -> {
-    profile.expert().addListener(DialogueController.this);
-  };
+  private Action<UserProfile> profileChangeListener = profile -> profile.expert().addListener(DialogueController.this);
 
   @FXML
   public void initialize() {
@@ -97,19 +97,24 @@ public class DialogueController implements Action<ExpertEvent> {
   }
   private final List<CompositeMessageViewController> controllers = new ArrayList<>();
   public void send(String text) {
-    locateVCOfType(MessageType.OUTGOING).addText(text);
+    locateVCOfType(MessageType.OUTGOING, task.owner(), task).addText(text);
     task.send(text);
   }
 
-  private CompositeMessageViewController locateVCOfType(MessageType type) {
+  private CompositeMessageViewController locateVCOfType(MessageType type, JID from, ExpertTask task) {
     final CompositeMessageViewController lastMsgController = controllers.isEmpty() ? null : controllers.get(controllers.size() - 1);
     //noinspection ConstantConditions
-    if (lastMsgController instanceof CompositeMessageViewController && lastMsgController.type() == type) {
+    if (lastMsgController instanceof CompositeMessageViewController && lastMsgController.type() == type && lastMsgController.from().equals(from)) {
       return lastMsgController;
     }
     final ObservableList<Node> children = messagesView.getChildren();
     try {
-      final CompositeMessageViewController viewController = type.newInstance(root);
+      final ExpertsProfile worker = task.offer().worker(from);
+      javafx.scene.image.Image ava = null;
+      if (worker != null) {
+        ava = new javafx.scene.image.Image(worker.avatar());
+      }
+      final CompositeMessageViewController viewController = type.newInstance(root, from, ava);
       final Node msg = FXMLLoader.load(type.fxml(), null, null, param -> viewController);
       final int size = children.size();
       Platform.runLater(() -> {
@@ -148,7 +153,7 @@ public class DialogueController implements Action<ExpertEvent> {
       try {
         this.task = taskEvt.task();
         final Offer offer = task.offer();
-        final CompositeMessageViewController viewController = MessageType.TASK.newInstance(root);
+        final CompositeMessageViewController viewController = MessageType.TASK.newInstance(root, task.client(), null);
         children.clear();
         this.taskView.getChildren().add(new ScrollPane(viewController.loadOffer(offer)));
       }
@@ -212,13 +217,11 @@ public class DialogueController implements Action<ExpertEvent> {
       return;
     }
     final MessageType type = task.owner().local().equals(source.from().resource()) ? MessageType.OUTGOING : MessageType.INCOMING;
-    final CompositeMessageViewController finalVc = locateVCOfType(type);
+    final CompositeMessageViewController finalVc = locateVCOfType(type, source.from(), task);
     if (source.has(Answer.class)) {
       Platform.runLater(() -> {
         finalVc.addText("Получен ответ от " + source.from().resource());
-        finalVc.addAction("Перейти к ответу", () -> {
-          MainController.instance().selectEditor(source.id(), false, true);
-        });
+        finalVc.addAction("Перейти к ответу", () -> MainController.instance().selectEditor(source.id(), false, true));
       });
     }
     else {
@@ -234,15 +237,14 @@ public class DialogueController implements Action<ExpertEvent> {
             Platform.runLater(() -> finalVc.addImage(image));
         }
       });
-      if (type == MessageType.INCOMING) { // incomming message from client
+      if (type == MessageType.INCOMING) { // incoming message from client
         input.setEditable(true);
       }
     }
   }
 
-  private static RuntimeUtils.InvokeDispatcher dispatcher = new RuntimeUtils.InvokeDispatcher(DialogueController.class, obj -> {
-    log.warning("Unhandled event " + obj);
-  }, "accept");
+  private static RuntimeUtils.InvokeDispatcher dispatcher = new RuntimeUtils.InvokeDispatcher(DialogueController.class,
+      obj -> log.warning("Unhandled event " + obj), "accept");
   @Override
   public void invoke(ExpertEvent expertEvent) {
     dispatcher.invoke(this, expertEvent);
@@ -271,8 +273,8 @@ public class DialogueController implements Action<ExpertEvent> {
       return alignment;
     }
 
-    public CompositeMessageViewController newInstance(VBox root) {
-      return new CompositeMessageViewController(root, this);
+    public CompositeMessageViewController newInstance(VBox root, JID from, javafx.scene.image.Image ava) {
+      return new CompositeMessageViewController(root, this, from, ava);
     }
 
     public String cssClass() {

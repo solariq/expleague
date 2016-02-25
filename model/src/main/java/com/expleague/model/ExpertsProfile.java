@@ -37,4 +37,8 @@ public class ExpertsProfile extends Item {
     this.avatar = avatar;
     this.tasksCount = tasksCount;
   }
+
+  public String avatar() {
+    return avatar;
+  }
 }

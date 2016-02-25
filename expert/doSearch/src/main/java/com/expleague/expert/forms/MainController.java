@@ -252,7 +252,7 @@ public class MainController implements Action<ExpertEvent> {
           items.remove(preview);
         if (showPreview || preview != null) {
           preview = new VBox();
-          final CompositeMessageViewController controller = DialogueController.MessageType.TASK.newInstance(preview);
+          final CompositeMessageViewController controller = DialogueController.MessageType.TASK.newInstance(preview, task.owner(), null);
           try {
             final ScrollPane taskPane = new ScrollPane(controller.loadOffer(this.task.offer()));
             final Accordion task = new Accordion(new TitledPane("Задание", taskPane));

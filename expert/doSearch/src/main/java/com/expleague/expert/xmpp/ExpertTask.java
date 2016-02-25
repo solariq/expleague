@@ -234,6 +234,10 @@ public class ExpertTask {
     return owner.jid();
   }
 
+  public JID client() {
+    return offer().client();
+  }
+
   enum State {
     INVITE,
     BUSY,

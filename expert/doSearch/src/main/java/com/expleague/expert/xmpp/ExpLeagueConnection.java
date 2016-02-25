@@ -177,7 +177,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
   public void register(UserProfile profile) {
     final Jaxmpp jaxmpp = new Jaxmpp();
     final UserProperties properties = jaxmpp.getProperties();
-    final String passwd = fastRandom.nextBase64String(15);
+    final String passwd = profile.has(UserProfile.Key.VK_TOKEN) ? profile.get(UserProfile.Key.VK_TOKEN) : fastRandom.nextBase64String(15);
     final String jid = profile.get(UserProfile.Key.EXP_LEAGUE_ID);
 
     profile.set(UserProfile.Key.EXP_LEAGUE_PASSWORD, passwd);

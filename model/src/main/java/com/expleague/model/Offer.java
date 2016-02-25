@@ -5,6 +5,7 @@ import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.spbsu.commons.seq.CharSeqTools;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.bind.annotation.*;
 import java.io.IOException;
@@ -48,8 +49,9 @@ public class Offer extends Item {
   @XmlAttribute
   private Double started;
 
-  @XmlElement(namespace = Operations.NS)
-  private Set<JID> workers;
+  @XmlElementWrapper(namespace = Operations.NS)
+  @XmlAnyElement(lax = true)
+  private Set<ExpertsProfile> workers;
 
   @XmlElement(namespace = Operations.NS)
   private Set<JID> slackers;
@@ -104,6 +106,14 @@ public class Offer extends Item {
     throw new IllegalArgumentException("Unable to restore offer from: " + description);
   }
 
+  @Nullable
+  public ExpertsProfile worker(JID jid) {
+    if (workers == null)
+      return null;
+    final Optional<ExpertsProfile> any = workers.stream().filter(p -> p.login().equals(jid.local()) || p.login().equals(jid.resource())).findAny();
+    return any.isPresent() ? any.get() : null;
+  }
+
   public JID room() {
     return room;
   }
@@ -116,7 +126,7 @@ public class Offer extends Item {
     return attachments != null ? attachments.toArray(new Item[attachments.size()]) : new Item[0];
   }
 
-  public void addWorker(JID worker) {
+  public void addWorker(ExpertsProfile worker) {
     if (workers == null)
       workers = new HashSet<>();
     workers.add(worker);
@@ -129,7 +139,7 @@ public class Offer extends Item {
   }
 
   public boolean hasWorker(JID worker) {
-    return workers != null && workers.contains(worker) && (slackers == null || slackers.contains(worker));
+    return workers != null && workers.stream().anyMatch(profile -> profile.login().equals(worker.local())) && (slackers == null || !slackers.contains(worker));
   }
 
   public boolean hasSlacker(JID worker) {
@@ -154,6 +164,10 @@ public class Offer extends Item {
 
   public Location location() {
     return location;
+  }
+
+  public JID client() {
+    return client;
   }
 
   @XmlEnum

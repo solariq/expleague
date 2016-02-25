@@ -3,6 +3,7 @@ package com.expleague.expert.forms.chat;
 import com.expleague.expert.forms.MainController;
 import com.expleague.model.Offer;
 import com.expleague.xmpp.Item;
+import com.expleague.xmpp.JID;
 import com.lynden.gmapsfx.GoogleMapView;
 import com.lynden.gmapsfx.javascript.object.*;
 import javafx.beans.InvalidationListener;
@@ -11,13 +12,19 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
@@ -31,12 +38,17 @@ import java.util.Date;
 public class CompositeMessageViewController {
   private final VBox root;
   private final DialogueController.MessageType type;
+  private final JID from;
+  private final Image avatarImg;
   public VBox contents;
   public AnchorPane parent;
+  public ImageView avatar;
 
-  public CompositeMessageViewController(VBox root, DialogueController.MessageType type) {
+  public CompositeMessageViewController(VBox root, DialogueController.MessageType type, JID from, Image ava) {
     this.root = root;
     this.type = type;
+    this.from = from;
+    avatarImg = ava;
   }
 
   public Node loadOffer(Offer offer) throws IOException {
@@ -191,5 +203,15 @@ public class CompositeMessageViewController {
       root.setPrefWidth((Double)newValue - 2);
     });
     trueWidth.setValue(root.getWidth());
+    if (avatar != null) {
+      final Circle clip = new Circle(15, 15, 15);
+      avatar.setClip(clip);
+      if (avatarImg != null)
+        avatar.setImage(avatarImg);
+    }
+  }
+
+  public JID from() {
+    return from;
   }
 }

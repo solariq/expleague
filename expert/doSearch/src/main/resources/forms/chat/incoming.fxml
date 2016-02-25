@@ -4,10 +4,13 @@
 <?import javafx.geometry.Insets?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.chat.CompositeMessageViewController" stylesheets="/css/messages.css" fx:id="parent">
   <padding><Insets top="5" bottom="5" left="0" right="0"/></padding>
-  <ImageView AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="0" fitWidth="10" preserveRatio="true">
+  <ImageView style="-fx-background-radius: 15px" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" fitWidth="30" preserveRatio="true" fx:id="avatar">
+    <Image url="/images/client_white.png"/>
+  </ImageView>
+  <ImageView AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="30" fitWidth="10" preserveRatio="true">
     <Image url="/images/left_blue_tail.png"/>
   </ImageView>
-  <HBox AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="0">
+  <HBox AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="40" AnchorPane.bottomAnchor="0">
     <VBox HBox.hgrow="NEVER" minHeight="25" fx:id="contents" styleClass="incoming-bubble"/>
     <Region HBox.hgrow="ALWAYS"/>
   </HBox>
