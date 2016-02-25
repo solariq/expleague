@@ -31,6 +31,8 @@
 		EE62BF041C4802B2004B6A42 /* ExpLeagueOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BF001C4802B2004B6A42 /* ExpLeagueOrder.swift */; };
 		EE6EA7CC1C48F79300692406 /* ProfileModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = EE6EA7CA1C48F79300692406 /* ProfileModel.xcdatamodeld */; };
 		EE70A5341C79C02C00174674 /* EVURLCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE70A5331C79C02C00174674 /* EVURLCache.swift */; };
+		EE70A5381C7FA3EA00174674 /* markdownpad-github.css in Resources */ = {isa = PBXBuildFile; fileRef = EE70A5361C7FA3EA00174674 /* markdownpad-github.css */; };
+		EE70A5391C7FA3EA00174674 /* md-scripts.js in Resources */ = {isa = PBXBuildFile; fileRef = EE70A5371C7FA3EA00174674 /* md-scripts.js */; };
 		EE755C551C57E9110018AF12 /* Setup.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE755C541C57E9110018AF12 /* Setup.xib */; };
 		EE755C571C591B220018AF12 /* Feedback.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE755C561C591B220018AF12 /* Feedback.xib */; };
 		EE94599C1C57A5FC000796ED /* AnswerReceived.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE94599A1C57A5FC000796ED /* AnswerReceived.xib */; };
@@ -71,6 +73,8 @@
 		EE62BF001C4802B2004B6A42 /* ExpLeagueOrder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueOrder.swift; sourceTree = "<group>"; };
 		EE6EA7CB1C48F79300692406 /* ProfileModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ProfileModel.xcdatamodel; sourceTree = "<group>"; };
 		EE70A5331C79C02C00174674 /* EVURLCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EVURLCache.swift; sourceTree = "<group>"; };
+		EE70A5361C7FA3EA00174674 /* markdownpad-github.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "markdownpad-github.css"; sourceTree = "<group>"; };
+		EE70A5371C7FA3EA00174674 /* md-scripts.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "md-scripts.js"; sourceTree = "<group>"; };
 		EE755C541C57E9110018AF12 /* Setup.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Setup.xib; sourceTree = "<group>"; };
 		EE755C561C591B220018AF12 /* Feedback.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Feedback.xib; sourceTree = "<group>"; };
 		EE94599A1C57A5FC000796ED /* AnswerReceived.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AnswerReceived.xib; sourceTree = "<group>"; };
@@ -104,6 +108,7 @@
 		688A5994FE17EAF8576C2131 /* unSearch */ = {
 			isa = PBXGroup;
 			children = (
+				EE70A5351C7FA32600174674 /* Web */,
 				EE3731AB1C689414007F55B0 /* unSearch.entitlements */,
 				EE62BF051C48032D004B6A42 /* Data */,
 				EE2DB18E1C4E5A0A00F9601D /* ResultView */,
@@ -184,6 +189,15 @@
 			name = Data;
 			sourceTree = "<group>";
 		};
+		EE70A5351C7FA32600174674 /* Web */ = {
+			isa = PBXGroup;
+			children = (
+				EE70A5361C7FA3EA00174674 /* markdownpad-github.css */,
+				EE70A5371C7FA3EA00174674 /* md-scripts.js */,
+			);
+			name = Web;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -256,8 +270,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				688A535C37173628E8F51CDC /* Assets.xcassets in Resources */,
+				EE70A5381C7FA3EA00174674 /* markdownpad-github.css in Resources */,
 				EE94599C1C57A5FC000796ED /* AnswerReceived.xib in Resources */,
 				EE755C551C57E9110018AF12 /* Setup.xib in Resources */,
+				EE70A5391C7FA3EA00174674 /* md-scripts.js in Resources */,
 				EE9EE7A31C577859000E9F46 /* ExpertInProgress.xib in Resources */,
 				EE0FC7E11C503CB9006F6045 /* OutgoingMessage.xib in Resources */,
 				EEF7BB421C4F9B6000E1B7BD /* IncomingMessage.xib in Resources */,

@@ -40,7 +40,11 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     var answerText: String = "" {
         willSet (newValue){
             if (answerText != newValue) {
-                answerView?.loadHTMLString("<html><style type=\"text/css\">img {max-width: 100%;}</style><body>\(newValue)</body></html>", baseURL: nil)
+                let path = NSBundle.mainBundle().bundlePath
+                let baseURL = NSURL.fileURLWithPath(path);
+                answerView?.loadHTMLString("<html><head><script src=\"md-scripts.js\"></script>\n"
+                    + "<link rel=\"stylesheet\" href=\"markdownpad-github.css\"></head>"
+                    + "<body>\(newValue)</body></html>", baseURL: baseURL)
             }
         }
     }
@@ -59,7 +63,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         scrollView.addSubview(input.view)
         answerView = UIWebView()
         if (!answerText.isEmpty) {
-            answerView!.loadHTMLString("<html><style type=\"text/css\">img {max-width: 100%;}</style><body>\(answerText)</body></html>", baseURL: nil)
+            answerText += " "
         }
         answerDelegate = AnswerDelegate(parent: self)
         answerView?.delegate = answerDelegate

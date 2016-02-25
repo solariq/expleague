@@ -194,8 +194,20 @@ public class MarkdownEditorPane
 		return (path != null) ? path.getParent() : null;
 	}
 
+	final Pattern cutPattern = Pattern.compile("\\+\\[([^\\]]+)\\]([^-]*)-\\[\\1\\]");
 	private void textChanged(String newText) {
-		RootNode astRoot = parseMarkdown(newText);
+		final Matcher matcher = cutPattern.matcher(newText);
+		final StringBuffer buffer = new StringBuffer();
+		int index = 0;
+		while(matcher.find()) {
+			final String id = "cut-" + index + "";
+			matcher.appendReplacement(buffer, "<a href=\"javascript:showHide('" + id + "')\">" + matcher.group(1) + "</a>" +
+					"<div id=\"" + id + "\" style=\"display: none\">" + matcher.group(2) +
+					"<br/><a href=\"javascript:showHide('" + id + "')\">hide</a></div>");
+			index++;
+		}
+		matcher.appendTail(buffer);
+		RootNode astRoot = parseMarkdown(buffer.toString());
 		applyHighlighting(astRoot);
 		markdownAST.set(astRoot);
 	}

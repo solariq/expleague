@@ -110,15 +110,16 @@ class WebViewPreview
 
 	private String content(RootNode astRoot, String base, String scrollScript) {
 		return "<!DOCTYPE html>\n"
-    + "<html>\n"
-    + "<head>\n"
-    + "<link rel=\"stylesheet\" href=\"" + getClass().getResource("markdownpad-github.css").toExternalForm() + "\">\n"
-    + base
-    + "</head>\n"
-    + "<body" + scrollScript + ">\n"
-    + toHtml(astRoot)
-    + "</body>\n"
-    + "</html>";
+				+ "<html>\n"
+				+ "<head>\n"
+				+ "<script src=\""+ getClass().getResource("md-scripts.js").toExternalForm() + "\"></script>\n"
+				+ "<link rel=\"stylesheet\" href=\"" + getClass().getResource("markdownpad-github.css").toExternalForm() + "\">\n"
+				+ base
+				+ "</head>\n"
+				+ "<body" + scrollScript + ">\n"
+				+ toHtml(astRoot)
+				+ "</body>\n"
+				+ "</html>";
 	}
 
 	@Override

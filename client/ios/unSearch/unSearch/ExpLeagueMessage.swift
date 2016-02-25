@@ -75,8 +75,25 @@ class ExpLeagueMessage: NSManagedObject {
                     answerText = answerText.substringFromIndex(firstLineEnd)
                     properties["short"] = shortAnswer
                 }
+                let re = try! NSRegularExpression(pattern: "\\+\\[([^\\]]+)\\]([^-]*)-\\[\\1\\]", options: [])
+                let matches = re.matchesInString(answerText, options: [], range: NSRange(location: 0, length: answerText.characters.count))
                 
-                self.body = try MMMarkdown.HTMLStringWithMarkdown(answerText, extensions: [
+                var finalMD = ""
+                var lastMatchIndex = answerText.startIndex
+                var index = 0
+                for match in matches as [NSTextCheckingResult] {
+                    let whole = match.rangeAtIndex(0)
+                    let id = "cut-\(index)"
+                    finalMD += answerText.substringWithRange(lastMatchIndex..<answerText.startIndex.advancedBy(whole.location))
+                    finalMD += "<a href=\"javascript:showHide('" + id + "')\">" + (answerText as NSString).substringWithRange(match.rangeAtIndex(1)) + "</a>" +
+                        "<div id=\"" + id + "\" style=\"display: none\">" + (answerText as NSString).substringWithRange(match.rangeAtIndex(2)) +
+                        "<br/><a href=\"javascript:showHide('" + id + "')\">скрыть</a></div>";
+                    lastMatchIndex = answerText.startIndex.advancedBy(whole.location).advancedBy(whole.length)
+                    index++
+                }
+                finalMD += answerText.substringWithRange(lastMatchIndex..<answerText.endIndex)
+                
+                self.body = try MMMarkdown.HTMLStringWithMarkdown(finalMD, extensions: [
                     .AutolinkedURLs,
                     .FencedCodeBlocks,
                     .Tables,
