@@ -27,8 +27,15 @@
 
 package org.markdownwriterfx.preview;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.web.WebView;
 import org.pegdown.LinkRenderer;
@@ -46,6 +53,7 @@ import org.pegdown.plugins.PegDownPlugins;
 class WebViewPreview
 	implements MarkdownPreviewPane.Preview
 {
+	private static final Logger log = Logger.getLogger(WebViewPreview.class.getName());
 	private final WebView webView = new WebView();
 	private int lastScrollX;
 	private int lastScrollY;
@@ -81,17 +89,36 @@ class WebViewPreview
 				? ("  onload='window.scrollTo("+lastScrollX+", "+lastScrollY+");'")
 				: "";
 
+		final String content = content(astRoot, base, scrollScript);
 		webView.getEngine().loadContent(
-			"<!DOCTYPE html>\n"
-			+ "<html>\n"
-			+ "<head>\n"
-			+ "<link rel=\"stylesheet\" href=\"" + getClass().getResource("markdownpad-github.css") + "\">\n"
-			+ base
-			+ "</head>\n"
-			+ "<body" + scrollScript + ">\n"
-			+ toHtml(astRoot)
-			+ "</body>\n"
-			+ "</html>");
+				content);
+
+		webView.getEngine().locationProperty().addListener((prop, before, after) -> {
+      Platform.runLater(() -> {
+        if (after.isEmpty() || after.equals("about:blank"))
+          return;
+        try {
+          Runtime.getRuntime().exec("open " + after);
+        }
+        catch (IOException e) {
+          log.log(Level.WARNING, "Unable to open page " + after);
+        }
+        webView.getEngine().loadContent(content);
+      });
+    });
+	}
+
+	private String content(RootNode astRoot, String base, String scrollScript) {
+		return "<!DOCTYPE html>\n"
+    + "<html>\n"
+    + "<head>\n"
+    + "<link rel=\"stylesheet\" href=\"" + getClass().getResource("markdownpad-github.css").toExternalForm() + "\">\n"
+    + base
+    + "</head>\n"
+    + "<body" + scrollScript + ">\n"
+    + toHtml(astRoot)
+    + "</body>\n"
+    + "</html>";
 	}
 
 	@Override
