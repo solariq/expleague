@@ -296,13 +296,13 @@ public class MainController implements Action<ExpertEvent> {
   }
 
   public void sendAnswer(ActionEvent ignore) {
-    final Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-    alert.setTitle("Лига Экспертов");
-    alert.setHeaderText("Закончить работу");
-    alert.setContentText("Уверены, что хотите отослать результат и закончить работу над заданием?");
-
-    Optional<ButtonType> result = alert.showAndWait();
-    if (result.get() == ButtonType.OK){
+    final TextInputDialog dialog = new TextInputDialog();
+    dialog.setTitle("Лига Экспертов");
+    dialog.setHeaderText("Закончить работу над заданием");
+    dialog.setContentText("Введите короткую версию ответа:");
+    Optional<String> result = dialog.showAndWait();
+    if (result.isPresent() && !result.get().isEmpty()){
+      task.patchwork(result.get() + "\n" + task.patchwork());
       task.answer();
     }
   }
