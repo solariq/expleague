@@ -182,10 +182,10 @@ public class MainController implements Action<ExpertEvent> {
     else if (expertTaskEvent instanceof TaskSuspendedEvent) {
       sendButton.setDisable(true);
       task = null;
-      if (preview != null) {
-        preview.getChildren().clear();
-      }
       Platform.runLater(() -> {
+        if (preview != null) {
+          preview.getChildren().clear();
+        }
         tabs.getTabs().clear();
 //        tabs.getTabs().remove(0, editorIndex);
         editorIndex = 0;
@@ -235,7 +235,9 @@ public class MainController implements Action<ExpertEvent> {
           preview = new VBox();
           final CompositeMessageViewController controller = DialogueController.MessageType.TASK.newInstance(preview);
           try {
-            final Accordion task = new Accordion(new TitledPane("Задание", controller.loadOffer(this.task.offer())));
+            final ScrollPane taskPane = new ScrollPane(controller.loadOffer(this.task.offer()));
+            final Accordion task = new Accordion(new TitledPane("Задание", taskPane));
+            taskPane.setPrefHeight(400);
             final Node pw = answerVC.createPreview();
             preview.getChildren().addAll(task, pw);
             VBox.setVgrow(task, Priority.NEVER);
