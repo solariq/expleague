@@ -150,7 +150,7 @@ public class DialogueController implements Action<ExpertEvent> {
         final Offer offer = task.offer();
         final CompositeMessageViewController viewController = MessageType.TASK.newInstance(root);
         children.clear();
-        this.taskView.getChildren().add(viewController.loadOffer(offer));
+        this.taskView.getChildren().add(new ScrollPane(viewController.loadOffer(offer)));
       }
       catch (IOException e) {
         throw new RuntimeException(e);
