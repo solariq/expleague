@@ -6,25 +6,19 @@ import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.lynden.gmapsfx.GoogleMapView;
 import com.lynden.gmapsfx.javascript.object.*;
+import com.spbsu.commons.util.Holder;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
@@ -56,7 +50,13 @@ public class CompositeMessageViewController {
     addText(offer.topic());
     if (offer.geoSpecific())
       addLocation(offer.location());
-
+    else if (offer.location() != null){
+      final Holder<Button> button = new Holder<>();
+      button.setValue(addAction("Показать позицию", () -> {
+        addLocation(offer.location());
+        ((Pane) button.getValue().getParent()).getChildren().remove(button.getValue());
+      }));
+    }
     for (int i = 0; i < offer.attachments().length; i++) {
       final Item attachment = offer.attachments()[i];
       if (attachment instanceof com.expleague.model.Image) {
@@ -109,7 +109,7 @@ public class CompositeMessageViewController {
       labelModel.setWrappingWidth(trueWidth.get() - 30);
     };
     trueWidth.addListener(listener);
-    listener.invalidated(trueWidth);
+    updateTrueWidth();
     if (type.alignment() == TextAlignment.CENTER)
       contents.getChildren().add(makeCenter(label));
     else
@@ -132,6 +132,7 @@ public class CompositeMessageViewController {
         // ignore
       }
     });
+    updateTrueWidth();
     if (type.alignment() == TextAlignment.CENTER)
       contents.getChildren().add(makeCenter(imageView));
     else
@@ -171,18 +172,21 @@ public class CompositeMessageViewController {
     trueWidth.addListener((observable, oldValue, newValue) -> {
       mapView.setMaxWidth((Double)newValue - 50);
     });
+    updateTrueWidth();
     if (type.alignment() == TextAlignment.CENTER)
       contents.getChildren().add(makeCenter(mapView));
     else
       contents.getChildren().add(mapView);
   }
 
-
-  public void addAction(String name, Runnable action) {
+  public Button addAction(String name, Runnable action) {
     final Button button = new Button(name);
     button.setOnAction(event -> action.run());
-    contents.getChildren().add(button);
+    contents.getChildren().add(makeCenter(button));
+    updateTrueWidth();
+    return button;
   }
+
 
   private Node makeCenter(Node flow) {
     final Region left = new Region();
@@ -209,6 +213,11 @@ public class CompositeMessageViewController {
       if (avatarImg != null)
         avatar.setImage(avatarImg);
     }
+  }
+
+  private void updateTrueWidth() {
+    trueWidth.setValue(trueWidth.get() - 1);
+    trueWidth.setValue(trueWidth.get() + 1);
   }
 
   public JID from() {
