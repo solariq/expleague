@@ -249,7 +249,7 @@ public class ExpertTask {
     return offer().client();
   }
 
-  enum State {
+  public enum State {
     INVITE,
     BUSY,
     SUSPEND,

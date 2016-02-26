@@ -183,7 +183,7 @@ public class MainController implements Action<ExpertEvent> {
       });
     }
     else if (expertTaskEvent instanceof TaskSuspendedEvent) {
-      if (expertTaskEvent instanceof TaskCanceledEvent) {
+      if (expertTaskEvent instanceof TaskCanceledEvent && task.state() == ExpertTask.State.BUSY) {
         Platform.runLater(() -> {
           final Alert alert = new Alert(Alert.AlertType.INFORMATION, "", ButtonType.OK);
           alert.setHeaderText("Задание было отменено сервером!");
@@ -304,6 +304,7 @@ public class MainController implements Action<ExpertEvent> {
     tabs.getSelectionModel().select(mapTab);
   }
 
+  @SuppressWarnings("UnusedParameters")
   public void sendAnswer(ActionEvent ignore) {
     final TextInputDialog dialog = new TextInputDialog();
     dialog.setTitle("Лига Экспертов");
