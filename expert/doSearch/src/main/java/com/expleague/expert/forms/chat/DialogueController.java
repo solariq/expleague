@@ -165,7 +165,9 @@ public class DialogueController implements Action<ExpertEvent> {
   public void accept(TaskInviteCanceledEvent cancel) {
     Platform.runLater(() -> {
       taskView.getChildren().clear();
-      taskViewParent.getChildren().remove(1);
+      final ObservableList<Node> children = taskViewParent.getChildren();
+      if (children.size() > 1)
+        children.remove(1);
     });
   }
 
