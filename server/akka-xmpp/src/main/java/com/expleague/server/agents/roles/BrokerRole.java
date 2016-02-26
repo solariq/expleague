@@ -34,7 +34,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
     private final Set<JID> checking = new HashSet<>();
     private final Set<JID> candidates = new HashSet<>();
     private final Set<JID> refused = new HashSet<>();
-    private Set<JID> invited = new HashSet<>();
+    private final Set<JID> invited = new HashSet<>();
     private JID onTask;
 
     public Task(Offer offer, TBTSRoomAgent.Status roomStatus) {
@@ -127,7 +127,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
     }
 
     public Task exit() {
-      invited = null;
+      invited.clear();
       onTask = null;
       refused.clear();
       candidates.clear();
