@@ -74,6 +74,7 @@ public class ExpertTask {
         catch (Exception ignored) {}
       }
     }
+    //noinspection ResultOfMethodCallIgnored
     patchesRoot.mkdirs();
     patches.addListener(new ListChangeListener<Patch>() {
       @Override

@@ -50,6 +50,9 @@ public class CompositeMessageViewController {
   public Pane loadOffer(Offer offer) throws IOException {
     final Node taskView = FXMLLoader.load(DialogueController.MessageType.TASK.fxml(), null, null, param -> this);
     addText(offer.topic());
+    if (!offer.workers().isEmpty()) {
+      addText("Продолжение задания");
+    }
     if (offer.geoSpecific())
       addLocation(offer.location());
     else if (offer.location() != null){
