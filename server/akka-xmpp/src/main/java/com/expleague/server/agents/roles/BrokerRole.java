@@ -97,6 +97,10 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
         Experts.tellTo(onTask, new Cancel(), self(), context());
       Stream.of(checking, candidates, invited).flatMap(Collection::stream)
           .forEach(jid -> Experts.tellTo(jid, new Cancel(), self(), context()));
+      checking.clear();
+      candidates.clear();
+      invited.clear();
+      onTask = null;
       return this;
     }
 

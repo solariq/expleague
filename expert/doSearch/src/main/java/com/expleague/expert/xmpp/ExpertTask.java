@@ -111,6 +111,7 @@ public class ExpertTask {
       switch (state) {
         case INVITE:
           eventsReceiver.accept(new TaskInviteCanceledEvent(command, this));
+          eventsReceiver.accept(new TaskSuspendedEvent(command, this));
           state(State.SUSPEND);
           break;
         case SUSPEND:
