@@ -27,6 +27,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
@@ -262,7 +263,7 @@ public class MainController implements Action<ExpertEvent> {
           preview = new VBox();
           final CompositeMessageViewController controller = DialogueController.MessageType.TASK.newInstance(preview, task.owner(), null);
           try {
-            final ScrollPane taskPane = new ScrollPane(controller.loadOffer(this.task.offer()));
+            final Pane taskPane = controller.loadOffer(this.task.offer());
             final Accordion task = new Accordion(new TitledPane("Задание", taskPane));
             taskPane.setPrefHeight(400);
             final Node pw = answerVC.createPreview();

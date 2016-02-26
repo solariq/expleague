@@ -47,7 +47,7 @@ public class CompositeMessageViewController {
     avatarImg = ava;
   }
 
-  public Node loadOffer(Offer offer) throws IOException {
+  public Pane loadOffer(Offer offer) throws IOException {
     final Node taskView = FXMLLoader.load(DialogueController.MessageType.TASK.fxml(), null, null, param -> this);
     addText(offer.topic());
     if (offer.geoSpecific())
@@ -65,7 +65,7 @@ public class CompositeMessageViewController {
         addImage((com.expleague.model.Image)attachment);
       }
     }
-    return taskView;
+    return (Pane)taskView;
   }
 
   public DialogueController.MessageType type() {
@@ -129,12 +129,14 @@ public class CompositeMessageViewController {
     addContentItem(imageView, false);
   }
 
-  private void addContentItem(Node imageView, boolean enforceCenter) {
+  private void addContentItem(Node node, boolean enforceCenter) {
     final Runnable todo = () -> {
-      if (type.alignment() == TextAlignment.CENTER || enforceCenter)
-        contents.getChildren().add(makeCenter(imageView));
+      if (type.alignment() == TextAlignment.CENTER || enforceCenter) {
+        final Node container = makeCenter(node);
+        contents.getChildren().add(container);
+      }
       else
-        contents.getChildren().add(imageView);
+        contents.getChildren().add(node);
       updateTrueWidth();
     };
     if (Platform.isFxApplicationThread())
@@ -204,8 +206,9 @@ public class CompositeMessageViewController {
       trueWidth.set(newValue.doubleValue());
     });
     trueWidth.addListener((observable, oldValue, newValue) -> {
-      root.setPrefWidth((Double)newValue - 2);
+      parent.setPrefWidth((Double)newValue - 5);
     });
+
     trueWidth.setValue(root.getWidth());
     if (avatar != null) {
       final Circle clip = new Circle(15, 15, 15);

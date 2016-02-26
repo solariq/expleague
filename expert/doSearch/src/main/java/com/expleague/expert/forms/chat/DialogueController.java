@@ -23,10 +23,7 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
@@ -153,11 +150,10 @@ public class DialogueController implements Action<ExpertEvent> {
         this.task = taskEvt.task();
         final Offer offer = task.offer();
         final CompositeMessageViewController viewController = MessageType.TASK.newInstance(root, task.client(), null);
-        final ScrollPane task = new ScrollPane(viewController.loadOffer(offer));
-
+        final Pane taskPane = viewController.loadOffer(offer);
         Platform.runLater(() -> {
           children.clear();
-          children.add(task);
+          children.add(taskPane);
           taskFolder.setExpandedPane(taskFolder.getPanes().get(0));
         });
       }
