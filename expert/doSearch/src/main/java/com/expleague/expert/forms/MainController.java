@@ -182,6 +182,14 @@ public class MainController implements Action<ExpertEvent> {
       });
     }
     else if (expertTaskEvent instanceof TaskSuspendedEvent) {
+      if (expertTaskEvent instanceof TaskCanceledEvent) {
+        Platform.runLater(() -> {
+          final Alert alert = new Alert(Alert.AlertType.INFORMATION, "", ButtonType.OK);
+          alert.setHeaderText("Задание было отменено сервером!");
+          alert.setContentText("Обычно такое происходит, если пользователь отменил задание.");
+          alert.showAndWait();
+        });
+      }
       sendButton.setDisable(true);
       task = null;
       Platform.runLater(() -> {

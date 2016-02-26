@@ -9,8 +9,8 @@ import com.expleague.xmpp.Item;
  * Experts League
  * Created by solar on 11/02/16.
  */
-public class TaskClosedEvent extends TaskSuspendedEvent {
-  public TaskClosedEvent(Item command, ExpertTask task) {
+public class TaskCanceledEvent extends TaskSuspendedEvent {
+  public TaskCanceledEvent(Item command, ExpertTask task) {
     super(command, task);
   }
 }

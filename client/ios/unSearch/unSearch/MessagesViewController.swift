@@ -396,8 +396,8 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 }
             }
         }
-        if(!order.isActive && (cells.last! is LookingForExpertModel || cells.last! is ExpertInProgressModel)) {
-            cells.removeLast()
+        if(!order.isActive && progressModel != nil) {
+            cells.removeAtIndex(progressCellIndex!)
             progressCellIndex = nil
             progressModel = nil
         }

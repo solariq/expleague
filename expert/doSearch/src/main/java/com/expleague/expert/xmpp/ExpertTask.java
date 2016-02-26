@@ -114,7 +114,7 @@ public class ExpertTask {
           break;
         case SUSPEND:
         case BUSY:
-          eventsReceiver.accept(new TaskClosedEvent(command, this));
+          eventsReceiver.accept(new TaskCanceledEvent(command, this));
           state(State.CLOSED);
           break;
       }
@@ -145,7 +145,7 @@ public class ExpertTask {
     ExpLeagueConnection.instance().send(new Message(owner.jid(), owner.system(), cancel));
     state(State.CLOSED);
     eventsReceiver.accept(new TaskInviteCanceledEvent(cancel, this));
-    eventsReceiver.accept(new TaskClosedEvent(cancel, this));
+    eventsReceiver.accept(new TaskSuspendedEvent(cancel, this));
     log(cancel);
   }
 
@@ -171,7 +171,7 @@ public class ExpertTask {
     ExpLeagueConnection.instance().send(new Message(owner.jid(), offer.room(), Message.MessageType.GROUP_CHAT, answer));
     patchwork("");
     state(State.CLOSED);
-    eventsReceiver.accept(new TaskClosedEvent(answer, this));
+    eventsReceiver.accept(new TaskSuspendedEvent(answer, this));
     log(answer);
   }
 

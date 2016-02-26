@@ -31,6 +31,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
+
 /**
  * Experts League
  * Created by solar on 09/02/16.
@@ -169,8 +171,12 @@ public class StatusViewController {
     if (task != null) {
       menu.getItems().add(new SeparatorMenuItem());
       menu.getItems().addAll(
-          createMenuItem("disconnect", "Отказаться от задания", evt -> task.cancel(), false)
-      );
+          createMenuItem("disconnect", "Отказаться от задания", evt -> {
+            final Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Вы уверены, что хотите отказаться от этого задания?", ButtonType.YES, ButtonType.NO);
+            final Optional<ButtonType> type = alert.showAndWait();
+            if (type.isPresent() && type.get() == ButtonType.YES)
+              task.cancel();
+          }, false));
     }
     menu.show(statusView, event.getScreenX() - 180, event.getScreenY());
     highlightStatus(event);

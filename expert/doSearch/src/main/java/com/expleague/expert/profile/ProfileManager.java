@@ -116,11 +116,5 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
       throw new RuntimeException(e);
     }
     invoke(profile);
-//    new Timer().schedule(new TimerTask() {
-//      @Override
-//      public void run() {
-//        ExpLeagueConnection.instance().start(profile);
-//      }
-//    }, 1000);
   }
 }
