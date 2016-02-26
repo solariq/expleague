@@ -2,7 +2,6 @@ package com.expleague.expert.forms;
 
 import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
-import com.expleague.expert.xmpp.ExpLeagueConnection;
 import com.expleague.expert.xmpp.ExpertTask;
 import com.expleague.model.patch.ImagePatch;
 import com.expleague.model.patch.LinkPatch;
@@ -75,6 +74,7 @@ public class PatchController {
 
   }
 
+  @SuppressWarnings("UnusedParameters")
   public void delete(Event event) {
     final UserProfile active = ProfileManager.instance().active();
     if (active == null)
