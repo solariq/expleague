@@ -145,24 +145,25 @@ public class DialogueController implements Action<ExpertEvent> {
     }
   }
 
-  ExpertTask task;
+  private ExpertTask task;
   public void accept(TaskStartedEvent taskEvt) {
     this.task = taskEvt.task();
-    Platform.runLater(() -> {
       final ObservableList<Node> children = taskView.getChildren();
       try {
         this.task = taskEvt.task();
         final Offer offer = task.offer();
         final CompositeMessageViewController viewController = MessageType.TASK.newInstance(root, task.client(), null);
-        children.clear();
-        this.taskView.getChildren().add(new ScrollPane(viewController.loadOffer(offer)));
+        final ScrollPane task = new ScrollPane(viewController.loadOffer(offer));
+
+        Platform.runLater(() -> {
+          children.clear();
+          children.add(task);
+          taskFolder.setExpandedPane(taskFolder.getPanes().get(0));
+        });
       }
       catch (IOException e) {
         throw new RuntimeException(e);
       }
-
-      taskFolder.setExpandedPane(taskFolder.getPanes().get(0));
-    });
   }
 
   public void accept(TaskInviteCanceledEvent cancel) {
@@ -219,10 +220,8 @@ public class DialogueController implements Action<ExpertEvent> {
     final MessageType type = task.owner().local().equals(source.from().resource()) ? MessageType.OUTGOING : MessageType.INCOMING;
     final CompositeMessageViewController finalVc = locateVCOfType(type, source.from(), task);
     if (source.has(Answer.class)) {
-      Platform.runLater(() -> {
-        finalVc.addText("Получен ответ от " + source.from().resource());
-        finalVc.addAction("Перейти к ответу", () -> MainController.instance().selectEditor(source.id(), false, true));
-      });
+      finalVc.addText("Получен ответ от " + source.from().resource());
+      finalVc.addAction("Перейти к ответу", () -> MainController.instance().selectEditor(source.id(), false, true));
     }
     else {
       event.visitParts(new ChatMessageEvent.PartsVisitor() {
@@ -230,11 +229,11 @@ public class DialogueController implements Action<ExpertEvent> {
         public void accept(String text) {
           final String trim = text.trim();
           if (!trim.isEmpty())
-            Platform.runLater(() -> finalVc.addText(trim));
+            finalVc.addText(trim);
         }
         @Override
         public void accept(Image image) {
-            Platform.runLater(() -> finalVc.addImage(image));
+            finalVc.addImage(image);
         }
       });
       if (type == MessageType.INCOMING) { // incoming message from client

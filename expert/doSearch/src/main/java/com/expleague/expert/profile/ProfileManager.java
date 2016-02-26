@@ -43,11 +43,11 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
     UserProfile first = null;
     //noinspection ConstantConditions
     for (final File file : home.listFiles()) {
-      if (file.isDirectory()) {
+      if (file.isDirectory() && !file.getName().equals("cache")) {
         final UserProfile value = new UserProfile(file);
         if (first == null)
           first = value;
-        if (!value.get(UserProfile.Key.EXP_LEAGUE_ID).equals(file.getName())) {
+        if (!file.getName().equals(value.get(UserProfile.Key.EXP_LEAGUE_ID))) {
           log.warning("Profile in directory " + file.getAbsolutePath() + " is invalid. Skipping it");
           continue;
         }
@@ -61,6 +61,10 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
     if (active == null && first != null) {
       activate(first);
     }
+  }
+
+  public File root() {
+    return root;
   }
 
   public UserProfile[] profiles() {

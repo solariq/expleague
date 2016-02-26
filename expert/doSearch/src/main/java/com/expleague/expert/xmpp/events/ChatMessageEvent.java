@@ -31,6 +31,6 @@ public class ChatMessageEvent extends ExpertTaskEvent {
 
   public static class PartsVisitor {
     public void accept(String text) { }
-    public void accept(Image text) { }
+    public void accept(Image image) { }
   }
 }

@@ -1,12 +1,14 @@
 package com.expleague.expert.forms.chat;
 
 import com.expleague.expert.forms.MainController;
+import com.expleague.expert.xmpp.ExpLeagueConnection;
 import com.expleague.model.Offer;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.lynden.gmapsfx.GoogleMapView;
 import com.lynden.gmapsfx.javascript.object.*;
 import com.spbsu.commons.util.Holder;
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
@@ -60,7 +62,7 @@ public class CompositeMessageViewController {
     for (int i = 0; i < offer.attachments().length; i++) {
       final Item attachment = offer.attachments()[i];
       if (attachment instanceof com.expleague.model.Image) {
-        addImage(((com.expleague.model.Image) attachment));
+        addImage((com.expleague.model.Image)attachment);
       }
     }
     return taskView;
@@ -70,13 +72,11 @@ public class CompositeMessageViewController {
     return type;
   }
 
+  @SuppressWarnings("unused")
   public void addTimeout(Date expires) {
     final Label timerLabel = new Label();
     timerLabel.setStyle(timerLabel.getStyle() + " -fx-text-fill: lightgray;");
-    if (type == DialogueController.MessageType.TASK) {
-      contents.getChildren().add(makeCenter(timerLabel));
-    }
-    else contents.getChildren().add(timerLabel);
+    addContentItem(timerLabel, true);
     TimeoutUtil.setTimer(timerLabel, expires, false);
   }
 
@@ -105,20 +105,13 @@ public class CompositeMessageViewController {
       }
     });
 
-    final InvalidationListener listener = observable -> {
-      labelModel.setWrappingWidth(trueWidth.get() - 30);
-    };
+    final InvalidationListener listener = observable -> labelModel.setWrappingWidth(trueWidth.get() - 30);
     trueWidth.addListener(listener);
-    updateTrueWidth();
-    if (type.alignment() == TextAlignment.CENTER)
-      contents.getChildren().add(makeCenter(label));
-    else
-      contents.getChildren().add(label);
+    addContentItem(label, false);
   }
 
   public void addImage(com.expleague.model.Image image) {
-    final Image img = new Image(image.url());
-    final ImageView imageView = new ImageView(img);
+    final ImageView imageView = new ImageView(ExpLeagueConnection.instance().load(image));
     imageView.setPreserveRatio(true);
     imageView.setFitWidth(100);
     trueWidth.addListener((observable, oldValue, newValue) -> {
@@ -132,11 +125,23 @@ public class CompositeMessageViewController {
         // ignore
       }
     });
-    updateTrueWidth();
-    if (type.alignment() == TextAlignment.CENTER)
-      contents.getChildren().add(makeCenter(imageView));
+
+    addContentItem(imageView, false);
+  }
+
+  private void addContentItem(Node imageView, boolean enforceCenter) {
+    final Runnable todo = () -> {
+      if (type.alignment() == TextAlignment.CENTER || enforceCenter)
+        contents.getChildren().add(makeCenter(imageView));
+      else
+        contents.getChildren().add(imageView);
+      updateTrueWidth();
+    };
+    if (Platform.isFxApplicationThread())
+      todo.run();
     else
-      contents.getChildren().add(imageView);
+      Platform.runLater(todo);
+
   }
 
   public void addLocation(Offer.Location location) {
@@ -172,18 +177,13 @@ public class CompositeMessageViewController {
     trueWidth.addListener((observable, oldValue, newValue) -> {
       mapView.setMaxWidth((Double)newValue - 50);
     });
-    updateTrueWidth();
-    if (type.alignment() == TextAlignment.CENTER)
-      contents.getChildren().add(makeCenter(mapView));
-    else
-      contents.getChildren().add(mapView);
+    addContentItem(mapView, false);
   }
 
   public Button addAction(String name, Runnable action) {
     final Button button = new Button(name);
     button.setOnAction(event -> action.run());
-    contents.getChildren().add(makeCenter(button));
-    updateTrueWidth();
+    addContentItem(button, true);
     return button;
   }
 

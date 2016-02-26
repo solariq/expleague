@@ -5,11 +5,15 @@ import com.expleague.expert.profile.UserProfile;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
+import com.spbsu.commons.io.StreamTools;
 import com.spbsu.commons.random.FastRandom;
+import com.spbsu.commons.util.cache.CacheStrategy;
+import com.spbsu.commons.util.cache.impl.FixedSizeCache;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
@@ -52,13 +56,16 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -242,9 +249,11 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
   }
 
   public void start() {
-    final UserProfile active = ProfileManager.instance().active();
-    if (active != null)
-      start(active, true);
+    new Thread(() -> {
+      final UserProfile active = ProfileManager.instance().active();
+      if (active != null)
+        start(active, true);
+    }).start();
   }
 
   public void stop() {
@@ -317,8 +326,15 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
   }
 
   public void disconnect() throws JaxmppException{
-    if (jaxmpp != null && jaxmpp.isConnected())
-      jaxmpp.disconnect();
+    new Thread(() -> {
+      if (jaxmpp != null && jaxmpp.isConnected())
+        try {
+          jaxmpp.disconnect();
+        }
+        catch (JaxmppException e) {
+          log.log(Level.WARNING, "Failed to correctly disconnect: ", e);
+        }
+    }).start();
   }
 
   public String uploadImage(Image content, String url) {
@@ -326,19 +342,20 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
       return "";
     final BufferedImage image = SwingFXUtils.fromFXImage(content, null);
 
-// Remove alpha-channel from buffered image:
-    final BufferedImage imageRGB =
-        new BufferedImage(
-            image.getWidth(),
-            image.getHeight(),
-            BufferedImage.OPAQUE);
-
-    final Graphics2D graphics = imageRGB.createGraphics();
-
-    graphics.setBackground(Color.WHITE);
-    graphics.setColor(Color.WHITE);
-    graphics.drawImage(image, 0, 0, null);
-
+//// Remove alpha-channel from buffered image:
+//    final BufferedImage imageRGB =
+//        new BufferedImage(
+//            image.getWidth(),
+//            image.getHeight(),
+//            BufferedImage.OPAQUE);
+//
+//    final Graphics2D graphics = imageRGB.createGraphics();
+//
+//    graphics.setBackground(Color.WHITE);
+//    graphics.setColor(Color.WHITE);
+//    graphics.drawImage(image, 0, 0, null);
+//    graphics.dispose();
+//
     try {
       final SSLContextBuilder ctxtBuilder = new SSLContextBuilder();
       ctxtBuilder.loadTrustMaterial(null, (x509Certificates, s) -> true);
@@ -352,18 +369,17 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
       final PipedInputStream pipeOut = new PipedInputStream(pipeIn, 4096);
       new Thread(() -> {
         try {
-          ImageIO.write(imageRGB, "png", pipeIn);
+          ImageIO.write(image, "png", pipeIn);
           pipeIn.close();
         } catch (IOException e) {
           log.log(Level.WARNING, "Error uploading image", e);
         }
       }).start();
-      graphics.dispose();
 
       final MultipartEntityBuilder builder = MultipartEntityBuilder.create();
       builder.addTextBody("id", imageId, ContentType.TEXT_PLAIN);
       builder.addBinaryBody("image", pipeOut, ContentType.create("image/png"), "file.png");
-      HttpEntity multipart = builder.build();
+      final HttpEntity multipart = builder.build();
 
       uploadFile.setEntity(multipart);
 
@@ -380,6 +396,28 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
       log.log(Level.WARNING, "Error uploading image", ioe);
       return "";
     }
+  }
+
+  private FixedSizeCache<String, Image> imageCache = new FixedSizeCache<>(10, CacheStrategy.Type.LRU);
+  public Image load(com.expleague.model.Image image) {
+    return imageCache.get(image.url(), (urlStr) -> {
+      final URI url;
+      try {
+        url = new URI(urlStr);
+        final File file = new File(ProfileManager.instance().root().getAbsolutePath() + "/cache/" + url.getHost() + "/" + url.getPath());
+        if (!file.exists()) {
+          file.getParentFile().mkdirs();
+          final CloseableHttpClient httpClient = HttpClients.createDefault();
+          final CloseableHttpResponse response = httpClient.execute(new HttpGet(url));
+          StreamTools.transferData(response.getEntity().getContent(), new FileOutputStream(file));
+          httpClient.close();
+        }
+        return new Image(new FileInputStream(file));
+      }
+      catch (URISyntaxException | IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   public enum Status {
