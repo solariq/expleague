@@ -171,7 +171,7 @@ public class Offer extends Item {
   }
 
   public Set<ExpertsProfile> workers() {
-    return workers;
+    return workers != null ? workers : Collections.emptySet();
   }
 
   @XmlEnum
