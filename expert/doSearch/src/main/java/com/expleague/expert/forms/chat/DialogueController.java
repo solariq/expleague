@@ -172,7 +172,7 @@ public class DialogueController implements Action<ExpertEvent> {
   public void accept(TaskInviteEvent invite) {
     final HBox box = new HBox();
     VBox.setVgrow(box, Priority.NEVER);
-    box.setPadding(new Insets(0, 10, 0, 10));
+    box.setPadding(new Insets(10,0,0,0));
     final Button decline = new Button("Отказаться");
     final Button accept = new Button("Выполнить");
     final Region placeHolder = new Region();

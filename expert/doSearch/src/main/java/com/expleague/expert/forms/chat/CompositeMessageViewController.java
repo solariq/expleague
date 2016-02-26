@@ -11,8 +11,11 @@ import com.spbsu.commons.util.Holder;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -51,7 +54,7 @@ public class CompositeMessageViewController {
     final Node taskView = FXMLLoader.load(DialogueController.MessageType.TASK.fxml(), null, null, param -> this);
     addText(offer.topic());
     if (!offer.workers().isEmpty()) {
-      addText("Продолжение задания");
+      addText("(Продолжение задания)", "comment");
     }
     if (offer.geoSpecific())
       addLocation(offer.location());
@@ -84,11 +87,14 @@ public class CompositeMessageViewController {
   }
 
   private SimpleDoubleProperty trueWidth = new SimpleDoubleProperty();
-  public void addText(String text) {
+
+  public void addText(String text, String... cssClass) {
     final TextArea label = new TextArea();
     final Text labelModel2 = new Text(text);
-    final Text labelModel = new Text(text);
+    final Text labelModel = new Text();
+
     label.getStyleClass().add(type.cssClass());
+    label.getStyleClass().addAll(cssClass);
     label.setText(text);
     label.setEditable(false);
     label.setWrapText(true);
@@ -97,20 +103,25 @@ public class CompositeMessageViewController {
     labelModel.layoutBoundsProperty().addListener(o -> {
       final int value = (int)Math.ceil(labelModel.getLayoutBounds().getHeight() / labelModel.getFont().getSize() / 1.3333);
       if (value > 0) {
-        label.setPrefRowCount(value);
-        label.setMaxHeight(value * label.getFont().getSize() * 1.3333);
-        if (value == 1) {
-          label.setMaxWidth(labelModel2.getLayoutBounds().getWidth());
-        }
-        else {
-          label.setMaxWidth(trueWidth.get() - 30);
-        }
+//        label.setPrefRowCount(value);
+        final double height = value * label.getFont().getSize() * 1.3333;
+        final double width = value > 1 ? trueWidth.get() - 30 : labelModel2.getLayoutBounds().getWidth();
+        label.resize(width, height);
+      }
+    });
+    labelModel.setText(text);
+    label.setManaged(false);
+    label.maxHeightProperty().addListener(new ChangeListener<Number>() {
+      @Override
+      public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+        System.out.println(label.getMaxHeight() + " " + newValue);
+//        labelModel.setText(text);
       }
     });
 
-    final InvalidationListener listener = observable -> labelModel.setWrappingWidth(trueWidth.get() - 30);
+    final InvalidationListener listener = observable -> labelModel.setWrappingWidth(trueWidth.get() - 33);
     trueWidth.addListener(listener);
-    addContentItem(label, false);
+    addContentItem(new Group(label), false);
   }
 
   public void addImage(com.expleague.model.Image image) {

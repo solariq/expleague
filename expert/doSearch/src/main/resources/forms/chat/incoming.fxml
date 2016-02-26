@@ -11,7 +11,7 @@
     <Image url="/images/left_blue_tail.png"/>
   </ImageView>
   <HBox AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="40" AnchorPane.bottomAnchor="0">
-    <VBox HBox.hgrow="NEVER" minHeight="25" fx:id="contents" styleClass="incoming-bubble"/>
+    <VBox HBox.hgrow="NEVER" fx:id="contents" styleClass="incoming-bubble"/>
     <Region HBox.hgrow="ALWAYS"/>
   </HBox>
 </AnchorPane>

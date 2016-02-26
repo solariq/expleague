@@ -41,6 +41,7 @@
     -fx-border-style: none;
     -fx-background-insets: 0;
     -fx-background-radius: 0;
+
     -fx-padding: 0;
 }
 
@@ -65,4 +66,9 @@
     -fx-background-radius: 8px;
     -fx-background-color: #1991e3;
     -fx-padding: 5;
+}
+
+.comment {
+    -fx-font-size: 10px;
+    -fx-text-fill: #777777;
 }
