@@ -178,6 +178,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         tabBarController?.tabBar.hidden = true
+        
         if (data == nil) {
             return
         }

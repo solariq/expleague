@@ -496,8 +496,8 @@ struct Urgency {
     var type: String;
 
     static let ASAP = Urgency(caption: "Срочно", value: 1.0, type: "asap")
-    static let DURING_THE_DAY = Urgency(caption: "В течении дня", value: 0.5, type: "day")
-    static let DURING_THE_WEEK = Urgency(caption: "в течении недели", value: 0.0, type: "week")
+    static let DURING_THE_DAY = Urgency(caption: "В течение дня", value: 0.5, type: "day")
+    static let DURING_THE_WEEK = Urgency(caption: "в течение недели", value: 0.0, type: "week")
 
     static func find(value: Float) -> Urgency {
         if (value < 0.25) {
