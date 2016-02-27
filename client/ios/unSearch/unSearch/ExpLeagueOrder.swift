@@ -47,7 +47,7 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     var before: NSTimeInterval {
-        var duration: NSTimeInterval = 0
+        var duration: NSTimeInterval = 60 * 60
         ExpLeagueOrder.urgencyDict.forEach({
             if($1 == (self.flags & 0x1FF)) {
                 switch($0){
@@ -61,7 +61,7 @@ class ExpLeagueOrder: NSManagedObject {
                     duration = 7 * 24 * 60 * 60
                     break
                 default:
-                    duration = 0;
+                    duration = 60 * 60;
                 }
             }
         })
