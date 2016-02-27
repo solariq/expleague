@@ -161,39 +161,41 @@ public class CompositeMessageViewController {
   }
 
   public void addLocation(Offer.Location location) {
-    final GoogleMapView mapView = new GoogleMapView();
-    mapView.addMapInializedListener(() -> {
-      //Set the initial properties of the map.
-      MapOptions mapOptions = new MapOptions();
+    Platform.runLater(() -> {
+      final GoogleMapView mapView = new GoogleMapView();
+      mapView.addMapInializedListener(() -> {
+        //Set the initial properties of the map.
+        MapOptions mapOptions = new MapOptions();
 
-      mapOptions.center(new LatLong(location.latitude(), location.longitude()))
-          .mapType(MapTypeIdEnum.ROADMAP)
-          .overviewMapControl(false)
-          .panControl(false)
-          .rotateControl(false)
-          .scaleControl(false)
-          .streetViewControl(false)
-          .zoomControl(false)
-          .zoom(13);
-      final GoogleMap map = mapView.createMap(mapOptions);
+        mapOptions.center(new LatLong(location.latitude(), location.longitude()))
+            .mapType(MapTypeIdEnum.ROADMAP)
+            .overviewMapControl(false)
+            .panControl(false)
+            .rotateControl(false)
+            .scaleControl(false)
+            .streetViewControl(false)
+            .zoomControl(false)
+            .zoom(13);
+        final GoogleMap map = mapView.createMap(mapOptions);
 
-      //Add a marker to the map
-      MarkerOptions markerOptions = new MarkerOptions();
+        //Add a marker to the map
+        MarkerOptions markerOptions = new MarkerOptions();
 
-      markerOptions.position( new LatLong(location.latitude(), location.longitude()) )
-          .visible(Boolean.TRUE)
-          .title("Пользователь");
+        markerOptions.position(new LatLong(location.latitude(), location.longitude()))
+            .visible(Boolean.TRUE)
+            .title("Пользователь");
 
-      Marker marker = new Marker( markerOptions );
+        Marker marker = new Marker(markerOptions);
 
-      map.addMarker(marker);
+        map.addMarker(marker);
+      });
+      mapView.setMaxHeight(200);
+      mapView.setOnMouseClicked(event -> MainController.instance().openMap(location));
+      trueWidth.addListener((observable, oldValue, newValue) -> {
+        mapView.setMaxWidth((Double) newValue - 50);
+      });
+      addContentItem(mapView, false);
     });
-    mapView.setMaxHeight(200);
-    mapView.setOnMouseClicked(event -> MainController.instance().openMap(location));
-    trueWidth.addListener((observable, oldValue, newValue) -> {
-      mapView.setMaxWidth((Double)newValue - 50);
-    });
-    addContentItem(mapView, false);
   }
 
   public Button addAction(String name, Runnable action) {
