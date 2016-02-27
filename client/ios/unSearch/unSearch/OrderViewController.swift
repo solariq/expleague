@@ -11,8 +11,7 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
     @IBOutlet weak var orderDescription: UIView!
     @IBAction func fire(sender: AnyObject) {
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
-        if (controller.orderText.text.isEmpty) {
-            controller.orderTextBackground.backgroundColor = controller.error_color
+        if (!controller.orderTextDelegate!.validate()) {
             return
         }
         if (!AppDelegate.instance.stream.isConnected()) {
@@ -53,11 +52,11 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
         
         AppDelegate.instance.activeProfile!.placeOrder(
                 topic: controller.orderText.text,
-                urgency: Urgency.find(controller.urgency.value).type,
+            urgency: (controller.urgency.on ? Urgency.ASAP : Urgency.DURING_THE_DAY).type,
                 local: controller.isLocal.on,
                 attachments: controller.attachments.ids,
                 location: self.location,
-                prof: controller.needExpert.on
+                prof: true
         );
         controller.clear()
         controller.attachments.clear()
@@ -84,21 +83,18 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
 }
 class OrderDescriptionViewController: UITableViewController {
     let error_color = UIColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 0.1)
-    let rowHeight = 44;
+    let rowHeight = 62;
+    @IBOutlet weak var lupa: UIImageView!
+
     @IBOutlet weak var isLocal: UISwitch!
-    @IBOutlet weak var needExpert: UISwitch!
-    @IBOutlet weak var urgency: UISlider!
+    @IBOutlet weak var urgency: UISwitch!
     @IBOutlet weak var urgencyLabel: UILabel!
-    @IBAction func urgencyChanged(sender: UISlider) {
-        let type = Urgency.find(sender.value);
-        urgencyLabel.text = type.caption
-        sender.value = type.value
-    }
+    @IBOutlet weak var owlIcon: UIImageView!
+    @IBOutlet weak var owlHeight: NSLayoutConstraint!
+    @IBOutlet weak var owlWidth: NSLayoutConstraint!
+    @IBOutlet weak var unSearchLabel: UILabel!
 
-    @IBAction func attach(sender: UIButton) {
-        self.presentViewController(picker, animated: true, completion: nil)
-    }
-
+    @IBOutlet weak var orderTextHeight: NSLayoutConstraint!
     @IBOutlet weak var orderText: UITextView!
     @IBOutlet weak var orderTextBackground: UIView!
     @IBOutlet weak var attachmentsView: UICollectionView!
@@ -106,12 +102,14 @@ class OrderDescriptionViewController: UITableViewController {
     var orderTextBGColor: UIColor?
     let picker = UIImagePickerController()
     var pickerDelegate: ImagePickerDelegate?
+    var orderTextDelegate: OrderTextDelegate?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         orderTextBGColor = orderTextBackground.backgroundColor
-        urgencyChanged(urgency)
-        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "dismissKeyboard"))
+
+        (view as! UITableView).allowsSelection = true
+        (view as! UITableView).delegate = self
         attachmentsView.delegate = attachments
         attachmentsView.dataSource = attachments
         attachmentsView.userInteractionEnabled = true
@@ -124,31 +122,82 @@ class OrderDescriptionViewController: UITableViewController {
         pickerDelegate = ImagePickerDelegate(queue: attachments, picker: picker)
         picker.delegate = pickerDelegate
         picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+        
+        orderTextDelegate = OrderTextDelegate(height: orderTextHeight, parent: self)
+        orderText.delegate = orderTextDelegate
     }
     
-    func dismissKeyboard() {
-        orderTextBackground.backgroundColor = orderText.text.isEmpty ? error_color : orderTextBGColor
-        
-        view.endEditing(true)
+    override func viewDidAppear(animated: Bool) {
+        adjustSizes(view.frame.height)
+    }
+    
+    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+        coordinator.animateAlongsideTransition({ (UIViewControllerTransitionCoordinatorContext) -> Void in
+            self.adjustSizes(size.height - self.view.window!.frame.height + self.view.frame.height)
+        }, completion: nil)
+    }
+    
+    @IBOutlet weak var unSearchY: NSLayoutConstraint!
+    @IBOutlet weak var owlY: NSLayoutConstraint!
+    
+    internal func adjustSizes(height: CGFloat) {
+        print("\(height), \(sizeOfInput(height))")
+        let inputHeight = sizeOfInput(height)
+        if (inputHeight > 130) {
+            unSearchLabel.hidden = false
+            owlIcon.hidden = false
+            owlHeight.constant = max((inputHeight - 71.0) / 2.0, 50.0)
+            owlWidth.constant = owlHeight.constant * 160.0/168.0
+            owlY.constant = (inputHeight - owlHeight.constant)/2.0 - 8
+        }
+        else if (inputHeight > 100) {
+            unSearchLabel.hidden = false
+            owlIcon.hidden = true
+            unSearchY.constant = (inputHeight)/2.0 - 8 - unSearchLabel.frame.height
+        }
+        else {
+            owlIcon.hidden = true
+            unSearchLabel.hidden = true
+        }
+        orderTextDelegate!.total = inputHeight
     }
     
     internal func clear() {
         isLocal.on = false
-        needExpert.on = false
-        urgency.value = Urgency.DURING_THE_DAY.value
-        orderText.text = ""
+        urgency.on = false
+        orderTextDelegate!.clear(orderText)
         attachments.clear()
     }
 
+    @IBOutlet weak var urgencyType: UILabel!
+    @IBAction func onUnrgency(sender: AnyObject) {
+        urgencyType.text = (urgency.on ? Urgency.ASAP : Urgency.DURING_THE_DAY).caption
+    }
+    @IBOutlet weak var imagesCaption: UILabel!
+
+    internal func sizeOfInput(height: CGFloat) -> CGFloat {
+        return max(CGFloat(50), height - CGFloat(5 * rowHeight));
+    }
+    
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
         if (indexPath.item == 0 && indexPath.section == 0) {
-            let sectionsHeight = 28 * 2 * 2;
-            return max(CGFloat(50), view.frame.height - CGFloat(6 * rowHeight + sectionsHeight));
-        }
-        if (indexPath.item == 0 && indexPath.section == 1) {
-            return 64
+            return sizeOfInput(view.frame.height)
         }
         return CGFloat(rowHeight);
+    }
+    
+    override func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return 4...5 ~= indexPath.item
+    }
+    
+    override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+        return 4...5 ~= indexPath.item ? indexPath : nil
+    }
+    
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        if (indexPath.item == 4) {
+            self.presentViewController(picker, animated: true, completion: nil)
+        }
     }
 }
 
@@ -221,6 +270,18 @@ class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionV
         let index = ids.indexOf(id)
         if (index != nil) {
             self.status[index!] = status
+        }
+        if (cells.count > 4) {
+            parent!.imagesCaption.text = "\(cells.count) приложений"
+        }
+        else if (cells.count > 1) {
+            parent!.imagesCaption.text = "\(cells.count) приложения"
+        }
+        else if (cells.count > 0) {
+            parent!.imagesCaption.text = "\(cells.count) приложениe"
+        }
+        else {
+            parent!.imagesCaption.text = "Не выбрано"
         }
     }
     
@@ -352,14 +413,91 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
     }
 }
 
+class OrderTextDelegate: NSObject, UITextViewDelegate {
+    static let placeholder = "Найдем для Вас что угодно!"
+    static let error_placeholder = "Введите текст запроса"
+    var active: Bool = false
+    var tapDetector: UIGestureRecognizer?
+    func textViewShouldBeginEditing(textView: UITextView) -> Bool {
+        UIView.animateWithDuration(0.3) { () -> Void in
+            if (textView.text == OrderTextDelegate.placeholder || textView.text == OrderTextDelegate.error_placeholder) {
+                textView.text = ""
+                textView.textAlignment = .Left
+                self.parent.lupa.hidden = true
+            }
+            textView.textColor = UIColor.blackColor()
+            self.height.constant = self.total - 16.0 - 30.0
+            self.parent.view!.layoutIfNeeded()
+        }
+        if (tapDetector == nil) {
+            tapDetector = UITapGestureRecognizer(trailingClosure: {
+                textView.endEditing(true)
+            })
+            parent.view.addGestureRecognizer(tapDetector!)
+        }
+        else {
+            tapDetector!.enabled = true
+        }
+        active = true
+        return true
+    }
+    
+    func textViewDidEndEditing(textView: UITextView) {
+        textView.resignFirstResponder()
+        if (textView.text == "") {
+            UIView.animateWithDuration(0.3) { () -> Void in
+                self.clear(textView)
+                self.parent.view!.layoutIfNeeded()
+            }
+        }
+        tapDetector!.enabled = false
+    }
+    
+    func clear(textView: UITextView) {
+        textView.text = OrderTextDelegate.placeholder
+        textView.textColor = UIColor.lightGrayColor()
+        textView.textAlignment = .Center
+        parent.lupa.hidden = false
+        height.constant = 30
+        active = false
+    }
+    
+    func validate() -> Bool {
+        if (parent.orderText.text.isEmpty || parent.orderText.text == OrderTextDelegate.placeholder || parent.orderText.text == OrderTextDelegate.error_placeholder) {
+            parent.orderText.text = OrderTextDelegate.error_placeholder
+            parent.orderText.textColor = OngoingOrderStateCell.ERROR_COLOR
+            return false
+        }
+        return true
+    }
+    
+    var total: CGFloat = 80 {
+        didSet {
+            if (active) {
+                height.constant = total - 16.0 - 30.0
+            }
+            else {
+                height.constant = 30
+            }
+        }
+    }
+    let height: NSLayoutConstraint
+    let parent: OrderDescriptionViewController
+    init(height: NSLayoutConstraint, parent: OrderDescriptionViewController) {
+        self.height = height
+        self.parent = parent
+    }
+}
+
+
 struct Urgency {
     var caption: String;
     var value: Float;
     var type: String;
 
-    static let ASAP = Urgency(caption: "срочно", value: 1.0, type: "asap")
-    static let DURING_THE_DAY = Urgency(caption: "в течение дня", value: 0.5, type: "day")
-    static let DURING_THE_WEEK = Urgency(caption: "в течение недели", value: 0.0, type: "week")
+    static let ASAP = Urgency(caption: "Срочно", value: 1.0, type: "asap")
+    static let DURING_THE_DAY = Urgency(caption: "В течении дня", value: 0.5, type: "day")
+    static let DURING_THE_WEEK = Urgency(caption: "в течении недели", value: 0.0, type: "week")
 
     static func find(value: Float) -> Urgency {
         if (value < 0.25) {

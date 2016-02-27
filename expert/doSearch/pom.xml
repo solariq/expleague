@@ -151,7 +151,7 @@
             <argument>-Xmx1g</argument>
             <argument>-Dfile.encoding=UTF-8</argument>
           </jvmArgs>
-          <bundler>ALL</bundler>
+          <bundler>DMG</bundler>
         </configuration>
         <dependencies>
           <dependency>
