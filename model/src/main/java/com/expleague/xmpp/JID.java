@@ -1,5 +1,6 @@
 package com.expleague.xmpp;
 
+import com.spbsu.commons.text.StringUtils;
 import com.sun.istack.Interned;
 
 import javax.xml.bind.annotation.XmlValue;
@@ -95,6 +96,7 @@ public class JID implements Serializable, Cloneable {
       return new JID(bare, resource);
     }
     catch (Exception e) {
+      // todo: is it ok? not checked by clients
       return null;
     }
   }
@@ -104,15 +106,13 @@ public class JID implements Serializable, Cloneable {
   }
 
   public boolean bareEq(JID to) {
-//    if (to != null && this.bare.equals(to.bare) && this.bare != to.bare)
-//      System.out.println();
     //noinspection StringEquality
     return to != null && this.bare == to.bare;
   }
 
   public String local() {
     final int dogIndex = bare.indexOf('@');
-    return dogIndex >= 0 ? bare.substring(0, dogIndex) : "";
+    return dogIndex >= 0 ? bare.substring(0, dogIndex) : StringUtils.EMPTY;
   }
 
   public String domain() {
@@ -121,7 +121,7 @@ public class JID implements Serializable, Cloneable {
   }
 
   public String resource() {
-    return resource != null ? resource : "";
+    return resource != null ? resource : StringUtils.EMPTY;
   }
 
 

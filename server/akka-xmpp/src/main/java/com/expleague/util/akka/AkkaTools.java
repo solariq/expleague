@@ -87,6 +87,18 @@ public class AkkaTools {
     }
   }
 
+  public static <T, A> T askOrThrow(ActorSelection ref, A arg, Timeout apply) {
+    final AskableActorSelection ask = new AskableActorSelection(ref);
+    //noinspection unchecked
+    final Future<T> future = (Future<T>)ask.ask(arg, apply);
+    try {
+      return Await.result(future, Duration.Inf());
+    }
+    catch (Exception e) {
+      throw new RuntimeException("Exception during synchronous ask", e);
+    }
+  }
+
   public static Cancellable scheduleTimeout(ActorContext context, FiniteDuration timeout, ActorRef to) {
     return context.system().scheduler().scheduleOnce(timeout, () -> {
       to.tell(Timeout.apply(timeout), to);

@@ -4,9 +4,6 @@ import akka.actor.ActorRef;
 import akka.persistence.SaveSnapshotFailure;
 import akka.persistence.SaveSnapshotSuccess;
 import akka.persistence.UntypedPersistentActor;
-import com.relayrides.pushy.apns.util.TokenUtil;
-import com.spbsu.commons.system.RuntimeUtils;
-import com.spbsu.commons.util.MultiMap;
 import com.expleague.model.Operations;
 import com.expleague.util.ios.NotificationsManager;
 import com.expleague.xmpp.JID;
@@ -14,9 +11,14 @@ import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
+import com.relayrides.pushy.apns.util.TokenUtil;
+import com.spbsu.commons.system.RuntimeUtils;
+import com.spbsu.commons.util.MultiMap;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 /**
@@ -26,134 +28,129 @@ import java.util.logging.Logger;
  */
 public class UserAgent extends UntypedPersistentActor {
   private static final Logger log = Logger.getLogger(UserAgent.class.getName());
-  private final JID bareJid;
-  private final List<Message> messages = new ArrayList<>();
-  private final MultiMap<String, String> delivered = new MultiMap<>();
-  private final Map<JID, Presence> presenceMap = new HashMap<>();
+
   private final RuntimeUtils.InvokeDispatcher dispatcher;
 
+  private final JID bareJid;
+
+  private final MessagesStash messagesStash;
+  private final ConnectionManager connectionManager;
+  private final PresenceTracker presenceTracker;
+  private final NotificationController notificationController;
+
   public UserAgent(JID jid) {
-    dispatcher = new RuntimeUtils.InvokeDispatcher(getClass(), this::unhandled);
-    XMPP.subscribe(XMPP.jid(), self(), context());
+    this.dispatcher = new RuntimeUtils.InvokeDispatcher(getClass(), this::unhandled);
     this.bareJid = jid.bare();
+    this.messagesStash = new MessagesStash(this);
+    this.connectionManager = new ConnectionManager(this);
+    this.presenceTracker = new PresenceTracker();
+    this.notificationController = new NotificationController();
+
+    log.fine("User agent in created for " + bareJid);
+    XMPP.subscribe(XMPP.jid(), self(), context());
   }
 
   public JID jid() {
     return bareJid;
   }
-  private Map<String, ActorRef> connecters = new HashMap<>();
-
-  public static class ConnStatus {
-    final boolean connected;
-    final String resource;
-
-    public ConnStatus(boolean connected, String resource) {
-      this.connected = connected;
-      this.resource = resource;
-    }
-  }
 
   public void invoke(ConnStatus status) { // connection acquired
+    log.fine("User agent " + bareJid + " received " + status);
+
+    final ActorRef sender = sender();
     final String resource = status.resource;
     if (status.connected) {
-      final ActorRef put = connecters.put(resource, sender());
-      if (put != null)
-        log.warning("Concurrent connectors for the same resource: " + resource + " for " + jid() + "!");
-      final Collection<String> deliveredToResource = delivered.get(resource);
-      messages.stream()
-          .filter(msg -> !deliveredToResource.contains(msg.id()))
-          .forEach(msg -> {
-            if (!msg.from().bareEq(jid()))
-              sender().tell(msg, self());
-          });
-      presenceMap.values().stream()
-          .filter(Presence::available)
-          .forEach(p -> sender().tell(p, self()));
+      connectionManager.connected(resource, sender);
+      messagesStash.forAwaitingDelivery(status, tellTo(sender));
+      presenceTracker.forAvailable(tellTo(sender));
     }
     else {
-      connecters.remove(resource);
-      invoke(new Presence(new JID(jid().local(), jid().domain(), resource), false));
+      connectionManager.disconnected(resource, sender);
+      // todo: should it just be a call to out()?
+      invoke(notAvailable(resource));
     }
   }
 
   public void invoke(final Presence presence) {
-    if (!presence.from().bareEq(jid())) { // incoming
-      final Presence replace = presenceMap.put(presence.from(), presence);
-      if (!presence.equals(replace))
+    log.fine("User agent " + bareJid + " received presence " + presence.from() + ": " + presence.available());
+
+    if (isIncoming(presence)) {
+      if (presenceTracker.updatePresence(presence)) {
         in(presence);
+      }
     }
-    else out(presence);
+    else {
+      out(presence);
+    }
   }
 
   public void invoke(final Iq iq) {
-    if (iq.from().bareEq(jid()))
-      XMPP.send(iq, context());
-    else
+    log.fine("User agent " + bareJid + " received iq " + iq.from() + ": " + iq.get());
+
+    if (isIncoming(iq)) {
       in(iq);
+    }
+    else {
+      XMPP.send(iq, context());
+    }
   }
 
   public void invoke(final Message msg) {
-    this.persist(msg, messages::add);
-    if (!msg.from().bareEq(jid())) { // incoming
+    log.fine("User agent " + bareJid + " received message " + msg.from() + ": " + msg.id());
+
+    messagesStash.persist(msg);
+    if (isIncoming(msg)) {
       in(msg);
     }
-    else out(msg);
+    else {
+      out(msg);
+    }
   }
 
-  public static class Delivered implements Serializable {
-    final String id;
-    final String resource;
+  private boolean isIncoming(final Stanza stanza) {
+    return !jid().bareEq(stanza.from());
+  }
 
+  @NotNull
+  private Presence notAvailable(final String resource) {
+    return new Presence(new JID(jid().local(), jid().domain(), resource), false);
+  }
 
-    public Delivered(String id, String resource) {
-      this.id = id;
-      this.resource = resource;
-    }
+  @NotNull
+  private <T extends Stanza> Consumer<T> tellTo(final ActorRef recipient) {
+    return stanza -> recipient.tell(stanza, self());
   }
 
   public void invoke(final Delivered delivered) {
-    this.persist(delivered, d -> this.delivered.put(delivered.resource, delivered.id));
+    messagesStash.persist(delivered);
   }
 
   private void out(Stanza stanza) {
     XMPP.send(stanza, context());
-    if("expert".equals(stanza.from().resource()))
+    // todo: looks like a hardcode?
+    if ("expert".equals(stanza.from().resource())) {
       LaborExchange.Experts.tellTo(jid(), stanza, self(), context());
+    }
     if (stanza instanceof Message) {
-      final Message message = (Message) stanza;
-      if (message.has(Operations.Token.class)) {
-        appTokens.add(TokenUtil.sanitizeTokenString(message.get(Operations.Token.class).value()));
-      }
+      notificationController.storeTokenIfPresent((Message) stanza);
     }
   }
 
-  private void in(Stanza stanza) {
-    connecters.values().stream().forEach(conn -> conn.tell(stanza, self()));
-    if (connecters.isEmpty() && stanza instanceof Message) {
-      appTokens.stream().forEach(
-          token -> NotificationsManager.instance().sendPush((Message)stanza, token)
-      );
+  private void in(final Stanza stanza) {
+    if (connectionManager.hasConnections()) {
+      connectionManager.forConnected(conn -> conn.tell(stanza, self()));
+    }
+    else if (stanza instanceof Message) {
+      notificationController.sendNotifications((Message) stanza);
     }
   }
 
   @Override
   public void onReceiveRecover(Object o) throws Exception {
+    messagesStash.onReceiveRecover(o);
     if (o instanceof Message) {
-      final Message message = (Message) o;
-      messages.add(message);
-      if (message.has(Operations.Token.class)) {
-        appTokens.add(TokenUtil.sanitizeTokenString(message.get(Operations.Token.class).value()));
-      }
+      notificationController.storeTokenIfPresent((Message) o);
     }
-    if (o instanceof Delivered) {
-      final Delivered del = (Delivered) o;
-      delivered.put(del.resource, del.id);
-    }
-  }
-
-  private Set<String> appTokens = new HashSet<>();
-  public String[] appTokens() {
-    return appTokens.toArray(new String[appTokens.size()]);
   }
 
   @SuppressWarnings("UnusedParameters")
@@ -165,11 +162,150 @@ public class UserAgent extends UntypedPersistentActor {
 
   @Override
   public void onReceiveCommand(Object msg) throws Exception {
+    // todo: shouldn't there be logging similar to UntypedActorAdapter's?
     dispatcher.invoke(this, msg);
   }
 
   @Override
   public String persistenceId() {
     return bareJid.getAddr();
+  }
+
+  public static class NotificationController {
+    private final Set<String> appTokens = new HashSet<>();
+
+    public void sendNotifications(final Message message) {
+      if (!appTokens.isEmpty()) {
+        final NotificationsManager notificationsManager = NotificationsManager.instance();
+        appTokens.stream().forEach(token -> notificationsManager.sendPush(message, token));
+      }
+    }
+
+    public void storeTokenIfPresent(final Message message) {
+      if (message.has(Operations.Token.class)) {
+        appTokens.add(TokenUtil.sanitizeTokenString(message.get(Operations.Token.class).value()));
+      }
+    }
+
+    public String[] appTokens() {
+      return appTokens.toArray(new String[appTokens.size()]);
+    }
+  }
+
+  // todo: look like XMPP.PresenceTracker is something similar, but no bare jids here
+  public static class PresenceTracker {
+    private final Map<JID, Presence> presenceMap = new HashMap<>();
+
+    public boolean updatePresence(final Presence presence) {
+      return !presence.equals(presenceMap.put(presence.from(), presence));
+    }
+
+    public void forAvailable(final Consumer<Presence> consumer) {
+      presenceMap.values().stream()
+        .filter(Presence::available)
+        .forEach(consumer);
+    }
+  }
+
+  public static class Delivered implements Serializable {
+    final String id;
+    final String resource;
+
+    public Delivered(String id, String resource) {
+      this.id = id;
+      this.resource = resource;
+    }
+
+    @Override
+    public String toString() {
+      return "Delivered{" +
+        "id='" + id + '\'' +
+        ", resource='" + resource + '\'' +
+        '}';
+    }
+  }
+
+  public static class MessagesStash {
+    private final UserAgent userAgent;
+
+    private final List<Message> messages = new ArrayList<>();
+    private final MultiMap<String, String> delivered = new MultiMap<>();
+
+    public MessagesStash(final UserAgent userAgent) {
+      this.userAgent = userAgent;
+    }
+
+    public void persist(Message message) {
+      userAgent.persist(message, messages::add);
+    }
+
+    public void persist(Delivered delivered) {
+      userAgent.persist(delivered, d -> this.delivered.put(delivered.resource, delivered.id));
+    }
+
+    public void forAwaitingDelivery(final ConnStatus connStatus, final Consumer<Message> consumer) {
+      final Collection<String> deliveredToResource = delivered.get(connStatus.resource);
+      messages.stream()
+        .filter(msg -> !deliveredToResource.contains(msg.id()))
+        .filter(userAgent::isIncoming)
+        .forEach(consumer);
+    }
+
+    public void onReceiveRecover(final Object o) {
+      if (o instanceof Message) {
+        final Message message = (Message) o;
+        messages.add(message);
+      }
+      if (o instanceof Delivered) {
+        final Delivered del = (Delivered) o;
+        delivered.put(del.resource, del.id);
+      }
+    }
+  }
+
+  public static class ConnStatus {
+    final boolean connected;
+    final String resource;
+
+    public ConnStatus(boolean connected, String resource) {
+      this.connected = connected;
+      this.resource = resource;
+    }
+
+    @Override
+    public String toString() {
+      return "ConnStatus{" +
+        "connected=" + connected +
+        ", resource='" + resource + '\'' +
+        '}';
+    }
+  }
+
+  public static class ConnectionManager {
+    private final UserAgent userAgent;
+    private final Map<String, ActorRef> connecters = new HashMap<>();
+
+    public ConnectionManager(final UserAgent userAgent) {
+      this.userAgent = userAgent;
+    }
+
+    public void connected(final String resource, final ActorRef sender) {
+      final ActorRef existing = connecters.put(resource, sender);
+      if (existing != null) {
+        log.warning("Concurrent connectors [" + sender + ", " + existing + "] for the same resource: " + resource + " for " + userAgent.jid() + "!");
+      }
+    }
+
+    public void disconnected(final String resource, final ActorRef sender) {
+      connecters.remove(resource);
+    }
+
+    public boolean hasConnections() {
+      return !connecters.isEmpty();
+    }
+
+    public void forConnected(final Consumer<ActorRef> consumer) {
+      connecters.values().stream().forEach(consumer);
+    }
   }
 }

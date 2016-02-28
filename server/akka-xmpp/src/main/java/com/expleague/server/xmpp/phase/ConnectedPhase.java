@@ -42,13 +42,14 @@ public class ConnectedPhase extends XMPPPhase {
       iq.from(jid());
     switch (iq.type()) {
       case SET : {
-        if (iq.get() instanceof Bind) {
+        final Object payload = iq.get();
+        if (payload instanceof Bind) {
           bound = true;
-          jid = jid.resource(((Bind) iq.get()).resource());
+          jid = jid.resource(((Bind) payload).resource());
           answer(Iq.answer(iq, new Bind(jid())));
           break;
         }
-        else if (iq.get() instanceof Session) {
+        else if (payload instanceof Session) {
           bound = true;
           agent = XMPP.register(jid().bare(), context());
           agent.tell(new UserAgent.ConnStatus(true, jid.resource()), self());

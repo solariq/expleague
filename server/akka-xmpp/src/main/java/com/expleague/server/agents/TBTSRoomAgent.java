@@ -168,7 +168,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     private JID owner = null;
     private JID lastWorker = null;
     private boolean open;
-    public boolean lastActive;
+    private boolean lastActive;
     private Offer offer;
 
     public boolean isWorker(JID jid) {

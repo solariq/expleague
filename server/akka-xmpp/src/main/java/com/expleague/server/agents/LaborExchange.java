@@ -204,7 +204,7 @@ public class LaborExchange extends UntypedPersistentActor {
     }
 
     public static JID jid(ActorRef ref) {
-      return JID.parse(ref.path().name());
+      return XMPP.jid(ref);
     }
 
     public static void tellTo(JID jid, Object o, ActorRef from, ActorContext context) {

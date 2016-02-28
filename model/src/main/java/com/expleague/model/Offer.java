@@ -139,7 +139,8 @@ public class Offer extends Item {
   }
 
   public boolean hasWorker(JID worker) {
-    return workers != null && workers.stream().anyMatch(profile -> profile.login().equals(worker.local())) && (slackers == null || !slackers.contains(worker));
+    // todo: worker(jid) uses different condition - why?
+    return workers != null && workers.stream().anyMatch(profile -> profile.login().equals(worker.local())) && !hasSlacker(worker);
   }
 
   public boolean hasSlacker(JID worker) {

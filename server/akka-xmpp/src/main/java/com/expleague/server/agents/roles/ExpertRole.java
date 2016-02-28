@@ -367,7 +367,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
   }
 
   public JID jid() {
-    return JID.parse(self().path().name());
+    return LaborExchange.Experts.jid(self());
   }
 
   public class Task {

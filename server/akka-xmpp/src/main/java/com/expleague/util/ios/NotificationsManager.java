@@ -24,6 +24,7 @@ public class NotificationsManager {
   private static NotificationsManager instance;
 
   public static synchronized NotificationsManager instance() {
+    // todo: hard to test this singleton
     if (instance == null) {
       instance = new NotificationsManager("certs/apns.p12", "tg30239");
     }

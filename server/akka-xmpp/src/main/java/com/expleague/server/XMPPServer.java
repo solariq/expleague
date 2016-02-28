@@ -23,6 +23,7 @@ public class XMPPServer extends UntypedActorAdapter {
   public void preStart() throws Exception {
     final ActorRef tcp = Tcp.get(getContext().system()).manager();
     //noinspection ArraysAsListWithZeroOrOneArgument
+    //todo: how about ipv6?
     tcp.tell(TcpMessage.bind(getSelf(), new InetSocketAddress("0.0.0.0", 5222), 100, Arrays.asList(
         TcpSO.keepAlive(true)
         ), false), getSelf());

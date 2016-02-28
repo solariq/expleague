@@ -286,7 +286,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
               return goTo(State.UNEMPLOYED).using(null);
             }
         ).event(Cancel.class, // cancel from expert
-            (cancel, task) -> task.onTask(JID.parse(sender().path().name())),
+            (cancel, task) -> task.onTask(Experts.jid(sender())),
             (cancel, task) -> {
               explain("Expert canceled task. Looking for other worker.");
               XMPP.send(new Message(Experts.jid(sender()), task.jid(), cancel), context());
@@ -334,7 +334,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
         matchStop(Normal(),
             (state, data) -> log.fine("BrokerRole stopped" + data.offer)
         ).stop(Shutdown(),
-            (state, data) -> log.warning("BrokerRole shut down on " + data.offer)
+            (state, data) -> log.warning("BrokerRole shut down on " + data)
         ).stop(Failure.class,
             (reason, data, state) -> log.warning("ExpertRole terminated on " + data + " in state " + state)
         )
@@ -380,8 +380,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, BrokerRole.Task> {
 
   private FSM.State<State, Task> lookForExpert(Task task) {
     explain("Going to labor exchange to find expert.");
-    final ActorSelection roomAgent = XMPP.agent(task.offer.room(), context());
-    task.roomStatus = AkkaTools.ask(roomAgent, TBTSRoomAgent.Status.class);
+    task.roomStatus = TBTSRoomAgent.status(task.offer.room(), context());
     task.refused.clear();
     experts(context()).tell(task.offer, self());
     nextTimer(AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT, self()));

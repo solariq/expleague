@@ -7,6 +7,7 @@ import com.expleague.server.agents.XMPP;
 import com.expleague.server.dao.Archive;
 import com.expleague.server.services.XMPPServices;
 import com.expleague.util.ios.NotificationsManager;
+import com.google.common.annotations.VisibleForTesting;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -25,15 +26,9 @@ public class ExpLeagueServer {
   private static Cfg config;
   private static Roster users;
 
-  public static void main(String[] args) throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+  public static void main(String[] args) throws Exception {
     final Config load = ConfigFactory.load();
-    config = new Cfg(load);
-    users = config.roster().newInstance();
-    Archive.instance = config.archive().newInstance();
-    if (System.getProperty("logger.config") == null)
-      LogManager.getLogManager().readConfiguration(ExpLeagueServer.class.getResourceAsStream("/logging.properties"));
-    else
-      LogManager.getLogManager().readConfiguration(new FileInputStream(System.getProperty("logger.config")));
+    setConfig(new Cfg(load));
 
     final ActorSystem system = ActorSystem.create("ExpLeague", load);
 
@@ -55,6 +50,17 @@ public class ExpLeagueServer {
 
   public static Cfg config() {
     return config;
+  }
+
+  @VisibleForTesting
+  protected static void setConfig(final Cfg cfg) throws Exception {
+    config = cfg;
+    users = config.roster().newInstance();
+    Archive.instance = config.archive().newInstance();
+    if (System.getProperty("logger.config") == null)
+      LogManager.getLogManager().readConfiguration(ExpLeagueServer.class.getResourceAsStream("/logging.properties"));
+    else
+      LogManager.getLogManager().readConfiguration(new FileInputStream(System.getProperty("logger.config")));
   }
 
   public static class Cfg {

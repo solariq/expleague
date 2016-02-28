@@ -49,15 +49,21 @@ public class Stanza extends Item {
   public JID from() {
     return from;
   }
-  public void from(JID jid) {
+  public Stanza from(JID jid) {
     this.from = jid;
+    return this;
   }
 
   public JID to() {
     return to;
   }
-  public void to(JID to) {
+  public <S extends Stanza> S to(JID to) {
     this.to = to;
+    return (S) this;
+  }
+
+  public boolean isBroadcast() {
+    return to == null;
   }
 
   public String id() {
