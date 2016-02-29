@@ -158,7 +158,7 @@ public class AnswerViewController {
     if (task != null) {
       ((StyleClassedTextArea) editorPane.getNode()).setEditable(false);
       editorNode.setOnDragOver(event -> {
-        if (event.getDragboard().hasString())
+        if (checkClipboard(event.getDragboard()))
           event.acceptTransferModes(TransferMode.COPY);
         editorPane.requestFocus();
         final CharacterHit hit = editorNode.hit(event.getX(), event.getY());
@@ -191,13 +191,16 @@ public class AnswerViewController {
     }
   }
 
+  private boolean checkClipboard(Clipboard db) {
+    return db.hasString() || db.hasImage() ||
+        (db.hasFiles() && db.getFiles().size() == 1 && isImage(db.getFiles().get(0).getName())) ||
+        (db.hasUrl() && db.getUrl().startsWith("http") && isImage(db.getUrl()));
+  }
+
   private boolean processClipboard(Clipboard db) {
     editorPane.requestFocus();
     String result = null;
-    if (db.hasUrl() && db.getUrl().startsWith("http") && (
-        db.getUrl().endsWith(".jpg") || db.getUrl().endsWith(".jpeg") ||
-        db.getUrl().endsWith(".png") || db.getUrl().endsWith(".gif")
-    )) {
+    if (db.hasUrl() && db.getUrl().startsWith("http") && isImage(db.getUrl())){
       if (db.hasImage()) {
         result= "![" + (db.hasString() ? db.getString() : "") + "](" + db.getUrl() + ")";
       }
@@ -205,7 +208,7 @@ public class AnswerViewController {
         result= "[" + (db.hasString() ? db.getString() : "") + "](" + db.getUrl() + ")";
       }
     }
-    else if (db.hasFiles() && db.getFiles().size() == 1 && isImage(db.getFiles().get(0))) {
+    else if (db.hasFiles() && db.getFiles().size() == 1 && isImage(db.getFiles().get(0).getName())) {
       try {
         result = "![" + (db.hasString() ? db.getString() : "") + "](" +
             ExpLeagueConnection.instance().uploadImage(SwingFXUtils.toFXImage(ImageIO.read(new FileInputStream(db.getFiles().get(0))), null), db.getUrl())
@@ -227,8 +230,8 @@ public class AnswerViewController {
     return db.hasString();
   }
 
-  private boolean isImage(File file) {
-    return Arrays.stream(ImageIO.getReaderFileSuffixes()).anyMatch(suffix -> file.getName().endsWith(suffix));
+  private boolean isImage(String file) {
+    return Arrays.stream(ImageIO.getReaderFileSuffixes()).anyMatch(file::endsWith);
   }
 
   private final ExpertTask task;

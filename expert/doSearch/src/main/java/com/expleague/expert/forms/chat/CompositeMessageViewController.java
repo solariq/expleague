@@ -11,8 +11,11 @@ import com.spbsu.commons.util.Holder;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -47,9 +50,12 @@ public class CompositeMessageViewController {
     avatarImg = ava;
   }
 
-  public Node loadOffer(Offer offer) throws IOException {
+  public Pane loadOffer(Offer offer) throws IOException {
     final Node taskView = FXMLLoader.load(DialogueController.MessageType.TASK.fxml(), null, null, param -> this);
     addText(offer.topic());
+    if (!offer.workers().isEmpty()) {
+      addText("(Продолжение задания)", "comment");
+    }
     if (offer.geoSpecific())
       addLocation(offer.location());
     else if (offer.location() != null){
@@ -65,7 +71,7 @@ public class CompositeMessageViewController {
         addImage((com.expleague.model.Image)attachment);
       }
     }
-    return taskView;
+    return (Pane)taskView;
   }
 
   public DialogueController.MessageType type() {
@@ -81,11 +87,14 @@ public class CompositeMessageViewController {
   }
 
   private SimpleDoubleProperty trueWidth = new SimpleDoubleProperty();
-  public void addText(String text) {
+
+  public void addText(String text, String... cssClass) {
     final TextArea label = new TextArea();
     final Text labelModel2 = new Text(text);
-    final Text labelModel = new Text(text);
+    final Text labelModel = new Text();
+
     label.getStyleClass().add(type.cssClass());
+    label.getStyleClass().addAll(cssClass);
     label.setText(text);
     label.setEditable(false);
     label.setWrapText(true);
@@ -94,20 +103,25 @@ public class CompositeMessageViewController {
     labelModel.layoutBoundsProperty().addListener(o -> {
       final int value = (int)Math.ceil(labelModel.getLayoutBounds().getHeight() / labelModel.getFont().getSize() / 1.3333);
       if (value > 0) {
-        label.setPrefRowCount(value);
-        label.setMaxHeight(value * label.getFont().getSize() * 1.3333);
-        if (value == 1) {
-          label.setMaxWidth(labelModel2.getLayoutBounds().getWidth());
-        }
-        else {
-          label.setMaxWidth(trueWidth.get() - 30);
-        }
+//        label.setPrefRowCount(value);
+        final double height = value * label.getFont().getSize() * 1.3333;
+        final double width = value > 1 ? trueWidth.get() - 30 : labelModel2.getLayoutBounds().getWidth();
+        label.resize(width, height);
+      }
+    });
+    labelModel.setText(text);
+    label.setManaged(false);
+    label.maxHeightProperty().addListener(new ChangeListener<Number>() {
+      @Override
+      public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+        System.out.println(label.getMaxHeight() + " " + newValue);
+//        labelModel.setText(text);
       }
     });
 
-    final InvalidationListener listener = observable -> labelModel.setWrappingWidth(trueWidth.get() - 30);
+    final InvalidationListener listener = observable -> labelModel.setWrappingWidth(trueWidth.get() - 33);
     trueWidth.addListener(listener);
-    addContentItem(label, false);
+    addContentItem(new Group(label), false);
   }
 
   public void addImage(com.expleague.model.Image image) {
@@ -129,12 +143,14 @@ public class CompositeMessageViewController {
     addContentItem(imageView, false);
   }
 
-  private void addContentItem(Node imageView, boolean enforceCenter) {
+  private void addContentItem(Node node, boolean enforceCenter) {
     final Runnable todo = () -> {
-      if (type.alignment() == TextAlignment.CENTER || enforceCenter)
-        contents.getChildren().add(makeCenter(imageView));
+      if (type.alignment() == TextAlignment.CENTER || enforceCenter) {
+        final Node container = makeCenter(node);
+        contents.getChildren().add(container);
+      }
       else
-        contents.getChildren().add(imageView);
+        contents.getChildren().add(node);
       updateTrueWidth();
     };
     if (Platform.isFxApplicationThread())
@@ -145,39 +161,41 @@ public class CompositeMessageViewController {
   }
 
   public void addLocation(Offer.Location location) {
-    final GoogleMapView mapView = new GoogleMapView();
-    mapView.addMapInializedListener(() -> {
-      //Set the initial properties of the map.
-      MapOptions mapOptions = new MapOptions();
+    Platform.runLater(() -> {
+      final GoogleMapView mapView = new GoogleMapView();
+      mapView.addMapInializedListener(() -> {
+        //Set the initial properties of the map.
+        MapOptions mapOptions = new MapOptions();
 
-      mapOptions.center(new LatLong(location.latitude(), location.longitude()))
-          .mapType(MapTypeIdEnum.ROADMAP)
-          .overviewMapControl(false)
-          .panControl(false)
-          .rotateControl(false)
-          .scaleControl(false)
-          .streetViewControl(false)
-          .zoomControl(false)
-          .zoom(13);
-      final GoogleMap map = mapView.createMap(mapOptions);
+        mapOptions.center(new LatLong(location.latitude(), location.longitude()))
+            .mapType(MapTypeIdEnum.ROADMAP)
+            .overviewMapControl(false)
+            .panControl(false)
+            .rotateControl(false)
+            .scaleControl(false)
+            .streetViewControl(false)
+            .zoomControl(false)
+            .zoom(13);
+        final GoogleMap map = mapView.createMap(mapOptions);
 
-      //Add a marker to the map
-      MarkerOptions markerOptions = new MarkerOptions();
+        //Add a marker to the map
+        MarkerOptions markerOptions = new MarkerOptions();
 
-      markerOptions.position( new LatLong(location.latitude(), location.longitude()) )
-          .visible(Boolean.TRUE)
-          .title("Пользователь");
+        markerOptions.position(new LatLong(location.latitude(), location.longitude()))
+            .visible(Boolean.TRUE)
+            .title("Пользователь");
 
-      Marker marker = new Marker( markerOptions );
+        Marker marker = new Marker(markerOptions);
 
-      map.addMarker(marker);
+        map.addMarker(marker);
+      });
+      mapView.setMaxHeight(200);
+      mapView.setOnMouseClicked(event -> MainController.instance().openMap(location));
+      trueWidth.addListener((observable, oldValue, newValue) -> {
+        mapView.setMaxWidth((Double) newValue - 50);
+      });
+      addContentItem(mapView, false);
     });
-    mapView.setMaxHeight(200);
-    mapView.setOnMouseClicked(event -> MainController.instance().openMap(location));
-    trueWidth.addListener((observable, oldValue, newValue) -> {
-      mapView.setMaxWidth((Double)newValue - 50);
-    });
-    addContentItem(mapView, false);
   }
 
   public Button addAction(String name, Runnable action) {
@@ -204,8 +222,9 @@ public class CompositeMessageViewController {
       trueWidth.set(newValue.doubleValue());
     });
     trueWidth.addListener((observable, oldValue, newValue) -> {
-      root.setPrefWidth((Double)newValue - 2);
+      parent.setPrefWidth((Double)newValue - 5);
     });
+
     trueWidth.setValue(root.getWidth());
     if (avatar != null) {
       final Circle clip = new Circle(15, 15, 15);

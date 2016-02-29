@@ -1,6 +1,4 @@
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Button?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.expleague.expert.forms.chat.CompositeMessageViewController" stylesheets="/css/messages.css">
-  <VBox AnchorPane.topAnchor="0" AnchorPane.rightAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="0" minHeight="25" styleClass="task" fx:id="contents"/>
+  <VBox AnchorPane.topAnchor="0" AnchorPane.rightAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="0" styleClass="task" fx:id="contents"/>
 </AnchorPane>

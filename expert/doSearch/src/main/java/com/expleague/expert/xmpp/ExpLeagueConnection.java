@@ -326,6 +326,11 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
   }
 
   public void disconnect() throws JaxmppException{
+    if (expert != null) {
+      final ExpertTask task = expert.task();
+      if (task != null)
+        task.suspend();
+    }
     new Thread(() -> {
       if (jaxmpp != null && jaxmpp.isConnected())
         try {

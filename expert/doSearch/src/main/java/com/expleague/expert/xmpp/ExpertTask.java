@@ -74,6 +74,7 @@ public class ExpertTask {
         catch (Exception ignored) {}
       }
     }
+    //noinspection ResultOfMethodCallIgnored
     patchesRoot.mkdirs();
     patches.addListener(new ListChangeListener<Patch>() {
       @Override
@@ -110,11 +111,12 @@ public class ExpertTask {
       switch (state) {
         case INVITE:
           eventsReceiver.accept(new TaskInviteCanceledEvent(command, this));
+          eventsReceiver.accept(new TaskSuspendedEvent(command, this));
           state(State.SUSPEND);
           break;
         case SUSPEND:
         case BUSY:
-          eventsReceiver.accept(new TaskClosedEvent(command, this));
+          eventsReceiver.accept(new TaskCanceledEvent(command, this));
           state(State.CLOSED);
           break;
       }
@@ -145,7 +147,7 @@ public class ExpertTask {
     ExpLeagueConnection.instance().send(new Message(owner.jid(), owner.system(), cancel));
     state(State.CLOSED);
     eventsReceiver.accept(new TaskInviteCanceledEvent(cancel, this));
-    eventsReceiver.accept(new TaskClosedEvent(cancel, this));
+    eventsReceiver.accept(new TaskSuspendedEvent(cancel, this));
     log(cancel);
   }
 
@@ -171,7 +173,7 @@ public class ExpertTask {
     ExpLeagueConnection.instance().send(new Message(owner.jid(), offer.room(), Message.MessageType.GROUP_CHAT, answer));
     patchwork("");
     state(State.CLOSED);
-    eventsReceiver.accept(new TaskClosedEvent(answer, this));
+    eventsReceiver.accept(new TaskSuspendedEvent(answer, this));
     log(answer);
   }
 
@@ -249,7 +251,7 @@ public class ExpertTask {
     return offer().client();
   }
 
-  enum State {
+  public enum State {
     INVITE,
     BUSY,
     SUSPEND,

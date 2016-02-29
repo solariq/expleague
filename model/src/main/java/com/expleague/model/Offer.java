@@ -171,6 +171,10 @@ public class Offer extends Item {
     return client;
   }
 
+  public Set<ExpertsProfile> workers() {
+    return workers != null ? workers : Collections.emptySet();
+  }
+
   @XmlEnum
   public enum Urgency {
     @XmlEnumValue("asap") ASAP(TimeUnit.HOURS.toMillis(1)),

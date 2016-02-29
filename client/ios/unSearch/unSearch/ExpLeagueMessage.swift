@@ -75,7 +75,7 @@ class ExpLeagueMessage: NSManagedObject {
                     answerText = answerText.substringFromIndex(firstLineEnd)
                     properties["short"] = shortAnswer
                 }
-                let re = try! NSRegularExpression(pattern: "\\+\\[([^\\]]+)\\]([^-]*)-\\[\\1\\]", options: [])
+                let re = try! NSRegularExpression(pattern: "\\+\\[([^\\]]+)\\]([^-]*(?:-[^\\[][^-]*)*)-\\[\\1\\]", options: [])
                 let matches = re.matchesInString(answerText, options: [], range: NSRange(location: 0, length: answerText.characters.count))
                 
                 var finalMD = ""

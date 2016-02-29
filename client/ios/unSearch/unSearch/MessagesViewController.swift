@@ -178,6 +178,7 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         tabBarController?.tabBar.hidden = true
+        
         if (data == nil) {
             return
         }
@@ -396,8 +397,8 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 }
             }
         }
-        if(!order.isActive && (cells.last! is LookingForExpertModel || cells.last! is ExpertInProgressModel)) {
-            cells.removeLast()
+        if(!order.isActive && progressModel != nil) {
+            cells.removeAtIndex(progressCellIndex!)
             progressCellIndex = nil
             progressModel = nil
         }

@@ -80,21 +80,13 @@ class HistoryViewController: UITableViewController {
         }
         AppDelegate.instance.tabs.tabBar.hidden = false
         AppDelegate.instance.activeProfile!.track(tracker!)
+        if (navigationController != nil) {
+            navigationController!.navigationBar.setBackgroundImage(UIImage(named: "history_background"), forBarMetrics: .Default)
+        }
     }
 
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
         return !(indexPath.section == 0 && indexPath.row == 0 && ongoing.isEmpty)
-    }
-    
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        switch(section) {
-        case 0:
-            return "ТЕКУЩИЕ"
-        case 1:
-            return "ВЫПОЛНЕННЫЕ"
-        default:
-            return nil
-        }
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -180,6 +172,25 @@ class HistoryViewController: UITableViewController {
         }
     }
     
+    override func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let label = UILabel()
+        label.textColor = UIColor.lightGrayColor()
+        label.font = UIFont(name: "Helvetica", size: 14)
+        label.backgroundColor = UIColor.whiteColor()
+        label.frame = CGRectMake(15, 0, tableView.frame.width - 15, 38)
+        let view = UIView()
+        view.addSubview(label)
+        switch(section) {
+        case 0:
+            label.text = "ТЕКУЩИЕ ЗАКАЗЫ"
+        case 1:
+            label.text = "ВЫПОЛНЕНО"
+        default:
+            label.text = ""
+        }
+        return view
+    }
+    
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 2
     }
@@ -215,10 +226,6 @@ class HistoryViewController: UITableViewController {
         splitViewController!.showDetailViewController(messagesView, sender: nil)
     }
     
-    override func tableView(tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        (view as! UITableViewHeaderFooterView).textLabel!.textColor = UIColor.lightGrayColor()
-    }
-
     override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
         return false
     }

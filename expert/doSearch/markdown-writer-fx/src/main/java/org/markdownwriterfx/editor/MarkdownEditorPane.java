@@ -194,8 +194,8 @@ public class MarkdownEditorPane
 		return (path != null) ? path.getParent() : null;
 	}
 
-	final Pattern cutPattern = Pattern.compile("\\+\\[([^\\]]+)\\]([^-]*)-\\[\\1\\]");
 	private void textChanged(String newText) {
+		final Pattern cutPattern = Pattern.compile("\\+\\[([^\\]]+)\\]([^-]*(?:-[^\\[][^-]*)*)-\\[\\1\\]");
 		final Matcher matcher = cutPattern.matcher(newText);
 		final StringBuffer buffer = new StringBuffer();
 		int index = 0;

@@ -23,10 +23,7 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
@@ -153,11 +150,10 @@ public class DialogueController implements Action<ExpertEvent> {
         this.task = taskEvt.task();
         final Offer offer = task.offer();
         final CompositeMessageViewController viewController = MessageType.TASK.newInstance(root, task.client(), null);
-        final ScrollPane task = new ScrollPane(viewController.loadOffer(offer));
-
+        final Pane taskPane = viewController.loadOffer(offer);
         Platform.runLater(() -> {
           children.clear();
-          children.add(task);
+          children.add(taskPane);
           taskFolder.setExpandedPane(taskFolder.getPanes().get(0));
         });
       }
@@ -169,14 +165,16 @@ public class DialogueController implements Action<ExpertEvent> {
   public void accept(TaskInviteCanceledEvent cancel) {
     Platform.runLater(() -> {
       taskView.getChildren().clear();
-      taskViewParent.getChildren().remove(1);
+      final ObservableList<Node> children = taskViewParent.getChildren();
+      if (children.size() > 1)
+        children.remove(1);
     });
   }
 
   public void accept(TaskInviteEvent invite) {
     final HBox box = new HBox();
     VBox.setVgrow(box, Priority.NEVER);
-    box.setPadding(new Insets(0, 10, 0, 10));
+    box.setPadding(new Insets(10,0,0,0));
     final Button decline = new Button("Отказаться");
     final Button accept = new Button("Выполнить");
     final Region placeHolder = new Region();

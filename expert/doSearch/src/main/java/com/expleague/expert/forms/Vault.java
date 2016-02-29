@@ -91,7 +91,7 @@ public class Vault implements Action<ExpertEvent> {
   }
 
   private void addPatch(final Patch patch) {
-    final PatchController controller = new PatchController(patch);
+    final PatchController controller = new PatchController(patch, task);
     try {
       final Node load;
       if (patch instanceof TextPatch)
@@ -102,22 +102,6 @@ public class Vault implements Action<ExpertEvent> {
         load = FXMLLoader.load(getClass().getResource("/forms/patch/link-patch.fxml"), null, null, param -> controller);
       else
         return;
-      load.setOnMouseClicked(event -> {
-        if(event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2 && task != null) {
-          final AnswerViewController editor = task.editor();
-          if (editor != null)
-            editor.insertAtCursor(patch);
-          event.consume();
-        }
-      });
-      load.setOnDragDetected(event -> {
-        final Dragboard db = load.startDragAndDrop(TransferMode.ANY);
-        final ClipboardContent content = new ClipboardContent();
-        content.putString(patch.toMD());
-        db.setContent(content);
-        db.setDragView(load.snapshot(null, null), 50, 50);
-        event.consume();
-      });
       vaultContainer.getChildren().add(0, load);
     }
     catch (IOException e) {
