@@ -8,6 +8,7 @@ import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLException;
 import java.nio.ByteBuffer;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 /**
  * User: solar
@@ -15,6 +16,7 @@ import java.util.function.Consumer;
  * Time: 22:01
  */
 public class SSLHelper {
+  private static final Logger log = Logger.getLogger(SSLHelper.class.getName());
   public SSLHelper(SSLEngine sslEngine) {
     this.sslEngine = sslEngine;
   }
@@ -69,6 +71,7 @@ public class SSLHelper {
           dst.flip();
           src.compact();
           if (dst.limit() > 0) {
+            log.finest(dst.limit() + " bytes " + (incoming ? "received" : "sent"));
             consumer.accept(ByteString.fromByteBuffer(dst));
             dst.clear();
           }

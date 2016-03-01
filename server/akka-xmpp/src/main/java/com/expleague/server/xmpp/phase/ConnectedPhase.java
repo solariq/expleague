@@ -1,6 +1,7 @@
 package com.expleague.server.xmpp.phase;
 
 import akka.actor.ActorRef;
+import com.expleague.model.Delivered;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.UserAgent;
 import com.expleague.server.agents.XMPP;
@@ -77,7 +78,8 @@ public class ConnectedPhase extends XMPPPhase {
       return;
     if (msg.to() != null && jid().bareEq(msg.to())) { // incoming
       answer(msg);
-      sender().tell(new UserAgent.Delivered(msg.id(), jid.resource()), self());
+      if (!(msg instanceof Presence))
+        sender().tell(new Delivered(msg.id(), jid.resource()), self());
     }
     else { // outgoing
       msg.from(jid);
