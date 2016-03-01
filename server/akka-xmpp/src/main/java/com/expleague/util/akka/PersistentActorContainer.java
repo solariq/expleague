@@ -30,8 +30,12 @@ public class PersistentActorContainer extends UntypedPersistentActor {
   }
 
   @Override
-  public void onReceiveCommand(final Object msg) throws Exception {
-    dispatcher.invoke(msg);
+  public void onReceiveCommand(final Object message) throws Exception {
+    if (ActorFailureChecker.checkIfFailure(getClass(), self().path().name(), message)) {
+      return;
+    }
+
+    dispatcher.invoke(message);
   }
 
   @Override

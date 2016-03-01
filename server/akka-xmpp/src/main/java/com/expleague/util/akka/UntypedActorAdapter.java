@@ -22,13 +22,7 @@ public abstract class UntypedActorAdapter extends UntypedActor {
 
   @Override
   public final void onReceive(Object message) throws Exception {
-    if (message instanceof Failure) {
-      final Failure failure = (Failure) message;
-      //noinspection ThrowableResultOfMethodCallIgnored
-      if (failure.exception() != null)
-        log.log(Level.WARNING, "Failure in" + getClass().getName() + "", failure.exception());
-      else
-        log.log(Level.WARNING, failure.toString());
+    if (ActorFailureChecker.checkIfFailure(getClass(), self().path().name(), message)) {
       return;
     }
 

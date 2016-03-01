@@ -10,7 +10,7 @@ import java.util.function.Consumer;
  * @author vpdelta
  */
 public abstract class PersistentActorAdapter extends ActorAdapter<UntypedPersistentActor> {
-  public void persist(final Object event, final Consumer<Object> handler) {
+  public <T> void persist(final T event, final Consumer<? super T> handler) {
     actor.persist(event, new FromJavaConsumer(handler));
   }
 

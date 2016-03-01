@@ -2,6 +2,10 @@ package com.expleague.util.akka;
 
 import akka.actor.Props;
 import akka.actor.UntypedActor;
+import scala.util.Failure;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author vpdelta
@@ -26,6 +30,9 @@ public class ActorContainer extends UntypedActor {
 
   @Override
   public void onReceive(final Object message) throws Exception {
+    if (ActorFailureChecker.checkIfFailure(getClass(), self().path().name(), message)) {
+      return;
+    }
     dispatcher.invoke(message);
   }
 }

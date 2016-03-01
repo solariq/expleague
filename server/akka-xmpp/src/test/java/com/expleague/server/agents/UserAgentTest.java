@@ -1,7 +1,7 @@
 package com.expleague.server.agents;
 
 import akka.actor.ActorRef;
-import akka.actor.Props;
+import com.expleague.model.Delivered;
 import com.expleague.model.Operations;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
@@ -63,7 +63,7 @@ public class UserAgentTest extends ActorSystemTestCase {
       assertEquals("Hello", message.body());
 
       // send delivery ack to jid1
-      userAgentRef1.tell(new UserAgent.Delivered(message.id(), "resource"), getRef());
+      userAgentRef1.tell(new Delivered(message.id(), "resource"), getRef());
       expectNoMsg();
 
       // disconnect

@@ -1,18 +1,18 @@
 package com.expleague.server.agents;
 
 import akka.actor.ActorRef;
-import akka.actor.Props;
 import akka.persistence.RecoveryCompleted;
-import akka.persistence.UntypedPersistentActor;
 import com.expleague.model.Delivered;
 import com.expleague.model.Operations;
+import com.expleague.util.akka.ActorMethod;
+import com.expleague.util.akka.PersistentActorAdapter;
+import com.expleague.util.akka.PersistentActorContainer;
 import com.expleague.util.ios.NotificationsManager;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
 import com.relayrides.pushy.apns.util.TokenUtil;
-import com.spbsu.commons.system.RuntimeUtils;
 import scala.Option;
 import scala.collection.JavaConversions;
 
@@ -24,17 +24,19 @@ import java.util.logging.Logger;
  * Date: 14.12.15
  * Time: 20:40
  */
-public class UserAgent extends UntypedPersistentActor {
+public class UserAgent extends PersistentActorAdapter {
   private static final Logger log = Logger.getLogger(UserAgent.class.getName());
   private final JID bareJid;
   private final Map<JID, Presence> presenceMap = new HashMap<>();
-  private final RuntimeUtils.InvokeDispatcher dispatcher;
   private Set<String> appTokens = new HashSet<>();
 
   public UserAgent(JID jid) {
-    dispatcher = new RuntimeUtils.InvokeDispatcher(getClass(), this::unhandled);
-    XMPP.subscribe(XMPP.jid(), self(), context());
     this.bareJid = jid.bare();
+  }
+
+  @Override
+  protected void init() {
+    XMPP.subscribe(XMPP.jid(), self(), context());
   }
 
   public JID jid() {
@@ -51,6 +53,7 @@ public class UserAgent extends UntypedPersistentActor {
     }
   }
 
+  @ActorMethod
   public void invoke(ConnStatus status) { // connection acquired
     final String resource = status.resource;
     final Option<ActorRef> option = context().child(resource);
@@ -62,7 +65,10 @@ public class UserAgent extends UntypedPersistentActor {
         context().stop(courier);
         invoke(status);
       }
-      else context().actorOf(Props.create(Courier.class, jid().resource(resource), sender()), resource);
+      else context().actorOf(
+        PersistentActorContainer.props(Courier.class, jid().resource(resource), sender()),
+        resource
+      );
 
       presenceMap.values().stream()
           .filter(Presence::available)
@@ -75,6 +81,7 @@ public class UserAgent extends UntypedPersistentActor {
     }
   }
 
+  @ActorMethod
   public void invoke(final Stanza sta) {
     if (!sta.from().bareEq(jid())) { // incoming
       if (sta instanceof Presence) {
@@ -90,6 +97,7 @@ public class UserAgent extends UntypedPersistentActor {
     else toWorld(sta);
   }
 
+  @ActorMethod
   public void invoke(final Delivered delivered) {
     persist(delivered, param -> {});
   }
@@ -119,25 +127,14 @@ public class UserAgent extends UntypedPersistentActor {
   }
 
   @Override
-  public void onReceiveRecover(Object o) throws Exception {
-  }
-
-  @Override
-  public void onReceiveCommand(Object msg) throws Exception {
-    dispatcher.invoke(this, msg);
-  }
-
-  @Override
   public String persistenceId() {
     return bareJid.getAddr();
   }
 
-  public static class Courier extends UntypedPersistentActor {
+  public static class Courier extends PersistentActorAdapter {
     private final JID jid;
     private final ActorRef connection;
     private Queue<Stanza> deliveryQueue = new ArrayDeque<>();
-    private static final RuntimeUtils.InvokeDispatcher dispatcher = new RuntimeUtils.InvokeDispatcher(Courier.class, (u) -> {});
-
 
     public Courier(JID jid, ActorRef connection) {
       this.jid = jid;
@@ -160,6 +157,7 @@ public class UserAgent extends UntypedPersistentActor {
       }
     }
 
+    @ActorMethod
     public void invoke(final Delivered delivered) {
       final Stanza peek = deliveryQueue.peek();
       if (!peek.id().equals(delivered.id())) {
@@ -174,6 +172,7 @@ public class UserAgent extends UntypedPersistentActor {
       context().parent().forward(delivered, context());
     }
 
+    @ActorMethod
     public void invoke(final Stanza stanza) {
       if (stanza instanceof Presence) {
         connection.tell(stanza, self());
@@ -182,11 +181,6 @@ public class UserAgent extends UntypedPersistentActor {
       if (deliveryQueue.isEmpty())
         connection.tell(stanza, self());
       deliveryQueue.add(stanza);
-    }
-
-    @Override
-    public void onReceiveCommand(Object o) throws Exception {
-      dispatcher.invoke(this, o);
     }
 
     @Override
