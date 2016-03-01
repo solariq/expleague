@@ -172,6 +172,9 @@ class HistoryViewController: UITableViewController {
         }
     }
     
+    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 38
+    }
     override func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let label = UILabel()
         label.textColor = UIColor.lightGrayColor()
@@ -188,6 +191,8 @@ class HistoryViewController: UITableViewController {
         default:
             label.text = ""
         }
+        view.frame = CGRectMake(0, 0, tableView.frame.width, 38)
+        view.backgroundColor = UIColor.whiteColor()
         return view
     }
     
