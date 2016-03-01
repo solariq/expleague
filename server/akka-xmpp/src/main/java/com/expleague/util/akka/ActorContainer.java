@@ -2,16 +2,12 @@ package com.expleague.util.akka;
 
 import akka.actor.Props;
 import akka.actor.UntypedActor;
-import scala.util.Failure;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author vpdelta
  */
 public class ActorContainer extends UntypedActor {
-  private final ActorInvokeDispatcher dispatcher;
+  private final ActorInvokeDispatcher<ActorAdapter> dispatcher;
 
   public static Props props(final Class<? extends ActorAdapter> adapter, final Object... args) {
     return Props.create(ActorContainer.class, new Object[]{new AdapterProps[]{AdapterProps.create(adapter, args)}});
@@ -25,14 +21,19 @@ public class ActorContainer extends UntypedActor {
   }
 
   public ActorContainer(AdapterProps[] props) {
-    dispatcher = new ActorInvokeDispatcher(this, props, this::unhandled);
+    dispatcher = new ActorInvokeDispatcher<>(this, props, this::unhandled);
   }
 
   @Override
   public void onReceive(final Object message) throws Exception {
-    if (ActorFailureChecker.checkIfFailure(getClass(), self().path().name(), message)) {
+    if (ActorFailureChecker.checkIfFailure(getAdapterInstance().getClass(), self().path().name(), message)) {
       return;
     }
+
     dispatcher.invoke(message);
+  }
+
+  private ActorAdapter getAdapterInstance() {
+    return dispatcher.getDispatchSequence().get(0).getInstance();
   }
 }
