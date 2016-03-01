@@ -98,7 +98,7 @@ public class UserAgentTest extends ActorSystemTestCase {
   }
 
   @Test
-  public void testXmppRegistrationOfOverride() throws Exception {
+  public void testUserAgentWithComposition() throws Exception {
     new TestKit()  {{
       final JID jid1 = JID.parse("login1");
       final JID jid2 = JID.parse("login2");
@@ -124,6 +124,34 @@ public class UserAgentTest extends ActorSystemTestCase {
 
       actorRef.tell("Hello", getRef());
       expectMsgEquals("Reply to Hello");
+    }};
+  }
+
+  @Test
+  public void testUserAgentWithOverride() throws Exception {
+    new TestKit()  {{
+      final JID jid1 = JID.parse("login1");
+      final JID jid2 = JID.parse("login2");
+
+      class ActorOverrideTester extends ActorAdapter {
+        @ActorMethod
+        public void reply(final UserAgent.ConnStatus status) {
+          sender().tell("Get status from " + status.resource, self());
+          unhandled(status);
+        }
+      }
+
+      final ActorRef actorRef = registerOverride(jid1, new ActorOverrideTester());
+
+      // register test actor as connector
+      actorRef.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
+      expectMsgEquals("Get status from resource");
+
+      // send message to jid1
+      final Iq<Operations.Ok> iq = Iq.create(jid1, Iq.IqType.GET, new Operations.Ok());
+      iq.from(jid2);
+      actorRef.tell(iq, getRef());
+      expectMsgEquals(iq);
     }};
   }
 }

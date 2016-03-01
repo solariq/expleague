@@ -29,11 +29,12 @@ public class ActorInvokeDispatcher<A extends ActorAdapter> {
         final Constructor<?> constructor = clazz.getDeclaredConstructors()[0];
         constructor.setAccessible(true);
         final A instance = (A) constructor.newInstance(Arrays.copyOf(p.getArgs(), constructor.getParameterCount()));
-        instance.injectActor(actor);
         final Dispatcher dispatcher = new Dispatcher(
           instance,
           new RuntimeUtils.InvokeDispatcher(clazz, currentUnhandledCallback, annotation)
         );
+        instance.injectActor(actor);
+        instance.injectUnhandled(currentUnhandledCallback);
         dispatchSequence.add(dispatcher);
         currentUnhandledCallback = dispatcher;
       } catch (Exception e) {
