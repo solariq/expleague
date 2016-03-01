@@ -5,6 +5,7 @@ import akka.testkit.JavaTestKit;
 import akka.util.Timeout;
 import com.expleague.server.ExpLeagueServerTestCase;
 import com.expleague.util.akka.ActorAdapter;
+import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.AkkaTools;
 import com.expleague.xmpp.JID;
 import com.spbsu.commons.io.StreamTools;
@@ -117,7 +118,7 @@ public class ActorSystemTestCase {
     private final ActorAdapter actorMock;
 
     public UntypedActorMock(final ActorAdapter dispatchTrait) {
-      dispatcher = new RuntimeUtils.InvokeDispatcher(dispatchTrait.getClass(), dispatchTrait::unhandled);
+      dispatcher = new RuntimeUtils.InvokeDispatcher(dispatchTrait.getClass(), dispatchTrait::unhandled, ActorMethod.class);
       try {
         actorMock = dispatchTrait;
         actorMock.injectActor(this);
