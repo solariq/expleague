@@ -49,9 +49,9 @@ public class Stanza extends Item {
   public JID from() {
     return from;
   }
-  public Stanza from(JID jid) {
+  public <S extends Stanza> S from(JID jid) {
     this.from = jid;
-    return this;
+    return (S) this;
   }
 
   public JID to() {

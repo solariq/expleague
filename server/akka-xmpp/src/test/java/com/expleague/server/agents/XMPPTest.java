@@ -1,17 +1,11 @@
 package com.expleague.server.agents;
 
 import akka.actor.*;
-import akka.pattern.AskableActorSelection;
-import akka.testkit.JavaTestKit;
-import akka.util.Timeout;
-import com.expleague.util.akka.AkkaTools;
+import com.expleague.util.akka.ActorAdapter;
+import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.JID;
 import org.junit.Test;
-import scala.concurrent.Await;
-import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
-
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -59,6 +53,21 @@ public class XMPPTest extends ActorSystemTestCase {
           assertEquals(jid, XMPP.jid(expectActorRef()));
         }
       };
+    }};
+  }
+
+  @Test
+  public void testXmppRegistrationOfMock() throws Exception {
+    new TestKit()  {{
+      final JID jid = JID.parse("login");
+      final ActorRef actorRef = register(jid, new ActorAdapter() {
+        @ActorMethod
+        public void reply(final String xxx) {
+          sender().tell("Reply to " + xxx, self());
+        }
+      });
+      actorRef.tell("Hello", getRef());
+      expectMsgEquals("Reply to Hello");
     }};
   }
 

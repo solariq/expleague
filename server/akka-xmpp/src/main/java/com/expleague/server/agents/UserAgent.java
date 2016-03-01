@@ -3,8 +3,10 @@ package com.expleague.server.agents;
 import akka.actor.ActorRef;
 import akka.persistence.SaveSnapshotFailure;
 import akka.persistence.SaveSnapshotSuccess;
-import akka.persistence.UntypedPersistentActor;
 import com.expleague.model.Operations;
+import com.expleague.util.akka.ActorMethod;
+import com.expleague.util.akka.ActorRecover;
+import com.expleague.util.akka.PersistentActorAdapter;
 import com.expleague.util.ios.NotificationsManager;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Iq;
@@ -12,7 +14,6 @@ import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
 import com.relayrides.pushy.apns.util.TokenUtil;
-import com.spbsu.commons.system.RuntimeUtils;
 import com.spbsu.commons.util.MultiMap;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,10 +27,8 @@ import java.util.logging.Logger;
  * Date: 14.12.15
  * Time: 20:40
  */
-public class UserAgent extends UntypedPersistentActor {
+public class UserAgent extends PersistentActorAdapter {
   private static final Logger log = Logger.getLogger(UserAgent.class.getName());
-
-  private final RuntimeUtils.InvokeDispatcher dispatcher;
 
   private final JID bareJid;
 
@@ -39,7 +38,6 @@ public class UserAgent extends UntypedPersistentActor {
   private final NotificationController notificationController;
 
   public UserAgent(JID jid) {
-    this.dispatcher = new RuntimeUtils.InvokeDispatcher(getClass(), this::unhandled);
     this.bareJid = jid.bare();
     this.messagesStash = new MessagesStash(this);
     this.connectionManager = new ConnectionManager(this);
@@ -47,6 +45,10 @@ public class UserAgent extends UntypedPersistentActor {
     this.notificationController = new NotificationController();
 
     log.fine("User agent in created for " + bareJid);
+  }
+
+  @Override
+  protected void init() {
     XMPP.subscribe(XMPP.jid(), self(), context());
   }
 
@@ -54,6 +56,7 @@ public class UserAgent extends UntypedPersistentActor {
     return bareJid;
   }
 
+  @ActorMethod
   public void invoke(ConnStatus status) { // connection acquired
     log.fine("User agent " + bareJid + " received " + status);
 
@@ -71,6 +74,7 @@ public class UserAgent extends UntypedPersistentActor {
     }
   }
 
+  @ActorMethod
   public void invoke(final Presence presence) {
     log.fine("User agent " + bareJid + " received presence " + presence.from() + ": " + presence.available());
 
@@ -84,6 +88,7 @@ public class UserAgent extends UntypedPersistentActor {
     }
   }
 
+  @ActorMethod
   public void invoke(final Iq iq) {
     log.fine("User agent " + bareJid + " received iq " + iq.from() + ": " + iq.get());
 
@@ -95,6 +100,7 @@ public class UserAgent extends UntypedPersistentActor {
     }
   }
 
+  @ActorMethod
   public void invoke(final Message msg) {
     log.fine("User agent " + bareJid + " received message " + msg.from() + ": " + msg.id());
 
@@ -121,6 +127,7 @@ public class UserAgent extends UntypedPersistentActor {
     return stanza -> recipient.tell(stanza, self());
   }
 
+  @ActorMethod
   public void invoke(final Delivered delivered) {
     messagesStash.persist(delivered);
   }
@@ -145,7 +152,7 @@ public class UserAgent extends UntypedPersistentActor {
     }
   }
 
-  @Override
+  @ActorRecover
   public void onReceiveRecover(Object o) throws Exception {
     messagesStash.onReceiveRecover(o);
     if (o instanceof Message) {
@@ -154,16 +161,12 @@ public class UserAgent extends UntypedPersistentActor {
   }
 
   @SuppressWarnings("UnusedParameters")
+  @ActorMethod
   public void invoke(SaveSnapshotSuccess sss) {}
 
+  @ActorMethod
   public void invoke(SaveSnapshotFailure ssf) {
     log.warning("Snapshot failed:" + ssf);
-  }
-
-  @Override
-  public void onReceiveCommand(Object msg) throws Exception {
-    // todo: shouldn't there be logging similar to UntypedActorAdapter's?
-    dispatcher.invoke(this, msg);
   }
 
   @Override
@@ -236,7 +239,7 @@ public class UserAgent extends UntypedPersistentActor {
     }
 
     public void persist(Message message) {
-      userAgent.persist(message, messages::add);
+      userAgent.persist(message, m -> messages.add(message));
     }
 
     public void persist(Delivered delivered) {

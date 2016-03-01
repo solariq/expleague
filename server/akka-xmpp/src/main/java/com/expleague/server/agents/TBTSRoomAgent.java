@@ -8,8 +8,9 @@ import com.expleague.model.Operations.Done;
 import com.expleague.model.Operations.Start;
 import com.expleague.server.ExpertManager;
 import com.expleague.server.dao.Archive;
+import com.expleague.util.akka.ActorAdapter;
+import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.AkkaTools;
-import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Iq;
@@ -17,6 +18,8 @@ import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Message.MessageType;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
+import com.google.common.annotations.VisibleForTesting;
+import com.spbsu.commons.func.Functions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,116 +32,146 @@ import java.util.stream.Collectors;
  * Time: 13:18
  */
 @SuppressWarnings("UnusedParameters")
-public class TBTSRoomAgent extends UntypedActorAdapter {
+public class TBTSRoomAgent extends ActorAdapter {
   private final List<Item> snapshot = new ArrayList<>();
 
-  private final Map<JID, Presence.Status> presence = new HashMap<>();
   private final JID jid;
   private final Status status = new Status();
+  private final PresenceTracker presenceTracker = new PresenceTracker();
 
   public TBTSRoomAgent(JID jid) {
     this.jid = jid.bare();
-    Archive.instance().visitMessages(jid.local(), new Archive.MessageVisitor() {
-      @Override
-      public boolean accept(String authorId, CharSequence message, long ts) {
-        final Item item = Item.create(message);
-        snapshot.add(item);
-        if (item instanceof Stanza)
-          status.accept((Stanza)item);
-        return true;
+  }
+
+  @Override
+  protected void init() {
+    Archive.instance().visitMessages(jid.local(), (authorId, message, ts) -> {
+      final Item item = Item.create(message);
+      snapshot.add(item);
+      if (item instanceof Stanza) {
+        status.accept((Stanza)item);
       }
+      return true;
     });
-    if (snapshot.isEmpty())
+
+    if (snapshot.isEmpty()) {
       invoke(new Message(jid, null, MessageType.GROUP_CHAT, "Welcome to room " + jid));
+    }
   }
 
+  @ActorMethod
   public void invoke(Operations.Resume resume) {
-    if (status.isOpen())
-      LaborExchange.reference(context()).tell(status.offer(), self());
+    if (status.isOpen()) {
+      tellLaborExchange(status.offer());
+    }
   }
 
+  @ActorMethod
   public void invoke(Message msg) {
-    if (msg.type() == MessageType.GROUP_CHAT && status.owner() != null && !status.isParticipant(msg.from())) {
-      final Message message = new Message(jid, msg.from(), MessageType.GROUP_CHAT, "Сообщение от " + msg.from() + " не доставленно. Вы не являетесь участником задания! Известные участники: "
-          + status.participants.stream().map(JID::toString).collect(Collectors.joining(", ")) + ".");
+    final JID owner = status.owner();
+    final JID from = msg.from();
+
+    if (msg.type() == MessageType.GROUP_CHAT && owner != null && !status.isParticipant(from)) {
+      final Message message = new Message(
+        jid,
+        from,
+        MessageType.GROUP_CHAT,
+        "Сообщение от " + from + " не доставленно. Вы не являетесь участником задания! Известные участники: " + status.participants.stream().map(JID::toString).collect(Collectors.joining(", ")) + "."
+      );
       message.append(msg);
       XMPP.send(message, context());
       return;
     }
 
+    final boolean messageFromOwner = from.bareEq(owner);
     if (msg.has(Start.class) || msg.has(Operations.Resume.class)) {
-      enterRoom(msg.from());
-      XMPP.send(new Message(jid, status.owner(), msg.get(Operations.Command.class), ExpertManager.instance().profile(msg.from().bare())), context());
+      enterRoom(from);
+      XMPP.send(new Message(jid, owner, msg.get(Operations.Command.class), ExpertManager.instance().profile(from.bare())), context());
     }
     else if (msg.has(Cancel.class) || msg.has(Done.class)) {
-      if (msg.from().bareEq(status.owner())) {
-        LaborExchange.reference(context()).tell(msg.get(Operations.Command.class), self());
+      if (messageFromOwner) {
+        tellLaborExchange(msg.get(Operations.Command.class));
       }
       else if (msg.has(Cancel.class)) {
-        XMPP.send(new Message(jid, status.owner(), msg.get(Operations.Command.class), ExpertManager.instance().profile(msg.from().bare())), context());
+        XMPP.send(new Message(jid, owner, msg.get(Operations.Command.class), ExpertManager.instance().profile(from.bare())), context());
       }
     }
-    else if (!msg.from().bareEq(status.owner()) && msg.body().startsWith("{\"type\":\"pageVisited\"")) {
-      XMPP.send(new Message(jid, status.owner(), msg.body()), context());
+    else if (!messageFromOwner && msg.body().startsWith("{\"type\":\"pageVisited\"")) {
+      XMPP.send(new Message(jid, owner, msg.body()), context());
     }
+
     log(msg);
 
-    if (msg.from().bareEq(status.owner()) && !status.isOpen()) {
+    if (messageFromOwner && !status.isOpen()) {
       final Offer offer = status.offer();
       if (offer != null) {
         invoke(new Message(XMPP.jid(), jid, new Operations.Create(), offer));
-        LaborExchange.reference(context()).tell(offer.copy(), self());
+        tellLaborExchange(offer.copy());
       }
     }
-    if (msg.type() == MessageType.GROUP_CHAT)
+
+    if (msg.type() == MessageType.GROUP_CHAT) {
       broadcast(msg);
+    }
   }
 
+  private void tellLaborExchange(final Object message) {
+    LaborExchange.reference(context()).tell(message, self());
+  }
+
+  @ActorMethod
   public void invoke(Presence presence) {
-    if (status.owner() == null)
+    if (status.owner() == null) {
       enterRoom(presence.from());
-    else if (!status.isParticipant(presence.from()))
+    }
+    else if (!status.isParticipant(presence.from())) {
       return;
-    final JID from = presence.from();
-    final Presence.Status currentStatus = this.presence.get(from);
-    if (presence.status().equals(currentStatus))
+    }
+
+    if (!presenceTracker.updatePresence(presence)) {
       return;
-    this.presence.put(from, presence.status());
+    }
+
     log(presence);
     broadcast(presence);
   }
 
+  @ActorMethod
   public void invoke(Iq command) {
     log(command);
     XMPP.send(Iq.answer(command), context());
-    if (command.type() == Iq.IqType.SET)
+    if (command.type() == Iq.IqType.SET) {
       XMPP.send(new Message(jid, command.from(), "Room set up and unlocked."), context());
+    }
+    // todo: why do we duplicate accept here? it is already called inside of log()
     status.accept(command);
   }
 
   private void broadcast(Stanza stanza) {
-    for (final JID jid : status.participants) {
-      if (jid.bareEq(stanza.from()))
-        continue;
-
-      final Stanza copy = stanza.copy();
-      copy.to(jid);
-      copy.from(roomAlias(stanza.from()));
-      XMPP.send(copy, context());
-    }
+    status.participants.stream()
+      .filter(jid -> !jid.bareEq(stanza.from()))
+      .forEach(jid -> XMPP.send(copyFromRoomAlias(stanza, jid), context()));
   }
 
   private void enterRoom(JID jid) {
-    if (jid.bareEq(this.jid))
+    if (jid.bareEq(this.jid)) {
       return;
-    if (!status.isParticipant(jid) || status.isWorker(jid)) {
-      snapshot.stream().filter(s -> s instanceof Message && ((Message)s).type() == MessageType.GROUP_CHAT).map(s -> (Message)s).forEach(message -> {
-        final Message copy = message.copy();
-        copy.to(jid);
-        copy.from(roomAlias(message.from()));
-        XMPP.send(copy, context());
-      });
     }
+
+    if (status.isParticipant(jid) && !status.isWorker(jid)) {
+      return;
+    }
+
+    snapshot.stream()
+      .flatMap(Functions.instancesOf(Message.class))
+      .filter(message -> message.type() == MessageType.GROUP_CHAT)
+      .forEach(message -> XMPP.send(copyFromRoomAlias(message, jid), context()));
+  }
+
+  private <S extends Stanza> S copyFromRoomAlias(final S stanza, final JID to) {
+    return stanza.<S>copy()
+      .to(to)
+      .from(roomAlias(stanza.from()));
   }
 
   @NotNull
@@ -152,6 +185,7 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
     Archive.instance().log(jid.local(), stanza.from().toString(), stanza.xmlString());
   }
 
+  @ActorMethod
   public void invoke(Class<?> c) {
     if (Status.class.equals(c)) {
       sender().tell(status.copy(), self());
@@ -196,7 +230,8 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
       return jid.local().isEmpty() || participants.contains(jid.bare());
     }
 
-    private void accept(Stanza item) {
+    @VisibleForTesting
+    void accept(Stanza item) {
       if (item instanceof Message) {
         final Message msg = (Message) item;
         final JID bareSender = msg.from().bare();
@@ -263,6 +298,15 @@ public class TBTSRoomAgent extends UntypedActorAdapter {
 
     public Status copy() {
       return new Status(owner, offer, lastWorker, open, lastActive, participants);
+    }
+  }
+
+  // todo: look like XMPP.PresenceTracker but holds Statuses as values
+  public static class PresenceTracker {
+    private final Map<JID, Presence.Status> presenceMap = new HashMap<>();
+
+    public boolean updatePresence(final Presence presence) {
+      return !presence.status().equals(presenceMap.put(presence.from(), presence.status()));
     }
   }
 }

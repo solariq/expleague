@@ -4,6 +4,7 @@ import com.expleague.server.JabberUser;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.xmpp.control.XMPPFeature;
 import com.expleague.xmpp.control.sasl.plain.PlainServer;
+import com.spbsu.commons.func.Functions;
 
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -14,6 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * User: solar
@@ -50,9 +52,9 @@ public class Mechanisms extends XMPPFeature {
     public SaslServer unmarshal(String mechanism) {
       try {
         final CallbackHandler callbackHandler = callbacks -> {
-          final Optional<NameCallback> nameO = Arrays.asList(callbacks).stream().filter(callback -> callback instanceof NameCallback).map(a -> (NameCallback) a).findAny();
-          final Optional<PasswordCallback> passwdO = Arrays.asList(callbacks).stream().filter(callback -> callback instanceof PasswordCallback).map(a -> (PasswordCallback) a).findAny();
-          final Optional<AuthorizeCallback> authO = Arrays.asList(callbacks).stream().filter(callback -> callback instanceof AuthorizeCallback).map(a -> (AuthorizeCallback) a).findAny();
+          final Optional<NameCallback> nameO = Stream.of(callbacks).flatMap(Functions.instancesOf(NameCallback.class)).findAny();
+          final Optional<PasswordCallback> passwdO = Stream.of(callbacks).flatMap(Functions.instancesOf(PasswordCallback.class)).findAny();
+          final Optional<AuthorizeCallback> authO = Stream.of(callbacks).flatMap(Functions.instancesOf(AuthorizeCallback.class)).findAny();
           if (passwdO.isPresent() && nameO.isPresent()) {
             final PasswordCallback passwd = passwdO.get();
             final JabberUser user = ExpLeagueServer.roster().byName(nameO.get().getDefaultName());

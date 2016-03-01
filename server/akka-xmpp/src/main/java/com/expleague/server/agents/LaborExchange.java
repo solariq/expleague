@@ -18,6 +18,7 @@ import com.expleague.util.akka.AkkaTools;
 import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Presence;
+import scala.Option;
 import scala.collection.JavaConversions;
 import scala.concurrent.duration.Duration;
 
@@ -32,6 +33,9 @@ import java.util.logging.Logger;
  */
 public class LaborExchange extends UntypedPersistentActor {
   private static final Logger log = Logger.getLogger(LaborExchange.class.getName());
+
+  public static final String EXPERTS_ACTOR_NAME = "experts";
+
   private final Map<String, ActorRef> openPositions = new HashMap<>();
   public LaborExchange() {
     XMPP.send(new Presence(XMPP.jid(), false, new ServiceStatus(0)), context());
@@ -40,19 +44,24 @@ public class LaborExchange extends UntypedPersistentActor {
   @Override
   public void preStart() throws Exception {
     super.preStart();
-    AkkaTools.getOrCreate("experts", context(), () -> Props.create(Experts.class));
+    AkkaTools.getOrCreate(EXPERTS_ACTOR_NAME, context(), () -> Props.create(Experts.class));
   }
 
   public void invoke(Offer offer) {
-    if (openPositions.containsKey(offer.room().local()))
+    final String roomName = offer.room().local();
+    if (openPositions.containsKey(roomName)) {
+      log.fine("Room " + roomName + " is already open");
       return;
-    log.fine("Labor exchange received offer " + offer.room().local() + " looking for broker");
+    }
+
+    log.fine("Labor exchange received offer " + roomName + " looking for broker");
     final Collection<ActorRef> children = JavaConversions.asJavaCollection(context().children());
     for (final ActorRef ref : children) {
-      if (!"experts".equals(ref.path().name())) {
+      if (!isExpertActorRef(ref)) {
         if (AkkaTools.ask(ref, offer) instanceof Operations.Ok) {
-          openPositions.put(offer.room().local(), ref);
-          saveSnapshot(new ArrayList<>(openPositions.keySet()));
+          openPositions.put(roomName, ref);
+          saveSnapshot();
+          // todo: multiple exits with similar logic
           return;
         }
       }
@@ -61,24 +70,25 @@ public class LaborExchange extends UntypedPersistentActor {
     final Object answer = AkkaTools.ask(ref, offer);
     if (!(answer instanceof Operations.Ok))
       throw new RuntimeException("Unable to create alive broker! Received: " + answer);
-    openPositions.put(offer.room().local(), ref);
-    saveSnapshot(new ArrayList<>(openPositions.keySet()));
+    openPositions.put(roomName, ref);
+    saveSnapshot();
   }
 
   public void invoke(ActorRef expertAgent) {
-    JavaConversions.asJavaCollection(context().children()).forEach(
-        ref -> {
-          if(!"experts".equals(ref.path().name()))
-            ref.forward(expertAgent, context());
-        }
-    );
+    JavaConversions.asJavaCollection(context().children()).stream()
+      .filter(LaborExchange::isExpertActorRef)
+      .forEach(ref -> ref.forward(expertAgent, context()));
+  }
+
+  private static boolean isExpertActorRef(final ActorRef ref) {
+    return EXPERTS_ACTOR_NAME.equals(ref.path().name());
   }
 
   public void invoke(Operations.Done done) {
     final Optional<Map.Entry<String, ActorRef>> first = openPositions.entrySet().stream().filter(entry -> entry.getValue().equals(sender())).findFirst();
     if (first.isPresent()) {
       openPositions.remove(first.get().getKey());
-      saveSnapshot(new ArrayList<>(openPositions.keySet()));
+      saveSnapshot();
     }
     else {
       log.warning("Was unable to find broker, that has finished his job: " + sender().path() + "!");
@@ -88,8 +98,13 @@ public class LaborExchange extends UntypedPersistentActor {
   public void invoke(Operations.Cancel cancel) {
     final JID jid = XMPP.jid(sender());
     final ActorRef remove = openPositions.remove(jid.local());
-    if (remove != null)
+    if (remove != null) {
       remove.forward(cancel, context());
+    }
+    saveSnapshot();
+  }
+
+  private void saveSnapshot() {
     saveSnapshot(new ArrayList<>(openPositions.keySet()));
   }
 
@@ -108,6 +123,7 @@ public class LaborExchange extends UntypedPersistentActor {
 
   @Override
   public void onReceiveCommand(Object o) throws Exception {
+    // todo: failure handling
     dispatcher.invoke(this, o);
   }
 
@@ -163,13 +179,19 @@ public class LaborExchange extends UntypedPersistentActor {
 
     public void invoke(Pair<Object, JID> whisper) {
       final ActorRef ref;
-      scala.Option<ActorRef> child = context().child(whisper.second.bare().toString());
-      if (child.isEmpty())
-        ref = context().actorOf(Props.create(ExpertRole.class), whisper.second.bare().toString());
-      else
+      final String name = whisper.second.bare().toString();
+      final Option<ActorRef> child = context().child(name);
+      if (child.isEmpty()) {
+        ref = context().actorOf(Props.create(ExpertRole.class), name);
+      } else {
         ref = child.get();
-      if (whisper.first != null)
+      }
+      if (whisper.first != null) {
         ref.forward(whisper.first, context());
+      }
+      else {
+        // todo: do we need to spawn child anyway?
+      }
     }
 
     public void invoke(Timeout to) {
@@ -182,6 +204,7 @@ public class LaborExchange extends UntypedPersistentActor {
       if (stateTimeout != null)
         return;
       if (sentCount != readyCount) {
+        // todo: don't we need to check actual experts?
         sentCount = readyCount;
         XMPP.send(new Presence(XMPP.jid(), readyCount != 0, new ServiceStatus(readyCount)), context());
         stateTimeout = AkkaTools.scheduleTimeout(context(), Duration.apply(10, TimeUnit.SECONDS), self());

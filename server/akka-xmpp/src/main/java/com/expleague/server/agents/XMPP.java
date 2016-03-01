@@ -6,11 +6,14 @@ import akka.actor.ActorSelection;
 import akka.actor.Props;
 import akka.util.Timeout;
 import com.expleague.server.ExpLeagueServer;
+import com.expleague.util.akka.ActorContainer;
 import com.expleague.util.akka.AkkaTools;
+import com.expleague.util.akka.PersistentActorContainer;
 import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
+import com.google.common.annotations.VisibleForTesting;
 import org.jetbrains.annotations.NotNull;
 import scala.Option;
 import scala.collection.JavaConversions;
@@ -108,18 +111,19 @@ public class XMPP extends UntypedActorAdapter {
       return child.get();
     }
 
-    return context().actorOf(Props.create(getActorClass(jid), jid), id);
+    return context().actorOf(newActorProps(jid), id);
   }
 
   private static ActorSelection getXmppActorSelection(final ActorContext context) {
     return context.actorSelection(XMPP_ACTOR_PATH);
   }
 
+  @VisibleForTesting
   @NotNull
-  private static Class<?> getActorClass(final JID jid) {
+  protected Props newActorProps(final JID jid) {
     return jid.domain().startsWith("muc.")
-      ? TBTSRoomAgent.class
-      : UserAgent.class;
+      ? ActorContainer.props(TBTSRoomAgent.class, jid)
+      : PersistentActorContainer.props(UserAgent.class, jid);
   }
 
   public static class PresenceTracker {

@@ -206,6 +206,13 @@ public class Message extends Stanza {
     @XmlAttribute(name = "lang", namespace = "http://www.w3.org/XML/1998/namespace")
     protected String lang;
 
+    public Subject() {
+    }
+
+    public Subject(final String value) {
+      this.value = value;
+    }
+
     public String value() {
       return value;
     }
