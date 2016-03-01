@@ -106,7 +106,7 @@ public class CompositeMessageViewController {
 //        label.setPrefRowCount(value);
         final double height = value * label.getFont().getSize() * 1.3333;
         final double width = value > 1 ? trueWidth.get() - 30 : labelModel2.getLayoutBounds().getWidth();
-        label.resize(width, height);
+        label.resize(width + 4, height + 4);
       }
     });
     labelModel.setText(text);

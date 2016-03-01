@@ -347,20 +347,6 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
       return "";
     final BufferedImage image = SwingFXUtils.fromFXImage(content, null);
 
-//// Remove alpha-channel from buffered image:
-//    final BufferedImage imageRGB =
-//        new BufferedImage(
-//            image.getWidth(),
-//            image.getHeight(),
-//            BufferedImage.OPAQUE);
-//
-//    final Graphics2D graphics = imageRGB.createGraphics();
-//
-//    graphics.setBackground(Color.WHITE);
-//    graphics.setColor(Color.WHITE);
-//    graphics.drawImage(image, 0, 0, null);
-//    graphics.dispose();
-//
     try {
       final SSLContextBuilder ctxtBuilder = new SSLContextBuilder();
       ctxtBuilder.loadTrustMaterial(null, (x509Certificates, s) -> true);

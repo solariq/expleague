@@ -25,9 +25,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -39,7 +37,7 @@ import java.util.logging.Logger;
  * Time: 17:57
  */
 @XmlTransient
-public class Item implements Serializable, Cloneable {
+public class Item implements Cloneable {
   private static final Logger log = Logger.getLogger(Item.class.getName());
   public static final String XMPP_START = "<stream:stream xmlns:stream=\"http://etherx.jabber.org/streams\" version=\"1.0\" xmlns=\"jabber:client\" xml:lang=\"en\" xmlns:xml=\"http://www.w3.org/XML/1998/namespace\">";
   private static ThreadLocal<XmlOutputter> tlWriter = new ThreadLocal<XmlOutputter>() {
@@ -212,14 +210,4 @@ public class Item implements Serializable, Cloneable {
       return result;
     }
   }
-
-//  private void writeObject(ObjectOutputStream out) throws IOException {
-//    out.writeUTF(xmlString());
-//  }
-//  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-//    final String xml = in.readUTF();
-//
-//  }
-//  private void readObjectNoData() throws ObjectStreamException {
-//  }
 }

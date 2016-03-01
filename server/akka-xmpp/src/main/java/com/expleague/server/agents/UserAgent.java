@@ -1,24 +1,22 @@
 package com.expleague.server.agents;
 
 import akka.actor.ActorRef;
-import akka.persistence.SaveSnapshotFailure;
-import akka.persistence.SaveSnapshotSuccess;
+import akka.actor.Props;
+import akka.persistence.RecoveryCompleted;
+import akka.persistence.UntypedPersistentActor;
+import com.expleague.model.Delivered;
 import com.expleague.model.Operations;
-import com.expleague.util.akka.ActorMethod;
-import com.expleague.util.akka.PersistentActorAdapter;
 import com.expleague.util.ios.NotificationsManager;
 import com.expleague.xmpp.JID;
-import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
 import com.relayrides.pushy.apns.util.TokenUtil;
-import com.spbsu.commons.util.MultiMap;
-import org.jetbrains.annotations.NotNull;
+import com.spbsu.commons.system.RuntimeUtils;
+import scala.Option;
+import scala.collection.JavaConversions;
 
-import java.io.Serializable;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 /**
@@ -26,243 +24,21 @@ import java.util.logging.Logger;
  * Date: 14.12.15
  * Time: 20:40
  */
-public class UserAgent extends PersistentActorAdapter {
+public class UserAgent extends UntypedPersistentActor {
   private static final Logger log = Logger.getLogger(UserAgent.class.getName());
-
   private final JID bareJid;
-
-  private final MessagesStash messagesStash;
-  private final ConnectionManager connectionManager;
-  private final PresenceTracker presenceTracker;
-  private final NotificationController notificationController;
+  private final Map<JID, Presence> presenceMap = new HashMap<>();
+  private final RuntimeUtils.InvokeDispatcher dispatcher;
+  private Set<String> appTokens = new HashSet<>();
 
   public UserAgent(JID jid) {
-    this.bareJid = jid.bare();
-    this.messagesStash = new MessagesStash(this);
-    this.connectionManager = new ConnectionManager(this);
-    this.presenceTracker = new PresenceTracker();
-    this.notificationController = new NotificationController();
-
-    log.fine("User agent in created for " + bareJid);
-  }
-
-  @Override
-  protected void init() {
+    dispatcher = new RuntimeUtils.InvokeDispatcher(getClass(), this::unhandled);
     XMPP.subscribe(XMPP.jid(), self(), context());
+    this.bareJid = jid.bare();
   }
 
   public JID jid() {
     return bareJid;
-  }
-
-  @ActorMethod
-  public void invoke(ConnStatus status) { // connection acquired
-    log.fine("User agent " + bareJid + " received " + status);
-
-    final ActorRef sender = sender();
-    final String resource = status.resource;
-    if (status.connected) {
-      connectionManager.connected(resource, sender);
-      messagesStash.forAwaitingDelivery(status, tellTo(sender));
-      presenceTracker.forAvailable(tellTo(sender));
-    }
-    else {
-      connectionManager.disconnected(resource, sender);
-      // todo: should it just be a call to out()?
-      invoke(notAvailable(resource));
-    }
-  }
-
-  @ActorMethod
-  public void invoke(final Presence presence) {
-    log.fine("User agent " + bareJid + " received presence " + presence.from() + ": " + presence.available());
-
-    if (isIncoming(presence)) {
-      if (presenceTracker.updatePresence(presence)) {
-        in(presence);
-      }
-    }
-    else {
-      out(presence);
-    }
-  }
-
-  @ActorMethod
-  public void invoke(final Iq iq) {
-    log.fine("User agent " + bareJid + " received iq " + iq.from() + ": " + iq.get());
-
-    if (isIncoming(iq)) {
-      in(iq);
-    }
-    else {
-      XMPP.send(iq, context());
-    }
-  }
-
-  @ActorMethod
-  public void invoke(final Message msg) {
-    log.fine("User agent " + bareJid + " received message " + msg.from() + ": " + msg.id());
-
-    messagesStash.persist(msg);
-    if (isIncoming(msg)) {
-      in(msg);
-    }
-    else {
-      out(msg);
-    }
-  }
-
-  private boolean isIncoming(final Stanza stanza) {
-    return !jid().bareEq(stanza.from());
-  }
-
-  @NotNull
-  private Presence notAvailable(final String resource) {
-    return new Presence(new JID(jid().local(), jid().domain(), resource), false);
-  }
-
-  @NotNull
-  private <T extends Stanza> Consumer<T> tellTo(final ActorRef recipient) {
-    return stanza -> recipient.tell(stanza, self());
-  }
-
-  @ActorMethod
-  public void invoke(final Delivered delivered) {
-    messagesStash.persist(delivered);
-  }
-
-  private void out(Stanza stanza) {
-    XMPP.send(stanza, context());
-    // todo: looks like a hardcode?
-    if ("expert".equals(stanza.from().resource())) {
-      LaborExchange.Experts.tellTo(jid(), stanza, self(), context());
-    }
-    if (stanza instanceof Message) {
-      notificationController.storeTokenIfPresent((Message) stanza);
-    }
-  }
-
-  private void in(final Stanza stanza) {
-    if (connectionManager.hasConnections()) {
-      connectionManager.forConnected(conn -> conn.tell(stanza, self()));
-    }
-    else if (stanza instanceof Message) {
-      notificationController.sendNotifications((Message) stanza);
-    }
-  }
-
-  @Override
-  public void onReceiveRecover(Object o) throws Exception {
-    messagesStash.onReceiveRecover(o);
-    if (o instanceof Message) {
-      notificationController.storeTokenIfPresent((Message) o);
-    }
-  }
-
-  @SuppressWarnings("UnusedParameters")
-  @ActorMethod
-  public void invoke(SaveSnapshotSuccess sss) {}
-
-  @ActorMethod
-  public void invoke(SaveSnapshotFailure ssf) {
-    log.warning("Snapshot failed:" + ssf);
-  }
-
-  @Override
-  public String persistenceId() {
-    return bareJid.getAddr();
-  }
-
-  public static class NotificationController {
-    private final Set<String> appTokens = new HashSet<>();
-
-    public void sendNotifications(final Message message) {
-      if (!appTokens.isEmpty()) {
-        final NotificationsManager notificationsManager = NotificationsManager.instance();
-        appTokens.stream().forEach(token -> notificationsManager.sendPush(message, token));
-      }
-    }
-
-    public void storeTokenIfPresent(final Message message) {
-      if (message.has(Operations.Token.class)) {
-        appTokens.add(TokenUtil.sanitizeTokenString(message.get(Operations.Token.class).value()));
-      }
-    }
-
-    public String[] appTokens() {
-      return appTokens.toArray(new String[appTokens.size()]);
-    }
-  }
-
-  // todo: look like XMPP.PresenceTracker is something similar, but no bare jids here
-  public static class PresenceTracker {
-    private final Map<JID, Presence> presenceMap = new HashMap<>();
-
-    public boolean updatePresence(final Presence presence) {
-      return !presence.equals(presenceMap.put(presence.from(), presence));
-    }
-
-    public void forAvailable(final Consumer<Presence> consumer) {
-      presenceMap.values().stream()
-        .filter(Presence::available)
-        .forEach(consumer);
-    }
-  }
-
-  public static class Delivered implements Serializable {
-    final String id;
-    final String resource;
-
-    public Delivered(String id, String resource) {
-      this.id = id;
-      this.resource = resource;
-    }
-
-    @Override
-    public String toString() {
-      return "Delivered{" +
-        "id='" + id + '\'' +
-        ", resource='" + resource + '\'' +
-        '}';
-    }
-  }
-
-  public static class MessagesStash {
-    private final UserAgent userAgent;
-
-    private final List<Message> messages = new ArrayList<>();
-    private final MultiMap<String, String> delivered = new MultiMap<>();
-
-    public MessagesStash(final UserAgent userAgent) {
-      this.userAgent = userAgent;
-    }
-
-    public void persist(Message message) {
-      userAgent.persist(message, m -> messages.add(message));
-    }
-
-    public void persist(Delivered delivered) {
-      userAgent.persist(delivered, d -> this.delivered.put(delivered.resource, delivered.id));
-    }
-
-    public void forAwaitingDelivery(final ConnStatus connStatus, final Consumer<Message> consumer) {
-      final Collection<String> deliveredToResource = delivered.get(connStatus.resource);
-      messages.stream()
-        .filter(msg -> !deliveredToResource.contains(msg.id()))
-        .filter(userAgent::isIncoming)
-        .forEach(consumer);
-    }
-
-    public void onReceiveRecover(final Object o) {
-      if (o instanceof Message) {
-        final Message message = (Message) o;
-        messages.add(message);
-      }
-      if (o instanceof Delivered) {
-        final Delivered del = (Delivered) o;
-        delivered.put(del.resource, del.id);
-      }
-    }
   }
 
   public static class ConnStatus {
@@ -273,41 +49,149 @@ public class UserAgent extends PersistentActorAdapter {
       this.connected = connected;
       this.resource = resource;
     }
+  }
 
-    @Override
-    public String toString() {
-      return "ConnStatus{" +
-        "connected=" + connected +
-        ", resource='" + resource + '\'' +
-        '}';
+  public void invoke(ConnStatus status) { // connection acquired
+    final String resource = status.resource;
+    final Option<ActorRef> option = context().child(resource);
+    if (status.connected) {
+      final ActorRef courier;
+      if (!option.isEmpty()) {
+        log.warning("Concurrent connectors for the same resource: " + resource + " for " + jid() + "!");
+        courier = option.get();
+        context().stop(courier);
+        invoke(status);
+      }
+      else context().actorOf(Props.create(Courier.class, jid().resource(resource), sender()), resource);
+
+      presenceMap.values().stream()
+          .filter(Presence::available)
+          .forEach(p -> sender().tell(p, self()));
+    }
+    else {
+      if (option.isDefined())
+        context().stop(option.get());
+      invoke(new Presence(new JID(jid().local(), jid().domain(), resource), false));
     }
   }
 
-  public static class ConnectionManager {
-    private final UserAgent userAgent;
-    private final Map<String, ActorRef> connecters = new HashMap<>();
+  public void invoke(final Stanza sta) {
+    if (!sta.from().bareEq(jid())) { // incoming
+      if (sta instanceof Presence) {
+        final Presence replace = presenceMap.put(sta.from(), (Presence)sta);
+        if (!sta.equals(replace))
+          toConn(sta);
+      }
+      else if (sta instanceof Message) {
+        persist(sta, this::toConn);
+      }
+      else toConn(sta);
+    }
+    else toWorld(sta);
+  }
 
-    public ConnectionManager(final UserAgent userAgent) {
-      this.userAgent = userAgent;
+  public void invoke(final Delivered delivered) {
+    persist(delivered, param -> {});
+  }
+
+  private void toWorld(Stanza stanza) {
+    XMPP.send(stanza, context());
+    if("expert".equals(stanza.from().resource()))
+      LaborExchange.Experts.tellTo(jid(), stanza, self(), context());
+    if (stanza instanceof Message) {
+      final Message message = (Message) stanza;
+      if (message.has(Operations.Token.class)) {
+        appTokens.add(TokenUtil.sanitizeTokenString(message.get(Operations.Token.class).value()));
+      }
+    }
+  }
+
+  private void toConn(Stanza stanza) {
+    final Collection<ActorRef> couriers = JavaConversions.asJavaCollection(context().children().seq());
+    for (final ActorRef courier : couriers) {
+      courier.tell(stanza, self());
+    }
+    if (couriers.isEmpty() && stanza instanceof Message) {
+      appTokens.stream().forEach(
+          token -> NotificationsManager.instance().sendPush((Message)stanza, token)
+      );
+    }
+  }
+
+  @Override
+  public void onReceiveRecover(Object o) throws Exception {
+  }
+
+  @Override
+  public void onReceiveCommand(Object msg) throws Exception {
+    dispatcher.invoke(this, msg);
+  }
+
+  @Override
+  public String persistenceId() {
+    return bareJid.getAddr();
+  }
+
+  public static class Courier extends UntypedPersistentActor {
+    private final JID jid;
+    private final ActorRef connection;
+    private Queue<Stanza> deliveryQueue = new ArrayDeque<>();
+    private static final RuntimeUtils.InvokeDispatcher dispatcher = new RuntimeUtils.InvokeDispatcher(Courier.class, (u) -> {});
+
+
+    public Courier(JID jid, ActorRef connection) {
+      this.jid = jid;
+      this.connection = connection;
     }
 
-    public void connected(final String resource, final ActorRef sender) {
-      final ActorRef existing = connecters.put(resource, sender);
-      if (existing != null) {
-        log.warning("Concurrent connectors [" + sender + ", " + existing + "] for the same resource: " + resource + " for " + userAgent.jid() + "!");
+    @Override
+    public void onReceiveRecover(Object o) throws Exception {
+      System.out.println(o);
+      if (o instanceof Stanza) {
+        deliveryQueue.add((Stanza) o);
+      }
+      else if (o instanceof Delivered) {
+        deliveryQueue.stream().filter(
+            stanza -> stanza.id().equals(((Delivered)o).id())
+        ).findFirst().ifPresent(deliveryQueue::remove);
+      }
+      else if (o instanceof RecoveryCompleted && !deliveryQueue.isEmpty()) {
+        connection.tell(deliveryQueue.peek(), self());
       }
     }
 
-    public void disconnected(final String resource, final ActorRef sender) {
-      connecters.remove(resource);
+    public void invoke(final Delivered delivered) {
+      final Stanza peek = deliveryQueue.peek();
+      if (!peek.id().equals(delivered.id())) {
+        log.warning("Unexpected delivery message id " + delivered.id() + ", retrying to send: " + peek);
+        connection.tell(peek, self());
+        return;
+      }
+      deliveryQueue.poll();
+      if (!deliveryQueue.isEmpty()) {
+        connection.tell(deliveryQueue.peek(), self());
+      }
+      context().parent().forward(delivered, context());
     }
 
-    public boolean hasConnections() {
-      return !connecters.isEmpty();
+    public void invoke(final Stanza stanza) {
+      if (stanza instanceof Presence) {
+        connection.tell(stanza, self());
+        return;
+      }
+      if (deliveryQueue.isEmpty())
+        connection.tell(stanza, self());
+      deliveryQueue.add(stanza);
     }
 
-    public void forConnected(final Consumer<ActorRef> consumer) {
-      connecters.values().stream().forEach(consumer);
+    @Override
+    public void onReceiveCommand(Object o) throws Exception {
+      dispatcher.invoke(this, o);
+    }
+
+    @Override
+    public String persistenceId() {
+      return jid.bare().toString();
     }
   }
 }

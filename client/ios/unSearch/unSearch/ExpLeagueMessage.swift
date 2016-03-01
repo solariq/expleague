@@ -83,7 +83,7 @@ class ExpLeagueMessage: NSManagedObject {
                 var index = 0
                 for match in matches as [NSTextCheckingResult] {
                     let whole = match.rangeAtIndex(0)
-                    let id = "cut-\(index)"
+                    let id = "cut-\(msg.attributeStringValueForName("id"))-\(index)"
                     finalMD += answerText.substringWithRange(lastMatchIndex..<answerText.startIndex.advancedBy(whole.location))
                     finalMD += "<a href=\"javascript:showHide('" + id + "')\">" + (answerText as NSString).substringWithRange(match.rangeAtIndex(1)) + "</a>" +
                         "<div id=\"" + id + "\" style=\"display: none\">" + (answerText as NSString).substringWithRange(match.rangeAtIndex(2)) +

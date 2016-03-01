@@ -1,5 +1,7 @@
 package com.expleague.util.ios;
 
+import com.expleague.model.Answer;
+import com.expleague.model.Operations;
 import com.relayrides.pushy.apns.ApnsClient;
 import com.relayrides.pushy.apns.PushNotificationResponse;
 import com.relayrides.pushy.apns.util.SimpleApnsPushNotification;
@@ -51,12 +53,12 @@ public class NotificationsManager {
       log.info("Sending push notification from " + message.from());
       SimpleApnsPushNotification notification = null;
       if (message.from().resource().isEmpty()) { // system message
-        if (message.has(ExpertsProfile.class)) {
+        if (message.has(Operations.Start.class) && message.has(ExpertsProfile.class)) {
           notification = new ExpertFoundNotification(token, message.from(), message.get(ExpertsProfile.class));
         }
       }
       else {
-        if (message.body().startsWith("{\"type\":\"response\"")) {
+        if (message.has(Answer.class)) {
           notification = new ResponseReceivedNotification(token, message.from());
         }
         else if (!message.body().isEmpty()){
