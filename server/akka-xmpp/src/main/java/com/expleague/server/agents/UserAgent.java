@@ -5,7 +5,6 @@ import akka.persistence.SaveSnapshotFailure;
 import akka.persistence.SaveSnapshotSuccess;
 import com.expleague.model.Operations;
 import com.expleague.util.akka.ActorMethod;
-import com.expleague.util.akka.ActorRecover;
 import com.expleague.util.akka.PersistentActorAdapter;
 import com.expleague.util.ios.NotificationsManager;
 import com.expleague.xmpp.JID;
@@ -152,7 +151,7 @@ public class UserAgent extends PersistentActorAdapter {
     }
   }
 
-  @ActorRecover
+  @Override
   public void onReceiveRecover(Object o) throws Exception {
     messagesStash.onReceiveRecover(o);
     if (o instanceof Message) {

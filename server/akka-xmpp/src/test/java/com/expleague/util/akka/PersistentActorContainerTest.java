@@ -23,10 +23,6 @@ public class PersistentActorContainerTest extends ActorSystemTestCase {
       sender().tell(id + " reply to " + msg, self());
     }
 
-    @ActorRecover
-    public void recover(final Object msg) {
-    }
-
     @Override
     public String persistenceId() {
       return "some-test-id";

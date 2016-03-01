@@ -15,4 +15,7 @@ public abstract class PersistentActorAdapter extends ActorAdapter<UntypedPersist
   }
 
   public abstract String persistenceId();
+
+  public void onReceiveRecover(final Object msg) throws Exception {
+  }
 }

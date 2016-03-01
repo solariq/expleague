@@ -60,7 +60,7 @@ public class XMPPTest extends ActorSystemTestCase {
   public void testXmppRegistrationOfMock() throws Exception {
     new TestKit()  {{
       final JID jid = JID.parse("login");
-      final ActorRef actorRef = register(jid, new ActorAdapter() {
+      final ActorRef actorRef = registerMock(jid, new ActorAdapter() {
         @ActorMethod
         public void reply(final String xxx) {
           sender().tell("Reply to " + xxx, self());

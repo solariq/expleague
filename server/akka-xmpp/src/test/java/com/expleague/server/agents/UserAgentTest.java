@@ -3,6 +3,8 @@ package com.expleague.server.agents;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import com.expleague.model.Operations;
+import com.expleague.util.akka.ActorAdapter;
+import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
@@ -92,6 +94,36 @@ public class UserAgentTest extends ActorSystemTestCase {
       iq.from(jid2);
       userAgentRef1.tell(iq, getRef());
       expectMsgEquals(iq);
+    }};
+  }
+
+  @Test
+  public void testXmppRegistrationOfOverride() throws Exception {
+    new TestKit()  {{
+      final JID jid1 = JID.parse("login1");
+      final JID jid2 = JID.parse("login2");
+
+      class ActorOverrideTester extends ActorAdapter {
+        @ActorMethod
+        public void reply(final String xxx) {
+          sender().tell("Reply to " + xxx, self());
+        }
+      }
+
+      final ActorRef actorRef = registerOverride(jid1, new ActorOverrideTester());
+
+      // register test actor as connector
+      actorRef.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
+      expectNoMsg();
+
+      // send message to jid1
+      final Iq<Operations.Ok> iq = Iq.create(jid1, Iq.IqType.GET, new Operations.Ok());
+      iq.from(jid2);
+      actorRef.tell(iq, getRef());
+      expectMsgEquals(iq);
+
+      actorRef.tell("Hello", getRef());
+      expectMsgEquals("Reply to Hello");
     }};
   }
 }

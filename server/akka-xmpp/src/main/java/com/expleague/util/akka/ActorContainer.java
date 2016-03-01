@@ -10,19 +10,18 @@ public class ActorContainer extends UntypedActor {
   private final ActorInvokeDispatcher dispatcher;
 
   public static Props props(final Class<? extends ActorAdapter> adapter, final Object... args) {
-    return Props.create(ActorContainer.class, new Class[] {adapter}, args);
+    return Props.create(ActorContainer.class, new Object[]{new AdapterProps[]{AdapterProps.create(adapter, args)}});
   }
 
   public static Props props(
-    final Class<? extends ActorAdapter> adapter,
-    final Class<? extends ActorAdapter> override,
-    final Object... args
+    final AdapterProps adapterProps,
+    final AdapterProps overrideProps
   ) {
-    return Props.create(ActorContainer.class, new Class[] {adapter, override}, args);
+    return Props.create(ActorContainer.class, new Object[]{new AdapterProps[]{adapterProps, overrideProps}});
   }
 
-  public ActorContainer(Class[] classes, final Object[] args) {
-    dispatcher = new ActorInvokeDispatcher(this, classes, args, this::unhandled);
+  public ActorContainer(AdapterProps[] props) {
+    dispatcher = new ActorInvokeDispatcher(this, props, this::unhandled);
   }
 
   @Override

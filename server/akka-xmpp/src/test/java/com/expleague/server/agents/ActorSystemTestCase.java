@@ -4,9 +4,7 @@ import akka.actor.*;
 import akka.testkit.JavaTestKit;
 import akka.util.Timeout;
 import com.expleague.server.ExpLeagueServerTestCase;
-import com.expleague.util.akka.ActorAdapter;
-import com.expleague.util.akka.ActorMethod;
-import com.expleague.util.akka.AkkaTools;
+import com.expleague.util.akka.*;
 import com.expleague.xmpp.JID;
 import com.spbsu.commons.io.StreamTools;
 import com.spbsu.commons.system.RuntimeUtils;
@@ -16,7 +14,10 @@ import org.junit.After;
 import org.junit.Before;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -49,6 +50,7 @@ public class ActorSystemTestCase {
     protected final ActorRef registrator;
 
     private final Map<JID, ActorAdapter> jidMocks = new HashMap<>();
+    private final Map<JID, ActorAdapter> jidOverrides = new HashMap<>();
 
     public TestKit() {
       super(system);
@@ -61,8 +63,14 @@ public class ActorSystemTestCase {
       return expectActorRef();
     }
 
-    protected ActorRef register(final JID jid, final ActorAdapter actorMock) {
+    protected ActorRef registerMock(final JID jid, final ActorAdapter actorMock) {
       jidMocks.put(jid, actorMock);
+      registrator.tell(jid, getRef());
+      return expectActorRef();
+    }
+
+    protected ActorRef registerOverride(final JID jid, final ActorAdapter actorMock) {
+      jidOverrides.put(jid, actorMock);
       registrator.tell(jid, getRef());
       return expectActorRef();
     }
@@ -90,6 +98,33 @@ public class ActorSystemTestCase {
         final ActorAdapter actorMock = jidMocks.get(jid);
         if (actorMock != null) {
           return Props.create(UntypedActorMock.class, actorMock);
+        }
+        final ActorAdapter overrideAdapter = jidOverrides.get(jid);
+        if (overrideAdapter != null) {
+          final Class<? extends ActorAdapter> overrideAdapterClass = overrideAdapter.getClass();
+          final Field[] declaredFields = overrideAdapterClass.getDeclaredFields();
+          final List<Object> args = new ArrayList<>();
+          for (Field declaredField : declaredFields) {
+            declaredField.setAccessible(true);
+            if (declaredField.isSynthetic()) {
+              try {
+                args.add(declaredField.get(overrideAdapter));
+              } catch (IllegalAccessException e) {
+                throw new IllegalStateException(e);
+              }
+            }
+          }
+          args.add(jid);
+          final Object[] argsArray = args.toArray(new Object[args.size()]);
+          return jid.domain().startsWith("muc.")
+            ? ActorContainer.props(
+                AdapterProps.create(TBTSRoomAgent.class, jid),
+                AdapterProps.create(overrideAdapterClass, argsArray)
+              )
+            : PersistentActorContainer.props(
+                AdapterProps.create(UserAgent.class, jid),
+                AdapterProps.create(overrideAdapterClass, argsArray)
+              );
         }
         return super.newActorProps(jid);
       }

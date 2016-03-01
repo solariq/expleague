@@ -5,7 +5,9 @@ import com.spbsu.commons.func.Action;
 import com.spbsu.commons.system.RuntimeUtils;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -14,16 +16,19 @@ import java.util.List;
 public class ActorInvokeDispatcher<A extends ActorAdapter> {
   private final List<Dispatcher> dispatchSequence = new ArrayList<>();
 
-  public ActorInvokeDispatcher(final Actor actor, Class<? extends A>[] classes, Object[] args, Action<Object> unhandledCallback) {
-    this(actor, classes, args, unhandledCallback, ActorMethod.class);
+  public ActorInvokeDispatcher(final Actor actor, final AdapterProps[] props, final Action<Object> unhandledCallback) {
+    this(actor, props, unhandledCallback, ActorMethod.class);
   }
 
-  public ActorInvokeDispatcher(final Actor actor, Class<? extends A>[] classes, Object[] args, Action<Object> unhandledCallback, Class<? extends Annotation> annotation) {
+  public ActorInvokeDispatcher(final Actor actor, final AdapterProps[] props, Action<Object> unhandledCallback, Class<? extends Annotation> annotation) {
     Action<Object> currentUnhandledCallback = unhandledCallback;
-    for (Class<?> clazz : classes) {
+    for (AdapterProps p : props) {
       try {
         // todo: quite dirty
-        final A instance = (A) clazz.getConstructors()[0].newInstance(args);
+        final Class<?> clazz = p.getAdapterClass();
+        final Constructor<?> constructor = clazz.getDeclaredConstructors()[0];
+        constructor.setAccessible(true);
+        final A instance = (A) constructor.newInstance(Arrays.copyOf(p.getArgs(), constructor.getParameterCount()));
         instance.injectActor(actor);
         final Dispatcher dispatcher = new Dispatcher(
           instance,

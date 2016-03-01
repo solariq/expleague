@@ -8,28 +8,25 @@ import akka.persistence.UntypedPersistentActor;
  */
 public class PersistentActorContainer extends UntypedPersistentActor {
   private final ActorInvokeDispatcher<PersistentActorAdapter> dispatcher;
-  private final ActorInvokeDispatcher<PersistentActorAdapter> recoverDispatcher;
 
-  public static Props props(final Class<? extends PersistentActorAdapter> adapter, final Object... args) {
-    return Props.create(PersistentActorContainer.class, new Class[] {adapter}, args);
+  public static Props props(final Class<? extends ActorAdapter> adapter, final Object... args) {
+    return Props.create(PersistentActorContainer.class, new Object[] {new AdapterProps[] {AdapterProps.create(adapter, args)}});
   }
 
   public static Props props(
-    final Class<? extends PersistentActorAdapter> adapter,
-    final Class<? extends PersistentActorAdapter> override,
-    final Object... args
+    final AdapterProps adapterProps,
+    final AdapterProps overrideProps
   ) {
-    return Props.create(PersistentActorContainer.class, new Class[] {adapter, override}, args);
+    return Props.create(PersistentActorContainer.class, new Object[] {new AdapterProps[] {adapterProps, overrideProps}});
   }
 
-  public PersistentActorContainer(Class[] classes, final Object[] args) {
-    dispatcher = new ActorInvokeDispatcher<>(this, classes, args, this::unhandled);
-    recoverDispatcher = new ActorInvokeDispatcher<>(this, classes, args, this::unhandled, ActorRecover.class);
+  public PersistentActorContainer(final AdapterProps[] props) {
+    dispatcher = new ActorInvokeDispatcher<>(this, props, this::unhandled);
   }
 
   @Override
   public void onReceiveRecover(final Object msg) throws Exception {
-    recoverDispatcher.invoke(msg);
+    getAdapterInstance().onReceiveRecover(msg);
   }
 
   @Override
@@ -39,6 +36,10 @@ public class PersistentActorContainer extends UntypedPersistentActor {
 
   @Override
   public String persistenceId() {
-    return dispatcher.getDispatchSequence().get(0).getInstance().persistenceId();
+    return getAdapterInstance().persistenceId();
+  }
+
+  private PersistentActorAdapter getAdapterInstance() {
+    return dispatcher.getDispatchSequence().get(0).getInstance();
   }
 }
