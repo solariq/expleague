@@ -131,6 +131,8 @@ public class XMPPLevelDBJournal extends AsyncWriteJournal {
       while (iterator.hasNext()) {
         final Map.Entry<byte[], byte[]> next = iterator.next();
         final ByteBuffer currentKey = ByteBuffer.wrap(next.getKey());
+        if (currentKey.remaining() < key.remaining())
+          break;
         currentKey.limit(key.remaining());
         if (currentKey.compareTo(key) != 0)
           break;
