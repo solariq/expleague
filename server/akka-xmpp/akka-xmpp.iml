@@ -20,6 +20,14 @@
     <orderEntry type="library" scope="TEST" name="Maven: com.typesafe.akka:akka-testkit_2.11:2.4.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.mockito:mockito-core:1.9.5" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.objenesis:objenesis:1.0" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang.modules:scala-java8-compat_2.11:0.6.0" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang:scala-compiler:2.11.7" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang.modules:scala-xml_2.11:1.0.4" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang.modules:fngen_2.11:0.6.0" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang:scala-reflect:2.11.7" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: com.typesafe.akka:akka-testkit_2.11:2.4.2" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mockito:mockito-core:1.9.5" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.objenesis:objenesis:1.0" level="project" />
     <orderEntry type="module" module-name="commons" />
     <orderEntry type="library" name="Maven: com.intellij:annotations:12.0" level="project" />
     <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.2" level="project" />

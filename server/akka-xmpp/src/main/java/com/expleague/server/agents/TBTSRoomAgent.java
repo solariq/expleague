@@ -68,10 +68,9 @@ public class TBTSRoomAgent extends ActorAdapter {
 
   @ActorMethod
   public void invoke(Message msg) {
-    final JID owner = status.owner();
     final JID from = msg.from();
 
-    if (msg.type() == MessageType.GROUP_CHAT && owner != null && !status.isParticipant(from)) {
+    if (msg.type() == MessageType.GROUP_CHAT && status.owner() != null && !status.isParticipant(from)) {
       final Message message = new Message(
         jid,
         from,
@@ -83,26 +82,25 @@ public class TBTSRoomAgent extends ActorAdapter {
       return;
     }
 
-    final boolean messageFromOwner = from.bareEq(owner);
     if (msg.has(Start.class) || msg.has(Operations.Resume.class)) {
       enterRoom(from);
-      XMPP.send(new Message(jid, owner, msg.get(Operations.Command.class), ExpertManager.instance().profile(from.bare())), context());
+      XMPP.send(new Message(jid, status.owner(), msg.get(Operations.Command.class), ExpertManager.instance().profile(from.bare())), context());
     }
     else if (msg.has(Cancel.class) || msg.has(Done.class)) {
-      if (messageFromOwner) {
+      if (from.bareEq(status.owner())) {
         tellLaborExchange(msg.get(Operations.Command.class));
       }
       else if (msg.has(Cancel.class)) {
-        XMPP.send(new Message(jid, owner, msg.get(Operations.Command.class), ExpertManager.instance().profile(from.bare())), context());
+        XMPP.send(new Message(jid, status.owner(), msg.get(Operations.Command.class), ExpertManager.instance().profile(from.bare())), context());
       }
     }
-    else if (!messageFromOwner && msg.body().startsWith("{\"type\":\"pageVisited\"")) {
-      XMPP.send(new Message(jid, owner, msg.body()), context());
+    else if (!from.bareEq(status.owner()) && msg.body().startsWith("{\"type\":\"pageVisited\"")) {
+      XMPP.send(new Message(jid, status.owner(), msg.body()), context());
     }
 
     log(msg);
 
-    if (messageFromOwner && !status.isOpen()) {
+    if (from.bareEq(status.owner()) && !status.isOpen()) {
       final Offer offer = status.offer();
       if (offer != null) {
         invoke(new Message(XMPP.jid(), jid, new Operations.Create(), offer));

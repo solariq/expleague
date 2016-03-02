@@ -57,7 +57,7 @@ public class LaborExchange extends UntypedPersistentActor {
     log.fine("Labor exchange received offer " + roomName + " looking for broker");
     final Collection<ActorRef> children = JavaConversions.asJavaCollection(context().children());
     for (final ActorRef ref : children) {
-      if (!isExpertActorRef(ref)) {
+      if (isBrokerActorRef(ref)) {
         if (AkkaTools.ask(ref, offer) instanceof Operations.Ok) {
           openPositions.put(roomName, ref);
           saveSnapshot();
@@ -76,12 +76,12 @@ public class LaborExchange extends UntypedPersistentActor {
 
   public void invoke(ActorRef expertAgent) {
     JavaConversions.asJavaCollection(context().children()).stream()
-      .filter(LaborExchange::isExpertActorRef)
+      .filter(LaborExchange::isBrokerActorRef)
       .forEach(ref -> ref.forward(expertAgent, context()));
   }
 
-  private static boolean isExpertActorRef(final ActorRef ref) {
-    return EXPERTS_ACTOR_NAME.equals(ref.path().name());
+  private static boolean isBrokerActorRef(final ActorRef ref) {
+    return !EXPERTS_ACTOR_NAME.equals(ref.path().name());
   }
 
   public void invoke(Operations.Done done) {
