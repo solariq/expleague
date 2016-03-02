@@ -1,6 +1,6 @@
 [submodule "commons"]
 	path = commons
-	url = https://github.com/spbsu-ml-community/commons.git
+	url = git@github.com:spbsu-ml-community/commons.git
 [submodule "server/fastxml"]
 	path = server/fastxml
 	url = git@github.com:solariq/fastxml.git
