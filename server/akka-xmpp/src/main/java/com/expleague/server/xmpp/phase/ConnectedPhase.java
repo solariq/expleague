@@ -6,6 +6,7 @@ import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.UserAgent;
 import com.expleague.server.agents.XMPP;
 import com.expleague.server.services.XMPPServices;
+import com.expleague.server.xmpp.XMPPClientConnection;
 import com.expleague.xmpp.Features;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.Bind;
@@ -15,15 +16,20 @@ import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
 
+import java.util.logging.Logger;
+
 /**
  * User: solar
  * Date: 14.12.15
  * Time: 16:37
  */
 public class ConnectedPhase extends XMPPPhase {
+  private static final Logger log = Logger.getLogger(ConnectedPhase.class.getName());
+
   private JID jid;
   private boolean bound = false;
   private ActorRef agent;
+  private ActorRef courier;
 
   public ConnectedPhase(ActorRef connection, String authId) {
     super(connection);
@@ -74,18 +80,29 @@ public class ConnectedPhase extends XMPPPhase {
     }
   }
 
+  public void invoke(ActorRef courier) {
+    this.courier = courier;
+  }
+
   public void invoke(Stanza msg) {
     if (msg instanceof Iq)
       return;
     if (msg.to() != null && jid().bareEq(msg.to())) { // incoming
       answer(msg);
-      if (!(msg instanceof Presence))
-        sender().tell(new Delivered(msg.id(), jid.resource()), self());
     }
     else { // outgoing
       msg.from(jid);
       if (agent != null)
         agent.tell(msg, self());
+    }
+  }
+
+  public void invoke(XMPPClientConnection.DeliveryAck ack) {
+    if (courier != null) {
+      courier.tell(new Delivered(ack.getId(), jid.resource()), self());
+    }
+    else {
+      log.warning("Can't process delivery ack to " + jid + ", courier is absent");
     }
   }
 

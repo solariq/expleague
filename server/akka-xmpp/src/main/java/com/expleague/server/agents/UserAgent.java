@@ -65,10 +65,13 @@ public class UserAgent extends PersistentActorAdapter {
         context().stop(courier);
         invoke(status);
       }
-      else context().actorOf(
-        PersistentActorContainer.props(Courier.class, jid().resource(resource), sender()),
-        resource
-      );
+      else {
+        final ActorRef courierRef = context().actorOf(
+          PersistentActorContainer.props(Courier.class, jid().resource(resource), sender()),
+          resource
+        );
+        sender().tell(courierRef, self());
+      }
 
       presenceMap.values().stream()
           .filter(Presence::available)

@@ -7,14 +7,6 @@ import akka.stream.OverflowStrategy;
 import akka.stream.javadsl.Source;
 import akka.util.ByteString;
 import com.expleague.server.ExpLeagueServer;
-import com.fasterxml.aalto.AsyncByteArrayFeeder;
-import com.fasterxml.aalto.AsyncXMLInputFactory;
-import com.fasterxml.aalto.AsyncXMLStreamReader;
-import com.fasterxml.aalto.stax.InputFactoryImpl;
-import com.relayrides.pushy.apns.P12Util;
-import com.spbsu.commons.func.Action;
-import com.spbsu.commons.io.StreamTools;
-import com.spbsu.commons.net.URLConnectionTools;
 import com.expleague.server.xmpp.phase.AuthorizationPhase;
 import com.expleague.server.xmpp.phase.ConnectedPhase;
 import com.expleague.server.xmpp.phase.HandshakePhase;
@@ -25,13 +17,22 @@ import com.expleague.xmpp.Item;
 import com.expleague.xmpp.Stream;
 import com.expleague.xmpp.control.Close;
 import com.expleague.xmpp.control.Open;
+import com.expleague.xmpp.stanza.Message;
+import com.fasterxml.aalto.AsyncByteArrayFeeder;
+import com.fasterxml.aalto.AsyncXMLInputFactory;
+import com.fasterxml.aalto.AsyncXMLStreamReader;
+import com.fasterxml.aalto.stax.InputFactoryImpl;
+import com.relayrides.pushy.apns.P12Util;
+import com.spbsu.commons.func.Action;
+import com.spbsu.commons.io.StreamTools;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http2.Http2SecurityUtil;
-import io.netty.handler.ssl.*;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslProvider;
+import io.netty.handler.ssl.SupportedCipherSuiteFilter;
 import org.xml.sax.SAXException;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 import javax.xml.stream.XMLStreamException;
@@ -39,7 +40,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.InetAddress;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -119,17 +119,27 @@ public class XMPPClientConnection extends UntypedActorAdapter {
   }
 
   public void invoke(Item item) throws SSLException {
+    if (item instanceof Message) {
+      sendItem(item, new DeliveryAck(((Message) item).id()));
+    }
+    else {
+      sendItem(item, new Tcp.NoAck(null));
+    }
+  }
+
+  public void sendItem(Item item, Tcp.Event requestedAck) throws SSLException {
     final String xml;
     if (item instanceof Open)
       xml = Item.XMPP_START;
     else
       xml = item.xmlString(false);
+
     log.finest("<" + xml);
     final ByteString data = ByteString.fromString(xml);
     if (currentState != ConnectionState.HANDSHAKE && currentState != ConnectionState.STARTTLS)
-      helper.encrypt(data, s -> connection.tell(TcpMessage.write(s), self()));
+      helper.encrypt(data, s -> connection.tell(TcpMessage.write(s, requestedAck), self()));
     else
-      connection.tell(TcpMessage.write(data), getSelf());
+      connection.tell(TcpMessage.write(data, requestedAck), getSelf());
   }
 
   public void invoke(Status.Failure failure) {
@@ -143,6 +153,11 @@ public class XMPPClientConnection extends UntypedActorAdapter {
       businessLogic.tell(PoisonPill.getInstance(), self());
     closed = true;
     log.fine("Client connection closed");
+  }
+
+  public void invoke(DeliveryAck ack) {
+    if(businessLogic != null)
+      businessLogic.tell(ack, self());
   }
 
   public void invoke(Terminated who) {
@@ -251,6 +266,23 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         .sslProvider(SslProvider.OPENSSL)
         .ciphers(Http2SecurityUtil.CIPHERS, SupportedCipherSuiteFilter.INSTANCE)
         .build();
+  }
+
+  public static class DeliveryAck implements Tcp.Event {
+    private final String id;
+
+    public DeliveryAck(final String id) {
+      this.id = id;
+    }
+
+    public String getId() {
+      return id;
+    }
+
+    @Override
+    public String toString() {
+      return "DeliveryAck{id='" + id + '\'' + '}';
+    }
   }
 
   public enum ConnectionState {

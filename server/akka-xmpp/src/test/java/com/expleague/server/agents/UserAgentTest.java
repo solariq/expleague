@@ -28,10 +28,10 @@ public class UserAgentTest extends ActorSystemTestCase {
       final ActorRef userAgentRef2 = register(jid2);
 
       userAgentRef1.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
-      expectNoMsg();
+      expectMsgClass(ActorRef.class);
 
       userAgentRef2.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
-      expectNoMsg();
+      expectMsgClass(ActorRef.class);
 
       userAgentRef2.tell(new Presence(jid1, true), getRef());
       final Presence presenceOf1 = expectMessage(Presence.class);
@@ -59,6 +59,7 @@ public class UserAgentTest extends ActorSystemTestCase {
 
       // connect jid1 and receive message
       userAgentRef1.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
+      expectMsgClass(ActorRef.class);
       final Message message = expectMessage(Message.class);
       assertEquals("Hello", message.body());
 
@@ -73,7 +74,7 @@ public class UserAgentTest extends ActorSystemTestCase {
       // reconnect (no messages will come)
       // todo: shouldn't there be a state sync logic between client and server?
       userAgentRef1.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
-      expectNoMsg();
+      expectMsgClass(ActorRef.class);
     }};
   }
 
@@ -87,7 +88,7 @@ public class UserAgentTest extends ActorSystemTestCase {
 
       // register test actor as connector
       userAgentRef1.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
-      expectNoMsg();
+      expectMsgClass(ActorRef.class);
 
       // send message to jid1
       final Iq<Operations.Ok> iq = Iq.create(jid1, Iq.IqType.GET, new Operations.Ok());
@@ -114,7 +115,7 @@ public class UserAgentTest extends ActorSystemTestCase {
 
       // register test actor as connector
       actorRef.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
-      expectNoMsg();
+      expectMsgClass(ActorRef.class);
 
       // send message to jid1
       final Iq<Operations.Ok> iq = Iq.create(jid1, Iq.IqType.GET, new Operations.Ok());
@@ -145,7 +146,14 @@ public class UserAgentTest extends ActorSystemTestCase {
 
       // register test actor as connector
       actorRef.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
-      expectMsgEquals("Get status from resource");
+      final Object[] messages = receiveN(2);
+      if (messages[0] instanceof ActorRef) {
+        assertEquals("Get status from resource", messages[1]);
+      }
+      else {
+        assertEquals("Get status from resource", messages[0]);
+        assertTrue(messages[1] instanceof ActorRef);
+      }
 
       // send message to jid1
       final Iq<Operations.Ok> iq = Iq.create(jid1, Iq.IqType.GET, new Operations.Ok());
