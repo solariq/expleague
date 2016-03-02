@@ -63,12 +63,16 @@ public class UserAgent extends PersistentActorAdapter {
         log.warning("Concurrent connectors for the same resource: " + resource + " for " + jid() + "!");
         courier = option.get();
         context().stop(courier);
+        try {
+          Thread.sleep(10);
+        }
+        catch (InterruptedException ignore) {}
         invoke(status);
       }
       else {
         final ActorRef courierRef = context().actorOf(
-          PersistentActorContainer.props(Courier.class, jid().resource(resource), sender()),
-          resource
+            PersistentActorContainer.props(Courier.class, jid().resource(resource), sender()),
+            resource.isEmpty() ? "@@empty@@" : resource
         );
         sender().tell(courierRef, self());
       }
@@ -146,7 +150,6 @@ public class UserAgent extends PersistentActorAdapter {
 
     @Override
     public void onReceiveRecover(Object o) throws Exception {
-      System.out.println(o);
       if (o instanceof Stanza) {
         deliveryQueue.add((Stanza) o);
       }
