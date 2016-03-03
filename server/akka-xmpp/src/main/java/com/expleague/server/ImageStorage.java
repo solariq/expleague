@@ -121,6 +121,7 @@ public class ImageStorage extends UntypedActor {
           response = HttpResponse.create().withStatus(404).withEntity("Page not found");
       }
       else if (request.method() == HttpMethods.POST) {
+        log.info("Receiving image");
         final ActorMaterializer materializer = ActorMaterializer.create(getContext());
         final RequestEntity entity = request.entity();
         MediaType.Multipart mediaType = (MediaType.Multipart) entity.getContentType().mediaType();
@@ -152,6 +153,7 @@ public class ImageStorage extends UntypedActor {
               final ByteArrayOutputStream out = new ByteArrayOutputStream();
               multipartStream.readBodyData(out);
               id = new String(out.toByteArray(), StreamTools.UTF);
+              log.info("\t" + id);
             }
             nextPart = multipartStream.readBoundary();
           }
@@ -168,9 +170,11 @@ public class ImageStorage extends UntypedActor {
           final PutObjectRequest putRequest = new PutObjectRequest(BUCKET_NAME, id, tempFile);
           putRequest.setMetadata(new ObjectMetadata());
           putRequest.getMetadata().setContentType(mime.trim());
+          log.info("Uploading image " + id + " to S3");
           s3Client.putObject(putRequest);
           //noinspection ResultOfMethodCallIgnored
           tempFile.delete();
+          log.info("Success");
         }
         catch(Exception e) {
           log.log(Level.WARNING, "Failed to store attachment", e);
