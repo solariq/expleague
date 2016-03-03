@@ -160,6 +160,8 @@ public class ImageStorage extends UntypedActor {
         }
         catch (Exception e) {
           log.log(Level.WARNING, "Failed to upload attachment", e);
+          sender().tell(HttpResponse.create().withStatus(504).withEntity("Multipart message is incomplete"), self());
+          return;
         }
         try {
           final File tempFile = File.createTempFile("asdasd", "adsasd");
@@ -167,10 +169,11 @@ public class ImageStorage extends UntypedActor {
 //            final String streamMD5 = new String(Base64.encodeBase64(DigestUtils.md5(img.contents)));
 //            metadata.setContentMD5(streamMD5);
 
+          log.info("Uploading image " + id + " to S3");
           final PutObjectRequest putRequest = new PutObjectRequest(BUCKET_NAME, id, tempFile);
           putRequest.setMetadata(new ObjectMetadata());
+          assert mime != null;
           putRequest.getMetadata().setContentType(mime.trim());
-          log.info("Uploading image " + id + " to S3");
           s3Client.putObject(putRequest);
           //noinspection ResultOfMethodCallIgnored
           tempFile.delete();
@@ -178,6 +181,8 @@ public class ImageStorage extends UntypedActor {
         }
         catch(Exception e) {
           log.log(Level.WARNING, "Failed to store attachment", e);
+          sender().tell(HttpResponse.create().withStatus(504).withEntity("Unable to upload image to s3: " + e.getMessage()), self());
+          return;
         }
         response = HttpResponse.create().withEntity(
             ContentTypes.TEXT_HTML_UTF8,
@@ -185,7 +190,7 @@ public class ImageStorage extends UntypedActor {
       }
       else response = HttpResponse.create().withStatus(404).withEntity("Page not found");
 
-      getSender().tell(response, getSelf());
+      sender().tell(response, self());
     }
   }
 }
