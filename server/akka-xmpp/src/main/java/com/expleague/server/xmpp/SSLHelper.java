@@ -1,7 +1,7 @@
 package com.expleague.server.xmpp;
 
+import akka.actor.ActorRef;
 import akka.util.ByteString;
-import com.expleague.server.xmpp.phase.SSLHandshake;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
@@ -17,75 +17,96 @@ import java.util.logging.Logger;
  */
 public class SSLHelper {
   private static final Logger log = Logger.getLogger(SSLHelper.class.getName());
+  private final SSLEngine sslEngine;
+  private final SSLDirection in;
+  private final SSLDirection out;
+
   public SSLHelper(SSLEngine sslEngine) {
     this.sslEngine = sslEngine;
+    in = new SSLDirection(true);
+    out = new SSLDirection(false);
   }
-  private SSLEngine sslEngine;
 
-  private ByteBuffer inDst = ByteBuffer.allocate(4 * 4096);
-  private ByteBuffer inSrc = ByteBuffer.allocate(4 * 4096);
+  public static ByteBuffer expandBuffer(ByteBuffer buffer, int growth) {
+    final ByteBuffer expand = ByteBuffer.allocate(growth + buffer.limit());
+    buffer.flip();
+    expand.put(buffer);
+    return expand;
+  }
+
   public void decrypt(ByteString msgIn, Consumer<ByteString> consumer) {
-    inDst = sslPipe(msgIn, consumer, inSrc, inDst, true);
+    in.process(msgIn, consumer);
   }
 
-  private ByteBuffer outDst = ByteBuffer.allocate(4 * 4096);
-  private ByteBuffer outSrc = ByteBuffer.allocate(4 * 4096);
-  public void encrypt(ByteString data, Consumer<ByteString> consumer) throws SSLException {
-    outDst = sslPipe(data, consumer, outSrc, outDst, false);
+  public void encrypt(ByteString data, Consumer<ByteString> consumer, ActorRef self) throws SSLException {
+    out.process(data, consumer);
   }
 
-  private ByteBuffer sslPipe(ByteString msgIn, Consumer<ByteString> consumer, ByteBuffer src, ByteBuffer dst, boolean incoming) {
-    try {
-      final ByteBuffer inBuffer = msgIn.asByteBuffer();
-      while (inBuffer.remaining() > 0) {
-        if (inBuffer.remaining() > src.remaining()) {
-          final ByteBuffer slice = inBuffer.slice();
-          slice.limit(src.remaining());
-          inBuffer.position(slice.position());
-          src.put(slice);
-        }
-        else src.put(inBuffer);
-        do {
-          src.flip();
-          final SSLEngineResult r = incoming ? sslEngine.unwrap(src, dst) : sslEngine.wrap(src, dst);
-          switch (r.getStatus()) {
-            case BUFFER_OVERFLOW: {
-              // Could attempt to drain the dst buffer of any already obtained
-              // data, but we'll just increase it to the size needed.
-              dst = SSLHandshake.expandBuffer(dst, sslEngine.getSession().getApplicationBufferSize());
-              src.compact();
-              continue;
-            }
-            case BUFFER_UNDERFLOW: {
-              int netSize = sslEngine.getSession().getPacketBufferSize();
-              // Resize buffer if needed.
-              if (netSize > dst.capacity()) {
-                dst = SSLHandshake.expandBuffer(dst, netSize);
+  private class SSLDirection {
+    private ByteBuffer dst = ByteBuffer.allocate(4 * 4096);
+    private ByteBuffer src = ByteBuffer.allocate(4 * 4096);
+    private final boolean incoming;
+
+    private SSLDirection(boolean incoming) {
+      this.incoming = incoming;
+    }
+
+    private void process(ByteString msgIn, Consumer<ByteString> consumer) {
+      try {
+        final int netSize = sslEngine.getSession().getApplicationBufferSize();
+        final ByteBuffer inBuffer = msgIn.asByteBuffer();
+        while (inBuffer.remaining() > 0) {
+          if (src.remaining() < netSize / 2) {
+            src = expandBuffer(src, netSize);
+          }
+          if (inBuffer.remaining() > src.remaining()) {
+            final ByteBuffer slice = inBuffer.slice();
+            slice.limit(src.remaining());
+            inBuffer.position(slice.limit());
+            src.put(slice);
+          }
+          else src.put(inBuffer);
+          do {
+            src.flip();
+            final SSLEngineResult r;
+            r = incoming ? sslEngine.unwrap(src, dst) : sslEngine.wrap(src, dst);
+            switch (r.getStatus()) {
+              case BUFFER_OVERFLOW: {
+                // Could attempt to drain the dst buffer of any already obtained
+                // data, but we'll just increase it to the size needed.
+                dst = expandBuffer(dst, netSize);
+                src.compact();
+                continue;
               }
-              // Obtain more inbound network data for inSrc,
-              // then retry the operation.
-              return dst;
-              // other cases: CLOSED, OK.
+              case BUFFER_UNDERFLOW: {
+                // Resize buffer if needed.
+                if (netSize > dst.capacity()) {
+                  dst = expandBuffer(dst, netSize);
+                }
+                // Obtain more inbound network data for inSrc,
+                // then retry the operation.
+                return;
+                // other cases: CLOSED, OK.
+              }
             }
+            dst.flip();
+            src.compact();
+            if (dst.limit() > 0) {
+              log.finest(dst.limit() + " bytes " + (incoming ? "received" : "sent"));
+              consumer.accept(ByteString.fromByteBuffer(dst));
+              dst.clear();
+            }
+            else if (r.bytesConsumed() == 0)
+              break;
+            if (src.position() > 0)
+              break;
           }
-          dst.flip();
-          src.compact();
-          if (dst.limit() > 0) {
-            log.finest(dst.limit() + " bytes " + (incoming ? "received" : "sent"));
-            consumer.accept(ByteString.fromByteBuffer(dst));
-            dst.clear();
-          }
-          else if (r.bytesConsumed() == 0)
-            break;
-          if (src.position() > 0)
-            break;
+          while (true);
         }
-        while (true);
+      }
+      catch (SSLException e) {
+        throw new RuntimeException(e);
       }
     }
-    catch (SSLException e) {
-      throw new RuntimeException(e);
-    }
-    return dst;
   }
 }

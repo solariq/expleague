@@ -44,6 +44,8 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -136,8 +138,19 @@ public class XMPPClientConnection extends UntypedActorAdapter {
 
     log.finest("<" + xml);
     final ByteString data = ByteString.fromString(xml);
-    if (currentState != ConnectionState.HANDSHAKE && currentState != ConnectionState.STARTTLS)
-      helper.encrypt(data, s -> connection.tell(TcpMessage.write(s, requestedAck), self()));
+    if (currentState != ConnectionState.HANDSHAKE && currentState != ConnectionState.STARTTLS) {
+      final List<ByteString> encrypted = new ArrayList<>();
+      helper.encrypt(data, encrypted::add, self());
+      final int size = encrypted.size();
+      for (int i = 0; i < size; i++) {
+        final Tcp.Command write;
+        if (i < size - 1)
+          write = TcpMessage.write(encrypted.get(i));
+        else
+          write = TcpMessage.write(encrypted.get(i), requestedAck);
+        connection.tell(write, self());
+      }
+    }
     else
       connection.tell(TcpMessage.write(data, requestedAck), getSelf());
   }
