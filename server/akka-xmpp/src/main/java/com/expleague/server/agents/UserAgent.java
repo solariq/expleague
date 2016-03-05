@@ -66,7 +66,7 @@ public class UserAgent extends PersistentActorAdapter {
         courier = option.get();
         context().stop(courier);
         try {
-          Thread.sleep(10);
+          Thread.sleep(1000);
         }
         catch (InterruptedException ignore) {}
         invoke(status);
