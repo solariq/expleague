@@ -66,12 +66,11 @@ public class UserAgent extends PersistentActorAdapter {
         log.warning("Concurrent connectors for the same resource: " + resource + " for " + jid() + "!");
         courier = option.get();
         courier.tell(PoisonPill.getInstance(), self());
-        context().stop(courier);
         try {
           Thread.sleep(1000);
         }
         catch (InterruptedException ignore) {}
-        invoke(status);
+        self().forward(status, context());
         return;
       }
       final ActorRef courierRef = context().actorOf(
