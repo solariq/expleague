@@ -9,6 +9,7 @@ import com.expleague.util.akka.PersistentActorAdapter;
 import com.expleague.util.akka.PersistentActorContainer;
 import com.expleague.util.ios.NotificationsManager;
 import com.expleague.xmpp.JID;
+import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
@@ -56,10 +57,11 @@ public class UserAgent extends PersistentActorAdapter {
   @ActorMethod
   public void invoke(ConnStatus status) { // connection acquired
     final String resource = status.resource;
-    final Option<ActorRef> option = context().child(resource);
+    final String actorResourceAddr = resource.isEmpty() ? "@@empty@@" : resource.replace('/', '&');
+    final Option<ActorRef> option = context().child(actorResourceAddr);
     if (status.connected) {
       final ActorRef courier;
-      if (!option.isEmpty()) {
+      if (option.isDefined()) {
         log.warning("Concurrent connectors for the same resource: " + resource + " for " + jid() + "!");
         courier = option.get();
         context().stop(courier);
@@ -72,7 +74,7 @@ public class UserAgent extends PersistentActorAdapter {
       else {
         final ActorRef courierRef = context().actorOf(
             PersistentActorContainer.props(Courier.class, jid().resource(resource), sender()),
-            resource.isEmpty() ? "@@empty@@" : resource
+            actorResourceAddr
         );
         sender().tell(courierRef, self());
       }
@@ -111,7 +113,7 @@ public class UserAgent extends PersistentActorAdapter {
 
   private void toWorld(Stanza stanza) {
     XMPP.send(stanza, context());
-    if("expert".equals(stanza.from().resource()))
+    if (!(stanza instanceof Iq) && stanza.from().resource().endsWith("expert"))
       LaborExchange.Experts.tellTo(jid(), stanza, self(), context());
     if (stanza instanceof Message) {
       final Message message = (Message) stanza;
