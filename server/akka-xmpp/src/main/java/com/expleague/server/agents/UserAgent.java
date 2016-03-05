@@ -1,6 +1,7 @@
 package com.expleague.server.agents;
 
 import akka.actor.ActorRef;
+import akka.actor.PoisonPill;
 import akka.persistence.RecoveryCompleted;
 import com.expleague.model.Delivered;
 import com.expleague.model.Operations;
@@ -64,20 +65,20 @@ public class UserAgent extends PersistentActorAdapter {
       if (option.isDefined()) {
         log.warning("Concurrent connectors for the same resource: " + resource + " for " + jid() + "!");
         courier = option.get();
+        courier.tell(PoisonPill.getInstance(), self());
         context().stop(courier);
         try {
           Thread.sleep(1000);
         }
         catch (InterruptedException ignore) {}
         invoke(status);
+        return;
       }
-      else {
-        final ActorRef courierRef = context().actorOf(
-            PersistentActorContainer.props(Courier.class, jid().resource(resource), sender()),
-            actorResourceAddr
-        );
-        sender().tell(courierRef, self());
-      }
+      final ActorRef courierRef = context().actorOf(
+          PersistentActorContainer.props(Courier.class, jid().resource(resource), sender()),
+          actorResourceAddr
+      );
+      sender().tell(courierRef, self());
 
       presenceMap.values().stream()
           .filter(Presence::available)
