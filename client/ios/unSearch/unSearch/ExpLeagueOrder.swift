@@ -76,13 +76,7 @@ class ExpLeagueOrder: NSManagedObject {
         return messagesRaw[index] as! ExpLeagueMessage
     }
     
-    func message(var message msg: XMPPMessage) {
-        if (msg.elementsForName("body").count > 0 && msg.body().containsString("Welcome to room \(id)")) { // initial message
-            msg = XMPPMessage(type: "groupchat", to: jid)
-            msg.addSubject(topic)
-            stream.sendElement(msg)
-        }
-
+    func message(message msg: XMPPMessage) {
         let message = ExpLeagueMessage(msg: msg, parent: self, context: self.managedObjectContext!)
         let mutableItems = messagesRaw.mutableCopy() as! NSMutableOrderedSet
         mutableItems.addObject(message)

@@ -29,8 +29,10 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         didSet {
             messagesView.delegate = data
             messagesView.dataSource = data
+
             answerText = data!.answer
             if (loaded) {
+                
                 data!.controller = self
                 messagesView.reloadData()
             }
@@ -171,8 +173,6 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         if (data != nil) {
             data?.scrollToLastMessage(messagesView)
         }
-
-        super.viewWillAppear(animated)
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -182,17 +182,17 @@ class MessagesVeiwController: UIViewController, ChatInputDelegate, ImageSenderQu
         if (data == nil) {
             return
         }
-        if (data!.order.isActive) {
-            scrollView.setContentOffset(messagesView.frame.origin, animated: false)
-        }
-        else {
-            scrollView.setContentOffset(progress.frame.origin, animated: false)
-        }
         if (data!.order.text.characters.count > 15) {
             self.title = data!.order.text.substringToIndex(data!.order.topic.startIndex.advancedBy(15)) + "..."
         }
         else {
             self.title = data!.order.text
+        }
+        if (data!.order.isActive) {
+            scrollView.setContentOffset(messagesView.frame.origin, animated: false)
+        }
+        else {
+            scrollView.setContentOffset(progress.frame.origin, animated: false)
         }
     }
 
@@ -330,6 +330,7 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         var model = cells.last!
         while (lastKnownMessage < order.count) {
             let msg = order.message(lastKnownMessage)
+            print("\(order.jid) -> \(msg.type)")
             if (model is LookingForExpertModel || model is FeedbackModel) {
                 cells.removeLast();
                 model = cells.last!
@@ -387,7 +388,7 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 lastKnownMessage++
             }
         }
-        if (order.count > 0 && !haveActiveExpert && order.isActive) {
+        if (!haveActiveExpert && order.isActive) {
             if !(cells.last! is FeedbackModel || cells.last! is LookingForExpertModel) {
                 if (model is AnswerReceivedModel) {
                     cells.append(FeedbackModel(order: order))

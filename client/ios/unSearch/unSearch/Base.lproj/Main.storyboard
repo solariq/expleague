@@ -91,7 +91,7 @@
         <scene sceneID="jE3-7V-d5Q">
             <objects>
                 <tableViewController id="9Xn-iC-3CX" customClass="OrderDescriptionViewController" customModule="unSearch" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" keyboardDismissMode="interactive" dataMode="static" style="plain" separatorStyle="none" rowHeight="150" sectionHeaderHeight="28" sectionFooterHeight="28" id="kqs-su-sKb">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" bounces="NO" showsHorizontalScrollIndicator="NO" keyboardDismissMode="interactive" dataMode="static" style="plain" separatorStyle="none" rowHeight="150" sectionHeaderHeight="28" sectionFooterHeight="28" id="kqs-su-sKb">
                         <rect key="frame" x="0.0" y="0.0" width="328" height="439"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -352,7 +352,7 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <collectionView clipsSubviews="YES" contentMode="scaleToFill" bounces="NO" alwaysBounceHorizontal="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="Kwa-c3-kaj">
-                                                    <rect key="frame" x="23" y="0.0" width="282" height="44"/>
+                                                    <rect key="frame" x="68" y="0.0" width="237" height="44"/>
                                                     <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="10" minimumInteritemSpacing="10" id="oVd-2p-xuo">
                                                         <size key="itemSize" width="45" height="44"/>
                                                         <size key="headerReferenceSize" width="0.0" height="0.0"/>
@@ -403,7 +403,7 @@
                                                 <constraint firstItem="Kwa-c3-kaj" firstAttribute="top" secondItem="w7M-Qd-3gZ" secondAttribute="topMargin" constant="-8" id="6gh-8x-PLN"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="Kwa-c3-kaj" secondAttribute="trailing" constant="15" id="W5j-Ci-pyL"/>
                                                 <constraint firstAttribute="bottomMargin" secondItem="Kwa-c3-kaj" secondAttribute="bottom" constant="-8" id="Wfd-3y-QrO"/>
-                                                <constraint firstItem="Kwa-c3-kaj" firstAttribute="leading" secondItem="w7M-Qd-3gZ" secondAttribute="leadingMargin" constant="15" id="orb-Iq-pcT"/>
+                                                <constraint firstItem="Kwa-c3-kaj" firstAttribute="leading" secondItem="w7M-Qd-3gZ" secondAttribute="leadingMargin" constant="60" id="orb-Iq-pcT"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>

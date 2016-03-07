@@ -78,11 +78,14 @@ class HistoryViewController: UITableViewController {
             table.selectRowAtIndexPath(index, animated: false, scrollPosition: .Top)
             self.tableView(table, didSelectRowAtIndexPath: index)
         }
-        AppDelegate.instance.tabs.tabBar.hidden = false
         AppDelegate.instance.activeProfile!.track(tracker!)
         if (navigationController != nil) {
             navigationController!.navigationBar.setBackgroundImage(UIImage(named: "history_background"), forBarMetrics: .Default)
         }
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+        AppDelegate.instance.tabs.tabBar.hidden = false
     }
 
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
@@ -238,13 +241,16 @@ class HistoryViewController: UITableViewController {
     override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
         if (editingStyle == .Delete) {
             if (indexPath.section == 0) {
-                ongoing.removeAtIndex(indexPath.row).archive()
+                let order = ongoing.removeAtIndex(indexPath.row)
+                tableView.beginUpdates()
                 if (ongoing.isEmpty) {
                     tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
                 }
                 else {
                     tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
                 }
+                tableView.endUpdates()
+                order.archive()
             }
             else if (indexPath.section == 1) {
                 finished.removeAtIndex(indexPath.row).archive()

@@ -62,8 +62,9 @@ class ExpLeagueProfile: NSManagedObject {
         orderSelected = Int16(orders.count - 1)
     }
     
+    private dynamic var _jid: XMPPJID?
     var jid: XMPPJID! {
-        return XMPPJID.jidWithString(login + "@" + domain + "/unSearch");
+        return _jid ?? XMPPJID.jidWithString(login + "@" + domain + "/unSearch");
     }
     
     var progressBar: ConnectionProgressController? {
@@ -144,9 +145,12 @@ class ExpLeagueProfile: NSManagedObject {
         }
         
         let topicJson = try! NSJSONSerialization.dataWithJSONObject(json, options: [])
-        let order = ExpLeagueOrder("room-" + login + "-" + rand, topic: String(NSString(data: topicJson, encoding: NSUTF8StringEncoding)!), urgency: urgency, local: local, specific: prof, context: self.managedObjectContext!);
-        let presence = XMPPPresence(type: "available", to: order.jid);
-        AppDelegate.instance.stream.sendElement(presence)
+        let topic = String(NSString(data: topicJson, encoding: NSUTF8StringEncoding)!)
+        let order = ExpLeagueOrder("room-" + login + "-" + rand, topic: topic, urgency: urgency, local: local, specific: prof, context: self.managedObjectContext!);
+        let msg = XMPPMessage(type: "groupchat", to: order.jid)
+        msg.addSubject(topic)
+        AppDelegate.instance.stream.sendElement(msg)
+        
         orderSelected = Int16(orders.count)
         let mutableItems = orders.mutableCopy() as! NSMutableOrderedSet
         mutableItems.addObject(order)
@@ -243,6 +247,7 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
     @objc
     func xmppStreamDidAuthenticate(sender: XMPPStream!) {
         progressBar?.progress = .Connected
+        self._jid = sender.myJID
         if (AppDelegate.instance.token != nil) {
             let msg = XMPPMessage(type: "normal")
             let token = DDXMLElement(name: "token", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)

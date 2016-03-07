@@ -133,7 +133,9 @@ class OrderDescriptionViewController: UITableViewController {
     
     override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
         coordinator.animateAlongsideTransition({ (UIViewControllerTransitionCoordinatorContext) -> Void in
-            self.adjustSizes(size.height - self.view.window!.frame.height + self.view.frame.height)
+            if (self.view.window != nil) {
+                self.adjustSizes(size.height - self.view.window!.frame.height + self.view.frame.height)
+            }
         }, completion: nil)
     }
     
@@ -180,9 +182,12 @@ class OrderDescriptionViewController: UITableViewController {
     }
     
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        if (indexPath.item == 0 && indexPath.section == 0) {
+        if (indexPath.item == 0) {
             return sizeOfInput(view.frame.height)
         }
+//        else if (indexPath.item == 4) {
+//            return CGFloat(82)
+//        }
         return CGFloat(rowHeight);
     }
     
@@ -204,6 +209,10 @@ class OrderDescriptionViewController: UITableViewController {
 class ImageAttachment: UICollectionViewCell {
     @IBOutlet weak var image: UIImageView!
     @IBOutlet weak var progress: UIProgressView!
+    
+    override func awakeFromNib() {
+        progress.progress = 0.0
+    }
 }
 
 class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionViewDataSource, ImageSenderQueue {
@@ -305,6 +314,7 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
     
     @objc
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+        progressView = nil
         if let referenceUrl = info[UIImagePickerControllerReferenceURL] as? NSURL {
             imageId = "\(ExpLeagueProfile.active.jid.user)-\(referenceUrl.hash).jpeg";
         }
@@ -325,8 +335,8 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
             
             queue.append(imageId!, image: image, progress: {
                 self.progressView = $0
-                self.uploadImage()
             })
+            self.uploadImage()
             self.image = image
         }
         picker.dismissViewControllerAnimated(true, completion: nil)
@@ -354,6 +364,7 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
         requestBodyData.appendData(imageData!)
         requestBodyData.appendData("\r\n".dataUsingEncoding(NSUTF8StringEncoding)!)
         requestBodyData.appendData(boundaryEnd.dataUsingEncoding(NSUTF8StringEncoding)!)
+        requestBodyData.appendData("\r\n".dataUsingEncoding(NSUTF8StringEncoding)!)
         
         request.HTTPMethod = "POST"
         request.setValue("Keep-Alive", forHTTPHeaderField: "Connection")
@@ -361,7 +372,6 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
         request.HTTPBody = requestBodyData.copy() as? NSData
         request.timeoutInterval = 10 * 60
         request.cachePolicy = .ReloadIgnoringLocalCacheData
-
         let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
         let session = NSURLSession(configuration: configuration, delegate: self, delegateQueue: NSOperationQueue.mainQueue())
 
@@ -380,6 +390,7 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
     
     func URLSession(session: NSURLSession, task: NSURLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
         let uploadProgress:Float = Float(totalBytesSent) / Float(totalBytesExpectedToSend)
+        progressView?.progressTintColor = UIColor.blueColor()
         progressView?.progress = uploadProgress
 //        print("\(uploadProgress) \(totalBytesSent) of \(totalBytesExpectedToSend)")
     }
@@ -426,7 +437,7 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
                 self.parent.lupa.hidden = true
             }
             textView.textColor = UIColor.blackColor()
-            self.height.constant = self.total - 16.0 - 30.0
+            self.height.constant = max(30.0, self.total - 16.0 - 30.0)
             self.parent.view!.layoutIfNeeded()
         }
         if (tapDetector == nil) {
@@ -474,7 +485,7 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
     var total: CGFloat = 80 {
         didSet {
             if (active) {
-                height.constant = total - 16.0 - 30.0
+                height.constant = max(30, total - 16.0 - 30.0)
             }
             else {
                 height.constant = 30
