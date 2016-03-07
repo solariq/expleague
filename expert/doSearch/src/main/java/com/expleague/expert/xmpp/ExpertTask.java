@@ -152,9 +152,11 @@ public class ExpertTask {
   }
 
   public void suspend() {
-    if (state != State.BUSY)
+    if (state != State.BUSY && state != State.INVITE)
       return;
     final Operations.Suspend suspend = new Operations.Suspend();
+    if (state == State.INVITE)
+      eventsReceiver.accept(new TaskInviteCanceledEvent(new Operations.Cancel(), this));
     state(State.SUSPEND);
     eventsReceiver.accept(new TaskSuspendedEvent(suspend, this));
     log(suspend);

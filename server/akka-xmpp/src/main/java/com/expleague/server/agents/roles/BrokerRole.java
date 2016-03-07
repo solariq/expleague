@@ -5,7 +5,6 @@ import akka.actor.ActorRef;
 import akka.actor.Cancellable;
 import akka.actor.FSM;
 import akka.util.Timeout;
-import com.expleague.model.Offer;
 import com.expleague.model.Operations.*;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
@@ -13,6 +12,7 @@ import com.expleague.server.agents.XMPP;
 import com.expleague.util.akka.AkkaTools;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
+import com.spbsu.commons.random.FastRandom;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
 import static com.expleague.server.agents.LaborExchange.Experts;
 import static com.expleague.server.agents.LaborExchange.experts;
 
@@ -35,6 +36,8 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
 
   private String explanation = "";
   private Cancellable timeout;
+
+  private final FastRandom rng = new FastRandom();
 
   {
     startWith(State.UNEMPLOYED, null);
@@ -62,7 +65,6 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
     when(State.STARVING,
         matchEvent(Ok.class,
             (ok, task) -> {
-              nextTimer(null);
               explain("Received agreement from expert " + Experts.jid(sender()).local());
               final JID expert = Experts.jid(sender());
               if (task.interview(expert)) {
@@ -106,33 +108,42 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
         ).event(Cancel.class,
             (cancel, task) -> !task.jid().bareEq(XMPP.jid(sender())),
             (cancel, task) -> {
-              nextTimer(null);
               final JID expert = Experts.jid(sender());
               explain("Expert " + expert + " refused the check.");
               return stay().using(task.refused(expert));
+            }
+        ).event(Ignore.class,
+            (cancel, task) -> {
+              final JID expert = Experts.jid(sender());
+              explain("Expert " + expert + " ignored the check.");
+              return stay().using(task.ignored(expert));
             }
         ).event(Cancel.class,
             (cancel, task) -> task.jid().bareEq(XMPP.jid(sender())),
             (cancel, task) -> cancelTask(task)
         ).event(Timeout.class,
-            (to, task) -> lookForExpert(task)
+            (to, task) -> {
+              timeout = AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT.plus(FiniteDuration.apply(rng.nextDouble(), TimeUnit.MINUTES)), self());
+              return lookForExpert(task);
+            }
         )
     );
 
     when(State.INVITE,
         matchEvent(Start.class,
-            (start, task) -> task.role(Experts.jid(sender())) == ExpLeagueOrder.Role.INVITED,
+            (start, task) -> task.role(Experts.jid(sender())) == INVITED,
             (start, task) -> {
               final JID expert = Experts.jid(sender());
               explain("Expert " + expert + " started working on task " + task.order().room().local() + ".");
+              task.enter(expert);
               XMPP.send(new Message(expert, task.jid(), new Start()), context());
-              task.order().participants()
+              task.experts()
                   .filter(jid -> !jid.bareEq(expert))
                   .forEach(jid -> Experts.tellTo(jid, new Cancel(), self(), context()));
-              return goTo(State.WORK_TRACKING).using(task.enter(expert));
+              return goTo(State.WORK_TRACKING);
             }
         ).event(// from invitation
-            (cancel, task) -> task.role(Experts.jid(sender())) == ExpLeagueOrder.Role.INVITED && (cancel instanceof Cancel || cancel instanceof Ignore),
+            (cancel, task) -> task.role(Experts.jid(sender())) == INVITED && (cancel instanceof Cancel || cancel instanceof Ignore),
             (cancel, task) -> {
               final JID expert = Experts.jid(sender());
               explain("Expert " + expert + " declined invitation");
@@ -157,17 +168,15 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
             (expertRef, task) -> {
               final JID expert = Experts.jid(expertRef);
               explain("Labor exchange send us new candidate: " + expert + ".");
-              if (!task.interview(expert)) {
+              if (task.interview(expert) && task.check(expert)) {
                 explain("Have not seen him before, sending offer.");
-                if (task.check(expert)) {
-                  Experts.tellTo(expert, task.offer(), self(), context());
-                }
+                Experts.tellTo(expert, task.offer(), self(), context());
               }
               else explain("This candidate has already refused our invitation/check/failed interview. Ignoring.");
               return stay();
             }
         ).event(Cancel.class, // from check
-            (cancel, task) -> task.role(Experts.jid(sender())) == ExpLeagueOrder.Role.CHECKING,
+            (cancel, task) -> task.role(Experts.jid(sender())) == CHECKING,
             (cancel, task) -> {
               explain("Expert " + Experts.jid(sender()) + " is not ready");
               return stay().using(task.refused(Experts.jid(sender())));
@@ -185,9 +194,8 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
                   Experts.tellTo(expert, new Invite(), self(), context());
                   XMPP.send(new Message(expert, XMPP.jid(), new Invite()), context());
                 }
-                else if (task.role(expert) == ExpLeagueOrder.Role.NONE) {
+                else if (task.role(expert) == NONE)
                   Experts.tellTo(expert, new Cancel(), self(), context());
-                }
                 return stay();
               }
               else {
@@ -202,7 +210,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
 
     when(State.WORK_TRACKING,
         matchEvent(Done.class,
-            (done, task) -> task.role(Experts.jid(sender())) == ExpLeagueOrder.Role.ACTIVE,
+            (done, task) -> task.role(Experts.jid(sender())) == ACTIVE,
             (done, task) -> {
               explain("Expert has finished working on the " + task.order().room().local() + ". Sending notification to the room.");
               task.order().broker(LaborExchange.reference(context()));
@@ -210,7 +218,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               return goTo(State.UNEMPLOYED).using(null);
             }
         ).event(Cancel.class, // cancel from expert
-            (cancel, task) -> task.role(Experts.jid(sender())) == ExpLeagueOrder.Role.ACTIVE,
+            (cancel, task) -> task.role(Experts.jid(sender())) == ACTIVE,
             (cancel, task) -> {
               explain("Expert canceled task. Looking for other worker.");
               XMPP.send(new Message(Experts.jid(sender()), task.jid(), cancel), context());
@@ -235,13 +243,23 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
           explain("Unemployed expert ignored in improper state");
           return stay();
         }
-    ).event(Offer.class,
+    ).event(ExpLeagueOrder.class,
         (offer, task) -> {
           explain("Already working on " + task.order().room() + ".");
           return stay().replying(new Cancel());
         }
     ));
 
+    onTransition((from, to) -> {
+      if (from != to) {
+        if (this.timeout != null)
+          this.timeout.cancel();
+        if (to == State.STARVING)
+          this.timeout = AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT, self());
+        else
+          this.timeout = null;
+      }
+    });
     onTermination(
         matchStop(Normal(),
             (state, data) -> log.fine("BrokerRole stopped " + data.order().room())
@@ -273,17 +291,9 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
 
   private FSM.State<State, ExpLeagueOrder.State> cancelTask(ExpLeagueOrder.State orderState) {
     explain("The order was canceled by client. Sending all experts cancel.");
-    nextTimer(null);
-    orderState.order().participants()
-        .forEach(jid -> Experts.tellTo(jid, new Cancel(), self(), context()));
+    orderState.experts().forEach(jid -> Experts.tellTo(jid, new Cancel(), self(), context()));
     orderState.cancel();
     return goTo(State.UNEMPLOYED).using(null);
-  }
-
-  private void nextTimer(Cancellable timeout) {
-    if (this.timeout != null)
-      this.timeout.cancel();
-    this.timeout = timeout;
   }
 
   private void explain(String explanation) {
@@ -296,7 +306,6 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
     explain("Going to labor exchange to find expert.");
     orderState.nextRound();
     experts(context()).tell(orderState.order().offer(), self());
-    nextTimer(AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT, self()));
     return stateName() != State.STARVING ? goTo(State.STARVING) : stay();
   }
 

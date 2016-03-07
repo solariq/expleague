@@ -328,47 +328,45 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         let cellsCount = cells.count
         let startedFrom = lastKnownMessage
         var model = cells.last!
+        var modelChangeCount = 0
+        if (model is LookingForExpertModel || model is FeedbackModel) {
+            cells.removeLast();
+            model = cells.last!
+        }
+
         while (lastKnownMessage < order.count) {
-            let msg = order.message(lastKnownMessage)
-            print("\(order.jid) -> \(msg.type)")
-            if (model is LookingForExpertModel || model is FeedbackModel) {
-                cells.removeLast();
-                model = cells.last!
-            }
-            if (msg.type == .ExpertAssignment) {
-                if (progressModel == nil || !progressModel!.accept(msg)) {
-                    if (msg.properties["type"] as! String == "expert") {
-                        haveActiveExpert = true
-                        progressModel = ExpertInProgressModel(order: order)
-                        progressCellIndex = cells.count
-                        cells.append(progressModel!)
-                    }
-                }
-                else {
-                    lastKnownMessage++;
-                }
-            }
-            else if (msg.type == .ExpertCancel) {
-                if (progressCellIndex != nil) {
-                    cells.removeAtIndex(progressCellIndex!)
-                }
-                haveActiveExpert = false
-                progressModel = nil
-                progressCellIndex = nil
-                lastKnownMessage++;
-            }
-            else if (msg.type == .ExpertProgress) {
-                progressModel?.accept(msg)
+            if (modelChangeCount > 2) {
+                print("Loop found! Enforce next message")
                 lastKnownMessage++
             }
-            else if (!model.accept(msg)) { // switch model
-                if (msg.type == .Answer) {
+            let msg = order.message(lastKnownMessage)
+            print("\(order.jid) -> \(msg.type)")
+            if (!model.accept(msg)) { // switch model
+                modelChangeCount++
+                var newModel : ChatCellModel? = nil
+                if (msg.type == .ExpertAssignment) {
+                    haveActiveExpert = true
+                    progressModel = ExpertInProgressModel(order: order)
+                    progressCellIndex = cells.count
+                    newModel = progressModel!
+                }
+                else if (msg.type == .ExpertCancel) {
+                    if (progressCellIndex != nil) {
+                        cells.removeAtIndex(progressCellIndex!)
+                    }
+                    haveActiveExpert = false
+                    progressModel = nil
+                    progressCellIndex = nil
+                }
+                else if (msg.type == .ExpertProgress) {
+                    progressModel?.accept(msg)
+                }
+                else if (msg.type == .Answer) {
                     let id = "message-\(msg.hashValue)"
                     answer += "\n<div id=\"\(id)\"/>\n"
                     answer += (msg.body!);
                     answer += "\n<a href='unSearch:///chat-messages#\(cells.count)'>Обратно в чат</a>\n"
-
-                    model = AnswerReceivedModel(id: id, progress: progressModel!)
+                    newModel = AnswerReceivedModel(id: id, progress: progressModel!)
                     progressModel = nil
                     if (progressCellIndex != nil) {
                         cells.removeAtIndex(progressCellIndex!)
@@ -377,16 +375,19 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                     haveActiveExpert = false
                 }
                 else if (msg.type == .ExpertMessage) {
-                    model = ChatMessageModel(incoming: true, author: msg.from)
+                    newModel = ChatMessageModel(incoming: true, author: msg.from)
                 }
                 else {
-                    model = ChatMessageModel(incoming: false, author: "me")
+                    newModel = ChatMessageModel(incoming: false, author: "me")
                 }
-                cells.append(model)
+                if (newModel != nil) {
+                    cells.append(newModel!)
+                    model = cells.last!
+                    continue
+                }
             }
-            else {
-                lastKnownMessage++
-            }
+            lastKnownMessage++
+            modelChangeCount = 0
         }
         if (!haveActiveExpert && order.isActive) {
             if !(cells.last! is FeedbackModel || cells.last! is LookingForExpertModel) {

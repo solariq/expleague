@@ -28,7 +28,6 @@ public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> {
   private final Action<ExpLeagueConnection.Status> connectionListener = status -> {
     if (status == ExpLeagueConnection.Status.DISCONNECTED && task != null) {
       task.suspend();
-      task = null;
     }
   };
 

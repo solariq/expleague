@@ -99,9 +99,10 @@ public class AkkaTools {
     }
   }
 
-  public static Cancellable scheduleTimeout(ActorContext context, FiniteDuration timeout, ActorRef to) {
-    return context.system().scheduler().scheduleOnce(timeout, () -> {
-      to.tell(Timeout.apply(timeout), to);
+  public static Cancellable scheduleTimeout(ActorContext context, Duration timeout, ActorRef to) {
+    final FiniteDuration finiteDuration = FiniteDuration.apply(timeout.toMillis(), TimeUnit.MILLISECONDS);
+    return context.system().scheduler().scheduleOnce(finiteDuration, () -> {
+      to.tell(Timeout.apply(finiteDuration), to);
     }, context.dispatcher());
   }
 }

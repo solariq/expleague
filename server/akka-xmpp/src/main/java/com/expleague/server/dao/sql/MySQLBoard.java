@@ -36,7 +36,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @Override
   public MySQLOrder register(Offer offer) {
     try {
-      final PreparedStatement registerOrder = createStatement("register-order", "INSERT INTO expleague.Orders SET room = ?, offer = ?, eta = ?");
+      final PreparedStatement registerOrder = createStatement("register-order", "INSERT INTO expleague.Orders SET room = ?, offer = ?, eta = ?, status = " + ExpLeagueOrder.Status.OPEN.index(), true);
       registerOrder.setString(1, offer.room().local());
       registerOrder.setCharacterStream(2, new StringReader(offer.xmlString()));
       registerOrder.setTimestamp(3, Timestamp.from(offer.expires().toInstant()));
@@ -68,6 +68,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
             return new MySQLOrder(resultSet);
         }
         final PreparedStatement countOrders = createStatement("count-orders", "SELECT COUNT(*) FROM expleague.Orders WHERE room = ?");
+        countOrders.setString(1, id);
         final long ordersCount;
         try (final ResultSet countRS = countOrders.executeQuery()){
           countRS.next();
@@ -133,12 +134,12 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
           try {
             final MySQLOrder order = new MySQLOrder(rs);
             ordersCache.put(order.room().local(), order);
-            return order;
+            return (ExpLeagueOrder)order;
           }
           catch (SQLException | IOException e) {
             throw new RuntimeException(e);
           }
-        });
+        }).filter(o -> o != null);
   }
 
   private class MySQLOrder extends InMemBoard.MyOrder {

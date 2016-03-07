@@ -2,6 +2,8 @@ package com.expleague.server;
 
 import com.expleague.xmpp.JID;
 
+import java.util.Date;
+
 /**
  * Experts League
  * Created by solar on 02/03/16.
@@ -14,7 +16,7 @@ public class XMPPUser {
   private final String avatar;
   private JID jid;
 
-  public XMPPUser(String id, String name, String country, String city, String avatar) {
+  public XMPPUser(String id, String country, String city, String name, int sex, int age, Date created, String avatar) {
     this.id = id;
     this.name = name;
     this.country = country;

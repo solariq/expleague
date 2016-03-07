@@ -92,9 +92,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
             else if (msg.has(Cancel.class)) {
               XMPP.send(new Message(jid, dump.owner(), msg.get(Command.class)), context());
             }
-            break;
-          case INVITED:
-            if (msg.has(Start.class)) {
+            else if (msg.has(Start.class)) {
               dump.stream()
                   .flatMap(Functions.instancesOf(Message.class))
                   .filter(message -> message.type() == MessageType.GROUP_CHAT)
@@ -126,7 +124,10 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
   @SuppressWarnings("ConstantConditions")
   public static ExpLeagueOrder[] replay(LaborExchange.Board board, String roomId) {
     final Queue<ExpLeagueOrder> result = new ArrayDeque<>();
-    Archive.instance().dump(roomId).stream().forEach(stanza -> {
+    final Archive.Dump dump = Archive.instance().dump(roomId);
+    if (dump == null)
+      return new ExpLeagueOrder[0];
+    dump.stream().forEach(stanza -> {
       if (!(stanza instanceof Message))
         return;
       final Message message = (Message) stanza;
@@ -197,7 +198,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
 
   private void dump(Stanza stanza) {
     if (dump == null)
-      dump = Archive.instance().register(jid.local(), stanza.from().local());
+      dump = Archive.instance().register(jid.local(), stanza.from().toString());
     dump.accept(stanza);
   }
 

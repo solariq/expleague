@@ -1,21 +1,23 @@
 package com.expleague.server.dao;
 
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
-import com.amazonaws.services.dynamodbv2.document.AttributeUpdate;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.document.UpdateItemOutcome;
+import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
+import com.amazonaws.services.dynamodbv2.document.internal.InternalUtils;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
-import com.expleague.server.agents.XMPP;
+import com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.util.cache.CacheStrategy;
 import com.spbsu.commons.util.cache.impl.FixedSizeCache;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -28,20 +30,19 @@ import java.util.stream.Stream;
 public class DynamoDBArchive implements Archive {
   public static final String TBTS_ROOMS = "tbts-rooms";
   private final DynamoDBMapper mapper;
-  private final Table table;
+  private final AmazonDynamoDBAsyncClient client;
 
   public DynamoDBArchive() {
     final BasicAWSCredentials credentials = new BasicAWSCredentials("AKIAJPLJBHVNFAWY3S4A", "UEnvfQ2ver5mlOu7IJsjxRH3G9uF3/f0WNLFZ9c6");
-    final AmazonDynamoDBAsyncClient dbClient = new AmazonDynamoDBAsyncClient(credentials);
-    mapper = new DynamoDBMapper(dbClient);
-    final List<String> tableNames = dbClient.listTables().getTableNames();
+    client = new AmazonDynamoDBAsyncClient(credentials);
+    mapper = new DynamoDBMapper(client);
+    final List<String> tableNames = client.listTables().getTableNames();
     if (!tableNames.contains(TBTS_ROOMS)) {
       final CreateTableRequest createReq = mapper.generateCreateTableRequest(RoomArchive.class);
       createReq.setProvisionedThroughput(new ProvisionedThroughput(10L, 10L));
-      dbClient.createTable(createReq);
+      client.createTable(createReq);
     }
-    final DynamoDB db = new DynamoDB(dbClient);
-    table = db.getTable(TBTS_ROOMS);
+    final DynamoDB db = new DynamoDB(client);
   }
 
   private FixedSizeCache<String, RoomArchive> dumpsCache = new FixedSizeCache<>(1000, CacheStrategy.Type.LRU);
@@ -49,7 +50,8 @@ public class DynamoDBArchive implements Archive {
   public synchronized Dump dump(String local) {
     return dumpsCache.get(local, id -> {
       final RoomArchive archive = mapper.load(RoomArchive.class, id);
-      archive.handlers(table, mapper);
+      if (archive != null)
+        archive.handlers(client, mapper);
       return archive;
     });
   }
@@ -57,7 +59,7 @@ public class DynamoDBArchive implements Archive {
   @Override
   public synchronized Dump register(String room, String owner) {
     final RoomArchive archive = new RoomArchive(room);
-    archive.handlers(table, mapper);
+    archive.handlers(client, mapper);
     dumpsCache.put(room, archive);
     return archive;
   }
@@ -98,11 +100,20 @@ public class DynamoDBArchive implements Archive {
 
     @Override
     public void accept(Stanza stanza) {
-      final Message message = new Message(stanza.from().local(), stanza.xmlString(), System.currentTimeMillis());
+      final Message message = new Message(stanza.from().toString(), stanza.xmlString(), System.currentTimeMillis());
       messages.add(message);
       if (messages.size() != 1) {
         messages.add(message);
-        UpdateItemOutcome outcome =  table.updateItem("id", id, new AttributeUpdate("messages").addElements(message));
+        client.updateItem(new UpdateItemRequest()
+            .withTableName(TBTS_ROOMS)
+            .withKey(InternalUtils.toAttributeValueMap(new PrimaryKey("id", id)))
+            .withUpdateExpression("set #m = list_append(#m, :i)")
+            .withExpressionAttributeNames(new HashMap<String, String>() {{
+              put("#m", "messages");
+            }})
+            .withExpressionAttributeValues(new HashMap<String, AttributeValue>(){{
+              put(":i", message.asMap());
+            }}));
       }
       else mapper.save(this);
     }
@@ -112,16 +123,17 @@ public class DynamoDBArchive implements Archive {
       return messages.stream().map(msg -> (Stanza)Stanza.create(msg.text));
     }
 
+    private JID jid;
     @Override
     public JID owner() {
-      return XMPP.jid(messages.get(0).author);
+      return jid != null ? jid : (jid = JID.parse(messages.get(0).author));
     }
 
-    private Table table;
     private DynamoDBMapper mapper;
+    private AmazonDynamoDB client;
 
-    public void handlers(Table table, DynamoDBMapper mapper) {
-      this.table = table;
+    public void handlers(AmazonDynamoDB client, DynamoDBMapper mapper) {
+      this.client = client;
       this.mapper = mapper;
     }
   }
@@ -164,6 +176,13 @@ public class DynamoDBArchive implements Archive {
 
     public void setTs(long ts) {
       this.ts = ts;
+    }
+
+    public AttributeValue asMap() {
+      return new AttributeValue().withL(new AttributeValue()
+          .addMEntry("text", new AttributeValue().withS(text))
+          .addMEntry("author", new AttributeValue().withS(author))
+          .addMEntry("ts", new AttributeValue().withN(Long.toString(ts))));
     }
   }
 }

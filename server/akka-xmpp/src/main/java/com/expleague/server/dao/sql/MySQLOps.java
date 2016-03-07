@@ -1,7 +1,13 @@
 package com.expleague.server.dao.sql;
 
+import com.spbsu.commons.io.StreamTools;
+import com.spbsu.commons.system.RuntimeUtils;
 import org.intellij.lang.annotations.Language;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -9,6 +15,7 @@ import java.util.Map;
 import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -18,6 +25,7 @@ import java.util.stream.StreamSupport;
  * Time: 18:55
  */
 public class MySQLOps {
+  private static final Logger log = Logger.getLogger(MySQLOps.class.getName());
   private final String connectionUrl;
   private Connection conn;
   private final ThreadLocal<Map<String, PreparedStatement>> statements = new ThreadLocal<Map<String, PreparedStatement>>(){
@@ -32,10 +40,14 @@ public class MySQLOps {
   }
 
   public PreparedStatement createStatement(String name, @Language("MySQL") String stmt) {
+    return createStatement(name, stmt, false);
+  }
+
+  public PreparedStatement createStatement(String name, @Language("MySQL") String stmt, boolean returnGenKeys) {
     PreparedStatement preparedStatement = statements.get().get(name);
     try {
       if (preparedStatement == null || preparedStatement.isClosed() || preparedStatement.getConnection() == null) {
-        preparedStatement = conn().prepareStatement(stmt);
+        preparedStatement = conn().prepareStatement(stmt, returnGenKeys ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS);
       }
       preparedStatement.clearParameters();
       statements.get().put(name, preparedStatement);
@@ -48,8 +60,9 @@ public class MySQLOps {
 
   public Connection conn() {
     try {
-      if (conn == null || conn.isClosed())
+      if (conn == null || conn.isClosed()) {
         conn = DriverManager.getConnection(connectionUrl);
+      }
       return conn;
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -86,7 +99,7 @@ public class MySQLOps {
 
     @Override
     public boolean hasNext() {
-      if (ps == null)
+      if (rs == null)
         init();
       try {
         boolean hasMore = rs.next();
@@ -102,14 +115,7 @@ public class MySQLOps {
 
     @Override
     public ResultSet next() {
-      try {
-        rs.next();
-        return rs;
-      }
-      catch (SQLException e) {
-        close();
-        throw new RuntimeException(e);
-      }
+      return rs;
     }
 
     private void close() {
@@ -127,7 +133,21 @@ public class MySQLOps {
   static {
     try {
       Class.forName("com.mysql.jdbc.Driver");
-    } catch (ClassNotFoundException e) {
+      //noinspection ResultOfMethodCallIgnored
+      final Process exec = Runtime.getRuntime().exec("/bin/bash");
+      final PrintStream bash = new PrintStream(exec.getOutputStream());
+      bash.println("mysql -u root --password=tg30239");
+      bash.append(StreamTools.readStream(MySQLOps.class.getResourceAsStream("/tbts-schema.sql")));
+      exec.getOutputStream().close();
+      exec.waitFor();
+      final String info = StreamTools.readStream(exec.getInputStream()).toString();
+      if (!info.isEmpty())
+        log.info(info);
+      final String warn = StreamTools.readStream(exec.getErrorStream()).toString();
+      if (!warn.isEmpty())
+        log.warning(warn);
+
+    } catch (ClassNotFoundException | InterruptedException | IOException e) {
       throw new RuntimeException(e);
     }
   }

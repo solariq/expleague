@@ -2,6 +2,8 @@ package com.expleague.server;
 
 import com.expleague.model.ExpertsProfile;
 import com.expleague.model.Offer;
+import com.expleague.server.agents.ExpLeagueOrder;
+import com.expleague.server.agents.LaborExchange;
 import com.spbsu.commons.util.Pair;
 import com.expleague.server.agents.roles.ExpertRole;
 import com.expleague.xmpp.JID;
@@ -31,11 +33,10 @@ public class ExpertManager {
   }
 
   public synchronized ExpertsProfile profile(JID jid) {
-    final Record record = record(jid);
-    int invitations = record.entries().filter(r -> r.getSecond() == ExpertRole.State.INVITE).collect(Collectors.counting()).intValue();
-    final XMPPDevice user = Roster.instance().device(jid.local());
+    final int tasks = LaborExchange.board().related(jid).filter(o -> o.role(jid) == ExpLeagueOrder.Role.ACTIVE).collect(Collectors.counting()).intValue();
+    final XMPPDevice device = Roster.instance().device(jid.local());
 
-    return new ExpertsProfile(user.realName(), jid.local(), user.avatar(), invitations);
+    return new ExpertsProfile(device.realName(), jid.local(), device.avatar(), tasks);
   }
 
   public static class Record {

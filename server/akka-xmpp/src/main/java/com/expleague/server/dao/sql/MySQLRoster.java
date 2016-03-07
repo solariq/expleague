@@ -47,10 +47,12 @@ public class MySQLRoster extends MySQLOps implements Roster {
     log.log(Level.INFO, "Registering device " + query.username());
     XMPPUser associated = null;
     final PreparedStatement associateUser = createStatement("associate-user",
-        "SELECT * FROM expleague.Users WHERE avatar = ? AND avatar IS NOT NULL OR name = ? AND name IS NOT NULL "
+        "SELECT * FROM expleague.Users WHERE avatar = ? AND avatar IS NOT NULL OR name = ? AND name IS NOT NULL OR id = ?"
     );
     associateUser.setString(1, query.name());
     associateUser.setString(2, query.avatar());
+    associateUser.setString(3, query.username());
+
     try (final ResultSet resultSet = associateUser.executeQuery()) {
       if (resultSet.next()) {
         associated = createUser(resultSet, 0);
@@ -88,13 +90,15 @@ public class MySQLRoster extends MySQLOps implements Roster {
   public XMPPUser user(String name) {
     return usersCache.get(name, id -> {
       try {
-        final PreparedStatement userById = createStatement("device-by-name",
+        final PreparedStatement userById = createStatement("user-by-name",
             "SELECT * FROM expleague.Users WHERE id = ?"
         );
         userById.setString(1, id);
         try (final ResultSet resultSet = userById.executeQuery()) {
-          return createUser(resultSet, 0);
+          if (resultSet.next())
+            return createUser(resultSet, 0);
         }
+        return null;
       }
       catch (SQLException e) {
         throw new RuntimeException(e);
@@ -112,6 +116,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
         final PreparedStatement devicesByUser = createStatement("devices-by-user",
             "SELECT id FROM expleague.Devices WHERE user = ?"
         );
+        devicesByUser.setString(1, userId);
         try (final ResultSet resultSet = devicesByUser.executeQuery()) {
           while (resultSet.next()) {
             result.add(device(resultSet.getString(1)));
@@ -158,8 +163,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
               }
             };
           }
-          else
-            return null;
+          else return null;
         }
       }
       catch (SQLException e) {
@@ -172,10 +176,13 @@ public class MySQLRoster extends MySQLOps implements Roster {
   private XMPPUser createUser(ResultSet resultSet, int offset) throws SQLException {
     return new XMPPUser(
         resultSet.getString(offset + 1),
-        resultSet.getString(offset + 4),
         resultSet.getString(offset + 2),
         resultSet.getString(offset + 3),
-        resultSet.getString(offset + 5)
+        resultSet.getString(offset + 4),
+        resultSet.getInt(offset + 5),
+        resultSet.getInt(offset + 6),
+        resultSet.getTimestamp(offset + 7),
+        resultSet.getString(offset + 8)
     );
   }
 }

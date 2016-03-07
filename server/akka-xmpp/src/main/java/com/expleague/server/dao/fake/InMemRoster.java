@@ -6,6 +6,7 @@ import com.expleague.server.XMPPUser;
 import com.expleague.xmpp.control.register.Query;
 
 import javax.security.sasl.AuthenticationException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class InMemRoster implements Roster {
       }
     }
     if (associated == null) {
-      associated = new XMPPUser(query.username(), query.name(), query.country(), query.city(), query.avatar());
+      associated = new XMPPUser(query.username(), query.country(), query.city(), query.name(), 0, 0, new Date(), query.avatar());
       users.put(associated.id(), associated);
       log.log(Level.INFO, "Created new user " + associated.name());
     }

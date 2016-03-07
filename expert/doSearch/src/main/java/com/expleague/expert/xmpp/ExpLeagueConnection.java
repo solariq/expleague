@@ -299,8 +299,9 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
       status = Status.DISCONNECTED;
       invoke(Status.DISCONNECTED);
       final ExpertTask task = expert.task();
-      if (task != null)
+      if (task != null) {
         task.suspend();
+      }
     }
     else if (event instanceof Connector.StanzaReceivedHandler.StanzaReceivedEvent) {
       final StreamPacket streamPacket = ((Connector.StanzaReceivedHandler.StanzaReceivedEvent) event).getStanza();

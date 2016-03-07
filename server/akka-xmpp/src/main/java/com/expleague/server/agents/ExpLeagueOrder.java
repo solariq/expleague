@@ -2,14 +2,13 @@ package com.expleague.server.agents;
 
 import akka.actor.ActorRef;
 import com.expleague.model.Offer;
-import com.expleague.model.Operations;
-import com.expleague.server.dao.Archive;
 import com.expleague.xmpp.JID;
-import com.expleague.xmpp.stanza.Message;
 
-import java.util.*;
+import java.util.EnumSet;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
 
 /**
  * Experts League
@@ -64,20 +63,20 @@ public abstract class ExpLeagueOrder {
 
   public class State {
     public boolean check(JID expert) {
-      if (role(expert) == Role.NONE && of(Role.CANDIDATE).count() < SIMULTANEOUSLY_INVITED) {
-        role(expert, Role.CHECKING);
+      if (role(expert) == Role.NONE && of(CANDIDATE).count() < SIMULTANEOUSLY_INVITED) {
+        role(expert, CHECKING);
         return true;
       }
       return false;
     }
 
     public boolean invite(JID expert) {
-      if (of(Role.INVITED).count() < SIMULTANEOUSLY_INVITED) {
-        role(expert, Role.INVITED);
+      if (of(INVITED).count() < SIMULTANEOUSLY_INVITED) {
+        role(expert, INVITED);
         return true;
       }
-      else if (of(Role.CANDIDATE).count() < SIMULTANEOUSLY_INVITED)
-        role(expert, Role.CANDIDATE);
+      else if (of(CANDIDATE).count() < SIMULTANEOUSLY_INVITED)
+        role(expert, CANDIDATE);
       else
         role(expert, Role.NONE);
       return false;
@@ -85,7 +84,7 @@ public abstract class ExpLeagueOrder {
 
     public ExpLeagueOrder.State enter(JID expert) {
       if (expert != null)
-        role(expert, Role.ACTIVE);
+        role(expert, ACTIVE);
       mapTempRoles(role -> role.permanent() ? role : Role.NONE);
       status(expert != null ? Status.IN_PROGRESS : Status.OPEN);
       return this;
@@ -101,29 +100,30 @@ public abstract class ExpLeagueOrder {
       switch (role(expert)) {
         case ACTIVE:
           status(Status.OPEN);
-          role(expert, Role.SLACKER);
+          role(expert, SLACKER);
           break;
         case INVITED:
-          role(expert, Role.DENIER);
+          role(expert, DENIER);
           break;
         case CHECKING:
-          role(expert, Role.DND);
+          role(expert, DND);
           break;
       }
       return this;
     }
 
     public ExpLeagueOrder.State ignored(JID expert) {
-      role(expert, Role.DND);
+      if (role(expert) == INVITED)
+        role(expert, DND);
       return this;
     }
 
     public JID nextCandidate() {
-      return of(Role.CANDIDATE).findFirst().orElse(null);
+      return of(CANDIDATE).findFirst().orElse(null);
     }
 
     public boolean interview(JID expert) {
-      return !EnumSet.of(Role.SLACKER, Role.DENIER, Role.DND).contains(role(expert)) && offer.fit(expert);
+      return !EnumSet.of(SLACKER, DENIER, DND).contains(role(expert)) && offer.fit(expert);
     }
 
     public JID jid() {
@@ -131,7 +131,7 @@ public abstract class ExpLeagueOrder {
     }
 
     public JID active() {
-      return of(Role.ACTIVE).findAny().orElse(null);
+      return of(ACTIVE).findAny().orElse(null);
     }
 
     public Offer offer() {
@@ -139,7 +139,7 @@ public abstract class ExpLeagueOrder {
     }
 
     public void nextRound() {
-      mapTempRoles(role -> role != Role.DND ? role : Role.NONE);
+      mapTempRoles(role -> role != DND ? role : Role.NONE);
     }
 
     public void suspend() {
@@ -160,6 +160,10 @@ public abstract class ExpLeagueOrder {
 
     public void close() {
       status(Status.DONE);
+    }
+
+    public Stream<JID> experts() {
+      return participants().filter(jid -> EnumSet.of(ACTIVE, CANDIDATE, CHECKING, INVITED).contains(role(jid)));
     }
   }
 

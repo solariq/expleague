@@ -126,6 +126,30 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     func cancel() {
+        if (!AppDelegate.instance.stream.isConnected()) {
+            let alertView = UIAlertController(title: "Experts League", message: "Connecting to server.\n\n", preferredStyle: .Alert)
+            let completion = {
+                //  Add your progressbar after alert is shown (and measured)
+                let progressController = AppDelegate.instance.connectionProgressView
+                let rect = CGRectMake(0, 54.0, alertView.view.frame.width, 50)
+                progressController.completion = {
+                    self.cancel()
+                }
+                progressController.view.frame = rect
+                progressController.view.backgroundColor = alertView.view.backgroundColor
+                alertView.view.addSubview(progressController.view)
+                progressController.alert = alertView
+                AppDelegate.instance.connect()
+            }
+            alertView.addAction(UIAlertAction(title: "Retry", style: .Default, handler: {(x: UIAlertAction) -> Void in
+                AppDelegate.instance.disconnect()
+                self.cancel()
+            }))
+            alertView.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
+            AppDelegate.instance.window?.rootViewController?.presentViewController(alertView, animated: true, completion: completion)
+            return
+        }
+
         flags = flags | ExpLeagueOrderFlags.Canceled.rawValue
         let msg = XMPPMessage(type: "normal", to: jid)
         msg.addChild(DDXMLElement(name: "cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))

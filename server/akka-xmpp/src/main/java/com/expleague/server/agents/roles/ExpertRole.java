@@ -225,7 +225,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
         matchEvent(Offer.class,
             (offer, task) -> {
               explain("Received offer during improper state. Ignoring.");
-              return stay();
+              return stay().replying(new Ignore());
             }
         )
     );
