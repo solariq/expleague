@@ -41,7 +41,7 @@ public class InMemBoard implements LaborExchange.Board {
   }
 
   @Override
-  public Stream<Object> related(JID jid) {
+  public Stream<ExpLeagueOrder> related(JID jid) {
     return history.stream().filter(o -> o.role(jid) != ExpLeagueOrder.Role.NONE);
   }
 
