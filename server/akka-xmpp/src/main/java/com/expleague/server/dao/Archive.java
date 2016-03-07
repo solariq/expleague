@@ -1,26 +1,27 @@
 package com.expleague.server.dao;
 
+import com.expleague.server.ExpLeagueServer;
+import com.expleague.xmpp.JID;
+import com.expleague.xmpp.stanza.Stanza;
+
+import java.util.stream.Stream;
+
 /**
  * User: solar
  * Date: 28.10.15
  * Time: 18:09
  */
-public abstract class Archive {
-  public static Archive instance;
-
-  public static Archive instance() {
-    return instance;
+public interface Archive {
+  static Archive instance() {
+    return ExpLeagueServer.archive();
   }
 
-  public abstract void log(String id, String authorId, CharSequence element);
-  public abstract void visitMessages(String id, MessageVisitor visitor);
+  Dump dump(String local);
+  Dump register(String room, String owner);
 
-  /**
-   * User: solar
-   * Date: 28.10.15
-   * Time: 16:58
-   */
-  public interface MessageVisitor {
-    boolean accept(String authorId, CharSequence message, long ts);
+  interface Dump {
+    void accept(Stanza stanza);
+    Stream<Stanza> stream();
+    JID owner();
   }
 }

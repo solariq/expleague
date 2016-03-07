@@ -34,6 +34,7 @@ import tigase.jaxmpp.core.client.xml.Element;
 import tigase.jaxmpp.core.client.xml.ElementFactory;
 import tigase.jaxmpp.core.client.xml.XMLException;
 import tigase.jaxmpp.core.client.xmpp.modules.AbstractStanzaModule;
+import tigase.jaxmpp.core.client.xmpp.modules.ResourceBinderModule;
 import tigase.jaxmpp.core.client.xmpp.modules.SessionEstablishmentModule;
 import tigase.jaxmpp.core.client.xmpp.modules.auth.AuthModule;
 import tigase.jaxmpp.core.client.xmpp.modules.auth.SaslModule;
@@ -54,19 +55,14 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Timer;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
@@ -79,7 +75,7 @@ import java.util.logging.Logger;
 public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnection.Status> implements EventListener {
   private static final Logger log = Logger.getLogger(ExpLeagueConnection.class.getName());
   private static ExpLeagueConnection instance;
-  private static Timer ping;
+//  private static Timer ping;
   private ExpLeagueMember expert;
   private FastRandom rng = new FastRandom();
 
@@ -91,13 +87,13 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
 //        sslctx.init(null, new TrustManager[]{
 //            new TLSUtils.AcceptAllTrustManager()
 //        }, new SecureRandom());
-//      }
+//
 //      catch (KeyManagementException | NoSuchAlgorithmException e) {
 //        log.log(Level.SEVERE, "Unable to create SSL context needed to connect to ExpLeague servers");
 //        throw new RuntimeException(e);
 //      }
       instance = new ExpLeagueConnection();
-      ping = new Timer("XMPP ping", true);
+//      ping = new Timer("XMPP ping", true);
 //      ping.schedule(new TimerTask() {
 //        @Override
 //        public void run() {
@@ -117,14 +113,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
   }
 
   private Jaxmpp jaxmpp;
-
-//  private SSLContext sslctx;
-
   private FastRandom fastRandom = new FastRandom();
-
-  public void start(UserProfile profile) {
-    start(profile, true);
-  }
 
   private void start(UserProfile profile, boolean tryToRegister) {
     try {
@@ -153,7 +142,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
       final UserProperties properties = jaxmpp.getProperties();
       properties.setUserProperty(SessionObject.DOMAIN_NAME, profile.get(UserProfile.Key.EXP_LEAGUE_DOMAIN));
       properties.setUserProperty(SocketConnector.HOSTNAME_VERIFIER_DISABLED_KEY, true);
-      properties.setUserProperty(SessionObject.USER_BARE_JID, BareJID.bareJIDInstance(profile.get(UserProfile.Key.EXP_LEAGUE_ID)));
+      properties.setUserProperty(SessionObject.USER_BARE_JID, BareJID.bareJIDInstance(profile.deviceJid().toString()));
       properties.setUserProperty(SessionObject.PASSWORD, profile.get(UserProfile.Key.EXP_LEAGUE_PASSWORD));
       properties.setUserProperty(SessionObject.RESOURCE, "expert");
 
@@ -161,6 +150,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
       final EventBus eventBus = jaxmpp.getEventBus();
       eventBus.addListener(JaxmppCore.DisconnectedHandler.DisconnectedEvent.class, this);
       eventBus.addListener(SessionEstablishmentModule.SessionEstablishmentSuccessHandler.SessionEstablishmentSuccessEvent.class, this);
+      eventBus.addListener(ResourceBinderModule.ResourceBindSuccessHandler.ResourceBindSuccessEvent.class, this);
       eventBus.addListener(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, this);
       if (tryToRegister) {
         eventBus.addHandler(AuthModule.AuthFailedHandler.AuthFailedEvent.class, (sessionObject, saslError) -> {
@@ -185,7 +175,6 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
     final Jaxmpp jaxmpp = new Jaxmpp();
     final UserProperties properties = jaxmpp.getProperties();
     final String passwd = profile.has(UserProfile.Key.VK_TOKEN) ? profile.get(UserProfile.Key.VK_TOKEN) : fastRandom.nextBase64String(15);
-    final String jid = profile.get(UserProfile.Key.EXP_LEAGUE_ID);
 
     profile.set(UserProfile.Key.EXP_LEAGUE_PASSWORD, passwd);
 
@@ -204,12 +193,14 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
             iq.setTo(JID.jidInstance((String)profile.get(UserProfile.Key.EXP_LEAGUE_DOMAIN)));
             Element q = ElementFactory.create("query", null, "jabber:iq:register");
             iq.addChild(q);
-            q.addChild(ElementFactory.create("username", jid, null));
+            q.addChild(ElementFactory.create("username", profile.deviceJid().toString(), null));
             q.addChild(ElementFactory.create("password", passwd, null));
             q.addChild(ElementFactory.create("misc", profile.get(UserProfile.Key.AVATAR_URL), null));
             q.addChild(ElementFactory.create("name", profile.get(UserProfile.Key.NAME), null));
             q.addChild(ElementFactory.create("city", profile.get(UserProfile.Key.CITY), null));
             q.addChild(ElementFactory.create("state", profile.get(UserProfile.Key.COUNTRY), null));
+            q.addChild(ElementFactory.create("email", getClass().getPackage().getImplementationVersion() + "/expert", null));
+
             jaxmpp.send(iq, new AsyncCallback() {
               @Override
               public void onError(tigase.jaxmpp.core.client.xmpp.stanzas.Stanza stanza, XMPPException.ErrorCondition errorCondition) throws JaxmppException {
@@ -245,7 +236,6 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
     catch (JaxmppException | InterruptedException e) {
       log.log(Level.SEVERE, "Exception during expert registration", e);
     }
-
   }
 
   public void start() {
@@ -308,21 +298,30 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
     else if (event instanceof JaxmppCore.DisconnectedHandler.DisconnectedEvent) {
       status = Status.DISCONNECTED;
       invoke(Status.DISCONNECTED);
+      final ExpertTask task = expert.task();
+      if (task != null)
+        task.suspend();
     }
     else if (event instanceof Connector.StanzaReceivedHandler.StanzaReceivedEvent) {
       final StreamPacket streamPacket = ((Connector.StanzaReceivedHandler.StanzaReceivedEvent) event).getStanza();
       try {
-        log.info(">" + streamPacket.getAsString());
-        final Item item = Item.create(streamPacket.getAsString());
-        if (item instanceof Stanza)
-          expert.processPacket((Stanza) item);
+        final String packet = streamPacket.getAsString();
+        if (packet != null) {
+          log.info(">" + packet);
+          final Item item = Item.create(packet);
+          if (item instanceof Stanza)
+            expert.processPacket((Stanza) item);
+        }
       }
       catch (XMLException e) {
         log.log(Level.SEVERE, "Unable to parse incoming message", e);
         throw new RuntimeException(e);
       }
     }
-//    System.out.println(event);
+    else if (event instanceof ResourceBinderModule.ResourceBindSuccessHandler.ResourceBindSuccessEvent) {
+      final ResourceBinderModule.ResourceBindSuccessHandler.ResourceBindSuccessEvent successEvent = (ResourceBinderModule.ResourceBindSuccessHandler.ResourceBindSuccessEvent) event;
+      expert.jid(com.expleague.xmpp.JID.parse(successEvent.getBindedJid().toString()));
+    }
   }
 
   public void disconnect() throws JaxmppException{
@@ -397,6 +396,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
         url = new URI(urlStr);
         final File file = new File(ProfileManager.instance().root().getAbsolutePath() + "/cache/" + url.getHost() + "/" + url.getPath());
         if (!file.exists()) {
+          //noinspection ResultOfMethodCallIgnored
           file.getParentFile().mkdirs();
           final CloseableHttpClient httpClient = HttpClients.createDefault();
           final CloseableHttpResponse response = httpClient.execute(new HttpGet(url));
@@ -437,7 +437,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
       SSLContext sc = SSLContext.getInstance("SSL");
       sc.init(null, trustAllCerts, new java.security.SecureRandom());
       HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-    } catch (GeneralSecurityException e) {
+    } catch (GeneralSecurityException ignored) {
     }
   }
 }

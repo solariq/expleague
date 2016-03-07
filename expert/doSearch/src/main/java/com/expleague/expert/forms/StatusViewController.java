@@ -41,7 +41,7 @@ import java.util.Optional;
 public class StatusViewController {
   public ImageView avatar;
   public ImageView statusView;
-  public VBox task;
+  public VBox order;
 
   private SimpleObjectProperty<ExpertStatus> status = new SimpleObjectProperty<>();
 
@@ -65,13 +65,13 @@ public class StatusViewController {
     }
     else if (expertEvent instanceof TaskInviteCanceledEvent) {
       status.set(ExpertStatus.WAITING);
-      Platform.runLater(() -> this.task.getChildren().clear());
+      Platform.runLater(() -> this.order.getChildren().clear());
     }
     else if (expertEvent instanceof TaskAcceptedEvent) {
       status.set(ExpertStatus.BUSY);
       Platform.runLater(() -> {
         final ExpertTask task = ((ExpertTaskEvent)expertEvent).task();
-        final ObservableList<Node> children = this.task.getChildren();
+        final ObservableList<Node> children = this.order.getChildren();
         children.clear();
         final Label topic = new Label(task.offer().topic());
         topic.setStyle("-fx-font-weight: bold");
@@ -86,14 +86,14 @@ public class StatusViewController {
     }
     else if (expertEvent instanceof TaskSuspendedEvent) {
       status.set(ExpertStatus.WAITING);
-      Platform.runLater(() -> task.getChildren().clear());
+      Platform.runLater(() -> order.getChildren().clear());
     }
     else if (expertEvent instanceof TaskInviteEvent) {
       status.set(ExpertStatus.INVITE);
       Platform.runLater(() -> {
         final TaskInviteEvent invite = (TaskInviteEvent) expertEvent;
         final ExpertTask task = invite.task();
-        final ObservableList<Node> children = this.task.getChildren();
+        final ObservableList<Node> children = this.order.getChildren();
         children.clear();
         final Label topic = new Label(task.offer().topic());
         topic.setStyle("-fx-font-weight: bold");
@@ -198,12 +198,8 @@ public class StatusViewController {
     final Region region = new Region();
     HBox.setHgrow(region, Priority.ALWAYS);
     graphics.getChildren().addAll(imageView, region, new Label(caption));
-    graphics.setOnMouseEntered(evt -> {
-      imageView.setImage(hIcon);
-    });
-    graphics.setOnMouseExited(evt -> {
-      imageView.setImage(icon);
-    });
+    graphics.setOnMouseEntered(evt -> imageView.setImage(hIcon));
+    graphics.setOnMouseExited(evt -> imageView.setImage(icon));
     graphics.setPrefWidth(180);
     final MenuItem item = new MenuItem("", graphics);
     item.setOnAction(handler);

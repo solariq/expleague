@@ -13,7 +13,7 @@
       <padding><Insets top="5" right="60" bottom="5" left="5"/></padding>
       <VBox>
         <Region VBox.vgrow="ALWAYS"/>
-        <VBox fx:id="task"/>
+        <VBox fx:id="order"/>
         <Region VBox.vgrow="ALWAYS"/>
       </VBox>
     </HBox>

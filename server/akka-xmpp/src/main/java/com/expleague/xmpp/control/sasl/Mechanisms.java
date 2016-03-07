@@ -1,6 +1,6 @@
 package com.expleague.xmpp.control.sasl;
 
-import com.expleague.server.JabberUser;
+import com.expleague.server.XMPPDevice;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.xmpp.control.XMPPFeature;
 import com.expleague.xmpp.control.sasl.plain.PlainServer;
@@ -57,7 +57,7 @@ public class Mechanisms extends XMPPFeature {
           final Optional<AuthorizeCallback> authO = Stream.of(callbacks).flatMap(Functions.instancesOf(AuthorizeCallback.class)).findAny();
           if (passwdO.isPresent() && nameO.isPresent()) {
             final PasswordCallback passwd = passwdO.get();
-            final JabberUser user = ExpLeagueServer.roster().byName(nameO.get().getDefaultName());
+            final XMPPDevice user = ExpLeagueServer.roster().device(nameO.get().getDefaultName());
             if (user != null)
               passwd.setPassword(user.passwd().toCharArray());
             else

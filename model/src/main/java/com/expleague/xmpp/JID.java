@@ -23,6 +23,15 @@ public class JID implements Serializable, Cloneable {
   @SuppressWarnings("unused")
   public JID() {}
 
+  private JID(String addr) {
+    addr = addr.toLowerCase();
+    //noinspection ResultOfMethodCallIgnored
+    URI.create(addr); // check syntax
+    final int resourceStart = addr.indexOf('/');
+    bare = resourceStart >= 0 ? addr.substring(0, resourceStart).intern() : addr.intern();
+    resource = resourceStart >= 0 ? addr.substring(resourceStart + 1) : null;
+  }
+
   private JID(String bare, String resource) {
     this.bare = bare;
     this.resource = "".equals(resource) ? null : resource;
@@ -87,13 +96,7 @@ public class JID implements Serializable, Cloneable {
 
   public static JID parse(String addr) {
     try {
-      addr = addr.toLowerCase();
-      //noinspection ResultOfMethodCallIgnored
-      URI.create(addr); // check syntax
-      final int resourceStart = addr.indexOf('/');
-      final String bare = resourceStart >= 0 ? addr.substring(0, resourceStart).intern() : addr.intern();
-      final String resource = resourceStart >= 0 ? addr.substring(resourceStart + 1) : null;
-      return new JID(bare, resource);
+      return new JID(addr);
     }
     catch (Exception e) {
       // todo: is it ok? not checked by clients

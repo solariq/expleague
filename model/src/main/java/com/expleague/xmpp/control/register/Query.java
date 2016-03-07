@@ -195,4 +195,20 @@ public class Query {
   public String country() {
     return state;
   }
+
+  public int age() {
+    return text != null ? Integer.parseInt(text.split("\\s+")[0]) : 0;
+  }
+
+  public int sex() {
+    return text != null ? Integer.parseInt(text.split("\\s+")[1]) : 0;
+  }
+
+  public String platform() {
+    return email;
+  }
+
+  public boolean expert() {
+    return platform() != null && platform().endsWith("/expert");
+  }
 }

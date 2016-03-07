@@ -56,6 +56,9 @@ public class Offer extends Item {
   @XmlElement(namespace = Operations.NS)
   private Set<JID> slackers;
 
+  @XmlAnyElement(lax = true)
+  private Filter filter;
+
   public Offer() {
   }
 
@@ -173,6 +176,18 @@ public class Offer extends Item {
 
   public Set<ExpertsProfile> workers() {
     return workers != null ? workers : Collections.emptySet();
+  }
+
+  public boolean fit(JID expert) {
+    return filter == null || filter.fit(expert);
+  }
+
+  public void topic(String topic) {
+    this.topic = topic;
+  }
+
+  public Filter filter() {
+    return filter;
   }
 
   @XmlEnum

@@ -3,9 +3,13 @@ package com.expleague.server.agents;
 import akka.actor.ActorRef;
 import com.expleague.model.Delivered;
 import com.expleague.model.Operations;
+import com.expleague.server.Roster;
+import com.expleague.server.XMPPDevice;
+import com.expleague.server.XMPPUser;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.JID;
+import com.expleague.xmpp.control.register.Query;
 import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
@@ -21,16 +25,16 @@ public class UserAgentTest extends ActorSystemTestCase {
   @Test
   public void testInitializationAndPresenceExchange() throws Exception {
     new TestKit()  {{
-      final JID jid1 = JID.parse("login1@expleague.com");
-      final JID jid2 = JID.parse("login2@expleague.com");
+      final JID jid1 = JID.parse("login1@localhost");
+      final JID jid2 = JID.parse("login2@localhost");
 
       final ActorRef userAgentRef1 = register(jid1);
       final ActorRef userAgentRef2 = register(jid2);
 
-      userAgentRef1.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
+      userAgentRef1.tell(new UserAgent.ConnStatus(true, "resource", registerFakeDevice(jid1)), getRef());
       expectMsgClass(ActorRef.class);
 
-      userAgentRef2.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
+      userAgentRef2.tell(new UserAgent.ConnStatus(true, "resource", registerFakeDevice(jid2)), getRef());
       expectMsgClass(ActorRef.class);
 
       userAgentRef2.tell(new Presence(jid1, true), getRef());
@@ -48,17 +52,19 @@ public class UserAgentTest extends ActorSystemTestCase {
   @Test
   public void testMessageDelivery() throws Exception {
     new TestKit()  {{
-      final JID jid1 = JID.parse("login1@expleague.com");
-      final JID jid2 = JID.parse("login2@expleague.com");
+      final JID jid1 = JID.parse("login1@localhost");
+      final JID jid2 = JID.parse("login2@localhost");
+      final XMPPDevice device2 = registerFakeDevice(jid1);
 
-      final ActorRef userAgentRef1 = register(jid1);
+      final ActorRef userAgentRef2 = register(jid2);
 
       // send message to jid1
-      userAgentRef1.tell(new Message(jid2, jid1, "Hello"), getRef());
+      userAgentRef2.tell(new Message(jid2, jid1, "Hello"), getRef());
       expectNoMsg();
 
       // connect jid1 and receive message
-      userAgentRef1.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
+      final ActorRef userAgentRef1 = register(jid1);
+      userAgentRef1.tell(new UserAgent.ConnStatus(true, "resource", device2), getRef());
       expectMsgClass(ActorRef.class);
       final Message message = expectMessage(Message.class);
       assertEquals("Hello", message.body());
@@ -68,12 +74,12 @@ public class UserAgentTest extends ActorSystemTestCase {
       expectNoMsg();
 
       // disconnect
-      userAgentRef1.tell(new UserAgent.ConnStatus(false, "resource"), getRef());
+      userAgentRef1.tell(new UserAgent.ConnStatus(false, "resource", device2), getRef());
       expectNoMsg();
 
       // reconnect (no messages will come)
       // todo: shouldn't there be a state sync logic between client and server?
-      userAgentRef1.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
+      userAgentRef1.tell(new UserAgent.ConnStatus(true, "resource", device2), getRef());
       expectMsgClass(ActorRef.class);
     }};
   }
@@ -81,13 +87,13 @@ public class UserAgentTest extends ActorSystemTestCase {
   @Test
   public void testIqDelivery() throws Exception {
     new TestKit()  {{
-      final JID jid1 = JID.parse("login1@expleague.com");
-      final JID jid2 = JID.parse("login2@expleague.com");
+      final JID jid1 = JID.parse("login1@localhost");
+      final JID jid2 = JID.parse("login2@localhost");
 
       final ActorRef userAgentRef1 = register(jid1);
 
       // register test actor as connector
-      userAgentRef1.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
+      userAgentRef1.tell(new UserAgent.ConnStatus(true, "resource", registerFakeDevice(jid1)), getRef());
       expectMsgClass(ActorRef.class);
 
       // send message to jid1
@@ -114,7 +120,7 @@ public class UserAgentTest extends ActorSystemTestCase {
       final ActorRef actorRef = registerOverride(jid1, new ActorOverrideTester());
 
       // register test actor as connector
-      actorRef.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
+      actorRef.tell(new UserAgent.ConnStatus(true, "resource", registerFakeDevice(jid1)), getRef());
       expectMsgClass(ActorRef.class);
 
       // send message to jid1
@@ -145,7 +151,7 @@ public class UserAgentTest extends ActorSystemTestCase {
       final ActorRef actorRef = registerOverride(jid1, new ActorOverrideTester());
 
       // register test actor as connector
-      actorRef.tell(new UserAgent.ConnStatus(true, "resource"), getRef());
+      actorRef.tell(new UserAgent.ConnStatus(true, "resource", registerFakeDevice(jid1)), getRef());
       final Object[] messages = receiveN(2);
       if (messages[0] instanceof ActorRef) {
         assertEquals("Get status from resource", messages[1]);
@@ -161,5 +167,14 @@ public class UserAgentTest extends ActorSystemTestCase {
       actorRef.tell(iq, getRef());
       expectMsgEquals(iq);
     }};
+  }
+
+  private XMPPDevice registerFakeDevice(JID jid1) throws Exception {
+    final Query query = new Query();
+    query.username(jid1.local());
+    query.name("Fake User: " + jid1.local());
+    query.passwd("");
+    Roster.instance().register(query);
+    return Roster.instance().device(jid1.local());
   }
 }

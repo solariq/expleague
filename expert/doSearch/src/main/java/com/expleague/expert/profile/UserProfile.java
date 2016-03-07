@@ -13,8 +13,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Experts League
  * Created by solar on 04.02.16.
  */
+@SuppressWarnings("unused")
 public class UserProfile extends WeakListenerHolderImpl<UserProfile.Key>{
   private static final Logger log = Logger.getLogger(UserProfile.class.getName());
   private final File propertiesFile;
@@ -70,7 +72,8 @@ public class UserProfile extends WeakListenerHolderImpl<UserProfile.Key>{
   public <T> T get(Key key) {
     try {
       if (key.valueType != String.class) {
-        final Constructor<?> constructor = key.valueType.getConstructor(String.class);
+        final Constructor<?> constructor = key.valueType.getDeclaredConstructor(String.class);
+        constructor.setAccessible(true);
         //noinspection unchecked
         return (T)constructor.newInstance(userProperties.getProperty(key.name));
       }
@@ -104,12 +107,13 @@ public class UserProfile extends WeakListenerHolderImpl<UserProfile.Key>{
     return expert;
   }
 
-  public JID jid() {
-    return JID.parse(get(Key.EXP_LEAGUE_ID));
+  public JID deviceJid() {
+    return get(Key.EXP_DEVICE_ID);
   }
 
   public enum Key {
-    EXP_LEAGUE_ID("com.expleague.jid", String.class),
+    EXP_DEVICE_ID("com.expleague.device-id", JID.class),
+    EXP_LEAGUE_ID("com.expleague.jid", JID.class),
     EXP_LEAGUE_DOMAIN("com.expleague.domain", String.class),
     EXP_LEAGUE_USER("com.expleague.user", String.class),
     EXP_LEAGUE_PASSWORD("com.expleague.secret", String.class),
@@ -128,7 +132,5 @@ public class UserProfile extends WeakListenerHolderImpl<UserProfile.Key>{
       this.valueType = valueType;
       this.name = name;
     }
-
   }
-
 }

@@ -1,7 +1,6 @@
 package com.expleague.expert;
 
 import com.expleague.expert.forms.Register;
-import com.expleague.expert.forms.Vault;
 import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
 import com.expleague.expert.xmpp.ExpLeagueConnection;
@@ -14,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spbsu.commons.io.StreamTools;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -26,14 +24,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.logging.Logger;
 
 /**
+ * Experts League
  * Created by solar on 03/02/16.
  */
 public class doSearch extends Application {
-  private static final Logger log = Logger.getLogger(doSearch.class.getName());
+//  private static final Logger log = Logger.getLogger(doSearch.class.getName());
 
   public doSearch() {
   }

@@ -6,7 +6,6 @@ import akka.actor.Cancellable;
 import akka.actor.FSM;
 import akka.util.Timeout;
 import com.expleague.model.Answer;
-import com.expleague.server.ExpertManager;
 import com.expleague.model.Offer;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
@@ -30,10 +29,10 @@ import static com.expleague.model.Operations.*;
  * Date: 17.12.15
  * Time: 14:16
  */
-public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.Task> {
+public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.Variants> {
   private static final Logger log = Logger.getLogger(ExpertRole.class.getName());
-  public static final FiniteDuration CHOICE_TIMEOUT = Duration.create(10, TimeUnit.SECONDS);
-  public static final FiniteDuration CHECK_TIMEOUT = Duration.create(10, TimeUnit.SECONDS);
+  public static final FiniteDuration CHOICE_TIMEOUT = Duration.create(5, TimeUnit.SECONDS);
+  public static final FiniteDuration CONTINUATION_TIMEOUT = Duration.create(30, TimeUnit.SECONDS);
   public static final FiniteDuration INVITE_TIMEOUT = Duration.create(5, TimeUnit.MINUTES);
   private Cancellable timer;
 
@@ -44,185 +43,113 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
 
   private String explanation = "";
   {
-    startWith(State.OFFLINE, new Task(true));
+    startWith(State.OFFLINE, new Variants());
 
     when(State.OFFLINE,
-        matchEvent(
-            Presence.class,
+        matchEvent(Presence.class,
             (presence, task) -> {
               if (presence.available()) {
-                explain("Online presence received");
-                stopTimer();
-                if (!task.isEmpty()) {
-                  explain(", resuming task " + task.offer().room());
-                  XMPP.send(new Message(XMPP.jid(), jid(), new Resume(), task.offer()), context());
-                  task.chosen = false;
-                  timer = AkkaTools.scheduleTimeout(context(), INVITE_TIMEOUT, self());
-                  return goTo(State.INVITE);
-                }
-                explain(", no active task, going to labor exchange");
-                LaborExchange.reference(context()).tell(self(), self());
-                return goTo(State.READY).using(new Task(true));
+                explain("Online presence received. Going to labor exchange.");
+                return laborExchange(task);
               }
+              return stay();
+            }
+        )
+    );
+    when(State.READY,
+        matchEvent(Presence.class,
+            (presence, task) -> presence.available() ? stay() : goTo(State.OFFLINE)
+        ).event(Offer.class,
+            (offer, task) -> {
+              explain("Offer received appending as variant");
+              task.appendVariant(offer, sender());
               return stay();
             }
         ).event(Resume.class,
             (resume, task) -> {
-              explain("Resume command received from " + sender());
-              return stay().using(task.appendVariant(resume.offer(), sender()));
+              explain("Resume command received from " + sender() + " sending resume command to the expert");
+              XMPP.send(new Message(XMPP.jid(), jid(), new Resume(), resume.offer()), context());
+              return goTo(State.INVITE).using(task.enforce(resume.offer(), sender()));
             }
         ).event(Timeout.class,
             (to, task) -> {
-              explain("Timeout"+ (to.duration()) + " while being offline");
-              return stay().using(new Task(true));
-            }
-        ));
-    when(State.READY,
-        matchEvent(
-            Offer.class,
-            (offer, task) -> {
-              explain("Offer accepted");
-              task.appendVariant(offer, sender());
-              if (task.immediate() || offer.hasWorker(jid())) {
-                explain(", the task type is 'immediate', choose process started");
-                task.choose();
+              if (!task.choose()) {
+                timer = AkkaTools.scheduleTimeout(context(), CHOICE_TIMEOUT, self());
+                return stay();
               }
+              explain("Sending offer " + task.offer().room().local() + " to expert.");
+              XMPP.send(new Message(XMPP.jid(), jid(), task.offer()), context());
               return goTo(State.CHECK);
-            }
-        ).event(
-            Presence.class,
-            (presence, task) -> presence.available() ? stay() : goTo(State.OFFLINE)
-        ).event(Resume.class,
-            (resume, zero) -> {
-              explain("Resume command received from " + sender() + " sending resume command to the expert");
-              stopTimer();
-              XMPP.send(new Message(XMPP.jid(), jid(), new Resume(), resume.offer()), context());
-              return goTo(State.INVITE).using(new Task(true).appendVariant(resume.offer(), sender()));
-            }
-        ).event(Timeout.class,
-            (to, zero) -> {
-              explain("Timeout " + to.duration() + " waiting next task from the same room. Going to labor exchange.");
-              LaborExchange.reference(context()).tell(self(), self());
-              return stay().using(new Task(true));
             }
         )
     );
     when(State.CHECK,
-        matchEvent( // expert accepted check
-            Message.class,
+        matchEvent(Presence.class,
+            (presence, task) -> {
+              if (presence.available())
+                return stay();
+              explain("Expert has gone offline. Cancelling the check.");
+              task.broker().tell(new Cancel(), self());
+              return goTo(State.OFFLINE).using(task.clean());
+            }
+        ).event(Message.class,  // expert accepted check
             (msg, task) -> msg.get(Ok.class) != null,
             (msg, task) -> {
               explain("Received Ok message from expert, forwarding it to broker");
-              stopTimer();
               task.broker().tell(new Ok(), self());
               return goTo(State.INVITE).using(task);
             }
-        ).event(
-            Message.class, // expert canceled check
+        ).event(Message.class, // expert canceled check
             (msg, task) -> msg.get(Cancel.class) != null,
             (msg, task) -> {
               explain("Received Cancel message from expert, forwarding it to broker, going to labor exchange");
-              stopTimer();
               task.broker().tell(new Cancel(), self());
-              return laborExchange();
+              return laborExchange(task).using(task.clean());
             }
-        ).event(Timeout.class, // expert check timed out
-            (msg, task) -> {
-              timer = null;
-              explain("Received timeout");
-              if (task.chosen()) { // CHECK_TIMEOUT
-                explain(" during expert check. Sending cancel to broker and going to labor exchange.");
-                task.broker().tell(new Cancel(), self());
-                return laborExchange();
-              }
-              explain(" on choose process.");
-              task.choose();
-              return stay();
-            }
-        ).event( // broker canceled offer
-            Cancel.class,
-            (invite, task) -> task.broker().equals(sender()),
-            (invite, task) -> {
-              explain("Broker canceled check. Going to labor exchange.");
-              stopTimer();
-              return laborExchange();
-            }
-        ).event(
-            Presence.class,
-            (presence, task) -> !presence.available(),
-            (presence, task) -> {
-              explain("Expert has gone offline. Cancelling the check.");
-              stopTimer();
-              task.brokers.stream().forEach(b -> b.tell(new Cancel(), self()));
-              return goTo(State.OFFLINE).using(new Task(true));
-            }
-        ).event(
-            Presence.class,
-            (presence, task) -> presence.available(),
-            (presence, task) -> stay()
-        ).event(
-            Offer.class,
-            (offer, task) -> {
-              explain("Received one more offer");
-              if (!task.chosen()) {
-                task.appendVariant(offer, sender());
-                if (offer.hasWorker(jid())){
-                  explain(" the new offer has priority because this expert is one of the active workers of the task.");
-                  stopTimer();
-                  task.choose();
-                }
-              }
-              else explain(" while waiting the response from the expert. Cancelling it");
-              return stay();
+        ).event(Cancel.class, // broker canceled offer
+            (cancel, task) -> task.broker().equals(sender()),
+            (cancel, task) -> {
+              explain("Broker canceled check. Canceling check and going to labor exchange.");
+              XMPP.send(new Message(XMPP.jid(), jid(), cancel), context());
+              return laborExchange(task);
             }
         )
     );
     when(State.INVITE,
-        matchEvent(
-            Presence.class,
-            (presence, task) -> presence.available() && task.offer().room().bareEq(presence.to()),
-            (stanza, task) -> {
-              stopTimer();
-              explain("Expert has shown in the room. Assuming he has accepted the invitation.");
-              if (task.chosen())
-                task.broker().tell(new Start(), self());
-              else {
-                explain("The task seems to be suspended, sending Resume to broker.");
-                task.broker().tell(new Resume(), self());
+        matchEvent(Presence.class,
+            (presence, task) -> {
+              if (!presence.available()) {
+                explain("Expert has gone offline during invitation. Sending ignore to broker.");
+                task.broker().tell(new Ignore(), self());
+                return goTo(State.OFFLINE).using(task.clean());
               }
-              task.chosen = true;
-              return goTo(State.BUSY);
+              return stay();
             }
-        ).event( // broker sent invitation
-            Invite.class,
+        ).event(Invite.class,  // broker sent invitation
             (invite, task) -> task.broker().equals(sender()),
             (invite, task) -> {
               explain("Invitation from broker received, forwarding it to expert.");
-              stopTimer();
               invite.timeout = INVITE_TIMEOUT.toSeconds();
               final Message message = new Message(task.offer().room(), jid(), task.offer(), invite);
               XMPP.send(message, context());
               timer = AkkaTools.scheduleTimeout(context(), INVITE_TIMEOUT, self());
               return stay();
             }
-        ).event( // broker sent cancel
-            Cancel.class,
+        ).event(Cancel.class,  // broker sent cancel
             (cancel, task) -> task.broker().equals(sender()),
             (cancel, task) -> {
-              stopTimer();
               explain("Cancel command received from broker, forwarding to expert and going to labor exchange.");
               final Message message = new Message(task.offer().room(), jid(), cancel, task.offer());
               XMPP.send(message, context());
-              return laborExchange();
+              return laborExchange(task);
             }
-        ).event(
-            Message.class,
+        ).event(Message.class,
             (message, task) -> {
               if (message.has(Cancel.class)) {
                 explain("Cancel received from expert. Forwarding it to broker and going to labor exchange.");
                 stopTimer();
                 task.broker().tell(new Cancel(), self());
-                return laborExchange();
+                return laborExchange(task);
               }
               if (message.has(Start.class)) {
                 explain("Expert started working on " + task.offer().room().local());
@@ -239,31 +166,17 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               explain("Ignoring message: " + message);
               return stay();
             }
-        ).event(
-            Timeout.class,
+        ).event(Timeout.class,
             (timeout, task) -> {
               explain("Timeout (" + timeout.duration() + ") received. Sending ignore to broker and cancel to expert. Going to labor exchange.");
-              timer = null;
               XMPP.send(new Message(XMPP.jid(), jid(), task.offer(), new Cancel()), context());
               task.broker().tell(new Ignore(), self());
-              return laborExchange();
-            }
-        ).event(
-            Presence.class,
-            (presence, task) -> {
-              if (!presence.available()) {
-                explain("Expert has gone offline during invitation. Sending ignore to broker.");
-                stopTimer();
-                task.broker().tell(new Ignore(), self());
-                return goTo(State.OFFLINE).using(new Task(true));
-              }
-              return stay();
+              return laborExchange(task);
             }
         )
     );
     when(State.BUSY,
-        matchEvent(
-            Presence.class,
+        matchEvent(Presence.class,
             (presence, task) -> {
               if (!presence.available()) {
                 explain("Expert has gone offline during task execution. Sending suspend to broker.");
@@ -277,12 +190,13 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               if (msg.get(Cancel.class) != null) {
                 explain("Expert has canceled task during execution. Notifying broker and going to labor exchange.");
                 task.broker().tell(new Cancel(), self());
-                return laborExchange();
+                return laborExchange(task);
               }
-              if (msg.has(Done.class) || msg.has(Answer.class)){ // hack for answer
+              if (msg.has(Done.class) || msg.has(Answer.class)) { // hack for answer
                 explain("Expert has finished task execution. Notifying broker and going to labor exchange with slight suspension to let user send a message to restart the task.");
+                timer = AkkaTools.scheduleTimeout(context(), CONTINUATION_TIMEOUT, self());
                 task.broker().tell(new Done(), self());
-                return goTo(State.READY).using(new Task(false));
+                return stay();
               }
               explain("Ignoring message inside busy state: " + msg);
               return stay();
@@ -292,7 +206,17 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
             (cancel, task) -> {
               explain("Broker canceled task. Sending expert cancel.");
               XMPP.send(new Message(XMPP.jid(), jid(), new Cancel(), task.offer()), context());
-              return laborExchange();
+              return laborExchange(task);
+            }
+        ).event(Timeout.class,
+            (timeout, task) -> {
+              explain("Tired to wait for continuation of the task. Going to labor exchange.");
+              return laborExchange(task);
+            }
+        ).event(Offer.class, // continue the task
+            (offer, task) -> offer.room().equals(task.offer().room()),
+            (offer, task) -> {
+              return goTo(State.INVITE).using(task.enforce(offer, sender())).replying(new Ok());
             }
         )
     );
@@ -306,13 +230,16 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
         )
     );
 
-//    whenUnhandled(matchAnyEvent((state, data) -> stay().replying(new Operations.Cancel())));
-
     onTransition((from, to) -> {
-      final Offer first = nextStateData() != null && nextStateData().chosen() ? nextStateData().offer() : null;
-      ExpertManager.instance().record(jid()).entry(first, to);
-      if (from != to)
+      if (from != to) {
         context().parent().tell(to, self());
+        if (timer != null) {
+          timer.cancel();
+          timer = null;
+        }
+        if (to == State.READY)
+          timer = AkkaTools.scheduleTimeout(context(), CHOICE_TIMEOUT, self());
+      }
     });
 
     onTermination(
@@ -340,20 +267,23 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
   }
 
   @Override
-  public void processEvent(FSM.Event<Task> event, Object source) {
+  public void processEvent(FSM.Event<Variants> event, Object source) {
     final State from = stateName();
     super.processEvent(event, source);
+    if (explanation.isEmpty())
+      return;
+
     final State to = stateName();
-    final Offer first = stateData() != null && stateData().chosen() ? stateData().offer() : null;
+    final Offer first = stateData() != null && stateData().offers.size() == 1 ? stateData().offer() : null;
     log.fine("Expert " + jid() + " state change " + from + " -> " + to +
         (first != null ? " " + first.room().local() : "")
         + " " + explanation);
     explanation = "";
   }
 
-  private FSM.State<State, Task> laborExchange() {
-    LaborExchange.reference(context()).tell(self(), self());
-    return goTo(State.READY).using(new Task(true));
+  private FSM.State<State, Variants> laborExchange(Variants task) {
+    LaborExchange.tell(context(), self(), self());
+    return goTo(State.READY).using(task.clean());
   }
 
   private void explain(String s) {
@@ -370,28 +300,21 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     return LaborExchange.Experts.jid(self());
   }
 
-  public class Task {
+  public class Variants {
     private List<Offer> offers = new ArrayList<>();
     private List<ActorRef> brokers = new ArrayList<>();
-    private final boolean immediate;
-    private boolean chosen = false;
 
-    public Task(boolean immediate) {
-      this.immediate = immediate;
-      if (!immediate) {
-        timer = AkkaTools.scheduleTimeout(context(), CHOICE_TIMEOUT, self());
-      }
-    }
-
-    public Task appendVariant(Offer offer, ActorRef broker) {
+    public Variants appendVariant(Offer offer, ActorRef broker) {
       offers.add(offer);
       brokers.add(broker);
       return this;
     }
 
-    public Offer choose() {
+    public boolean choose() {
+      if (offers.isEmpty())
+        return false;
       int winner = 0;
-      explain(" Choosing the offer between " + offers.size() + " variants.");
+      explain("Choosing the offer between " + offers.size() + " variants.");
       for (int i = 0; i < offers.size(); i++) {
         final Offer offer = offers.get(i);
         if (offer.hasWorker(jid())) {
@@ -407,18 +330,9 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
         }
       }
 
-      explain(" Sending offer " + offers.get(winner).room().local() + " to expert.");
-      XMPP.send(new Message(XMPP.jid(), jid(), offers.get(winner)), context());
-      stopTimer();
-      timer = AkkaTools.scheduleTimeout(context(), CHECK_TIMEOUT, self());
       offers = Collections.singletonList(offers.get(winner));
       brokers = Collections.singletonList(brokers.get(winner));
-      chosen = true;
-      return offers.get(0);
-    }
-
-    public boolean chosen() {
-      return chosen;
+      return true;
     }
 
     public ActorRef broker() {
@@ -433,12 +347,16 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
       return offers.get(0);
     }
 
-    public boolean immediate() {
-      return immediate;
+    public Variants enforce(Offer offer, ActorRef sender) {
+      offers = Collections.singletonList(offer);
+      brokers = Collections.singletonList(sender);
+      return this;
     }
 
-    public boolean isEmpty() {
-      return brokers.isEmpty();
+    public Variants clean() {
+      offers = new ArrayList<>();
+      brokers = new ArrayList<>();
+      return this;
     }
   }
 

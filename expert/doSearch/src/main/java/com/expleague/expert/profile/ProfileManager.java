@@ -47,7 +47,9 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
         final UserProfile value = new UserProfile(file);
         if (first == null)
           first = value;
-        if (!file.getName().equals(value.get(UserProfile.Key.EXP_LEAGUE_ID))) {
+        if (!value.has(UserProfile.Key.EXP_DEVICE_ID) && value.has(UserProfile.Key.EXP_LEAGUE_ID))
+          value.set(UserProfile.Key.EXP_DEVICE_ID, value.get(UserProfile.Key.EXP_LEAGUE_ID).toString());
+        if (!file.getName().equals(value.get(UserProfile.Key.EXP_DEVICE_ID).toString())) {
           log.warning("Profile in directory " + file.getAbsolutePath() + " is invalid. Skipping it");
           continue;
         }
@@ -56,7 +58,8 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
     }
     final File activeProfileFile = new File(root, ACTIVE_PROFILE_FILENAME);
     if (activeProfileFile.exists()) {
-      activate(knownProfiles.get(StreamTools.readFile(activeProfileFile).toString().trim()));
+      final String profileName = StreamTools.readFile(activeProfileFile).toString().trim();
+      activate(knownProfiles.get(profileName));
     }
     if (active == null && first != null) {
       activate(first);
@@ -91,7 +94,7 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
           ExpLeagueConnection.instance().register(profile);
         }
       }
-      final String profileId = profile.get(UserProfile.Key.EXP_LEAGUE_ID);
+      final String profileId = profile.get(UserProfile.Key.EXP_DEVICE_ID);
       userProfile = new UserProfile(new File(root, profileId));
       userProfile.copy(profile);
       knownProfiles.put(profileId, userProfile);
@@ -105,7 +108,7 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
   public void activate(UserProfile profile) {
     if (!knownProfiles.containsValue(profile))
       throw new IllegalArgumentException("Unknown profile");
-    final String id = profile.get(UserProfile.Key.EXP_LEAGUE_ID);
+    final String id = profile.get(UserProfile.Key.EXP_DEVICE_ID).toString();
     if (id == null)
       throw new IllegalArgumentException("Profile is not registered");
     active = profile;

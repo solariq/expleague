@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDataSourceStorage">
+    <option name="dataSources">
+      <list>
+        <State>
+          <option name="id" value="a1d85c2e-5e8e-4602-8230-9372712e564d" />
+          <option name="name" value="tbts-schema" />
+          <option name="urls">
+            <array>
+              <option value="file://$PROJECT_DIR$/server/akka-xmpp/src/main/resources/tbts-schema.sql" />
+            </array>
+          </option>
+        </State>
+      </list>
+    </option>
+  </component>
+</project>

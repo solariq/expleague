@@ -86,6 +86,16 @@ public class Operations {
   @XmlRootElement
   public static class Suspend extends Command {}
 
+  @XmlRootElement(name = "expert-feedback")
+  public static class Feedback extends Command {
+    @XmlAttribute
+    private Integer stars;
+
+    public int stars() {
+      return stars != null ? stars : 2;
+    }
+  }
+
   public static abstract class Command extends Item {}
 
   @XmlRootElement

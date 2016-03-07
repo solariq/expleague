@@ -88,6 +88,12 @@ public class Presence extends Stanza {
     any = new ArrayList<>(Arrays.asList(contents));
   }
 
+  public Presence(JID from, JID to, boolean available) {
+    this.from = from;
+    this.to = to;
+    type = available ? PresenceType.AVAILABLE : PresenceType.UNAVAILABLE;
+  }
+
   public boolean available() {
     return (type == null && status() == null) || type == PresenceType.AVAILABLE || "available".equals(status().value);
   }

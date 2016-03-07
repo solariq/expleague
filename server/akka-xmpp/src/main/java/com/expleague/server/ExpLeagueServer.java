@@ -12,19 +12,20 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 /**
  * User: solar
  * Date: 24.11.15
  * Time: 17:42
  */
+@SuppressWarnings("unused")
 public class ExpLeagueServer {
-  private static final Logger log = Logger.getLogger(ExpLeagueServer.class.getName());
+//  private static final Logger log = Logger.getLogger(ExpLeagueServer.class.getName());
   private static Cfg config;
   private static Roster users;
+  private static LaborExchange.Board leBoard;
+  private static Archive archive;
 
   public static void main(String[] args) throws Exception {
     final Config load = ConfigFactory.load();
@@ -44,8 +45,14 @@ public class ExpLeagueServer {
     system.actorOf(Props.create(ImageStorage.class), "image-storage");
   }
 
-  public static synchronized Roster roster() {
+  public static Roster roster() {
     return users;
+  }
+  public static LaborExchange.Board board() {
+    return leBoard;
+  }
+  public static Archive archive() {
+    return archive;
   }
 
   public static Cfg config() {
@@ -56,7 +63,8 @@ public class ExpLeagueServer {
   protected static void setConfig(final Cfg cfg) throws Exception {
     config = cfg;
     users = config.roster().newInstance();
-    Archive.instance = config.archive().newInstance();
+    leBoard = config.board().newInstance();
+    archive = config.archive().newInstance();
     if (System.getProperty("logger.config") == null)
       LogManager.getLogManager().readConfiguration(ExpLeagueServer.class.getResourceAsStream("/logging.properties"));
     else
@@ -68,6 +76,7 @@ public class ExpLeagueServer {
     private final String domain;
     private final Class<? extends Archive> archive;
     private final Class<? extends Roster> roster;
+    private final Class<? extends LaborExchange.Board> board;
     private final Type type;
 
     public Cfg(Config load) throws ClassNotFoundException {
@@ -76,6 +85,8 @@ public class ExpLeagueServer {
       domain = tbts.getString("domain");
       //noinspection unchecked
       archive = (Class<? extends Archive>) Class.forName(tbts.getString("archive"));
+      //noinspection unchecked
+      board = (Class<? extends LaborExchange.Board>) Class.forName(tbts.getString("board"));
       //noinspection unchecked
       roster = (Class<? extends Roster>) Class.forName(tbts.getString("roster"));
       type = Type.valueOf(tbts.getString("type").toUpperCase());
@@ -99,6 +110,10 @@ public class ExpLeagueServer {
 
     public Type type() {
       return type;
+    }
+
+    public Class<? extends LaborExchange.Board> board() {
+      return board;
     }
 
     public enum Type {

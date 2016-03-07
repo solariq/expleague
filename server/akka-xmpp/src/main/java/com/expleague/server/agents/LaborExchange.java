@@ -1,12 +1,7 @@
 package com.expleague.server.agents;
 
 import akka.actor.*;
-import akka.persistence.SaveSnapshotFailure;
-import akka.persistence.SaveSnapshotSuccess;
-import akka.persistence.SnapshotOffer;
-import akka.persistence.UntypedPersistentActor;
 import akka.util.Timeout;
-import com.spbsu.commons.system.RuntimeUtils;
 import com.spbsu.commons.util.Pair;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
@@ -25,13 +20,14 @@ import scala.concurrent.duration.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * User: solar
  * Date: 17.12.15
  * Time: 15:18
  */
-public class LaborExchange extends UntypedPersistentActor {
+public class LaborExchange extends UntypedActorAdapter {
   private static final Logger log = Logger.getLogger(LaborExchange.class.getName());
 
   public static final String EXPERTS_ACTOR_NAME = "experts";
@@ -45,33 +41,34 @@ public class LaborExchange extends UntypedPersistentActor {
   public void preStart() throws Exception {
     super.preStart();
     AkkaTools.getOrCreate(EXPERTS_ACTOR_NAME, context(), () -> Props.create(Experts.class));
+    board().open().forEach(o -> self().tell(o, self()));
   }
 
-  public void invoke(Offer offer) {
-    final String roomName = offer.room().local();
+  public void invoke(ExpLeagueOrder order) {
+    final String roomName = order.room().local();
     if (openPositions.containsKey(roomName)) {
       log.fine("Room " + roomName + " is already open");
       return;
     }
 
-    log.fine("Labor exchange received offer " + roomName + " looking for broker");
+    log.fine("Labor exchange received order " + roomName + " looking for broker");
     final Collection<ActorRef> children = JavaConversions.asJavaCollection(context().children());
+    ActorRef responsible = null;
     for (final ActorRef ref : children) {
       if (isBrokerActorRef(ref)) {
-        if (AkkaTools.ask(ref, offer) instanceof Operations.Ok) {
-          openPositions.put(roomName, ref);
-          saveSnapshot();
-          // todo: multiple exits with similar logic
-          return;
+        if (AkkaTools.ask(ref, order) instanceof Operations.Ok) {
+          responsible = ref;
+          break;
         }
       }
     }
-    final ActorRef ref = context().actorOf(Props.create(BrokerRole.class));
-    final Object answer = AkkaTools.ask(ref, offer);
-    if (!(answer instanceof Operations.Ok))
-      throw new RuntimeException("Unable to create alive broker! Received: " + answer);
-    openPositions.put(roomName, ref);
-    saveSnapshot();
+    if (responsible == null) {
+      responsible = context().actorOf(Props.create(BrokerRole.class));
+      final Object answer = AkkaTools.ask(responsible, order);
+      if (!(answer instanceof Operations.Ok))
+        throw new RuntimeException("Unable to create alive broker! Received: " + answer);
+    }
+    openPositions.put(roomName, responsible);
   }
 
   public void invoke(ActorRef expertAgent) {
@@ -84,67 +81,23 @@ public class LaborExchange extends UntypedPersistentActor {
     return !EXPERTS_ACTOR_NAME.equals(ref.path().name());
   }
 
-  public void invoke(Operations.Done done) {
-    final Optional<Map.Entry<String, ActorRef>> first = openPositions.entrySet().stream().filter(entry -> entry.getValue().equals(sender())).findFirst();
-    if (first.isPresent()) {
-      openPositions.remove(first.get().getKey());
-      saveSnapshot();
-    }
-    else {
-      log.warning("Was unable to find broker, that has finished his job: " + sender().path() + "!");
-    }
-  }
-
-  public void invoke(Operations.Cancel cancel) {
-    final JID jid = XMPP.jid(sender());
-    final ActorRef remove = openPositions.remove(jid.local());
-    if (remove != null) {
-      remove.forward(cancel, context());
-    }
-    saveSnapshot();
-  }
-
-  private void saveSnapshot() {
-    saveSnapshot(new ArrayList<>(openPositions.keySet()));
-  }
-
-  @Override
-  public void onReceiveRecover(Object o) throws Exception {
-    if (o instanceof SnapshotOffer) {
-      final SnapshotOffer offer = (SnapshotOffer) o;
-      //noinspection unchecked
-      ((List<String>) offer.snapshot()).stream().forEach(local -> {
-        final JID room = new JID(local, "muc." + ExpLeagueServer.config().domain(), null);
-        final ActorRef roomAgent = XMPP.register(room, context());
-        roomAgent.tell(new Operations.Resume(), self());
-      });
-    }
-  }
-
-  @Override
-  public void onReceiveCommand(Object o) throws Exception {
-    // todo: failure handling
-    dispatcher.invoke(this, o);
-  }
-
-  @Override
-  public String persistenceId() {
-    return "labor-exchange";
-  }
-
-  private RuntimeUtils.InvokeDispatcher dispatcher = new RuntimeUtils.InvokeDispatcher(getClass(), this::unhandled);
   public static ActorRef reference(ActorContext context) {
     return AkkaTools.getOrCreate("/user/labor-exchange", context.system(),
         (name, factory) -> factory.actorOf(Props.create(LaborExchange.class), "labor-exchange")
     );
   }
 
+  public static <T> void tell(ActorContext context, T msg, ActorRef from) {
+    reference(context).tell(msg, from);
+  }
+
   public static ActorSelection experts(ActorContext context) {
     return context.actorSelection("/user/labor-exchange/experts");
   }
 
-  public void invoke(SaveSnapshotSuccess sss) {}
-  public void invoke(SaveSnapshotFailure ssf) {}
+  public static Board board() {
+    return ExpLeagueServer.board();
+  }
 
   /**
    * User: solar
@@ -189,11 +142,12 @@ public class LaborExchange extends UntypedPersistentActor {
       if (whisper.first != null) {
         ref.forward(whisper.first, context());
       }
-      else {
+//      else {
         // todo: do we need to spawn child anyway?
-      }
+//      }
     }
 
+    @SuppressWarnings("UnusedParameters")
     public void invoke(Timeout to) {
       stateTimeout = null;
       sendState();
@@ -233,5 +187,14 @@ public class LaborExchange extends UntypedPersistentActor {
     public static void tellTo(JID jid, Object o, ActorRef from, ActorContext context) {
       experts(context).tell(Pair.create(o, jid), from);
     }
+  }
+
+  public interface Board {
+    ExpLeagueOrder active(String roomId);
+    ExpLeagueOrder register(Offer offer);
+
+    ExpLeagueOrder[] history(String roomId);
+    Stream<ExpLeagueOrder> related(JID jid);
+    Stream<ExpLeagueOrder> open();
   }
 }

@@ -33,7 +33,7 @@ public class ExpertManager {
   public synchronized ExpertsProfile profile(JID jid) {
     final Record record = record(jid);
     int invitations = record.entries().filter(r -> r.getSecond() == ExpertRole.State.INVITE).collect(Collectors.counting()).intValue();
-    final JabberUser user = Roster.instance().byName(jid.local());
+    final XMPPDevice user = Roster.instance().device(jid.local());
 
     return new ExpertsProfile(user.realName(), jid.local(), user.avatar(), invitations);
   }

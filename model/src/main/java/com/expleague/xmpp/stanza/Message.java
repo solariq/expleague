@@ -105,6 +105,28 @@ public class Message extends Stanza {
     any.add(new Body(str));
   }
 
+  public Message(JID to, MessageType type, Item... any) {
+    this.to = to;
+    this.type = type;
+    this.any.addAll(Arrays.asList(any));
+  }
+
+  public Message(JID to, MessageType type, String body) {
+    this.to = to;
+    this.type = type;
+    any.add(new Body(body));
+  }
+
+  public Message(JID to, String body) {
+    this.to = to;
+    any.add(new Body(body));
+  }
+
+  public Message(JID to, Item... items) {
+    this.to = to;
+    this.any.addAll(Arrays.asList(items));
+  }
+
   public MessageType type() {
     return type;
   }
@@ -173,6 +195,7 @@ public class Message extends Stanza {
     @XmlSchemaType(name = "language")
     protected String lang;
 
+    @SuppressWarnings("unused")
     public Body() {}
 
     public Body(String message) {
@@ -247,6 +270,7 @@ public class Message extends Stanza {
     protected String parent;
   }
 
+  @SuppressWarnings("unused")
   @XmlEnum
   public enum MessageType {
     @XmlEnumValue(value = "groupchat") GROUP_CHAT,

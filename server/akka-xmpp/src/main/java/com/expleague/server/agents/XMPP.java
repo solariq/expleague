@@ -2,7 +2,6 @@ package com.expleague.server.agents;
 
 import akka.actor.ActorContext;
 import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
 import akka.actor.Props;
 import akka.util.Timeout;
 import com.expleague.server.ExpLeagueServer;
@@ -42,26 +41,22 @@ public class XMPP extends UntypedActorAdapter {
   public static ActorRef register(JID jid, ActorContext context) {
     // reply will call allocate via invoke(JID)
     return AkkaTools.askOrThrow(
-      getXmppActorSelection(context),
-      jid,
-      Timeout.apply(Duration.create(60, TimeUnit.SECONDS))
+        context.actorSelection(XMPP_ACTOR_PATH),
+        jid,
+        Timeout.apply(Duration.create(60, TimeUnit.SECONDS))
     );
   }
 
   public static void send(Stanza message, ActorContext context) {
-    getXmppActorSelection(context).forward(message, context);
+    context.actorSelection(XMPP_ACTOR_PATH).forward(message, context);
   }
 
   public static void subscribe(JID forJid, ActorRef ref, ActorContext context) {
-    getXmppActorSelection(context).tell(new Subscribe(jid(ref), forJid), ref);
-  }
-
-  public static ActorSelection agent(JID jid, ActorContext context) {
-    return context.actorSelection(XMPP_ACTOR_PATH + "/" + jid.bare().toString());
+    context.actorSelection(XMPP_ACTOR_PATH).tell(new Subscribe(jid(ref), forJid), ref);
   }
 
   public static JID jid(ActorRef ref) {
-    return JID.parse(ref.path().name());
+    return JID.parse(ref.path().name().replace('&', '/'));
   }
 
   public void invoke(final JID jid) {
@@ -114,16 +109,16 @@ public class XMPP extends UntypedActorAdapter {
     return context().actorOf(newActorProps(jid), id);
   }
 
-  private static ActorSelection getXmppActorSelection(final ActorContext context) {
-    return context.actorSelection(XMPP_ACTOR_PATH);
-  }
-
   @VisibleForTesting
   @NotNull
   protected Props newActorProps(final JID jid) {
     return jid.domain().startsWith("muc.")
-      ? ActorContainer.props(TBTSRoomAgent.class, jid)
+      ? ActorContainer.props(ExpLeagueRoomAgent.class, jid)
       : PersistentActorContainer.props(UserAgent.class, jid);
+  }
+
+  public static JID jid(String local) {
+    return new JID(local, ExpLeagueServer.config().domain(), null);
   }
 
   public static class PresenceTracker {

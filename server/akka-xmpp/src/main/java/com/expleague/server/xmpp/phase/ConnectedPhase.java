@@ -3,6 +3,8 @@ package com.expleague.server.xmpp.phase;
 import akka.actor.ActorRef;
 import com.expleague.model.Delivered;
 import com.expleague.server.ExpLeagueServer;
+import com.expleague.server.Roster;
+import com.expleague.server.XMPPDevice;
 import com.expleague.server.agents.UserAgent;
 import com.expleague.server.agents.XMPP;
 import com.expleague.server.services.XMPPServices;
@@ -30,6 +32,7 @@ public class ConnectedPhase extends XMPPPhase {
   private boolean bound = false;
   private ActorRef agent;
   private ActorRef courier;
+  private XMPPDevice device;
 
   public ConnectedPhase(ActorRef connection, String authId) {
     super(connection);
@@ -52,14 +55,16 @@ public class ConnectedPhase extends XMPPPhase {
         final Object payload = iq.get();
         if (payload instanceof Bind) {
           bound = true;
-          jid = jid.resource(((Bind) payload).resource());
+          device = Roster.instance().device(jid.local());
+          final String resource = ((Bind) payload).resource();
+          jid = device.user().jid().resource(device.name() + (resource.isEmpty() ? "" : "/" + resource));
           answer(Iq.answer(iq, new Bind(jid())));
           break;
         }
         else if (payload instanceof Session) {
           bound = true;
           agent = XMPP.register(jid().bare(), context());
-          agent.tell(new UserAgent.ConnStatus(true, jid.resource()), self());
+          agent.tell(new UserAgent.ConnStatus(true, jid.resource(), device), self());
           answer(Iq.answer(iq, new Session()));
           break;
         }
@@ -76,7 +81,7 @@ public class ConnectedPhase extends XMPPPhase {
   @Override
   public void postStop() throws Exception {
     if (agent != null) {
-      agent.tell(new UserAgent.ConnStatus(false, jid.resource()), self());
+      agent.tell(new UserAgent.ConnStatus(false, jid.resource(), device), self());
     }
   }
 
@@ -110,7 +115,7 @@ public class ConnectedPhase extends XMPPPhase {
   public void invoke(Close close) throws Exception {
     if (agent != null) {
       agent.tell(new Presence(jid, false), self());
-      agent.tell(new UserAgent.ConnStatus(false, jid.resource()), self());
+      agent.tell(new UserAgent.ConnStatus(false, jid.resource(), device), self());
     }
   }
 

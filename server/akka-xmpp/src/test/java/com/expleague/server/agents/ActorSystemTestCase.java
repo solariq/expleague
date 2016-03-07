@@ -34,7 +34,7 @@ public class ActorSystemTestCase {
     final Config config = ExpLeagueServerTestCase.setUpTestConfig();
 
     // todo: this is hack while waiting for release of persistence testkit https://github.com/akka/akka/issues/15571
-    StreamTools.deleteDirectoryContents(new File(config.getString("akka.persistence.journal.leveldb.dir")));
+    StreamTools.deleteDirectoryContents(new File(config.getString("tbts.xmpp.journal.root")));
     StreamTools.deleteDirectoryContents(new File(config.getString("akka.persistence.snapshot-store.local.dir")));
 
     system = ActorSystem.create("test-env");
@@ -118,7 +118,7 @@ public class ActorSystemTestCase {
           final Object[] argsArray = args.toArray(new Object[args.size()]);
           return jid.domain().startsWith("muc.")
             ? ActorContainer.props(
-                AdapterProps.create(TBTSRoomAgent.class, jid),
+                AdapterProps.create(ExpLeagueRoomAgent.class, jid),
                 AdapterProps.create(overrideAdapterClass, argsArray)
               )
             : PersistentActorContainer.props(

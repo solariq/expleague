@@ -10,7 +10,10 @@ import com.expleague.xmpp.control.register.Query;
 public interface Roster {
   void register(Query query) throws Exception;
   Query required();
-  JabberUser byName(String name);
+
+  XMPPDevice device(String name);
+  XMPPUser user(String name);
+  XMPPDevice[] devices(String id);
 
   static Roster instance() {
     return ExpLeagueServer.roster();

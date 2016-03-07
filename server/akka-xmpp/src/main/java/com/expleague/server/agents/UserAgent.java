@@ -5,6 +5,9 @@ import akka.actor.PoisonPill;
 import akka.persistence.RecoveryCompleted;
 import com.expleague.model.Delivered;
 import com.expleague.model.Operations;
+import com.expleague.server.Roster;
+import com.expleague.server.XMPPDevice;
+import com.expleague.server.XMPPUser;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.PersistentActorAdapter;
 import com.expleague.util.akka.PersistentActorContainer;
@@ -20,6 +23,7 @@ import scala.collection.JavaConversions;
 
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * User: solar
@@ -30,10 +34,11 @@ public class UserAgent extends PersistentActorAdapter {
   private static final Logger log = Logger.getLogger(UserAgent.class.getName());
   private final JID bareJid;
   private final Map<JID, Presence> presenceMap = new HashMap<>();
-  private Set<String> appTokens = new HashSet<>();
+  private final XMPPUser user;
 
   public UserAgent(JID jid) {
     this.bareJid = jid.bare();
+    user = Roster.instance().user(jid.local());
   }
 
   @Override
@@ -48,10 +53,12 @@ public class UserAgent extends PersistentActorAdapter {
   public static class ConnStatus {
     final boolean connected;
     final String resource;
+    final XMPPDevice device;
 
-    public ConnStatus(boolean connected, String resource) {
+    public ConnStatus(boolean connected, String resource, XMPPDevice device) {
       this.connected = connected;
       this.resource = resource;
+      this.device = device;
     }
   }
 
@@ -74,7 +81,7 @@ public class UserAgent extends PersistentActorAdapter {
         return;
       }
       final ActorRef courierRef = context().actorOf(
-          PersistentActorContainer.props(Courier.class, jid().resource(resource), sender()),
+          PersistentActorContainer.props(Courier.class, status.device, sender()),
           actorResourceAddr
       );
       sender().tell(courierRef, self());
@@ -115,12 +122,6 @@ public class UserAgent extends PersistentActorAdapter {
     XMPP.send(stanza, context());
     if (!(stanza instanceof Iq) && stanza.from().resource().endsWith("expert"))
       LaborExchange.Experts.tellTo(jid(), stanza, self(), context());
-    if (stanza instanceof Message) {
-      final Message message = (Message) stanza;
-      if (message.has(Operations.Token.class)) {
-        appTokens.add(TokenUtil.sanitizeTokenString(message.get(Operations.Token.class).value()));
-      }
-    }
   }
 
   private void toConn(Stanza stanza) {
@@ -129,7 +130,7 @@ public class UserAgent extends PersistentActorAdapter {
       courier.tell(stanza, self());
     }
     if (couriers.isEmpty() && stanza instanceof Message) {
-      appTokens.stream().forEach(
+      Stream.of(user.devices()).map(XMPPDevice::token).filter(s -> s != null).forEach(
           token -> NotificationsManager.instance().sendPush((Message)stanza, token)
       );
     }
@@ -141,12 +142,12 @@ public class UserAgent extends PersistentActorAdapter {
   }
 
   public static class Courier extends PersistentActorAdapter {
-    private final JID jid;
+    private final XMPPDevice connectedDevice;
     private final ActorRef connection;
     private Queue<Stanza> deliveryQueue = new ArrayDeque<>();
 
-    public Courier(JID jid, ActorRef connection) {
-      this.jid = jid;
+    public Courier(XMPPDevice connectedDevice, ActorRef connection) {
+      this.connectedDevice = connectedDevice;
       this.connection = connection;
     }
 
@@ -162,6 +163,13 @@ public class UserAgent extends PersistentActorAdapter {
       }
       else if (o instanceof RecoveryCompleted && !deliveryQueue.isEmpty()) {
         connection.tell(deliveryQueue.peek(), self());
+      }
+    }
+
+    @ActorMethod
+    public void updateToken(Message message) {
+      if (message.has(Operations.Token.class)) {
+        connectedDevice.updateToken(TokenUtil.sanitizeTokenString(message.get(Operations.Token.class).value()));
       }
     }
 
@@ -193,7 +201,7 @@ public class UserAgent extends PersistentActorAdapter {
 
     @Override
     public String persistenceId() {
-      return jid.bare().toString();
+      return connectedDevice != null ? connectedDevice.user().jid().toString() : "fake";
     }
   }
 }

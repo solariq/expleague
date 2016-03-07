@@ -38,8 +38,7 @@ public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> {
   }
 
   public JID jid() {
-    final String id = profile.get(UserProfile.Key.EXP_LEAGUE_ID);
-    return JID.parse(id);
+    return profile.get(UserProfile.Key.EXP_LEAGUE_ID);
   }
 
   boolean check = false;
@@ -67,7 +66,7 @@ public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> {
         }
         else if (!message.has(Operations.Command.class)){
           invoke(new CheckEvent(message));
-          ExpLeagueConnection.instance().send(new Message(jid(), system(), new Operations.Ok()));
+          ExpLeagueConnection.instance().send(new Message(system(), new Operations.Ok()));
           check = true;
         }
         else if (task != null) {
@@ -101,5 +100,9 @@ public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> {
 
   public JID system() {
     return JID.parse(profile.get(UserProfile.Key.EXP_LEAGUE_DOMAIN));
+  }
+
+  public void jid(JID boundJid) {
+    profile.set(UserProfile.Key.EXP_LEAGUE_ID, boundJid);
   }
 }

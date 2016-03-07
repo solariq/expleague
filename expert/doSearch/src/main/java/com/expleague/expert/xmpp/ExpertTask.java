@@ -124,7 +124,7 @@ public class ExpertTask {
     else if (command instanceof Operations.Resume) {
       state(State.BUSY);
       eventsReceiver.accept(new TaskResumedEvent(offer, this));
-      ExpLeagueConnection.instance().send(new Message(owner.jid(), owner.system(), new Operations.Resume()));
+      ExpLeagueConnection.instance().send(new Message(owner.system(), new Operations.Resume()));
     }
   }
 
@@ -136,7 +136,7 @@ public class ExpertTask {
     if (state != State.INVITE) 
       throw new IllegalStateException();
     final Operations.Start start = new Operations.Start();
-    ExpLeagueConnection.instance().send(new Message(owner.jid(), owner.system(), start));
+    ExpLeagueConnection.instance().send(new Message(owner.system(), start));
     state(State.BUSY);
     eventsReceiver.accept(new TaskAcceptedEvent(start, this));
     log(start);
@@ -144,7 +144,7 @@ public class ExpertTask {
 
   public void cancel() {
     final Operations.Cancel cancel = new Operations.Cancel();
-    ExpLeagueConnection.instance().send(new Message(owner.jid(), owner.system(), cancel));
+    ExpLeagueConnection.instance().send(new Message(owner.system(), cancel));
     state(State.CLOSED);
     eventsReceiver.accept(new TaskInviteCanceledEvent(cancel, this));
     eventsReceiver.accept(new TaskSuspendedEvent(cancel, this));
@@ -161,16 +161,16 @@ public class ExpertTask {
   }
 
   public void send(String msg) {
-    ExpLeagueConnection.instance().send(new Message(owner.jid(), offer.room(), Message.MessageType.GROUP_CHAT, msg));
+    ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.GROUP_CHAT, msg));
   }
 
   public void progress(String item) {
-    ExpLeagueConnection.instance().send(new Message(owner.jid(), offer.room(), item));
+    ExpLeagueConnection.instance().send(new Message(offer.room(), item));
   }
 
   public void answer() {
     final Answer answer = new Answer(patchwork());
-    ExpLeagueConnection.instance().send(new Message(owner.jid(), offer.room(), Message.MessageType.GROUP_CHAT, answer));
+    ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.GROUP_CHAT, answer));
     patchwork("");
     state(State.CLOSED);
     eventsReceiver.accept(new TaskSuspendedEvent(answer, this));
