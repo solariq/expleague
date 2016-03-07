@@ -365,7 +365,7 @@ class ChatMessagesModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                     let id = "message-\(msg.hashValue)"
                     answer += "\n<div id=\"\(id)\"/>\n"
                     answer += (msg.body!);
-                    answer += "\n<a href='unSearch:///chat-messages#\(cells.count)'>Обратно в чат</a>\n"
+                    answer += "\n<a class=\"back_to_chat\" href='unSearch:///chat-messages#\(cells.count)'>Обратно в чат</a>\n"
                     newModel = AnswerReceivedModel(id: id, progress: progressModel!)
                     progressModel = nil
                     if (progressCellIndex != nil) {

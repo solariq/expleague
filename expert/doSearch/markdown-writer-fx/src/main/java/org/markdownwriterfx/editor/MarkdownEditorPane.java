@@ -201,9 +201,10 @@ public class MarkdownEditorPane
 		int index = 0;
 		while(matcher.find()) {
 			final String id = "cut-" + index + "";
-			matcher.appendReplacement(buffer, "<a href=\"javascript:showHide('" + id + "')\">" + matcher.group(1) + "</a>" +
-					"<div id=\"" + id + "\" style=\"display: none\">" + matcher.group(2) +
-					"<br/><a href=\"javascript:showHide('" + id + "')\">hide</a></div>");
+			final String id_1 = "cuts-" + index + "";
+			matcher.appendReplacement(buffer, "<a class=\"cut\" id=\"" + id_1 + "\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">" + matcher.group(1) + "</a>" +
+					"<div class=\"cut\" id=\"" + id + "\" style=\"display: none\">" + matcher.group(2) +
+					"\n<a class=\"hide\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">скрыть</a></div>");
 			index++;
 		}
 		matcher.appendTail(buffer);
