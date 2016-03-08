@@ -48,7 +48,7 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
         if (first == null)
           first = value;
         if (!value.has(UserProfile.Key.EXP_DEVICE_ID) && value.has(UserProfile.Key.EXP_LEAGUE_ID))
-          value.set(UserProfile.Key.EXP_DEVICE_ID, value.get(UserProfile.Key.EXP_LEAGUE_ID).toString());
+          value.set(UserProfile.Key.EXP_DEVICE_ID, value.get(UserProfile.Key.EXP_LEAGUE_ID));
         if (!file.getName().equals(value.get(UserProfile.Key.EXP_DEVICE_ID).toString())) {
           log.warning("Profile in directory " + file.getAbsolutePath() + " is invalid. Skipping it");
           continue;
