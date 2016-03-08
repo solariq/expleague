@@ -134,20 +134,20 @@ public class MySQLOps {
     try {
       Class.forName("com.mysql.jdbc.Driver");
       //noinspection ResultOfMethodCallIgnored
-      final Process exec = Runtime.getRuntime().exec("/bin/bash");
-      final PrintStream bash = new PrintStream(exec.getOutputStream());
-      bash.println("mysql -u root --password=tg30239");
-      bash.append(StreamTools.readStream(MySQLOps.class.getResourceAsStream("/tbts-schema.sql")));
-      exec.getOutputStream().close();
-      exec.waitFor();
-      final String info = StreamTools.readStream(exec.getInputStream()).toString();
-      if (!info.isEmpty())
-        log.info(info);
-      final String warn = StreamTools.readStream(exec.getErrorStream()).toString();
-      if (!warn.isEmpty())
-        log.warning(warn);
+//      final Process exec = Runtime.getRuntime().exec("/bin/bash");
+//      final PrintStream bash = new PrintStream(exec.getOutputStream());
+//      bash.println("mysql -u root --password=tg30239");
+//      bash.append(StreamTools.readStream(MySQLOps.class.getResourceAsStream("/tbts-schema.sql")));
+//      exec.getOutputStream().close();
+//      exec.waitFor();
+//      final String info = StreamTools.readStream(exec.getInputStream()).toString();
+//      if (!info.isEmpty())
+//        log.info(info);
+//      final String warn = StreamTools.readStream(exec.getErrorStream()).toString();
+//      if (!warn.isEmpty())
+//        log.warning(warn);
 
-    } catch (ClassNotFoundException | InterruptedException | IOException e) {
+    } catch (ClassNotFoundException /*| InterruptedException | IOException*/ e) {
       throw new RuntimeException(e);
     }
   }
