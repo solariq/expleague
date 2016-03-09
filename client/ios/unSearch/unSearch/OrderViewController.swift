@@ -178,7 +178,7 @@ class OrderDescriptionViewController: UITableViewController {
     @IBOutlet weak var imagesCaption: UILabel!
 
     internal func sizeOfInput(height: CGFloat) -> CGFloat {
-        return max(CGFloat(50), height - CGFloat(5 * rowHeight));
+        return max(CGFloat(82), height - CGFloat(5 * rowHeight));
     }
     
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {

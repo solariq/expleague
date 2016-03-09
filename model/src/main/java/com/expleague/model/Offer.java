@@ -187,7 +187,7 @@ public class Offer extends Item {
   }
 
   public Filter filter() {
-    return filter;
+    return filter != null ? filter : (filter = new Filter());
   }
 
   @XmlEnum

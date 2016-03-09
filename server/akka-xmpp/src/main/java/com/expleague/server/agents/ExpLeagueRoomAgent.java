@@ -17,9 +17,13 @@ import com.spbsu.commons.func.Functions;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayDeque;
+import java.util.EnumSet;
 import java.util.Queue;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+
+import static com.expleague.server.agents.ExpLeagueOrder.Role.DENIER;
+import static com.expleague.server.agents.ExpLeagueOrder.Role.SLACKER;
 
 /**
  * User: solar
@@ -64,52 +68,47 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
     // saving everything to archive
 
     if (order != null) {
-      if (msg.has(Command.class)) {
-        switch (order.role(from)) {
-          case OWNER:
-            if (msg.has(Feedback.class))
-              order.feedback(msg.get(Feedback.class).stars());
-
-            if (msg.has(Cancel.class)) {
-              order.broker().tell(new Cancel(), self());
-              order = null;
-            }
-            break;
-          case ACTIVE:
-            if (msg.has(Resume.class)) {
-              dump.stream()
-                  .flatMap(Functions.instancesOf(Message.class))
-                  .filter(message -> message.type() == MessageType.GROUP_CHAT)
-                  .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
-              XMPP.send(new Presence(roomAlias(msg.from()), dump.owner(), true), context());
-            }
-            else if (msg.has(Answer.class)) {
-              order = null;
-            }
-            else if (msg.has(Suspend.class)) {
-              XMPP.send(new Presence(roomAlias(msg.from()), dump.owner(), false), context());
-            }
-            else if (msg.has(Cancel.class)) {
-              XMPP.send(new Message(jid, dump.owner(), msg.get(Command.class)), context());
-            }
-            else if (msg.has(Start.class)) {
-              dump.stream()
-                  .flatMap(Functions.instancesOf(Message.class))
-                  .filter(message -> message.type() == MessageType.GROUP_CHAT)
-                  .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
-              XMPP.send(new Message(jid, dump.owner(), msg.get(Start.class), ExpertManager.instance().profile(from.bare())), context());
-            }
-            break;
-          default:
-            log.warning("Unexpected command " + msg.get(Command.class) + " received from " + from + " playing: " + order.role(from));
-        }
-      }
-      else if (order.role(from) == ExpLeagueOrder.Role.ACTIVE && msg.body().startsWith("{\"type\":\"pageVisited\"")) {
-        XMPP.send(new Message(jid, dump.owner(), msg.body()), context());
+      switch (order.role(from)) {
+        case OWNER:
+          if (msg.has(Feedback.class))
+            order.feedback(msg.get(Feedback.class).stars());
+          if (msg.has(Cancel.class)) {
+            order.broker().tell(new Cancel(), self());
+            order = null;
+          }
+          break;
+        case ACTIVE:
+          if (msg.has(Resume.class)) {
+            dump.stream()
+                    .flatMap(Functions.instancesOf(Message.class))
+                    .filter(message -> message.type() == MessageType.GROUP_CHAT)
+                    .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
+            XMPP.send(new Presence(roomAlias(msg.from()), dump.owner(), true), context());
+          }
+          else if (msg.has(Answer.class)) {
+            order = null;
+          }
+          else if (msg.has(Suspend.class)) {
+            XMPP.send(new Presence(roomAlias(msg.from()), dump.owner(), false), context());
+          }
+          else if (msg.has(Cancel.class)) {
+            XMPP.send(new Message(jid, dump.owner(), msg.get(Command.class)), context());
+          }
+          else if (msg.has(Start.class)) {
+            dump.stream()
+                    .flatMap(Functions.instancesOf(Message.class))
+                    .filter(message -> message.type() == MessageType.GROUP_CHAT)
+                    .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
+            XMPP.send(new Message(jid, dump.owner(), msg.get(Start.class), ExpertManager.instance().profile(from.bare())), context());
+          }
+          else if (msg.body().startsWith("{\"type\":\"pageVisited\"")) {
+            XMPP.send(new Message(jid, dump.owner(), msg.body()), context());
+          }
+          break;
+        default:
+          log.warning("Unexpected command " + msg.get(Command.class) + " received from " + from + " playing: " + order.role(from));
       }
     }
-    else if (msg.has(Command.class))
-      log.warning("Command received when no active order exist!");
     else {
       order = LaborExchange.board().register(offer(msg));
       invoke(new Message(XMPP.jid(), jid, new Create(), order.offer()));
@@ -170,11 +169,11 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
       final Offer prevOffer = prevOrder.offer();
       result = prevOffer.copy();
       result.topic(result.topic() + "\n" + msg.body());
-      order.participants()
-          .filter(expert -> order.role(expert) == ExpLeagueOrder.Role.SLACKER || order.role(expert) == ExpLeagueOrder.Role.DENIER)
+      prevOrder.participants()
+          .filter(expert -> EnumSet.of(SLACKER, DENIER).contains(prevOrder.role(expert)))
           .forEach(slacker -> result.filter().reject(slacker));
-      order.participants()
-          .filter(expert -> order.role(expert) == ExpLeagueOrder.Role.ACTIVE)
+      prevOrder.participants()
+          .filter(expert -> prevOrder.role(expert) == ExpLeagueOrder.Role.ACTIVE)
           .forEach(worker -> result.filter().prefer(worker));
     }
     else result = Offer.create(jid, dump.owner(), msg);
