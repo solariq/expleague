@@ -52,7 +52,7 @@ public class InMemArchive implements Archive {
 
     @Override
     public JID owner() {
-      return XMPP.jid(owner);
+      return JID.parse(owner);
     }
   }
 }
