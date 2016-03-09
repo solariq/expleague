@@ -15,35 +15,25 @@
                 <rect key="frame" x="0.0" y="0.0" width="322" height="53"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="client_icon_black" translatesAutoresizingMaskIntoConstraints="NO" id="xYm-j6-wLH" userLabel="avatar">
-                        <rect key="frame" x="287" y="10" width="35" height="35"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="35" id="8kN-P1-2yc"/>
-                            <constraint firstAttribute="height" constant="35" id="adJ-KY-a2x"/>
-                        </constraints>
-                    </imageView>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble_blue_tail_right" translatesAutoresizingMaskIntoConstraints="NO" id="ZjN-mD-VMH">
-                        <rect key="frame" x="0.0" y="0.0" width="287" height="53"/>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chat_client_bubble" translatesAutoresizingMaskIntoConstraints="NO" id="ZjN-mD-VMH">
+                        <rect key="frame" x="0.0" y="0.0" width="322" height="53"/>
                     </imageView>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0tF-CD-ELP">
-                        <rect key="frame" x="8" y="8" width="261" height="37"/>
+                        <rect key="frame" x="8" y="8" width="306" height="37"/>
                     </view>
                 </subviews>
                 <constraints>
-                    <constraint firstAttribute="trailingMargin" secondItem="xYm-j6-wLH" secondAttribute="trailing" constant="-8" id="0zR-sA-cB6"/>
                     <constraint firstItem="0tF-CD-ELP" firstAttribute="bottom" secondItem="pTU-4Q-ZpM" secondAttribute="bottomMargin" id="BPd-y7-Ykk"/>
                     <constraint firstAttribute="bottomMargin" secondItem="ZjN-mD-VMH" secondAttribute="bottom" constant="-8" id="Ce3-JR-TeH"/>
                     <constraint firstItem="ZjN-mD-VMH" firstAttribute="leading" secondItem="pTU-4Q-ZpM" secondAttribute="leadingMargin" constant="-8" id="K4O-V6-mXd"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="ZjN-mD-VMH" secondAttribute="trailing" constant="27" id="Mmo-V4-qbt"/>
                     <constraint firstItem="0tF-CD-ELP" firstAttribute="top" secondItem="pTU-4Q-ZpM" secondAttribute="topMargin" id="WnA-zX-j5G"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="xYm-j6-wLH" secondAttribute="bottom" id="Z7t-Ak-v2x"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="0tF-CD-ELP" secondAttribute="trailing" id="et5-Ed-G9I"/>
                     <constraint firstItem="0tF-CD-ELP" firstAttribute="leading" secondItem="pTU-4Q-ZpM" secondAttribute="leadingMargin" id="inZ-l0-xnb"/>
                     <constraint firstItem="ZjN-mD-VMH" firstAttribute="top" secondItem="pTU-4Q-ZpM" secondAttribute="topMargin" constant="-8" id="oql-qI-Xb2"/>
-                    <constraint firstItem="xYm-j6-wLH" firstAttribute="leading" secondItem="0tF-CD-ELP" secondAttribute="trailing" constant="18" id="xb7-xW-dMx"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="ZjN-mD-VMH" secondAttribute="trailing" constant="-8" id="wGU-pb-e0p"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>
-                <outlet property="avatar" destination="xYm-j6-wLH" id="R9z-vw-gQo"/>
                 <outlet property="bubble" destination="ZjN-mD-VMH" id="gbv-UI-aLZ"/>
                 <outlet property="content" destination="0tF-CD-ELP" id="IEY-r7-DMs"/>
             </connections>
@@ -51,7 +41,6 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="bubble_blue_tail_right" width="190" height="49"/>
-        <image name="client_icon_black" width="637" height="637"/>
+        <image name="chat_client_bubble" width="505" height="116"/>
     </resources>
 </document>

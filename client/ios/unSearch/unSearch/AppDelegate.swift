@@ -181,11 +181,18 @@ extension AppDelegate: UIApplicationDelegate {
         stream.keepAliveInterval = 30
         stream.enableBackgroundingOnSocket = true
         
-        navigation.navigationBar.barTintColor = UIColor(red: 17.0/256, green: 138.0/256, blue: 222.0/256, alpha: 1.0)
+//        navigation.navigationBar.barTintColor = UIColor(red: 17.0/256, green: 138.0/256, blue: 222.0/256, alpha: 1.0)
         navigation.navigationBar.tintColor = UIColor.whiteColor()
         navigation.navigationBar.titleTextAttributes = [
             NSForegroundColorAttributeName: UIColor.whiteColor()
         ]
+        
+        for b in tabs.tabBar.items! {
+            b.image = b.image?.imageWithRenderingMode(.AlwaysOriginal)
+            b.selectedImage = b.selectedImage?.imageWithRenderingMode(.AlwaysOriginal)
+            b.setTitleTextAttributes([NSForegroundColorAttributeName: Palette.CONTROL], forState: .Selected)
+        }
+        
         application.statusBarStyle = .LightContent
         application.registerForRemoteNotifications()
         let settings = UIUserNotificationSettings(forTypes: [.Alert, .Sound], categories: [])

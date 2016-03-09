@@ -22,8 +22,7 @@ import java.util.Queue;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-import static com.expleague.server.agents.ExpLeagueOrder.Role.DENIER;
-import static com.expleague.server.agents.ExpLeagueOrder.Role.SLACKER;
+import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
 
 /**
  * User: solar
@@ -52,7 +51,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
     final JID from = msg.from();
     dump(msg);
     if (msg.type() == MessageType.GROUP_CHAT &&
-        !(dump.owner().bareEq(from) || order != null && order.role(from) == ExpLeagueOrder.Role.ACTIVE)
+        !(dump.owner().bareEq(from) || order != null && order.role(from) == ACTIVE)
         ) {
       final Message message = new Message(
         jid,
@@ -145,7 +144,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
       else if (message.has(Suspend.class)) {
         state.suspend();
       }
-      else if (message.has(Cancel.class) && current.role(message.from()) == ExpLeagueOrder.Role.OWNER) {
+      else if (message.has(Cancel.class) && current.role(message.from()) == OWNER) {
         state.cancel();
       }
       else if (message.has(Cancel.class)) {

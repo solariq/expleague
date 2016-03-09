@@ -33,11 +33,11 @@ public class InMemRoster implements Roster {
   }
 
   @Override
-  public void register(Query query) throws Exception {
+  public synchronized XMPPDevice register(Query query) throws Exception {
     final XMPPDevice device = device(query.username());
     if (device != null) {
       if (device.passwd().equals(query.passwd()))
-        return;
+        return device;
       throw new AuthenticationException("User known with different password");
     }
     log.log(Level.INFO, "Registering device " + query.username());
@@ -61,6 +61,7 @@ public class InMemRoster implements Roster {
       }
     };
     devices.put(result.name(), result);
+    return result;
   }
 
   @Override
@@ -69,12 +70,12 @@ public class InMemRoster implements Roster {
   }
 
   @Override
-  public XMPPUser user(String name) {
+  public synchronized XMPPUser user(String name) {
     return users.get(name);
   }
 
   @Override
-  public XMPPDevice[] devices(String id) {
+  public synchronized XMPPDevice[] devices(String id) {
     final List<XMPPDevice> result = devices.values().stream().filter(
         device -> id.equals(device.user().id())
     ).collect(Collectors.toList());

@@ -8,7 +8,7 @@ import com.expleague.xmpp.control.register.Query;
  * Time: 18:37
  */
 public interface Roster {
-  void register(Query query) throws Exception;
+  XMPPDevice register(Query query) throws Exception;
   Query required();
 
   XMPPDevice device(String name);

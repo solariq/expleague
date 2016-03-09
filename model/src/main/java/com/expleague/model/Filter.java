@@ -17,6 +17,7 @@ public class Filter {
   @XmlAnyElement(lax = true)
   private List<JID> reject;
 
+  @SuppressWarnings({"MismatchedQueryAndUpdateOfCollection", "unused"})
   @XmlAnyElement(lax = true)
   private List<JID> accept;
 
@@ -41,5 +42,11 @@ public class Filter {
     if (prefer == null)
       prefer = new ArrayList<>();
     prefer.add(worker);
+  }
+
+  public boolean isPrefered(JID jid) {
+    if (accept != null)
+      return accept.contains(jid);
+    return prefer != null && prefer.contains(jid) && (reject == null || !reject.contains(jid));
   }
 }

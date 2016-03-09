@@ -13,10 +13,19 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
     var placeHolder = "Напишите эксперту"
     @IBOutlet weak var text: UITextView!
     var hDiff = CGFloat(0)
+    var inputViewHConstraint: NSLayoutConstraint?
     override func viewDidLoad() {
         text.delegate = self
         text.scrollEnabled = false
         hDiff = text.frame.minY + view.frame.height - text.frame.maxY
+        text.layer.borderWidth = 2
+        text.layer.borderColor = UIColor(red: 202, green: 210, blue: 227, alpha: 1).CGColor
+        text.layer.cornerRadius = 4
+        view!.translatesAutoresizingMaskIntoConstraints = false
+        inputViewHConstraint = NSLayoutConstraint(item: view, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: view.frame.height)
+        NSLayoutConstraint.activateConstraints([
+            inputViewHConstraint!
+        ])
         textViewDidEndEditing(text)
     }
     
@@ -24,7 +33,7 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
         if !text.text.isEmpty && (delegate == nil || delegate!.chatInput(self, didSend: text.text)) {
             text.text = ""
             textViewDidChange(text)
-            parent.scrollView.scrollRectToVisible(parent.messagesView.frame, animated: true)
+            parent.detailsView!.scrollToChat(true)
         }
     }
     @IBAction func attach(sender: AnyObject) {
@@ -33,8 +42,8 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
     
     var delegate: ChatInputDelegate?
     
-    var parent: MessagesVeiwController {
-        return (parentViewController as! MessagesVeiwController)
+    var parent: OrderDetailsVeiwController {
+        return (parentViewController as! OrderDetailsVeiwController)
     }
     
     func textViewDidBeginEditing(textView: UITextView) {
@@ -59,10 +68,8 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
             print(newSize.height + hDiff)
             UITextView.beginAnimations(nil, context: nil)
             UITextView.setAnimationDuration(0.2)
-            parent.inputViewHConstraint?.constant = newSize.height + hDiff
-            parent.messagesViewHConstraint?.constant = -newSize.height - hDiff - 2
-            parent.answerViewHConstraint?.constant = -newSize.height - hDiff - 2
-            parent.view.layoutIfNeeded()
+            inputViewHConstraint?.constant = newSize.height + hDiff
+            view.layoutIfNeeded()
             UITextView.commitAnimations()
         }
     }

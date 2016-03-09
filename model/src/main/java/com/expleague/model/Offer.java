@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * User: solar
@@ -51,10 +52,7 @@ public class Offer extends Item {
 
   @XmlElementWrapper(namespace = Operations.NS)
   @XmlAnyElement(lax = true)
-  private Set<ExpertsProfile> workers;
-
-  @XmlElement(namespace = Operations.NS)
-  private Set<JID> slackers;
+  private List<ExpertsProfile> workers;
 
   @XmlAnyElement(lax = true)
   private Filter filter;
@@ -109,14 +107,6 @@ public class Offer extends Item {
     throw new IllegalArgumentException("Unable to restore offer from: " + description);
   }
 
-  @Nullable
-  public ExpertsProfile worker(JID jid) {
-    if (workers == null)
-      return null;
-    final Optional<ExpertsProfile> any = workers.stream().filter(p -> p.login().equals(jid.local()) || p.login().equals(jid.resource())).findAny();
-    return any.isPresent() ? any.get() : null;
-  }
-
   public JID room() {
     return room;
   }
@@ -127,27 +117,6 @@ public class Offer extends Item {
 
   public Item[] attachments() {
     return attachments != null ? attachments.toArray(new Item[attachments.size()]) : new Item[0];
-  }
-
-  public void addWorker(ExpertsProfile worker) {
-    if (workers == null)
-      workers = new HashSet<>();
-    workers.add(worker);
-  }
-
-  public void addSlacker(JID worker) {
-    if (slackers == null)
-      slackers = new HashSet<>();
-    slackers.add(worker);
-  }
-
-  public boolean hasWorker(JID worker) {
-    // todo: worker(jid) uses different condition - why?
-    return workers != null && workers.stream().anyMatch(profile -> profile.login().equals(worker.local())) && !hasSlacker(worker);
-  }
-
-  public boolean hasSlacker(JID worker) {
-    return slackers != null && slackers.contains(worker);
   }
 
   public Date expires() {
@@ -174,10 +143,6 @@ public class Offer extends Item {
     return client;
   }
 
-  public Set<ExpertsProfile> workers() {
-    return workers != null ? workers : Collections.emptySet();
-  }
-
   public boolean fit(JID expert) {
     return filter == null || filter.fit(expert);
   }
@@ -188,6 +153,16 @@ public class Offer extends Item {
 
   public Filter filter() {
     return filter != null ? filter : (filter = new Filter());
+  }
+
+  public void addWorker(ExpertsProfile profile) {
+    if (workers == null)
+      workers = new ArrayList<>();
+    workers.add(profile);
+  }
+
+  public Stream<ExpertsProfile> workers() {
+    return workers != null ? workers.stream() : Stream.empty();
   }
 
   @XmlEnum
@@ -229,5 +204,4 @@ public class Offer extends Item {
       return latitude;
     }
   }
-
 }

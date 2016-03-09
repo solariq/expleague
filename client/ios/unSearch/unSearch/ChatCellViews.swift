@@ -16,8 +16,7 @@ enum CellAlignment: Int {
 }
 
 class ChatCell: UITableViewCell {
-    static let bgColor = UIColor(red: 218.0/256.0, green: 234.0/256.0, blue: 239.0/256.0, alpha: 1.0)
-    var controller: MessagesVeiwController?
+    var controller: OrderDetailsVeiwController?
     override func awakeFromNib() {
         super.awakeFromNib()
         backgroundColor = UIColor.clearColor()
@@ -95,7 +94,7 @@ class SetupChatCell: CompositeChatCell {
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        backgroundColor = ChatCell.bgColor
+        backgroundColor = Palette.CHAT_BACKGROUND
         SetupChatCell.labelHeight = label.frame.height
     }
 }
@@ -142,10 +141,7 @@ class ExpertInProgressCell: SimpleChatCell {
     @IBOutlet weak var expertAvatar: UIImageView!
     @IBOutlet weak var pagesCount: UILabel!
     @IBOutlet weak var callsCount: UILabel!
-    @IBOutlet weak var answersCount: UILabel!
-    @IBOutlet weak var answerTypeIcon: UIImageView!
     @IBOutlet weak var name: UILabel!
-    @IBOutlet weak var progress: UIActivityIndicatorView!
     
     var action: (() -> Void)?
     @IBAction func cancelTask(sender: UIButton) {
@@ -224,8 +220,8 @@ class AnswerReceivedCell: ExpertInProgressCell {
     var id: String?
     
     @IBAction func fire(sender: UIButton) {
-        self.controller!.scrollView.setContentOffset(self.controller!.progress.frame.origin, animated: true)
-        self.controller!.answerView!.stringByEvaluatingJavaScriptFromString("document.getElementById('\(self.id!)').scrollIntoView()")
+        self.controller!.detailsView!.scrollToAnswer(true)
+        self.controller!.answer.stringByEvaluatingJavaScriptFromString("document.getElementById('\(self.id!)').scrollIntoView()")
     }
     
     override class var height: CGFloat {
@@ -238,22 +234,55 @@ class AnswerReceivedCell: ExpertInProgressCell {
     }
 }
 
-class FeedbackCell: SimpleChatCell {
+class FeedbackCell: UIView {
+    @IBOutlet weak var no: UIButton!
+    @IBOutlet weak var yes: UIButton!
+    @IBAction func cancel(sender: AnyObject) {
+        self.cancel?()
+    }
     @IBAction func fire(sender: UIButton) {
-        action?()
+        ok?()
     }
     
-    var action: (() -> ())?
+    var ok: (() -> ())?
+    var cancel: (() -> ())?
     
-    static var heightFromNib: CGFloat = 120;
-    override class var height: CGFloat {
-        return FeedbackCell.heightFromNib;
-    }
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        FeedbackCell.heightFromNib = frame.height
+        yes.backgroundColor = UIColor.whiteColor()
+        yes.layer.borderWidth = 2
+        yes.layer.borderColor = Palette.CONTROL.CGColor
+        yes.layer.cornerRadius = 8
+//        yes.layer.masksToBounds = true
+        no.backgroundColor = UIColor.whiteColor()
+        no.layer.borderWidth = 2
+        no.layer.borderColor = Palette.CONTROL.CGColor
+        no.layer.cornerRadius = 8
+//        no.layer.masksToBounds = true
+
+        NSLayoutConstraint.activateConstraints([
+            NSLayoutConstraint(item: self, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: frame.height)
+        ])
     }
+}
+
+class SeparatorView: UIView {
+    @IBOutlet weak var tagImage: UIImageView!
+    override func awakeFromNib() {
+        translatesAutoresizingMaskIntoConstraints = false
+        tagImage.translatesAutoresizingMaskIntoConstraints = false
+        backgroundColor = Palette.CHAT_BACKGROUND
+        super.awakeFromNib()
+    }
+}
+
+class Palette {
+    static let CONTROL = UIColor(red: 88/256.0, green: 135/256.0, blue: 242/256.0, alpha: 1.0)
+    static let CHAT_BACKGROUND = UIColor(red: 230/256.0, green: 233/256.0, blue: 234/256.0, alpha: 1.0)
+    static let ERROR = UIColor(red: 174/256.0, green: 53/256.0, blue: 53/256.0, alpha: 1.0)
+    static let COMMENT = UIColor(red: 63/256.0, green: 84/256.0, blue: 130/256.0, alpha: 1.0)
+    static let BORDER = UIColor(red: 202/256.0, green: 210/256.0, blue: 227/256.0, alpha: 1.0)
 }
 
 

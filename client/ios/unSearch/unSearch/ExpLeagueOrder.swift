@@ -89,7 +89,7 @@ class ExpLeagueOrder: NSManagedObject {
         model?.sync()
     }
 
-    dynamic weak var model: ChatMessagesModel?
+    dynamic weak var model: ChatModel?
     
     func iq(iq iq: XMPPIQ) {
     }

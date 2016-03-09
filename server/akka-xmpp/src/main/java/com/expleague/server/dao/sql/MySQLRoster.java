@@ -36,12 +36,12 @@ public class MySQLRoster extends MySQLOps implements Roster {
   }
 
   @Override
-  public void register(Query query) throws Exception {
+  public XMPPDevice register(Query query) throws Exception {
     log.log(Level.FINE, "Registering device " + query.username());
     final XMPPDevice device = device(query.username());
     if (device != null) {
       if (device.passwd().equals(query.passwd()))
-        return;
+        return device;
       throw new AuthenticationException("User known with different password");
     }
     log.log(Level.INFO, "Registering device " + query.username());
@@ -84,6 +84,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
     register.setBoolean(5, query.expert());
     register.execute();
     devicesCache.clear(associated.id());
+    return device(query.username());
   }
 
   private final FixedSizeCache<String, XMPPUser> usersCache = new FixedSizeCache<>(1000, CacheStrategy.Type.LRU);
@@ -105,7 +106,6 @@ public class MySQLRoster extends MySQLOps implements Roster {
       }
     });
   }
-
 
   private final FixedSizeCache<String, XMPPDevice[]> devicesCache = new FixedSizeCache<>(1000, CacheStrategy.Type.LRU);
   @Override

@@ -22,7 +22,7 @@
                         <constraint firstAttribute="width" constant="33" id="LHh-BB-lfL"/>
                         <constraint firstAttribute="height" constant="33" id="wdC-eB-pJw"/>
                     </constraints>
-                    <state key="normal" title="Attach" image="AttachButton"/>
+                    <state key="normal" image="chat_attach_icon"/>
                     <connections>
                         <action selector="attach:" destination="-1" eventType="touchUpInside" id="hdI-6A-0zb"/>
                     </connections>
@@ -33,7 +33,7 @@
                         <constraint firstAttribute="height" constant="33" id="Xpy-rV-hCm"/>
                         <constraint firstAttribute="width" constant="33" id="dsu-RK-WvD"/>
                     </constraints>
-                    <state key="normal" title="Send" image="SendButton"/>
+                    <state key="normal" title="Send" image="chat_send_icon"/>
                     <connections>
                         <action selector="send:" destination="-1" eventType="touchUpInside" id="Qa7-CT-zqd"/>
                     </connections>
@@ -64,7 +64,7 @@
         </view>
     </objects>
     <resources>
-        <image name="AttachButton" width="37" height="37"/>
-        <image name="SendButton" width="37" height="37"/>
+        <image name="chat_attach_icon" width="27" height="28"/>
+        <image name="chat_send_icon" width="67" height="60"/>
     </resources>
 </document>

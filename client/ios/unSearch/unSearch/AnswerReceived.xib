@@ -1,108 +1,101 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9531" systemVersion="15D21" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9532" systemVersion="15D21" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="130" id="KGk-i7-Jjw" customClass="AnswerReceivedCell" customModule="unSearch" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="320" height="130"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="50" id="KGk-i7-Jjw" customClass="AnswerReceivedCell" customModule="unSearch" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="50"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
-                <rect key="frame" x="0.0" y="0.0" width="320" height="129"/>
+                <rect key="frame" x="0.0" y="0.0" width="320" height="49"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble_without_tail_green" translatesAutoresizingMaskIntoConstraints="NO" id="JEg-Dj-lCi">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="129"/>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chat_state_bubble" translatesAutoresizingMaskIntoConstraints="NO" id="JEg-Dj-lCi">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="49"/>
                         <rect key="contentStretch" x="0.10000000000000001" y="0.10000000000000001" width="0.20000000000000001" height="0.20000000000000001"/>
                     </imageView>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="V1J-o2-cGa">
-                        <rect key="frame" x="285" y="0.0" width="35" height="35"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="35" id="D93-Gn-JFU"/>
-                            <constraint firstAttribute="height" constant="35" id="U3q-h0-79Z"/>
-                        </constraints>
-                    </imageView>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Просмотренно страниц: 0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="akg-of-VP9">
-                        <rect key="frame" x="101" y="49" width="155" height="15"/>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="страниц: 0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="akg-of-VP9">
+                        <rect key="frame" x="130" y="28" width="64" height="15"/>
                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                        <color key="textColor" red="0.2470588235" green="0.3294117647" blue="0.50980392159999999" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Сделано звонков: 0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G2k-Zd-a2l">
-                        <rect key="frame" x="101" y="36" width="117" height="15"/>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="звонков: 0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G2k-Zd-a2l">
+                        <rect key="frame" x="60" y="28" width="62" height="15"/>
                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                        <color key="textColor" red="0.2470588235" green="0.3294117647" blue="0.50980392159999999" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Имя эксперта" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="c9X-B5-mhF">
-                        <rect key="frame" x="101" y="8" width="176" height="20"/>
+                        <rect key="frame" x="60" y="8" width="106" height="20"/>
                         <fontDescription key="fontDescription" type="system" pointSize="16"/>
                         <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  Ответ готов!" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vqD-pA-QCX">
-                        <rect key="frame" x="8" y="70" width="304" height="21"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                        <nil key="highlightedColor"/>
-                    </label>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="owl_exp" translatesAutoresizingMaskIntoConstraints="NO" id="72M-5B-E2S" customClass="AvatarView" customModule="unSearch" customModuleProvider="target">
+                        <rect key="frame" x="12" y="5" width="40" height="40"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="40" id="THJ-in-FtX"/>
+                            <constraint firstAttribute="height" constant="40" id="gfo-mm-9zp"/>
+                        </constraints>
+                    </imageView>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dnV-6b-reR">
-                        <rect key="frame" x="8" y="99" width="304" height="30"/>
-                        <state key="normal" title="Показать содержимое ">
-                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <rect key="frame" x="230" y="0.0" width="90" height="49"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="90" id="8d0-bw-bNT"/>
+                        </constraints>
+                        <state key="normal" title="Ответ">
+                            <color key="titleColor" red="0.34509803919999998" green="0.52941176469999995" blue="0.94901960780000005" alpha="1" colorSpace="calibratedRGB"/>
                         </state>
                         <connections>
                             <action selector="fire:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="u5S-dN-VZ9"/>
                         </connections>
                     </button>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="GuruPlaceholder" translatesAutoresizingMaskIntoConstraints="NO" id="72M-5B-E2S">
-                        <rect key="frame" x="8" y="8" width="85" height="85"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="85" id="1ap-Bf-5tm"/>
-                            <constraint firstAttribute="height" constant="85" id="OQS-Ux-tjl"/>
-                        </constraints>
-                    </imageView>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="JEg-Dj-lCi" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="-8" id="0Ob-sW-HVS"/>
-                    <constraint firstItem="dnV-6b-reR" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="5WE-AY-62s"/>
-                    <constraint firstItem="G2k-Zd-a2l" firstAttribute="leading" secondItem="72M-5B-E2S" secondAttribute="trailing" constant="8" id="5hV-am-GPZ"/>
-                    <constraint firstItem="c9X-B5-mhF" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" id="6UJ-VA-nFc"/>
-                    <constraint firstItem="vqD-pA-QCX" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="Aap-LD-2Si"/>
-                    <constraint firstItem="72M-5B-E2S" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="Asd-ta-vLO"/>
-                    <constraint firstItem="V1J-o2-cGa" firstAttribute="leading" secondItem="c9X-B5-mhF" secondAttribute="trailing" constant="8" id="Bdi-l4-tR5"/>
-                    <constraint firstItem="dnV-6b-reR" firstAttribute="top" secondItem="vqD-pA-QCX" secondAttribute="bottom" constant="8" id="HDc-9N-dtw"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="dnV-6b-reR" secondAttribute="trailing" id="HGc-UF-PTQ"/>
-                    <constraint firstItem="vqD-pA-QCX" firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailingMargin" id="HGd-y9-D2F"/>
-                    <constraint firstItem="akg-of-VP9" firstAttribute="top" secondItem="G2k-Zd-a2l" secondAttribute="bottom" constant="-2" id="Ipg-Fi-HZV"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="dnV-6b-reR" secondAttribute="bottom" constant="-8" id="JbX-4T-hrc"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="JEg-Dj-lCi" secondAttribute="bottom" constant="-8" id="Mct-qP-D3g"/>
-                    <constraint firstItem="JEg-Dj-lCi" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="-8" id="Myr-1X-HLP"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="V1J-o2-cGa" secondAttribute="trailing" constant="-8" id="O21-sL-Lli"/>
-                    <constraint firstItem="c9X-B5-mhF" firstAttribute="leading" secondItem="72M-5B-E2S" secondAttribute="trailing" constant="8" id="OEm-78-DTp"/>
-                    <constraint firstItem="72M-5B-E2S" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" id="QNP-yd-ZFj"/>
-                    <constraint firstItem="akg-of-VP9" firstAttribute="leading" secondItem="72M-5B-E2S" secondAttribute="trailing" constant="8" id="UhP-vc-QZH"/>
-                    <constraint firstItem="G2k-Zd-a2l" firstAttribute="top" secondItem="c9X-B5-mhF" secondAttribute="bottom" constant="8" id="WRb-4B-CYC"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="JEg-Dj-lCi" secondAttribute="trailing" constant="-8" id="iC3-QX-Ij7"/>
-                    <constraint firstItem="V1J-o2-cGa" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="-8" id="zuB-ZR-86c"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="dnV-6b-reR" secondAttribute="trailing" constant="-8" id="1kN-x6-Yse"/>
+                    <constraint firstItem="JEg-Dj-lCi" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="-8" id="3AE-R6-Mmr"/>
+                    <constraint firstItem="72M-5B-E2S" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="4" id="4Ao-w8-pzm"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="JEg-Dj-lCi" secondAttribute="trailing" constant="-8" id="4RM-5j-IsZ"/>
+                    <constraint firstItem="dnV-6b-reR" firstAttribute="leading" secondItem="JEg-Dj-lCi" secondAttribute="trailing" constant="-8" id="6v0-lB-8Mk"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="72M-5B-E2S" secondAttribute="bottom" id="AIY-5J-vp6"/>
+                    <constraint firstItem="c9X-B5-mhF" firstAttribute="leading" secondItem="72M-5B-E2S" secondAttribute="trailing" constant="8" id="JRB-EZ-yZZ"/>
+                    <constraint firstItem="akg-of-VP9" firstAttribute="top" secondItem="c9X-B5-mhF" secondAttribute="bottom" id="LdM-kQ-9gQ"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="JEg-Dj-lCi" secondAttribute="bottom" constant="-8" id="Lrt-K0-B39"/>
+                    <constraint firstItem="72M-5B-E2S" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="ULj-Ch-bym"/>
+                    <constraint firstItem="G2k-Zd-a2l" firstAttribute="top" secondItem="c9X-B5-mhF" secondAttribute="bottom" id="Vcv-34-bbV"/>
+                    <constraint firstItem="dnV-6b-reR" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="-8" id="daW-gi-LKj"/>
+                    <constraint firstItem="G2k-Zd-a2l" firstAttribute="leading" secondItem="c9X-B5-mhF" secondAttribute="leading" id="hSS-oY-qNg"/>
+                    <constraint firstItem="akg-of-VP9" firstAttribute="leading" secondItem="G2k-Zd-a2l" secondAttribute="trailing" constant="8" id="kpi-ar-V4K"/>
+                    <constraint firstItem="dnV-6b-reR" firstAttribute="top" secondItem="G2k-Zd-a2l" secondAttribute="bottom" constant="-8" id="ovc-jM-euV"/>
+                    <constraint firstItem="JEg-Dj-lCi" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="-8" id="sVq-6g-pSB"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="dnV-6b-reR" secondAttribute="bottom" constant="-8" id="wZk-i5-bHD"/>
+                    <constraint firstItem="c9X-B5-mhF" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" id="zhE-qD-X83"/>
                 </constraints>
+                <variation key="default">
+                    <mask key="constraints">
+                        <exclude reference="AIY-5J-vp6"/>
+                        <exclude reference="6v0-lB-8Mk"/>
+                        <exclude reference="ovc-jM-euV"/>
+                    </mask>
+                </variation>
             </tableViewCellContentView>
             <connections>
-                <outlet property="answerTypeIcon" destination="V1J-o2-cGa" id="0BV-7i-Rzu"/>
                 <outlet property="callsCount" destination="G2k-Zd-a2l" id="vdq-oN-TEe"/>
                 <outlet property="expertAvatar" destination="72M-5B-E2S" id="Oeh-Og-bSS"/>
                 <outlet property="name" destination="c9X-B5-mhF" id="Yhi-LL-7iR"/>
                 <outlet property="pagesCount" destination="akg-of-VP9" id="WYa-MF-C3c"/>
             </connections>
-            <point key="canvasLocation" x="479" y="489"/>
+            <point key="canvasLocation" x="479" y="449"/>
         </tableViewCell>
     </objects>
     <resources>
-        <image name="GuruPlaceholder" width="42" height="42"/>
-        <image name="bubble_without_tail_green" width="186" height="87"/>
+        <image name="chat_state_bubble" width="319" height="59"/>
+        <image name="owl_exp" width="39" height="39"/>
     </resources>
 </document>

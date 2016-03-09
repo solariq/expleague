@@ -203,12 +203,12 @@ class HistoryViewController: UITableViewController {
         return 2
     }
 
-    private var models: [String: ChatMessagesModel] = [:]
+    private var models: [String:ChatModel] = [:]
     
-    func model(order: ExpLeagueOrder) -> ChatMessagesModel{
+    func model(order: ExpLeagueOrder) -> ChatModel {
         var model = models[order.jid.user]
         if (model == nil) {
-            model = ChatMessagesModel(order: order)
+            model = ChatModel(order: order)
             models[order.jid.user] = model
         }
         return model!
@@ -229,8 +229,7 @@ class HistoryViewController: UITableViewController {
         AppDelegate.instance.tabs.tabBar.hidden = true;
 
         AppDelegate.instance.activeProfile!.selected = o
-        let messagesView = MessagesVeiwController()
-        messagesView.data = model(o)
+        let messagesView = OrderDetailsVeiwController(data: model(o))
         splitViewController!.showDetailViewController(messagesView, sender: nil)
     }
     
@@ -281,8 +280,7 @@ extension HistoryViewController: UISplitViewControllerDelegate {
             if (navigationController != nil) {
                 return navigationController
             }
-            let mvc = MessagesVeiwController()
-            mvc.data = model(selected!)
+            let mvc = OrderDetailsVeiwController(data: model(selected!))
             return mvc
         }
     }
@@ -298,10 +296,7 @@ extension HistoryViewController: UISplitViewControllerDelegate {
     }
 
     func splitViewController(splitViewController: UISplitViewController, showDetailViewController vc: UIViewController, sender: AnyObject?) -> Bool {
-        let mvc = vc as! MessagesVeiwController
-        if (selected != nil) {
-            mvc.data = model(selected!)
-        }
+        let mvc = vc as! OrderDetailsVeiwController
         return false
     }
 //
@@ -310,9 +305,9 @@ extension HistoryViewController: UISplitViewControllerDelegate {
 //    }
     
     func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController: UIViewController, ontoPrimaryViewController primaryViewController: UIViewController) -> Bool {
-        let mvc = secondaryViewController as! MessagesVeiwController
+        let mvc = secondaryViewController as! OrderDetailsVeiwController
         if (selected != nil) {
-            mvc.data = model(selected!)
+//            mvc.data = model(selected!)
             return false
         }
         return true

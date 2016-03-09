@@ -420,18 +420,9 @@ class ExpertInProgressModel: ChatCellModel {
         eipCell.pages = pagesCount
         eipCell.name.text = expertProperties["name"] as? String
         eipCell.expertAvatar.image = ExpLeagueProfile.active.avatar(expertProperties["login"] as! String, url: expertProperties["avatar"] as? String)
-        eipCell.expertAvatar.layer.cornerRadius = 10;
-        eipCell.expertAvatar.clipsToBounds = true;
 
         eipCell.action = {
             self.order.cancel()
-        }
-        if (eipCell.progress != nil) {
-            if (AppDelegate.instance.stream.isConnected()) {
-                eipCell.progress.startAnimating()
-            } else {
-                eipCell.progress.stopAnimating()
-            }
         }
     }
     func accept(message: ExpLeagueMessage) -> Bool {
@@ -443,35 +434,6 @@ class ExpertInProgressModel: ChatCellModel {
             }
         }
         return message.type == .ExpertProgress || message.type == .ExpertAssignment
-    }
-    
-    let order: ExpLeagueOrder
-    init(order: ExpLeagueOrder) {
-        self.order = order
-    }
-}
-
-class FeedbackModel: ChatCellModel {
-    //    let listener: OrderTracker
-    var type: CellType {
-        return .Feedback
-    }
-    
-    func height(maxWidth width: CGFloat) -> CGFloat {
-        return FeedbackCell.height + 24
-    }
-    
-    func form(chatCell cell: ChatCell) throws {
-        guard let feedbackCell = cell as? FeedbackCell else {
-            throw ModelErrors.WrongCellType
-        }
-        feedbackCell.action = {
-            self.order.close(stars: 5)
-        }
-    }
-    
-    func accept(message: ExpLeagueMessage) -> Bool {
-        return false
     }
     
     let order: ExpLeagueOrder

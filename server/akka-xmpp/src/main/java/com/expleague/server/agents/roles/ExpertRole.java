@@ -317,7 +317,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
       explain("Choosing the offer between " + offers.size() + " variants.");
       for (int i = 0; i < offers.size(); i++) {
         final Offer offer = offers.get(i);
-        if (offer.hasWorker(jid())) {
+        if (offer.filter().isPrefered(jid())) {
           winner = i;
           break;
         }

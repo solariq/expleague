@@ -2,11 +2,11 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "filled_star.pdf",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
+      "filename" : "tools_icon_active.png",
       "scale" : "2x"
     },
     {
