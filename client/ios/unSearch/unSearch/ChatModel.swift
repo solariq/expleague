@@ -68,7 +68,6 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             cells.removeLast();
             model = cells.last!
         }
-        var newState = ChatState.Chat
 
         while (lastKnownMessage < order.count) {
             if (modelChangeCount > 2) {
@@ -125,13 +124,25 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             lastKnownMessage++
             modelChangeCount = 0
         }
-        if (order.isActive) {
-            if (model is AnswerReceivedModel) {
-                newState = .Feedback
+        
+        state = .Chat
+        if (model is AnswerReceivedModel) {
+            switch(order.status) {
+            case .Feedback:
+                state = .Feedback
+                break
+            case .Deciding:
+                state = .Ask
+                break
+            case .Closed:
+                state = .Closed
+                break
+            default:
+                state = .Chat
             }
-            else if (!haveActiveExpert && !(cells.last! is LookingForExpertModel)) {
-                cells.append(LookingForExpertModel(order: order))
-            }
+        }
+        else if (order.status == .ExpertSearch && !(cells.last! is LookingForExpertModel)) {
+            cells.append(LookingForExpertModel(order: order))
         }
         else if(progressModel != nil) {
             cells.removeAtIndex(progressCellIndex!)
@@ -144,7 +155,6 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             controller!.messages.reloadData()
             controller!.scrollToLastMessage()
         }
-        state = newState;
     }
 
     var cells: [ChatCellModel] = [];

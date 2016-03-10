@@ -15,8 +15,9 @@
                 <rect key="frame" x="0.0" y="0.0" width="321" height="49"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chat_state_bubble" translatesAutoresizingMaskIntoConstraints="NO" id="NRP-Sy-fcu">
-                        <rect key="frame" x="0.0" y="0.0" width="321" height="8"/>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="chat_state_bubble" translatesAutoresizingMaskIntoConstraints="NO" id="NRP-Sy-fcu">
+                        <rect key="frame" x="0.0" y="0.0" width="321" height="49"/>
+                        <rect key="contentStretch" x="0.10000000000000001" y="0.10000000000000001" width="0.80000000000000004" height="0.80000000000000004"/>
                     </imageView>
                     <activityIndicatorView opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="8Jg-fK-vMb">
                         <rect key="frame" x="12" y="5" width="40" height="40"/>
@@ -26,10 +27,7 @@
                         </constraints>
                     </activityIndicatorView>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Ищем эксперта" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QIZ-u4-tv2">
-                        <rect key="frame" x="60" y="8" width="115" height="18"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="115" id="xjX-gr-8if"/>
-                        </constraints>
+                        <rect key="frame" x="60" y="8" width="113" height="18"/>
                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                         <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
@@ -43,6 +41,7 @@
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="J3V-6Y-JjR">
                         <rect key="frame" x="231" y="0.0" width="90" height="49"/>
                         <constraints>
+                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="90" id="7gv-yq-fyc"/>
                             <constraint firstAttribute="width" constant="90" id="SQc-Ti-Ew2"/>
                         </constraints>
                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -55,23 +54,17 @@
                     </button>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="J3V-6Y-JjR" firstAttribute="top" secondItem="NRP-Sy-fcu" secondAttribute="bottom" constant="-8" id="1Az-Wg-6b9"/>
-                    <constraint firstItem="8Jg-fK-vMb" firstAttribute="leading" secondItem="8JB-pe-PoN" secondAttribute="leadingMargin" constant="4" id="2uf-45-bIe"/>
-                    <constraint firstItem="J3V-6Y-JjR" firstAttribute="top" secondItem="8JB-pe-PoN" secondAttribute="topMargin" constant="-8" id="7Qv-3L-JIf"/>
-                    <constraint firstItem="QIZ-u4-tv2" firstAttribute="leading" secondItem="8Jg-fK-vMb" secondAttribute="trailing" constant="8" id="DJM-la-eg2"/>
-                    <constraint firstItem="NRP-Sy-fcu" firstAttribute="leading" secondItem="8JB-pe-PoN" secondAttribute="leadingMargin" constant="-8" id="IGE-hY-hks"/>
-                    <constraint firstItem="NRP-Sy-fcu" firstAttribute="top" secondItem="8JB-pe-PoN" secondAttribute="topMargin" constant="-8" id="Rzl-Cb-xW0"/>
-                    <constraint firstItem="iqJ-oE-LTd" firstAttribute="top" secondItem="QIZ-u4-tv2" secondAttribute="bottom" id="W6S-ua-WWC"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="J3V-6Y-JjR" secondAttribute="trailing" constant="-8" id="oQf-da-bog"/>
-                    <constraint firstItem="QIZ-u4-tv2" firstAttribute="top" secondItem="8JB-pe-PoN" secondAttribute="topMargin" id="pcT-LK-7j2"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="NRP-Sy-fcu" secondAttribute="trailing" constant="-8" id="rn1-Dr-iJ2"/>
-                    <constraint firstItem="iqJ-oE-LTd" firstAttribute="leading" secondItem="QIZ-u4-tv2" secondAttribute="leading" id="tjE-PV-tfN"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="J3V-6Y-JjR" secondAttribute="bottom" constant="-8" id="xLH-px-Fn8"/>
+                    <constraint firstItem="iqJ-oE-LTd" firstAttribute="leading" secondItem="QIZ-u4-tv2" secondAttribute="leading" id="54O-OZ-jzT"/>
+                    <constraint firstItem="8Jg-fK-vMb" firstAttribute="centerY" secondItem="8JB-pe-PoN" secondAttribute="centerY" id="B2H-an-WVy"/>
+                    <constraint firstItem="QIZ-u4-tv2" firstAttribute="leading" secondItem="8Jg-fK-vMb" secondAttribute="trailing" constant="8" id="MAt-cz-kXD"/>
+                    <constraint firstItem="iqJ-oE-LTd" firstAttribute="top" secondItem="QIZ-u4-tv2" secondAttribute="bottom" id="MjJ-mg-csr"/>
+                    <constraint firstItem="8Jg-fK-vMb" firstAttribute="leading" secondItem="8JB-pe-PoN" secondAttribute="leadingMargin" constant="4" id="PUI-iw-WoR"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="J3V-6Y-JjR" secondAttribute="trailing" constant="-8" id="W7w-lo-vq2"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="J3V-6Y-JjR" secondAttribute="bottom" constant="-8" id="arP-zu-vYq"/>
+                    <constraint firstItem="J3V-6Y-JjR" firstAttribute="top" secondItem="8JB-pe-PoN" secondAttribute="topMargin" constant="-8" id="f6M-ea-g7n"/>
+                    <constraint firstAttribute="topMargin" secondItem="QIZ-u4-tv2" secondAttribute="top" id="fTB-SN-1oX"/>
                 </constraints>
             </tableViewCellContentView>
-            <constraints>
-                <constraint firstItem="8Jg-fK-vMb" firstAttribute="centerY" secondItem="jkA-PF-DPE" secondAttribute="centerY" id="hJl-du-rgj"/>
-            </constraints>
             <connections>
                 <outlet property="expertsOnline" destination="iqJ-oE-LTd" id="MLB-sH-FlF"/>
                 <outlet property="progress" destination="8Jg-fK-vMb" id="JGX-PW-zyR"/>
@@ -80,6 +73,6 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="chat_state_bubble" width="319" height="59"/>
+        <image name="chat_state_bubble" width="213" height="39"/>
     </resources>
 </document>

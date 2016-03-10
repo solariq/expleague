@@ -108,11 +108,16 @@ class ExpLeagueMessage: NSManagedObject {
             }
             type = .Answer
         }
-        else if let image = msg.elementForName("image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
-            properties["image"] = image.stringValue()
+        else if let feedback = msg.elementForName("feedback", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+            type = .Feedback
+            properties["stars"] = feedback.attributeIntegerValueForName("stars")
         }
         else {
             self.body = textChildren.count > 0 ? textChildren[0].stringValue : nil
+        }
+        
+        if let image = msg.elementForName("image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+            properties["image"] = image.stringValue()
         }
         self.time = attrs["time"] != nil ? Double(attrs["time"] as! String)!: CFAbsoluteTimeGetCurrent()
         let data = NSMutableData()
@@ -214,4 +219,5 @@ enum ExpLeagueMessageType: Int16 {
     case ExpertProgress = 5
     case ExpertAssignment = 6
     case ExpertCancel = 7
+    case Feedback = 8
 }

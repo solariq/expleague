@@ -70,17 +70,24 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
                     break
                 case .Feedback:
                     let feedback = NSBundle.mainBundle().loadNibNamed("FeedbackView", owner: self, options: [:])[0] as! FeedbackCell
-                    feedback.ok = {
-                        self.state = .Chat
+                    feedback.fire = {
+                        self.data.order.feedback(stars: feedback.rate)
                     }
                     
-                    feedback.cancel = {
-                        self.state = .Chat
-                    }
                     detailsView!.bottomContents = feedback
                     break
                 case .Ask:
-                    detailsView!.scrollToAnswer(true)
+                    let ask = NSBundle.mainBundle().loadNibNamed("ContinueView", owner: self, options: [:])[0] as! ContinueCell
+                    ask.ok = {
+                        self.state = .Chat
+                        self.data.order.continueTask()
+                    }
+                    
+                    ask.cancel = {
+                        self.state = .Closed
+                        self.data.order.close()
+                    }
+                    detailsView!.bottomContents = ask
                     break
                 default:
                     break
@@ -122,6 +129,7 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
         super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
     }
     
+    private var enforceScroll = false
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         NSNotificationCenter.defaultCenter().addObserver(view, selector: "keyboardShown:", name: UIKeyboardWillShowNotification, object: nil)
@@ -133,17 +141,21 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
         else {
             self.title = data.order.text
         }
+        enforceScroll = true
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        scrollToLastMessage()
 
-        if (state == .Chat) {
-            detailsView!.scrollToChat(false)
-        }
-        else {
-            detailsView!.scrollToAnswer(false)
+        if (enforceScroll) {
+            scrollToLastMessage()
+            if (state == .Chat) {
+                detailsView!.scrollToChat(false)
+            }
+            else {
+                detailsView!.scrollToAnswer(false)
+            }
+            enforceScroll = false
         }
     }
 
@@ -179,7 +191,7 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
 
     func scrollToLastMessage() {
         if (data.cells.count > 0) {
-            messages.scrollToRowAtIndexPath(NSIndexPath(forItem: data.cells.count - 1, inSection: 0), atScrollPosition: .Bottom, animated: true)
+            messages.scrollToRowAtIndexPath(NSIndexPath(forItem: data.cells.count - 1, inSection: 0), atScrollPosition: .Middle, animated: true)
         }
     }
 

@@ -62,6 +62,7 @@ class OrderDetailsView: UIView {
                 constraints.append(NSLayoutConstraint(item: bottomContents!, attribute: .Leading, relatedBy: .Equal, toItem: bottomView, attribute: .Leading, multiplier: 1, constant: 0))
                 constraints.append(NSLayoutConstraint(item: bottomContents!, attribute: .Top, relatedBy: .Equal, toItem: bottomView, attribute: .Top, multiplier: 1, constant: 0))
                 NSLayoutConstraint.activateConstraints(constraints)
+                layoutIfNeeded()
             }
         }
     }
@@ -126,7 +127,8 @@ class OrderDetailsView: UIView {
         constraints.append(NSLayoutConstraint(item: progress, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: 2))
         constraints.append(NSLayoutConstraint(item: progress, attribute: .Width, relatedBy: .Equal, toItem: self, attribute: .Width, multiplier: 1, constant: 0))
         constraints.append(NSLayoutConstraint(item: progress, attribute: .Bottom, relatedBy: .Equal, toItem: bottomView, attribute: .Top, multiplier: 1, constant: 0))
-        constraints.append(NSLayoutConstraint(item: bottomView, attribute: .Width, relatedBy: .Equal, toItem: self, attribute: .Width, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: bottomView, attribute: .Leading, relatedBy: .Equal, toItem: self, attribute: .Leading, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: bottomView, attribute: .Trailing, relatedBy: .Equal, toItem: self, attribute: .Trailing, multiplier: 1, constant: 0))
         constraints.append(bottomViewBottom)
 
                 // scroll view constraints
@@ -158,7 +160,7 @@ class OrderDetailsView: UIView {
 extension OrderDetailsView: UIGestureRecognizerDelegate {
     func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldReceiveTouch touch: UITouch) -> Bool {
         let y = touch.locationInView(scrollView).y
-        return (y > separator.frame.maxY ? y - separator.frame.maxY : separator.frame.minY - y) < 40
+        return (y > separator.frame.maxY ? y - separator.frame.maxY : separator.frame.minY - y) < 80
     }
 
     @IBAction

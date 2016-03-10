@@ -41,6 +41,6 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="chat_client_bubble" width="505" height="116"/>
+        <image name="chat_client_bubble" width="168" height="38"/>
     </resources>
 </document>

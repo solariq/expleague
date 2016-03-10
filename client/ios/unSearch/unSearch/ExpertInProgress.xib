@@ -15,19 +15,19 @@
                 <rect key="frame" x="0.0" y="0.0" width="320" height="49"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chat_state_bubble" translatesAutoresizingMaskIntoConstraints="NO" id="afL-J4-u6U">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="59"/>
-                        <rect key="contentStretch" x="0.10000000000000001" y="0.10000000000000001" width="0.10000000000000001" height="0.10000000000000001"/>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" misplaced="YES" image="chat_state_bubble" translatesAutoresizingMaskIntoConstraints="NO" id="afL-J4-u6U">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="50"/>
+                        <rect key="contentStretch" x="0.10000000000000001" y="0.10000000000000001" width="0.80000000000000004" height="0.80000000000000004"/>
                     </imageView>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="owl_exp" translatesAutoresizingMaskIntoConstraints="NO" id="hG0-IM-IUL" customClass="AvatarView" customModule="unSearch" customModuleProvider="target">
-                        <rect key="frame" x="12" y="5" width="40" height="40"/>
+                        <rect key="frame" x="12" y="5" width="35" height="35"/>
                         <constraints>
-                            <constraint firstAttribute="height" constant="40" id="HtL-aK-4cC"/>
-                            <constraint firstAttribute="width" constant="40" id="hdf-Dz-G0B"/>
+                            <constraint firstAttribute="height" constant="35" id="HtL-aK-4cC"/>
+                            <constraint firstAttribute="width" constant="35" id="hdf-Dz-G0B"/>
                         </constraints>
                     </imageView>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mb5-aC-7CY">
-                        <rect key="frame" x="230" y="0.0" width="90" height="51"/>
+                        <rect key="frame" x="230" y="0.0" width="90" height="31"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="90" id="PJP-vM-4a5"/>
                         </constraints>
@@ -39,19 +39,19 @@
                         </connections>
                     </button>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Имя эксперта" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JSF-04-FQt">
-                        <rect key="frame" x="64" y="8" width="106" height="20"/>
+                        <rect key="frame" x="59" y="8" width="106" height="20"/>
                         <fontDescription key="fontDescription" type="system" pointSize="16"/>
                         <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="звонков: 0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jLm-Af-C8P">
-                        <rect key="frame" x="64" y="28" width="62" height="15"/>
+                        <rect key="frame" x="59" y="28" width="62" height="15"/>
                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                         <color key="textColor" red="0.2470588235" green="0.3294117647" blue="0.50980392159999999" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="страниц: 0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qmE-ag-Htn">
-                        <rect key="frame" x="134" y="28" width="64" height="15"/>
+                        <rect key="frame" x="129" y="28" width="64" height="15"/>
                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                         <color key="textColor" red="0.2470588235" green="0.3294117647" blue="0.50980392159999999" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
@@ -86,7 +86,7 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="chat_state_bubble" width="319" height="59"/>
+        <image name="chat_state_bubble" width="213" height="39"/>
         <image name="owl_exp" width="39" height="39"/>
     </resources>
 </document>

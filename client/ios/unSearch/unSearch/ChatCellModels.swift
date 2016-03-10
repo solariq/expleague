@@ -132,7 +132,6 @@ class CompositeCellModel: ChatCellModel {
         cell.content.autoresizingMask = .None
         var height: CGFloat = 0.0
         var width: CGFloat = 0.0
-        let textColor = cell is MessageChatCell && !(cell as! MessageChatCell).incoming  ? UIColor.whiteColor() : UIColor.blackColor()
 
         for i in 0 ..< parts.count {
             if (i > 0) {
@@ -146,7 +145,6 @@ class CompositeCellModel: ChatCellModel {
                 label.dataDetectorTypes = .All
                 label.font = defaultFont
                 label.text = text
-                label.textColor = textColor
                 label.textAlignment = .Left
                 label.backgroundColor = UIColor.clearColor()
                 label.textContainerInset = UIEdgeInsetsZero
@@ -162,7 +160,6 @@ class CompositeCellModel: ChatCellModel {
                 label.editable = false
                 label.dataDetectorTypes = .All
                 label.attributedText = richText
-                label.textColor = textColor
                 label.textAlignment = .Left
                 label.backgroundColor = UIColor.clearColor()
                 label.textContainerInset = UIEdgeInsetsZero
@@ -274,11 +271,11 @@ class ChatMessageModel: CompositeCellModel {
     override func form(messageViewCell cell: CompositeChatCell) {
         (cell as! MessageChatCell).incoming = incoming
         super.form(messageViewCell: cell)
-        if (incoming) {
-            (cell as! MessageChatCell).avatar.image = AppDelegate.instance.activeProfile!.avatar(author, url: nil)
-            (cell as! MessageChatCell).avatar.layer.cornerRadius = (cell as! MessageChatCell).avatar.frame.size.width / 2;
-            (cell as! MessageChatCell).avatar.clipsToBounds = true;
-        }
+//        if (incoming) {
+//            (cell as! MessageChatCell).avatar.image = AppDelegate.instance.activeProfile!.avatar(author, url: nil)
+//            (cell as! MessageChatCell).avatar.layer.cornerRadius = (cell as! MessageChatCell).avatar.frame.size.width / 2;
+//            (cell as! MessageChatCell).avatar.clipsToBounds = true;
+//        }
     }
     
     override func accept(message: ExpLeagueMessage) -> Bool {
@@ -492,6 +489,7 @@ class LookingForExpertModel: ChatCellModel {
 class AnswerReceivedModel: ChatCellModel {
     var expertProperties: NSDictionary?
     let id: String
+    var score: Int?
     var type: CellType {
         return .AnswerReceived
     }
@@ -501,7 +499,10 @@ class AnswerReceivedModel: ChatCellModel {
     }
     
     func accept(message: ExpLeagueMessage) -> Bool {
-        guard message.type == .Answer else {
+        if (message.type == .Feedback) {
+            score = message.properties["stars"] as? Int
+        }
+        guard message.type == .Answer || message.type == .Feedback else {
             return false
         }
         return true
@@ -513,6 +514,7 @@ class AnswerReceivedModel: ChatCellModel {
         }
         try progress.form(chatCell: arCell)
         arCell.id = id
+        arCell.rating = score
     }
 
     let progress: ExpertInProgressModel

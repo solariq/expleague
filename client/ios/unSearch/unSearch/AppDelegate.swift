@@ -188,6 +188,7 @@ extension AppDelegate: UIApplicationDelegate {
         ]
         
         for b in tabs.tabBar.items! {
+            b.imageInsets = UIEdgeInsetsMake(1, 1, 1, 1);
             b.image = b.image?.imageWithRenderingMode(.AlwaysOriginal)
             b.selectedImage = b.selectedImage?.imageWithRenderingMode(.AlwaysOriginal)
             b.setTitleTextAttributes([NSForegroundColorAttributeName: Palette.CONTROL], forState: .Selected)

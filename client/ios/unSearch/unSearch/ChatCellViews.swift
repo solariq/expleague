@@ -30,7 +30,7 @@ class SimpleChatCell: ChatCell {
     }
     
     override func layoutSubviews() {
-        contentView.frame = CGRectMake(16, 4, frame.width - 32, frame.height - 8)
+        contentView.frame = CGRectMake(24, 4, frame.width - 48, frame.height - 8)
     }
 }
 
@@ -101,9 +101,9 @@ class SetupChatCell: CompositeChatCell {
 
 class MessageChatCell: CompositeChatCell {
     @IBOutlet weak var bubble: UIImageView!
-    @IBOutlet weak var avatar: UIImageView!
+//    @IBOutlet weak var avatar: UIImageView!
     var incoming: Bool = true
-    static var avatarWidth = CGFloat(35)
+    static var avatarWidth = CGFloat(0)
     override class func height(contentHeight height: CGFloat) -> CGFloat {
         return max(height + 32, MessageChatCell.minSize.height);
     }
@@ -133,7 +133,7 @@ class MessageChatCell: CompositeChatCell {
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        MessageChatCell.avatarWidth = avatar.frame.width
+//        MessageChatCell.avatarWidth = avatar.frame.width
     }
 }
 
@@ -204,19 +204,8 @@ class LookingForExpertCell: SimpleChatCell {
     }
 }
 
-class ExpertIdleCell: SimpleChatCell {
-    static var heightFromNib: CGFloat = 120;
-    override class var height: CGFloat {
-        return ExpertIdleCell.heightFromNib;
-    }
-    
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        ExpertIdleCell.heightFromNib = frame.height
-    }
-}
-
 class AnswerReceivedCell: ExpertInProgressCell {
+    @IBOutlet var stars: [UIImageView]!
     var id: String?
     
     @IBAction func fire(sender: UIButton) {
@@ -232,9 +221,82 @@ class AnswerReceivedCell: ExpertInProgressCell {
         super.awakeFromNib()
         AnswerReceivedCell.heightFromNib = frame.height
     }
+    
+    var rating: Int? {
+        didSet {
+            for i in 0..<stars.count {
+                if(rating == nil) {
+                    stars[i].hidden = true
+                }
+                else {
+                    stars[i].hidden = false
+                    stars[i].highlighted = rating! > i
+                }
+            }
+        }
+    }
 }
 
 class FeedbackCell: UIView {
+    @IBOutlet weak var buttonWidth: NSLayoutConstraint!
+    @IBOutlet weak var leftBlockCenter: NSLayoutConstraint!
+    @IBOutlet var stars: [UIImageView]!
+    @IBOutlet weak var bottle: UIImageView!
+    @IBOutlet weak var bottles: UIImageView!
+    @IBAction func fire(sender: AnyObject) {
+        fire?()
+    }
+    
+    var fire: (() -> ())?
+    
+    var rate: Int = 0 {
+        didSet {
+            var index = 0
+            for s in stars {
+                s.highlighted = index < rate
+                index++
+            }
+            if (rate == 5) {
+                stars[3].highlighted = false
+            }
+        }
+    }
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        //        no.layer.masksToBounds = true
+        addGestureRecognizer(UITapGestureRecognizer(target: self, action: "handleTap:"))
+        NSLayoutConstraint.activateConstraints([
+            NSLayoutConstraint(item: self, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: frame.height)
+        ])
+    }
+    
+    func handleTap(recognizer: UITapGestureRecognizer) {
+        let tap = recognizer.locationInView(self)
+        for i in 0..<stars.count {
+            let rect = stars[i].frame
+            if (distance(tap, CGPointMake(rect.origin.x + rect.width / 2, rect.origin.y + rect.height / 2)) < 30) {
+                rate = i + 1
+            }
+        }
+    }
+    
+    func distance(p1: CGPoint, _ p2: CGPoint) -> CGFloat {
+        let xDist = p2.x - p1.x
+        let yDist = p2.y - p1.y
+        return sqrt((xDist * xDist) + (yDist * yDist));
+    }
+    
+    override func updateConstraints() {
+        super.updateConstraints()
+        let rate = CGFloat(3.3)
+        let width = frame.width
+        leftBlockCenter.constant = width * ((rate - 1) / rate / 2 - 1/2.0)
+        buttonWidth.constant = width / rate
+    }
+}
+
+class ContinueCell: UIView {
     @IBOutlet weak var no: UIButton!
     @IBOutlet weak var yes: UIButton!
     @IBAction func cancel(sender: AnyObject) {

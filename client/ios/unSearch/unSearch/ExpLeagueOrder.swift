@@ -29,7 +29,7 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     var isActive: Bool {
-        return status == .Open || status == .Overtime || status == .ExpertSearch
+        return status != .Closed && status != .Archived && status != .Canceled
     }
     
     var expert: String? {
@@ -81,12 +81,7 @@ class ExpLeagueOrder: NSManagedObject {
         let mutableItems = messagesRaw.mutableCopy() as! NSMutableOrderedSet
         mutableItems.addObject(message)
         messagesRaw = mutableItems.copy() as! NSOrderedSet
-        do {
-            try self.managedObjectContext!.save()
-        } catch {
-            fatalError("Failure to save context: \(error)")
-        }
-        model?.sync()
+        save()
     }
 
     dynamic weak var model: ChatModel?
@@ -154,34 +149,25 @@ class ExpLeagueOrder: NSManagedObject {
         let msg = XMPPMessage(type: "normal", to: jid)
         msg.addChild(DDXMLElement(name: "cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
         stream.sendElement(msg)
-        do {
-            try self.managedObjectContext!.save()
-            model?.sync()
-            if let h = AppDelegate.instance.historyView, tableView = h.view as? UITableView{
-                tableView.reloadData()
-            }
-        } catch {
-            fatalError("Failure to save context: \(error)")
-        }
+        save()
     }
     
-    func close(stars score: Int) {
-        flags = flags | ExpLeagueOrderFlags.Closed.rawValue
+    func feedback(stars score: Int) {
+        flags = flags | ExpLeagueOrderFlags.Deciding.rawValue
         let msg = XMPPMessage(type: "normal", to: jid)
-        msg.addChild(DDXMLElement(name: "done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
-        let feedback = DDXMLElement(name: "expert-feedback", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+        let feedback = DDXMLElement(name: "feedback", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
         feedback.addAttributeWithName("stars", integerValue: score)
         msg.addChild(feedback)
         stream.sendElement(msg)
-        do {
-            try self.managedObjectContext!.save()
-            model?.sync()
-            if let h = AppDelegate.instance.historyView, tableView = h.view as? UITableView{
-                tableView.reloadData()
-            }
-        } catch {
-            fatalError("Failure to save context: \(error)")
-        }
+        save()
+    }
+
+    func close() {
+        flags = flags | ExpLeagueOrderFlags.Closed.rawValue
+        let msg = XMPPMessage(type: "normal", to: jid)
+        msg.addChild(DDXMLElement(name: "done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
+        stream.sendElement(msg)
+        save()
     }
     
     func archive() {
@@ -189,11 +175,14 @@ class ExpLeagueOrder: NSManagedObject {
             cancel()
         }
         flags |= ExpLeagueOrderFlags.Archived.rawValue
-        do {
-            try self.managedObjectContext!.save()
-        } catch {
-            fatalError("Failure to save context: \(error)")
+        save()
+    }
+    
+    func continueTask() {
+        if (status == .Deciding) {
+            flags ^= ExpLeagueOrderFlags.Deciding.rawValue
         }
+        save()
     }
     
     var status: ExpLeagueOrderStatus {
@@ -206,13 +195,17 @@ class ExpLeagueOrder: NSManagedObject {
         else if (flags & ExpLeagueOrderFlags.Closed.rawValue != 0) {
             return .Closed
         }
-        else if (before - CFAbsoluteTimeGetCurrent() > 0){
-            if (expert == nil) {
-                return .ExpertSearch
-            }
-            else {
-                return .Open
-            }
+        else if (flags & ExpLeagueOrderFlags.Deciding.rawValue != 0) {
+            return .Closed
+        }
+        else if (expert == nil) {
+            return .ExpertSearch
+        }
+        else if (count > 0 && message(count - 1).type == .Feedback) {
+            return .Feedback
+        }
+        else if (before - CFAbsoluteTimeGetCurrent() > 0) {
+            return .Open
         }
         else {
             return .Overtime
@@ -264,6 +257,18 @@ class ExpLeagueOrder: NSManagedObject {
             fatalError("Failure to save context: \(error)")
         }
     }
+    
+    private func save() {
+        do {
+            try self.managedObjectContext!.save()
+            model?.sync()
+            if let h = AppDelegate.instance.historyView, tableView = h.view as? UITableView {
+                tableView.reloadData()
+            }
+        } catch {
+            fatalError("Failure to save context: \(error)")
+        }
+    }
 }
 
 enum ExpLeagueOrderStatus: Int {
@@ -273,6 +278,8 @@ enum ExpLeagueOrderStatus: Int {
     case Canceled = 3
     case Archived = 4
     case ExpertSearch = 5
+    case Feedback = 6
+    case Deciding = 7
 }
 
 enum ExpLeagueOrderFlags: Int16 {
@@ -281,4 +288,5 @@ enum ExpLeagueOrderFlags: Int16 {
     case Closed = 4096
     case Canceled = 2048
     case Archived = 1024
+    case Deciding = 512
 }

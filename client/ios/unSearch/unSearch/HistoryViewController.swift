@@ -295,23 +295,23 @@ extension HistoryViewController: UISplitViewControllerDelegate {
         }
     }
 
-    func splitViewController(splitViewController: UISplitViewController, showDetailViewController vc: UIViewController, sender: AnyObject?) -> Bool {
-        let mvc = vc as! OrderDetailsVeiwController
-        return false
-    }
+//    func splitViewController(splitViewController: UISplitViewController, showDetailViewController vc: UIViewController, sender: AnyObject?) -> Bool {
+//        let mvc = vc as! OrderDetailsVeiwController
+//        return false
+//    }
 //
 //    func splitViewController(splitViewController: UISplitViewController, showViewController vc: UIViewController, sender: AnyObject?) -> Bool {
 //        return true
 //    }
     
-    func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController: UIViewController, ontoPrimaryViewController primaryViewController: UIViewController) -> Bool {
-        let mvc = secondaryViewController as! OrderDetailsVeiwController
-        if (selected != nil) {
-//            mvc.data = model(selected!)
-            return false
-        }
-        return true
-    }
+//    func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController: UIViewController, ontoPrimaryViewController primaryViewController: UIViewController) -> Bool {
+//        let mvc = secondaryViewController as! OrderDetailsVeiwController
+//        if (selected != nil) {
+////            mvc.data = model(selected!)
+//            return false
+//        }
+//        return true
+//    }
 }
 
 class OngoingOrderStateCell: UITableViewCell {
