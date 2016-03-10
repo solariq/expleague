@@ -14,14 +14,17 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
     @IBOutlet weak var text: UITextView!
     var hDiff = CGFloat(0)
     var inputViewHConstraint: NSLayoutConstraint?
+    @IBOutlet weak var progress: UIProgressView!
     override func viewDidLoad() {
         text.delegate = self
         text.scrollEnabled = false
         hDiff = text.frame.minY + view.frame.height - text.frame.maxY
         text.layer.borderWidth = 2
-        text.layer.borderColor = UIColor(red: 202, green: 210, blue: 227, alpha: 1).CGColor
+        text.layer.borderColor = Palette.BORDER.CGColor
         text.layer.cornerRadius = 4
         view!.translatesAutoresizingMaskIntoConstraints = false
+        progress.progress = 0.0
+        progress.backgroundColor = Palette.CONTROL_BACKGROUND
         inputViewHConstraint = NSLayoutConstraint(item: view, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: view.frame.height)
         NSLayoutConstraint.activateConstraints([
             inputViewHConstraint!

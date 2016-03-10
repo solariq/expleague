@@ -407,7 +407,7 @@ class ExpertInProgressModel: ChatCellModel {
     }
 
     func height(maxWidth width: CGFloat) -> CGFloat {
-        return ExpertInProgressCell.height + 8
+        return ExpertInProgressCell.height
     }
 
     func form(chatCell cell: ChatCell) throws {
@@ -495,7 +495,7 @@ class AnswerReceivedModel: ChatCellModel {
     }
 
     func height(maxWidth width: CGFloat) -> CGFloat {
-        return AnswerReceivedCell.height + 8
+        return AnswerReceivedCell.height
     }
     
     func accept(message: ExpLeagueMessage) -> Bool {

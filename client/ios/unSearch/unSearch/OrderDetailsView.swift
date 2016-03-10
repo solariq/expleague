@@ -11,7 +11,6 @@ class OrderDetailsView: UIView {
     let bottomView = UIView()
     let messagesView = UITableView()
     let answerView = UIWebView()
-    let progress = UIProgressView()
 
     var separator: SeparatorView!
     var messagesViewHConstraint: NSLayoutConstraint!
@@ -88,7 +87,6 @@ class OrderDetailsView: UIView {
 
         separator = NSBundle.mainBundle().loadNibNamed("Separator", owner: self, options: [:])[0] as! SeparatorView
         addSubview(scrollView)
-        addSubview(progress)
         addSubview(bottomView)
         scrollView.addSubview(messagesView)
         scrollView.addSubview(separator)
@@ -110,7 +108,6 @@ class OrderDetailsView: UIView {
         answerView.translatesAutoresizingMaskIntoConstraints = false
         messagesView.translatesAutoresizingMaskIntoConstraints = false
         bottomView.translatesAutoresizingMaskIntoConstraints = false
-        progress.translatesAutoresizingMaskIntoConstraints = false
         let pullGesture = UIPanGestureRecognizer(target: self, action: "handlePan:")
         pullGesture.delegate = self
         scrollView.gestureRecognizers!.removeAll()
@@ -123,10 +120,7 @@ class OrderDetailsView: UIView {
                 // main view constraints
         constraints.append(NSLayoutConstraint(item: scrollView, attribute: .Top, relatedBy: .Equal, toItem: self, attribute: .TopMargin, multiplier: 1, constant: 0))
         constraints.append(NSLayoutConstraint(item: scrollView, attribute: .Width, relatedBy: .Equal, toItem: self, attribute: .Width, multiplier: 1, constant: 0))
-        constraints.append(NSLayoutConstraint(item: scrollView, attribute: .Bottom, relatedBy: .Equal, toItem: progress, attribute: .Top, multiplier: 1, constant: 0))
-        constraints.append(NSLayoutConstraint(item: progress, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: 2))
-        constraints.append(NSLayoutConstraint(item: progress, attribute: .Width, relatedBy: .Equal, toItem: self, attribute: .Width, multiplier: 1, constant: 0))
-        constraints.append(NSLayoutConstraint(item: progress, attribute: .Bottom, relatedBy: .Equal, toItem: bottomView, attribute: .Top, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: scrollView, attribute: .Bottom, relatedBy: .Equal, toItem: bottomView, attribute: .Top, multiplier: 1, constant: 0))
         constraints.append(NSLayoutConstraint(item: bottomView, attribute: .Leading, relatedBy: .Equal, toItem: self, attribute: .Leading, multiplier: 1, constant: 0))
         constraints.append(NSLayoutConstraint(item: bottomView, attribute: .Trailing, relatedBy: .Equal, toItem: self, attribute: .Trailing, multiplier: 1, constant: 0))
         constraints.append(bottomViewBottom)

@@ -198,11 +198,14 @@ class ExpLeagueOrder: NSManagedObject {
         else if (flags & ExpLeagueOrderFlags.Deciding.rawValue != 0) {
             return .Closed
         }
-        else if (expert == nil) {
-            return .ExpertSearch
+        else if (count > 0 && message(count - 1).type == .Answer) {
+            return .Feedback
         }
         else if (count > 0 && message(count - 1).type == .Feedback) {
-            return .Feedback
+            return .Deciding
+        }
+        else if (expert == nil) {
+            return .ExpertSearch
         }
         else if (before - CFAbsoluteTimeGetCurrent() > 0) {
             return .Open

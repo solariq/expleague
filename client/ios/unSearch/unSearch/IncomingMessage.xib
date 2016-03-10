@@ -19,12 +19,12 @@
                         <rect key="frame" x="0.0" y="0.0" width="367" height="303"/>
                     </imageView>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Cbx-yh-ZRR">
-                        <rect key="frame" x="8" y="8" width="351" height="287"/>
+                        <rect key="frame" x="16" y="8" width="343" height="287"/>
                     </view>
                 </subviews>
                 <constraints>
                     <constraint firstItem="Cbx-yh-ZRR" firstAttribute="trailing" secondItem="Nb7-0I-srg" secondAttribute="trailingMargin" id="6rN-G8-KGg"/>
-                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="leading" secondItem="Nb7-0I-srg" secondAttribute="leadingMargin" id="CZQ-Xw-nbL"/>
+                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="leading" secondItem="Nb7-0I-srg" secondAttribute="leadingMargin" constant="8" id="CZQ-Xw-nbL"/>
                     <constraint firstAttribute="bottomMargin" secondItem="8Nj-Pv-nQQ" secondAttribute="bottom" constant="-8" id="HYg-c5-GDg"/>
                     <constraint firstAttribute="trailingMargin" secondItem="8Nj-Pv-nQQ" secondAttribute="trailing" constant="-8" id="Ukb-ad-bUF"/>
                     <constraint firstItem="8Nj-Pv-nQQ" firstAttribute="leading" secondItem="Nb7-0I-srg" secondAttribute="leadingMargin" constant="-8" id="VjA-lh-EvN"/>

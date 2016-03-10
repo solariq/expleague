@@ -144,7 +144,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         else if (order.status == .ExpertSearch && !(cells.last! is LookingForExpertModel)) {
             cells.append(LookingForExpertModel(order: order))
         }
-        else if(progressModel != nil) {
+        else if(progressModel != nil && !order.isActive) {
             cells.removeAtIndex(progressCellIndex!)
             progressCellIndex = nil
             progressModel = nil

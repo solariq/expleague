@@ -29,8 +29,13 @@ class SimpleChatCell: ChatCell {
         return 0.0;
     }
     
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        frame.size.height += 12
+    }
+    
     override func layoutSubviews() {
-        contentView.frame = CGRectMake(24, 4, frame.width - 48, frame.height - 8)
+        contentView.frame = CGRectMake(24, 6, frame.width - 48, frame.height - 12)
     }
 }
 
@@ -105,19 +110,19 @@ class MessageChatCell: CompositeChatCell {
     var incoming: Bool = true
     static var avatarWidth = CGFloat(0)
     override class func height(contentHeight height: CGFloat) -> CGFloat {
-        return max(height + 32, MessageChatCell.minSize.height);
+        return max(height + 12, MessageChatCell.minSize.height);
     }
 
     override class var minSize: CGSize {
-        return CGSizeMake(MessageChatCell.avatarWidth + 32, MessageChatCell.avatarWidth + 8)
+        return CGSizeMake(MessageChatCell.avatarWidth + 32, MessageChatCell.avatarWidth + 32)
     }
 
     override var contentInsets: UIEdgeInsets {
         if (incoming) {
-            return UIEdgeInsetsMake(8, 16 + MessageChatCell.avatarWidth, 8, 16)
+            return UIEdgeInsetsMake(6, 16 + MessageChatCell.avatarWidth, 6, 16)
         }
         else {
-            return UIEdgeInsetsMake(8, 16, 8, 16 + MessageChatCell.avatarWidth)
+            return UIEdgeInsetsMake(6, 16, 6, 16 + MessageChatCell.avatarWidth)
         }
     }
 
@@ -341,6 +346,7 @@ class SeparatorView: UIView {
 
 class Palette {
     static let CONTROL = UIColor(red: 88/256.0, green: 135/256.0, blue: 242/256.0, alpha: 1.0)
+    static let CONTROL_BACKGROUND = UIColor(red: 249/256.0, green: 249/256.0, blue: 249/256.0, alpha: 1.0)
     static let CHAT_BACKGROUND = UIColor(red: 230/256.0, green: 233/256.0, blue: 234/256.0, alpha: 1.0)
     static let ERROR = UIColor(red: 174/256.0, green: 53/256.0, blue: 53/256.0, alpha: 1.0)
     static let COMMENT = UIColor(red: 63/256.0, green: 84/256.0, blue: 130/256.0, alpha: 1.0)

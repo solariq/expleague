@@ -175,15 +175,15 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
 
     func attach(input: ChatInputViewController) {
         self.presentViewController(picker, animated: true, completion: nil)
-        detailsView!.progress.tintColor = UIColor.blueColor()
+        input.progress.tintColor = UIColor.blueColor()
     }
     
     func append(id: String, image: UIImage, progress: (UIProgressView) -> Void) {
-        progress(detailsView!.progress)
+        progress(input.progress)
     }
     
     func report(id: String, status: Bool) {
-        detailsView?.progress.tintColor = status ? UIColor.greenColor() : UIColor.redColor()
+        input.progress.tintColor = status ? UIColor.greenColor() : UIColor.redColor()
         let img = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
         img.setStringValue(AppDelegate.instance.activeProfile!.imageUrl(id).absoluteString)
         data.order.send(xml: img)

@@ -14,6 +14,7 @@
             <subviews>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y0Q-pX-UuE">
                     <rect key="frame" x="30" y="29" width="122" height="47"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <state key="normal" title="Нет">
                         <color key="titleColor" red="0.34509803919999998" green="0.52941176469999995" blue="0.94901960780000005" alpha="1" colorSpace="calibratedRGB"/>
                     </state>
@@ -23,6 +24,7 @@
                 </button>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Kp2-BM-aXp">
                     <rect key="frame" x="168" y="29" width="122" height="47"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
                     <state key="normal" title="Да, спасибо">
                         <color key="titleColor" red="0.34509803919999998" green="0.52941176469999995" blue="0.94901960780000005" alpha="1" colorSpace="calibratedRGB"/>
@@ -38,7 +40,7 @@
                     <nil key="highlightedColor"/>
                 </label>
             </subviews>
-            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+            <color key="backgroundColor" red="0.97647058819999999" green="0.97647058819999999" blue="0.97647058819999999" alpha="1" colorSpace="calibratedRGB"/>
             <constraints>
                 <constraint firstItem="Kp2-BM-aXp" firstAttribute="top" secondItem="6il-Cp-xxQ" secondAttribute="bottom" constant="4" id="0Cy-G8-9jy"/>
                 <constraint firstItem="Kp2-BM-aXp" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="centerX" constant="8" id="1Mp-R9-KCy"/>

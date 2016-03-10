@@ -15,21 +15,21 @@
                 <rect key="frame" x="0.0" y="0.0" width="320" height="49"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" misplaced="YES" image="chat_state_bubble" translatesAutoresizingMaskIntoConstraints="NO" id="afL-J4-u6U">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="50"/>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" image="chat_state_bubble" translatesAutoresizingMaskIntoConstraints="NO" id="afL-J4-u6U">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="49"/>
                         <rect key="contentStretch" x="0.10000000000000001" y="0.10000000000000001" width="0.80000000000000004" height="0.80000000000000004"/>
                     </imageView>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="owl_exp" translatesAutoresizingMaskIntoConstraints="NO" id="hG0-IM-IUL" customClass="AvatarView" customModule="unSearch" customModuleProvider="target">
-                        <rect key="frame" x="12" y="5" width="35" height="35"/>
+                        <rect key="frame" x="12" y="7" width="35" height="35"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="35" id="HtL-aK-4cC"/>
                             <constraint firstAttribute="width" constant="35" id="hdf-Dz-G0B"/>
                         </constraints>
                     </imageView>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mb5-aC-7CY">
-                        <rect key="frame" x="230" y="0.0" width="90" height="31"/>
+                        <rect key="frame" x="240" y="0.0" width="80" height="49"/>
                         <constraints>
-                            <constraint firstAttribute="width" constant="90" id="PJP-vM-4a5"/>
+                            <constraint firstAttribute="width" constant="80" id="PJP-vM-4a5"/>
                         </constraints>
                         <state key="normal" title="Отмена">
                             <color key="titleColor" red="0.68235294120000001" green="0.20784313730000001" blue="0.20784313730000001" alpha="1" colorSpace="calibratedRGB"/>
@@ -58,22 +58,21 @@
                     </label>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="afL-J4-u6U" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="-8" id="FV8-ks-CDb"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="afL-J4-u6U" secondAttribute="bottom" constant="-8" id="FwV-cu-dE2"/>
-                    <constraint firstItem="JSF-04-FQt" firstAttribute="leading" secondItem="hG0-IM-IUL" secondAttribute="trailing" constant="12" id="GSG-rP-asv"/>
-                    <constraint firstItem="hG0-IM-IUL" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="-3" id="HHz-Pm-MCN"/>
-                    <constraint firstItem="jLm-Af-C8P" firstAttribute="top" secondItem="JSF-04-FQt" secondAttribute="bottom" id="HPv-in-Bqw"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="mb5-aC-7CY" secondAttribute="bottom" id="HWQ-QE-b4V"/>
-                    <constraint firstItem="qmE-ag-Htn" firstAttribute="leading" secondItem="jLm-Af-C8P" secondAttribute="trailing" constant="8" id="bZr-n9-wiB"/>
-                    <constraint firstItem="hG0-IM-IUL" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="4" id="odj-Cc-jTe"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="mb5-aC-7CY" secondAttribute="trailing" constant="-8" id="po5-Ul-L1W"/>
-                    <constraint firstItem="afL-J4-u6U" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="-8" id="prh-xV-ar4"/>
-                    <constraint firstItem="JSF-04-FQt" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" id="qO0-Mc-JZR"/>
-                    <constraint firstItem="mb5-aC-7CY" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="-8" id="qh7-j5-Kp3"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="hG0-IM-IUL" secondAttribute="bottom" constant="-3" id="rdW-d8-dY0"/>
-                    <constraint firstItem="qmE-ag-Htn" firstAttribute="top" secondItem="JSF-04-FQt" secondAttribute="bottom" id="vkS-AU-e5P"/>
-                    <constraint firstItem="jLm-Af-C8P" firstAttribute="leading" secondItem="JSF-04-FQt" secondAttribute="leading" id="x0n-Ly-LTF"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="afL-J4-u6U" secondAttribute="trailing" constant="-8" id="ymr-V9-JZF"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="mb5-aC-7CY" secondAttribute="trailing" constant="-8" id="2uK-Ml-uVY"/>
+                    <constraint firstItem="afL-J4-u6U" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="-8" id="3nd-gR-Jwg"/>
+                    <constraint firstItem="JSF-04-FQt" firstAttribute="leading" secondItem="hG0-IM-IUL" secondAttribute="trailing" constant="12" id="B3T-QE-Hvv"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="mb5-aC-7CY" secondAttribute="bottom" constant="-8" id="D0a-JH-Akc"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="afL-J4-u6U" secondAttribute="trailing" constant="-8" id="Loh-Iw-Rz9"/>
+                    <constraint firstItem="hG0-IM-IUL" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="R0X-0x-NEX"/>
+                    <constraint firstItem="qmE-ag-Htn" firstAttribute="top" secondItem="JSF-04-FQt" secondAttribute="bottom" id="UJq-CW-tWn"/>
+                    <constraint firstItem="qmE-ag-Htn" firstAttribute="leading" secondItem="jLm-Af-C8P" secondAttribute="trailing" constant="8" id="WCH-7D-pbP"/>
+                    <constraint firstItem="afL-J4-u6U" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="-8" id="cZy-t9-Wro"/>
+                    <constraint firstItem="mb5-aC-7CY" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="-8" id="gcN-FF-KHL"/>
+                    <constraint firstItem="jLm-Af-C8P" firstAttribute="leading" secondItem="JSF-04-FQt" secondAttribute="leading" id="kmV-3n-BLD"/>
+                    <constraint firstItem="hG0-IM-IUL" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="4" id="orp-mj-JKl"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="afL-J4-u6U" secondAttribute="bottom" constant="-8" id="p86-by-zLa"/>
+                    <constraint firstAttribute="topMargin" secondItem="JSF-04-FQt" secondAttribute="top" id="tKp-yr-IHf"/>
+                    <constraint firstItem="jLm-Af-C8P" firstAttribute="top" secondItem="JSF-04-FQt" secondAttribute="bottom" id="vUn-3K-31L"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>
