@@ -196,7 +196,7 @@ class ExpLeagueOrder: NSManagedObject {
             return .Closed
         }
         else if (flags & ExpLeagueOrderFlags.Deciding.rawValue != 0) {
-            return .Closed
+            return .Deciding
         }
         else if (count > 0 && message(count - 1).type == .Answer) {
             return .Feedback
