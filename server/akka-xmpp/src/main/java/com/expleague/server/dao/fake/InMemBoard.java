@@ -10,6 +10,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.expleague.server.agents.ExpLeagueOrder.Role.OWNER;
+
 /**
  * Experts League
  * Created by solar on 04/03/16.
@@ -28,6 +30,7 @@ public class InMemBoard implements LaborExchange.Board {
   public ExpLeagueOrder register(Offer offer) {
     final MyOrder order = new MyOrder(offer);
     active.put(order.room().local(), order);
+    order.role(offer.client(), OWNER);
     history.add(order);
     return order;
   }

@@ -112,6 +112,9 @@ class ExpLeagueMessage: NSManagedObject {
             type = .Feedback
             properties["stars"] = feedback.attributeIntegerValueForName("stars")
         }
+        else if let _ = msg.elementForName("done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+            type = .System
+        }
         else {
             self.body = textChildren.count > 0 ? textChildren[0].stringValue : nil
         }

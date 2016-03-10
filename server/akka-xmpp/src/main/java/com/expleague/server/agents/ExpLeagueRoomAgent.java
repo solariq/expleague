@@ -108,9 +108,14 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
           log.warning("Unexpected command " + msg.get(Command.class) + " received from " + from + " playing: " + order.role(from));
       }
     }
-    else {
-      order = LaborExchange.board().register(offer(msg));
-      invoke(new Message(XMPP.jid(), jid, new Create(), order.offer()));
+    else if (msg.has(Feedback.class)) {
+      //noinspection ConstantConditions
+      lastOrder().feedback(msg.get(Feedback.class).stars());
+    }
+    else if (!msg.has(Done.class)){
+      final Offer offer = offer(msg);
+      order = LaborExchange.board().register(offer);
+      invoke(new Message(XMPP.jid(), offer.client(), new Create(), order.offer()));
       LaborExchange.tell(context(), order, self());
     }
 
@@ -160,11 +165,15 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
     return result.toArray(new ExpLeagueOrder[result.size()]);
   }
 
-  private Offer offer(Message msg) {
+  private ExpLeagueOrder lastOrder() {
     final ExpLeagueOrder[] history = LaborExchange.board().history(jid.local());
+    return history.length > 0 ? history[history.length - 1] : null;
+  }
+
+  private Offer offer(Message msg) {
     final Offer result;
-    if (history.length > 0) {
-      final ExpLeagueOrder prevOrder = history[history.length - 1];
+    final ExpLeagueOrder prevOrder = lastOrder();
+    if (prevOrder != null) {
       final Offer prevOffer = prevOrder.offer();
       result = prevOffer.copy();
       result.topic(result.topic() + "\n" + msg.body());

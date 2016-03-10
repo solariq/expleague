@@ -3,8 +3,7 @@ package com.expleague.model;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 
-import javax.xml.bind.annotation.XmlAnyElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,14 +14,14 @@ import java.util.List;
 @XmlRootElement(name = "experts-filter")
 public class Filter extends Item {
 
-  @XmlAnyElement(lax = true)
+  @XmlElement(namespace = Operations.NS)
   private List<JID> reject;
 
   @SuppressWarnings({"MismatchedQueryAndUpdateOfCollection", "unused"})
-  @XmlAnyElement(lax = true)
+  @XmlElement(namespace = Operations.NS)
   private List<JID> accept;
 
-  @XmlAnyElement(lax = true)
+  @XmlElement(namespace = Operations.NS)
   private List<JID> prefer;
 
   public boolean fit(JID who) {

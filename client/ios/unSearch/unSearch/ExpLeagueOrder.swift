@@ -100,7 +100,7 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     func send(xml xml: DDXMLElement) {
-        let msg = XMPPMessage(type: "groupchat", to: jid)
+        let msg = XMPPMessage(type: "normal", to: jid)
         msg.addChild(xml)
         message(message:msg)
         stream.sendElement(msg)
@@ -154,20 +154,14 @@ class ExpLeagueOrder: NSManagedObject {
     
     func feedback(stars score: Int) {
         flags = flags | ExpLeagueOrderFlags.Deciding.rawValue
-        let msg = XMPPMessage(type: "normal", to: jid)
         let feedback = DDXMLElement(name: "feedback", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
         feedback.addAttributeWithName("stars", integerValue: score)
-        msg.addChild(feedback)
-        stream.sendElement(msg)
-        save()
+        send(xml: feedback)
     }
 
     func close() {
         flags = flags | ExpLeagueOrderFlags.Closed.rawValue
-        let msg = XMPPMessage(type: "normal", to: jid)
-        msg.addChild(DDXMLElement(name: "done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
-        stream.sendElement(msg)
-        save()
+        send(xml: DDXMLElement(name: "done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
     }
     
     func archive() {
@@ -200,9 +194,6 @@ class ExpLeagueOrder: NSManagedObject {
         }
         else if (count > 0 && message(count - 1).type == .Answer) {
             return .Feedback
-        }
-        else if (count > 0 && message(count - 1).type == .Feedback) {
-            return .Deciding
         }
         else if (expert == nil) {
             return .ExpertSearch

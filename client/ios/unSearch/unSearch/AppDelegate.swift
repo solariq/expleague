@@ -105,6 +105,7 @@ class AppDelegate: UIResponder {
         do {
             stream.hostName = activeProfile!.domain;
             stream.hostPort = UInt16(activeProfile!.port)
+            activeProfile!._jid = nil
             stream.myJID = activeProfile!.jid;
 
             xmppMessageDeliveryReceipts = XMPPMessageDeliveryReceipts(dispatchQueue: dispatch_get_main_queue())

@@ -62,7 +62,7 @@ class ExpLeagueProfile: NSManagedObject {
         orderSelected = Int16(orders.count - 1)
     }
     
-    private dynamic var _jid: XMPPJID?
+    dynamic var _jid: XMPPJID?
     var jid: XMPPJID! {
         return _jid ?? XMPPJID.jidWithString(login + "@" + domain + "/unSearch");
     }
@@ -147,7 +147,7 @@ class ExpLeagueProfile: NSManagedObject {
         let topicJson = try! NSJSONSerialization.dataWithJSONObject(json, options: [])
         let topic = String(NSString(data: topicJson, encoding: NSUTF8StringEncoding)!)
         let order = ExpLeagueOrder("room-" + login + "-" + rand, topic: topic, urgency: urgency, local: local, specific: prof, context: self.managedObjectContext!);
-        let msg = XMPPMessage(type: "groupchat", to: order.jid)
+        let msg = XMPPMessage(type: "normal", to: order.jid)
         msg.addSubject(topic)
         AppDelegate.instance.stream.sendElement(msg)
         

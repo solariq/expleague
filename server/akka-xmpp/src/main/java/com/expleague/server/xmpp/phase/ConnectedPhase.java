@@ -127,7 +127,7 @@ public class ConnectedPhase extends XMPPPhase {
     final Message message = (Message) msg;
     if (message.has(Received.class)) {
       final String messageId = message.get(Received.class).getId();
-      log.info("Client received: " + messageId);
+      log.finest("Client received: " + messageId);
       if (courier != null) {
         courier.tell(new Delivered(messageId, jid.resource()), self());
       }
@@ -139,7 +139,7 @@ public class ConnectedPhase extends XMPPPhase {
       final Message ack = new Message(message.to(), message.from());
       final String messageId = message.id();
       ack.append(new Received(messageId));
-      log.info("Server received: " + messageId);
+      log.finest("Server received: " + messageId);
       answer(ack);
     }
   }

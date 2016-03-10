@@ -79,13 +79,13 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
                 case .Ask:
                     let ask = NSBundle.mainBundle().loadNibNamed("ContinueView", owner: self, options: [:])[0] as! ContinueCell
                     ask.ok = {
-                        self.state = .Chat
-                        self.data.order.continueTask()
+                        self.state = .Closed
+                        self.data.order.close()
                     }
                     
                     ask.cancel = {
-                        self.state = .Closed
-                        self.data.order.close()
+                        self.state = .Chat
+                        self.data.order.continueTask()
                     }
                     detailsView!.bottomContents = ask
                     break
@@ -93,10 +93,8 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
                     detailsView?.bottomContents = nil
                     break
                 }
-                UIView.animateWithDuration(0.3, animations: {
-                    self.view.layoutIfNeeded()
-                    detailsView?.adjustScroll()
-                })
+                self.view.layoutIfNeeded()
+                self.detailsView?.adjustScroll()
             }
         }
     }

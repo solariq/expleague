@@ -252,8 +252,11 @@ class HistoryViewController: UITableViewController {
                 order.archive()
             }
             else if (indexPath.section == 1) {
-                finished.removeAtIndex(indexPath.row).archive()
+                let order = finished.removeAtIndex(indexPath.row)
+                tableView.beginUpdates()
                 tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+                tableView.endUpdates()
+                order.archive()
             }
         }
     }

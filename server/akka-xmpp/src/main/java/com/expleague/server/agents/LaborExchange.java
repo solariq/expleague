@@ -46,11 +46,6 @@ public class LaborExchange extends UntypedActorAdapter {
 
   public void invoke(ExpLeagueOrder order) {
     final String roomName = order.room().local();
-    if (openPositions.containsKey(roomName)) {
-      log.fine("Room " + roomName + " is already open");
-      return;
-    }
-
     log.fine("Labor exchange received order " + roomName + " looking for broker");
     final Collection<ActorRef> children = JavaConversions.asJavaCollection(context().children());
     ActorRef responsible = null;
@@ -68,7 +63,6 @@ public class LaborExchange extends UntypedActorAdapter {
       if (!(answer instanceof Operations.Ok))
         throw new RuntimeException("Unable to create alive broker! Received: " + answer);
     }
-    openPositions.put(roomName, responsible);
   }
 
   public void invoke(ActorRef expertAgent) {

@@ -76,7 +76,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             }
             let msg = order.message(lastKnownMessage)
             print("\(order.jid) -> \(msg.type)")
-            if (!model.accept(msg)) { // switch model
+            if (msg.type != .System && !model.accept(msg)) { // switch model
                 modelChangeCount++
                 var newModel : ChatCellModel? = nil
                 if (msg.type == .ExpertAssignment) {
