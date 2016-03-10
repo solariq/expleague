@@ -89,9 +89,14 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
                     }
                     detailsView!.bottomContents = ask
                     break
-                default:
+                case .Closed:
+                    detailsView?.bottomContents = nil
                     break
                 }
+                UIView.animateWithDuration(0.3, animations: {
+                    self.view.layoutIfNeeded()
+                    detailsView?.adjustScroll()
+                })
             }
         }
     }

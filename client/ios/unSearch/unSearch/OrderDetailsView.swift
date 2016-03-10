@@ -65,17 +65,29 @@ class OrderDetailsView: UIView {
             }
         }
     }
-    
+
+    var inAnswer = false
     func scrollToAnswer(animated: Bool) {
         scrollView.setContentOffset(separator.frame.origin, animated: animated)
         separator.backgroundColor = UIColor.whiteColor()
         separator.tagImage.image = UIImage(named: "chat_header_tag")!
+        inAnswer = true
     }
     
     func scrollToChat(animated: Bool) {
         scrollView.setContentOffset(messagesView.frame.origin, animated: animated)
         separator.backgroundColor = Palette.CHAT_BACKGROUND
         separator.tagImage.image = UIImage(named: "chat_footer_tag")!
+        inAnswer = false
+    }
+    
+    func adjustScroll() {
+        if (inAnswer) {
+            scrollToAnswer(false)
+        }
+        else {
+            scrollToChat(false)
+        }
     }
 
     func dismissKeyboard() {
