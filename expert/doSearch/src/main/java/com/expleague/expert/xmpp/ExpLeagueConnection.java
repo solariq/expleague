@@ -317,7 +317,9 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
           if (item instanceof Stanza) {
             final Stanza stanza = (Stanza) item;
             tryProcessMessageReceipt(stanza);
-            expert.processPacket(stanza);
+            if (!isDeliveryReceipt(stanza)) {
+              expert.processPacket(stanza);
+            }
           }
         }
       }
@@ -374,6 +376,10 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
         send(ack);
       }
     }
+  }
+
+  protected boolean isDeliveryReceipt(final Stanza stanza) {
+    return stanza instanceof Message && ((Message) stanza).has(Received.class);
   }
 
   public String uploadImage(Image content, String url) {

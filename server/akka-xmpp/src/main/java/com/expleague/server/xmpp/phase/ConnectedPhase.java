@@ -100,9 +100,11 @@ public class ConnectedPhase extends XMPPPhase {
     }
     else { // outgoing
       tryProcessMessageReceipt(msg);
-      msg.from(jid);
-      if (agent != null)
-        agent.tell(msg, self());
+      if (!isDeliveryReceipt(msg)) {
+        msg.from(jid);
+        if (agent != null)
+          agent.tell(msg, self());
+      }
     }
   }
 
@@ -140,6 +142,10 @@ public class ConnectedPhase extends XMPPPhase {
       log.info("Server received: " + messageId);
       answer(ack);
     }
+  }
+
+  protected boolean isDeliveryReceipt(final Stanza stanza) {
+    return stanza instanceof Message && ((Message) stanza).has(Received.class);
   }
 
   @SuppressWarnings("UnusedParameters")
