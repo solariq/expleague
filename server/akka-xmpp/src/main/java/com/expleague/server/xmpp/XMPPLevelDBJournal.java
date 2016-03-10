@@ -1,6 +1,8 @@
 package com.expleague.server.xmpp;
 
+import akka.actor.Terminated;
 import akka.dispatch.Futures;
+import akka.japi.JavaPartialFunction;
 import akka.persistence.AtomicWrite;
 import akka.persistence.PersistentImpl;
 import akka.persistence.PersistentRepr;
@@ -16,9 +18,13 @@ import org.iq80.leveldb.DBIterator;
 import org.iq80.leveldb.Options;
 import org.iq80.leveldb.WriteBatch;
 import org.iq80.leveldb.impl.DbImpl;
+import scala.Function1;
+import scala.PartialFunction;
 import scala.collection.JavaConversions;
 import scala.collection.immutable.Seq;
 import scala.concurrent.Future;
+import scala.runtime.AbstractPartialFunction;
+import scala.runtime.BoxedUnit;
 
 import java.io.File;
 import java.io.IOException;
@@ -118,6 +124,12 @@ public class XMPPLevelDBJournal extends AsyncWriteJournal {
       });
       return result.getValue();
     }, context().dispatcher());
+  }
+
+  @Override
+  public void postStop() throws Exception {
+    db.close();
+    super.postStop();
   }
 
   private interface EntryVisitor {
