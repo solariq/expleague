@@ -3,6 +3,9 @@ package com.expleague.expert.xmpp;
 import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
 import com.expleague.xmpp.Item;
+import com.expleague.xmpp.control.receipts.Received;
+import com.expleague.xmpp.control.receipts.Request;
+import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.spbsu.commons.io.StreamTools;
@@ -268,6 +271,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
   }
 
   public void send(Stanza stanza) {
+    tryRequestMessageReceipt(stanza);
     SimpleParser parser = new SimpleParser();
     final String xmlString = stanza.xmlString();
     final DomBuilderHandler handler = new DomBuilderHandler(new DefaultElementFactory());
@@ -310,8 +314,11 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
         if (packet != null) {
           log.info(">" + packet);
           final Item item = Item.create(packet);
-          if (item instanceof Stanza)
-            expert.processPacket((Stanza) item);
+          if (item instanceof Stanza) {
+            final Stanza stanza = (Stanza) item;
+            tryProcessMessageReceipt(stanza);
+            expert.processPacket(stanza);
+          }
         }
       }
       catch (XMLException e) {
@@ -340,6 +347,33 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
           log.log(Level.WARNING, "Failed to correctly disconnect: ", e);
         }
     }).start();
+  }
+
+  protected void tryRequestMessageReceipt(final Stanza stanza) {
+    if (stanza instanceof Message) {
+      final Message message = (Message) stanza;
+      if (!message.has(Received.class) && !message.has(Request.class)) {
+        message.append(new Request());
+      }
+    }
+  }
+
+  protected void tryProcessMessageReceipt(final Stanza stanza) {
+    if (stanza instanceof Message) {
+      final Message message = (Message) stanza;
+      if (message.has(Received.class)) {
+        final String messageId = message.get(Received.class).getId();
+        log.info("Server received: " + messageId);
+        // todo: mark as received
+      }
+      else if (message.has(Request.class)) {
+        final Message ack = new Message(message.to(), message.from());
+        final String messageId = message.id();
+        ack.append(new Received(messageId));
+        log.info("Client received: " + messageId);
+        send(ack);
+      }
+    }
   }
 
   public String uploadImage(Image content, String url) {

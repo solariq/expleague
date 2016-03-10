@@ -17,7 +17,6 @@ import com.expleague.xmpp.Item;
 import com.expleague.xmpp.Stream;
 import com.expleague.xmpp.control.Close;
 import com.expleague.xmpp.control.Open;
-import com.expleague.xmpp.stanza.Message;
 import com.fasterxml.aalto.AsyncByteArrayFeeder;
 import com.fasterxml.aalto.AsyncXMLInputFactory;
 import com.fasterxml.aalto.AsyncXMLStreamReader;
@@ -121,12 +120,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
   }
 
   public void invoke(Item item) throws SSLException {
-    if (item instanceof Message) {
-      sendItem(item, new DeliveryAck(((Message) item).id()));
-    }
-    else {
-      sendItem(item, new Tcp.NoAck(null));
-    }
+    sendItem(item, new Tcp.NoAck(null));
   }
 
   public void sendItem(Item item, Tcp.Event requestedAck) throws SSLException {
@@ -166,11 +160,6 @@ public class XMPPClientConnection extends UntypedActorAdapter {
       businessLogic.tell(PoisonPill.getInstance(), self());
     closed = true;
     log.fine("Client connection closed");
-  }
-
-  public void invoke(DeliveryAck ack) {
-    if(businessLogic != null)
-      businessLogic.tell(ack, self());
   }
 
   public void invoke(Terminated who) {
@@ -279,23 +268,6 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         .sslProvider(SslProvider.OPENSSL)
         .ciphers(Http2SecurityUtil.CIPHERS, SupportedCipherSuiteFilter.INSTANCE)
         .build();
-  }
-
-  public static class DeliveryAck implements Tcp.Event {
-    private final String id;
-
-    public DeliveryAck(final String id) {
-      this.id = id;
-    }
-
-    public String getId() {
-      return id;
-    }
-
-    @Override
-    public String toString() {
-      return "DeliveryAck{id='" + id + '\'' + '}';
-    }
   }
 
   public enum ConnectionState {

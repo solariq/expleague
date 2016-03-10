@@ -56,6 +56,8 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
             }
         )
     );
+
+    // todo: Ok can be received here and will be unhandled
     when(State.READY,
         matchEvent(Presence.class,
             (presence, task) -> presence.available() ? stay() : goTo(State.OFFLINE)
@@ -239,7 +241,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
         }
         if (to == State.READY)
           timer = AkkaTools.scheduleTimeout(context(), CHOICE_TIMEOUT, self());
-      }
+        }
     });
 
     onTermination(

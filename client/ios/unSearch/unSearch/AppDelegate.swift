@@ -86,6 +86,8 @@ class AppDelegate: UIResponder {
     let connectionProgressView = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier("progressBar") as! ConnectionProgressController
     
     let stream = XMPPStream()
+    var xmppMessageDeliveryReceipts: XMPPMessageDeliveryReceipts?
+    
     var dataController: DataController!
     var token: String?
     
@@ -104,6 +106,11 @@ class AppDelegate: UIResponder {
             stream.hostName = activeProfile!.domain;
             stream.hostPort = UInt16(activeProfile!.port)
             stream.myJID = activeProfile!.jid;
+
+            xmppMessageDeliveryReceipts = XMPPMessageDeliveryReceipts(dispatchQueue: dispatch_get_main_queue())
+            xmppMessageDeliveryReceipts!.autoSendMessageDeliveryReceipts = true
+            xmppMessageDeliveryReceipts!.autoSendMessageDeliveryRequests = true
+            xmppMessageDeliveryReceipts!.activate(stream)
 
             try stream.connectWithTimeout(XMPPStreamTimeoutNone)
         }
@@ -154,7 +161,7 @@ class AppDelegate: UIResponder {
         }
         profile.active = true
         profile.selected = nil
-
+        
         stream.addDelegate(profile, delegateQueue: dispatch_get_main_queue())
         do {
             try dataController.managedObjectContext.save()

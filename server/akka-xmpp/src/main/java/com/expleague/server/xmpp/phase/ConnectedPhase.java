@@ -8,13 +8,15 @@ import com.expleague.server.XMPPDevice;
 import com.expleague.server.agents.UserAgent;
 import com.expleague.server.agents.XMPP;
 import com.expleague.server.services.XMPPServices;
-import com.expleague.server.xmpp.XMPPClientConnection;
 import com.expleague.xmpp.Features;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.Bind;
 import com.expleague.xmpp.control.Close;
 import com.expleague.xmpp.control.Session;
+import com.expleague.xmpp.control.receipts.Received;
+import com.expleague.xmpp.control.receipts.Request;
 import com.expleague.xmpp.stanza.Iq;
+import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
 
@@ -93,21 +95,50 @@ public class ConnectedPhase extends XMPPPhase {
     if (msg instanceof Iq)
       return;
     if (msg.to() != null && jid().bareEq(msg.to())) { // incoming
+      tryRequestMessageReceipt(msg);
       answer(msg);
     }
     else { // outgoing
+      tryProcessMessageReceipt(msg);
       msg.from(jid);
       if (agent != null)
         agent.tell(msg, self());
     }
   }
 
-  public void invoke(XMPPClientConnection.DeliveryAck ack) {
-    if (courier != null) {
-      courier.tell(new Delivered(ack.getId(), jid.resource()), self());
+  protected void tryRequestMessageReceipt(final Stanza msg) {
+    if (!(msg instanceof Message)) {
+      return;
     }
-    else {
-      log.warning("Can't process delivery ack to " + jid + ", courier is absent");
+
+    final Message message = (Message) msg;
+    if (!message.has(Received.class) && !message.has(Request.class)) {
+      message.append(new Request());
+    }
+  }
+
+  protected void tryProcessMessageReceipt(final Stanza msg) {
+    if (!(msg instanceof Message)) {
+      return;
+    }
+
+    final Message message = (Message) msg;
+    if (message.has(Received.class)) {
+      final String messageId = message.get(Received.class).getId();
+      log.info("Client received: " + messageId);
+      if (courier != null) {
+        courier.tell(new Delivered(messageId, jid.resource()), self());
+      }
+      else {
+        log.warning("Can't process delivery ack to " + jid + ", courier is absent");
+      }
+    }
+    else if (message.has(Request.class)) {
+      final Message ack = new Message(message.to(), message.from());
+      final String messageId = message.id();
+      ack.append(new Received(messageId));
+      log.info("Server received: " + messageId);
+      answer(ack);
     }
   }
 

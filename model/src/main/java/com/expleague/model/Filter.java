@@ -1,5 +1,6 @@
 package com.expleague.model;
 
+import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 
 import javax.xml.bind.annotation.XmlAnyElement;
@@ -12,7 +13,7 @@ import java.util.List;
  * Created by solar on 04/03/16.
  */
 @XmlRootElement(name = "experts-filter")
-public class Filter {
+public class Filter extends Item {
 
   @XmlAnyElement(lax = true)
   private List<JID> reject;
