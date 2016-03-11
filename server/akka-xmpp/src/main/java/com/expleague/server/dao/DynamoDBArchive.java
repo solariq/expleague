@@ -103,7 +103,6 @@ public class DynamoDBArchive implements Archive {
       final Message message = new Message(stanza.from().toString(), stanza.xmlString(), System.currentTimeMillis());
       messages.add(message);
       if (messages.size() != 1) {
-        messages.add(message);
         client.updateItem(new UpdateItemRequest()
             .withTableName(TBTS_ROOMS)
             .withKey(InternalUtils.toAttributeValueMap(new PrimaryKey("id", id)))
