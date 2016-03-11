@@ -182,7 +182,7 @@ ul li ul:first-of-type,
 ol li ol:first-of-type,
 ul li ol:first-of-type,
 ol li ul:first-of-type {
-    margin: 0 0 0 0;
+    margin-top: 0;
     margin-bottom: 0;
 }
 
@@ -292,7 +292,9 @@ kbd {
 blockquote {
     border-left: 4px solid #DDD;
     padding: 0 15px;
-    color: #777;
+    /*color: #777;*/
+    color:red;
+
 }
 
 blockquote>:first-child {
@@ -343,7 +345,7 @@ table tr:nth-child(2n) {
 
 
 img {
-    max-width: 100%;
+    max-width: 10px;
     display: block;
     margin-left: auto;
     margin-right: auto
@@ -365,6 +367,7 @@ img.back_to_chat{
     text-align: center;
     vertical-align:middle;
     color: #808080;
+    color: red;
     border: 1px solid #808080;
     padding: 1px;
     border-radius: 8px;
