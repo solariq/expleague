@@ -62,7 +62,7 @@ body .back_to_chat:last-of-type {
     color: #808080;
     border: 1px solid #808080;
     padding: 1px;
-    border-radius: 0px;
+    border-radius: 6px;
     margin-bottom: 0px;
 }
 
@@ -379,7 +379,7 @@ img.back_to_chat{
     color: #808080;
     border: 1px solid #808080;
     padding: 1px;
-    border-radius: 8px;
+    border-radius: 6px;
     margin-bottom: 20px;
 }
 
