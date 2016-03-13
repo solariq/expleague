@@ -40,7 +40,7 @@ public class LaborExchange extends UntypedActorAdapter {
   @Override
   public void preStart() throws Exception {
     super.preStart();
-    AkkaTools.getOrCreate(EXPERTS_ACTOR_NAME, context(), () -> Props.create(Experts.class));
+    context().actorOf(Props.create(Experts.class), EXPERTS_ACTOR_NAME);
     board().open().forEach(o -> self().tell(o, self()));
   }
 
@@ -58,7 +58,7 @@ public class LaborExchange extends UntypedActorAdapter {
       }
     }
     if (responsible == null) {
-      responsible = context().actorOf(Props.create(BrokerRole.class));
+      responsible = context().actorOf(Props.create(BrokerRole.class, self()));
       final Object answer = AkkaTools.ask(responsible, order);
       if (!(answer instanceof Operations.Ok))
         throw new RuntimeException("Unable to create alive broker! Received: " + answer);

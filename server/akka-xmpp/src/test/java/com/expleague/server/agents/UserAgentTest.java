@@ -95,6 +95,7 @@ public class UserAgentTest extends ActorSystemTestCase {
       // register test actor as connector
       userAgentRef1.tell(new UserAgent.ConnStatus(true, "resource", registerFakeDevice(jid1)), getRef());
       expectMsgClass(ActorRef.class);
+      expectMsgClass(Presence.class);
 
       // send message to jid1
       final Iq<Operations.Ok> iq = Iq.create(jid1, Iq.IqType.GET, new Operations.Ok());
@@ -122,6 +123,7 @@ public class UserAgentTest extends ActorSystemTestCase {
       // register test actor as connector
       actorRef.tell(new UserAgent.ConnStatus(true, "resource", registerFakeDevice(jid1)), getRef());
       expectMsgClass(ActorRef.class);
+      expectMsgClass(Presence.class);
 
       // send message to jid1
       final Iq<Operations.Ok> iq = Iq.create(jid1, Iq.IqType.GET, new Operations.Ok());
@@ -160,6 +162,7 @@ public class UserAgentTest extends ActorSystemTestCase {
         assertEquals("Get status from resource", messages[0]);
         assertTrue(messages[1] instanceof ActorRef);
       }
+      expectMsgClass(Presence.class);
 
       // send message to jid1
       final Iq<Operations.Ok> iq = Iq.create(jid1, Iq.IqType.GET, new Operations.Ok());

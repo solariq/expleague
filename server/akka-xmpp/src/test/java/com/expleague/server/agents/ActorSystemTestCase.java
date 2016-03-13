@@ -47,14 +47,17 @@ public class ActorSystemTestCase {
 
   public class TestKit extends JavaTestKit {
     protected final ActorRef xmpp;
+    protected final ActorRef laborExchange;
     protected final ActorRef registrator;
 
     private final Map<JID, ActorAdapter> jidMocks = new HashMap<>();
+    private final Map<JID, ActorAdapter> expertMocks = new HashMap<>();
     private final Map<JID, ActorAdapter> jidOverrides = new HashMap<>();
 
     public TestKit() {
       super(system);
       xmpp = system.actorOf(Props.create(XMPPWithMockSupport.class, this), "xmpp");
+      laborExchange = system.actorOf(Props.create(LaborExchange.class), "labor-exchange");
       registrator = system.actorOf(Props.create(Registrator.class));
     }
 
@@ -66,6 +69,11 @@ public class ActorSystemTestCase {
     protected ActorRef registerMock(final JID jid, final ActorAdapter actorMock) {
       jidMocks.put(jid, actorMock);
       registrator.tell(jid, getRef());
+      return expectActorRef();
+    }
+
+    protected ActorRef registerExpertMock(final JID jid, final ActorAdapter actorMock) {
+      expertMocks.put(jid, actorMock);
       return expectActorRef();
     }
 
@@ -164,6 +172,8 @@ public class ActorSystemTestCase {
 
     @Override
     public void onReceive(final Object message) throws Exception {
+      MessageCapture.instance().capture(sender(), self(), message);
+
       dispatcher.invoke(actorMock, message);
     }
   }

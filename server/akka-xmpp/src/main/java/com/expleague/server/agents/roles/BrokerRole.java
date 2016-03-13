@@ -39,7 +39,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
 
   private final FastRandom rng = new FastRandom();
 
-  {
+  public BrokerRole(final ActorRef laborExchange) {
     startWith(State.UNEMPLOYED, null);
     when(State.UNEMPLOYED,
         matchEvent(ExpLeagueOrder.class,
@@ -211,7 +211,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
             (done, task) -> task.role(Experts.jid(sender())) == ACTIVE,
             (done, task) -> {
               explain("Expert has finished working on the " + task.order().room().local() + ". Sending notification to the room.");
-              task.order().broker(LaborExchange.reference(context()));
+              task.order().broker(laborExchange);
               task.close();
               return goTo(State.UNEMPLOYED).using(null);
             }
@@ -302,6 +302,9 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
 
   private FSM.State<State, ExpLeagueOrder.State> lookForExpert(ExpLeagueOrder.State orderState) {
     explain("Going to labor exchange to find expert.");
+    orderState.experts().forEach(
+      jid -> Experts.tellTo(jid, new Cancel(), self(), context())
+    );
     orderState.nextRound();
     experts(context()).tell(orderState.order().offer(), self());
     return stateName() != State.STARVING ? goTo(State.STARVING) : stay();

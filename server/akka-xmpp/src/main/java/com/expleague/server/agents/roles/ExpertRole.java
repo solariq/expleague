@@ -83,6 +83,11 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               XMPP.send(new Message(XMPP.jid(), jid(), task.offer()), context());
               return goTo(State.CHECK);
             }
+        ).event(Cancel.class,
+          (cancel, task) -> {
+            task.removeVariant(sender());
+            return stay();
+          }
         )
     );
     when(State.CHECK,
@@ -307,8 +312,20 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     private List<ActorRef> brokers = new ArrayList<>();
 
     public Variants appendVariant(Offer offer, ActorRef broker) {
+      if (offers.indexOf(offer) != -1 || brokers.indexOf(broker) != -1) {
+        return this;
+      }
       offers.add(offer);
       brokers.add(broker);
+      return this;
+    }
+
+    public Variants removeVariant(ActorRef broker) {
+      final int indexOf = brokers.indexOf(broker);
+      if (indexOf != -1) {
+        offers.remove(indexOf);
+        brokers.remove(indexOf);
+      }
       return this;
     }
 

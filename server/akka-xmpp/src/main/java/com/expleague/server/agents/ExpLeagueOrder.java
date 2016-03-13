@@ -6,6 +6,7 @@ import com.expleague.xmpp.JID;
 
 import java.util.EnumSet;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
@@ -15,6 +16,8 @@ import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
  * Created by solar on 03/03/16.
  */
 public abstract class ExpLeagueOrder {
+  private static final Logger log = Logger.getLogger(LaborExchange.class.getName());
+
   public static int SIMULTANEOUSLY_INVITED = 3;
   private final Offer offer;
   private final State state = new State();
@@ -123,7 +126,13 @@ public abstract class ExpLeagueOrder {
     }
 
     public boolean interview(JID expert) {
-      return !EnumSet.of(SLACKER, DENIER, DND).contains(role(expert)) && offer.fit(expert);
+      final Role role = role(expert);
+      final boolean roleDoesntMatch = EnumSet.of(SLACKER, DENIER, DND).contains(role);
+      if (roleDoesntMatch) {
+        log.finest("Expert " + expert + " failed interview because it is " + role);
+        return false;
+      }
+      return offer.fit(expert);
     }
 
     public JID jid() {

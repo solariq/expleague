@@ -30,6 +30,8 @@ public class ActorContainer extends UntypedActor {
       return;
     }
 
+    MessageCapture.instance().capture(sender(), self(), message);
+
     dispatcher.invoke(message);
   }
 

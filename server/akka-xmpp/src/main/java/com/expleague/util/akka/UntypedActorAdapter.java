@@ -26,6 +26,8 @@ public abstract class UntypedActorAdapter extends UntypedActor {
       return;
     }
 
+    MessageCapture.instance().capture(sender(), self(), message);
+
     dispatcher.invoke(this, message);
   }
 }
