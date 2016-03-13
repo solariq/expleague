@@ -85,7 +85,7 @@ import javax.xml.bind.annotation.XmlType;
     "x"
 })
 @XmlRootElement(name = "query", namespace = "jabber:iq:register")
-public class Query {
+public class RegisterQuery {
     @XmlElement(namespace = "jabber:iq:register")
     protected String registered;
     @XmlElement(namespace = "jabber:iq:register")
@@ -151,8 +151,8 @@ public class Query {
             && x == null;
     }
 
-  public static Query requiredFields() {
-    final Query query = new Query();
+  public static RegisterQuery requiredFields() {
+    final RegisterQuery query = new RegisterQuery();
     query.username = "";
     query.password = "";
     query.instructions = "Choose user name and password";

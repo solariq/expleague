@@ -1,7 +1,9 @@
 package com.expleague.server.agents;
 
 import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
 import akka.actor.PoisonPill;
+import akka.pattern.Patterns;
 import akka.persistence.RecoveryCompleted;
 import com.expleague.model.Delivered;
 import com.expleague.model.Operations;
@@ -34,6 +36,7 @@ public class UserAgent extends PersistentActorAdapter {
   private static final Logger log = Logger.getLogger(UserAgent.class.getName());
   private final JID bareJid;
   private final Map<JID, Presence> presenceMap = new HashMap<>();
+  private final List<XMPPDevice> connected = new ArrayList<>();
   private final XMPPUser user;
 
   public UserAgent(JID jid) {
@@ -80,6 +83,7 @@ public class UserAgent extends PersistentActorAdapter {
         self().forward(status, context());
         return;
       }
+      connected.add(status.device);
       final ActorRef courierRef = context().actorOf(
           PersistentActorContainer.props(Courier.class, status.device, sender()),
           actorResourceAddr
@@ -93,8 +97,15 @@ public class UserAgent extends PersistentActorAdapter {
     else {
       if (option.isDefined())
         context().stop(option.get());
-      invoke(new Presence(new JID(jid().local(), jid().domain(), resource), false));
+      connected.remove(status.device);
+      if (connected.isEmpty())
+        invoke(new Presence(new JID(jid().local(), jid().domain(), resource), false));
     }
+  }
+
+  @ActorMethod
+  public void devices(Class<XMPPDevice> clazz) {
+    sender().tell(connected.toArray(new XMPPDevice[connected.size()]), self());
   }
 
   @ActorMethod

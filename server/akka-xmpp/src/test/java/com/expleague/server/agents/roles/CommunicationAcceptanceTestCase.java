@@ -13,18 +13,17 @@ import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.MessageCaptureTestCase;
 import com.expleague.xmpp.JID;
-import com.expleague.xmpp.control.register.Query;
+import com.expleague.xmpp.control.register.RegisterQuery;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
  * @author vpdelta
  */
+@SuppressWarnings("unused")
 public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCase {
   private static final Logger log = Logger.getLogger(CommunicationAcceptanceTestCase.class.getName());
 
@@ -81,10 +80,8 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
   }
 
   public class ScenarioTestKit extends TestKit {
-    private final Map<JID, ActorRef> jid2ActorRef = new HashMap<>();
-
     public XMPPDevice registerDevice(final JID jid) throws Exception {
-      final Query query = new Query();
+      final RegisterQuery query = new RegisterQuery();
       query.username(jid.toString());
       query.name(jid.toString());
       return Roster.instance().register(query);
@@ -93,7 +90,6 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
     public Room registerRoom() {
       final JID roomJid = JID.parse("testroom" + System.currentTimeMillis() + "@muc.localhost");
       final ActorRef roomRef = register(roomJid);
-      jid2ActorRef.put(roomJid, roomRef);
       return new Room(roomJid, roomRef);
     }
 
@@ -101,7 +97,6 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
       final JID jid = JID.parse(name + "@expleague.com");
       registerDevice(jid);
       final ActorRef actorRef = registerMock(jid, new ClientActor(jid));
-      jid2ActorRef.put(jid, actorRef);
       return new Client(jid, actorRef);
     }
 
@@ -109,7 +104,6 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
       final JID jid = JID.parse(name + "@expleague.com/expert");
       registerDevice(jid);
       final ActorRef actorRef = registerMock(jid, new ExpertActor(jid));
-      jid2ActorRef.put(jid, actorRef);
       return new Expert(jid, actorRef);
     }
 
@@ -169,26 +163,26 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
       }
 
       public void receiveStart(final Expert expert) throws Exception {
-        messageCapture.expect("Start not received from " + expert, 10000, records -> {
-          return records.stream()
-            .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path()))
-            .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
-            .filter(messageCaptureRecord -> ((Message) messageCaptureRecord.getMessage()).has(Operations.Start.class))
-            .count() == 1;
-        });
+        messageCapture.expect("Start not received from " + expert, 10000,
+            records -> records.stream()
+                .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path()))
+                .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
+                .filter(messageCaptureRecord -> ((Message) messageCaptureRecord.getMessage()).has(Operations.Start.class))
+                .count() == 1
+        );
         messageCapture.reset();
       }
 
       public void receiveAnswer(final Expert expert, final String answer) throws Exception {
-        messageCapture.expect("Answer not received from " + expert, 10000, records -> {
-          return records.stream()
-            .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path()))
-            .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
-            .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
-            .filter(message -> message.has(Answer.class))
-            .filter(message -> message.get(Answer.class).value().equals(answer))
-            .count() == 1;
-        });
+        messageCapture.expect("Answer not received from " + expert, 10000,
+            records -> records.stream()
+                .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path()))
+                .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
+                .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
+                .filter(message -> message.has(Answer.class))
+                .filter(message -> message.get(Answer.class).value().equals(answer))
+                .count() == 1
+        );
         messageCapture.reset();
       }
     }
@@ -213,15 +207,15 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
       }
 
       protected void receiveOffer(final Room room, final String offer) throws Exception {
-        messageCapture.expect("Offer not received from " + room, 30000, records -> {
-          return records.stream()
-            .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path()))
-            .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
-            .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
-            .filter(message -> message.has(Offer.class))
-            .filter(message -> message.get(Offer.class).topic().equals(offer))
-            .count() >= 1;
-        });
+        messageCapture.expect("Offer not received from " + room, 30000,
+            records -> records.stream()
+                .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path()))
+                .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
+                .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
+                .filter(message -> message.has(Offer.class))
+                .filter(message -> message.get(Offer.class).topic().equals(offer))
+                .count() >= 1
+        );
         messageCapture.reset();
       }
     }

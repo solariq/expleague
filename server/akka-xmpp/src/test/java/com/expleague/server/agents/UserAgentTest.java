@@ -5,11 +5,10 @@ import com.expleague.model.Delivered;
 import com.expleague.model.Operations;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
-import com.expleague.server.XMPPUser;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.JID;
-import com.expleague.xmpp.control.register.Query;
+import com.expleague.xmpp.control.register.RegisterQuery;
 import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
@@ -173,7 +172,7 @@ public class UserAgentTest extends ActorSystemTestCase {
   }
 
   private XMPPDevice registerFakeDevice(JID jid1) throws Exception {
-    final Query query = new Query();
+    final RegisterQuery query = new RegisterQuery();
     query.username(jid1.local());
     query.name("Fake User: " + jid1.local());
     query.passwd("");

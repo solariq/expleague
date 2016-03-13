@@ -1,7 +1,8 @@
 package com.expleague.xmpp.control.roster;
 
-import com.expleague.server.services.Roster;
+import com.expleague.server.services.RosterService;
 import com.expleague.server.services.XMPPServices;
+import com.expleague.xmpp.AnyHolder;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.XMPPQuery;
@@ -12,22 +13,30 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.expleague.xmpp.control.roster.RosterQuery.NS;
+
 /**
  * User: solar
  * Date: 14.12.15
  * Time: 18:19
  */
-@XmlRootElement(name = "query")
-public class Query extends XMPPQuery {
+@SuppressWarnings("unused")
+@XmlRootElement(name = "query", namespace = NS)
+public class RosterQuery extends XMPPQuery {
+  public static final String NS = "jabber:iq:roster";
+
   static {
-    XMPPServices.register("jabber:iq:roster", Roster.class, "roster");
+    XMPPServices.register(NS, RosterService.class, "roster");
   }
   @XmlElements({
-      @XmlElement(type = RosterItem.class, name = "item", namespace = "jabber:iq:roster")
+      @XmlElement(type = RosterItem.class, name = "item", namespace = NS)
   })
   private final List<RosterItem> items = new ArrayList<>();
 
-  public Query(JID... jids) {
+  @XmlAttribute
+  private String version;
+
+  public RosterQuery(JID... jids) {
     for (int i = 0; i < jids.length; i++) {
       items.add(new RosterItem(jids[i]));
     }
@@ -41,14 +50,14 @@ public class Query extends XMPPQuery {
     items.add(item);
   }
 
-  public Query() {}
+  public RosterQuery() {}
 
   @Override
   public Item reply(Iq.IqType type) {
     return this;
   }
 
-  public static class RosterItem {
+  public static class RosterItem extends Item implements AnyHolder {
     @XmlAttribute
     private JID jid;
 
@@ -60,6 +69,11 @@ public class Query extends XMPPQuery {
 
     @XmlAttribute
     private String ask;
+
+    @XmlElement(namespace = NS)
+    private List<String> group;
+    @XmlAnyElement(lax = true)
+    private List<Item> any;
 
     public RosterItem(JID jid) {
       this.jid = jid;
@@ -78,15 +92,27 @@ public class Query extends XMPPQuery {
       this.ask = ask;
     }
 
+    @Override
+    public List<? super Item> any() {
+      return any != null ? any : (any = new ArrayList<>());
+    }
+
     public RosterItem() {}
 
     public JID jid() {
       return jid;
     }
 
+    public void group(String group) {
+      (this.group = this.group != null ? this.group : new ArrayList<>())
+          .add(group);
+    }
+
     @XmlEnum
     public enum Subscription {
       @XmlEnumValue(value = "none") NONE,
+      @XmlEnumValue(value = "to") TO,
+      @XmlEnumValue(value = "from") FROM,
       @XmlEnumValue(value = "both") BOTH,
     }
   }

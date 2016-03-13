@@ -2,6 +2,7 @@ package com.expleague.server.agents;
 
 import akka.actor.*;
 import akka.util.Timeout;
+import com.expleague.model.ExpertsProfile;
 import com.spbsu.commons.util.Pair;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
@@ -190,5 +191,7 @@ public class LaborExchange extends UntypedActorAdapter {
     ExpLeagueOrder[] history(String roomId);
     Stream<ExpLeagueOrder> related(JID jid);
     Stream<ExpLeagueOrder> open();
+
+    Stream<JID> topExperts();
   }
 }

@@ -85,7 +85,7 @@ public class NotificationsManager {
   private static class ExpertFoundNotification extends SimpleApnsPushNotification {
     public ExpertFoundNotification(String token, JID from, ExpertsProfile profile) {
       super(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
-          "\"alert\": \"Эксперт найден! Для Вас работает " + profile.login() + "!\", " +
+          "\"alert\": \"Эксперт найден! Для Вас работает " + profile.jid().local() + "!\", " +
           "\"content-available\": 1," +
           "\"sound\": \"default\"" +
           "}, \"order\": \"" + from.local() + "\"}", tomorrow());

@@ -8,6 +8,7 @@
 
 package com.expleague.xmpp.stanza;
 
+import com.expleague.xmpp.AnyHolder;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.data.Err;
@@ -18,7 +19,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 
 /**
@@ -63,7 +63,7 @@ import java.util.Optional;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "message")
-public class Message extends Stanza {
+public class Message extends Stanza implements AnyHolder {
   @XmlAnyElement(lax = true)
   protected List<Object> any = new ArrayList<>();
 
@@ -135,36 +135,14 @@ public class Message extends Stanza {
     this.type = type;
   }
 
-  public <T> T any() {
-    for (int i = 0; i < any.size(); i++) {
-      try {
-        //noinspection unchecked
-        return (T) any;
-      }
-      catch (ClassCastException ignore) {
-      }
-    }
-    return null;
-  }
-
   public String body() {
     final Body t = get(Body.class);
     return t != null ? t.value : "";
   }
 
-  public <T> T get(Class<T> clazz) {
-    //noinspection unchecked
-    final Optional<T> any = (Optional<T>)this.any.stream().filter(x -> clazz.isAssignableFrom(x.getClass())).findAny();
-    return any.isPresent() ? any.get() : null;
-  }
-
-  public Message append(Object o) {
-    any.add(o);
-    return this;
-  }
-
-  public boolean has(Class<?> clazz) {
-    return this.any.stream().filter(x -> clazz.isAssignableFrom(x.getClass())).findAny().isPresent();
+  @Override
+  public List<? super Item> any() {
+    return any;
   }
 
   /**

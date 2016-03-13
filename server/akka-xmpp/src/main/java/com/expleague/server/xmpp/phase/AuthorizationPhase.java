@@ -5,7 +5,7 @@ import com.spbsu.commons.func.Action;
 import com.expleague.server.Roster;
 import com.expleague.server.xmpp.XMPPClientConnection;
 import com.expleague.xmpp.Features;
-import com.expleague.xmpp.control.register.Query;
+import com.expleague.xmpp.control.register.RegisterQuery;
 import com.expleague.xmpp.control.register.Register;
 import com.expleague.xmpp.control.sasl.*;
 import com.expleague.xmpp.stanza.Iq;
@@ -38,8 +38,8 @@ public class AuthorizationPhase extends XMPPPhase {
     auth.fillKnownMechanisms();
   }
 
-  public void invoke(Iq<Query> request) {
-    final Query query = request.get();
+  public void invoke(Iq<RegisterQuery> request) {
+    final RegisterQuery query = request.get();
     if (query != null) {
       if (request.type() == IqType.GET && query.isEmpty()) {
         answer(Iq.answer(request, Roster.instance().required()));

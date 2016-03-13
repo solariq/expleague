@@ -36,6 +36,9 @@
 		EE62BF021C4802B2004B6A42 /* ExpLeagueMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEFE1C4802B2004B6A42 /* ExpLeagueMessage.swift */; };
 		EE62BF031C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEFF1C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift */; };
 		EE62BF041C4802B2004B6A42 /* ExpLeagueOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BF001C4802B2004B6A42 /* ExpLeagueOrder.swift */; };
+		EE62CB4F1C958E1500352699 /* ExpertsOverview.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62CB4E1C958E1500352699 /* ExpertsOverview.swift */; };
+		EE62CB511C958E2B00352699 /* ExpertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62CB501C958E2B00352699 /* ExpertView.swift */; };
+		EE62CB531C95B18200352699 /* ExpertView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE62CB521C95B18200352699 /* ExpertView.xib */; };
 		EE6EA7CC1C48F79300692406 /* ProfileModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = EE6EA7CA1C48F79300692406 /* ProfileModel.xcdatamodeld */; };
 		EE70A5341C79C02C00174674 /* EVURLCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE70A5331C79C02C00174674 /* EVURLCache.swift */; };
 		EE70A5381C7FA3EA00174674 /* markdownpad-github.css in Resources */ = {isa = PBXBuildFile; fileRef = EE70A5361C7FA3EA00174674 /* markdownpad-github.css */; };
@@ -86,6 +89,9 @@
 		EE62BEFE1C4802B2004B6A42 /* ExpLeagueMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueMessage.swift; sourceTree = "<group>"; };
 		EE62BEFF1C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueOrder+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		EE62BF001C4802B2004B6A42 /* ExpLeagueOrder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueOrder.swift; sourceTree = "<group>"; };
+		EE62CB4E1C958E1500352699 /* ExpertsOverview.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpertsOverview.swift; sourceTree = "<group>"; };
+		EE62CB501C958E2B00352699 /* ExpertView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpertView.swift; sourceTree = "<group>"; };
+		EE62CB521C95B18200352699 /* ExpertView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ExpertView.xib; sourceTree = "<group>"; };
 		EE6EA7CB1C48F79300692406 /* ProfileModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ProfileModel.xcdatamodel; sourceTree = "<group>"; };
 		EE70A5331C79C02C00174674 /* EVURLCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EVURLCache.swift; sourceTree = "<group>"; };
 		EE70A5361C7FA3EA00174674 /* markdownpad-github.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "markdownpad-github.css"; sourceTree = "<group>"; };
@@ -129,6 +135,7 @@
 				EE3731AB1C689414007F55B0 /* unSearch.entitlements */,
 				EE62BF051C48032D004B6A42 /* Data */,
 				EE2DB18E1C4E5A0A00F9601D /* ResultView */,
+				EE62CB4D1C958DE000352699 /* ExpertsView */,
 				688A572BF69C09B25F168A0A /* Info.plist */,
 				688A54C1275EF718A177A20D /* Assets.xcassets */,
 				688A5389D422FDF184F24FF8 /* LaunchScreen.storyboard */,
@@ -221,6 +228,16 @@
 			name = Data;
 			sourceTree = "<group>";
 		};
+		EE62CB4D1C958DE000352699 /* ExpertsView */ = {
+			isa = PBXGroup;
+			children = (
+				EE62CB4E1C958E1500352699 /* ExpertsOverview.swift */,
+				EE62CB521C95B18200352699 /* ExpertView.xib */,
+				EE62CB501C958E2B00352699 /* ExpertView.swift */,
+			);
+			name = ExpertsView;
+			sourceTree = "<group>";
+		};
 		EE70A5351C7FA32600174674 /* Web */ = {
 			isa = PBXGroup;
 			children = (
@@ -303,6 +320,7 @@
 			files = (
 				688A535C37173628E8F51CDC /* Assets.xcassets in Resources */,
 				D59A36A01C92E2D900A64230 /* arrow_cut_close.png in Resources */,
+				EE62CB531C95B18200352699 /* ExpertView.xib in Resources */,
 				EEF3E77B1C908EA50050A519 /* Separator.xib in Resources */,
 				EE70A5381C7FA3EA00174674 /* markdownpad-github.css in Resources */,
 				EE94599C1C57A5FC000796ED /* AnswerReceived.xib in Resources */,
@@ -388,6 +406,7 @@
 				EE2DB1941C4E5E9000F9601D /* ChatInputViewController.swift in Sources */,
 				EE62BF011C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift in Sources */,
 				EE1CB81B1C48449D0047DB03 /* ExpLeagueProfile.swift in Sources */,
+				EE62CB511C958E2B00352699 /* ExpertView.swift in Sources */,
 				688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */,
 				EE297ACC1C4A6C79002DE78B /* ConnectionProgressController.swift in Sources */,
 				688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */,
@@ -398,6 +417,7 @@
 				688A597007AAFF6899530EA7 /* ChatCellModels.swift in Sources */,
 				688A599209AAD7BBCC21E8D6 /* OrderDetailsView.swift in Sources */,
 				688A595B1F3387F23AA2CC61 /* ChatModel.swift in Sources */,
+				EE62CB4F1C958E1500352699 /* ExpertsOverview.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

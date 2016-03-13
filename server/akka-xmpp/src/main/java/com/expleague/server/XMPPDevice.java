@@ -62,4 +62,8 @@ public abstract class XMPPDevice {
   }
 
   public abstract void updateToken(String token);
+
+  public boolean expert() {
+    return expert;
+  }
 }

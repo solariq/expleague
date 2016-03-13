@@ -1,8 +1,10 @@
 package com.expleague.server;
 
+import com.expleague.model.Tag;
 import com.expleague.xmpp.JID;
 
 import java.util.Date;
+import java.util.stream.Stream;
 
 /**
  * Experts League
@@ -47,6 +49,9 @@ public class XMPPUser {
 
   public XMPPDevice[] devices() {
     return Roster.instance().devices(this.id);
+  }
+  public Stream<Tag> tags() {
+    return Roster.instance().specializations(this.jid);
   }
 
   public JID jid() {

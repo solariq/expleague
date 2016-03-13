@@ -20,15 +20,15 @@ public class XMPPServices extends UntypedActorAdapter {
     final String ns = iq.serviceNS();
     if (knownServices.containsKey(ns)) {
       final String shortName = shortNames.get(ns);
-      final ActorRef service = getContext()
+      final ActorRef service = context()
           .child(shortName)
           .getOrElse(new AbstractFunction0<ActorRef>() {
             @Override
             public ActorRef apply() {
-              return getContext().actorOf(Props.create(knownServices.get(ns)), shortName);
+              return context().actorOf(Props.create(knownServices.get(ns)), shortName);
             }
           });
-      service.forward(iq, getContext());
+      service.forward(iq, context());
     }
     else if (iq.get() instanceof XMPPQuery) {
       final Item answer = ((XMPPQuery) iq.get()).reply(iq.type());

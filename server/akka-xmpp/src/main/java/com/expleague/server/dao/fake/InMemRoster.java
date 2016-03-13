@@ -3,7 +3,7 @@ package com.expleague.server.dao.fake;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
 import com.expleague.server.XMPPUser;
-import com.expleague.xmpp.control.register.Query;
+import com.expleague.xmpp.control.register.RegisterQuery;
 
 import javax.security.sasl.AuthenticationException;
 import java.util.Date;
@@ -25,15 +25,15 @@ public class InMemRoster implements Roster {
   final Map<String, XMPPDevice> devices = new HashMap<>();
   final Map<String, XMPPUser> users = new HashMap<>();
   @Override
-  public Query required() {
-    final Query query = new Query();
+  public RegisterQuery required() {
+    final RegisterQuery query = new RegisterQuery();
     query.username("");
     query.passwd("");
     return query;
   }
 
   @Override
-  public synchronized XMPPDevice register(Query query) throws Exception {
+  public synchronized XMPPDevice register(RegisterQuery query) throws Exception {
     final XMPPDevice device = device(query.username());
     if (device != null) {
       if (device.passwd().equals(query.passwd()))

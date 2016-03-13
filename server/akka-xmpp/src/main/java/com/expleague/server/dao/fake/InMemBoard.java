@@ -1,15 +1,18 @@
 package com.expleague.server.dao.fake;
 
 import com.expleague.model.Offer;
+import com.expleague.model.Tag;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.xmpp.JID;
+import gnu.trove.procedure.TObjectDoubleProcedure;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.expleague.server.agents.ExpLeagueOrder.Role.ACTIVE;
 import static com.expleague.server.agents.ExpLeagueOrder.Role.OWNER;
 
 /**
@@ -53,8 +56,14 @@ public class InMemBoard implements LaborExchange.Board {
     return active.values().stream();
   }
 
+  @Override
+  public Stream<JID> topExperts() {
+    return history.stream().map(o -> o.of(ACTIVE)).flatMap(s -> s);
+  }
+
   public static class MyOrder extends ExpLeagueOrder {
     private final Map<JID, Role> roles = new HashMap<>();
+    protected final Set<String> tags = new HashSet<>();
 
     protected double score = -1;
 
@@ -84,10 +93,25 @@ public class InMemBoard implements LaborExchange.Board {
     }
 
     @Override
-    protected Stream<JID> of(Role role) {
+    protected void tag(String tag) {
+      tags.add(tag);
+    }
+
+    @Override
+    public Stream<JID> of(Role role) {
       return roles.entrySet().stream().filter(
           e -> e.getValue() == role
       ).map(Map.Entry::getKey);
+    }
+
+    @Override
+    public double feedback() {
+      return score;
+    }
+
+    @Override
+    public String[] tags() {
+      return tags.toArray(new String[tags.size()]);
     }
 
     @Override

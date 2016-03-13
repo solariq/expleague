@@ -3,7 +3,7 @@ package com.expleague.server.agents;
 import com.expleague.model.Answer;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations.*;
-import com.expleague.server.ExpertManager;
+import com.expleague.server.Roster;
 import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
@@ -98,7 +98,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
                     .flatMap(Functions.instancesOf(Message.class))
                     .filter(message -> message.type() == MessageType.GROUP_CHAT)
                     .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
-            XMPP.send(new Message(jid, dump.owner(), msg.get(Start.class), ExpertManager.instance().profile(from.bare())), context());
+            XMPP.send(new Message(jid, dump.owner(), msg.get(Start.class), Roster.instance().profile(from.bare())), context());
           }
           else if (msg.body().startsWith("{\"type\":\"pageVisited\"")) {
             XMPP.send(new Message(jid, dump.owner(), msg.body()), context());

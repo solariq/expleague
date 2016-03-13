@@ -91,7 +91,8 @@ public class MySQLOps {
     public void init() {
       try {
         rs = ps.executeQuery();
-      } catch (SQLException e) {
+      }
+      catch (SQLException e) {
         close();
         throw new RuntimeException(e);
       }
@@ -120,7 +121,8 @@ public class MySQLOps {
 
     private void close() {
       try {
-        rs.close();
+        if (rs != null)
+          rs.close();
       } catch (SQLException ignore) {
       }
     }

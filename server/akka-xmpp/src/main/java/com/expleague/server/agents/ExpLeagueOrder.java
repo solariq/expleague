@@ -56,13 +56,18 @@ public abstract class ExpLeagueOrder {
   public abstract Role role(JID jid);
   public abstract Stream<JID> participants();
   public abstract void feedback(double stars);
+  public abstract Stream<JID> of(Role role);
+  public abstract double feedback();
+  public abstract String[] tags();
 
+  // Write interface
   protected abstract void mapTempRoles(Function<Role, Role> map);
   protected abstract void role(JID bare, Role checking);
-  protected abstract Stream<JID> of(Role role);
+  protected abstract void tag(String tag);
   protected void status(Status status) {
     this.status = status;
   }
+
 
   public class State {
     public boolean check(JID expert) {

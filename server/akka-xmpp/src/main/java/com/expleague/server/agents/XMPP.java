@@ -3,8 +3,10 @@ package com.expleague.server.agents;
 import akka.actor.ActorContext;
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import akka.pattern.Patterns;
 import akka.util.Timeout;
 import com.expleague.server.ExpLeagueServer;
+import com.expleague.server.XMPPDevice;
 import com.expleague.util.akka.ActorContainer;
 import com.expleague.util.akka.AkkaTools;
 import com.expleague.util.akka.PersistentActorContainer;
@@ -13,14 +15,18 @@ import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
 import com.google.common.annotations.VisibleForTesting;
+import com.spbsu.commons.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import scala.Option;
 import scala.collection.JavaConversions;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * User: solar
@@ -55,8 +61,40 @@ public class XMPP extends UntypedActorAdapter {
     context.actorSelection(XMPP_ACTOR_PATH).tell(new Subscribe(jid(ref), forJid), ref);
   }
 
+
+  public static Set<JID> online(ActorContext context) {
+    try {
+      final Timeout timeout = Timeout.apply(5, TimeUnit.SECONDS);
+      final Future<Object> future = Patterns.ask(context.actorSelection(XMPP_ACTOR_PATH), Presence.class, timeout);
+      //noinspection unchecked
+      return (Set<JID>)Await.result(future, timeout.duration());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static boolean online(JID jid, ActorContext context) {
+    try {
+      final Timeout timeout = Timeout.apply(5, TimeUnit.SECONDS);
+      final Future<Object> future = Patterns.ask(context.actorSelection(XMPP_ACTOR_PATH), Pair.create(jid, XMPPDevice.class), timeout);
+      final XMPPDevice[] result = (XMPPDevice[])Await.result(future, timeout.duration());
+      return result.length > 0;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static JID jid(ActorRef ref) {
     return JID.parse(ref.path().name().replace('&', '/'));
+  }
+
+  public void invoke(Pair<JID, ?> whisper) {
+    findOrAllocate(whisper.first).forward(whisper.second, context());
+  }
+
+  @SuppressWarnings("UnusedParameters")
+  public void invoke(Class<Presence> clazz) {
+    sender().tell(presenceTracker.online(), self());
   }
 
   public void invoke(final JID jid) {
@@ -134,6 +172,12 @@ public class XMPP extends UntypedActorAdapter {
       if (presence != null) {
         callback.accept(presence.<Presence>copy().to(subscribe.from));
       }
+    }
+
+    public Set<JID> online() {
+      return status.entrySet().stream().filter(
+          entry -> entry.getValue().available()
+      ).map(Map.Entry::getKey).collect(Collectors.toSet());
     }
   }
 

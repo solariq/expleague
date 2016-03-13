@@ -1,10 +1,13 @@
 package com.expleague.server.dao.sql;
 
-import com.expleague.server.XMPPUser;
-import com.expleague.server.XMPPDevice;
-import com.expleague.server.Roster;
+import com.expleague.model.ExpertsProfile;
+import com.expleague.model.Tag;
 import com.expleague.server.ExpLeagueServer;
-import com.expleague.xmpp.control.register.Query;
+import com.expleague.server.Roster;
+import com.expleague.server.XMPPDevice;
+import com.expleague.server.XMPPUser;
+import com.expleague.xmpp.JID;
+import com.expleague.xmpp.control.register.RegisterQuery;
 import com.spbsu.commons.util.cache.CacheStrategy;
 import com.spbsu.commons.util.cache.impl.FixedSizeCache;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * User: solar
@@ -31,12 +35,12 @@ public class MySQLRoster extends MySQLOps implements Roster {
   }
 
   @Override
-  public Query required() {
-    return Query.requiredFields();
+  public RegisterQuery required() {
+    return RegisterQuery.requiredFields();
   }
 
   @Override
-  public XMPPDevice register(Query query) throws Exception {
+  public XMPPDevice register(RegisterQuery query) throws Exception {
     log.log(Level.FINE, "Registering device " + query.username());
     final XMPPDevice device = device(query.username());
     if (device != null) {
@@ -167,6 +171,27 @@ public class MySQLRoster extends MySQLOps implements Roster {
         }
       }
       catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
+  FixedSizeCache<String, ExpertsProfile> profilesCache = new FixedSizeCache<>(100, CacheStrategy.Type.LRU);
+  @Override
+  public ExpertsProfile profile(JID jid) {
+    return profilesCache.get(jid.local(), a -> Roster.super.profile(jid));
+  }
+
+  @Override
+  public Stream<Tag> specializations(JID jid) {
+    return stream("specializations", "SELECT T.tag, S.score " +
+        "FROM expleague.Specializations AS S JOIN expleague.Tags AS T ON S.tag = T.id " +
+        "WHERE `owner` = ?",
+        stmt -> stmt.setString(1, jid.local()))
+        .map(rs -> {
+      try {
+        return new Tag(rs.getString(1), rs.getFloat(2));
+      } catch (SQLException e) {
         throw new RuntimeException(e);
       }
     });

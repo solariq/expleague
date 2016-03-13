@@ -11,6 +11,7 @@ import com.expleague.xmpp.JID;
 import com.spbsu.commons.io.StreamTools;
 import com.spbsu.commons.util.cache.CacheStrategy;
 import com.spbsu.commons.util.cache.impl.FixedSizeCache;
+import gnu.trove.map.hash.TObjectIntHashMap;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -142,6 +143,51 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
         }).filter(o -> o != null);
   }
 
+  @Override
+  public Stream<JID> topExperts() {
+    return stream("top-experts", "SELECT U.id, count(*) FROM expleague.Users AS U " +
+        "JOIN expleague.Participants AS P ON U.id = P.partisipant " +
+        "JOIN expleague.Orders AS O ON P.`order` = O.id " +
+        "WHERE P.role = " + ExpLeagueOrder.Role.ACTIVE.index() + " GROUP BY U.id", stmt -> {}).map(rs -> {
+      try {
+        return XMPP.jid(rs.getString(1));
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
+  private TObjectIntHashMap<String> tags;
+  private int tag(String tag) {
+    if (tags == null) {
+      tags = new TObjectIntHashMap<>();
+      stream("all-tags", "SELECT * FROM expleague.Tags", q -> {}).forEach(rs -> {
+        try {
+          tags.put(rs.getString(2), rs.getInt(1));
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
+      });
+    }
+    if (tags.containsKey(tag))
+      return tags.get(tag);
+    final PreparedStatement statement = createStatement("add-tag", "INSERT expleague.Tags SET tag = ?", true);
+    try {
+      statement.setString(1, tag);
+      statement.executeUpdate();
+      try (final ResultSet gk = statement.getGeneratedKeys()) {
+        gk.next();
+        final int tagId = gk.getInt(1);
+        tags.put(tag, tagId);
+        return tagId;
+      }
+    }
+    catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+
   private class MySQLOrder extends InMemBoard.MyOrder {
     private final int id;
 
@@ -192,6 +238,24 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       }
     }
 
+    boolean tagsAcquired = false;
+    @Override
+    public String[] tags() {
+      if (!tagsAcquired) {
+        tagsAcquired = true;
+        super.tags.addAll(stream("order-topics", "SELECT Tags.tag FROM expleague.Topics JOIN expleague.Tags ON Topics.tag = Tags.id WHERE `order` = ?",
+            stmt -> stmt.setInt(1, id)
+        ).map(rs -> {
+          try {
+            return rs.getString(1);
+          } catch (SQLException e) {
+            throw new RuntimeException(e);
+          }
+        }).collect(Collectors.toSet()));
+      }
+      return super.tags();
+    }
+
     @Override
     protected void role(JID jid, Role role) {
       try {
@@ -200,6 +264,21 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
         changeRole.setInt(1, id);
         changeRole.setString(2, jid.local());
         changeRole.setByte(3, (byte)role.index());
+        changeRole.execute();
+      }
+      catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    protected void tag(String tag) {
+      try {
+        super.tag(tag);
+        final int tagId = MySQLBoard.this.tag(tag);
+        final PreparedStatement changeRole = createStatement("append-topic", "INSERT INTO expleague.Topics SET `order` = ?, tag = ?");
+        changeRole.setInt(1, id);
+        changeRole.setInt(2, tagId);
         changeRole.execute();
       }
       catch (SQLException e) {

@@ -26,6 +26,54 @@ class XMPPTracker: NSObject {
     }
 }
 
+class ExpLeagueMember: NSObject {
+    let id: XMPPJID
+    let avatarUrl: String
+    let name: String
+    let tasks: Int
+    let rating: Double
+    let based: Int
+    let tags: [String]
+    let group: String
+    var available: Bool
+    
+    init(id: String, avatar: String, name: String, rating: Double, based: Int, available: Bool, tags: [String], tasks: Int, group: String) {
+        self.id = XMPPJID.jidWithString(id)
+        self.avatarUrl = avatar
+        self.name = name
+        self.tasks = tasks
+        self.rating = rating
+        self.based = based
+        self.tags = tags
+        self.group = group
+        self.available = available
+    }
+    
+    var avatar: UIImage {
+        return AppDelegate.instance.activeProfile!.avatar(id.user, url: avatarUrl)
+    }
+    
+    var _myTasks: Int?
+    var myTasks: Int {
+        if (_myTasks != nil) {
+            return _myTasks!
+        }
+        var count = 0
+        for o in AppDelegate.instance.activeProfile!.orders where o is ExpLeagueOrder {
+            let order = o as! ExpLeagueOrder
+            for i in 0..<order.count {
+                let msg = order.message(i)
+                if (msg.type == .Answer && msg.from.hasSuffix(id.user)) {
+                    count++
+                    break
+                }
+            }
+        }
+        _myTasks = count
+        return count
+    }
+}
+
 @objc(ExpLeagueProfile)
 class ExpLeagueProfile: NSManagedObject {
     static var active: ExpLeagueProfile {
@@ -106,7 +154,9 @@ class ExpLeagueProfile: NSManagedObject {
         }
     }
     
-    var avatars: [String: String] = [:]
+    dynamic var experts: [ExpLeagueMember] = []
+    
+    dynamic var avatars: [String: String] = [:]
     func avatar(login: String, url urlStr: String?) -> UIImage {
         if let u = urlStr ?? avatars[login], let url = NSURL(string: u) {
             avatars[login] = u
@@ -255,6 +305,10 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
             msg.addChild(token)
             sender.sendElement(msg)
         }
+        let iq = DDXMLElement(name: "iq", xmlns: "jabber:client")
+        iq.addAttributeWithName("type", stringValue: "get")
+        iq.addChild(DDXMLElement(name: "query", xmlns: "jabber:iq:roster"))
+        sender.sendElement(iq)
         log("Success!");
     }
     
@@ -265,7 +319,31 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
     
     func xmppStream(sender: XMPPStream!, didReceiveIQ iq: XMPPIQ!) -> Bool {
         log(String(iq))
-        if let order = order(name: iq.from().user) {
+        if let query = iq.elementForName("query", xmlns: "jabber:iq:roster") {
+            for item in query.elementsForName("item") as! [DDXMLElement] {
+                let group = item.elementForName("group").stringValue()
+                if let profile = item.elementForName("expert", xmlns: "http://expleague.com/scheme") {
+                    var tags: [String] = []
+                    if let tagsE = profile.elementForName("tags") {
+                        for tag in tagsE.elementsForName("tag") as! [DDXMLElement] {
+                            tags.append(tag.stringValue())
+                        }
+                    }
+                    experts.append(ExpLeagueMember(
+                        id: profile.attributeStringValueForName("jid"),
+                        avatar: profile.elementForName("avatar").stringValue(),
+                        name: profile.attributeStringValueForName("name"),
+                        rating: profile.attributeDoubleValueForName("rating"),
+                        based: profile.attributeIntegerValueForName("basedOn"),
+                        available: profile.attributeBoolValueForName("available"),
+                        tags: tags,
+                        tasks: profile.attributeIntegerValueForName("tasks"),
+                        group: group
+                    ))
+                }
+            }
+        }
+        if let from = iq.from(), let order = order(name: from.user) {
             order.iq(iq: iq)
         }
         return false

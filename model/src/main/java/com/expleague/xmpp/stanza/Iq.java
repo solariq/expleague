@@ -8,12 +8,15 @@
 
 package com.expleague.xmpp.stanza;
 
+import com.expleague.xmpp.AnyHolder;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.data.Err;
 import org.jetbrains.annotations.Nullable;
 
 import javax.xml.bind.annotation.*;
+import java.util.Collections;
+import java.util.List;
 
 
 /**

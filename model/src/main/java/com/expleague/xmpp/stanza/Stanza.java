@@ -51,6 +51,7 @@ public class Stanza extends Item {
   }
   public <S extends Stanza> S from(JID jid) {
     this.from = jid;
+    //noinspection unchecked
     return (S) this;
   }
 
@@ -59,6 +60,7 @@ public class Stanza extends Item {
   }
   public <S extends Stanza> S to(JID to) {
     this.to = to;
+    //noinspection unchecked
     return (S) this;
   }
 
