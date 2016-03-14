@@ -84,6 +84,7 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
       final RegisterQuery query = new RegisterQuery();
       query.username(jid.toString());
       query.name(jid.toString());
+      query.passwd(jid.toString());
       return Roster.instance().register(query);
     }
 
@@ -170,7 +171,6 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
                 .filter(messageCaptureRecord -> ((Message) messageCaptureRecord.getMessage()).has(Operations.Start.class))
                 .count() == 1
         );
-        messageCapture.reset();
       }
 
       public void receiveAnswer(final Expert expert, final String answer) throws Exception {
@@ -183,7 +183,7 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
                 .filter(message -> message.get(Answer.class).value().equals(answer))
                 .count() == 1
         );
-        messageCapture.reset();
+//        messageCapture.reset();
       }
     }
 
@@ -194,11 +194,13 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
 
       public void acceptOffer(final Room room, final String offer) throws Exception {
         receiveOffer(room, offer);
+        messageCapture.reset();
         actorRef.tell(new AcceptOffer(), getRef());
       }
 
       public void rejectOffer(final Room room, final String offer) throws Exception {
         receiveOffer(room, offer);
+        messageCapture.reset();
         actorRef.tell(new RejectOffer(), getRef());
       }
 
@@ -216,7 +218,6 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
                 .filter(message -> message.get(Offer.class).topic().equals(offer))
                 .count() >= 1
         );
-        messageCapture.reset();
       }
     }
   }

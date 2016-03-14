@@ -69,7 +69,7 @@ public class ExpertsProfile extends Item {
   }
 
   public Stream<Tag> tags() {
-    return tags.stream();
+    return tags != null ? tags.stream() : Stream.empty();
   }
 
   @SuppressWarnings("unused")
