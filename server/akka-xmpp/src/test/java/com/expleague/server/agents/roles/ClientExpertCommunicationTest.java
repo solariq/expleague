@@ -7,7 +7,8 @@ import org.junit.Test;
  */
 public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCase {
   @Test
-  public void testClientReceivesAnswer() throws Exception {
+  /*need to add Invite method. Not only Offer(check)*/
+  public void testClientReceivesAnswerAlternatelyOnline() throws Exception {
     new ScenarioTestKit() {{
       final Client client = registerClient("client");
       final Expert expert = registerExpert("expert");
@@ -20,6 +21,40 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       client.receiveAnswer(expert, "Answer");
     }};
   }
+
+  @Test
+  /*need to add Invite method. Not only Offer(check)*/
+  public void testClientReceivesAnswerTogetherOnline() throws Exception {
+    new ScenarioTestKit() {{
+      final Client client = registerClient("client");
+      final Expert expert = registerExpert("expert");
+      expert.goOnline();
+      client.goOnline();
+      final Room room = client.query("Task");
+      expert.acceptOffer(room, "Task");
+      client.receiveStart(expert);
+      expert.sendAnswer(room, "Answer");
+      client.receiveAnswer(expert, "Answer");
+    }};
+  }
+
+  @Test
+  /*need to add Invite method. Not only Offer(check)*/
+  public void testClientSendLocationOption() throws Exception {
+    new ScenarioTestKit() {{
+      final Client client = registerClient("client");
+      final Expert expert = registerExpert("expert");
+      expert;
+      client.goOnline();
+      final Room room = client.query("Task");
+      expert.acceptOffer(room, "Task");
+      client.receiveStart(expert);
+      expert.sendAnswer(room, "Answer");
+      client.receiveAnswer(expert, "Answer");
+    }};
+  }
+
+
 
   @Test
   public void testClientReceivesAnswerAfterReject() throws Exception {
@@ -62,4 +97,6 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       client.receiveAnswer(expert, "Answer");
     }};
   }
+
+
 }

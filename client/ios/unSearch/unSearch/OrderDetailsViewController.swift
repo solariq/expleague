@@ -189,7 +189,7 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
         input.progress.tintColor = status ? UIColor.greenColor() : UIColor.redColor()
         let img = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
         img.setStringValue(AppDelegate.instance.activeProfile!.imageUrl(id).absoluteString)
-        data.order.send(xml: img)
+        data.order.send(xml: img, type: "groupchat")
     }
 
     func scrollToLastMessage() {

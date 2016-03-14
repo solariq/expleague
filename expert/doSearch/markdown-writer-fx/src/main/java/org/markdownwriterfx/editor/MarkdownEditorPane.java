@@ -196,18 +196,20 @@ public class MarkdownEditorPane
 
 	private void textChanged(String newText) {
 		final Pattern cutPattern = Pattern.compile("\\+\\[([^\\]]+)\\]([^-]*(?:-[^\\[][^-]*)*)-\\[\\1\\]");
-		final Matcher matcher = cutPattern.matcher(newText);
+		final Pattern checkedPattern = Pattern.compile("\\{checked=true\\}");
+		final Matcher cutMatcher = cutPattern.matcher(newText);
+		final Matcher checkedMatcher = cutPattern.matcher(newText);
 		final StringBuffer buffer = new StringBuffer();
 		int index = 0;
-		while(matcher.find()) {
+		while(cutMatcher.find()) {
 			final String id = "cut-" + index + "";
 			final String id_1 = "cuts-" + index + "";
-			matcher.appendReplacement(buffer, "<a class=\"cut\" id=\"" + id_1 + "\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">" + matcher.group(1) + "</a>" +
-					"<div class=\"cut\" id=\"" + id + "\" style=\"display: none\">" + matcher.group(2) +
+			cutMatcher.appendReplacement(buffer, "<a class=\"cut\" id=\"" + id_1 + "\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">" + cutMatcher.group(1) + "</a>" +
+					"<div class=\"cut\" id=\"" + id + "\" style=\"display: none\">" + cutMatcher.group(2) +
 					"\n<a class=\"hide\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">скрыть</a></div>");
 			index++;
 		}
-		matcher.appendTail(buffer);
+		cutMatcher.appendTail(buffer);
 		RootNode astRoot = parseMarkdown(buffer.toString());
 		applyHighlighting(astRoot);
 		markdownAST.set(astRoot);
