@@ -175,30 +175,14 @@ class ExpLeagueProfile: NSManagedObject {
 
         return UIImage(named: "owl_exp")!
     }
-    
-    func placeOrder(topic topic: String, urgency: String, local: Bool, attachments: [String], location: CLLocationCoordinate2D?, prof: Bool) -> ExpLeagueOrder {
+        
+    func placeOrder(topic topic: String, urgency: String, local: Bool, location locationOrNil: CLLocationCoordinate2D?, experts: [XMPPJID], images: [String]) -> ExpLeagueOrder {
         var rand = NSUUID().UUIDString;
         rand = rand.substringToIndex(rand.startIndex.advancedBy(8))
-        var json: [String: NSObject] = [
-            "topic": topic,
-            "attachments": attachments.joinWithSeparator(", "),
-            "urgency": urgency,
-            "local": local,
-            "specific": prof,
-            "started": NSDate().timeIntervalSince1970
-        ]
-        if (location != nil) {
-            json["location"] = [
-                "latitude": location!.latitude,
-                "longitude": location!.longitude,
-            ]
-        }
-        
-        let topicJson = try! NSJSONSerialization.dataWithJSONObject(json, options: [])
-        let topic = String(NSString(data: topicJson, encoding: NSUTF8StringEncoding)!)
-        let order = ExpLeagueOrder("room-" + login + "-" + rand, topic: topic, urgency: urgency, local: local, specific: prof, context: self.managedObjectContext!);
+        let offer = ExpLeagueOffer(topic: topic, urgency: urgency, local: local, location: locationOrNil, experts: experts, images: images, started: nil)
+        let order = ExpLeagueOrder("room-" + login + "-" + rand, offer: offer, context: self.managedObjectContext!)
         let msg = XMPPMessage(type: "normal", to: order.jid)
-        msg.addSubject(topic)
+        msg.addChild(offer.xml)
         AppDelegate.instance.stream.sendElement(msg)
         
         orderSelected = Int16(orders.count)

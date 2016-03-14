@@ -16,6 +16,7 @@ enum CellAlignment: Int {
 }
 
 class ChatCell: UITableViewCell {
+    static let defaultFont = UIFont(name: "Helvetica Neue", size: 14)!
     var controller: OrderDetailsVeiwController?
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -82,25 +83,81 @@ class CompositeChatCell: ChatCell {
     }
 }
 
-class SetupChatCell: CompositeChatCell {
-    @IBOutlet weak var label: UILabel!
+class SetupChatCell: ChatCell {
+    static let ATTACHMENTS_HEIGHT = CGFloat(210)
+    @IBOutlet weak var status: UILabel!
+    @IBOutlet weak var attachmentsView: UICollectionView!
+    @IBOutlet weak var topic: UITextView!
+    @IBOutlet weak var topicHeight: NSLayoutConstraint!
+    @IBOutlet weak var attachmentsHeight: NSLayoutConstraint!
+    
+    var attachments: Int = 0 {
+        didSet {
+            if (attachments > 0) {
+                attachmentsHeight.constant = SetupChatCell.ATTACHMENTS_HEIGHT
+            }
+            else {
+                attachmentsHeight.constant = 0
+            }
+        }
+    }
+    
+    var textWidth: CGFloat {
+        return topic.contentSize.width
+    }
+    
     static var labelHeight = CGFloat(18)
-    override class func height(contentHeight size: CGFloat) -> CGFloat {
-        return SetupChatCell.labelHeight + 16 + size + 8;
-    }
-
-    override var align: CellAlignment {
-        return .Center
-    }
-
-    override var contentInsets: UIEdgeInsets {
-        return UIEdgeInsetsMake(SetupChatCell.labelHeight + 8,8,8,8)
+    class func height(textHeight size: CGFloat, attachments: Int) -> CGFloat {
+        return SetupChatCell.labelHeight + 16 + size + 8 + (attachments > 0 ? SetupChatCell.ATTACHMENTS_HEIGHT : 0);
     }
 
     override func awakeFromNib() {
         super.awakeFromNib()
         backgroundColor = Palette.CHAT_BACKGROUND
-        SetupChatCell.labelHeight = label.frame.height
+        SetupChatCell.labelHeight = status.frame.height
+        attachmentsView.registerClass(AttachmentCell.self, forCellWithReuseIdentifier: "AttachmentCell")
+        attachmentsView.backgroundView = nil
+        attachmentsView.backgroundColor = UIColor.clearColor()
+        attachmentsView.translatesAutoresizingMaskIntoConstraints = false
+
+        topic.editable = false
+        topic.backgroundColor = UIColor.clearColor()
+        topic.textContainerInset = UIEdgeInsetsZero
+        topic.contentInset = UIEdgeInsetsZero
+        topic.scrollEnabled = false
+        topic.textContainer.lineFragmentPadding = 0
+    }
+}
+
+class AttachmentCell: UICollectionViewCell {
+    var content: UIView? {
+        willSet (newContent) {
+            for v in contentView.subviews {
+                v.removeFromSuperview()
+            }
+            if let content = newContent {
+                contentView.addSubview(content)
+            }
+        }
+    }
+ 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        content?.frame = contentView.frame
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        layer.cornerRadius = 10
+        layer.masksToBounds = true
+        backgroundColor = UIColor.clearColor()
+        backgroundView = nil
+        translatesAutoresizingMaskIntoConstraints = false
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError()
     }
 }
 

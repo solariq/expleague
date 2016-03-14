@@ -38,9 +38,6 @@ public class Offer extends Item {
   @XmlAttribute(name = "local")
   private Boolean isLocal;
 
-  @XmlAttribute(name = "specific")
-  private Boolean isSpecific;
-
   @XmlAttribute
   private Urgency urgency;
 
@@ -61,8 +58,12 @@ public class Offer extends Item {
   }
 
   public static Offer create(JID room, JID client, Message description) {
-    if (description.has(Offer.class))
-      return description.get(Offer.class);
+    if (description.has(Offer.class)) {
+      final Offer offer = description.get(Offer.class);
+      offer.room = room;
+      offer.client = client;
+      return offer;
+    }
     if (description.has(Message.Subject.class)) {
       final Offer result;
       final Message.Subject subject = description.get(Message.Subject.class);
@@ -77,7 +78,6 @@ public class Offer extends Item {
           result.urgency = node.has("urgency") ? Urgency.valueOf(node.get("urgency").asText().toUpperCase()) : null;
           result.started = node.has("started") ? node.get("started").asDouble() : System.currentTimeMillis() / 1000.;
           result.isLocal = node.has("local") && node.get("local").asBoolean();
-          result.isSpecific = node.has("specific") && node.get("specific").asBoolean();
           result.location = node.has("location") ? new Location(
               node.get("location").get("longitude").asDouble(),
               node.get("location").get("latitude").asDouble()

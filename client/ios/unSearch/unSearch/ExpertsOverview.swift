@@ -37,7 +37,7 @@ class ExpertsOverviewController: UITableViewController {
             if (exp.group == "Top") {
                 top.append(exp)
             }
-            else {
+            else if (exp.group == "Favorites") {
                 my.append(exp)
             }
         }
@@ -73,7 +73,7 @@ class ExpertsOverviewController: UITableViewController {
             cell.name.text = exp.name
             cell.tags.text = exp.tags.joinWithSeparator(", ")
             cell.avatar.image = exp.avatar
-            cell.tasks.text = "всего заданий: \(exp.myTasks)"
+            cell.tasks.text = "всего заданий: \(exp.tasks)"
             return cell
         default:
             return UITableViewCell()
@@ -98,6 +98,7 @@ class ExpertsOverviewController: UITableViewController {
     override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 38
     }
+    
     override func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let label = UILabel()
         label.textColor = UIColor.lightGrayColor()
@@ -165,6 +166,93 @@ extension ExpertsOverviewController: UISplitViewControllerDelegate {
         if (displayMode != .AllVisible) {
             AppDelegate.instance.tabs.tabBar.hidden = false
         }
+    }
+}
+
+class ChooseExpertViewController: UITableViewController {
+    var experts: [ExpLeagueMember] {
+        return AppDelegate.instance.activeProfile!.experts
+    }
+    
+    let parent: OrderDescriptionViewController
+    
+    func close() {
+        self.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        navigationController!.navigationBar.setBackgroundImage(UIImage(named: "experts_background"), forBarMetrics: .Default)
+        navigationController!.navigationBarHidden = false
+        navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
+        navigationItem.title = "Выберите эксперта"
+        let button = UIBarButtonItem(title: "Отмена", style: .Done, target: self, action: "close")
+        button.tintColor = UIColor.whiteColor()
+        navigationItem.setRightBarButtonItem(button, animated: false)
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+    }
+    
+    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return false
+    }
+    
+    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        let exp = experts[indexPath.row]
+        let cell = tableView.dequeueReusableCellWithIdentifier("ExpertCell", forIndexPath: indexPath) as! ExpertCell
+        cell.name.text = exp.name
+        cell.tags.text = exp.tags.joinWithSeparator(", ")
+        cell.avatar.image = exp.avatar
+        cell.tasks.text = "всего заданий: \(exp.tasks)"
+        return cell
+    }
+    
+    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+        return 77;
+    }
+    
+    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return experts.count
+    }
+    
+    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 0
+    }
+    
+    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+        return 1
+    }
+    
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        parent.append(expert: experts[indexPath.item])
+        close()
+    }
+    
+    override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return false
+    }
+    
+    override func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return true
+    }
+    
+    override func loadView() {
+        let table = UITableView()
+        view = table
+        table.registerNib(UINib(nibName: "ExpertCell", bundle: NSBundle.mainBundle()), forCellReuseIdentifier: "ExpertCell")
+        table.dataSource = self
+        table.delegate = self
+        table.separatorStyle = .None
+    }
+    
+    init(parent: OrderDescriptionViewController) {
+        self.parent = parent
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 }
 

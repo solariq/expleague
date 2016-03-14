@@ -103,6 +103,8 @@ public class MySQLOps {
       if (rs == null)
         init();
       try {
+        if (rs.isClosed())
+          return false;
         boolean hasMore = rs.next();
         if (!hasMore)
           close();

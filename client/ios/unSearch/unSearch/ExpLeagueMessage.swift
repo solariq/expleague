@@ -13,10 +13,80 @@ import MMMarkdown
 
 class ExpLeagueMessage: NSManagedObject {
     static let EXP_LEAGUE_SCHEME = "http://expleague.com/scheme"
-    override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
-        super.init(entity: entity, insertIntoManagedObjectContext: context)
+
+    var isSystem: Bool {
+        return type == .System || type == .ExpertAssignment || type == .ExpertProgress
     }
 
+    var isRead: Bool {
+        return properties["read"] as? String == "true"
+    }
+
+    var parent: ExpLeagueOrder {
+        return parentRaw as! ExpLeagueOrder
+    }
+    
+    var ts: NSDate {
+        return NSDate(timeIntervalSince1970: time)
+    }
+    
+    var type: ExpLeagueMessageType {
+        get {
+            return ExpLeagueMessageType(rawValue: self.typeRaw)!
+        }
+        set (val) {
+            self.typeRaw = val.rawValue
+        }
+    }
+    
+    func setProperty(name: String, value: AnyObject) {
+        let properties = NSMutableDictionary()
+        properties.addEntriesFromDictionary(self.properties)
+        properties[name] = value
+        let data = NSMutableData()
+        let archiver = NSKeyedArchiver(forWritingWithMutableData: data)
+        archiver.encodeObject(properties.copy() as! NSDictionary)
+        archiver.finishEncoding()
+        self.propertiesRaw = data.xmpp_base64Encoded()
+        do {
+            try self.managedObjectContext!.save()
+        } catch {
+            fatalError("Failure to save context: \(error)")
+        }
+    }
+    
+    var properties: [String: AnyObject] {
+        if (self.propertiesRaw != nil) {
+            let data = NSData(base64EncodedString: self.propertiesRaw!, options: [])
+            let archiver = NSKeyedUnarchiver(forReadingWithData: data!)
+            return archiver.decodeObject() as! [String: AnyObject]
+        }
+        return [:];
+    }
+    
+    func visitParts(visitor: ExpLeagueMessageVisitor) {
+        if (type == .System || type == .Topic) {
+            return
+        }
+        if (properties["image"] != nil) {
+            do {
+                let imageUrl = NSURL(string: properties["image"] as! String)!
+                let request = NSURLRequest(URL: imageUrl)
+                let imageData = try NSURLConnection.sendSynchronousRequest(request, returningResponse: nil)
+                    
+                if let image = UIImage(data: imageData) {
+                    visitor.message(self, title: "Приложение", image: image)
+                }
+            }
+            catch {
+                ExpLeagueProfile.active.log("Unable to load image \(properties["image"]): \(error)");
+            }
+        }
+        if (body != nil) {
+            visitor.message(self, text: body!)
+        }
+    }
+    
     init(msg: XMPPMessage, parent: ExpLeagueOrder, context: NSManagedObjectContext) {
         super.init(entity: NSEntityDescription.entityForName("Message", inManagedObjectContext: context)!, insertIntoManagedObjectContext: context)
         let attrs = msg.attributesAsDictionary()
@@ -101,7 +171,7 @@ class ExpLeagueMessage: NSManagedObject {
                     .UnderscoresInWords,
                     .Strikethroughs,
                     .GitHubFlavored
-                ])
+                    ])
             }
             catch {
                 parent.parent.log("\(error)")
@@ -122,13 +192,13 @@ class ExpLeagueMessage: NSManagedObject {
         if let image = msg.elementForName("image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
             properties["image"] = image.stringValue()
         }
-        self.time = attrs["time"] != nil ? Double(attrs["time"] as! String)!: CFAbsoluteTimeGetCurrent()
+        self.time = attrs["time"] != nil ? Double(attrs["time"] as! String)!: NSDate().timeIntervalSince1970
         let data = NSMutableData()
         let archiver = NSKeyedArchiver(forWritingWithMutableData: data)
         archiver.encodeObject(properties)
         archiver.finishEncoding()
         self.propertiesRaw = data.xmpp_base64Encoded()
-
+        
         do {
             try self.managedObjectContext!.save()
         } catch {
@@ -136,73 +206,8 @@ class ExpLeagueMessage: NSManagedObject {
         }
     }
 
-    var isSystem: Bool {
-        return type == .System || type == .ExpertAssignment || type == .ExpertProgress
-    }
-
-    var isRead: Bool {
-        return properties["read"] as? String == "true"
-    }
-
-    var parent: ExpLeagueOrder {
-        return parentRaw as! ExpLeagueOrder
-    }
-    
-    var type: ExpLeagueMessageType {
-        get {
-            return ExpLeagueMessageType(rawValue: self.typeRaw)!
-        }
-        set (val) {
-            self.typeRaw = val.rawValue
-        }
-    }
-    
-    func setProperty(name: String, value: AnyObject) {
-        let properties = NSMutableDictionary()
-        properties.addEntriesFromDictionary(self.properties)
-        properties[name] = value
-        let data = NSMutableData()
-        let archiver = NSKeyedArchiver(forWritingWithMutableData: data)
-        archiver.encodeObject(properties.copy() as! NSDictionary)
-        archiver.finishEncoding()
-        self.propertiesRaw = data.xmpp_base64Encoded()
-        do {
-            try self.managedObjectContext!.save()
-        } catch {
-            fatalError("Failure to save context: \(error)")
-        }
-    }
-    
-    var properties: [String: AnyObject] {
-        if (self.propertiesRaw != nil) {
-            let data = NSData(base64EncodedString: self.propertiesRaw!, options: [])
-            let archiver = NSKeyedUnarchiver(forReadingWithData: data!)
-            return archiver.decodeObject() as! [String: AnyObject]
-        }
-        return [:];
-    }
-    
-    func visitParts(visitor: ExpLeagueMessageVisitor) {
-        if (type == .System || type == .Topic) {
-            return
-        }
-        if (properties["image"] != nil) {
-            do {
-                let imageUrl = NSURL(string: properties["image"] as! String)!
-                let request = NSURLRequest(URL: imageUrl)
-                let imageData = try NSURLConnection.sendSynchronousRequest(request, returningResponse: nil)
-                    
-                if let image = UIImage(data: imageData) {
-                    visitor.message(self, title: "Приложение", image: image)
-                }
-            }
-            catch {
-                ExpLeagueProfile.active.log("Unable to load image \(properties["image"]): \(error)");
-            }
-        }
-        if (body != nil) {
-            visitor.message(self, text: body!)
-        }
+    override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
+        super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
 }
 

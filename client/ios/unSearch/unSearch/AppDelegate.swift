@@ -172,12 +172,40 @@ class AppDelegate: UIResponder {
         }
         connect()
     }
+    
+    func ensureConnected(success: () -> ()) -> Bool {
+        if (stream.isAuthenticated()) {
+            return true
+        }
+        
+        let alertView = UIAlertController(title: "Experts League", message: "Connecting to server.\n\n", preferredStyle: .Alert)
+        let completion = {
+            //  Add your progressbar after alert is shown (and measured)
+            let progressController = AppDelegate.instance.connectionProgressView
+            let rect = CGRectMake(0, 54.0, alertView.view.frame.width, 50)
+            progressController.completion = {
+                success()
+            }
+            progressController.view.frame = rect
+            progressController.view.backgroundColor = alertView.view.backgroundColor
+            alertView.view.addSubview(progressController.view)
+            progressController.alert = alertView
+            self.connect()
+        }
+        alertView.addAction(UIAlertAction(title: "Retry", style: .Default, handler: {(x: UIAlertAction) -> Void in
+            self.disconnect()
+            success()
+        }))
+        alertView.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
+        window?.rootViewController?.presentViewController(alertView, animated: true, completion: completion)
+        return false
+    }
 }
 
 extension AppDelegate: UIApplicationDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        EVURLCache.LOGGING = true
+        EVURLCache.LOGGING = false
         EVURLCache.MAX_FILE_SIZE = 26
         EVURLCache.MAX_CACHE_SIZE = 30
         EVURLCache.MAX_AGE = "\(3.0 * 365 * 24 * 60 * 60 * 1000)"

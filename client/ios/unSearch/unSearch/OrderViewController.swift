@@ -6,35 +6,13 @@
 import Foundation
 import UIKit
 import MapKit
+import XMPPFramework
 
 class OrderViewController: UIViewController, CLLocationManagerDelegate {
     @IBOutlet weak var orderDescription: UIView!
     @IBAction func fire(sender: AnyObject) {
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
-        if (!controller.orderTextDelegate!.validate()) {
-            return
-        }
-        if (!AppDelegate.instance.stream.isConnected()) {
-            let alertView = UIAlertController(title: "Experts League", message: "Connecting to server.\n\n", preferredStyle: .Alert)
-            let completion = {
-                //  Add your progressbar after alert is shown (and measured)
-                let progressController = AppDelegate.instance.connectionProgressView
-                let rect = CGRectMake(0, 54.0, alertView.view.frame.width, 50)
-                progressController.completion = {
-                    self.fire(self)
-                }
-                progressController.view.frame = rect
-                progressController.view.backgroundColor = alertView.view.backgroundColor
-                alertView.view.addSubview(progressController.view)
-                progressController.alert = alertView
-                AppDelegate.instance.connect()
-            }
-            alertView.addAction(UIAlertAction(title: "Retry", style: .Default, handler: {(x: UIAlertAction) -> Void in
-                AppDelegate.instance.disconnect()
-                self.fire(self)
-            }))
-            alertView.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
-            presentViewController(alertView, animated: true, completion: completion)
+        guard controller.orderTextDelegate!.validate() && AppDelegate.instance.ensureConnected({self.fire(self)}) else {
             return
         }
         if (controller.isLocal.on && location == nil) {
@@ -51,13 +29,13 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
         }
         
         AppDelegate.instance.activeProfile!.placeOrder(
-                topic: controller.orderText.text,
-            urgency: (controller.urgency.on ? Urgency.ASAP : Urgency.DURING_THE_DAY).type,
-                local: controller.isLocal.on,
-                attachments: controller.attachments.ids,
-                location: self.location,
-                prof: true
-        );
+            topic: controller.orderText.text,
+            urgency: controller.urgency.on ? "asap" : "day",
+            local: controller.isLocal.on,
+            location: self.location,
+            experts: controller.experts.map{ return $0.id },
+            images: controller.attachments.ids
+        )
         controller.clear()
         controller.attachments.clear()
 
@@ -98,11 +76,19 @@ class OrderDescriptionViewController: UITableViewController {
     @IBOutlet weak var orderText: UITextView!
     @IBOutlet weak var orderTextBackground: UIView!
     @IBOutlet weak var attachmentsView: UICollectionView!
+    @IBOutlet weak var expertsDescription: UILabel!
+
     let attachments = AttachmentsViewDelegate()
     var orderTextBGColor: UIColor?
     let picker = UIImagePickerController()
     var pickerDelegate: ImagePickerDelegate?
     var orderTextDelegate: OrderTextDelegate?
+    var experts: [ExpLeagueMember] = []
+    
+    func append(expert exp: ExpLeagueMember) {
+        experts.append(exp)
+        update()
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -169,11 +155,42 @@ class OrderDescriptionViewController: UITableViewController {
         urgency.on = false
         orderTextDelegate!.clear(orderText)
         attachments.clear()
+        experts.removeAll()
+        update()
+    }
+    
+    internal func update() {
+        let count = attachments.count
+        if (count > 4) {
+            imagesCaption.text = "\(count) приложений"
+        }
+        else if (count > 1) {
+            imagesCaption.text = "\(count) приложения"
+        }
+        else if (count > 0) {
+            imagesCaption.text = "\(count) приложениe"
+        }
+        else {
+            imagesCaption.text = "Не выбрано"
+        }
+        urgencyType.text = urgency.on ? "Срочно" : "В течение дня"
+        if experts.count > 0 {
+            expertsDescription.text = ""
+            for i in 0..<experts.count {
+                if (i > 0) {
+                    expertsDescription.text! += ", "
+                }
+                expertsDescription.text! += experts[i].name
+            }
+        }
+        else {
+            expertsDescription.text = "Автоматически"
+        }
     }
 
     @IBOutlet weak var urgencyType: UILabel!
     @IBAction func onUnrgency(sender: AnyObject) {
-        urgencyType.text = (urgency.on ? Urgency.ASAP : Urgency.DURING_THE_DAY).caption
+        update()
     }
     @IBOutlet weak var imagesCaption: UILabel!
 
@@ -192,16 +209,22 @@ class OrderDescriptionViewController: UITableViewController {
     }
     
     override func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        return 4...5 ~= indexPath.item
+        return 3...5 ~= indexPath.item
     }
     
     override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
-        return 4...5 ~= indexPath.item ? indexPath : nil
+        return 3...5 ~= indexPath.item ? indexPath : nil
     }
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         if (indexPath.item == 4) {
             self.presentViewController(picker, animated: true, completion: nil)
+        }
+        else if (indexPath.item == 3) {
+            let chooseExpert = ChooseExpertViewController(parent: self)
+            
+            let navigation = UINavigationController(rootViewController: chooseExpert)
+            self.presentViewController(navigation, animated: true, completion: nil)
         }
     }
 }
@@ -221,6 +244,14 @@ class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionV
     var progress: [(UIProgressView)->Void] = []
     var ids: [String] = []
     var status: [Bool] = []
+    
+    var count: Int {
+        var result = 0
+        for i in 0..<status.count {
+            result += status[i] ? 1 : 0
+        }
+        return result
+    }
     
     func append(id: String, image: UIImage, progress: (UIProgressView)->Void) {
         status.append(false)
@@ -280,18 +311,7 @@ class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionV
         if (index != nil) {
             self.status[index!] = status
         }
-        if (cells.count > 4) {
-            parent!.imagesCaption.text = "\(cells.count) приложений"
-        }
-        else if (cells.count > 1) {
-            parent!.imagesCaption.text = "\(cells.count) приложения"
-        }
-        else if (cells.count > 0) {
-            parent!.imagesCaption.text = "\(cells.count) приложениe"
-        }
-        else {
-            parent!.imagesCaption.text = "Не выбрано"
-        }
+        parent?.update()
     }
     
     var parent: OrderDescriptionViewController?
@@ -497,26 +517,5 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
     init(height: NSLayoutConstraint, parent: OrderDescriptionViewController) {
         self.height = height
         self.parent = parent
-    }
-}
-
-
-struct Urgency {
-    var caption: String;
-    var value: Float;
-    var type: String;
-
-    static let ASAP = Urgency(caption: "Срочно", value: 1.0, type: "asap")
-    static let DURING_THE_DAY = Urgency(caption: "В течение дня", value: 0.5, type: "day")
-    static let DURING_THE_WEEK = Urgency(caption: "в течение недели", value: 0.0, type: "week")
-
-    static func find(value: Float) -> Urgency {
-        if (value < 0.25) {
-            return DURING_THE_WEEK
-        }
-        else if value < 0.75 {
-            return DURING_THE_DAY
-        }
-        return ASAP
     }
 }

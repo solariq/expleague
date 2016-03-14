@@ -414,6 +414,7 @@
                     </tableView>
                     <connections>
                         <outlet property="attachmentsView" destination="Kwa-c3-kaj" id="usB-AM-N7T"/>
+                        <outlet property="expertsDescription" destination="RoH-Ty-MVK" id="iZ1-99-ZWT"/>
                         <outlet property="imagesCaption" destination="roH-LH-oVg" id="tAq-iF-mwD"/>
                         <outlet property="isLocal" destination="oQF-mq-Doe" id="cMZ-Dy-YOm"/>
                         <outlet property="lupa" destination="iUt-UK-Ii0" id="yYT-Uj-jaZ"/>
@@ -523,8 +524,8 @@
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="search_icon" translatesAutoresizingMaskIntoConstraints="NO" id="ivc-sg-Kqc">
-                                            <rect key="frame" x="13" y="14" width="50" height="50"/>
+                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="search_icon" translatesAutoresizingMaskIntoConstraints="NO" id="ivc-sg-Kqc">
+                                            <rect key="frame" x="13" y="13" width="50" height="50"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="50" id="J1c-E0-Yce"/>
                                                 <constraint firstAttribute="height" constant="50" id="k0k-hQ-etw"/>
