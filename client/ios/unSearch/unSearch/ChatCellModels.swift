@@ -27,7 +27,7 @@ private class MessageVisitor: ExpLeagueMessageVisitor {
         self.model = model;
     }
     func message(message: ExpLeagueMessage, text: String) {
-        model.append(text: text, time: message.time)
+        model.append(text: text, time: message.ts)
     }
     
     func message(message: ExpLeagueMessage, title: String, text: String) {
@@ -38,7 +38,7 @@ private class MessageVisitor: ExpLeagueMessageVisitor {
         result.appendAttributedString(NSAttributedString(string: "\n" + text, attributes: [
             NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
             ]))
-        model.append(richText: result, time: message.time)
+        model.append(richText: result, time: message.ts)
     }
     
     func message(message: ExpLeagueMessage, title: String, link: String) {
@@ -48,7 +48,7 @@ private class MessageVisitor: ExpLeagueMessageVisitor {
                 NSLinkAttributeName: link,
                 NSForegroundColorAttributeName: UIColor.blueColor()
                 ]),
-            time: message.time)
+            time: message.ts)
     }
     func message(message: ExpLeagueMessage, title: String, image: UIImage) {
         model.append(
@@ -57,41 +57,40 @@ private class MessageVisitor: ExpLeagueMessageVisitor {
                 attributes: [
                     NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody),
                     NSForegroundColorAttributeName: UIColor.blueColor()]),
-            time: message.time
+            time: message.ts
         )
-        model.append(image: image, time: message.time)
+        model.append(image: image, time: message.ts)
     }
 }
 
 class CompositeCellModel: ChatCellModel {
-    let defaultFont = UIFont(name: "Helvetica Neue", size: 14)!
     let separatorHeight: CGFloat = 8
 
     private var parts:[AnyObject] = []
-    private var timeStamps: [NSTimeInterval] = []
+    private var timeStamps: [NSDate] = []
     var textAlignment: NSTextAlignment = .Left
 
-    func append(text text: String, time: NSTimeInterval) {
+    func append(text text: String, time: NSDate) {
         parts.append(text)
         timeStamps.append(time)
     }
 
-    func append(richText text: NSAttributedString, time: NSTimeInterval) {
+    func append(richText text: NSAttributedString, time: NSDate) {
         parts.append(text)
         timeStamps.append(time)
     }
 
-    func append(image img: UIImage, time: NSTimeInterval) {
+    func append(image img: UIImage, time: NSDate) {
         parts.append(img)
         timeStamps.append(time)
     }
 
-    func append(location point: CLLocation, time: NSTimeInterval) {
+    func append(location point: CLLocation, time: NSDate) {
         parts.append(point)
         timeStamps.append(time)
     }
 
-    func append(action run: () -> Void, caption: String, time: NSTimeInterval) {
+    func append(action run: () -> Void, caption: String, time: NSDate) {
         parts.append(ChatAction(action: run, caption: caption))
         timeStamps.append(time)
     }
@@ -143,7 +142,7 @@ class CompositeCellModel: ChatCellModel {
                 let label = UITextView()
                 label.editable = false
                 label.dataDetectorTypes = .All
-                label.font = defaultFont
+                label.font = ChatCell.defaultFont
                 label.text = text
                 label.textAlignment = .Left
                 label.backgroundColor = UIColor.clearColor()
@@ -220,7 +219,7 @@ class CompositeCellModel: ChatCellModel {
             CGSizeMake(width, CGFloat(MAXFLOAT)),
                     options: NSStringDrawingOptions.UsesLineFragmentOrigin,
                     attributes: [
-                            NSFontAttributeName : defaultFont
+                            NSFontAttributeName : ChatCell.defaultFont
                     ],
                     context: nil).size
         }
@@ -287,55 +286,52 @@ class ChatMessageModel: CompositeCellModel {
     }
 }
 
-class SetupModel: CompositeCellModel {
-    static var timer: NSTimer?
+class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    var timer: NSTimer?
     let order: ExpLeagueOrder
     init(order: ExpLeagueOrder) {
         self.order = order
         super.init()
-        textAlignment = .Center
-        append(text: order.text, time: order.started)
-        if (order.topic.hasPrefix("{")) {
-            let json = try! NSJSONSerialization.JSONObjectWithData(order.topic.dataUsingEncoding(NSUTF8StringEncoding)!, options: []) as! [String: AnyObject]
-            let attachments = (json["attachments"] as! String).componentsSeparatedByString(", ")
-            for attachment in attachments {
-                if (attachment.isEmpty) {
-                    continue
-                }
-                
-                let imageUrl = AppDelegate.instance.activeProfile!.imageUrl(attachment)
-                let request = NSURLRequest(URL: imageUrl)
-                do {
-                    let imageData = try NSURLConnection.sendSynchronousRequest(request, returningResponse: nil)
-                
-                    if let image = UIImage(data: imageData) {
-                        append(image: image, time: order.started)
-                    }
-                }
-                catch {
-                    ExpLeagueProfile.active.log("Unable to load image \(imageUrl.absoluteString): \(error)");
+        for image in order.offer.images {
+            do {
+                let request = NSURLRequest(URL: image)
+                let imageData = try NSURLConnection.sendSynchronousRequest(request, returningResponse: nil)
+                if let image = UIImage(data: imageData) {
+                    images.append(image)
                 }
             }
-            if (json["local"] as! Bool) {
-                let location = json["location"] as! [String: AnyObject]
-                self.location = CLLocationCoordinate2DMake(location["latitude"] as! CLLocationDegrees, location["longitude"] as! CLLocationDegrees)
-                append(location: CLLocation(latitude: self.location!.latitude, longitude: self.location!.longitude), time: order.started)
+            catch {
+                ExpLeagueProfile.active.log("Unable to load image \(image.absoluteString): \(error)");
             }
         }
     }
-    
-    override var type: CellType {
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    var type: CellType {
         return .Setup
     }
     
     var images: [UIImage] = []
     var location: CLLocationCoordinate2D?
+    
+    func textHeight(width: CGFloat) -> CGFloat {
+        return order.text.boundingRectWithSize(
+            CGSizeMake(width, CGFloat(MAXFLOAT)),
+            options: NSStringDrawingOptions.UsesLineFragmentOrigin,
+            attributes: [
+                NSFontAttributeName : ChatCell.defaultFont
+            ],
+            context: nil).size.height
+    }
 
-    override func height(maxWidth width: CGFloat) -> CGFloat {
-        return SetupChatCell.height(contentHeight: super.height(maxWidth: width))
+    func height(maxWidth width: CGFloat) -> CGFloat {
+        return SetupChatCell.height(textHeight: textHeight(width), attachments: images.count + (order.offer.local ? 1 : 0))
     }
     
-    override func accept(message: ExpLeagueMessage) -> Bool {
+    func accept(message: ExpLeagueMessage) -> Bool {
         return message.type == .Topic
     }
 
@@ -387,14 +383,62 @@ class SetupModel: CompositeCellModel {
             break
         }
     }
-    override func form(chatCell cell: ChatCell) throws {
+    
+    func form(chatCell cell: ChatCell) throws {
         guard let setupCell = cell as? SetupChatCell else {
             throw ModelErrors.WrongCellType
         }
-        SetupModel.timer?.invalidate()
-        SetupModel.timer = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: "advanceTimer:", userInfo: setupCell.label, repeats: true)
-        advanceTimer(SetupModel.timer!)
-        try super.form(chatCell: setupCell)
+        setupCell.topic.text = order.offer.topic
+        setupCell.topicHeight.constant = textHeight(setupCell.textWidth)
+        timer = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: "advanceTimer:", userInfo: setupCell.status, repeats: true)
+        setupCell.attachments = images.count + (order.offer.local ? 1 : 0)
+        setupCell.attachmentsView.dataSource = self
+        setupCell.attachmentsView.delegate = self
+        advanceTimer(timer!)
+    }
+    
+    func collectionView(collectionView: UICollectionView, canMoveItemAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return false
+    }
+    
+    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return section > 0 ? 0 : images.count + (order.offer.local ? 1 : 0)
+    }
+    
+    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("AttachmentCell", forIndexPath: indexPath) as! AttachmentCell
+        if (indexPath.item >= images.count) {
+            let mapView = MKMapView()
+            let location = order.offer.location!
+            let region = MKCoordinateRegionMake(location, MKCoordinateSpanMake(0.005, 0.005))
+            mapView.setRegion(region, animated: false)
+            mapView.setCenterCoordinate(location, animated: false)
+            mapView.userInteractionEnabled = false
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = location
+            mapView.addAnnotation(annotation)
+            cell.content = mapView
+        }
+        else {
+            let image = UIImageView(image: images[indexPath.item])
+            image.contentMode = UIViewContentMode.ScaleAspectFit
+            image.backgroundColor = UIColor.whiteColor()
+            cell.content = image
+        }
+        return cell
+    }
+    
+    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
+        let max = CGSizeMake(collectionView.frame.width - 32, collectionView.frame.height - 4)
+        if indexPath.item < images.count {
+            let image = images[indexPath.item]
+            return CGSizeMake(image.size.width / image.size.height * max.height, max.height)
+        }
+        return max
+    }
+    
+    deinit {
+        timer?.invalidate()
     }
 }
 

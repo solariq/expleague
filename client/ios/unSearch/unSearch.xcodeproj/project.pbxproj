@@ -39,6 +39,7 @@
 		EE62CB4F1C958E1500352699 /* ExpertsOverview.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62CB4E1C958E1500352699 /* ExpertsOverview.swift */; };
 		EE62CB511C958E2B00352699 /* ExpertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62CB501C958E2B00352699 /* ExpertView.swift */; };
 		EE62CB531C95B18200352699 /* ExpertView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE62CB521C95B18200352699 /* ExpertView.xib */; };
+		EE62CB551C975A9600352699 /* ExpertCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE62CB541C975A9600352699 /* ExpertCell.xib */; };
 		EE6EA7CC1C48F79300692406 /* ProfileModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = EE6EA7CA1C48F79300692406 /* ProfileModel.xcdatamodeld */; };
 		EE70A5341C79C02C00174674 /* EVURLCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE70A5331C79C02C00174674 /* EVURLCache.swift */; };
 		EE70A5381C7FA3EA00174674 /* markdownpad-github.css in Resources */ = {isa = PBXBuildFile; fileRef = EE70A5361C7FA3EA00174674 /* markdownpad-github.css */; };
@@ -92,6 +93,7 @@
 		EE62CB4E1C958E1500352699 /* ExpertsOverview.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpertsOverview.swift; sourceTree = "<group>"; };
 		EE62CB501C958E2B00352699 /* ExpertView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpertView.swift; sourceTree = "<group>"; };
 		EE62CB521C95B18200352699 /* ExpertView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ExpertView.xib; sourceTree = "<group>"; };
+		EE62CB541C975A9600352699 /* ExpertCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ExpertCell.xib; sourceTree = "<group>"; };
 		EE6EA7CB1C48F79300692406 /* ProfileModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ProfileModel.xcdatamodel; sourceTree = "<group>"; };
 		EE70A5331C79C02C00174674 /* EVURLCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EVURLCache.swift; sourceTree = "<group>"; };
 		EE70A5361C7FA3EA00174674 /* markdownpad-github.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "markdownpad-github.css"; sourceTree = "<group>"; };
@@ -234,6 +236,7 @@
 				EE62CB4E1C958E1500352699 /* ExpertsOverview.swift */,
 				EE62CB521C95B18200352699 /* ExpertView.xib */,
 				EE62CB501C958E2B00352699 /* ExpertView.swift */,
+				EE62CB541C975A9600352699 /* ExpertCell.xib */,
 			);
 			name = ExpertsView;
 			sourceTree = "<group>";
@@ -326,6 +329,7 @@
 				EE94599C1C57A5FC000796ED /* AnswerReceived.xib in Resources */,
 				EE755C551C57E9110018AF12 /* Setup.xib in Resources */,
 				EE70A5391C7FA3EA00174674 /* md-scripts.js in Resources */,
+				EE62CB551C975A9600352699 /* ExpertCell.xib in Resources */,
 				EE9EE7A31C577859000E9F46 /* ExpertInProgress.xib in Resources */,
 				EE0FC7E11C503CB9006F6045 /* OutgoingMessage.xib in Resources */,
 				EEF7BB421C4F9B6000E1B7BD /* IncomingMessage.xib in Resources */,

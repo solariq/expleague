@@ -3,11 +3,11 @@ package com.expleague.model;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
 
 /**
+ * Experts League
  * Created by solar on 21.02.16.
  */
 @XmlRootElement

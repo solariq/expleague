@@ -19,7 +19,6 @@ class Weak<T: AnyObject> {
 }
 
 class ExpLeagueOrder: NSManagedObject {
-
     var stream: XMPPStream {
         return AppDelegate.instance.stream
     }
@@ -47,25 +46,7 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     var before: NSTimeInterval {
-        var duration: NSTimeInterval = 60 * 60
-        ExpLeagueOrder.urgencyDict.forEach({
-            if($1 == (self.flags & 0x1FF)) {
-                switch($0){
-                case "asap":
-                    duration = 60 * 60
-                    break
-                case "day":
-                    duration = 24 * 60 * 60
-                    break
-                case "week":
-                    duration = 7 * 24 * 60 * 60
-                    break
-                default:
-                    duration = 60 * 60;
-                }
-            }
-        })
-        return started + duration
+        return started + offer.duration
     }
     
     var timeLeft: NSTimeInterval {
@@ -100,7 +81,11 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     func send(xml xml: DDXMLElement) {
-        let msg = XMPPMessage(type: "normal", to: jid)
+        send(xml: xml, type: "normal")
+    }
+    
+    func send(xml xml: DDXMLElement, type: String) {
+        let msg = XMPPMessage(type: type, to: jid)
         msg.addChild(xml)
         message(message:msg)
         stream.sendElement(msg)
@@ -111,37 +96,11 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     var text: String {
-        if (topic.hasPrefix("{")) {
-            let json = try! NSJSONSerialization.JSONObjectWithData(topic.dataUsingEncoding(NSUTF8StringEncoding)!, options: []) as! [String: AnyObject]
-            return json["topic"] as! String
-        }
-        else {
-            return topic
-        }
+        return offer.topic
     }
     
     func cancel() {
-        if (!AppDelegate.instance.stream.isConnected()) {
-            let alertView = UIAlertController(title: "Experts League", message: "Connecting to server.\n\n", preferredStyle: .Alert)
-            let completion = {
-                //  Add your progressbar after alert is shown (and measured)
-                let progressController = AppDelegate.instance.connectionProgressView
-                let rect = CGRectMake(0, 54.0, alertView.view.frame.width, 50)
-                progressController.completion = {
-                    self.cancel()
-                }
-                progressController.view.frame = rect
-                progressController.view.backgroundColor = alertView.view.backgroundColor
-                alertView.view.addSubview(progressController.view)
-                progressController.alert = alertView
-                AppDelegate.instance.connect()
-            }
-            alertView.addAction(UIAlertAction(title: "Retry", style: .Default, handler: {(x: UIAlertAction) -> Void in
-                AppDelegate.instance.disconnect()
-                self.cancel()
-            }))
-            alertView.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
-            AppDelegate.instance.window?.rootViewController?.presentViewController(alertView, animated: true, completion: completion)
+        guard AppDelegate.instance.ensureConnected({self.cancel()}) else {
             return
         }
 
@@ -214,7 +173,7 @@ class ExpLeagueOrder: NSManagedObject {
                 result = msg.properties["short"] as? String
             }
         }
-        return result != nil ? result! : "Нет простого ответа"
+        return result != nil && !result!.isEmpty ? result! : "Нет простого ответа"
     }
     
     var unreadCount: Int {
@@ -228,28 +187,38 @@ class ExpLeagueOrder: NSManagedObject {
         return result
     }
     
-    static let urgencyDict : [String: Int16] = [
-        "asap" : 256,
-        "day" : 128,
-        "week" : 0
-    ]
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
     
-    init(_ roomId: String, topic: String, urgency: String, local: Bool, specific: Bool, context: NSManagedObjectContext) {
+    init(_ roomId: String, offer: ExpLeagueOffer, context: NSManagedObjectContext) {
         super.init(entity: NSEntityDescription.entityForName("Order", inManagedObjectContext: context)!, insertIntoManagedObjectContext: context)
         self.started = CFAbsoluteTimeGetCurrent()
         self.id = roomId.lowercaseString
-        self.topic = topic
-        self.flags |= local ? ExpLeagueOrderFlags.LocalTask.rawValue : 0
-        self.flags |= specific ? ExpLeagueOrderFlags.SpecificTask.rawValue : 0
-        self.flags += ExpLeagueOrder.urgencyDict[urgency]!
+        self.topic = offer.xml.XMLString()
         do {
             try self.managedObjectContext!.save()
         } catch {
             fatalError("Failure to save context: \(error)")
         }
+    }
+
+    private dynamic var _offer: ExpLeagueOffer?
+    var offer: ExpLeagueOffer {
+        if _offer == nil {
+            do {
+                _offer = ExpLeagueOffer(xml: try DDXMLElement(XMLString: topic))
+            }
+            catch { // old format
+                do {
+                    _offer = try ExpLeagueOffer(json: try NSJSONSerialization.JSONObjectWithData(topic.dataUsingEncoding(NSUTF8StringEncoding)!, options: []) as! [String: AnyObject])
+                }
+                catch {
+                    _offer = ExpLeagueOffer(plain: topic)
+                }
+            }
+        }
+        return _offer!
     }
     
     private func save() {
@@ -262,6 +231,106 @@ class ExpLeagueOrder: NSManagedObject {
         } catch {
             fatalError("Failure to save context: \(error)")
         }
+    }
+}
+
+class ExpLeagueOffer: NSObject {
+    let xml: DDXMLElement
+    
+    var duration: NSTimeInterval {
+        switch(xml.attributeStringValueForName("urgency")) {
+        case "day":
+            return 24 * 60 * 60
+        case "asap":
+            return 60 * 60
+        default:
+            return 7 * 24 * 60 * 60
+        }
+    }
+    
+    var topic: String {
+        return xml.elementForName("topic").stringValue()
+    }
+    
+    var images: [NSURL] {
+        var result: [NSURL] = []
+        for imageElement in xml.elementsForName("image") {
+            result.append(NSURL(string: imageElement.stringValue)!)
+        }
+        return result
+    }
+    
+    var started: NSDate {
+        return NSDate(timeIntervalSince1970: xml.attributeDoubleValueForName("started"))
+    }
+    
+    var local: Bool {
+        return xml.attributeBoolValueForName("local")
+    }
+    
+    var location: CLLocationCoordinate2D? {
+        if let location = xml.elementForName("location", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+            return CLLocationCoordinate2DMake(location.attributeDoubleValueForName("latitude") , location.attributeDoubleValueForName("longitude"))
+        }
+        return nil
+    }
+    
+    init(xml: DDXMLElement) {
+        self.xml = xml
+    }
+    
+    init(topic: String, urgency: String, local: Bool, location locationOrNil: CLLocationCoordinate2D?, experts: [XMPPJID], images: [String], started: NSTimeInterval?) {
+        let offer = DDXMLElement(name: "offer", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+        offer.addAttributeWithName("local", boolValue: local)
+        offer.addAttributeWithName("urgency", stringValue: urgency)
+        offer.addAttributeWithName("started", doubleValue: started ?? NSDate().timeIntervalSince1970)
+        let topicElement = DDXMLElement(name: "topic", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+        topicElement.setStringValue(topic)
+        offer.addChild(topicElement)
+        var expertsElement: DDXMLElement? = nil
+        for expert in experts {
+            expertsElement = expertsElement != nil ? expertsElement: DDXMLElement(name: "experts-filter", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+            let accept = DDXMLElement(name: "accept", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+            accept.setStringValue("\(expert)")
+            expertsElement?.addChild(accept)
+        }
+        if expertsElement != nil {
+            offer.addChild(expertsElement!)
+        }
+        
+        for img in images {
+            if (img.isEmpty) {
+                continue
+            }
+            let imageElement = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+            imageElement.setStringValue("\(AppDelegate.instance.activeProfile!.imageStorage)\(img)")
+            offer.addChild(imageElement)
+        }
+        
+        if let location = locationOrNil {
+            let locationElement = DDXMLElement(name: "location", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+            locationElement.addAttributeWithName("longitude", doubleValue: location.longitude)
+            locationElement.addAttributeWithName("latitude", doubleValue: location.latitude)
+            offer.addChild(locationElement)
+        }
+        xml = offer
+    }
+    
+    convenience init(json: [String: AnyObject]) throws {
+        let location = json["location"] as? [String: AnyObject]
+        self.init(
+            topic: json["topic"] as! String,
+            urgency: json["urgency"] as! String,
+            local: json["local"] as! Bool,
+            location: location != nil ? CLLocationCoordinate2D(latitude: location!["latitude"] as! Double, longitude: location!["longitude"] as! Double) : nil,
+            experts: [],
+            images: (json["attachments"] as! String).componentsSeparatedByString(", "),
+            started: json["started"] as? NSTimeInterval
+        )
+    }
+    
+    convenience init(plain topic: String) {
+        self.init(topic: topic, urgency: "day", local: false, location: nil, experts: [], images: [], started: nil)
     }
 }
 

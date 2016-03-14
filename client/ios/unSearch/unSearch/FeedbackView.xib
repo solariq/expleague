@@ -136,7 +136,7 @@
         <image name="beer_bottle_filled" width="42" height="100"/>
         <image name="beer_bottles_empty" width="84" height="117"/>
         <image name="beer_bottles_filled" width="84" height="117"/>
-        <image name="chat_state_bubble" width="319" height="59"/>
+        <image name="chat_state_bubble" width="213" height="39"/>
         <image name="star_empty" width="42" height="42"/>
         <image name="star_filled" width="42" height="42"/>
     </resources>

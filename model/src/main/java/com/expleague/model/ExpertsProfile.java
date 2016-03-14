@@ -22,6 +22,10 @@ public class ExpertsProfile extends Item {
   private JID jid;
 
   @XmlAttribute
+  private String login;
+
+
+  @XmlAttribute
   private String name;
 
   @XmlAttribute
@@ -54,6 +58,7 @@ public class ExpertsProfile extends Item {
 
   private ExpertsProfile(JID jid) {
     this.jid = jid;
+    login = jid.local();
   }
 
   public String avatar() {
