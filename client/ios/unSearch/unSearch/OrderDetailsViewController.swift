@@ -129,6 +129,9 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
     }
 
     override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+        coordinator.animateAlongsideTransition({ (context: UIViewControllerTransitionCoordinatorContext) -> Void in
+            self.messages.reloadData()
+        }, completion: nil)
         super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
     }
     
@@ -193,8 +196,8 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
     }
 
     func scrollToLastMessage() {
-        if (data.cells.count > 0) {
-            messages.scrollToRowAtIndexPath(NSIndexPath(forItem: data.cells.count - 1, inSection: 0), atScrollPosition: .Middle, animated: true)
+        if (data.groups.count > 0) {
+            messages.scrollToRowAtIndexPath(data.lastIndex, atScrollPosition: .Top, animated: true)
         }
     }
 
@@ -215,7 +218,7 @@ class AnswerDelegate: NSObject, UIWebViewDelegate {
         if let url = request.URL where url.scheme == "unsearch" {
             if (url.path == "/chat-messages") {
                 if let indexStr = url.fragment, index = Int(indexStr) {
-                    parent.messages.scrollToRowAtIndexPath(NSIndexPath(forItem: index - 1, inSection: 0), atScrollPosition: .Middle, animated: false)
+                    parent.messages.scrollToRowAtIndexPath(parent.data.translateToIndex(index)!, atScrollPosition: .Middle, animated: false)
                     parent.detailsView!.scrollToChat(true)
                 }
             }

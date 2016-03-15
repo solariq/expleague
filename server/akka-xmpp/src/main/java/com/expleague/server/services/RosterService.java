@@ -40,11 +40,10 @@ public class RosterService extends UntypedActorAdapter {
         final Set<JID> online = XMPP.online(context());
         Roster.instance().favorites(rosterIq.from())
             .filter(known::add)
-            .filter(online::contains)
             .map(jid -> Roster.instance().profile(jid))
             .map(p -> {
               final RosterQuery.RosterItem item = new RosterQuery.RosterItem(p.jid(), FROM, p.name());
-              p.available(true);
+              p.available(online.contains(p.jid()));
               item.append(p);
               item.group("Favorites");
               return item;

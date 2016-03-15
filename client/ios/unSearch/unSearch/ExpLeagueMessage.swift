@@ -120,6 +120,7 @@ class ExpLeagueMessage: NSManagedObject {
                     parent.parent.avatar(properties["login"] as! String, url: ava.stringValue())
                 }
                 type = .ExpertAssignment
+                body = element.XMLString()
             }
             if let _ = msg.elementForName("cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
                 properties["command"] = "cancel"

@@ -13,7 +13,7 @@ protocol ChatCellModel {
     var type: CellType {get}
 
     func height(maxWidth width: CGFloat) -> CGFloat
-    func form(chatCell cell: ChatCell) throws
+    func form(chatCell cell: UIView) throws
     func accept(message: ExpLeagueMessage) -> Bool
 }
 
@@ -116,7 +116,7 @@ class CompositeCellModel: ChatCellModel {
         return height
     }
 
-    func form(chatCell cell: ChatCell) throws {
+    func form(chatCell cell: UIView) throws {
         guard let messageViewCell = cell as? CompositeChatCell else {
             throw ModelErrors.WrongCellType
         }
@@ -384,7 +384,7 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
         }
     }
     
-    func form(chatCell cell: ChatCell) throws {
+    func form(chatCell cell: UIView) throws {
         guard let setupCell = cell as? SetupChatCell else {
             throw ModelErrors.WrongCellType
         }
@@ -442,30 +442,83 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
     }
 }
 
-class ExpertInProgressModel: ChatCellModel {
+class ExpertModel: ChatCellModel {
+    func height(maxWidth width: CGFloat) -> CGFloat {
+        return ExpertPresentation.height
+    }
+    
+    func form(chatCell cell: UIView) throws {
+        guard let eipCell = cell as? ExpertPresentation else {
+            throw ModelErrors.WrongCellType
+        }
+        
+        eipCell.name.text = expert!.name
+        eipCell.avatar.image = expert!.avatar
+        eipCell.avatar.online = expert!.available
+        if (status) {
+            eipCell.status.text = "Работает над вашим заказом"
+            eipCell.status.textColor = Palette.COMMENT
+        }
+        else {
+            eipCell.status.text = "Отказался от задания"
+            eipCell.status.textColor = Palette.ERROR
+        }
+    }
+    
+    func accept(message: ExpLeagueMessage) -> Bool {
+        if (message.type == .ExpertAssignment) {
+            let expert: ExpLeagueMember
+            if (message.body == nil || message.body!.isEmpty) {
+                expert = try! ExpLeagueMember(json: message.properties)
+            }
+            else {
+                expert = ExpLeagueMember(xml: try! DDXMLElement(XMLString: message.body))
+            }
+            if (self.expert == nil) {
+                self.expert = expert
+                return true
+            }
+            return self.expert!.login == expert.login
+        }
+        else if (message.type == .ExpertCancel) {
+            status = false
+            return false
+        }
+        return false
+    }
+    
+    var type: CellType {
+        return .Expert
+    }
+    
+    var expert: ExpLeagueMember?
+    var status = true
+}
+
+class TaskInProgressModel: ChatCellModel {
 //    let listener: OrderTracker
     var expertProperties = NSMutableDictionary()
     var pagesCount = 0
     var type: CellType {
-        return .ExpertInProgress
+        return .TaskInProgress
     }
 
     func height(maxWidth width: CGFloat) -> CGFloat {
-        return ExpertInProgressCell.height
+        return TaskInProgressCell.height
     }
 
-    func form(chatCell cell: ChatCell) throws {
-        guard let eipCell = cell as? ExpertInProgressCell else {
+    func form(chatCell cell: UIView) throws {
+        guard let eipCell = cell as? TaskInProgressCell else {
             throw ModelErrors.WrongCellType
         }
         eipCell.pages = pagesCount
-        eipCell.name.text = expertProperties["name"] as? String
-        eipCell.expertAvatar.image = ExpLeagueProfile.active.avatar(expertProperties["login"] as! String, url: expertProperties["avatar"] as? String)
-
-        eipCell.action = {
-            self.order.cancel()
+        if (eipCell.action == nil) {
+            eipCell.action = {() -> Void in
+                self.order.cancel()
+            }
         }
     }
+    
     func accept(message: ExpLeagueMessage) -> Bool {
         expertProperties.addEntriesFromDictionary(message.properties as [NSObject : AnyObject])
         if (message.type == .ExpertProgress) {
@@ -495,7 +548,7 @@ class LookingForExpertModel: ChatCellModel {
         return LookingForExpertCell.height
     }
 
-    func form(chatCell cell: ChatCell) throws {
+    func form(chatCell cell: UIView) throws {
         guard let lfeCell = cell as? LookingForExpertCell else {
             throw ModelErrors.WrongCellType
         }
@@ -552,7 +605,7 @@ class AnswerReceivedModel: ChatCellModel {
         return true
     }
 
-    func form(chatCell cell: ChatCell) throws {
+    func form(chatCell cell: UIView) throws {
         guard let arCell = cell as? AnswerReceivedCell else {
             throw ModelErrors.WrongCellType
         }
@@ -561,8 +614,8 @@ class AnswerReceivedModel: ChatCellModel {
         arCell.rating = score
     }
 
-    let progress: ExpertInProgressModel
-    init(id: String, progress: ExpertInProgressModel) {
+    let progress: TaskInProgressModel
+    init(id: String, progress: TaskInProgressModel) {
         self.id = id
         self.progress = progress
     }

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9532" systemVersion="15D21" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="ExpertPresentation" customModule="unSearch" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="321" height="50"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Имя Эксперта" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ksA-Kh-7sw">
+                    <rect key="frame" x="110" y="4" width="102" height="18"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Работает над вашим заказом" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qt3-Vk-xZk">
+                    <rect key="frame" x="61" y="22" width="199" height="17"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                    <color key="textColor" red="0.53725490200000003" green="0.56078431370000004" blue="0.63137254899999995" alpha="1" colorSpace="calibratedRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Yiw-UH-idT" customClass="AvatarView" customModule="unSearch" customModuleProvider="target">
+                    <rect key="frame" x="8" y="8" width="35" height="35"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="35" id="CKr-Sx-ONN"/>
+                        <constraint firstAttribute="height" constant="35" id="CvJ-E0-wUP"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="ksA-Kh-7sw" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="4" id="P2r-iU-aR2"/>
+                <constraint firstItem="Qt3-Vk-xZk" firstAttribute="top" secondItem="ksA-Kh-7sw" secondAttribute="bottom" id="Zdq-4A-eDC"/>
+                <constraint firstItem="ksA-Kh-7sw" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="b1e-V7-YxH"/>
+                <constraint firstItem="Qt3-Vk-xZk" firstAttribute="centerX" secondItem="ksA-Kh-7sw" secondAttribute="centerX" id="jCe-Ls-0gK"/>
+                <constraint firstItem="Yiw-UH-idT" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="xeu-qj-0eq"/>
+                <constraint firstItem="Yiw-UH-idT" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="8" id="zMl-6w-uDK"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <connections>
+                <outlet property="avatar" destination="Yiw-UH-idT" id="o0b-bj-4ys"/>
+                <outlet property="name" destination="ksA-Kh-7sw" id="uxd-t7-cHn"/>
+                <outlet property="status" destination="Qt3-Vk-xZk" id="6XH-iV-9zE"/>
+            </connections>
+            <point key="canvasLocation" x="527.5" y="94"/>
+        </view>
+    </objects>
+</document>
