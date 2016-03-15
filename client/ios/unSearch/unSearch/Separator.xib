@@ -15,7 +15,7 @@
                     <rect key="frame" x="186" y="0.0" width="68" height="15"/>
                 </imageView>
             </subviews>
-            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
             <constraints>
                 <constraint firstAttribute="bottom" secondItem="qXF-TU-NDE" secondAttribute="bottom" id="AIr-k8-UY4"/>
                 <constraint firstItem="qXF-TU-NDE" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="RFa-J0-bEh"/>

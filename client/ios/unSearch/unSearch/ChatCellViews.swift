@@ -26,17 +26,53 @@ class ChatCell: UITableViewCell {
 }
 
 class SimpleChatCell: ChatCell {
+    @IBOutlet weak var separator: UIView!
+    var action: (() -> Void)?
+    @IBAction func fire(sender: UIButton) {
+        action?()
+    }
+    @IBOutlet weak var button: UIButton!
+    
+    var controlColor = Palette.CONTROL
+
     class var height: CGFloat {
         return 0.0;
     }
     
+    var actionHighlighted = false {
+        didSet {
+            if (actionHighlighted) {
+                separator.hidden = true
+                button.backgroundColor = controlColor
+                button.setTitleColor(UIColor.whiteColor(), forState: .Normal)
+                button.setTitleColor(UIColor.whiteColor(), forState: .Selected)
+            }
+            else {
+                separator.hidden = false
+                button.backgroundColor = UIColor.whiteColor()
+                button.setTitleColor(controlColor, forState: .Normal)
+                button.setTitleColor(controlColor, forState: .Selected)
+            }
+            button.layoutIfNeeded()
+        }
+    }
+    
     override func awakeFromNib() {
+        frame.size.height += 8
         super.awakeFromNib()
-        frame.size.height += 12
+        contentView.layer.borderColor = Palette.BORDER.CGColor
+        contentView.layer.borderWidth = 2
+        contentView.layer.cornerRadius = 10
+        contentView.clipsToBounds = true
+        contentView.backgroundColor = UIColor.whiteColor()
+        backgroundColor = UIColor.clearColor()
     }
     
     override func layoutSubviews() {
-        contentView.frame = CGRectMake(24, 6, frame.width - 48, frame.height - 12)
+        super.layoutSubviews()
+        contentView.clipsToBounds = true
+        contentView.backgroundColor = UIColor.whiteColor()
+        contentView.frame = CGRectMake(24, 8, frame.width - 48, frame.height - 8)
     }
 }
 
@@ -64,6 +100,7 @@ class CompositeChatCell: ChatCell {
     }
 
     override func layoutSubviews() {
+        super.layoutSubviews()
         let size = CGSizeMake(
             max(content.frame.size.width + contentInsets.left + contentInsets.right, self.dynamicType.minSize.width),
             max(content.frame.size.height + contentInsets.top + contentInsets.bottom, self.dynamicType.minSize.height)
@@ -176,10 +213,10 @@ class MessageChatCell: CompositeChatCell {
 
     override var contentInsets: UIEdgeInsets {
         if (incoming) {
-            return UIEdgeInsetsMake(6, 16 + MessageChatCell.avatarWidth, 6, 16)
+            return UIEdgeInsetsMake(8, 16 + MessageChatCell.avatarWidth, 0, 16)
         }
         else {
-            return UIEdgeInsetsMake(6, 16, 6, 16 + MessageChatCell.avatarWidth)
+            return UIEdgeInsetsMake(8, 16, 0, 16 + MessageChatCell.avatarWidth)
         }
     }
 
@@ -199,17 +236,12 @@ class MessageChatCell: CompositeChatCell {
     }
 }
 
-class ExpertInProgressCell: SimpleChatCell {
-    @IBOutlet weak var expertAvatar: UIImageView!
+class TaskInProgressCell: SimpleChatCell {
+    @IBOutlet weak var patternsView: UICollectionView!
     @IBOutlet weak var pagesCount: UILabel!
     @IBOutlet weak var callsCount: UILabel!
-    @IBOutlet weak var name: UILabel!
+    @IBOutlet weak var topicIcon: UIImageView!
     
-    var action: (() -> Void)?
-    @IBAction func cancelTask(sender: UIButton) {
-        action?()
-    }
-
     var pages: Int {
         get {
             let parts = pagesCount.text!.componentsSeparatedByString(" ")
@@ -224,25 +256,23 @@ class ExpertInProgressCell: SimpleChatCell {
     
     private static var heightFromNib: CGFloat = 120;
     override class var height: CGFloat {
-        return ExpertInProgressCell.heightFromNib;
+        return TaskInProgressCell.heightFromNib;
     }
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        ExpertInProgressCell.heightFromNib = frame.height
+        controlColor = Palette.ERROR
+        patternsView.backgroundView = nil
+        patternsView.backgroundColor = UIColor.clearColor()
+        TaskInProgressCell.heightFromNib = frame.height
     }
 }
-
 
 class LookingForExpertCell: SimpleChatCell {
     @IBOutlet weak var status: UILabel!
     @IBOutlet weak var expertsOnline: UILabel!
     @IBOutlet weak var progress: UIActivityIndicatorView!
     
-    var action: (() -> Void)?
-    @IBAction func cancelTask(sender: UIButton) {
-        action?()
-    }
     static var heightFromNib: CGFloat = 120;
     override class var height: CGFloat {
         return LookingForExpertCell.heightFromNib;
@@ -250,6 +280,7 @@ class LookingForExpertCell: SimpleChatCell {
 
     override func awakeFromNib() {
         super.awakeFromNib()
+        controlColor = Palette.ERROR
         LookingForExpertCell.heightFromNib = frame.height
     }
     
@@ -266,14 +297,9 @@ class LookingForExpertCell: SimpleChatCell {
     }
 }
 
-class AnswerReceivedCell: ExpertInProgressCell {
+class AnswerReceivedCell: TaskInProgressCell {
     @IBOutlet var stars: [UIImageView]!
     var id: String?
-    
-    @IBAction func fire(sender: UIButton) {
-        self.controller!.detailsView!.scrollToAnswer(true)
-        self.controller!.answer.stringByEvaluatingJavaScriptFromString("document.getElementById('\(self.id!)').scrollIntoView()")
-    }
     
     override class var height: CGFloat {
         return AnswerReceivedCell.heightFromNib;
@@ -281,6 +307,11 @@ class AnswerReceivedCell: ExpertInProgressCell {
 
     override func awakeFromNib() {
         super.awakeFromNib()
+        controlColor = Palette.CONTROL
+        self.action = {
+            self.controller!.detailsView!.scrollToAnswer(true)
+            self.controller!.answer.stringByEvaluatingJavaScriptFromString("document.getElementById('\(self.id!)').scrollIntoView()")
+        }
         AnswerReceivedCell.heightFromNib = frame.height
     }
     
@@ -358,6 +389,23 @@ class FeedbackCell: UIView {
     }
 }
 
+class ExpertPresentation: UIView {
+    static var height: CGFloat = CGFloat(50)
+    @IBOutlet weak var avatar: AvatarView!
+    @IBOutlet weak var name: UILabel!
+    @IBOutlet weak var status: UILabel!
+    
+    override func awakeFromNib() {
+        ExpertPresentation.height = frame.height
+        frame.size.height += 12
+        layer.borderColor = Palette.BORDER.CGColor
+        layer.borderWidth = 2
+        layer.cornerRadius = 10
+        clipsToBounds = true
+        backgroundColor = UIColor.whiteColor()
+    }
+}
+
 class ContinueCell: UIView {
     @IBOutlet weak var no: UIButton!
     @IBOutlet weak var yes: UIButton!
@@ -417,9 +465,10 @@ enum CellType: Int {
     case Outgoing = 1
     case AnswerReceived = 2
     case LookingForExpert = 3
-    case ExpertInProgress = 4
+    case TaskInProgress = 4
     case ExpertIdle = 5
     case Feedback = 6
     case Setup = 7
+    case Expert = 8
     case None = -1
 }

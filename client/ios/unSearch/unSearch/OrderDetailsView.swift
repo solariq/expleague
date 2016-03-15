@@ -109,7 +109,7 @@ class OrderDetailsView: UIView {
         messagesView.registerNib(UINib(nibName: "OutgoingMessage", bundle: nil), forCellReuseIdentifier: String(CellType.Outgoing))
         messagesView.registerNib(UINib(nibName: "LookingForExpert", bundle: nil), forCellReuseIdentifier: String(CellType.LookingForExpert))
         messagesView.registerNib(UINib(nibName: "AnswerReceived", bundle: nil), forCellReuseIdentifier: String(CellType.AnswerReceived))
-        messagesView.registerNib(UINib(nibName: "ExpertInProgress", bundle: nil), forCellReuseIdentifier: String(CellType.ExpertInProgress))
+        messagesView.registerNib(UINib(nibName: "TaskInProgress", bundle: nil), forCellReuseIdentifier: String(CellType.TaskInProgress))
         messagesView.registerNib(UINib(nibName: "Setup", bundle: nil), forCellReuseIdentifier: String(CellType.Setup))
         messagesView.separatorStyle = .None
         messagesView.backgroundColor = Palette.CHAT_BACKGROUND
@@ -199,13 +199,5 @@ extension OrderDetailsView: UIGestureRecognizerDelegate {
         default:
             break
         }
-    }
-}
-
-class AvatarView: UIImageView {
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        layer.cornerRadius = frame.width / 2;
-        clipsToBounds = true;
     }
 }

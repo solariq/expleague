@@ -18,6 +18,7 @@
 		688A599209AAD7BBCC21E8D6 /* OrderDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A58C414F2611B9106E0EC /* OrderDetailsView.swift */; };
 		688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A58FFF35B86F1CBB41B6E /* AppDelegate.swift */; };
 		688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */; };
+		688A5F9437AF93713CFE361E /* AnswerReceived.xib in Resources */ = {isa = PBXBuildFile; fileRef = 688A5C34FC2CDD0C969E8E4D /* AnswerReceived.xib */; };
 		688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A57432F80F266C309E3F5 /* SettingsViewController.swift */; };
 		D59A36A01C92E2D900A64230 /* arrow_cut_close.png in Resources */ = {isa = PBXBuildFile; fileRef = D59A369C1C92E2D900A64230 /* arrow_cut_close.png */; };
 		D59A36A11C92E2D900A64230 /* arrow_hide.png in Resources */ = {isa = PBXBuildFile; fileRef = D59A369D1C92E2D900A64230 /* arrow_hide.png */; };
@@ -40,14 +41,14 @@
 		EE62CB511C958E2B00352699 /* ExpertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62CB501C958E2B00352699 /* ExpertView.swift */; };
 		EE62CB531C95B18200352699 /* ExpertView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE62CB521C95B18200352699 /* ExpertView.xib */; };
 		EE62CB551C975A9600352699 /* ExpertCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE62CB541C975A9600352699 /* ExpertCell.xib */; };
+		EE62CB571C9834D000352699 /* ExpertPresentation.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE62CB561C9834D000352699 /* ExpertPresentation.xib */; };
 		EE6EA7CC1C48F79300692406 /* ProfileModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = EE6EA7CA1C48F79300692406 /* ProfileModel.xcdatamodeld */; };
 		EE70A5341C79C02C00174674 /* EVURLCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE70A5331C79C02C00174674 /* EVURLCache.swift */; };
 		EE70A5381C7FA3EA00174674 /* markdownpad-github.css in Resources */ = {isa = PBXBuildFile; fileRef = EE70A5361C7FA3EA00174674 /* markdownpad-github.css */; };
 		EE70A5391C7FA3EA00174674 /* md-scripts.js in Resources */ = {isa = PBXBuildFile; fileRef = EE70A5371C7FA3EA00174674 /* md-scripts.js */; };
 		EE755C551C57E9110018AF12 /* Setup.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE755C541C57E9110018AF12 /* Setup.xib */; };
-		EE94599C1C57A5FC000796ED /* AnswerReceived.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE94599A1C57A5FC000796ED /* AnswerReceived.xib */; };
 		EE9EE79F1C576587000E9F46 /* LookingForExpert.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE9EE79E1C576587000E9F46 /* LookingForExpert.xib */; };
-		EE9EE7A31C577859000E9F46 /* ExpertInProgress.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE9EE7A11C577859000E9F46 /* ExpertInProgress.xib */; };
+		EE9EE7A31C577859000E9F46 /* TaskInProgress.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE9EE7A11C577859000E9F46 /* TaskInProgress.xib */; };
 		EEC0FF321C9080D100889E68 /* FeedbackView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEC0FF311C9080D100889E68 /* FeedbackView.xib */; };
 		EEF3E77B1C908EA50050A519 /* Separator.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEF3E77A1C908EA50050A519 /* Separator.xib */; };
 		EEF7BB401C4F9B2700E1B7BD /* ChatCellViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEF7BB3F1C4F9B2700E1B7BD /* ChatCellViews.swift */; };
@@ -67,6 +68,7 @@
 		688A59B0B617C9FE015E93EE /* ChatCellModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatCellModels.swift; sourceTree = "<group>"; };
 		688A5A3874D7356869C00A6B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		688A5C00876CA19A64E86FA1 /* unSearch-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "unSearch-Bridging-Header.h"; sourceTree = "<group>"; };
+		688A5C34FC2CDD0C969E8E4D /* AnswerReceived.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AnswerReceived.xib; sourceTree = "<group>"; };
 		688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderViewController.swift; sourceTree = "<group>"; };
 		688A5D254FAD2FD2CCCC8DF6 /* unSearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = unSearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		688A5DF0D4232A94DBB4A7CB /* ChatModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatModel.swift; sourceTree = "<group>"; };
@@ -94,14 +96,14 @@
 		EE62CB501C958E2B00352699 /* ExpertView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpertView.swift; sourceTree = "<group>"; };
 		EE62CB521C95B18200352699 /* ExpertView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ExpertView.xib; sourceTree = "<group>"; };
 		EE62CB541C975A9600352699 /* ExpertCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ExpertCell.xib; sourceTree = "<group>"; };
+		EE62CB561C9834D000352699 /* ExpertPresentation.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ExpertPresentation.xib; sourceTree = "<group>"; };
 		EE6EA7CB1C48F79300692406 /* ProfileModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ProfileModel.xcdatamodel; sourceTree = "<group>"; };
 		EE70A5331C79C02C00174674 /* EVURLCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EVURLCache.swift; sourceTree = "<group>"; };
 		EE70A5361C7FA3EA00174674 /* markdownpad-github.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "markdownpad-github.css"; sourceTree = "<group>"; };
 		EE70A5371C7FA3EA00174674 /* md-scripts.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "md-scripts.js"; sourceTree = "<group>"; };
 		EE755C541C57E9110018AF12 /* Setup.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Setup.xib; sourceTree = "<group>"; };
-		EE94599A1C57A5FC000796ED /* AnswerReceived.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AnswerReceived.xib; sourceTree = "<group>"; };
 		EE9EE79E1C576587000E9F46 /* LookingForExpert.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LookingForExpert.xib; sourceTree = "<group>"; };
-		EE9EE7A11C577859000E9F46 /* ExpertInProgress.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ExpertInProgress.xib; sourceTree = "<group>"; };
+		EE9EE7A11C577859000E9F46 /* TaskInProgress.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TaskInProgress.xib; sourceTree = "<group>"; };
 		EEC0FF311C9080D100889E68 /* FeedbackView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FeedbackView.xib; sourceTree = "<group>"; };
 		EEF3E77A1C908EA50050A519 /* Separator.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Separator.xib; sourceTree = "<group>"; };
 		EEF7BB3F1C4F9B2700E1B7BD /* ChatCellViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatCellViews.swift; sourceTree = "<group>"; };
@@ -136,8 +138,8 @@
 				EE70A5351C7FA32600174674 /* Web */,
 				EE3731AB1C689414007F55B0 /* unSearch.entitlements */,
 				EE62BF051C48032D004B6A42 /* Data */,
-				EE2DB18E1C4E5A0A00F9601D /* ResultView */,
-				EE62CB4D1C958DE000352699 /* ExpertsView */,
+				EE2DB18E1C4E5A0A00F9601D /* OrderDetails */,
+				EE62CB4D1C958DE000352699 /* Experts */,
 				688A572BF69C09B25F168A0A /* Info.plist */,
 				688A54C1275EF718A177A20D /* Assets.xcassets */,
 				688A5389D422FDF184F24FF8 /* LaunchScreen.storyboard */,
@@ -193,7 +195,7 @@
 			name = src_images;
 			sourceTree = "<group>";
 		};
-		EE2DB18E1C4E5A0A00F9601D /* ResultView */ = {
+		EE2DB18E1C4E5A0A00F9601D /* OrderDetails */ = {
 			isa = PBXGroup;
 			children = (
 				688A58C414F2611B9106E0EC /* OrderDetailsView.swift */,
@@ -202,18 +204,19 @@
 				688A5DF0D4232A94DBB4A7CB /* ChatModel.swift */,
 				EEF7BB3F1C4F9B2700E1B7BD /* ChatCellViews.swift */,
 				688A59B0B617C9FE015E93EE /* ChatCellModels.swift */,
-				EEF7BB411C4F9B6000E1B7BD /* IncomingMessage.xib */,
-				EE0FC7E01C503CB9006F6045 /* OutgoingMessage.xib */,
 				EE755C541C57E9110018AF12 /* Setup.xib */,
 				EE9EE79E1C576587000E9F46 /* LookingForExpert.xib */,
-				EE9EE7A11C577859000E9F46 /* ExpertInProgress.xib */,
-				EE94599A1C57A5FC000796ED /* AnswerReceived.xib */,
-				EE2DB1911C4E5AD800F9601D /* ChatInput.xib */,
+				EE62CB561C9834D000352699 /* ExpertPresentation.xib */,
+				EE9EE7A11C577859000E9F46 /* TaskInProgress.xib */,
+				688A5C34FC2CDD0C969E8E4D /* AnswerReceived.xib */,
+				EEF7BB411C4F9B6000E1B7BD /* IncomingMessage.xib */,
+				EE0FC7E01C503CB9006F6045 /* OutgoingMessage.xib */,
 				EEC0FF311C9080D100889E68 /* FeedbackView.xib */,
+				EE2DB1911C4E5AD800F9601D /* ChatInput.xib */,
 				EEF3E77A1C908EA50050A519 /* Separator.xib */,
 				688A50479C578C8365DA8927 /* ContinueView.xib */,
 			);
-			name = ResultView;
+			name = OrderDetails;
 			sourceTree = "<group>";
 		};
 		EE62BF051C48032D004B6A42 /* Data */ = {
@@ -230,7 +233,7 @@
 			name = Data;
 			sourceTree = "<group>";
 		};
-		EE62CB4D1C958DE000352699 /* ExpertsView */ = {
+		EE62CB4D1C958DE000352699 /* Experts */ = {
 			isa = PBXGroup;
 			children = (
 				EE62CB4E1C958E1500352699 /* ExpertsOverview.swift */,
@@ -238,7 +241,7 @@
 				EE62CB501C958E2B00352699 /* ExpertView.swift */,
 				EE62CB541C975A9600352699 /* ExpertCell.xib */,
 			);
-			name = ExpertsView;
+			name = Experts;
 			sourceTree = "<group>";
 		};
 		EE70A5351C7FA32600174674 /* Web */ = {
@@ -326,22 +329,23 @@
 				EE62CB531C95B18200352699 /* ExpertView.xib in Resources */,
 				EEF3E77B1C908EA50050A519 /* Separator.xib in Resources */,
 				EE70A5381C7FA3EA00174674 /* markdownpad-github.css in Resources */,
-				EE94599C1C57A5FC000796ED /* AnswerReceived.xib in Resources */,
 				EE755C551C57E9110018AF12 /* Setup.xib in Resources */,
 				EE70A5391C7FA3EA00174674 /* md-scripts.js in Resources */,
 				EE62CB551C975A9600352699 /* ExpertCell.xib in Resources */,
-				EE9EE7A31C577859000E9F46 /* ExpertInProgress.xib in Resources */,
+				EE9EE7A31C577859000E9F46 /* TaskInProgress.xib in Resources */,
 				EE0FC7E11C503CB9006F6045 /* OutgoingMessage.xib in Resources */,
 				EEF7BB421C4F9B6000E1B7BD /* IncomingMessage.xib in Resources */,
 				D59A36A11C92E2D900A64230 /* arrow_hide.png in Resources */,
 				688A50BC12A73F2E37A3EF75 /* LaunchScreen.storyboard in Resources */,
 				EE2DB1921C4E5AD800F9601D /* ChatInput.xib in Resources */,
+				EE62CB571C9834D000352699 /* ExpertPresentation.xib in Resources */,
 				EE9EE79F1C576587000E9F46 /* LookingForExpert.xib in Resources */,
 				D59A36A21C92E2D900A64230 /* phone.png in Resources */,
 				688A50129DA897A87210231A /* Main.storyboard in Resources */,
 				EEC0FF321C9080D100889E68 /* FeedbackView.xib in Resources */,
 				D59A36A31C92E2D900A64230 /* arrow_cut_open.png in Resources */,
 				688A521E5814896E25462F09 /* ContinueView.xib in Resources */,
+				688A5F9437AF93713CFE361E /* AnswerReceived.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

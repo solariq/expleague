@@ -65,6 +65,7 @@ class ExpertsOverviewController: UITableViewController {
             cell.name.text = exp.name
             cell.tags.text = exp.tags.joinWithSeparator(", ")
             cell.avatar.image = exp.avatar
+            cell.avatar.online = exp.available
             cell.tasks.text = "заданий: \(exp.myTasks)"
             return cell
         case 1:
@@ -73,6 +74,7 @@ class ExpertsOverviewController: UITableViewController {
             cell.name.text = exp.name
             cell.tags.text = exp.tags.joinWithSeparator(", ")
             cell.avatar.image = exp.avatar
+            cell.avatar.online = exp.available
             cell.tasks.text = "всего заданий: \(exp.tasks)"
             return cell
         default:
@@ -123,6 +125,7 @@ class ExpertsOverviewController: UITableViewController {
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 2
     }
+    
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let exp: ExpLeagueMember
         switch(indexPath.section) {
@@ -177,6 +180,7 @@ class ChooseExpertViewController: UITableViewController {
     let parent: OrderDescriptionViewController
     
     func close() {
+        parent.update()
         self.dismissViewControllerAnimated(true, completion: nil)
     }
     
@@ -186,7 +190,7 @@ class ChooseExpertViewController: UITableViewController {
         navigationController!.navigationBarHidden = false
         navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
         navigationItem.title = "Выберите эксперта"
-        let button = UIBarButtonItem(title: "Отмена", style: .Done, target: self, action: "close")
+        let button = UIBarButtonItem(title: "Готово", style: .Done, target: self, action: "close")
         button.tintColor = UIColor.whiteColor()
         navigationItem.setRightBarButtonItem(button, animated: false)
     }
@@ -204,6 +208,7 @@ class ChooseExpertViewController: UITableViewController {
         cell.name.text = exp.name
         cell.tags.text = exp.tags.joinWithSeparator(", ")
         cell.avatar.image = exp.avatar
+        cell.avatar.online = exp.available
         cell.tasks.text = "всего заданий: \(exp.tasks)"
         return cell
     }
@@ -225,8 +230,18 @@ class ChooseExpertViewController: UITableViewController {
     }
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        parent.append(expert: experts[indexPath.item])
-        close()
+        let expert = experts[indexPath.item]
+        if (!parent.experts.contains(expert)) {
+            parent.experts.append(expert)
+        }
+        else {
+            tableView.deselectRowAtIndexPath(indexPath, animated: true)
+            parent.experts.removeAtIndex(parent.experts.indexOf(expert)!)
+        }
+    }
+    
+    override func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
+        cell.highlighted = parent.experts.contains(experts[indexPath.item])
     }
     
     override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
