@@ -95,7 +95,7 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
           ExpLeagueConnection.instance().register(profile);
         }
       }
-      final String profileId = profile.get(UserProfile.Key.EXP_DEVICE_ID);
+      final String profileId = profile.get(UserProfile.Key.EXP_DEVICE_ID).toString();
       userProfile = new UserProfile(new File(root, profileId));
       userProfile.copy(profile);
       knownProfiles.put(profileId, userProfile);
