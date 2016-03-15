@@ -2,6 +2,7 @@ package com.expleague.expert.profile;
 
 import com.expleague.expert.vk.VkUtils;
 import com.expleague.expert.xmpp.ExpLeagueConnection;
+import com.expleague.xmpp.JID;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
 import com.spbsu.commons.io.StreamTools;
 
@@ -82,7 +83,7 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
   public UserProfile register(UserProfile profile) {
     final UserProfile userProfile;
     try {
-      if (!profile.has(UserProfile.Key.EXP_LEAGUE_ID)) {
+      if (!profile.has(UserProfile.Key.EXP_DEVICE_ID)) {
         if (!profile.has(UserProfile.Key.EXP_LEAGUE_DOMAIN))
           throw new IllegalArgumentException("ExpLeague domain was not set");
         if (profile.has(UserProfile.Key.VK_TOKEN)) {
@@ -90,7 +91,7 @@ public class ProfileManager extends WeakListenerHolderImpl<UserProfile> {
           VkUtils.fillProfile(profile);
           final String userName = "vk-" + profile.get(UserProfile.Key.VK_USER_ID) + InetAddress.getLocalHost().getHostName();
           profile.set(UserProfile.Key.EXP_LEAGUE_USER, userName);
-          profile.set(UserProfile.Key.EXP_LEAGUE_ID, profile.get(UserProfile.Key.EXP_LEAGUE_USER) + "@" + profile.get(UserProfile.Key.EXP_LEAGUE_DOMAIN));
+          profile.set(UserProfile.Key.EXP_DEVICE_ID, JID.parse(profile.get(UserProfile.Key.EXP_LEAGUE_USER) + "@" + profile.get(UserProfile.Key.EXP_LEAGUE_DOMAIN)));
           ExpLeagueConnection.instance().register(profile);
         }
       }
