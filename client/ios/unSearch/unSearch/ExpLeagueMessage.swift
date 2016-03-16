@@ -75,7 +75,7 @@ class ExpLeagueMessage: NSManagedObject {
                 let imageData = try NSURLConnection.sendSynchronousRequest(request, returningResponse: nil)
                     
                 if let image = UIImage(data: imageData) {
-                    visitor.message(self, title: "Приложение", image: image)
+                    visitor.message(self, title: "", image: image)
                 }
             }
             catch {

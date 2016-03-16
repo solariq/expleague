@@ -68,19 +68,15 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
                 case .Chat:
                     detailsView!.bottomContents = input.view
                     break
-                case .Feedback:
-                    let feedback = NSBundle.mainBundle().loadNibNamed("FeedbackView", owner: self, options: [:])[0] as! FeedbackCell
-                    feedback.fire = {
-                        self.data.order.feedback(stars: feedback.rate)
-                    }
-                    
-                    detailsView!.bottomContents = feedback
-                    break
                 case .Ask:
                     let ask = NSBundle.mainBundle().loadNibNamed("ContinueView", owner: self, options: [:])[0] as! ContinueCell
                     ask.ok = {
-                        self.state = .Closed
-                        self.data.order.close()
+                        let feedback = FeedbackViewController(parent: self)
+                        feedback.modalPresentationStyle = .OverCurrentContext
+                        self.providesPresentationContextTransitionStyle = true;
+                        self.definesPresentationContext = true;
+
+                        self.presentViewController(feedback, animated: true, completion: nil)
                     }
                     
                     ask.cancel = {
@@ -100,27 +96,7 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
     }
     
     func chatInput(chatInput: ChatInputViewController, didSend text: String) -> Bool {
-        if (!AppDelegate.instance.stream.isConnected()) {
-            let alertView = UIAlertController(title: "Experts League", message: "Connecting to server.\n\n", preferredStyle: .Alert)
-            let completion = {
-                //  Add your progressbar after alert is shown (and measured)
-                let progressController = AppDelegate.instance.connectionProgressView
-                let rect = CGRectMake(0, 54.0, alertView.view.frame.width, 50)
-                progressController.completion = {
-                    self.input.send(self)
-                }
-                progressController.view.frame = rect
-                progressController.view.backgroundColor = alertView.view.backgroundColor
-                alertView.view.addSubview(progressController.view)
-                progressController.alert = alertView
-                AppDelegate.instance.connect()
-            }
-            alertView.addAction(UIAlertAction(title: "Retry", style: .Default, handler: {(x: UIAlertAction) -> Void in
-                AppDelegate.instance.disconnect()
-                self.input.send(self)
-            }))
-            alertView.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
-            presentViewController(alertView, animated: true, completion: completion)
+        if (!AppDelegate.instance.ensureConnected({self.chatInput(chatInput, didSend: text)})) {
             return false
         }
         AppDelegate.instance.connect()
@@ -205,6 +181,37 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
     init(data: ChatModel) {
         self.data = data
         super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+class FeedbackViewController: UIViewController {
+    @IBOutlet weak var feedback: FeedbackCell!
+    @IBOutlet weak var cancelButton: UIButton!
+    @IBOutlet weak var scoreButton: UIButton!
+    @IBAction func fire(sender: AnyObject) {
+        parent.data.order.feedback(stars: feedback.rate)
+        self.dismissViewControllerAnimated(true, completion: nil)
+    }
+    @IBAction func cancel(sender: AnyObject) {
+        self.dismissViewControllerAnimated(true, completion: nil)
+    }
+    override func viewDidLoad() {
+        feedback.layer.cornerRadius = Palette.CORNER_RADIUS
+        feedback.clipsToBounds = true
+        scoreButton.layer.cornerRadius = Palette.CORNER_RADIUS
+        scoreButton.clipsToBounds = true
+        cancelButton.layer.cornerRadius = Palette.CORNER_RADIUS
+        cancelButton.clipsToBounds = true
+    }
+    
+    let parent: OrderDetailsVeiwController
+    init(parent: OrderDetailsVeiwController) {
+        self.parent = parent
+        super.init(nibName: "FeedbackView", bundle: nil)
     }
 
     required init?(coder aDecoder: NSCoder) {

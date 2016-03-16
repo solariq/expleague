@@ -8,6 +8,56 @@ import UIKit
 import XMPPFramework
 import CloudKit
 
+class AboutViewController: UIViewController {
+    @IBOutlet var stars: [UIImageView]!
+    
+    @IBOutlet weak var navigationBar: UINavigationBar!
+    @IBOutlet weak var build: UILabel!
+    @IBOutlet weak var inviteButton: UIButton!
+    @IBAction func invite(sender: AnyObject) {
+        let alert = UIAlertController(title: "Оставьте заявку", message: "С целью сохранения высокого качества работы экспертов и отсутствия очередей, доступ к приложению в данный момент ограничен. Оставьте e-mail Вашего друга и мы свяжемся с ним как только появится возможность.", preferredStyle: .Alert)
+        alert.addTextFieldWithConfigurationHandler { (text: UITextField) -> Void in
+            text.placeholder = "Введите адрес"
+            text.keyboardType = .EmailAddress
+            text.delegate = self
+        }
+        alert.addAction(UIAlertAction(title: "Отослать", style: .Default, handler: { (action: UIAlertAction) -> Void in
+            let application = DDXMLElement(name: "application", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+            application.setStringValue(self.friend)
+            AppDelegate.instance.stream.sendElement(application)
+        }))
+        alert.addAction(UIAlertAction(title: "Отмена", style: .Cancel, handler: nil))
+        self.presentViewController(alert, animated: true, completion: nil)
+    }
+    
+    @IBAction func showSettings(sender: AnyObject) {
+        let storyboard = UIStoryboard(name: "Main", bundle:nil)
+        let settings = storyboard.instantiateViewControllerWithIdentifier("SettingsViewController")
+        
+        navigationController!.pushViewController(settings, animated: true)
+    }
+    
+    var friend: String?
+    
+    override func viewDidLoad() {
+        inviteButton.layer.cornerRadius = inviteButton.frame.height / 2
+        inviteButton.layer.borderColor = Palette.CONTROL.CGColor
+        inviteButton.layer.borderWidth = 2
+        inviteButton.clipsToBounds = true
+        let system = NSBundle.mainBundle().infoDictionary!
+        build.text = "Version \(system["CFBundleShortVersionString"]!) build \(system["CFBundleVersion"]!)\n\(system["BuildDate"]!)"
+        navigationController!.navigationBar.setBackgroundImage(UIImage(named: "history_background"), forBarMetrics: .Default)
+        navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
+        navigationController!.navigationBar.tintColor = UIColor.whiteColor()
+    }
+}
+
+extension AboutViewController: UITextFieldDelegate {
+    func textFieldDidEndEditing(textField: UITextField) {
+        friend = textField.text
+    }
+}
+
 class SettingsViewController: UIViewController, UITextFieldDelegate, UITextViewDelegate {
     @IBOutlet weak var hostField: UITextField!
     @IBOutlet weak var userField: UITextField!

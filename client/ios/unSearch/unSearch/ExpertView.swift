@@ -178,6 +178,8 @@ class AvatarView: UIView {
         super.awakeFromNib()
         _imageView.clipsToBounds = true;
         addSubview(_imageView)
+        _imageView.layer.borderColor = Palette.BORDER.CGColor
+        _imageView.layer.borderWidth = 1
     }
     
     override func layoutSubviews() {

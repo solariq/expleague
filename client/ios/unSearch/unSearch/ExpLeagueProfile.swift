@@ -67,6 +67,10 @@ class ExpLeagueProfile: NSManagedObject {
         return _jid ?? XMPPJID.jidWithString(login + "@" + domain + "/unSearch");
     }
     
+    func expert(login: String) -> ExpLeagueMember? {
+        return experts.filter({$0.login == login}).first
+    }
+    
     var progressBar: ConnectionProgressController? {
         return AppDelegate.instance.connectionProgressView
     }
@@ -195,7 +199,7 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
         log("Configuring");
         settings.setValue(true, forKey: GCDAsyncSocketManuallyEvaluateTrust)
     }
-    
+
     @objc
     func xmppStream(sender: XMPPStream!, didNotAuthenticate error: DDXMLElement!) {
         var texts = error.elementsForName("text");
@@ -205,6 +209,12 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
                 if ("No such user" == String(text)) {
                     do {
                         log("No such user, trying to register a new one.")
+                        var props: [DDXMLElement] = []
+                        let system = NSBundle.mainBundle().infoDictionary!
+                        props.append(DDXMLElement(name: "username", stringValue: jid.user))
+                        props.append(DDXMLElement(name: "password", stringValue: passwd))
+                        props.append(DDXMLElement(name: "email", stringValue: "\(NSProcessInfo.processInfo().operatingSystemVersionString)/\(system["CFBundleIdentifier"]!)/\(system["CFBundleVersion"])/Development"))
+
                         try sender.registerWithPassword(passwd)
                     }
                     catch {
@@ -238,6 +248,7 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
             let msg = XMPPMessage(type: "normal")
             let token = DDXMLElement(name: "token", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
             token.setStringValue(AppDelegate.instance.token)
+            token.addAttributeWithName("type", stringValue: "development")
             msg.addChild(token)
             sender.sendElement(msg)
         }

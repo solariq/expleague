@@ -16,7 +16,7 @@
                     <rect key="frame" x="30" y="29" width="122" height="47"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <state key="normal" title="Нет">
-                        <color key="titleColor" red="0.34509803919999998" green="0.52941176469999995" blue="0.94901960780000005" alpha="1" colorSpace="calibratedRGB"/>
+                        <color key="titleColor" red="0.066666666669999999" green="0.54117647059999996" blue="0.87058823529999996" alpha="1" colorSpace="calibratedRGB"/>
                     </state>
                     <connections>
                         <action selector="cancel:" destination="iN0-l3-epB" eventType="touchUpInside" id="ccp-v3-BZe"/>
@@ -27,7 +27,7 @@
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
                     <state key="normal" title="Да, спасибо">
-                        <color key="titleColor" red="0.34509803919999998" green="0.52941176469999995" blue="0.94901960780000005" alpha="1" colorSpace="calibratedRGB"/>
+                        <color key="titleColor" red="0.066666666666666666" green="0.54117647058823526" blue="0.87058823529411766" alpha="1" colorSpace="calibratedRGB"/>
                     </state>
                     <connections>
                         <action selector="fire:" destination="iN0-l3-epB" eventType="touchUpInside" id="UXC-AB-Tn1"/>

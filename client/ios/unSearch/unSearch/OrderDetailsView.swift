@@ -42,15 +42,8 @@ class OrderDetailsView: UIView {
         didSet {
             for v in bottomView.subviews {
                 v.removeFromSuperview()
-                for c in bottomView.constraints {
-                    if let first = c.firstItem as? UIView where first == v {
-                        bottomView.removeConstraint(c)
-                    }
-                    else if let second = c.firstItem as? UIView where second == v {
-                        bottomView.removeConstraint(c)
-                    }
-                }
             }
+            bottomView.removeConstraints(bottomView.constraints)
             if bottomContents != nil {
                 bottomContents!.translatesAutoresizingMaskIntoConstraints = false
                 bottomView.addSubview(bottomContents!)
@@ -61,8 +54,11 @@ class OrderDetailsView: UIView {
                 constraints.append(NSLayoutConstraint(item: bottomContents!, attribute: .Leading, relatedBy: .Equal, toItem: bottomView, attribute: .Leading, multiplier: 1, constant: 0))
                 constraints.append(NSLayoutConstraint(item: bottomContents!, attribute: .Top, relatedBy: .Equal, toItem: bottomView, attribute: .Top, multiplier: 1, constant: 0))
                 NSLayoutConstraint.activateConstraints(constraints)
-                layoutIfNeeded()
             }
+            else {
+                bottomView.addConstraint(NSLayoutConstraint(item: bottomView, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: 0))
+            }
+            layoutIfNeeded()
         }
     }
 
@@ -167,6 +163,10 @@ extension OrderDetailsView: UIGestureRecognizerDelegate {
     func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldReceiveTouch touch: UITouch) -> Bool {
         let y = touch.locationInView(scrollView).y
         return (y > separator.frame.maxY ? y - separator.frame.maxY : separator.frame.minY - y) < 80
+    }
+    
+    func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWithGestureRecognizer otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
     }
 
     @IBAction

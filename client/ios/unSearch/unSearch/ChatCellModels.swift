@@ -51,14 +51,6 @@ private class MessageVisitor: ExpLeagueMessageVisitor {
             time: message.ts)
     }
     func message(message: ExpLeagueMessage, title: String, image: UIImage) {
-        model.append(
-            richText: NSAttributedString(
-                string: title,
-                attributes: [
-                    NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody),
-                    NSForegroundColorAttributeName: UIColor.blueColor()]),
-            time: message.ts
-        )
         model.append(image: image, time: message.ts)
     }
 }
@@ -107,23 +99,20 @@ class CompositeCellModel: ChatCellModel {
     func height(maxWidth width: CGFloat) -> CGFloat {
         var height: CGFloat = 0
         for i in 0 ..< parts.count {
-            if (i > 0) {
-                height += separatorHeight
-            }
-            let blockSize = self.blockSize(width: width, index: i)
+            let blockSize = self.blockSize(width: width - 12, index: i)
             height += blockSize.height
         }
-        return height
+        return ceil(height + 8)
     }
 
     func form(chatCell cell: UIView) throws {
-        guard let messageViewCell = cell as? CompositeChatCell else {
+        guard let messageViewCell = cell as? MessageChatCell else {
             throw ModelErrors.WrongCellType
         }
         form(messageViewCell: messageViewCell)
     }
 
-    func form(messageViewCell cell: CompositeChatCell) {
+    func form(messageViewCell cell: MessageChatCell) {
         for view in cell.content.subviews { // cleanup
             view.removeFromSuperview()
         }
@@ -131,12 +120,11 @@ class CompositeCellModel: ChatCellModel {
         cell.content.autoresizingMask = .None
         var height: CGFloat = 0.0
         var width: CGFloat = 0.0
+        var prev: UIView?
 
         for i in 0 ..< parts.count {
-            if (i > 0) {
-                height += separatorHeight
-            }
-            let blockSize = self.blockSize(width: cell.maxContentSize.width, index: i)
+            var blockSize = self.blockSize(width: cell.maxWidth - 12, index: i)
+            blockSize.width += 12
             var block: UIView?
             if let text = parts[i] as? String {
                 let label = UITextView()
@@ -152,6 +140,7 @@ class CompositeCellModel: ChatCellModel {
                 label.scrollEnabled = false
                 label.textContainer.lineFragmentPadding = 0
                 label.textAlignment = self.textAlignment
+
                 block = label
             }
             else if let richText = parts[i] as? NSAttributedString {
@@ -197,31 +186,50 @@ class CompositeCellModel: ChatCellModel {
             }
             if (block != nil) {
                 cell.content.addSubview(block!)
-                block!.frame.origin = CGPointMake(0, height)
-                height += blockSize.height
                 width = max(width, blockSize.width)
-                block!.frame.size = blockSize
+                block!.translatesAutoresizingMaskIntoConstraints = false
+                block!.addConstraint(NSLayoutConstraint(item: block!, attribute: .Width, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: blockSize.width))
+                block!.addConstraint(NSLayoutConstraint(item: block!, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: blockSize.height))
+
+                if (prev != nil) {
+                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .Top, relatedBy: .Equal, toItem: prev!, attribute: .Bottom, multiplier: 1, constant: 0))
+                }
+                else {
+                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .Top, relatedBy: .Equal, toItem: cell.content, attribute: .TopMargin, multiplier: 1, constant: 0))
+                }
+                switch(self.textAlignment) {
+                case .Left:
+                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .Leading, relatedBy: .Equal, toItem: cell.content, attribute: .LeadingMargin, multiplier: 1, constant: 0))
+                    break
+                case .Center:
+                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .CenterX, relatedBy: .Equal, toItem: cell.content, attribute: .CenterX, multiplier: 1, constant: 0))
+                    break
+                default:
+                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .Trailing, relatedBy: .Equal, toItem: cell.content, attribute: .TrailingMargin, multiplier: 1, constant: 0))
+                    break
+
+                }
+                height += blockSize.height
+                prev = block
             }
         }
-        for sub in cell.content.subviews {
-            if (sub is UITextView) {
-                sub.frame.size.width = min(cell.maxContentSize.width, width)
-            }
-        }
-        cell.content.frame.size = CGSizeMake(min(cell.maxContentSize.width, width), height + 2)
-        print("Cell: \(cell.dynamicType), content size: \(cell.content.frame.size), cell size: \(cell.frame.size)")
+
+        cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .Height, relatedBy: .GreaterThanOrEqual, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: ceil(height + 10)))
+        cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .Width, relatedBy: .GreaterThanOrEqual, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: ceil(width + 12)))
+        print("Cell: \(cell.dynamicType), content size: (\(width), \(height)), cell size: \(cell.frame.size)")
     }
 
     private func blockSize(width width: CGFloat, index: Int) -> CGSize {
         var blockSize: CGSize
         if let text = parts[index] as? String {
             blockSize = text.boundingRectWithSize(
-            CGSizeMake(width, CGFloat(MAXFLOAT)),
+                    CGSizeMake(width, CGFloat(MAXFLOAT)),
                     options: NSStringDrawingOptions.UsesLineFragmentOrigin,
                     attributes: [
                             NSFontAttributeName : ChatCell.defaultFont
                     ],
-                    context: nil).size
+                    context: nil
+                ).size
         }
         else if let richText = parts[index] as? NSAttributedString {
             blockSize = richText.boundingRectWithSize(
@@ -246,7 +254,7 @@ class CompositeCellModel: ChatCellModel {
         else {
             blockSize = CGSizeMake(0, 0)
         }
-        return CGSizeMake(blockSize.width, blockSize.height + 2)
+        return CGSizeMake(blockSize.width, blockSize.height)
     }
 }
 
@@ -267,8 +275,7 @@ class ChatMessageModel: CompositeCellModel {
         return MessageChatCell.height(contentHeight: super.height(maxWidth: width)) + 6
     }
     
-    override func form(messageViewCell cell: CompositeChatCell) {
-        (cell as! MessageChatCell).incoming = incoming
+    override func form(messageViewCell cell: MessageChatCell) {
         super.form(messageViewCell: cell)
 //        if (incoming) {
 //            (cell as! MessageChatCell).avatar.image = AppDelegate.instance.activeProfile!.avatar(author, url: nil)
@@ -467,13 +474,14 @@ class ExpertModel: ChatCellModel {
     
     func accept(message: ExpLeagueMessage) -> Bool {
         if (message.type == .ExpertAssignment) {
-            let expert: ExpLeagueMember
+            var expert: ExpLeagueMember
             if (message.body == nil || message.body!.isEmpty) {
                 expert = try! ExpLeagueMember(json: message.properties)
             }
             else {
                 expert = ExpLeagueMember(xml: try! DDXMLElement(XMLString: message.body))
             }
+            expert = AppDelegate.instance.activeProfile!.expert(expert.login) ?? expert
             if (self.expert == nil) {
                 self.expert = expert
                 return true

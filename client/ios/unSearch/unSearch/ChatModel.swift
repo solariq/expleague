@@ -141,9 +141,6 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         state = .Chat
         if (model is AnswerReceivedModel) {
             switch(order.status) {
-            case .Feedback:
-                state = .Feedback
-                break
             case .Deciding:
                 state = .Ask
                 break
@@ -241,8 +238,8 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             modelCells[model.type] = modelCell
         }
         modelCell?.frame.size.width = tableView.frame.width
-        if let compositeCell = modelCell as? CompositeChatCell {
-            return model.height(maxWidth: compositeCell.maxContentSize.width)
+        if let compositeCell = modelCell as? MessageChatCell {
+            return model.height(maxWidth: compositeCell.maxWidth)
         }
         else {
             return model.height(maxWidth: tableView.frame.width)
@@ -274,7 +271,6 @@ class ChatAction: NSObject {
 
 enum ChatState: Int {
     case Chat = 0
-    case Feedback = 1
     case Ask = 2
     case Closed = 3
 }

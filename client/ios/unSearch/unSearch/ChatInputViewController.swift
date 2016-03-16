@@ -21,7 +21,7 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
         hDiff = text.frame.minY + view.frame.height - text.frame.maxY
         text.layer.borderWidth = 2
         text.layer.borderColor = Palette.BORDER.CGColor
-        text.layer.cornerRadius = 4
+        text.layer.cornerRadius = Palette.CORNER_RADIUS
         view!.translatesAutoresizingMaskIntoConstraints = false
         progress.progress = 0.0
         progress.backgroundColor = Palette.CONTROL_BACKGROUND
@@ -33,7 +33,7 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
     }
     
     @IBAction func send(sender: AnyObject) {
-        if !text.text.isEmpty && (delegate == nil || delegate!.chatInput(self, didSend: text.text)) {
+        if !text.text.isEmpty && text.text != placeHolder && (delegate == nil || delegate!.chatInput(self, didSend: text.text)) {
             text.text = ""
             textViewDidChange(text)
             parent.detailsView!.scrollToChat(true)

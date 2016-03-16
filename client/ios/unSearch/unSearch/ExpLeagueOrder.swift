@@ -62,6 +62,9 @@ class ExpLeagueOrder: NSManagedObject {
         let mutableItems = messagesRaw.mutableCopy() as! NSMutableOrderedSet
         mutableItems.addObject(message)
         messagesRaw = mutableItems.copy() as! NSOrderedSet
+        if (message.type == .Answer) {
+            flags = flags | ExpLeagueOrderFlags.Deciding.rawValue
+        }
         save()
     }
 
@@ -112,10 +115,11 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     func feedback(stars score: Int) {
-        flags = flags | ExpLeagueOrderFlags.Deciding.rawValue
         let feedback = DDXMLElement(name: "feedback", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
         feedback.addAttributeWithName("stars", integerValue: score)
         send(xml: feedback)
+        
+        close()
     }
 
     func close() {
@@ -150,9 +154,6 @@ class ExpLeagueOrder: NSManagedObject {
         }
         else if (flags & ExpLeagueOrderFlags.Deciding.rawValue != 0) {
             return .Deciding
-        }
-        else if (count > 0 && message(count - 1).type == .Answer) {
-            return .Feedback
         }
         else if (expert == nil) {
             return .ExpertSearch
@@ -341,7 +342,6 @@ enum ExpLeagueOrderStatus: Int {
     case Canceled = 3
     case Archived = 4
     case ExpertSearch = 5
-    case Feedback = 6
     case Deciding = 7
 }
 

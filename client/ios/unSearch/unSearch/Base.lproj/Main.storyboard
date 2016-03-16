@@ -21,7 +21,7 @@
                         <segue destination="KGL-G5-i7p" kind="relationship" relationship="viewControllers" id="Myf-v1-eXR"/>
                         <segue destination="2cF-hF-wzs" kind="relationship" relationship="viewControllers" id="aYE-xI-Ahn"/>
                         <segue destination="2lD-J6-hxB" kind="relationship" relationship="viewControllers" id="Okl-3f-pGB"/>
-                        <segue destination="pgI-cD-fMH" kind="relationship" relationship="viewControllers" id="obX-oz-qYn"/>
+                        <segue destination="Icc-fT-KIK" kind="relationship" relationship="viewControllers" id="QSc-gK-Fob"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="HuB-VB-40B" sceneMemberID="firstResponder"/>
@@ -48,7 +48,7 @@
                             </containerView>
                             <button opaque="NO" clipsSubviews="YES" contentMode="scaleAspectFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="77e-ya-pIp">
                                 <rect key="frame" x="50" y="459" width="220" height="40"/>
-                                <color key="backgroundColor" red="0.34509803919999998" green="0.52941176469999995" blue="0.94901960780000005" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="backgroundColor" red="0.066666666666666666" green="0.54117647058823526" blue="0.87058823529411766" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="88b-Rg-SXV"/>
                                     <constraint firstAttribute="width" constant="220" id="rP7-eo-LL6"/>
@@ -807,10 +807,172 @@
             </objects>
             <point key="canvasLocation" x="-1669" y="-48"/>
         </scene>
+        <!--О нас-->
+        <scene sceneID="Hdb-pi-NiX">
+            <objects>
+                <navigationController id="Icc-fT-KIK" sceneMemberID="viewController">
+                    <tabBarItem key="tabBarItem" title="О нас" image="tabbar_info_icon" selectedImage="tabbar_info_icon_active" id="ygu-NQ-nWV"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="r5A-gv-CTG">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="BVX-oa-pIt" kind="relationship" relationship="rootViewController" id="BcA-Ln-vfD"/>
+                        <segue destination="pgI-cD-fMH" kind="showDetail" id="KE7-lk-AMp"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Iy8-0W-QLU" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1448" y="759"/>
+        </scene>
+        <!--О нас-->
+        <scene sceneID="swP-54-udr">
+            <objects>
+                <viewController id="BVX-oa-pIt" customClass="AboutViewController" customModule="unSearch" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="wgR-6D-Zar"/>
+                        <viewControllerLayoutGuide type="bottom" id="PxG-NB-lAb"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="1cF-s3-1yC">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="big_blue_owl" translatesAutoresizingMaskIntoConstraints="NO" id="nIt-Ku-cuI">
+                                <rect key="frame" x="122" y="134" width="76" height="76"/>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="unSearch" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TK2-rY-V5f">
+                                <rect key="frame" x="122" y="210" width="76" height="21"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
+                                <color key="textColor" red="0.066666666669999999" green="0.54117647059999996" blue="0.87058823529999996" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Найдем для вас что угодно!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vBe-iM-uev">
+                                <rect key="frame" x="60" y="239" width="201" height="18"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                <color key="textColor" red="0.066666666669999999" green="0.54117647059999996" blue="0.87058823529999996" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Version 1.0 Beta Build 7 16.03.2016" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GRB-VN-8JI">
+                                <rect key="frame" x="89" y="271" width="142" height="32"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Оцените нас" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TRA-IG-aIc">
+                                <rect key="frame" x="114" y="382" width="92" height="18"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9EB-7v-hjU">
+                                <rect key="frame" x="50" y="458" width="220" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="5bM-iY-0FS"/>
+                                    <constraint firstAttribute="width" constant="220" id="kdL-dv-2Zo"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
+                                <state key="normal" title="Пригласить друга">
+                                    <color key="titleColor" red="0.066666666669999999" green="0.54117647059999996" blue="0.87058823529999996" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="invite:" destination="BVX-oa-pIt" eventType="touchUpInside" id="lUB-ip-p2g"/>
+                                </connections>
+                            </button>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="star_empty" highlightedImage="I" translatesAutoresizingMaskIntoConstraints="NO" id="aDx-lP-gvQ">
+                                <rect key="frame" x="84" y="414" width="24" height="24"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="24" id="OdJ-cP-flE"/>
+                                    <constraint firstAttribute="width" constant="24" id="xvg-Yx-Jyc"/>
+                                </constraints>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="star_empty" highlightedImage="I" translatesAutoresizingMaskIntoConstraints="NO" id="jLU-p2-4Y4">
+                                <rect key="frame" x="116" y="414" width="24" height="24"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="24" id="6Ob-PO-I2j"/>
+                                    <constraint firstAttribute="height" constant="24" id="n92-2Q-1JK"/>
+                                </constraints>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="star_empty" highlightedImage="I" translatesAutoresizingMaskIntoConstraints="NO" id="O9L-rh-Hmb">
+                                <rect key="frame" x="148" y="414" width="24" height="24"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="24" id="5F2-IJ-5Lr"/>
+                                    <constraint firstAttribute="height" constant="24" id="xvI-vJ-nOY"/>
+                                </constraints>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="star_empty" highlightedImage="I" translatesAutoresizingMaskIntoConstraints="NO" id="L3X-5G-G61">
+                                <rect key="frame" x="180" y="414" width="24" height="24"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="24" id="hqv-ar-ZSP"/>
+                                    <constraint firstAttribute="width" constant="24" id="xYQ-eh-QLP"/>
+                                </constraints>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="star_empty" highlightedImage="I" translatesAutoresizingMaskIntoConstraints="NO" id="ebk-ob-gd6">
+                                <rect key="frame" x="212" y="414" width="24" height="24"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="24" id="axn-ew-hD0"/>
+                                    <constraint firstAttribute="height" constant="24" id="zn7-KH-MhK"/>
+                                </constraints>
+                            </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tvm-a2-W37">
+                                <rect key="frame" x="135" y="102" width="50" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="F79-T9-R76"/>
+                                    <constraint firstAttribute="width" constant="50" id="gBm-Ay-pvm"/>
+                                </constraints>
+                                <connections>
+                                    <action selector="showSettings:" destination="BVX-oa-pIt" eventType="touchUpInside" id="Rqs-Dn-klg"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="jLU-p2-4Y4" firstAttribute="centerY" secondItem="O9L-rh-Hmb" secondAttribute="centerY" id="3nv-7w-VIx"/>
+                            <constraint firstItem="ebk-ob-gd6" firstAttribute="leading" secondItem="L3X-5G-G61" secondAttribute="trailing" constant="8" id="6AX-fv-w5C"/>
+                            <constraint firstItem="GRB-VN-8JI" firstAttribute="top" secondItem="vBe-iM-uev" secondAttribute="bottom" constant="14" id="AW3-BX-o68"/>
+                            <constraint firstItem="jLU-p2-4Y4" firstAttribute="leading" secondItem="aDx-lP-gvQ" secondAttribute="trailing" constant="8" id="DwC-1v-fBH"/>
+                            <constraint firstItem="PxG-NB-lAb" firstAttribute="top" secondItem="9EB-7v-hjU" secondAttribute="bottom" constant="21" id="Gfq-HV-SFD"/>
+                            <constraint firstItem="nIt-Ku-cuI" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="H5H-x0-LGy"/>
+                            <constraint firstItem="9EB-7v-hjU" firstAttribute="top" secondItem="O9L-rh-Hmb" secondAttribute="bottom" constant="20" id="KEg-36-xER"/>
+                            <constraint firstItem="ebk-ob-gd6" firstAttribute="centerY" secondItem="O9L-rh-Hmb" secondAttribute="centerY" id="MOM-Fo-27f"/>
+                            <constraint firstItem="9EB-7v-hjU" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="Nug-DF-keL"/>
+                            <constraint firstItem="TK2-rY-V5f" firstAttribute="centerX" secondItem="nIt-Ku-cuI" secondAttribute="centerX" id="OOl-hs-jBT"/>
+                            <constraint firstItem="TK2-rY-V5f" firstAttribute="top" secondItem="nIt-Ku-cuI" secondAttribute="bottom" id="Oa4-OK-QpQ"/>
+                            <constraint firstItem="nIt-Ku-cuI" firstAttribute="top" secondItem="wgR-6D-Zar" secondAttribute="bottom" constant="70" id="PL3-P5-9qM"/>
+                            <constraint firstItem="L3X-5G-G61" firstAttribute="centerY" secondItem="O9L-rh-Hmb" secondAttribute="centerY" id="Pxj-Q4-28T"/>
+                            <constraint firstItem="tvm-a2-W37" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="Smb-gc-aOS"/>
+                            <constraint firstItem="vBe-iM-uev" firstAttribute="top" secondItem="TK2-rY-V5f" secondAttribute="bottom" constant="8" id="Xp5-wa-oNe"/>
+                            <constraint firstItem="TRA-IG-aIc" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="ZE6-2K-uEC"/>
+                            <constraint firstItem="vBe-iM-uev" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="azk-I3-n9k"/>
+                            <constraint firstItem="L3X-5G-G61" firstAttribute="leading" secondItem="O9L-rh-Hmb" secondAttribute="trailing" constant="8" id="dJd-bc-N7f"/>
+                            <constraint firstItem="aDx-lP-gvQ" firstAttribute="centerY" secondItem="O9L-rh-Hmb" secondAttribute="centerY" id="fO8-zo-mT6"/>
+                            <constraint firstItem="GRB-VN-8JI" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="fvN-nP-bGv"/>
+                            <constraint firstItem="O9L-rh-Hmb" firstAttribute="top" secondItem="TRA-IG-aIc" secondAttribute="bottom" constant="14" id="koa-KR-Aer"/>
+                            <constraint firstItem="O9L-rh-Hmb" firstAttribute="centerX" secondItem="TRA-IG-aIc" secondAttribute="centerX" id="qsZ-yc-zpO"/>
+                            <constraint firstItem="O9L-rh-Hmb" firstAttribute="leading" secondItem="jLU-p2-4Y4" secondAttribute="trailing" constant="8" id="zkI-yw-ASU"/>
+                            <constraint firstItem="nIt-Ku-cuI" firstAttribute="top" secondItem="tvm-a2-W37" secondAttribute="bottom" constant="2" id="znu-Va-G1d"/>
+                        </constraints>
+                    </view>
+                    <tabBarItem key="tabBarItem" title="О нас" image="tabbar_info_icon" selectedImage="tabbar_info_icon_active" id="W7Y-Qm-HBB"/>
+                    <navigationItem key="navigationItem" title="О нас" id="ngy-tQ-LF2"/>
+                    <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
+                    <connections>
+                        <outlet property="build" destination="GRB-VN-8JI" id="q2t-5C-clJ"/>
+                        <outlet property="inviteButton" destination="9EB-7v-hjU" id="vKa-kZ-T37"/>
+                        <outletCollection property="stars" destination="aDx-lP-gvQ" collectionClass="NSMutableArray" id="zzX-M8-zg5"/>
+                        <outletCollection property="stars" destination="jLU-p2-4Y4" collectionClass="NSMutableArray" id="GD9-r8-uFS"/>
+                        <outletCollection property="stars" destination="O9L-rh-Hmb" collectionClass="NSMutableArray" id="Ufe-hU-PXF"/>
+                        <outletCollection property="stars" destination="L3X-5G-G61" collectionClass="NSMutableArray" id="stT-1G-i1A"/>
+                        <outletCollection property="stars" destination="ebk-ob-gd6" collectionClass="NSMutableArray" id="Mpy-5G-FWa"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="gSa-46-ixx" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1014" y="759"/>
+        </scene>
         <!--Настройки-->
         <scene sceneID="guS-4T-0r4">
             <objects>
-                <viewController title="Настройки" id="pgI-cD-fMH" customClass="SettingsViewController" customModule="unSearch" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="SettingsViewController" title="Настройки" useStoryboardIdentifierAsRestorationIdentifier="YES" id="pgI-cD-fMH" customClass="SettingsViewController" customModule="unSearch" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="MIw-KU-klc"/>
                         <viewControllerLayoutGuide type="bottom" id="zv7-tL-LCp"/>
@@ -902,7 +1064,7 @@
                                 </connections>
                             </button>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SN8-hW-1CQ">
-                                <rect key="frame" x="21" y="255" width="288" height="200"/>
+                                <rect key="frame" x="21" y="255" width="288" height="249"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
@@ -911,7 +1073,7 @@
                                 </connections>
                             </textView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aPG-JI-dTG">
-                                <rect key="frame" x="142" y="463" width="36" height="30"/>
+                                <rect key="frame" x="142" y="512" width="36" height="30"/>
                                 <state key="normal" title="Clear"/>
                                 <connections>
                                     <action selector="clearLog:" destination="pgI-cD-fMH" eventType="touchUpInside" id="osp-Cp-sAS"/>
@@ -948,7 +1110,7 @@
                             <constraint firstItem="lUS-0W-xs5" firstAttribute="leading" secondItem="pJn-RE-qv8" secondAttribute="trailing" constant="8" symbolic="YES" id="xxj-Ou-Dam"/>
                         </constraints>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Настройки" image="tabbar_settings_icon" selectedImage="tabbar_settings_icon_active" id="y9p-ok-ZgZ"/>
+                    <tabBarItem key="tabBarItem" title="О нас" image="tabbar_info_icon" selectedImage="tabbar_info_icon_active" id="y9p-ok-ZgZ"/>
                     <connections>
                         <outlet property="hostField" destination="lUS-0W-xs5" id="o3u-cJ-eEd"/>
                         <outlet property="logView" destination="SN8-hW-1CQ" id="MHT-kO-NtB"/>
@@ -959,10 +1121,38 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="z7a-K1-RQg" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1014" y="775"/>
+            <point key="canvasLocation" x="-530" y="759"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="h51-bh-i9w">
+            <objects>
+                <navigationController id="eI5-5x-WMd" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="MmV-OE-pvp">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="h0P-8c-t0d" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-490" y="-597"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="El4-ba-nLx">
+            <objects>
+                <navigationController id="zMz-ds-XcH" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="PJD-g1-fI8">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="2zg-fc-Wah" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-490" y="-597"/>
         </scene>
     </scenes>
     <resources>
+        <image name="I" width="32" height="34"/>
+        <image name="big_blue_owl" width="76" height="76"/>
         <image name="menu_arrow" width="14" height="26"/>
         <image name="menu_attach_icon" width="44" height="45"/>
         <image name="menu_background" width="375" height="237"/>
@@ -973,13 +1163,14 @@
         <image name="owl_exp" width="39" height="39"/>
         <image name="search_bar_viewmag" width="35" height="36"/>
         <image name="search_icon" width="37" height="37"/>
+        <image name="star_empty" width="42" height="40"/>
         <image name="tabbar_experts_icon" width="40" height="29"/>
         <image name="tabbar_experts_icon_active" width="40" height="29"/>
         <image name="tabbar_history_icon" width="32" height="27"/>
         <image name="tabbar_history_icon_active" width="32" height="27"/>
+        <image name="tabbar_info_icon" width="40" height="40"/>
+        <image name="tabbar_info_icon_active" width="40" height="40"/>
         <image name="tabbar_order_icon" width="32" height="34"/>
         <image name="tabbar_order_icon_active" width="32" height="34"/>
-        <image name="tabbar_settings_icon" width="32" height="31"/>
-        <image name="tabbar_settings_icon_active" width="32" height="31"/>
     </resources>
 </document>

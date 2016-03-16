@@ -16,7 +16,7 @@ enum CellAlignment: Int {
 }
 
 class ChatCell: UITableViewCell {
-    static let defaultFont = UIFont(name: "Helvetica Neue", size: 14)!
+    static let defaultFont = UIFont(name: "Helvetica", size: 13)!
     var controller: OrderDetailsVeiwController?
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -62,7 +62,7 @@ class SimpleChatCell: ChatCell {
         super.awakeFromNib()
         contentView.layer.borderColor = Palette.BORDER.CGColor
         contentView.layer.borderWidth = 2
-        contentView.layer.cornerRadius = 10
+        contentView.layer.cornerRadius = Palette.CORNER_RADIUS
         contentView.clipsToBounds = true
         contentView.backgroundColor = UIColor.whiteColor()
         backgroundColor = UIColor.clearColor()
@@ -72,51 +72,7 @@ class SimpleChatCell: ChatCell {
         super.layoutSubviews()
         contentView.clipsToBounds = true
         contentView.backgroundColor = UIColor.whiteColor()
-        contentView.frame = CGRectMake(24, 8, frame.width - 48, frame.height - 8)
-    }
-}
-
-class CompositeChatCell: ChatCell {
-    @IBOutlet var content: UIView!
-
-    class func height(contentHeight height: CGFloat) -> CGFloat {
-        return height;
-    }
-
-    class var minSize: CGSize {
-        return CGSizeMake(0, 0)
-    }
-
-    var contentInsets: UIEdgeInsets {
-        return UIEdgeInsetsMake(0,0,0,0)
-    }
-
-    var align: CellAlignment {
-        return .Center
-    }
-
-    final var maxContentSize: CGSize {
-        return CGSizeMake(frame.width - 16 - contentInsets.left - contentInsets.right, frame.height - contentInsets.top - contentInsets.bottom - 4)
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        let size = CGSizeMake(
-            max(content.frame.size.width + contentInsets.left + contentInsets.right, self.dynamicType.minSize.width),
-            max(content.frame.size.height + contentInsets.top + contentInsets.bottom, self.dynamicType.minSize.height)
-        )
-        switch(align) {
-        case .Left:
-            contentView.frame.origin = CGPointMake(8, 4)
-            break
-        case .Right:
-            contentView.frame.origin = CGPointMake(frame.width - size.width - 8, 4)
-            break
-        case .Center:
-            contentView.frame.origin = CGPointMake((frame.width - size.width) / 2 + 4, 4)
-            break
-        }
-        contentView.frame.size = size
+        contentView.frame = CGRectMake(24, 6, frame.width - 48, frame.height - 8)
     }
 }
 
@@ -185,7 +141,7 @@ class AttachmentCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        layer.cornerRadius = 10
+        layer.cornerRadius = Palette.CORNER_RADIUS
         layer.masksToBounds = true
         backgroundColor = UIColor.clearColor()
         backgroundView = nil
@@ -198,41 +154,27 @@ class AttachmentCell: UICollectionViewCell {
     }
 }
 
-class MessageChatCell: CompositeChatCell {
-    @IBOutlet weak var bubble: UIImageView!
-//    @IBOutlet weak var avatar: UIImageView!
-    var incoming: Bool = true
-    static var avatarWidth = CGFloat(0)
-    override class func height(contentHeight height: CGFloat) -> CGFloat {
-        return max(height + 12, MessageChatCell.minSize.height);
-    }
 
-    override class var minSize: CGSize {
-        return CGSizeMake(MessageChatCell.avatarWidth + 32, MessageChatCell.avatarWidth + 32)
+class MessageChatCell: ChatCell {
+    //    @IBOutlet weak var avatar: UIImageView!
+    @IBOutlet var content: UIView!
+    
+    var maxWidth: CGFloat {
+        return frame.width - 32
     }
-
-    override var contentInsets: UIEdgeInsets {
-        if (incoming) {
-            return UIEdgeInsetsMake(8, 16 + MessageChatCell.avatarWidth, 0, 16)
-        }
-        else {
-            return UIEdgeInsetsMake(8, 16, 0, 16 + MessageChatCell.avatarWidth)
-        }
-    }
-
-    override var align: CellAlignment {
-        if (incoming) {
-            bubble.image! = bubble.image!.resizableImageWithCapInsets(UIEdgeInsetsMake(10, 30, 30, 10))
-        }
-        else {
-            bubble.image! = bubble.image!.resizableImageWithCapInsets(UIEdgeInsetsMake(10, 10, 30, 30))
-        }
-        return incoming ? .Left : .Right
-    }
-
+    
     override func awakeFromNib() {
         super.awakeFromNib()
-//        MessageChatCell.avatarWidth = avatar.frame.width
+        content.layer.cornerRadius = Palette.CORNER_RADIUS
+        content.clipsToBounds = true
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+    }
+
+    class func height(contentHeight height: CGFloat) -> CGFloat {
+        return height + 8;
     }
 }
 
@@ -379,14 +321,6 @@ class FeedbackCell: UIView {
         let yDist = p2.y - p1.y
         return sqrt((xDist * xDist) + (yDist * yDist));
     }
-    
-    override func updateConstraints() {
-        super.updateConstraints()
-        let rate = CGFloat(3.3)
-        let width = frame.width
-        leftBlockCenter.constant = width * ((rate - 1) / rate / 2 - 1/2.0)
-        buttonWidth.constant = width / rate
-    }
 }
 
 class ExpertPresentation: UIView {
@@ -400,7 +334,7 @@ class ExpertPresentation: UIView {
         frame.size.height += 12
         layer.borderColor = Palette.BORDER.CGColor
         layer.borderWidth = 2
-        layer.cornerRadius = 10
+        layer.cornerRadius = Palette.CORNER_RADIUS
         clipsToBounds = true
         backgroundColor = UIColor.whiteColor()
     }
@@ -450,13 +384,14 @@ class SeparatorView: UIView {
 }
 
 class Palette {
-    static let CONTROL = UIColor(red: 88/256.0, green: 135/256.0, blue: 242/256.0, alpha: 1.0)
+    static let CONTROL = UIColor(red: 17/256.0, green: 138/256.0, blue: 222/256.0, alpha: 1.0)
     static let CONTROL_BACKGROUND = UIColor(red: 249/256.0, green: 249/256.0, blue: 249/256.0, alpha: 1.0)
     static let CHAT_BACKGROUND = UIColor(red: 230/256.0, green: 233/256.0, blue: 234/256.0, alpha: 1.0)
     static let OK = UIColor(red: 102/256.0, green: 182/256.0, blue: 15/256.0, alpha: 1.0)
     static let ERROR = UIColor(red: 174/256.0, green: 53/256.0, blue: 53/256.0, alpha: 1.0)
     static let COMMENT = UIColor(red: 63/256.0, green: 84/256.0, blue: 130/256.0, alpha: 1.0)
     static let BORDER = UIColor(red: 202/256.0, green: 210/256.0, blue: 227/256.0, alpha: 1.0)
+    static let CORNER_RADIUS = CGFloat(8)
 }
 
 
