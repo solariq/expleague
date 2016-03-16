@@ -2,6 +2,8 @@ package com.expleague.util.ios;
 
 import com.expleague.model.Answer;
 import com.expleague.model.Operations;
+import com.expleague.server.Roster;
+import com.expleague.server.agents.XMPP;
 import com.relayrides.pushy.apns.ApnsClient;
 import com.relayrides.pushy.apns.PushNotificationResponse;
 import com.relayrides.pushy.apns.util.SimpleApnsPushNotification;
@@ -58,11 +60,12 @@ public class NotificationsManager {
         }
       }
       else {
+        final ExpertsProfile profile = Roster.instance().profile(XMPP.jid(message.from().resource()));
         if (message.has(Answer.class)) {
-          notification = new ResponseReceivedNotification(token, message.from());
+          notification = new ResponseReceivedNotification(token, message.from(), profile);
         }
         else if (!message.body().isEmpty()){
-          notification = new MessageReceivedNotification(token, message.from(), message.body());
+          notification = new MessageReceivedNotification(token, message.from(), profile, message.body());
         }
       }
       try {
@@ -85,27 +88,27 @@ public class NotificationsManager {
   private static class ExpertFoundNotification extends SimpleApnsPushNotification {
     public ExpertFoundNotification(String token, JID from, ExpertsProfile profile) {
       super(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
-          "\"alert\": \"Эксперт найден! Для Вас работает " + profile.jid().local() + "!\", " +
+          "\"alert\": \"Эксперт найден! Для Вас работает " + profile.name() + "!\", " +
           "\"content-available\": 1," +
-          "\"sound\": \"default\"" +
+          "\"sound\": \"owl.wav\"" +
           "}, \"order\": \"" + from.local() + "\"}", tomorrow());
     }
   }
 
   private static class ResponseReceivedNotification extends SimpleApnsPushNotification {
-    public ResponseReceivedNotification(String token, JID from) {
+    public ResponseReceivedNotification(String token, JID from, ExpertsProfile expert) {
       super(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
-          "\"alert\": \"Получен ответ на задание от " + from.resource() + "\", " +
+          "\"alert\": \"Получен ответ на задание от " + expert.name() + "\", " +
           "\"content-available\": 1," +
-          "\"sound\": \"default\"" +
+          "\"sound\": \"owl.wav\"" +
           "}, \"order\": \"" + from.local() + "\"}", tomorrow());
     }
   }
 
   private static class MessageReceivedNotification extends SimpleApnsPushNotification {
-    public MessageReceivedNotification(String token, JID from, String message) {
+    public MessageReceivedNotification(String token, JID from, ExpertsProfile expert, String message) {
       super(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
-          "\"alert\": \"Получено новое сообщение от " + from.resource() + ": '" + message.replace("\"", "") + "'\", " +
+          "\"alert\": \"Получено новое сообщение от " + expert.name() + ": '" + message.replace("\"", "") + "'\", " +
           "\"content-available\": 1,"+
           "\"sound\": \"default\"" +
           "}, \"order\": \"" + from.local() + "\"}", tomorrow());
