@@ -147,7 +147,9 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             break
         default:
             state = .Chat
-            cells.append(progressModel!)
+            if (progressModel != nil) {
+                cells.append(progressModel!)
+            }
         }
         
         updateGroups()
