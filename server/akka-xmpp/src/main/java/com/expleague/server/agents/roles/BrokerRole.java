@@ -83,9 +83,13 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
         ).event(ActorRef.class,
             (expert, task) -> {
               if (task.order().status() == ExpLeagueOrder.Status.SUSPENDED) {
-                explain("Worker returned online, sending resume.");
-                expert.tell(new Resume(task.order().offer()), self());
-                return goTo(State.INVITE);
+                if (task.role(Experts.jid(expert)) == ACTIVE) {
+                  explain("Worker returned online, sending resume.");
+                  expert.tell(new Resume(task.order().offer()), self());
+                  return goTo(State.INVITE);
+                }
+                explain("Task is in progress. Continue waiting for active worker.");
+                return stay();
               }
               final JID jid = Experts.jid(expert);
               explain("Labor exchange send us new candidate: " + jid + ".");
