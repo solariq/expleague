@@ -138,22 +138,18 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             modelChangeCount = 0
         }
         
-        state = .Chat
-        if (model is AnswerReceivedModel) {
-            switch(order.status) {
-            case .Deciding:
-                state = .Ask
-                break
-            case .Closed, .Canceled:
-                state = .Closed
-                break
-            default:
-                state = .Chat
-            }
-        }
-        else if (order.isActive && progressModel != nil) {
+        switch(order.status) {
+        case .Deciding:
+            state = .Ask
+            break
+        case .Closed, .Canceled:
+            state = .Closed
+            break
+        default:
+            state = .Chat
             cells.append(progressModel!)
         }
+        
         updateGroups()
 
         if ((startedFrom != lastKnownMessage || cells.count != cellsCount) && controller != nil) {
