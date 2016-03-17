@@ -219,7 +219,9 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
             (cancel, task) -> task.role(Experts.jid(sender())) == ACTIVE,
             (cancel, task) -> {
               explain("Expert canceled task. Looking for other worker.");
-              XMPP.send(new Message(Experts.jid(sender()), task.jid(), cancel), context());
+              final JID expert = Experts.jid(sender());
+              XMPP.send(new Message(expert, task.jid(), cancel), context());
+              task.refused(expert);
               return lookForExpert(task).using(task.enter(null));
             }
         ).event(Cancel.class, // cancel from the room
