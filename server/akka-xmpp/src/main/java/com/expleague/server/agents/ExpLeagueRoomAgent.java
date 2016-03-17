@@ -112,7 +112,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
       //noinspection ConstantConditions
       lastOrder().feedback(msg.get(Feedback.class).stars());
     }
-    else if (!msg.has(Done.class)){
+    else if (msg.from().bareEq(dump.owner()) && !msg.has(Done.class)){
       final Offer offer = offer(msg);
       order = LaborExchange.board().register(offer);
       invoke(new Message(XMPP.jid(), offer.client(), new Create(), order.offer()));
