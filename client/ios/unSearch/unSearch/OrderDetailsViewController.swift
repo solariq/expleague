@@ -118,6 +118,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         NSNotificationCenter.defaultCenter().addObserver(view, selector: "keyboardShown:", name: UIKeyboardWillShowNotification, object: nil)
         NSNotificationCenter.defaultCenter().addObserver(view, selector: "keyboardHidden:", name: UIKeyboardWillHideNotification, object: nil)
         data.controller = self
+        data.sync()
         if (data.order.text.characters.count > 15) {
             self.title = data.order.text.substringToIndex(data.order.topic.startIndex.advancedBy(15)) + "..."
         }
