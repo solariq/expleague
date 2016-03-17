@@ -144,7 +144,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             case .Deciding:
                 state = .Ask
                 break
-            case .Closed:
+            case .Closed, .Canceled:
                 state = .Closed
                 break
             default:
