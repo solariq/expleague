@@ -459,9 +459,9 @@ class ExpertModel: ChatCellModel {
             throw ModelErrors.WrongCellType
         }
         
-        eipCell.name.text = expert!.name
-        eipCell.avatar.image = expert!.avatar
-        eipCell.avatar.online = expert!.available
+        eipCell.name.text = expert.name
+        eipCell.avatar.image = expert.avatar
+        eipCell.avatar.online = expert.available
         if (status) {
             eipCell.status.text = "Работает над вашим заказом"
             eipCell.status.textColor = Palette.COMMENT
@@ -473,18 +473,6 @@ class ExpertModel: ChatCellModel {
     }
     
     func accept(message: ExpLeagueMessage) -> Bool {
-        if (message.type == .ExpertAssignment) {
-            let expert = message.expert!
-            if (self.expert == nil) {
-                self.expert = expert
-                return true
-            }
-            return self.expert!.login == expert.login
-        }
-        else if (message.type == .ExpertCancel) {
-            status = false
-            return false
-        }
         return false
     }
     
@@ -492,8 +480,12 @@ class ExpertModel: ChatCellModel {
         return .Expert
     }
     
-    var expert: ExpLeagueMember?
+    let expert: ExpLeagueMember
     var status = true
+    
+    init(expert: ExpLeagueMember) {
+        self.expert = expert
+    }
 }
 
 class TaskInProgressModel: ChatCellModel {

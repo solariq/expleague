@@ -97,8 +97,9 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 modelChangeCount++
                 var newModel : ChatCellModel? = nil
                 if (msg.type == .ExpertAssignment) {
-                    if (expertModel == nil || !expertModel!.accept(msg)) {
-                        expertModel = ExpertModel()
+                    let expert = msg.expert!
+                    if (expertModel == nil || expertModel!.expert.login != expert.login) {
+                        expertModel = ExpertModel(expert: expert)
                         newModel = expertModel
                     }
                     if progressModel is LookingForExpertModel {
@@ -106,7 +107,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                     }
                 }
                 else if (msg.type == .ExpertCancel) {
-                    expertModel!.accept(msg)
+                    expertModel!.status = false
                     expertModel = nil
                 }
                 else if (msg.type == .ExpertProgress) {
@@ -154,13 +155,10 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         }
         
         updateGroups()
-
-        if ((startedFrom != lastKnownMessage || cells.count != cellsCount) && controller != nil) {
-            controller?.messages.reloadData()
-            controller!.answerText = answer
-            dispatch_async(dispatch_get_main_queue()){
-                self.controller!.scrollToLastMessage()
-            }
+        controller?.messages.reloadData()
+        controller?.answerText = answer
+        dispatch_async(dispatch_get_main_queue()){
+            self.controller?.scrollToLastMessage()
         }
     }
 
