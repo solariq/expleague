@@ -18,7 +18,13 @@ import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.*;
 
 /**
  * @author vpdelta
@@ -50,7 +56,33 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
     }
   }
 
+  public static class CancelQuery {
+    private final JID room;
+
+    public CancelQuery(final JID room) {
+      this.room = room;
+    }
+
+    public JID getRoom() {
+      return room;
+    }
+  }
+
+  public static class SendQueryDone {
+    private final JID room;
+
+    public SendQueryDone(final JID room) {
+      this.room = room;
+    }
+
+    public JID getRoom() {
+      return room;
+    }
+  }
+
   public static class AcceptOffer {}
+
+  public static class ResumeOffer {}
 
   public static class RejectOffer {}
 
@@ -88,8 +120,8 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
       return Roster.instance().register(query);
     }
 
-    public Room registerRoom() {
-      final JID roomJid = JID.parse("testroom" + System.currentTimeMillis() + "@muc.localhost");
+    public Room registerRoom(final String prefix) {
+      final JID roomJid = JID.parse("testroom-" + prefix + "-" + UUID.randomUUID() + "@muc.localhost");
       final ActorRef roomRef = register(roomJid);
       return new Room(roomJid, roomRef);
     }
@@ -158,9 +190,17 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
       }
 
       public Room query(final String text) {
-        final Room room = registerRoom();
+        final Room room = registerRoom(text);
         actorRef.tell(new SendQuery(room.getJid(), text), getRef());
         return room;
+      }
+
+      public void cancel(final Room room) {
+        actorRef.tell(new CancelQuery(room.getJid()), getRef());
+      }
+
+      public void done(final Room room) {
+        actorRef.tell(new SendQueryDone(room.getJid()), getRef());
       }
 
       public void receiveStart(final Expert expert) throws Exception {
@@ -169,7 +209,7 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
                 .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path()))
                 .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
                 .filter(messageCaptureRecord -> ((Message) messageCaptureRecord.getMessage()).has(Operations.Start.class))
-                .count() == 1
+                .count() >= 1
         );
       }
 
@@ -192,31 +232,105 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
         super(jid, actorRef);
       }
 
-      public void acceptOffer(final Room room, final String offer) throws Exception {
-        receiveOffer(room, offer);
-        messageCapture.reset();
+      public void acceptOffer(final Offer offer) throws Exception {
+        messageCapture.expect("Expert " + jid + " doesn't received invite", 10000,
+          records -> records.stream()
+            .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
+            .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
+            .filter(message -> message.to().bareEq(jid))
+            .filter(message -> message.has(Operations.Invite.class))
+            .count() >= 1
+        );
         actorRef.tell(new AcceptOffer(), getRef());
+        final JID room = offer.room();
+        messageCapture.expect("Room " + room + " doesn't received start", 10000,
+          records -> records.stream()
+            .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
+            .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
+            .filter(message -> message.to().equals(room))
+            .filter(message -> message.has(Operations.Start.class))
+            .count() >= 1
+        );
       }
 
-      public void rejectOffer(final Room room, final String offer) throws Exception {
-        receiveOffer(room, offer);
-        messageCapture.reset();
+      public void resumeOffer(final Offer offer) throws Exception {
+        messageCapture.expect("Expert " + jid + " doesn't received resume", 10000,
+          records -> records.stream()
+            .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
+            .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
+            .filter(message -> message.to().bareEq(jid))
+            .filter(message -> message.has(Operations.Resume.class))
+            .count() >= 1
+        );
+        actorRef.tell(new ResumeOffer(), getRef());
+        final JID room = offer.room();
+        messageCapture.expect("Room " + room + " doesn't received resume", 10000,
+          records -> records.stream()
+            .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
+            .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
+            .filter(message -> message.to().equals(room))
+            .filter(message -> message.has(Operations.Resume.class))
+            .count() >= 1
+        );
+      }
+
+      public void rejectOffer(final Offer offer) throws Exception {
         actorRef.tell(new RejectOffer(), getRef());
+        messageCapture.expect("Room doesn't received start", 10000,
+          records -> records.stream()
+            .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
+            .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
+            .filter(message -> message.to().equals(offer.room()))
+            .filter(message -> message.has(Operations.Cancel.class))
+            .count() >= 1
+        );
       }
 
-      public void sendAnswer(final Room room, final String answer) throws Exception {
-        actorRef.tell(new SendAnswer(room.getJid(), answer), getRef());
+      public void sendAnswer(final JID room, final String answer) throws Exception {
+        actorRef.tell(new SendAnswer(room, answer), getRef());
       }
 
-      protected void receiveOffer(final Room room, final String offer) throws Exception {
-        messageCapture.expect("Offer not received from " + room, 30000,
-            records -> records.stream()
-                .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path()))
-                .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
-                .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
-                .filter(message -> message.has(Offer.class))
-                .filter(message -> message.get(Offer.class).topic().equals(offer))
-                .count() >= 1
+      public void sendAnswer(final Offer offer, final String answer) throws Exception {
+        sendAnswer(offer.room(), answer);
+      }
+
+      protected Offer receiveOffer(final String topic) throws Exception {
+        return receiveOffer(Predicate.isEqual(topic));
+      }
+
+      protected Offer receiveOffer() throws Exception {
+        return receiveOffer(s -> true);
+      }
+
+      protected Offer receiveOffer(final Predicate<String> topicFilter) throws Exception {
+        final List<MessageCaptureRecord> captureRecords = messageCapture.expect("Offer not received", 10000,
+          records -> records.stream()
+            .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path()))
+            .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
+            .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
+            .filter(message -> message.has(Offer.class) && message.has(Operations.Invite.class))
+            .filter(message -> topicFilter.test(message.get(Offer.class).topic()))
+            .count() >= 1
+        );
+        final List<Offer> offers = captureRecords.stream()
+          .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path()))
+          .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
+          .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
+          .filter(message -> message.has(Offer.class))
+          .map(message -> message.get(Offer.class))
+          .filter(offer -> topicFilter.test(offer.topic()))
+          .collect(Collectors.toList());
+        return offers.get(offers.size() - 1);
+      }
+
+      protected void passCheck() throws Exception {
+        final List<MessageCaptureRecord> captureRecords = messageCapture.expect("Check not passed", 10000,
+          records -> records.stream()
+            .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
+            .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
+            .filter(message -> message.from().equals(jid))
+            .filter(message -> message.has(Operations.Ok.class))
+            .count() >= 1
         );
       }
     }
@@ -224,6 +338,7 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
 
   public class UserActor extends ActorAdapter {
     protected final JID jid;
+    protected boolean isOnline;
 
     public UserActor(final JID jid) {
       this.jid = jid;
@@ -231,6 +346,7 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
 
     @ActorMethod
     public void tellPresence(GoOnline p) {
+      isOnline = true;
       send(new Presence(jid, true));
     }
 
@@ -252,12 +368,33 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
 
     @ActorMethod
     public void tellQuery(SendQuery sendQuery) {
+      assertTrue(isOnline);
       send(new Message(
         sendQuery.getRoom(),
         Message.MessageType.GROUP_CHAT,
         new Message.Subject( // todo: get rid of json
           "{\"specific\":true,\"started\":1457627722.72493,\"local\":false,\"location\":{\"longitude\":-122.406417,\"latitude\":37.785834},\"topic\":\"" + sendQuery.getText() + "\",\"attachments\":\"\",\"urgency\":\"day\"}"
         )
+      ));
+    }
+
+    @ActorMethod
+    public void tellCancel(CancelQuery cancelQuery) {
+      assertTrue(isOnline);
+      send(new Message(
+        cancelQuery.getRoom(),
+        Message.MessageType.GROUP_CHAT,
+        new Operations.Cancel()
+      ));
+    }
+
+    @ActorMethod
+    public void tellDone(SendQueryDone sendQueryDone) {
+      assertTrue(isOnline);
+      send(new Message(
+        sendQueryDone.getRoom(),
+        Message.MessageType.GROUP_CHAT,
+        new Operations.Done()
       ));
     }
   }
@@ -274,25 +411,37 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
 
     @ActorMethod
     public void tellAnswer(SendAnswer sendAnswer) {
+      assertTrue(isOnline);
       send(new Message(sendAnswer.getRoom(), Message.MessageType.GROUP_CHAT, new Answer(sendAnswer.getAnswer())));
     }
 
     @ActorMethod
     public void onOffer(AcceptOffer acceptOffer) {
+      assertTrue(isOnline);
       log.finest("AcceptOffer with " + jid);
       send(new Message(jid, new Operations.Start()));
     }
 
     @ActorMethod
+    public void onOffer(ResumeOffer resumeOffer) {
+      assertTrue(isOnline);
+      log.finest("ResumeOffer with " + jid);
+      send(new Message(jid, new Operations.Resume()));
+    }
+
+    @ActorMethod
     public void onOffer(RejectOffer rejectOffer) {
+      assertTrue(isOnline);
       log.finest("RejectOffer with " + jid);
       send(new Message(jid, new Operations.Cancel()));
     }
 
     @ActorMethod
     public void receive(Message message) {
-      if (message.has(Offer.class) && !message.has(Operations.Command.class)) {
-        send(new Message(jid, new Operations.Ok()));
+      if (isOnline) {
+        if (message.has(Offer.class) && !message.has(Operations.Command.class)) {
+          send(new Message(jid, new Operations.Ok()));
+        }
       }
     }
   }

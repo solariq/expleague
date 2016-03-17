@@ -7,7 +7,6 @@ import akka.actor.FSM;
 import akka.util.Timeout;
 import com.expleague.model.Operations.*;
 import com.expleague.server.agents.ExpLeagueOrder;
-import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
 import com.expleague.util.akka.AkkaTools;
 import com.expleague.xmpp.JID;
@@ -86,7 +85,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               if (task.order().status() == ExpLeagueOrder.Status.SUSPENDED) {
                 explain("Worker returned online, sending resume.");
                 expert.tell(new Resume(task.order().offer()), self());
-                return stay();
+                return goTo(State.INVITE);
               }
               final JID jid = Experts.jid(expert);
               explain("Labor exchange send us new candidate: " + jid + ".");
@@ -133,13 +132,21 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
             (start, task) -> {
               final JID expert = Experts.jid(sender());
               explain("Expert " + expert + " started working on task " + task.order().room().local() + ".");
-              task.enter(expert);
-              XMPP.send(new Message(expert, task.jid(), new Start()), context());
               task.experts()
                   .filter(jid -> !jid.bareEq(expert))
                   .forEach(jid -> Experts.tellTo(jid, new Cancel(), self(), context()));
+              task.enter(expert);
+              XMPP.send(new Message(expert, task.jid(), new Start()), context());
               return goTo(State.WORK_TRACKING);
             }
+        ).event(Resume.class,
+          (start, task) -> task.role(Experts.jid(sender())) == ACTIVE,
+          (start, task) -> {
+            final JID expert = Experts.jid(sender());
+            explain("Expert " + expert + " resumed working on task " + task.order().room().local() + ".");
+            XMPP.send(new Message(expert, task.jid(), new Resume()), context());
+            return goTo(State.WORK_TRACKING);
+          }
         ).event(// from invitation
             (cancel, task) -> task.role(Experts.jid(sender())) == INVITED && (cancel instanceof Cancel || cancel instanceof Ignore),
             (cancel, task) -> {
@@ -155,12 +162,15 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               while ((candidate = task.nextCandidate()) != null && !task.interview(candidate));
               if (candidate != null) {
                 explain("Have found candidate from queue, that fits: " + candidate + ". Sending him invitation.");
-                Experts.tellTo(expert, new Invite(), self(), context());
-                XMPP.send(new Message(expert, XMPP.jid(), new Invite()), context());
+                Experts.tellTo(candidate, new Invite(), self(), context());
+                XMPP.send(new Message(candidate, XMPP.jid(), new Invite()), context());
                 task.invite(candidate);
                 return stay();
               }
-              return lookForExpert(task);
+              else if (!task.order().of(INVITED).findAny().isPresent()) {
+                return lookForExpert(task);
+              }
+              return stay();
             }
         ).event(ActorRef.class,
             (expertRef, task) -> {

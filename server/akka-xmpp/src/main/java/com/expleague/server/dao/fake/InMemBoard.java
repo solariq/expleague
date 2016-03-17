@@ -1,13 +1,13 @@
 package com.expleague.server.dao.fake;
 
 import com.expleague.model.Offer;
-import com.expleague.model.Tag;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.xmpp.JID;
-import gnu.trove.procedure.TObjectDoubleProcedure;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,8 +21,8 @@ import static com.expleague.server.agents.ExpLeagueOrder.Role.OWNER;
  */
 @SuppressWarnings("unused")
 public class InMemBoard implements LaborExchange.Board {
-  private final Map<String, ExpLeagueOrder> active = new HashMap<>();
-  private final List<ExpLeagueOrder> history = new ArrayList<>();
+  private final Map<String, ExpLeagueOrder> active = new ConcurrentHashMap<>();
+  private final List<ExpLeagueOrder> history = new CopyOnWriteArrayList<>();
 
   @Override
   public ExpLeagueOrder active(String roomId) {

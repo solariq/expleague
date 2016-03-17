@@ -51,8 +51,8 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
     final JID from = msg.from();
     dump(msg);
     if (msg.type() == MessageType.GROUP_CHAT &&
-        !(dump.owner().bareEq(from) || order != null && order.role(from) == ACTIVE)
-        ) {
+      !(dump.owner().bareEq(from) || order != null && order.role(from) == ACTIVE)
+    ) {
       final Message message = new Message(
         jid,
         from,

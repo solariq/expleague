@@ -67,12 +67,10 @@ public class Operations {
   }
 
   @XmlRootElement
-  public static class Cancel extends Command {
-  }
+  public static class Cancel extends Command {}
 
   @XmlRootElement
-  public static class Ignore extends Command {
-  }
+  public static class Ignore extends Command {}
 
   @XmlRootElement
   public static class Create extends Command {}

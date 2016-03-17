@@ -345,7 +345,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
       for (int i = 0; i < brokers.size(); i++) {
         if (i != winner) {
           final ActorRef looser = brokers.get(i);
-          looser.tell(new Cancel(), self());
+          looser.tell(new Ignore(), self());
         }
       }
 

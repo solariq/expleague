@@ -23,7 +23,7 @@ public class MessageCaptureImpl implements MessageCapture {
     records.clear();
   }
 
-  public void expect(final String message, final long maxTimeoutMs, Function<List<MessageCaptureRecord>, Boolean> condition) throws Exception {
+  public List<MessageCaptureRecord> expect(final String message, final long maxTimeoutMs, Function<List<MessageCaptureRecord>, Boolean> condition) throws Exception {
     final long startMs = System.currentTimeMillis();
     while (true) {
       final ArrayList<MessageCaptureRecord> copy;
@@ -31,7 +31,7 @@ public class MessageCaptureImpl implements MessageCapture {
         copy = new ArrayList<>(records);
       }
       if (condition.apply(copy)) {
-        return;
+        return copy;
       }
 
       final long elapsedMs = System.currentTimeMillis() - startMs;
