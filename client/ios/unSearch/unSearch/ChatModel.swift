@@ -154,10 +154,13 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         else if (order.isActive && progressModel != nil) {
             cells.append(progressModel!)
         }
+        controller?.messages.beginUpdates()
         updateGroups()
+        controller?.messages.reloadData()
+        controller?.messages.endUpdates()
+
         if ((startedFrom != lastKnownMessage || cells.count != cellsCount) && controller != nil) {
             controller!.answerText = answer
-            controller!.messages.reloadData()
             controller!.scrollToLastMessage()
         }
     }
