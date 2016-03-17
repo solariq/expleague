@@ -31,18 +31,18 @@ class ExpLeagueOrder: NSManagedObject {
         return status != .Closed && status != .Archived && status != .Canceled
     }
     
-    var expert: String? {
+    var expert: ExpLeagueMember? {
         var lastExpert: String? = nil
         for i in 0 ..< count {
             let msg = message(i)
-            if (msg.type == .ExpertAssignment ){
+            if (msg.type == .ExpertAssignment){
                 lastExpert = msg.properties["login"] as? String
             }
             else if (msg.type == .ExpertCancel || msg.type == .Answer) {
                 lastExpert = nil
             }
         }
-        return lastExpert
+        return parent.expert(lastExpert)
     }
     
     var before: NSTimeInterval {

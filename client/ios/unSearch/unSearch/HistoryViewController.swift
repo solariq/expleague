@@ -123,7 +123,7 @@ class HistoryViewController: UITableViewController {
             }
             else if (o.status == .Open) {
                 cell.status.textColor = OngoingOrderStateCell.OK_COLOR
-                cell.status.text = "В РАБОТЕ: \(o.expert!)"
+                cell.status.text = "В РАБОТЕ: \(o.expert!.name)"
             }
             let formatter = NSDateFormatter()
             formatter.dateStyle = .ShortStyle;

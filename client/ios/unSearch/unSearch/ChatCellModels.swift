@@ -474,14 +474,7 @@ class ExpertModel: ChatCellModel {
     
     func accept(message: ExpLeagueMessage) -> Bool {
         if (message.type == .ExpertAssignment) {
-            var expert: ExpLeagueMember
-            if (message.body == nil || message.body!.isEmpty) {
-                expert = try! ExpLeagueMember(json: message.properties)
-            }
-            else {
-                expert = ExpLeagueMember(xml: try! DDXMLElement(XMLString: message.body))
-            }
-            expert = AppDelegate.instance.activeProfile!.expert(expert.login) ?? expert
+            let expert = message.expert!
             if (self.expert == nil) {
                 self.expert = expert
                 return true
