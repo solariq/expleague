@@ -32,17 +32,17 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     var expert: ExpLeagueMember? {
-        var lastExpert: String? = nil
+        var lastExpert: ExpLeagueMember? = nil
         for i in 0 ..< count {
             let msg = message(i)
             if (msg.type == .ExpertAssignment){
-                lastExpert = msg.properties["login"] as? String
+                lastExpert = msg.expert
             }
             else if (msg.type == .ExpertCancel || msg.type == .Answer) {
                 lastExpert = nil
             }
         }
-        return parent.expert(lastExpert)
+        return lastExpert
     }
     
     var before: NSTimeInterval {
