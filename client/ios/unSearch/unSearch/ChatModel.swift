@@ -58,7 +58,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         for i in 0..<groups.count {
             for j in 0..<groups[i].count {
                 x--
-                if (x == 0) {
+                if (x <= 0) {
                     return NSIndexPath(forRow: j, inSection: i)
                 }
             }
@@ -73,8 +73,6 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             cells.append(SetupModel(order: order))
             progressModel = LookingForExpertModel(order: order)
         }
-        let cellsCount = cells.count
-        let startedFrom = lastKnownMessage
         var model = cells.last!
         var modelChangeCount = 0
         
@@ -167,6 +165,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     var experts: [ExpertModel] = []
     private func updateGroups() {
         groups.removeAll()
+        experts.removeAll()
         var group = Array<ChatCellModel>()
         for cell in cells {
             if cell is ExpertModel {

@@ -70,7 +70,7 @@ body .back_to_chat:last-of-type {
  =============================================================================*/
 
 p, blockquote, ul, ol, dl, table, pre {
-    margin: 5px 0;
+    margin: 10px 0;
     text-align: justify;
 }
 
@@ -156,7 +156,7 @@ a.cut{
     padding-left:20px;
     text-decoration: none;
     color: #000000;
-    margin: 5px 0;
+    margin: 10px 0;
 }
 
 a.cut_open{
@@ -168,7 +168,7 @@ a.cut_open{
     padding-left:20px;
     text-decoration: none;
     color: #000000;
-    margin: 5px 0;
+    margin: 10px 0;
 }
 a.hide{
     text-decoration: underline;
@@ -176,7 +176,7 @@ a.hide{
     display: block;
     text-align: center;
     vertical-align:middle;
-    margin-top: 20px;
+    margin-top: 15px;
 }
 /* LISTS
  =============================================================================*/
