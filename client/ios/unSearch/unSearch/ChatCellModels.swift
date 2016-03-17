@@ -370,7 +370,7 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
         let label = timer.userInfo as! UILabel
         let timeLeft = order.before - CFAbsoluteTimeGetCurrent()
         switch(order.status) {
-        case .Open, .ExpertSearch:
+        case .Open, .ExpertSearch, .Deciding:
             label.textColor = UIColor.lightGrayColor()
             label.text = "ОТКРЫТО. Осталось: " + formatPeriodRussian(timeLeft)
             break
