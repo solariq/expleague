@@ -9,7 +9,6 @@ import com.expleague.server.XMPPDevice;
 import com.expleague.server.agents.UserAgent;
 import com.expleague.server.agents.XMPP;
 import com.expleague.server.services.XMPPServices;
-import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Features;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.Bind;

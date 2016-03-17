@@ -155,6 +155,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
             ){
               @Override
               public void updateToken(String token) {
+                this.token = token;
                 final PreparedStatement updateToken = createStatement("update-token", "UPDATE expleague.Devices SET token = ? WHERE id = ?");
                 try {
                   updateToken.setString(1, token);
