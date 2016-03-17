@@ -194,6 +194,12 @@ class FeedbackViewController: UIViewController {
     @IBOutlet weak var scoreButton: UIButton!
     @IBAction func fire(sender: AnyObject) {
         parent.data.order.feedback(stars: feedback.rate)
+        if (feedback.rate == 4) {
+            UIApplication.sharedApplication().openURL(NSURL(string: "https://www.paypal.me/expleague/30")!)
+        }
+        else if (feedback.rate == 5) {
+            UIApplication.sharedApplication().openURL(NSURL(string: "https://www.paypal.me/expleague/150")!)
+        }
         self.dismissViewControllerAnimated(true, completion: nil)
     }
     @IBAction func cancel(sender: AnyObject) {
