@@ -90,9 +90,6 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
           else if (msg.has(Suspend.class)) {
             XMPP.send(new Presence(roomAlias(msg.from()), dump.owner(), false), context());
           }
-          else if (msg.has(Cancel.class)) {
-            XMPP.send(new Message(jid, dump.owner(), msg.get(Command.class)), context());
-          }
           else if (msg.has(Start.class)) {
             dump.stream()
                     .flatMap(Functions.instancesOf(Message.class))
@@ -102,6 +99,11 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
           }
           else if (msg.body().startsWith("{\"type\":\"pageVisited\"")) {
             XMPP.send(new Message(jid, dump.owner(), msg.body()), context());
+          }
+          break;
+        case SLACKER:
+          if (msg.has(Cancel.class)) {
+            XMPP.send(new Message(jid, dump.owner(), msg.get(Command.class)), context());
           }
           break;
         default:
