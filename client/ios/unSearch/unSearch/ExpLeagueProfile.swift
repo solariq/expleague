@@ -271,6 +271,10 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
                 let group = item.elementForName("group").stringValue()
                 if let profile = item.elementForName("expert", xmlns: "http://expleague.com/scheme") {
                     let expert = ExpLeagueMember(xml: profile, group: group)
+                    let oldIndex = experts.indexOf({$0.login == expert.login})
+                    if let index = oldIndex {
+                        experts.removeAtIndex(index)
+                    }
                     experts.append(expert)
                     expert.available = profile.attributeBoolValueForName("available")
                 }
