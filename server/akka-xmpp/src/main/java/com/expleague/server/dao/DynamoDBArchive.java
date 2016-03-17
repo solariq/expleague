@@ -125,7 +125,14 @@ public class DynamoDBArchive implements Archive {
     private JID jid;
     @Override
     public JID owner() {
-      return jid != null ? jid : (jid = JID.parse(messages.get(0).author));
+      if (jid != null)
+        return jid;
+      for (final Message message : messages) {
+        final JID jid = JID.parse(message.author);
+        if (jid != null && !jid.domain().startsWith("muc."))
+          return this.jid = jid;
+      }
+      return null;
     }
 
     private DynamoDBMapper mapper;
