@@ -6,7 +6,6 @@ import akka.util.Timeout;
 import com.expleague.server.ExpLeagueServerTestCase;
 import com.expleague.util.akka.*;
 import com.expleague.xmpp.JID;
-import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.io.StreamTools;
 import com.spbsu.commons.system.RuntimeUtils;
 import com.spbsu.commons.util.ThreadTools;
@@ -14,9 +13,6 @@ import com.typesafe.config.Config;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
-import scala.concurrent.Await;
-import scala.concurrent.duration.Duration;
-import scala.concurrent.duration.FiniteDuration;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -26,12 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertNotNull;
-
 /**
  * @author vpdelta
  */
 public class ActorSystemTestCase {
+
   protected ActorSystem system;
 
   @Before

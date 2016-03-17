@@ -17,8 +17,10 @@ import com.expleague.xmpp.control.register.RegisterQuery;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
+import com.spbsu.commons.util.Factories;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -295,21 +297,26 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
       }
 
       protected Offer receiveOffer(final String topic) throws Exception {
-        return receiveOffer(Predicate.isEqual(topic));
+        return receiveOffer(offer -> offer.topic().equals(topic));
+      }
+
+      protected Offer receiveOffer(final Offer... exclude) throws Exception {
+        final Set<Offer> offers = Factories.hashSet(exclude);
+        return receiveOffer(offer -> !offers.contains(offer));
       }
 
       protected Offer receiveOffer() throws Exception {
-        return receiveOffer(s -> true);
+        return receiveOffer(o -> true);
       }
 
-      protected Offer receiveOffer(final Predicate<String> topicFilter) throws Exception {
+      protected Offer receiveOffer(final Predicate<Offer> offerFilter) throws Exception {
         final List<MessageCaptureRecord> captureRecords = messageCapture.expect("Offer not received", 10000,
           records -> records.stream()
             .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path()))
             .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
             .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
             .filter(message -> message.has(Offer.class) && message.has(Operations.Invite.class))
-            .filter(message -> topicFilter.test(message.get(Offer.class).topic()))
+            .filter(message -> offerFilter.test(message.get(Offer.class)))
             .count() >= 1
         );
         final List<Offer> offers = captureRecords.stream()
@@ -318,7 +325,7 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
           .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage())
           .filter(message -> message.has(Offer.class))
           .map(message -> message.get(Offer.class))
-          .filter(offer -> topicFilter.test(offer.topic()))
+          .filter(offerFilter)
           .collect(Collectors.toList());
         return offers.get(offers.size() - 1);
       }

@@ -1,7 +1,6 @@
 package com.expleague.server.agents.roles;
 
 import com.expleague.model.Offer;
-import com.expleague.xmpp.JID;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +14,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Client client = registerClient("client");
       final Expert expert = registerExpert("expert");
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
       expert.goOnline();
       final Offer offer = expert.receiveOffer("Task");
       expert.acceptOffer(offer);
@@ -32,7 +31,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert = registerExpert("expert");
       expert.goOnline();
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
       final Offer offer = expert.receiveOffer("Task");
       expert.acceptOffer(offer);
       client.receiveStart(expert);
@@ -49,8 +48,8 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert = registerExpert("expert");
       expert.goOnline();
       client.goOnline();
-      final Room room = client.query("Task1");
-      final Room room2 = client.query("Task2");
+      client.query("Task1");
+      client.query("Task2");
 
       final Offer offer1 = expert.receiveOffer();
       expert.acceptOffer(offer1);
@@ -58,7 +57,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       expert.sendAnswer(offer1, "Answer1");
       client.receiveAnswer(expert, "Answer1");
 
-      final Offer offer2 = expert.receiveOffer(s -> !s.equals(offer1.topic()));
+      final Offer offer2 = expert.receiveOffer(offer1);
       expert.acceptOffer(offer2);
       client.receiveStart(expert);
       expert.sendAnswer(offer2, "Answer2");
@@ -74,15 +73,15 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert = registerExpert("expert");
       expert.goOnline();
       client.goOnline();
-      final Room room = client.query("Task1");
-      final Room room2 = client.query("Task2");
+      client.query("Task1");
+      client.query("Task2");
       client.goOffline();
 
       final Offer offer = expert.receiveOffer();
       expert.acceptOffer(offer);
       expert.sendAnswer(offer, "Answer1");
 
-      final Offer offer2 = expert.receiveOffer(s -> !s.equals(offer.topic()));
+      final Offer offer2 = expert.receiveOffer(offer);
       expert.acceptOffer(offer2);
       expert.sendAnswer(offer2, "Answer2");
 
@@ -102,8 +101,8 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert = registerExpert("expert");
       expert.goOnline();
       client.goOnline();
-      final Room room = client.query("Task1");
-      final Room room2 = client.query("Task2");
+      client.query("Task1");
+      client.query("Task2");
       client.goOffline();
 
       final Offer offer = expert.receiveOffer();
@@ -115,7 +114,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       client.receiveAnswer(expert, "Answer1");
       client.goOffline();
 
-      final Offer offer2 = expert.receiveOffer(s -> !s.equals(offer.topic()));
+      final Offer offer2 = expert.receiveOffer(offer);
       expert.acceptOffer(offer2);
       expert.sendAnswer(offer2, "Answer2");
 
@@ -132,8 +131,8 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert = registerExpert("expert");
       expert.goOnline();
       client.goOnline();
-      final Room room = client.query("Task1");
-      final Room room2 = client.query("Task2");
+      client.query("Task1");
+      client.query("Task2");
       client.goOffline();
 
       final Offer offer = expert.receiveOffer();
@@ -143,7 +142,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       client.goOnline();
       client.receiveStart(expert);
       client.receiveAnswer(expert, "Answer1");
-      final Offer offer2 = expert.receiveOffer(s -> !s.equals(offer.topic()));
+      final Offer offer2 = expert.receiveOffer(offer);
       expert.acceptOffer(offer2);
       client.receiveStart(expert);
 
@@ -165,14 +164,14 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       expert.goOnline();
       expert2.goOnline();
       client.goOnline();
-      final Room room = client.query("Task1");
-      final Room room2 = client.query("Task2");
+      client.query("Task1");
+      client.query("Task2");
 
       final Offer offer = expert.receiveOffer();
       expert.acceptOffer(offer);
       client.receiveStart(expert);
 
-      final Offer offer2 = expert2.receiveOffer(s -> !s.equals(offer.topic()));
+      final Offer offer2 = expert2.receiveOffer(offer);
       expert2.acceptOffer(offer2);
       client.receiveStart(expert2);
 
@@ -193,14 +192,14 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       expert.goOnline();
       expert2.goOnline();
       client.goOnline();
-      final Room room = client.query("Task1");
-      final Room room2 = client.query("Task2");
+      client.query("Task1");
+      client.query("Task2");
       client.goOffline();
 
       final Offer offer = expert.receiveOffer();
       expert.acceptOffer(offer);
 
-      final Offer offer2 = expert2.receiveOffer(s -> !s.equals(offer.topic()));
+      final Offer offer2 = expert2.receiveOffer(offer);
       expert2.acceptOffer(offer2);
 
       expert.sendAnswer(offer.room(), "Answer1");
@@ -223,8 +222,8 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       expert.goOnline();
       expert2.goOnline();
       client.goOnline();
-      final Room room = client.query("Task1");
-      final Room room2 = client.query("Task2");
+      client.query("Task1");
+      client.query("Task2");
       client.goOffline();
 
       expert.passCheck();
@@ -239,7 +238,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       client.receiveAnswer(expert, "Answer1");
       client.goOffline();
 
-      final Offer offer2 = expert2.receiveOffer(s -> !s.equals(offer1.topic()));
+      final Offer offer2 = expert2.receiveOffer(offer1);
       expert2.acceptOffer(offer2);
       expert2.sendAnswer(offer2.room(), "Answer2");
 
@@ -258,8 +257,8 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       expert.goOnline();
       expert2.goOnline();
       client.goOnline();
-      final Room room = client.query("Task1");
-      final Room room2 = client.query("Task2");
+      client.query("Task1");
+      client.query("Task2");
       client.goOffline();
 
       final Offer offer1 = expert.receiveOffer();
@@ -290,7 +289,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert2 = registerExpert("expert2");
 
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
 
       expert.goOnline();
       final Offer offer = expert.receiveOffer();
@@ -314,12 +313,12 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert2 = registerExpert("expert2");
 
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
 
       expert.goOnline();
       expert2.goOnline();
 
-      final Offer offer1 = expert.receiveOffer("Task");
+      expert.receiveOffer("Task");
       final Offer offer2 = expert2.receiveOffer("Task");
 
       expert2.acceptOffer(offer2);
@@ -339,7 +338,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert3 = registerExpert("expert3");
 
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
 
       expert.goOnline();
       expert2.goOnline();
@@ -368,7 +367,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       expert2.goOnline();
       expert3.goOnline();
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
 
       expert.receiveOffer("Task");
       final Offer offer2 = expert2.receiveOffer("Task");
@@ -391,7 +390,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert3 = registerExpert("expert3");
       expert.goOnline();
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
       expert2.goOnline();
       expert3.goOnline();
 
@@ -420,7 +419,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert7 = registerExpert("expert7");
 
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
       expert.goOnline();
       expert2.goOnline();
       expert3.goOnline();
@@ -435,7 +434,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       expert5.passCheck();
       expert6.goOnline();
       expert6.passCheck();
-      final Room room2 = client.query("Task2");
+      client.query("Task2");
       expert7.goOnline();
       final Offer offer = expert7.receiveOffer("Task2");
 
@@ -465,7 +464,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert7 = registerExpert("expert7");
 
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
       expert.goOnline();
       expert2.goOnline();
       expert3.goOnline();
@@ -483,7 +482,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       expert6.goOnline();
       expert6.passCheck();
 
-      final Room room2 = client.query("Task2");
+      client.query("Task2");
       expert7.goOnline();
       final Offer offer7 = expert7.receiveOffer("Task2");
       expert7.acceptOffer(offer7);
@@ -493,7 +492,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       expert5.goOffline();
       expert6.goOffline();
 
-      final Room room3 = client.query("Task3");
+      client.query("Task3");
 
       expert2.acceptOffer(offer2);
       client.receiveStart(expert2);
@@ -527,7 +526,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert7 = registerExpert("expert7");
 
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
       expert.goOnline();
       expert2.goOnline();
       expert3.goOnline();
@@ -545,18 +544,15 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       expert6.goOnline();
       expert6.passCheck();
 
-      final Room room2 = client.query("Task2");
+      client.query("Task2");
       expert7.goOnline();
       final Offer task2 = expert7.receiveOffer("Task2");
       expert7.acceptOffer(task2);
       client.receiveStart(expert7);
 
       expert.goOffline();
-//      expert.passIgnoreCheck();
       expert3.goOffline();
-//      expert3.passIgnoreCheck();
       expert4.goOffline();
-//      expert4.passIgnoreCheck();
 
       expert5.receiveOffer("Task");
       expert6.receiveOffer("Task");
@@ -564,7 +560,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       expert2.acceptOffer(offer);
       client.receiveStart(expert2);
 
-      final Room room3 = client.query("Task3");
+      client.query("Task3");
       final Offer task3 = expert5.receiveOffer("Task3");
       expert6.receiveOffer("Task3");
 
@@ -593,7 +589,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       expert3.goOnline();
       client.goOnline();
 
-      final Room room = client.query("Task");
+      client.query("Task");
 
       expert.passCheck();
       expert2.passCheck();
@@ -605,7 +601,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
 
       expert3.goOffline();
 
-      final Room room2 = client.query("Task2");
+      client.query("Task2");
       expert2.acceptOffer(task);
       client.receiveStart(expert2);
 
@@ -630,7 +626,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert2 = registerExpert("expert2");
 
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
 
       expert.goOnline();
       expert2.goOnline();
@@ -655,7 +651,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert3 = registerExpert("expert3");
 
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
 
       expert.goOnline();
       expert.passCheck();
@@ -686,7 +682,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert3 = registerExpert("expert3");
 
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
 
       expert.goOnline();
       expert2.goOnline();
@@ -713,7 +709,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert = registerExpert("expert1");
 
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
       client.goOffline();
 
       expert.goOnline();
@@ -733,7 +729,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert = registerExpert("expert1");
 
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
       expert.goOnline();
       expert.passCheck();
       final Offer task = expert.receiveOffer("Task");
@@ -756,7 +752,7 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       final Expert expert = registerExpert("expert1");
 
       client.goOnline();
-      final Room room = client.query("Task");
+      client.query("Task");
       expert.goOnline();
       final Offer task = expert.receiveOffer("Task");
       expert.acceptOffer(task);
