@@ -13,24 +13,15 @@ class ExpertsOverviewController: UITableViewController {
     var experts: [ExpLeagueMember] {
         return AppDelegate.instance.activeProfile!.experts
     }
+    
+    var table: UITableView {
+        return (self.view as! UITableView)
+    }
         
     var top: [ExpLeagueMember] = []
     var my: [ExpLeagueMember] = []
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        self.navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
-    }
-    
-    override func viewWillAppear(animated: Bool) {
-        super.viewWillAppear(animated)
-        let table = (self.view as! UITableView)
-        table.reloadData()
-        table.editing = false
-        (view as! UITableView).registerClass(UITableViewCell.self, forCellReuseIdentifier: "Empty")
-        if (navigationController != nil) {
-            navigationController!.navigationBar.setBackgroundImage(UIImage(named: "experts_background"), forBarMetrics: .Default)
-        }
+    func update() {
         top.removeAll()
         my.removeAll()
         for exp in experts {
@@ -41,6 +32,24 @@ class ExpertsOverviewController: UITableViewController {
                 my.append(exp)
             }
         }
+        table.reloadData()
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
+        AppDelegate.instance.expertsView = self
+        (view as! UITableView).registerClass(UITableViewCell.self, forCellReuseIdentifier: "Empty")
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+
+        table.editing = false
+        if (navigationController != nil) {
+            navigationController!.navigationBar.setBackgroundImage(UIImage(named: "experts_background"), forBarMetrics: .Default)
+        }
+        update()
     }
     
     override func viewDidAppear(animated: Bool) {

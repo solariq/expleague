@@ -325,13 +325,13 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
     var location: CLLocationCoordinate2D?
     
     func textHeight(width: CGFloat) -> CGFloat {
-        return order.text.boundingRectWithSize(
+        return ceil(order.text.boundingRectWithSize(
             CGSizeMake(width, CGFloat(MAXFLOAT)),
             options: NSStringDrawingOptions.UsesLineFragmentOrigin,
             attributes: [
-                NSFontAttributeName : ChatCell.defaultFont
+                NSFontAttributeName : ChatCell.topicFont
             ],
-            context: nil).size.height
+            context: nil).size.height)
     }
 
     func height(maxWidth width: CGFloat) -> CGFloat {
@@ -396,7 +396,7 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
             throw ModelErrors.WrongCellType
         }
         setupCell.topic.text = order.offer.topic
-        setupCell.topicHeight.constant = textHeight(setupCell.textWidth)
+        setupCell.textHeight = textHeight(setupCell.textWidth)
         timer = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: "advanceTimer:", userInfo: setupCell.status, repeats: true)
         setupCell.attachments = images.count + (order.offer.local ? 1 : 0)
         setupCell.attachmentsView.dataSource = self

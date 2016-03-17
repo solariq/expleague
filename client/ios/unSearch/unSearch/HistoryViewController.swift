@@ -229,7 +229,7 @@ class HistoryViewController: UITableViewController {
         AppDelegate.instance.tabs.tabBar.hidden = true;
 
         AppDelegate.instance.activeProfile!.selected = o
-        let messagesView = OrderDetailsVeiwController(data: model(o))
+        let messagesView = OrderDetailsViewController(data: model(o))
         splitViewController!.showDetailViewController(messagesView, sender: nil)
     }
     
@@ -283,7 +283,7 @@ extension HistoryViewController: UISplitViewControllerDelegate {
             if (navigationController != nil) {
                 return navigationController
             }
-            let mvc = OrderDetailsVeiwController(data: model(selected!))
+            let mvc = OrderDetailsViewController(data: model(selected!))
             return mvc
         }
     }

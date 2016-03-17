@@ -275,6 +275,7 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
                     expert.available = profile.attributeBoolValueForName("available")
                 }
             }
+            AppDelegate.instance.expertsView?.update()
         }
         if let from = iq.from(), let order = order(name: from.user) {
             order.iq(iq: iq)

@@ -45,12 +45,17 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        AppDelegate.instance.orderView = self
         self.locationManager.requestWhenInUseAuthorization()
         if CLLocationManager.locationServicesEnabled() {
             locationManager.delegate = self
             locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
             locationManager.startUpdatingLocation()
         }
+    }
+    
+    var descriptionController: OrderDescriptionViewController {
+        return self.childViewControllers[0] as! OrderDescriptionViewController
     }
     
     let locationManager = CLLocationManager()
@@ -115,6 +120,11 @@ class OrderDescriptionViewController: UITableViewController {
     
     override func viewDidAppear(animated: Bool) {
         adjustSizes(view.frame.height)
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        update()
     }
     
     override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
@@ -267,6 +277,7 @@ class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionV
         ids.removeAtIndex(index)
         let _ = progress.removeAtIndex(index)
         view?.reloadData()
+        parent?.update()
     }
     
     func clear() {

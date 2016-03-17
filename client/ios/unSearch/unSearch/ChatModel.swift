@@ -12,7 +12,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     let order: ExpLeagueOrder
     let lock: dispatch_queue_t
 
-    weak var controller: OrderDetailsVeiwController? {
+    weak var controller: OrderDetailsViewController? {
         didSet {
             if (controller != nil) {
                 controller!.messages.dataSource = self
@@ -151,7 +151,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 state = .Chat
             }
         }
-        else if (progressModel != nil) {
+        else if (order.isActive && progressModel != nil) {
             cells.append(progressModel!)
         }
         updateGroups()

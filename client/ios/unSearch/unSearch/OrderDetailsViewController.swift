@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import XMPPFramework
 
-class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSenderQueue {
+class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSenderQueue {
     var detailsView: OrderDetailsView? {
         return view as? OrderDetailsView
     }
@@ -107,6 +107,7 @@ class OrderDetailsVeiwController: UIViewController, ChatInputDelegate, ImageSend
     override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
         coordinator.animateAlongsideTransition({ (context: UIViewControllerTransitionCoordinatorContext) -> Void in
             self.messages.reloadData()
+            self.detailsView!.adjustScroll()
         }, completion: nil)
         super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
     }
@@ -214,8 +215,8 @@ class FeedbackViewController: UIViewController {
         cancelButton.clipsToBounds = true
     }
     
-    let parent: OrderDetailsVeiwController
-    init(parent: OrderDetailsVeiwController) {
+    let parent: OrderDetailsViewController
+    init(parent: OrderDetailsViewController) {
         self.parent = parent
         super.init(nibName: "FeedbackView", bundle: nil)
     }
@@ -245,8 +246,8 @@ class AnswerDelegate: NSObject, UIWebViewDelegate {
         return true
     }
     
-    let parent: OrderDetailsVeiwController
-    init(parent: OrderDetailsVeiwController) {
+    let parent: OrderDetailsViewController
+    init(parent: OrderDetailsViewController) {
         self.parent = parent
     }
 }

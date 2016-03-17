@@ -82,6 +82,8 @@ class AppDelegate: UIResponder {
         }
     }
 
+    var orderView: OrderViewController?
+    var expertsView: ExpertsOverviewController?
     var historyView: HistoryViewController?
     let connectionProgressView = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier("progressBar") as! ConnectionProgressController
     

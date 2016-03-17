@@ -17,7 +17,8 @@ enum CellAlignment: Int {
 
 class ChatCell: UITableViewCell {
     static let defaultFont = UIFont(name: "Helvetica", size: 13)!
-    var controller: OrderDetailsVeiwController?
+    static let topicFont = UIFont.systemFontOfSize(15)
+    var controller: OrderDetailsViewController?
     override func awakeFromNib() {
         super.awakeFromNib()
         backgroundColor = UIColor.clearColor()
@@ -96,7 +97,16 @@ class SetupChatCell: ChatCell {
     }
     
     var textWidth: CGFloat {
-        return topic.contentSize.width
+        return frame.width - 32
+    }
+    
+    var textHeight: CGFloat {
+        get {
+            return topicHeight.constant
+        }
+        set (h) {
+            topicHeight.constant = h
+        }
     }
     
     static var labelHeight = CGFloat(18)

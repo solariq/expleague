@@ -45,8 +45,8 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
     
     var delegate: ChatInputDelegate?
     
-    var parent: OrderDetailsVeiwController {
-        return (parentViewController as! OrderDetailsVeiwController)
+    var parent: OrderDetailsViewController {
+        return (parentViewController as! OrderDetailsViewController)
     }
     
     func textViewDidBeginEditing(textView: UITextView) {

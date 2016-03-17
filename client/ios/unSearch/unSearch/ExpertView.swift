@@ -24,6 +24,7 @@ class ExpertViewController: UIViewController {
     @IBOutlet weak var button: UIButton!
     
     @IBAction func fire(sender: UIButton) {
+        AppDelegate.instance.orderView!.descriptionController.experts.append(expert)
         AppDelegate.instance.tabs.selectedIndex = 0
     }
     
@@ -45,7 +46,7 @@ class ExpertViewController: UIViewController {
         }
         navigationController?.navigationBar.tintColor = UIColor.whiteColor()
         button.layer.cornerRadius = button.frame.height / 2
-        topAvaDistance.constant = avatarBg.frame.height / 4
+        topAvaDistance.constant = max(avatarBg.frame.height / 4, 64)
         descriptionText.textContainerInset = UIEdgeInsetsZero
         descriptionText.contentInset = UIEdgeInsetsZero
         descriptionText.textContainer.lineFragmentPadding = 0
@@ -75,6 +76,7 @@ class ExpertViewController: UIViewController {
     }
     
     override func viewWillDisappear(animated: Bool) {
+        AppDelegate.instance.tabs.tabBar.hidden = false
         super.viewWillDisappear(animated)
     }
     
