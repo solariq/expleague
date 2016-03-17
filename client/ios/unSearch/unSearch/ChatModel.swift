@@ -54,7 +54,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     }
     
     func translateToIndex(plain: Int) -> NSIndexPath? {
-        var x = plain
+        var x = plain - 1
         for i in 0..<groups.count {
             for j in 0..<groups[i].count {
                 x--
@@ -68,8 +68,10 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     }
 
     private func syncInner() {
+        var progressModel = cells.last is TaskInProgressModel || cells.last is LookingForExpertModel ? cells.last : nil
         if (cells.isEmpty) {
             cells.append(SetupModel(order: order))
+            progressModel = LookingForExpertModel(order: order)
         }
         let cellsCount = cells.count
         let startedFrom = lastKnownMessage
@@ -78,7 +80,6 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         
         var expertModel = cells.filter({$0 is ExpertModel}).last as? ExpertModel
         expertModel = expertModel != nil ? (expertModel!.status ? expertModel : nil) : nil
-        var progressModel = cells.last is TaskInProgressModel || cells.last is LookingForExpertModel ? cells.last : LookingForExpertModel(order: order)
 
         if (model is LookingForExpertModel || model is TaskInProgressModel) {
             cells.removeLast();
