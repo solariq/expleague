@@ -170,7 +170,7 @@ class MessageChatCell: ChatCell {
     @IBOutlet var content: UIView!
     
     var maxWidth: CGFloat {
-        return frame.width - 32
+        return frame.width - 48
     }
     
     override func awakeFromNib() {

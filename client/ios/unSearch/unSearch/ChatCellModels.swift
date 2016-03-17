@@ -370,7 +370,7 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
         let label = timer.userInfo as! UILabel
         let timeLeft = order.before - CFAbsoluteTimeGetCurrent()
         switch(order.status) {
-        case .Open, .ExpertSearch:
+        case .Open, .ExpertSearch, .Deciding:
             label.textColor = UIColor.lightGrayColor()
             label.text = "ОТКРЫТО. Осталось: " + formatPeriodRussian(timeLeft)
             break
@@ -474,14 +474,7 @@ class ExpertModel: ChatCellModel {
     
     func accept(message: ExpLeagueMessage) -> Bool {
         if (message.type == .ExpertAssignment) {
-            var expert: ExpLeagueMember
-            if (message.body == nil || message.body!.isEmpty) {
-                expert = try! ExpLeagueMember(json: message.properties)
-            }
-            else {
-                expert = ExpLeagueMember(xml: try! DDXMLElement(XMLString: message.body))
-            }
-            expert = AppDelegate.instance.activeProfile!.expert(expert.login) ?? expert
+            let expert = message.expert!
             if (self.expert == nil) {
                 self.expert = expert
                 return true

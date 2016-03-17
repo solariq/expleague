@@ -24,7 +24,7 @@ class ExpertViewController: UIViewController {
     @IBOutlet weak var button: UIButton!
     
     @IBAction func fire(sender: UIButton) {
-        AppDelegate.instance.orderView!.descriptionController.experts.append(expert)
+        AppDelegate.instance.orderView!.descriptionController.append(expert: expert)
         AppDelegate.instance.tabs.selectedIndex = 0
     }
     
@@ -72,6 +72,7 @@ class ExpertViewController: UIViewController {
         descriptionText.text = "Эксперт в областях: \(expert.tags.joinWithSeparator(", "))\nОбразование: высшее\nВыполнено заказов: \(expert.tasks)"
         score.text = "\(expert.rating) баллов (\(expert.based) оценок)"
         orders.text = "\(expert.myTasks) заказов выполнено"
+        AppDelegate.instance.tabs.tabBar.hidden = true
         super.viewWillAppear(animated)
     }
     

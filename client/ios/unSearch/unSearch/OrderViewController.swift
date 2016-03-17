@@ -91,8 +91,10 @@ class OrderDescriptionViewController: UITableViewController {
     var experts: [ExpLeagueMember] = []
     
     func append(expert exp: ExpLeagueMember) {
-        experts.append(exp)
-        update()
+        if (!experts.contains(exp)) {
+            experts.append(exp)
+            update()
+        }
     }
     
     override func viewDidLoad() {

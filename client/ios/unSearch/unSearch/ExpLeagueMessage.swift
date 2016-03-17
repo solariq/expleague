@@ -39,6 +39,20 @@ class ExpLeagueMessage: NSManagedObject {
         }
     }
     
+    var expert: ExpLeagueMember? {
+        var expert: ExpLeagueMember?
+        if (type == .ExpertAssignment) {
+            if (body == nil || body!.isEmpty) {
+                expert = try! ExpLeagueMember(json: properties)
+            }
+            else {
+                expert = ExpLeagueMember(xml: try! DDXMLElement(XMLString: body))
+            }
+            expert = AppDelegate.instance.activeProfile!.expert(expert!.login) ?? expert
+        }
+        return expert
+    }
+    
     func setProperty(name: String, value: AnyObject) {
         let properties = NSMutableDictionary()
         properties.addEntriesFromDictionary(self.properties)

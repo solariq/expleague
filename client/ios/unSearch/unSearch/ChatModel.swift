@@ -54,7 +54,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     }
     
     func translateToIndex(plain: Int) -> NSIndexPath? {
-        var x = plain
+        var x = plain - 1
         for i in 0..<groups.count {
             for j in 0..<groups[i].count {
                 x--
@@ -68,8 +68,10 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     }
 
     private func syncInner() {
+        var progressModel = cells.last is TaskInProgressModel || cells.last is LookingForExpertModel ? cells.last : nil
         if (cells.isEmpty) {
             cells.append(SetupModel(order: order))
+            progressModel = LookingForExpertModel(order: order)
         }
         let cellsCount = cells.count
         let startedFrom = lastKnownMessage
@@ -78,7 +80,6 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         
         var expertModel = cells.filter({$0 is ExpertModel}).last as? ExpertModel
         expertModel = expertModel != nil ? (expertModel!.status ? expertModel : nil) : nil
-        var progressModel = cells.last is TaskInProgressModel || cells.last is LookingForExpertModel ? cells.last : LookingForExpertModel(order: order)
 
         if (model is LookingForExpertModel || model is TaskInProgressModel) {
             cells.removeLast();
@@ -122,7 +123,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 else if (msg.type == .ExpertMessage) {
                     newModel = ChatMessageModel(incoming: true, author: msg.from)
                 }
-                else {
+                else if (msg.type != .Feedback) {
                     newModel = ChatMessageModel(incoming: false, author: "me")
                     if (progressModel == nil) {
                         progressModel = LookingForExpertModel(order: order)
@@ -138,27 +139,28 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             modelChangeCount = 0
         }
         
-        state = .Chat
-        if (model is AnswerReceivedModel) {
-            switch(order.status) {
-            case .Deciding:
-                state = .Ask
-                break
-            case .Closed:
-                state = .Closed
-                break
-            default:
-                state = .Chat
+        switch(order.status) {
+        case .Deciding:
+            state = .Ask
+            break
+        case .Closed, .Canceled:
+            state = .Closed
+            break
+        default:
+            state = .Chat
+            if (progressModel != nil) {
+                cells.append(progressModel!)
             }
         }
-        else if (order.isActive && progressModel != nil) {
-            cells.append(progressModel!)
-        }
+        
         updateGroups()
+
         if ((startedFrom != lastKnownMessage || cells.count != cellsCount) && controller != nil) {
+            controller?.messages.reloadData()
             controller!.answerText = answer
-            controller!.messages.reloadData()
-            controller!.scrollToLastMessage()
+            dispatch_async(dispatch_get_main_queue()){
+                self.controller!.scrollToLastMessage()
+            }
         }
     }
 

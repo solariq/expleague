@@ -12,7 +12,7 @@
             <rect key="frame" x="0.0" y="0.0" width="367" height="304"/>
             <autoresizingMask key="autoresizingMask"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Em6-Hl-a3b" id="Nb7-0I-srg">
-                <rect key="frame" x="0.0" y="0.0" width="367" height="303"/>
+                <rect key="frame" x="0.0" y="0.0" width="367" height="303.5"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chat_expert_tail" translatesAutoresizingMaskIntoConstraints="NO" id="Ccx-0y-Ber">
@@ -38,6 +38,7 @@
                     <constraint firstItem="Cbx-yh-ZRR" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="Nb7-0I-srg" secondAttribute="trailingMargin" constant="8" id="6rN-G8-KGg"/>
                     <constraint firstItem="Cbx-yh-ZRR" firstAttribute="leading" secondItem="Nb7-0I-srg" secondAttribute="leadingMargin" constant="4" id="CZQ-Xw-nbL"/>
                     <constraint firstAttribute="bottomMargin" secondItem="Ccx-0y-Ber" secondAttribute="bottom" id="TCc-rz-PdH"/>
+                    <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="Cbx-yh-ZRR" secondAttribute="trailing" constant="8" id="VOI-fS-yFx"/>
                     <constraint firstItem="Cbx-yh-ZRR" firstAttribute="bottom" secondItem="Nb7-0I-srg" secondAttribute="bottomMargin" constant="6" id="Wyr-X8-x9j"/>
                     <constraint firstItem="Cbx-yh-ZRR" firstAttribute="top" secondItem="Nb7-0I-srg" secondAttribute="topMargin" id="nzB-3A-1pP"/>
                 </constraints>
