@@ -122,7 +122,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 else if (msg.type == .ExpertMessage) {
                     newModel = ChatMessageModel(incoming: true, author: msg.from)
                 }
-                else {
+                else if (msg.type != .Feedback) {
                     newModel = ChatMessageModel(incoming: false, author: "me")
                     if (progressModel == nil) {
                         progressModel = LookingForExpertModel(order: order)
