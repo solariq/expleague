@@ -5,11 +5,13 @@ import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.spbsu.commons.seq.CharSeqTools;
-import org.jetbrains.annotations.Nullable;
 
 import javax.xml.bind.annotation.*;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -32,8 +34,11 @@ public class Offer extends Item {
   @XmlElement(namespace = Operations.NS)
   private String topic;
 
+  @XmlElement(namespace = Operations.NS)
+  private Filter filter;
+
   @XmlAnyElement(lax = true)
-  private List<Item> attachments;
+  private List<Attachment> attachments;
 
   @XmlAttribute(name = "local")
   private Boolean isLocal;
@@ -50,9 +55,6 @@ public class Offer extends Item {
   @XmlElementWrapper(namespace = Operations.NS)
   @XmlAnyElement(lax = true)
   private List<ExpertsProfile> workers;
-
-  @XmlAnyElement(lax = true)
-  private Filter filter;
 
   public Offer() {
   }
@@ -144,7 +146,9 @@ public class Offer extends Item {
   }
 
   public boolean fit(JID expert) {
-    return filter == null || filter.fit(expert);
+    final Optional<Filter> filter = attachments.stream().filter(a -> a instanceof Filter).map(a -> (Filter) a).findFirst();
+    //noinspection OptionalGetWithoutIsPresent
+    return !filter.isPresent() || filter.get().fit(expert);
   }
 
   public void topic(String topic) {
@@ -152,7 +156,17 @@ public class Offer extends Item {
   }
 
   public Filter filter() {
-    return filter != null ? filter : (filter = new Filter());
+    final Optional<Filter> filterOpt = attachments.stream().filter(a -> a instanceof Filter).map(a -> (Filter) a).findFirst();
+    if (filterOpt.isPresent()) {
+      return filterOpt.get();
+    }
+    final Filter result = new Filter();
+    attachments.add(result);
+
+    return result;
+  }
+
+  private void recoverFilter() {
   }
 
   public void addWorker(ExpertsProfile profile) {

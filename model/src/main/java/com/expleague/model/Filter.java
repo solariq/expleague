@@ -12,7 +12,7 @@ import java.util.List;
  * Created by solar on 04/03/16.
  */
 @XmlRootElement(name = "experts-filter")
-public class Filter extends Item {
+public class Filter extends Attachment {
 
   @XmlElement(namespace = Operations.NS)
   private List<JID> reject;
