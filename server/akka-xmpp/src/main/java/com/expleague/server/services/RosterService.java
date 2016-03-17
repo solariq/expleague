@@ -50,7 +50,6 @@ public class RosterService extends UntypedActorAdapter {
             }).forEach(query::add);
 
         LaborExchange.board().topExperts()
-            .filter(jid -> XMPP.online(jid, context()))
             .filter(known::add)
             .map(jid -> Roster.instance().profile(jid))
             .map(p -> {
