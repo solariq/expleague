@@ -116,9 +116,11 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
     }
     else if (msg.from().bareEq(dump.owner()) && !msg.has(Done.class)){
       final Offer offer = offer(msg);
-      order = LaborExchange.board().register(offer);
-      invoke(new Message(XMPP.jid(), offer.client(), new Create(), order.offer()));
-      LaborExchange.tell(context(), order, self());
+      if (offer != null) {
+        order = LaborExchange.board().register(offer);
+        invoke(new Message(XMPP.jid(), offer.client(), new Create(), order.offer()));
+        LaborExchange.tell(context(), order, self());
+      }
     }
 
     if (msg.type() == MessageType.GROUP_CHAT) {
@@ -174,6 +176,8 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
 
   private Offer offer(Message msg) {
     final Offer result;
+    if (!msg.has(Offer.class) && msg.body().isEmpty())
+      return null;
     final ExpLeagueOrder prevOrder = lastOrder();
     if (prevOrder != null) {
       final Offer prevOffer = prevOrder.offer();

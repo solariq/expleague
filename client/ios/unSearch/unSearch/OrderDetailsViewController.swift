@@ -174,8 +174,8 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     }
 
     func scrollToLastMessage() {
-        if (data.groups.count > 0) {
-            messages.scrollToRowAtIndexPath(data.lastIndex, atScrollPosition: .Top, animated: true)
+        if let index = data.lastIndex {
+            messages.scrollToRowAtIndexPath(index, atScrollPosition: .Top, animated: true)
         }
     }
 
