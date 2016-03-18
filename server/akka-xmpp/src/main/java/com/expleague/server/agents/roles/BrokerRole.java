@@ -130,7 +130,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
         ).event(Timeout.class,
             (to, task) -> {
               timeout = AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT.plus(FiniteDuration.apply(rng.nextDouble(), TimeUnit.MINUTES)), self());
-              return lookForExpert(task);
+              return task.order().status() != SUSPENDED ? lookForExpert(task) : stay();
             }
         )
     );
