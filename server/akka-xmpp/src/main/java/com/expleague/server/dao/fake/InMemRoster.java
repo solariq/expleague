@@ -3,6 +3,7 @@ package com.expleague.server.dao.fake;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
 import com.expleague.server.XMPPUser;
+import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.register.RegisterQuery;
 
 import javax.security.sasl.AuthenticationException;
@@ -80,5 +81,9 @@ public class InMemRoster implements Roster {
         device -> id.equals(device.user().id())
     ).collect(Collectors.toList());
     return result.toArray(new XMPPDevice[result.size()]);
+  }
+
+  @Override
+  public void invalidateProfile(JID jid) {
   }
 }

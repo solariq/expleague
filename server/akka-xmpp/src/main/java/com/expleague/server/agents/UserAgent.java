@@ -182,7 +182,7 @@ public class UserAgent extends PersistentActorAdapter {
       final Stanza peek = deliveryQueue.peek();
       if (peek != null && !peek.id().equals(delivered.id())) {
         log.warning("Unexpected delivery message id " + delivered.id() + ", retrying to send: " + peek);
-        connection.tell(peek, self());
+//        connection.tell(peek, self());
         return;
       }
       deliveryQueue.poll();

@@ -63,6 +63,8 @@ public interface Roster {
         .map(o -> o.of(ACTIVE)).flatMap(s -> s);
   }
 
+  void invalidateProfile(JID jid);
+
   default Stream<Tag> specializations(JID jid) {
     final ExpertsProfile.Builder builder = new ExpertsProfile.Builder(jid);
     LaborExchange.board().related(jid)

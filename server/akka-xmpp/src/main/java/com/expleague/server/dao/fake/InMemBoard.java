@@ -1,6 +1,7 @@
 package com.expleague.server.dao.fake;
 
 import com.expleague.model.Offer;
+import com.expleague.server.Roster;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.xmpp.JID;
@@ -88,8 +89,11 @@ public class InMemBoard implements LaborExchange.Board {
     }
 
     @Override
-    protected void role(JID bare, Role checking) {
-      roles.put(bare.bare(), checking);
+    protected void role(JID bare, Role role) {
+      roles.put(bare.bare(), role);
+      if (role.permanent()) {
+        Roster.instance().invalidateProfile(bare);
+      }
     }
 
     @Override

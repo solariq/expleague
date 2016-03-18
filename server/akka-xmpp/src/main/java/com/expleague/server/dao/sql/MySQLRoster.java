@@ -177,10 +177,15 @@ public class MySQLRoster extends MySQLOps implements Roster {
     });
   }
 
-  FixedSizeCache<String, ExpertsProfile> profilesCache = new FixedSizeCache<>(100, CacheStrategy.Type.LRU);
+  private final FixedSizeCache<String, ExpertsProfile> profilesCache = new FixedSizeCache<>(100, CacheStrategy.Type.LRU);
   @Override
   public ExpertsProfile profile(JID jid) {
     return profilesCache.get(jid.local(), a -> Roster.super.profile(jid));
+  }
+
+  @Override
+  public void invalidateProfile(JID jid) {
+    profilesCache.clear(jid.local());
   }
 
   @Override

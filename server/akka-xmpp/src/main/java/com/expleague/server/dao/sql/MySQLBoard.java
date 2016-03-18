@@ -2,6 +2,7 @@ package com.expleague.server.dao.sql;
 
 import com.expleague.model.Offer;
 import com.expleague.server.ExpLeagueServer;
+import com.expleague.server.Roster;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.ExpLeagueRoomAgent;
 import com.expleague.server.agents.LaborExchange;
