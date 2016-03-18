@@ -169,7 +169,7 @@ class ExpLeagueMessage: NSManagedObject {
                 for match in matches as [NSTextCheckingResult] {
                     let whole = match.rangeAtIndex(0)
                     let id = "cut-\(msg.attributeStringValueForName("id"))-\(index)"
-                    let id_1 = "cuts-\(msg.attributeStringValueForName("id_1"))-\(index)"
+                    let id_1 = "cuts-\(msg.attributeStringValueForName("id"))-1-\(index)"
                     finalMD += answerText.substringWithRange(lastMatchIndex..<answerText.startIndex.advancedBy(whole.location))
                     finalMD += "<a class=\"cut\" id=\"" + id_1 + "\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">" + (answerText as NSString).substringWithRange(match.rangeAtIndex(1)) + "</a>" +
                         "<div class=\"cut\" id=\"" + id + "\" style=\"display: none\">" + (answerText as NSString).substringWithRange(match.rangeAtIndex(2)) +

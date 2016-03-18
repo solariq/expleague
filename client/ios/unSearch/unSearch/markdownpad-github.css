@@ -66,6 +66,25 @@ body .back_to_chat:last-of-type {
     margin-bottom: 0px;
 }
 
+/* CLASSES
+ =============================================================================*/
+
+.back_to_chat {
+    display: block;
+    text-align: center;
+    vertical-align:middle;
+    color: #808080;
+    border: 1px solid #808080;
+    padding: 1px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.cut{
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
 /* BLOCKS
  =============================================================================*/
 
@@ -126,7 +145,7 @@ a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-
 }
 
 h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 /* LINKS
@@ -176,7 +195,7 @@ a.hide{
     display: block;
     text-align: center;
     vertical-align:middle;
-    margin-top: 15px;
+    margin-top: 10px;
 }
 /* LISTS
  =============================================================================*/
@@ -368,22 +387,4 @@ img.back_to_chat{
     margin: 0px 0px 0px 0px;
 }
 
-/* CLASSES
- =============================================================================*/
 
-
-.back_to_chat {
-    display: block;
-    text-align: center;
-    vertical-align:middle;
-    color: #808080;
-    border: 1px solid #808080;
-    padding: 1px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-}
-
-.cut{
-    margin-top: 0 px;
-    margin-bottom: 0px
-}
