@@ -116,7 +116,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                     answer += "\n<div id=\"\(id)\"/>\n"
                     answer += (msg.body!);
                     answer += "\n<a class=\"back_to_chat\" href='unSearch:///chat-messages#\(cells.count)'>Обратно в чат</a>\n"
-                    newModel = AnswerReceivedModel(id: id, progress: progressModel as! TaskInProgressModel)
+                    newModel = AnswerReceivedModel(id: id, progress: (progressModel as? TaskInProgressModel) ?? TaskInProgressModel(order: order))
                     progressModel = nil
                 }
                 else if (msg.type == .ExpertMessage) {

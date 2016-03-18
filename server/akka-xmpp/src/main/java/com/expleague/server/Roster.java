@@ -31,11 +31,10 @@ public interface Roster {
 
   default ExpertsProfile profile(JID jid) {
     final ExpertsProfile.Builder builder = new ExpertsProfile.Builder(jid);
-    final XMPPDevice device = device(jid.local());
-    builder.name(device.realName())
-        .avatar(device.avatar());
 
     final XMPPUser user = user(jid.local());
+    builder.name(user.name())
+        .avatar(user.avatar());
     user.tags().forEach(tag -> builder.tag(tag.name(), tag.score()));
 
     final int tasks = LaborExchange.board().related(jid)
