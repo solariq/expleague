@@ -112,7 +112,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @Override
   public Stream<ExpLeagueOrder> related(JID jid) {
     return stream("related-orders", "SELECT Orders.* " +
-        "FROM expleague.Orders INNER JOIN expleague.Participants ON expleague.Orders.id = expleague.Participants.id " +
+        "FROM expleague.Orders INNER JOIN expleague.Participants ON expleague.Orders.id = expleague.Participants.`order` " +
         "WHERE Participants.partisipant = ?", stmt -> stmt.setString(1, jid.local()))
         .map(rs -> {
           try {
