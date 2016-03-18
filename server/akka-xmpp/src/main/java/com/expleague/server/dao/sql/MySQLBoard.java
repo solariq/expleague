@@ -258,16 +258,18 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
 
     @Override
     protected void role(JID jid, Role role) {
-      try {
-        super.role(jid, role);
-        final PreparedStatement changeRole = createStatement("change-role", "INSERT INTO expleague.Participants SET `order` = ?, partisipant = ?, role = ?");
-        changeRole.setInt(1, id);
-        changeRole.setString(2, jid.local());
-        changeRole.setByte(3, (byte)role.index());
-        changeRole.execute();
-      }
-      catch (SQLException e) {
-        throw new RuntimeException(e);
+      super.role(jid, role);
+      if (role.permanent()) {
+        try {
+
+          final PreparedStatement changeRole = createStatement("change-role", "INSERT INTO expleague.Participants SET `order` = ?, partisipant = ?, role = ?");
+          changeRole.setInt(1, id);
+          changeRole.setString(2, jid.local());
+          changeRole.setByte(3, (byte) role.index());
+          changeRole.execute();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
       }
     }
 

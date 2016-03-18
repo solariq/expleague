@@ -53,8 +53,8 @@ public class MySQLRoster extends MySQLOps implements Roster {
     final PreparedStatement associateUser = createStatement("associate-user",
         "SELECT * FROM expleague.Users WHERE avatar = ? AND avatar IS NOT NULL OR name = ? AND name IS NOT NULL OR id = ?"
     );
-    associateUser.setString(1, query.name());
-    associateUser.setString(2, query.avatar());
+    associateUser.setString(1, query.avatar());
+    associateUser.setString(2, query.name());
     associateUser.setString(3, query.username());
 
     try (final ResultSet resultSet = associateUser.executeQuery()) {

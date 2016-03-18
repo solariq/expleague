@@ -20,6 +20,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
+import static com.expleague.server.agents.ExpLeagueOrder.Status.IN_PROGRESS;
+import static com.expleague.server.agents.ExpLeagueOrder.Status.SUSPENDED;
 import static com.expleague.server.agents.LaborExchange.Experts;
 import static com.expleague.server.agents.LaborExchange.experts;
 
@@ -46,12 +48,15 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               explain("Received new order: " + order + ".");
               sender().tell(new Ok(), self());
               order.broker(self());
-              if (order.status() == ExpLeagueOrder.Status.SUSPENDED) {
+              if (order.status() == IN_PROGRESS) // server was shout down
+                order.state().suspend();
+              if (order.status() == SUSPENDED) {
+                order.state().suspend();
                 final JID expertOnTask = order.state().active();
                 //noinspection ConstantConditions
                 explain("Trying to get active worker " + expertOnTask.local() + " back to the order.");
                 Experts.tellTo(expertOnTask, new Resume(order.offer()), self(), context());
-                return goTo(State.WORK_TRACKING).using(order.state().enter(expertOnTask));
+                return goTo(State.STARVING).using(order.state());
               }
               else {
                 explain("No active work on order found.");
@@ -82,7 +87,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
             }
         ).event(ActorRef.class,
             (expert, task) -> {
-              if (task.order().status() == ExpLeagueOrder.Status.SUSPENDED) {
+              if (task.order().status() == SUSPENDED) {
                 if (task.role(Experts.jid(expert)) == ACTIVE) {
                   explain("Worker returned online, sending resume.");
                   expert.tell(new Resume(task.order().offer()), self());
