@@ -65,6 +65,9 @@ public class OfferDto {
     }
 
     this.started = offer.started();
-    this.workers = offer.workers().map(ExpertsProfileDto::new).collect(Collectors.toList());
+    this.workers = offer.workers()
+      .filter(expertsProfile -> expertsProfile.jid() != null)
+      .map(ExpertsProfileDto::new)
+      .collect(Collectors.toList());
   }
 }

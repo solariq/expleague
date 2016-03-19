@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html id=admin-service>
+<html itemscope itemtype="http://schema.org/WebPage" id=admin-service>
     <head>
         <title>ExpLeague - Admin</title>
         <link rel="stylesheet" type="text/css" href="/static/css/admin.css" media="screen"/>
@@ -10,8 +10,79 @@
     </head>
     <body>
         <div id="admin">
+            <div id="header-wrapper">
+                <div id="header">
+                    <span class="header-title">ExpLeague :: Admin</span>
+                </div>
+            </div>
+            <div id="with-sidebar" class="clearfix">
+                <div id="menu" class="sidebar">
+                    <div class="item" onclick="Admin.loadOpenOrders()">
+                        Open orders
+                    </div>
+                    <div class="item" onclick="Admin.loadTopExperts()">
+                        Experts
+                    </div>
+                </div>
+                <div id="content">
 
+                </div>
+            </div>
         </div>
+
+        <div class="hidden" id="templates">
+            <div class="orders bind-model">
+                <div data-bind="if: orders().length == 0">
+                    <div class="nothing-found">
+                        <div class="message">
+                            No orders found
+                        </div>
+                    </div>
+                </div>
+                <div data-bind="if: orders().length > 0">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Topic</th>
+                                <th>Client</th>
+                                <th>Urgency</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: orders">
+                            <tr>
+                                <td data-bind="text: status"></td>
+                                <td>
+                                    <a title="Show dump" href="#" data-bind="text: offer.topic, click: Admin.loadDumpHandler($data)"></a>
+                                </td>
+                                <td data-bind="text: offer.client.bare"></td>
+                                <td data-bind="text: offer.urgency"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="experts bind-model">
+                <div data-bind="foreach: experts">
+                    <div class="expert-profile">
+                        <img class="expert-avatar" data-bind="attr: {src: avatar}" width="40px" height="40px"/>
+                        <span class="expert-name" data-bind="text: name"></span>
+                        <a title="Show related orders" href="#" data-bind="click: Admin.loadRelatedHandler($data)">
+                            <span data-bind="text: login"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dump bind-model">
+                <div class="dump" data-bind="foreach: messages">
+                    <div class="message" data-bind="text: $data">
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script type="application/javascript">
             Admin.init()
         </script>

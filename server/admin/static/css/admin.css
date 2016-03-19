@@ -242,3 +242,124 @@ caption {
 .hidden {
     display: none;
 }
+
+.loader,
+.loader:before,
+.loader:after {
+    background: #50BDF1;
+    -webkit-animation: load1 1s infinite ease-in-out;
+    animation: load1 1s infinite ease-in-out;
+    width: 1em;
+    height: 4em;
+}
+.loader:before,
+.loader:after {
+    position: absolute;
+    top: 0;
+    content: '';
+}
+.loader:before {
+    left: -1.5em;
+    -webkit-animation-delay: -0.32s;
+    animation-delay: -0.32s;
+}
+.loader {
+    text-indent: -9999em;
+    margin: 88px auto;
+    position: relative;
+    font-size: 11px;
+    -webkit-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-animation-delay: -0.16s;
+    animation-delay: -0.16s;
+}
+.loader:after {
+    left: 1.5em;
+}
+@-webkit-keyframes load1 {
+    0%,
+    80%,
+    100% {
+        box-shadow: 0 0 #50BDF1;
+        height: 4em;
+    }
+    40% {
+        box-shadow: 0 -2em #50BDF1;
+        height: 5em;
+    }
+}
+@keyframes load1 {
+    0%,
+    80%,
+    100% {
+        box-shadow: 0 0 #50BDF1;
+        height: 4em;
+    }
+    40% {
+        box-shadow: 0 -2em #50BDF1;
+        height: 5em;
+    }
+}
+
+.nothing-found {
+    padding: 5px;
+}
+
+.nothing-found .message {
+    margin: 0 auto;
+    width: 450px;
+    text-align: center;
+}
+
+
+#admin #header-wrapper {
+    padding: 10px;
+}
+
+#admin #header {
+    background: url("/static/img/about_owl.png") 10px no-repeat transparent;
+    background-size: 50px 50px;
+    color: #3C3B3B;
+    padding: 20px 70px;
+    font-size: 14pt;
+    font-weight: bold;
+    border-bottom: 1px solid;
+    margin: 0px 0px 10px 0px;
+}
+
+#admin #menu {
+    width: 180px;
+    float: left;
+}
+
+#admin #menu .item {
+    background: #f3f3f3;
+    color: #333;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+#admin #menu .item:hover {
+    background: #e3e3e3;
+}
+
+#admin #with-sidebar {
+    padding: 0 10px;
+}
+
+#admin #content {
+    width: 1200px;
+    float: left;
+    padding: 0 10px;
+}
+
+.expert-profile, .dump .message {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px dotted #ccc;
+}
+
+.expert-profile .expert-avatar {
+    margin-right: 10px;
+}

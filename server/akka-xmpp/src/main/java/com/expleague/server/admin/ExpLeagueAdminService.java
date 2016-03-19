@@ -14,9 +14,13 @@ import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import akka.util.Timeout;
+import com.expleague.server.Roster;
+import com.expleague.server.admin.dto.ExpertsProfileDto;
 import com.expleague.server.admin.dto.JIDDto;
 import com.expleague.server.admin.dto.OrderDto;
 import com.expleague.server.agents.LaborExchange;
+import com.expleague.server.dao.Archive;
+import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -31,8 +35,7 @@ import scala.concurrent.duration.Duration;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -92,35 +95,53 @@ public class ExpLeagueAdminService extends UntypedActor {
             }
             else if (path.startsWith("/static")) {
               final File file = new File("admin/static", path.substring(path.indexOf("static") + 7));
-              response = HttpResponse.create().withStatus(200).withEntity(HttpEntities.create(getContentType(file), file));
+              if (file.isFile()) {
+                response = HttpResponse.create().withStatus(200).withEntity(HttpEntities.create(getContentType(file), file));
+              }
+              else {
+                response = HttpResponse.create().withStatus(404).withEntity("File not found");
+              }
             }
             else if ("/open".equals(path)) {
               final LaborExchange.Board board = LaborExchange.board();
               final List<OrderDto> open = board.open().map(OrderDto::new).collect(Collectors.toList());
-              response = getJsonResponse(open);
+              Collections.reverse(open);
+              response = getJsonResponse("orders", open);
             }
             else if ("/top/experts".equals(path)) {
               final LaborExchange.Board board = LaborExchange.board();
-              final List<JIDDto> experts = board.topExperts().map(JIDDto::new).collect(Collectors.toList());
-              response = getJsonResponse(experts);
+              final List<ExpertsProfileDto> experts = board.topExperts()
+                .map(Roster.instance()::profile)
+                .map(ExpertsProfileDto::new)
+                .collect(Collectors.toList());
+              response = getJsonResponse("experts", experts);
             }
             else if (path.startsWith("/history/")) {
               final LaborExchange.Board board = LaborExchange.board();
               final String roomId = path.substring("/history/".length());
               final List<OrderDto> history = Stream.of(board.history(roomId)).map(OrderDto::new).collect(Collectors.toList());
-              response = getJsonResponse(history);
+              Collections.reverse(history);
+              response = getJsonResponse("orders", history);
             }
             else if (path.startsWith("/active/")) {
               final LaborExchange.Board board = LaborExchange.board();
               final String roomId = path.substring("/active/".length());
-              final List<OrderDto> history = Stream.of(board.active(roomId)).map(OrderDto::new).collect(Collectors.toList());
-              response = getJsonResponse(history);
+              final List<OrderDto> active = Stream.of(board.active(roomId)).map(OrderDto::new).collect(Collectors.toList());
+              Collections.reverse(active);
+              response = getJsonResponse("orders", active);
             }
             else if (path.startsWith("/related/")) {
               final LaborExchange.Board board = LaborExchange.board();
               final JID jid = JID.parse(path.substring("/related/".length()));
-              final List<OrderDto> history = board.related(jid).map(OrderDto::new).collect(Collectors.toList());
-              response = getJsonResponse(history);
+              final List<OrderDto> orders = board.related(jid).map(OrderDto::new).collect(Collectors.toList());
+              Collections.reverse(orders);
+              response = getJsonResponse("orders", orders);
+            }
+            else if (path.startsWith("/dump/")) {
+              final JID jid = JID.parse(path.substring("/dump/".length()));
+              final Archive.Dump dump = Archive.instance().dump(jid.local());
+              final List<String> messages = dump.stream().map(Item::xmlString).collect(Collectors.toList());
+              response = getJsonResponse("messages", messages);
             }
           } catch (Exception e) {
             final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -134,8 +155,10 @@ public class ExpLeagueAdminService extends UntypedActor {
       }
     }
 
-    protected HttpResponse getJsonResponse(final Object value) throws JsonProcessingException {
-      return HttpResponse.create().withStatus(200).withEntity(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(value));
+    protected HttpResponse getJsonResponse(final String name, final Object value) throws JsonProcessingException {
+      final Map map = new HashMap();
+      map.put(name, value);
+      return HttpResponse.create().withStatus(200).withEntity(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(map));
     }
 
     @NotNull

@@ -11,6 +11,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.5.3" level="project" />
     <orderEntry type="library" name="Maven: tigase:jaxmpp-j2se:3.0.0" level="project" />
     <orderEntry type="library" name="Maven: tigase:tigase-xmltools:3.4.5" level="project" />
     <orderEntry type="library" name="Maven: dnsjava:dnsjava:2.1.1" level="project" />

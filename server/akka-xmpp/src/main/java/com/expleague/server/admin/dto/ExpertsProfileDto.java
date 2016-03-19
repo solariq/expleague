@@ -48,7 +48,7 @@ public class ExpertsProfileDto {
     this.name = expertsProfile.name();
     this.tasks = expertsProfile.tasks();
     this.education = expertsProfile.education();
-    this.available = expertsProfile.isAvailable();
+    this.available = Boolean.TRUE.equals(expertsProfile.isAvailable());
     this.tags = expertsProfile.tags().map(TagDto::new).collect(Collectors.toList());
     this.rating = expertsProfile.rating();
     this.basedOn = expertsProfile.basedOn();
