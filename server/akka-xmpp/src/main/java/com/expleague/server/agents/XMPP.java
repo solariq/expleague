@@ -112,7 +112,7 @@ public class XMPP extends UntypedActorAdapter {
 
   public void invoke(Message message) {
     if (jid().bareEq(message.to()) && message.has(Application.class)) {
-      Roster.instance().application(message.get(Application.class));
+      Roster.instance().application(message.get(Application.class), message.from());
     }
   }
 
