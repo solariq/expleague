@@ -358,12 +358,12 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
     @ActorMethod
     public void tellQuery(SendQuery sendQuery) {
       assertTrue(isOnline);
+      final Offer offer = new Offer();
+      offer.topic(sendQuery.getText());
       send(new Message(
         sendQuery.getRoom(),
         Message.MessageType.GROUP_CHAT,
-        new Message.Subject( // todo: get rid of json
-          "{\"specific\":true,\"started\":1457627722.72493,\"local\":false,\"location\":{\"longitude\":-122.406417,\"latitude\":37.785834},\"topic\":\"" + sendQuery.getText() + "\",\"attachments\":\"\",\"urgency\":\"day\"}"
-        )
+          offer
       ));
     }
 
