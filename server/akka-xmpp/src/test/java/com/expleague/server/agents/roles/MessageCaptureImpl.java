@@ -4,8 +4,10 @@ import akka.actor.ActorRef;
 import com.expleague.util.akka.MessageCapture;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -23,15 +25,21 @@ public class MessageCaptureImpl implements MessageCapture {
     records.clear();
   }
 
-  public List<MessageCaptureRecord> expect(final String message, final long maxTimeoutMs, Function<List<MessageCaptureRecord>, Boolean> condition) throws Exception {
+  public void expect(final String message, final long maxTimeoutMs, Predicate<List<MessageCaptureRecord>> condition) throws Exception {
+    expectAndGet(message, maxTimeoutMs, messageCaptureRecords -> condition.test(messageCaptureRecords) ? messageCaptureRecords : Collections.emptyList());
+  }
+
+  public <T> List<T> expectAndGet(final String message, final long maxTimeoutMs, Function<List<MessageCaptureRecord>, List<T>> extractor) throws Exception {
     final long startMs = System.currentTimeMillis();
     while (true) {
       final ArrayList<MessageCaptureRecord> copy;
       synchronized (this) {
         copy = new ArrayList<>(records);
       }
-      if (condition.apply(copy)) {
-        return copy;
+
+      final List<T> result = extractor.apply(copy);
+      if (result != null && !result.isEmpty()) {
+        return result;
       }
 
       final long elapsedMs = System.currentTimeMillis() - startMs;

@@ -39,8 +39,11 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
 
   private MessageCaptureImpl messageCapture;
 
-  public static class GoOnline {}
-  public static class GoOffline {}
+  public static class GoOnline {
+  }
+
+  public static class GoOffline {
+  }
 
   public static class SendQuery {
     private final JID room;
@@ -84,11 +87,14 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
     }
   }
 
-  public static class AcceptOffer {}
+  public static class AcceptOffer {
+  }
 
-  public static class ResumeOffer {}
+  public static class ResumeOffer {
+  }
 
-  public static class RejectOffer {}
+  public static class RejectOffer {
+  }
 
   public static class SendAnswer {
     private final JID room;
@@ -209,22 +215,23 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
 
       public void receiveStart(final Expert expert) throws Exception {
         messageCapture.expect("Start not received from " + expert, 10000,
-            records -> toMessages(records.stream()
-                .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path())))
-                .filter(message -> message.has(Operations.Start.class))
-                .count() >= 1
+          records -> records.stream()
+            .filter(toActor(actorRef))
+            .flatMap(messages())
+            .filter(message -> message.has(Operations.Start.class))
+            .count() >= 1
         );
       }
 
       public void receiveAnswer(final Expert expert, final String answer) throws Exception {
         messageCapture.expect("Answer not received from " + expert, 10000,
-            records -> toMessages(records.stream()
-                .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path())))
-                .flatMap(items(Answer.class))
-                .filter(a -> a.value().equals(answer))
-                .count() == 1
+          records -> records.stream()
+            .filter(toActor(actorRef))
+            .flatMap(messages())
+            .flatMap(items(Answer.class))
+            .filter(a -> a.value().equals(answer))
+            .count() == 1
         );
-//        messageCapture.reset();
       }
     }
 
@@ -235,7 +242,8 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
 
       public void acceptOffer(final Offer offer) throws Exception {
         messageCapture.expect("Expert " + jid + " doesn't received invite", 10000,
-          records -> toMessages(records.stream())
+          records -> records.stream()
+            .flatMap(messages())
             .filter(message -> message.to().bareEq(jid))
             .filter(message -> message.has(Operations.Invite.class))
             .count() >= 1
@@ -243,7 +251,8 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
         actorRef.tell(new AcceptOffer(), getRef());
         final JID room = offer.room();
         messageCapture.expect("Room " + room + " doesn't received start", 10000,
-          records -> toMessages(records.stream())
+          records -> records.stream()
+            .flatMap(messages())
             .filter(message -> message.to().equals(room))
             .filter(message -> message.has(Operations.Start.class))
             .count() >= 1
@@ -252,7 +261,8 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
 
       public void resumeOffer(final Offer offer) throws Exception {
         messageCapture.expect("Expert " + jid + " doesn't received resume", 10000,
-          records -> toMessages(records.stream())
+          records -> records.stream()
+            .flatMap(messages())
             .filter(message -> message.to().bareEq(jid))
             .filter(message -> message.has(Operations.Resume.class))
             .count() >= 1
@@ -260,7 +270,8 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
         actorRef.tell(new ResumeOffer(), getRef());
         final JID room = offer.room();
         messageCapture.expect("Room " + room + " doesn't received resume", 10000,
-          records -> toMessages(records.stream())
+          records -> records.stream()
+            .flatMap(messages())
             .filter(message -> message.to().equals(room))
             .filter(message -> message.has(Operations.Resume.class))
             .count() >= 1
@@ -270,7 +281,8 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
       public void rejectOffer(final Offer offer) throws Exception {
         actorRef.tell(new RejectOffer(), getRef());
         messageCapture.expect("Room doesn't received start", 10000,
-          records -> toMessages(records.stream())
+          records -> records.stream()
+            .flatMap(messages())
             .filter(message -> message.to().equals(offer.room()))
             .filter(message -> message.has(Operations.Cancel.class))
             .count() >= 1
@@ -299,24 +311,22 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
       }
 
       protected Offer receiveOffer(final Predicate<Offer> offerFilter) throws Exception {
-        final List<MessageCaptureRecord> captureRecords = messageCapture.expect("Offer not received", 10000,
-          records -> toMessages(records.stream()
-            .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path())))
+        final List<Offer> offers = messageCapture.expectAndGet("Offer not received", 10000,
+          records -> records.stream()
+            .filter(toActor(actorRef))
+            .flatMap(messages())
             .filter(message -> message.has(Operations.Invite.class))
             .flatMap(offers())
-            .count() >= 1
+            .filter(offerFilter)
+            .collect(Collectors.toList())
         );
-        final List<Offer> offers = toMessages(captureRecords.stream()
-          .filter(messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path())))
-          .flatMap(offers())
-          .filter(offerFilter)
-          .collect(Collectors.toList());
         return offers.get(offers.size() - 1);
       }
 
       protected void passCheck() throws Exception {
-        final List<MessageCaptureRecord> captureRecords = messageCapture.expect("Check not passed", 10000,
-          records -> toMessages(records.stream())
+        messageCapture.expect("Check not passed", 10000,
+          records -> records.stream()
+            .flatMap(messages())
             .filter(message -> message.from().equals(jid))
             .filter(message -> message.has(Operations.Ok.class))
             .count() >= 1
@@ -363,7 +373,7 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
       send(new Message(
         sendQuery.getRoom(),
         Message.MessageType.GROUP_CHAT,
-          offer
+        offer
       ));
     }
 
@@ -435,17 +445,21 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
     }
   }
 
-  public static Stream<Message> toMessages(Stream<MessageCaptureRecord> records) {
-    return records
-      .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
-      .map(messageCaptureRecord -> (Message) messageCaptureRecord.getMessage());
+  public static Predicate<MessageCaptureRecord> toActor(final ActorRef actorRef) {
+    return messageCaptureRecord -> messageCaptureRecord.getTo().path().equals(actorRef.path());
+  }
+
+  public static Function<MessageCaptureRecord, Stream<Message>> messages() {
+    return messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message
+      ? Stream.of((Message) messageCaptureRecord.getMessage())
+      : Stream.empty();
   }
 
   public static Function<Message, Stream<Offer>> offers() {
     return items(Offer.class);
   }
 
-  public static <T> Function<Message, Stream<T>> items(Class<T> cls) {
+  public static <T> Function<Message, Stream<T>> items(final Class<T> cls) {
     return m -> m.has(cls) ? Stream.of(m.get(cls)) : Stream.empty();
   }
 }
