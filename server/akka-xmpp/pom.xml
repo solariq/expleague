@@ -176,6 +176,7 @@
         <version>1.5</version>
         <executions>
           <execution>
+            <id>tbts-xmpp</id>
             <phase>package</phase>
             <goals>
               <goal>shade</goal>
@@ -196,6 +197,32 @@
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <mainClass>com.expleague.server.ExpLeagueServer</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+          <execution>
+            <id>tbts-admin</id>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <!--<minimizeJar/>-->
+              <finalName>tbts-admin</finalName>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>allinone</shadedClassifierName>
+              <artifactSet>
+                <includes>
+                  <include>*</include>
+                </includes>
+              </artifactSet>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>reference.conf</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>com.expleague.server.ExpLeagueAdmin</mainClass>
                 </transformer>
               </transformers>
             </configuration>
