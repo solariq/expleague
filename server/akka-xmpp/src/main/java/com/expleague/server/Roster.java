@@ -1,5 +1,6 @@
 package com.expleague.server;
 
+import com.expleague.model.Application;
 import com.expleague.model.ExpertsProfile;
 import com.expleague.model.Tag;
 import com.expleague.server.agents.LaborExchange;
@@ -78,4 +79,6 @@ public interface Roster {
         });
     return builder.build().tags();
   }
+
+  void application(Application application, JID referer);
 }

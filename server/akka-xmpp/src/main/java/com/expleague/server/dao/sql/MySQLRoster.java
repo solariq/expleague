@@ -1,5 +1,6 @@
 package com.expleague.server.dao.sql;
 
+import com.expleague.model.Application;
 import com.expleague.model.ExpertsProfile;
 import com.expleague.model.Tag;
 import com.expleague.server.ExpLeagueServer;
@@ -201,6 +202,18 @@ public class MySQLRoster extends MySQLOps implements Roster {
         throw new RuntimeException(e);
       }
     });
+  }
+
+  @Override
+  public void application(Application application, JID referer) {
+    try {
+      final PreparedStatement addApplication = createStatement("add-application", "INSERT INTO expleague.Applications SET referer= ?, email = ?");
+      addApplication.setString(1, application.email());
+      addApplication.setString(2, referer.bare().toString());
+    }
+    catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @NotNull

@@ -1,5 +1,6 @@
 package com.expleague.server.dao.fake;
 
+import com.expleague.model.Application;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
 import com.expleague.server.XMPPUser;
@@ -7,10 +8,7 @@ import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.register.RegisterQuery;
 
 import javax.security.sasl.AuthenticationException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -85,5 +83,11 @@ public class InMemRoster implements Roster {
 
   @Override
   public void invalidateProfile(JID jid) {
+  }
+
+  private final List<Application> applications = new ArrayList<>();
+  @Override
+  public void application(Application application, JID referer) {
+    applications.add(application);
   }
 }

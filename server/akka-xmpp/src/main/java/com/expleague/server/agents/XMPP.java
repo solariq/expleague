@@ -5,13 +5,16 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
+import com.expleague.model.Application;
 import com.expleague.server.ExpLeagueServer;
+import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
 import com.expleague.util.akka.ActorContainer;
 import com.expleague.util.akka.AkkaTools;
 import com.expleague.util.akka.PersistentActorContainer;
 import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.xmpp.JID;
+import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
 import com.google.common.annotations.VisibleForTesting;
@@ -104,6 +107,12 @@ public class XMPP extends UntypedActorAdapter {
   public void invoke(Stanza stanza) {
     if (!stanza.isBroadcast() && !jid().bareEq(stanza.to())) {
       findOrAllocate(stanza.to()).forward(stanza, context());
+    }
+  }
+
+  public void invoke(Message message) {
+    if (jid().bareEq(message.to()) && message.has(Application.class)) {
+      Roster.instance().application(message.get(Application.class));
     }
   }
 
