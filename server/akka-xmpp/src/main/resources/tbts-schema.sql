@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS expleague.Participants (
 
 CREATE TABLE IF NOT EXISTS expleague.Applications (
   email VARCHAR(128) NOT NULL,
-  referer VARCHAR(64) NOT NULL,
+  referer VARCHAR(64),
 
   CONSTRAINT Applications_Users_id_fk FOREIGN KEY (referer) REFERENCES Users (id) ON DELETE SET NULL
-)
+);

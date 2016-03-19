@@ -208,8 +208,9 @@ public class MySQLRoster extends MySQLOps implements Roster {
   public void application(Application application, JID referer) {
     try {
       final PreparedStatement addApplication = createStatement("add-application", "INSERT INTO expleague.Applications SET referer= ?, email = ?");
-      addApplication.setString(1, application.email());
-      addApplication.setString(2, referer.bare().toString());
+      addApplication.setString(2, application.email());
+      addApplication.setString(1, referer.local());
+      addApplication.execute();
     }
     catch (SQLException e) {
       throw new RuntimeException(e);
