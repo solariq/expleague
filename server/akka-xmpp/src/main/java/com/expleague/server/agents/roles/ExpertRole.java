@@ -7,19 +7,18 @@ import akka.actor.FSM;
 import akka.util.Timeout;
 import com.expleague.model.Answer;
 import com.expleague.model.Offer;
+import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
 import com.expleague.util.akka.AkkaTools;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
-import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static com.expleague.model.Operations.*;
@@ -31,9 +30,9 @@ import static com.expleague.model.Operations.*;
  */
 public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.Variants> {
   private static final Logger log = Logger.getLogger(ExpertRole.class.getName());
-  public static final FiniteDuration CHOICE_TIMEOUT = Duration.create(5, TimeUnit.SECONDS);
-  public static final FiniteDuration CONTINUATION_TIMEOUT = Duration.create(30, TimeUnit.SECONDS);
-  public static final FiniteDuration INVITE_TIMEOUT = Duration.create(5, TimeUnit.MINUTES);
+  public static final FiniteDuration CHOICE_TIMEOUT = ExpLeagueServer.config().timeout("expert-role.choice-timeout");
+  public static final FiniteDuration CONTINUATION_TIMEOUT = ExpLeagueServer.config().timeout("expert-role.continuation-timeout");
+  public static final FiniteDuration INVITE_TIMEOUT = ExpLeagueServer.config().timeout("expert-role.invite-timeout");
   private Cancellable timer;
 
   @Override

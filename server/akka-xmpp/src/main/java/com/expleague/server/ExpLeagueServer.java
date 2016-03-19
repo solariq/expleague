@@ -10,8 +10,10 @@ import com.expleague.util.ios.NotificationsManager;
 import com.google.common.annotations.VisibleForTesting;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import scala.concurrent.duration.FiniteDuration;
 
 import java.io.FileInputStream;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.LogManager;
 
 /**
@@ -72,6 +74,8 @@ public class ExpLeagueServer {
   }
 
   public static class Cfg {
+    private final Config config;
+
     private final String db;
     private final String domain;
     private final Class<? extends Archive> archive;
@@ -80,16 +84,16 @@ public class ExpLeagueServer {
     private final Type type;
 
     public Cfg(Config load) throws ClassNotFoundException {
-      final Config tbts = load.getConfig("tbts");
-      db = tbts.getString("db");
-      domain = tbts.getString("domain");
+      config = load.getConfig("tbts");
+      db = config.getString("db");
+      domain = config.getString("domain");
       //noinspection unchecked
-      archive = (Class<? extends Archive>) Class.forName(tbts.getString("archive"));
+      archive = (Class<? extends Archive>) Class.forName(config.getString("archive"));
       //noinspection unchecked
-      board = (Class<? extends LaborExchange.Board>) Class.forName(tbts.getString("board"));
+      board = (Class<? extends LaborExchange.Board>) Class.forName(config.getString("board"));
       //noinspection unchecked
-      roster = (Class<? extends Roster>) Class.forName(tbts.getString("roster"));
-      type = Type.valueOf(tbts.getString("type").toUpperCase());
+      roster = (Class<? extends Roster>) Class.forName(config.getString("roster"));
+      type = Type.valueOf(config.getString("type").toUpperCase());
     }
 
     public String domain() {
@@ -114,6 +118,21 @@ public class ExpLeagueServer {
 
     public Class<? extends LaborExchange.Board> board() {
       return board;
+    }
+
+    public FiniteDuration timeout(final String name) {
+      final Config config = this.config.getConfig(name);
+      if (config == null) {
+        throw new IllegalArgumentException("No timeout configured for: " + name);
+      }
+      return FiniteDuration.create(
+        config.getLong("length"),
+        TimeUnit.valueOf(config.getString("unit"))
+      );
+    }
+
+    public TimeUnit timeUnit(final String name) {
+      return TimeUnit.valueOf(config.getString(name + ".unit"));
     }
 
     public enum Type {

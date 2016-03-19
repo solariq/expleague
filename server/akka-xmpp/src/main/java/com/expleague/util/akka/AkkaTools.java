@@ -4,6 +4,7 @@ import akka.actor.*;
 import akka.pattern.AskableActorRef;
 import akka.pattern.AskableActorSelection;
 import akka.util.Timeout;
+import com.expleague.server.ExpLeagueServer;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
@@ -22,8 +23,8 @@ import java.util.logging.Logger;
  */
 public class AkkaTools {
   private static final Logger log = Logger.getLogger(AkkaTools.class.getName());
-  public static final FiniteDuration AKKA_OPERATION_TIMEOUT = FiniteDuration.create(1, TimeUnit.MINUTES);
-  public static final FiniteDuration AKKA_CREATE_TIMEOUT = FiniteDuration.create(30, TimeUnit.SECONDS);
+  public static final FiniteDuration AKKA_OPERATION_TIMEOUT = ExpLeagueServer.config().timeout("akka-tools.operation-timeout");
+  public static final FiniteDuration AKKA_CREATE_TIMEOUT = ExpLeagueServer.config().timeout("akka-tools.create-timeout");
 
   public static ActorRef getOrCreate(String path, ActorRefFactory context, BiFunction<String, ActorRefFactory, ActorRef> factory) {
     final ActorSelection selection = context.actorSelection(path);

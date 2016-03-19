@@ -6,16 +6,15 @@ import akka.actor.Cancellable;
 import akka.actor.FSM;
 import akka.util.Timeout;
 import com.expleague.model.Operations.*;
+import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.XMPP;
 import com.expleague.util.akka.AkkaTools;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.random.FastRandom;
-import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,7 +30,7 @@ import static com.expleague.server.agents.LaborExchange.experts;
 public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.State> {
   private static final Logger log = Logger.getLogger(BrokerRole.class.getName());
 
-  public static final FiniteDuration RETRY_TIMEOUT = Duration.apply(2, TimeUnit.MINUTES);
+  public static final FiniteDuration RETRY_TIMEOUT = ExpLeagueServer.config().timeout("broker-role.retry-timeout");
 
   private String explanation = "";
   private Cancellable timeout;
@@ -124,7 +123,10 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
             (cancel, task) -> cancelTask(task)
         ).event(Timeout.class,
             (to, task) -> {
-              timeout = AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT.plus(FiniteDuration.apply(rng.nextDouble(), TimeUnit.MINUTES)), self());
+              timeout = AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT.plus(FiniteDuration.apply(
+                rng.nextDouble(),
+                ExpLeagueServer.config().timeUnit("broker-role.retry-timeout-delta")
+              )), self());
               return lookForExpert(task);
             }
         )

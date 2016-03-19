@@ -156,7 +156,7 @@ public class LaborExchange extends UntypedActorAdapter {
         // todo: don't we need to check actual experts?
         sentCount = readyCount;
         XMPP.send(new Presence(XMPP.jid(), readyCount != 0, new ServiceStatus(readyCount)), context());
-        stateTimeout = AkkaTools.scheduleTimeout(context(), Duration.apply(10, TimeUnit.SECONDS), self());
+        stateTimeout = AkkaTools.scheduleTimeout(context(), ExpLeagueServer.config().timeout("labor-exchange.state-timeout"), self());
       }
     }
 
