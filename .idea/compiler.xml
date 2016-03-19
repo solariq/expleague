@@ -22,6 +22,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
+        <module name="admin" />
         <module name="akka-xmpp" />
         <module name="commons" />
         <module name="markdown-writer-fx" />
@@ -33,6 +34,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="admin" target="1.5" />
       <module name="akka-xmpp" target="1.8" />
       <module name="browser" target="1.8" />
       <module name="commons" target="1.8" />

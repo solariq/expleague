@@ -61,6 +61,10 @@ public class ExpertsProfile extends Item {
     login = jid.local();
   }
 
+  public String login() {
+    return login;
+  }
+
   public String avatar() {
     return avatar;
   }
@@ -69,12 +73,32 @@ public class ExpertsProfile extends Item {
     return name;
   }
 
+  public Integer tasks() {
+    return tasks;
+  }
+
+  public Education education() {
+    return education;
+  }
+
+  public Boolean isAvailable() {
+    return available;
+  }
+
   public void available(boolean value) {
     this.available = value;
   }
 
   public Stream<Tag> tags() {
     return tags != null ? tags.stream() : Stream.empty();
+  }
+
+  public double rating() {
+    return rating;
+  }
+
+  public int basedOn() {
+    return basedOn;
   }
 
   @SuppressWarnings("unused")

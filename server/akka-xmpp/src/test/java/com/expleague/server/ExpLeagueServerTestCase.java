@@ -9,7 +9,7 @@ import com.typesafe.config.ConfigFactory;
 public class ExpLeagueServerTestCase {
   public static Config setUpTestConfig() throws Exception {
     final Config config = ConfigFactory.load("application-test.conf");
-    ExpLeagueServer.setConfig(new ExpLeagueServer.Cfg(config));
+    ExpLeagueServer.setConfig(new ExpLeagueServer.ServerCfg(config));
     return config;
   }
 }

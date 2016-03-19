@@ -125,7 +125,7 @@ public class Offer extends Item {
     return new Date((long) (started() * 1000 + urgency().time()));
   }
 
-  private double started() {
+  public double started() {
     return started = (started != null ? started : System.currentTimeMillis() / 1000.);
   }
 

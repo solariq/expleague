@@ -1,6 +1,5 @@
 package com.expleague.server.dao.fake;
 
-import com.expleague.server.agents.XMPP;
 import com.expleague.server.dao.Archive;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Stanza;

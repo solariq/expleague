@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/server/admin/admin.iml" filepath="$PROJECT_DIR$/server/admin/admin.iml" />
       <module fileurl="file://$PROJECT_DIR$/server/akka-xmpp/akka-xmpp.iml" filepath="$PROJECT_DIR$/server/akka-xmpp/akka-xmpp.iml" />
       <module fileurl="file://$PROJECT_DIR$/commons/commons.iml" filepath="$PROJECT_DIR$/commons/commons.iml" />
       <module fileurl="file://$PROJECT_DIR$/expert/expert.iml" filepath="$PROJECT_DIR$/expert/expert.iml" />

@@ -13,6 +13,7 @@
     <module>../commons</module>
     <module>../model</module>
     <module>akka-xmpp</module>
+    <module>admin</module>
   </modules>
 
   <properties>

@@ -2,6 +2,7 @@ package com.expleague.server;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import com.expleague.server.admin.ExpLeagueAdminService;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
 import com.expleague.server.dao.Archive;
@@ -31,7 +32,7 @@ public class ExpLeagueServer {
 
   public static void main(String[] args) throws Exception {
     final Config load = ConfigFactory.load();
-    setConfig(new Cfg(load));
+    setConfig(new ServerCfg(load));
 
     final ActorSystem system = ActorSystem.create("ExpLeague", load);
 
@@ -45,6 +46,7 @@ public class ExpLeagueServer {
     system.actorOf(Props.create(XMPPServer.class), "comm");
     system.actorOf(Props.create(BOSHServer.class), "bosh");
     system.actorOf(Props.create(ImageStorage.class), "image-storage");
+    system.actorOf(Props.create(ExpLeagueAdminService.class, load.getConfig("tbts.admin.embedded")), "admin-service");
   }
 
   public static Roster roster() {
@@ -62,7 +64,7 @@ public class ExpLeagueServer {
   }
 
   @VisibleForTesting
-  protected static void setConfig(final Cfg cfg) throws Exception {
+  static void setConfig(final Cfg cfg) throws Exception {
     config = cfg;
     users = config.roster().newInstance();
     leBoard = config.board().newInstance();
@@ -73,7 +75,43 @@ public class ExpLeagueServer {
       LogManager.getLogManager().readConfiguration(new FileInputStream(System.getProperty("logger.config")));
   }
 
-  public static class Cfg {
+  public interface Cfg {
+    ServerCfg.Type type();
+
+    String domain();
+
+    String db();
+
+    Class<? extends Archive> archive();
+
+    Class<? extends Roster> roster();
+
+    Class<? extends LaborExchange.Board> board();
+
+    Config config();
+
+    default FiniteDuration timeout(final String name) {
+      final Config config = config().getConfig(name);
+      if (config == null) {
+        throw new IllegalArgumentException("No timeout configured for: " + name);
+      }
+      return FiniteDuration.create(
+        config.getLong("length"),
+        TimeUnit.valueOf(config.getString("unit"))
+      );
+    }
+
+    default TimeUnit timeUnit(final String name) {
+      return TimeUnit.valueOf(config().getString(name + ".unit"));
+    }
+
+    enum Type {
+      PRODUCTION,
+      TEST
+    }
+  }
+
+  public static class ServerCfg implements Cfg {
     private final Config config;
 
     private final String db;
@@ -83,7 +121,7 @@ public class ExpLeagueServer {
     private final Class<? extends LaborExchange.Board> board;
     private final Type type;
 
-    public Cfg(Config load) throws ClassNotFoundException {
+    public ServerCfg(Config load) throws ClassNotFoundException {
       config = load.getConfig("tbts");
       db = config.getString("db");
       domain = config.getString("domain");
@@ -96,48 +134,39 @@ public class ExpLeagueServer {
       type = Type.valueOf(config.getString("type").toUpperCase());
     }
 
+    @Override
+    public Config config() {
+      return config;
+    }
+
+    @Override
     public String domain() {
       return domain;
     }
 
+    @Override
     public String db() {
       return db;
     }
 
+    @Override
     public Class<? extends Archive> archive() {
       return archive;
     }
 
+    @Override
     public Class<? extends Roster> roster() {
       return roster;
     }
 
+    @Override
     public Type type() {
       return type;
     }
 
+    @Override
     public Class<? extends LaborExchange.Board> board() {
       return board;
-    }
-
-    public FiniteDuration timeout(final String name) {
-      final Config config = this.config.getConfig(name);
-      if (config == null) {
-        throw new IllegalArgumentException("No timeout configured for: " + name);
-      }
-      return FiniteDuration.create(
-        config.getLong("length"),
-        TimeUnit.valueOf(config.getString("unit"))
-      );
-    }
-
-    public TimeUnit timeUnit(final String name) {
-      return TimeUnit.valueOf(config.getString(name + ".unit"));
-    }
-
-    public enum Type {
-      PRODUCTION,
-      TEST
     }
   }
 }

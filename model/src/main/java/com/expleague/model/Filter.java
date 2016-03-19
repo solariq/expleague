@@ -6,6 +6,7 @@ import com.expleague.xmpp.JID;
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Experts League
@@ -48,5 +49,17 @@ public class Filter extends Attachment {
     if (accept != null)
       return accept.contains(jid);
     return prefer != null && prefer.contains(jid) && (reject == null || !reject.contains(jid));
+  }
+
+  public Stream<JID> rejected() {
+    return reject != null ? reject.stream() : Stream.empty();
+  }
+
+  public Stream<JID> accepted() {
+    return accept != null ? accept.stream() : Stream.empty();
+  }
+
+  public Stream<JID> preferred() {
+    return prefer != null ? prefer.stream() : Stream.empty();
   }
 }
