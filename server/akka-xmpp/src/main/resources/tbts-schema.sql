@@ -75,3 +75,10 @@ CREATE TABLE IF NOT EXISTS expleague.Participants (
   CONSTRAINT Participants_Users_id_fk FOREIGN KEY (partisipant) REFERENCES Users (id) ON DELETE CASCADE,
   CONSTRAINT Participants_Rooms_id_fk FOREIGN KEY (`order`) REFERENCES Orders (id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS expleague.Applications (
+  email VARCHAR(128) NOT NULL,
+  referer VARCHAR(64),
+
+  CONSTRAINT Applications_Users_id_fk FOREIGN KEY (referer) REFERENCES Users (id) ON DELETE SET NULL
+);

@@ -2,6 +2,7 @@ package com.expleague.server.dao.sql;
 
 import com.expleague.model.Offer;
 import com.expleague.server.ExpLeagueServer;
+import com.expleague.server.Roster;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.ExpLeagueRoomAgent;
 import com.expleague.server.agents.LaborExchange;
@@ -111,7 +112,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @Override
   public Stream<ExpLeagueOrder> related(JID jid) {
     return stream("related-orders", "SELECT Orders.* " +
-        "FROM expleague.Orders INNER JOIN expleague.Participants ON expleague.Orders.id = expleague.Participants.id " +
+        "FROM expleague.Orders INNER JOIN expleague.Participants ON expleague.Orders.id = expleague.Participants.`order` " +
         "WHERE Participants.partisipant = ?", stmt -> stmt.setString(1, jid.local()))
         .map(rs -> {
           try {
@@ -258,16 +259,18 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
 
     @Override
     protected void role(JID jid, Role role) {
-      try {
-        super.role(jid, role);
-        final PreparedStatement changeRole = createStatement("change-role", "INSERT INTO expleague.Participants SET `order` = ?, partisipant = ?, role = ?");
-        changeRole.setInt(1, id);
-        changeRole.setString(2, jid.local());
-        changeRole.setByte(3, (byte)role.index());
-        changeRole.execute();
-      }
-      catch (SQLException e) {
-        throw new RuntimeException(e);
+      super.role(jid, role);
+      if (role.permanent()) {
+        try {
+
+          final PreparedStatement changeRole = createStatement("change-role", "INSERT INTO expleague.Participants SET `order` = ?, partisipant = ?, role = ?");
+          changeRole.setInt(1, id);
+          changeRole.setString(2, jid.local());
+          changeRole.setByte(3, (byte) role.index());
+          changeRole.execute();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
       }
     }
 

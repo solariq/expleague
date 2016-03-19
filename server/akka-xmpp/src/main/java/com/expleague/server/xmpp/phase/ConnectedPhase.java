@@ -2,6 +2,7 @@ package com.expleague.server.xmpp.phase;
 
 import akka.actor.ActorRef;
 import com.expleague.model.Delivered;
+import com.expleague.model.Operations;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
@@ -19,6 +20,7 @@ import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
+import com.relayrides.pushy.apns.util.TokenUtil;
 
 import java.util.logging.Logger;
 
@@ -107,6 +109,13 @@ public class ConnectedPhase extends XMPPPhase {
       }
     }
   }
+
+  public void invoke(Message message) {
+    if (message.has(Operations.Token.class)) {
+      device.updateToken(TokenUtil.sanitizeTokenString(message.get(Operations.Token.class).value()));
+    }
+  }
+
 
   protected void tryRequestMessageReceipt(final Stanza msg) {
     if (!(msg instanceof Message)) {

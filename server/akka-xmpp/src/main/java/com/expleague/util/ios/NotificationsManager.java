@@ -110,7 +110,7 @@ public class NotificationsManager {
       super(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
           "\"alert\": \"Получено новое сообщение от " + expert.name() + ": '" + message.replace("\"", "") + "'\", " +
           "\"content-available\": 1,"+
-          "\"sound\": \"default\"" +
+          "\"sound\": \"owl.wav\"" +
           "}, \"order\": \"" + from.local() + "\"}", tomorrow());
     }
   }

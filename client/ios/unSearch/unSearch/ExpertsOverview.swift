@@ -75,7 +75,7 @@ class ExpertsOverviewController: UITableViewController {
             cell.tags.text = exp.tags.joinWithSeparator(", ")
             cell.avatar.image = exp.avatar
             cell.avatar.online = exp.available
-            cell.tasks.text = "заданий: \(exp.myTasks)"
+            cell.tasks.text = "Ваших заданий: \(exp.myTasks)"
             return cell
         case 1:
             let exp = top[indexPath.row]
@@ -84,7 +84,7 @@ class ExpertsOverviewController: UITableViewController {
             cell.tags.text = exp.tags.joinWithSeparator(", ")
             cell.avatar.image = exp.avatar
             cell.avatar.online = exp.available
-            cell.tasks.text = "всего заданий: \(exp.tasks)"
+            cell.tasks.text = "Всего заданий: \(exp.tasks)"
             return cell
         default:
             return UITableViewCell()

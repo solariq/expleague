@@ -116,7 +116,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                     answer += "\n<div id=\"\(id)\"/>\n"
                     answer += (msg.body!);
                     answer += "\n<a class=\"back_to_chat\" href='unSearch:///chat-messages#\(cells.count)'>Обратно в чат</a>\n"
-                    newModel = AnswerReceivedModel(id: id, progress: progressModel as! TaskInProgressModel)
+                    newModel = AnswerReceivedModel(id: id, progress: (progressModel as? TaskInProgressModel) ?? TaskInProgressModel(order: order))
                     progressModel = nil
                 }
                 else if (msg.type == .ExpertMessage) {
@@ -180,8 +180,13 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         groups.append(group)
     }
     
-    var lastIndex: NSIndexPath {
-        return NSIndexPath(forRow: groups[groups.count - 1].count - 1, inSection: groups.count - 1)
+    var lastIndex: NSIndexPath? {
+        for i in (0..<groups.count).reverse() {
+            if (groups[i].count > 0) {
+                return NSIndexPath(forRow: groups[i].count - 1, inSection: i)
+            }
+        }
+        return nil
     }
 
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {

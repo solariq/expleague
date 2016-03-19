@@ -1,5 +1,6 @@
 package com.expleague.server.dao.sql;
 
+import com.expleague.model.Application;
 import com.expleague.model.ExpertsProfile;
 import com.expleague.model.Tag;
 import com.expleague.server.ExpLeagueServer;
@@ -53,8 +54,8 @@ public class MySQLRoster extends MySQLOps implements Roster {
     final PreparedStatement associateUser = createStatement("associate-user",
         "SELECT * FROM expleague.Users WHERE avatar = ? AND avatar IS NOT NULL OR name = ? AND name IS NOT NULL OR id = ?"
     );
-    associateUser.setString(1, query.name());
-    associateUser.setString(2, query.avatar());
+    associateUser.setString(1, query.avatar());
+    associateUser.setString(2, query.name());
     associateUser.setString(3, query.username());
 
     try (final ResultSet resultSet = associateUser.executeQuery()) {
@@ -155,6 +156,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
             ){
               @Override
               public void updateToken(String token) {
+                this.token = token;
                 final PreparedStatement updateToken = createStatement("update-token", "UPDATE expleague.Devices SET token = ? WHERE id = ?");
                 try {
                   updateToken.setString(1, token);
@@ -176,10 +178,15 @@ public class MySQLRoster extends MySQLOps implements Roster {
     });
   }
 
-  FixedSizeCache<String, ExpertsProfile> profilesCache = new FixedSizeCache<>(100, CacheStrategy.Type.LRU);
+  private final FixedSizeCache<String, ExpertsProfile> profilesCache = new FixedSizeCache<>(100, CacheStrategy.Type.LRU);
   @Override
   public ExpertsProfile profile(JID jid) {
     return profilesCache.get(jid.local(), a -> Roster.super.profile(jid));
+  }
+
+  @Override
+  public void invalidateProfile(JID jid) {
+    profilesCache.clear(jid.local());
   }
 
   @Override
@@ -195,6 +202,19 @@ public class MySQLRoster extends MySQLOps implements Roster {
         throw new RuntimeException(e);
       }
     });
+  }
+
+  @Override
+  public void application(Application application, JID referer) {
+    try {
+      final PreparedStatement addApplication = createStatement("add-application", "INSERT INTO expleague.Applications SET referer= ?, email = ?");
+      addApplication.setString(2, application.email());
+      addApplication.setString(1, referer.local());
+      addApplication.execute();
+    }
+    catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @NotNull

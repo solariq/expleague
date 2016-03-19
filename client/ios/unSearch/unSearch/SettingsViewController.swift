@@ -24,7 +24,9 @@ class AboutViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Отослать", style: .Default, handler: { (action: UIAlertAction) -> Void in
             let application = DDXMLElement(name: "application", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
             application.setStringValue(self.friend)
-            AppDelegate.instance.stream.sendElement(application)
+            let msg = XMPPMessage(type: "normal", child: application)
+            msg.addAttributeWithName("to", stringValue: AppDelegate.instance.activeProfile!.domain)
+            AppDelegate.instance.stream.sendElement(msg)
         }))
         alert.addAction(UIAlertAction(title: "Отмена", style: .Cancel, handler: nil))
         self.presentViewController(alert, animated: true, completion: nil)

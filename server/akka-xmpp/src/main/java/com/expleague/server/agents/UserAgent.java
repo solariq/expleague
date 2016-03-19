@@ -178,18 +178,11 @@ public class UserAgent extends PersistentActorAdapter {
     }
 
     @ActorMethod
-    public void updateToken(Message message) {
-      if (message.has(Operations.Token.class)) {
-        connectedDevice.updateToken(TokenUtil.sanitizeTokenString(message.get(Operations.Token.class).value()));
-      }
-    }
-
-    @ActorMethod
     public void invoke(final Delivered delivered) {
       final Stanza peek = deliveryQueue.peek();
       if (peek != null && !peek.id().equals(delivered.id())) {
         log.warning("Unexpected delivery message id " + delivered.id() + ", retrying to send: " + peek);
-        connection.tell(peek, self());
+//        connection.tell(peek, self());
         return;
       }
       deliveryQueue.poll();

@@ -33,26 +33,6 @@ public abstract class XMPPDevice {
     return passwd;
   }
 
-  @Nullable
-  public String avatar() {
-    return user.avatar();
-  }
-
-  @Nullable
-  public String city() {
-    return user.city();
-  }
-
-  @Nullable
-  public String country() {
-    return user.country();
-  }
-
-  @Nullable
-  public String realName() {
-    return user.name();
-  }
-
   public XMPPUser user() {
     return user;
   }
