@@ -5,7 +5,10 @@ var Admin = {
             type: "GET",
             dataType: "json",
             url: url,
-            success: success
+            success: success,
+            error: function(j, s, message) {
+                $("#content").empty().text(message);
+            }
         });
     },
     
