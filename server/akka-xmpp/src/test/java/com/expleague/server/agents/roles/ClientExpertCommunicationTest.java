@@ -268,12 +268,10 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
       client.goOnline();
       client.receiveStart(expert);
       client.receiveAnswer(expert, "Answer1");
-      final Offer offer2 = expert2.receiveOffer();
+      final Offer offer2 = expert2.receiveOffer(offer1);
       expert2.acceptOffer(offer2);
       client.receiveStart(expert2);
       client.goOffline();
-
-      Assert.assertNotEquals(offer1.room(), offer2.room());
 
       expert2.sendAnswer(offer2.room(), "Answer2");
       client.goOnline();

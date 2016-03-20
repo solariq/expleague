@@ -6,6 +6,7 @@ import akka.util.Timeout;
 import com.expleague.server.ExpLeagueServerTestCase;
 import com.expleague.util.akka.*;
 import com.expleague.xmpp.JID;
+import com.spbsu.commons.JUnitIOCapture;
 import com.spbsu.commons.io.StreamTools;
 import com.spbsu.commons.system.RuntimeUtils;
 import com.spbsu.commons.util.ThreadTools;
@@ -25,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author vpdelta
  */
-public class ActorSystemTestCase {
+public class ActorSystemTestCase extends JUnitIOCapture {
 
   protected ActorSystem system;
 
@@ -59,7 +60,7 @@ public class ActorSystemTestCase {
       xmpp = system.actorOf(Props.create(XMPPWithMockSupport.class, this), "xmpp");
       laborExchange = system.actorOf(Props.create(LaborExchange.class), "labor-exchange");
       registrator = system.actorOf(Props.create(Registrator.class));
-      ThreadTools.sleep(500);
+      ThreadTools.sleep(50);
     }
 
     protected ActorRef register(final JID jid) {
