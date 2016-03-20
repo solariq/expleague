@@ -50,7 +50,7 @@ public class MessageCaptureImpl implements MessageCapture {
         }
         throw new IllegalStateException(message + " expectation failed after " + elapsedMs + " ms\nRecords:\n" + trace);
       }
-      Thread.sleep(100);
+      Thread.sleep(10);
     }
   }
 }
