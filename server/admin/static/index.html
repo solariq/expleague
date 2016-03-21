@@ -6,6 +6,7 @@
         <script type="text/javascript" src="/static/js/libs/jquery-2.2.2.min.js">&#160;</script>
         <script type="text/javascript" src="/static/js/libs/underscore-min.js">&#160;</script>
         <script type="text/javascript" src="/static/js/libs/knockout.min.js">&#160;</script>
+        <script type="text/javascript" src="/static/js/libs/moment.min.js">&#160;</script>
         <script type="text/javascript" src="/static/js/admin.js">&#160;</script>
     </head>
     <body>
@@ -19,6 +20,9 @@
                 <div id="menu" class="sidebar">
                     <div class="item" onclick="Admin.loadOpenOrders()">
                         Open orders
+                    </div>
+                    <div class="item" onclick="Admin.loadClosedWithoutFeedbackOrders()">
+                        Closed orders without feedback
                     </div>
                     <div class="item" onclick="Admin.loadTopExperts()">
                         Experts
@@ -40,23 +44,48 @@
                     </div>
                 </div>
                 <div data-bind="if: orders().length > 0">
-                    <table>
+                    <table class="orders-table">
                         <thead>
                             <tr>
-                                <th>Status</th>
-                                <th>Topic</th>
-                                <th>Client</th>
-                                <th>Urgency</th>
+                                <th class="order-status">Status</th>
+                                <th class="order-topic">Topic</th>
+                                <th class="order-client">Client</th>
+                                <th class="order-experts">Experts</th>
+                                <th class="order-urgency">Urgency</th>
+                                <th class="order-feedback">Feedback</th>
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: orders">
-                            <tr>
-                                <td data-bind="text: status"></td>
+                            <tr class="order">
+                                <td><span class="enum-label" data-bind="text: status"></span></td>
                                 <td>
                                     <a title="Show dump" href="#" data-bind="text: offer.topic, click: Admin.loadDumpHandler($data)"></a>
                                 </td>
                                 <td data-bind="text: offer.client.bare"></td>
-                                <td data-bind="text: offer.urgency"></td>
+                                <td>
+                                    <span data-bind="if: participants().length == 0">Nobody</span>
+                                    <span data-bind="if: participants().length > 0">
+                                        <span data-bind="foreach: participants">
+                                            <div data-bind="if: role() != 'OWNER'">
+                                                <div class="participant">
+                                                    <span class="enum-label" data-bind="text: role"></span>
+                                                    <a title="Show related orders" href="#" data-bind="click: Admin.loadRelatedHandler($data)">
+                                                        <span data-bind="text: jid.bare"></span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="enum-label" data-bind="text: offer.urgency"></span> expires: <span data-bind="text: Admin.formatExpiration(offer), attr: {title: Admin.formatDate(offer)}"></span>
+                                </td>
+                                <td>
+                                    <span data-bind="if: feedback() != -1">
+                                        <span data-bind="text: feedback"></span>
+                                    </span>
+                                    <span data-bind="if: feedback() == -1">No feedback</span>
+                                </td>
                             </tr>
                         </tbody>
                     </table>

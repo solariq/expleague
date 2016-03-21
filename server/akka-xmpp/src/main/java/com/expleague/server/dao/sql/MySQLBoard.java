@@ -13,6 +13,7 @@ import com.spbsu.commons.io.StreamTools;
 import com.spbsu.commons.util.cache.CacheStrategy;
 import com.spbsu.commons.util.cache.impl.FixedSizeCache;
 import gnu.trove.map.hash.TObjectIntHashMap;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.*;
 
 /**
@@ -132,16 +134,13 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @Override
   public Stream<ExpLeagueOrder> open() {
     return stream("active-orders", "SELECT Orders.* FROM expleague.Orders WHERE status < " + ExpLeagueOrder.Status.DONE.index(), stmt -> {})
-        .map(rs -> {
-          try {
-            final MySQLOrder order = new MySQLOrder(rs);
-            ordersCache.put(order.room().local(), order);
-            return (ExpLeagueOrder)order;
-          }
-          catch (SQLException | IOException e) {
-            throw new RuntimeException(e);
-          }
-        }).filter(o -> o != null);
+        .map(createOrder()).filter(o -> o != null);
+  }
+
+  @Override
+  public Stream<ExpLeagueOrder> closedWithoutFeedback() {
+    return stream("closed-without-feedback-orders", "SELECT Orders.* FROM expleague.Orders WHERE status = " + ExpLeagueOrder.Status.DONE.index() + " AND score = -1", stmt -> {})
+      .map(createOrder()).filter(o -> o != null);
   }
 
   @Override
@@ -188,6 +187,19 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     }
   }
 
+  @NotNull
+  protected Function<ResultSet, ExpLeagueOrder> createOrder() {
+    return rs -> {
+      try {
+        final MySQLOrder order = new MySQLOrder(rs);
+        ordersCache.put(order.room().local(), order);
+        return (ExpLeagueOrder)order;
+      }
+      catch (SQLException | IOException e) {
+        throw new RuntimeException(e);
+      }
+    };
+  }
 
   private class MySQLOrder extends InMemBoard.MyOrder {
     private final int id;

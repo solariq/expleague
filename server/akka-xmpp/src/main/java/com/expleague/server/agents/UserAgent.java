@@ -142,7 +142,7 @@ public class UserAgent extends PersistentActorAdapter {
     }
     if (couriers.isEmpty() && stanza instanceof Message) {
       Stream.of(user.devices()).map(XMPPDevice::token).filter(s -> s != null).forEach(
-          token -> NotificationsManager.instance().sendPush((Message)stanza, token)
+        token -> NotificationsManager.instance().sendPush((Message)stanza, token)
       );
     }
   }

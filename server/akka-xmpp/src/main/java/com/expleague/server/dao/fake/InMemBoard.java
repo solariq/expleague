@@ -58,6 +58,13 @@ public class InMemBoard implements LaborExchange.Board {
   }
 
   @Override
+  public Stream<ExpLeagueOrder> closedWithoutFeedback() {
+    return history.stream()
+      .filter(o -> o.status() == ExpLeagueOrder.Status.DONE)
+      .filter(o -> o.feedback() == -1);
+  }
+
+  @Override
   public Stream<JID> topExperts() {
     return history.stream().map(o -> o.of(ACTIVE)).flatMap(s -> s);
   }

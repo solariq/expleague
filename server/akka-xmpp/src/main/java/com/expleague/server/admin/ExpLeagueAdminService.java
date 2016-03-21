@@ -108,6 +108,12 @@ public class ExpLeagueAdminService extends UntypedActor {
               Collections.reverse(open);
               response = getJsonResponse("orders", open);
             }
+            else if ("/closed/without/feedback".equals(path)) {
+              final LaborExchange.Board board = LaborExchange.board();
+              final List<OrderDto> orders = board.closedWithoutFeedback().map(OrderDto::new).collect(Collectors.toList());
+              Collections.reverse(orders);
+              response = getJsonResponse("orders", orders);
+            }
             else if ("/top/experts".equals(path)) {
               final LaborExchange.Board board = LaborExchange.board();
               final List<ExpertsProfileDto> experts = board.topExperts()

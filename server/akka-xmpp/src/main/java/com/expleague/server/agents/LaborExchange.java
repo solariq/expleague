@@ -191,6 +191,7 @@ public class LaborExchange extends UntypedActorAdapter {
     ExpLeagueOrder[] history(String roomId);
     Stream<ExpLeagueOrder> related(JID jid);
     Stream<ExpLeagueOrder> open();
+    Stream<ExpLeagueOrder> closedWithoutFeedback();
 
     Stream<JID> topExperts();
   }

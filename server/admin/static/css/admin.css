@@ -363,3 +363,48 @@ caption {
 .expert-profile .expert-avatar {
     margin-right: 10px;
 }
+
+.enum-label {
+    box-sizing: border-box;
+    border-radius: 0.25em;
+    padding: 2px 5px;
+    background: #EEF3F0;
+    border: 1px solid #B5B5B9;
+    font-weight: 700;
+}
+
+table.orders-table {
+    border-collapse: collapse;
+}
+
+tr.order {
+    border-bottom: 1px dotted #ccc;
+}
+
+.participant {
+    margin-bottom: 5px;
+}
+
+th.order-status {
+    width: 50px;
+}
+
+th.order-topic {
+    width: 250px;
+}
+
+th.order-client {
+    width: 150px;
+}
+
+th.order-experts {
+    width: 200px;
+}
+
+th.order-urgency {
+    width: 100px;
+}
+
+th.order-feedback {
+    width: 100px;
+}

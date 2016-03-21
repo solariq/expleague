@@ -17,7 +17,13 @@ var Admin = {
             Admin.bindOrders(data);
         });
     },
-    
+
+    loadClosedWithoutFeedbackOrders: function() {
+        Admin.load("/closed/without/feedback", function(data) {
+            Admin.bindOrders(data);
+        });
+    },
+
     loadTopExperts: function() {
         Admin.load("/top/experts", function(data) {
             var experts = $("#templates").find(".experts").clone();
@@ -61,6 +67,14 @@ var Admin = {
         ko.applyBindings(model, dumpEl.get(0))
     },
 
+    formatExpiration: function(offerModel) {
+        return moment(offerModel.expiresMs()).fromNow();
+    },
+    
+    formatDate: function(offerModel) {
+        return moment(offerModel.expiresMs()).format();
+    },
+    
     init: function() {
         $(document).ready(function() {
             Admin.loadOpenOrders();
