@@ -99,7 +99,7 @@ class OrderDetailsView: UIView {
         scrollView.addSubview(messagesView)
         scrollView.addSubview(separator)
         scrollView.addSubview(answerView)
-        scrollView.pagingEnabled = true
+        scrollView.scrollEnabled = false
         scrollView.clipsToBounds = false
         messagesView.registerNib(UINib(nibName: "IncomingMessage", bundle: nil), forCellReuseIdentifier: String(CellType.Incoming))
         messagesView.registerNib(UINib(nibName: "OutgoingMessage", bundle: nil), forCellReuseIdentifier: String(CellType.Outgoing))
@@ -118,8 +118,9 @@ class OrderDetailsView: UIView {
         bottomView.translatesAutoresizingMaskIntoConstraints = false
         let pullGesture = UIPanGestureRecognizer(target: self, action: "handlePan:")
         pullGesture.delegate = self
-        scrollView.gestureRecognizers!.removeAll()
         scrollView.addGestureRecognizer(pullGesture)
+        answerView.scrollView.panGestureRecognizer.requireGestureRecognizerToFail(pullGesture)
+        messagesView.panGestureRecognizer.requireGestureRecognizerToFail(pullGesture)
         answerView.scrollView.bounces = false
         messagesViewHConstraint = NSLayoutConstraint(item: messagesView, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: -15)
         answerViewHConstraint = NSLayoutConstraint(item: answerView, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: -15)

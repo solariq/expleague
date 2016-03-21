@@ -13,8 +13,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spbsu.commons.io.StreamTools;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.AbstractHandler;
@@ -24,6 +27,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Experts League
@@ -40,14 +44,46 @@ public class doSearch extends Application {
     final Parent load = FXMLLoader.load(getClass().getResource("/forms/main.fxml"));
     final Scene scene = new Scene(load, 1024, 800);
 //    scene.getStylesheets().add(getClass().getResource("/Test.css").toExternalForm());
+    ((VBox) scene.getRoot()).getChildren().add(0, createMenu());
     stage.setScene(scene);
 
     jettyStart();
-
     stage.show();
     final UserProfile active = ProfileManager.instance().active();
     if (active == null)
       Register.register();
+  }
+
+  private MenuBar createMenu() {
+    final MenuBar menuBar = new MenuBar();
+    final Menu profile = new Menu("Профиль");
+    final MenuItem create = new MenuItem("Создать");
+    create.onActionProperty().set(event -> {
+      try {
+        Register.register();
+      }
+      catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      event.consume();
+    });
+
+    final MenuItem switchProfile = new MenuItem("Переключить");
+    switchProfile.onActionProperty().set(event -> {
+      final ChoiceDialog<UserProfile> alert = new ChoiceDialog<>(ProfileManager.instance().active(), ProfileManager.instance().profiles());
+      final Optional<UserProfile> userProfile = alert.showAndWait();
+      if (userProfile.isPresent()) {
+        ExpLeagueConnection.instance().stop();
+        ProfileManager.instance().activate(userProfile.get());
+        ExpLeagueConnection.instance().start();
+      }
+      event.consume();
+    });
+
+    profile.getItems().add(create);
+    profile.getItems().add(switchProfile);
+    menuBar.getMenus().add(profile);
+    return menuBar;
   }
 
   private void jettyStart() throws Exception {

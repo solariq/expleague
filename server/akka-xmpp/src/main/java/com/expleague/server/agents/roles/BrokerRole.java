@@ -49,9 +49,9 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               order.broker(self());
               if (order.status() == IN_PROGRESS) // server was shout down
                 order.state().suspend();
-              if (order.status() == SUSPENDED) {
+              final JID expertOnTask = order.state().active();
+              if (order.status() == SUSPENDED && expertOnTask != null) {
                 order.state().suspend();
-                final JID expertOnTask = order.state().active();
                 //noinspection ConstantConditions
                 explain("Trying to get active worker " + expertOnTask.local() + " back to the order.");
                 Experts.tellTo(expertOnTask, new Resume(order.offer()), self(), context());
