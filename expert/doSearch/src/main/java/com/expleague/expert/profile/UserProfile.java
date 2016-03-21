@@ -111,6 +111,11 @@ public class UserProfile extends WeakListenerHolderImpl<UserProfile.Key>{
     return get(Key.EXP_DEVICE_ID);
   }
 
+  @Override
+  public String toString() {
+    return deviceJid().toString();
+  }
+
   public enum Key {
     EXP_DEVICE_ID("com.expleague.device-id", JID.class),
     EXP_LEAGUE_ID("com.expleague.jid", JID.class),

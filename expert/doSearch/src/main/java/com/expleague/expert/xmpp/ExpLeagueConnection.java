@@ -251,7 +251,8 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
 
   public void stop() {
     try {
-      jaxmpp.disconnect();
+      if (jaxmpp != null)
+        jaxmpp.disconnect();
     }
     catch (JaxmppException e) {
       log.log(Level.WARNING, "Error during disconnect", e);
