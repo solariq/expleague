@@ -70,10 +70,11 @@ class SimpleChatCell: ChatCell {
     }
     
     override func layoutSubviews() {
-        super.layoutSubviews()
+        autoresizesSubviews = false
         contentView.clipsToBounds = true
         contentView.backgroundColor = UIColor.whiteColor()
         contentView.frame = CGRectMake(24, 6, frame.width - 48, frame.height - 8)
+//        super.layoutSubviews()
     }
 }
 
