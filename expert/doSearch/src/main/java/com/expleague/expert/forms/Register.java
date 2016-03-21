@@ -2,6 +2,7 @@ package com.expleague.expert.forms;
 
 import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
+import com.expleague.expert.xmpp.ExpLeagueConnection;
 import com.spbsu.commons.seq.CharSeqTools;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -54,34 +55,6 @@ public class Register {
     }
     catch (IOException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  private class ChooseProfilePage extends WizardPage {
-    public ChooseProfilePage() {
-      super("Выберите способ задания пользователя", loadContent("profile.fxml"));
-    }
-
-    @Override
-    protected void nextPage() {
-      final int selectedIndex = registerType.getToggles().indexOf(registerType.getSelectedToggle());
-      getWizard().navTo(selectedIndex == 0 ? index() + 2 : index() + 1);
-    }
-
-    @Override
-    protected boolean isValid() {
-      return true;
-    }
-  }
-
-  private class LoginPage extends WizardPage {
-    public LoginPage() {
-      super("Вход известного пользователя", loadContent("login.fxml"));
-    }
-
-    @Override
-    protected boolean isValid() {
-      return tokenReceived;
     }
   }
 
@@ -148,19 +121,19 @@ public class Register {
 
   public static void register() throws IOException {
     final Register register = new Register();
-    final Wizard wizard = new Wizard(register.new ChooseProfilePage(), register.new LoginPage(), register.new CreateProfilePage(), register.new SocialLoginPage()) {
+    final Wizard wizard = new Wizard(register.new CreateProfilePage(), register.new SocialLoginPage()) {
       @Override
       public void finish() {
         getScene().getWindow().hide();
         if (register.registering != null) {
           final UserProfile profile = ProfileManager.instance().register(register.registering);
           ProfileManager.instance().activate(profile);
+          ExpLeagueConnection.instance().start();
         }
       }
 
       @Override
       public void cancel() {
-        System.exit(100);
       }
     };
     final Stage stage = new Stage(StageStyle.DECORATED);
