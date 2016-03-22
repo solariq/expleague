@@ -64,10 +64,16 @@
                             <tr class="order">
                                 <td><span class="enum-label" data-bind="text: status"></span></td>
                                 <td>
-                                    <a title="Show dump" href="#" data-bind="text: offer.topic, click: Admin.loadDumpHandler($data)"></a>
+                                    <div>
+                                        <span class="message-timestamp" data-bind="text: moment(offer.startedMs()).format()"></span>
+                                    </div>
+                                    <div>
+                                        <a title="Show dump" href="#" data-bind="text: offer.topic, click: Admin.loadDumpHandler($data)"></a>
+                                    </div>
                                 </td>
                                 <td data-bind="text: offer.client.bare"></td>
                                 <td>
+                                    <!--todo: filter by role-->
                                     <span data-bind="if: participants().length == 0">Nobody</span>
                                     <span data-bind="if: participants().length > 0">
                                         <span data-bind="foreach: participants">

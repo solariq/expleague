@@ -40,7 +40,7 @@ public class OfferDto {
   private LocationDto location;
 
   @JsonProperty
-  private Double started;
+  private long startedMs;
 
   @JsonProperty
   private long expiresMs;
@@ -67,8 +67,8 @@ public class OfferDto {
       this.location = new LocationDto(location);
     }
 
-    this.started = offer.started();
-    this.expiresMs = (long) (this.started * 1000 + this.urgency.time());
+    this.startedMs = (long) offer.started() * 1000;
+    this.expiresMs = this.startedMs + this.urgency.time();
     this.workers = offer.workers()
       .filter(expertsProfile -> expertsProfile.jid() != null)
       .map(ExpertsProfileDto::new)
