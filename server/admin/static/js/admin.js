@@ -24,6 +24,12 @@ var Admin = {
         });
     },
 
+    loadClosedOrders: function() {
+        Admin.load("/closed", function(data) {
+            Admin.bindOrders(data);
+        });
+    },
+
     loadTopExperts: function() {
         Admin.load("/top/experts", function(data) {
             var experts = $("#templates").find(".experts").clone();

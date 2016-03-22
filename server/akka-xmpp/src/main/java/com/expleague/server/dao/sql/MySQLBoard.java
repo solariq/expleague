@@ -2,17 +2,18 @@ package com.expleague.server.dao.sql;
 
 import com.expleague.model.Offer;
 import com.expleague.server.ExpLeagueServer;
-import com.expleague.server.Roster;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.ExpLeagueRoomAgent;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
 import com.expleague.server.dao.fake.InMemBoard;
 import com.expleague.xmpp.JID;
+import com.google.common.base.Joiner;
 import com.spbsu.commons.io.StreamTools;
 import com.spbsu.commons.util.cache.CacheStrategy;
 import com.spbsu.commons.util.cache.impl.FixedSizeCache;
 import gnu.trove.map.hash.TObjectIntHashMap;
+import org.apache.commons.lang3.text.StrBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,9 +23,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.function.Function;
-import java.util.stream.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Experts League
@@ -138,8 +142,9 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   }
 
   @Override
-  public Stream<ExpLeagueOrder> closedWithoutFeedback() {
-    return stream("closed-without-feedback-orders", "SELECT Orders.* FROM expleague.Orders WHERE status = " + ExpLeagueOrder.Status.DONE.index() + " AND score = -1", stmt -> {})
+  public Stream<ExpLeagueOrder> orders(LaborExchange.OrderFilter filter) {
+    final OrderQuery orderQuery = createQuery(filter);
+    return stream(orderQuery.getName(), orderQuery.getSqlQuery(), stmt -> {})
       .map(createOrder()).filter(o -> o != null);
   }
 
@@ -299,6 +304,47 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       catch (SQLException e) {
         throw new RuntimeException(e);
       }
+    }
+  }
+
+  protected OrderQuery createQuery(final LaborExchange.OrderFilter filter) {
+    final List<String> queryKeys = new ArrayList<>();
+    final List<String> conditions = new ArrayList<>();
+    final EnumSet<ExpLeagueOrder.Status> statuses = filter.getStatuses();
+    if (!statuses.isEmpty()) {
+      queryKeys.add(statuses.stream().map(Enum::name).collect(Collectors.joining("-")));
+      final String statusesStr = statuses.stream().map(s -> Integer.toString(s.index())).collect(Collectors.joining(","));
+      conditions.add("status in (" + statusesStr + ")");
+    }
+    if (filter.withoutFeedback()) {
+      queryKeys.add("without-feedback");
+      conditions.add("score = -1");
+    }
+    final StrBuilder sqlQuery = new StrBuilder("SELECT Orders.* FROM Orders");
+    if (!conditions.isEmpty()) {
+      sqlQuery.append(" WHERE ").append(Joiner.on(" AND ").join(conditions));
+    }
+    return new OrderQuery(
+      Joiner.on("-").join(queryKeys),
+      sqlQuery.toString()
+    );
+  }
+
+  public static class OrderQuery {
+    private final String name;
+    private final String sqlQuery;
+
+    public OrderQuery(final String name, final String sqlQuery) {
+      this.name = name;
+      this.sqlQuery = sqlQuery;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public String getSqlQuery() {
+      return sqlQuery;
     }
   }
 }

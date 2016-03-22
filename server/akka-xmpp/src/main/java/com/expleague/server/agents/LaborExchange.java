@@ -2,7 +2,6 @@ package com.expleague.server.agents;
 
 import akka.actor.*;
 import akka.util.Timeout;
-import com.expleague.model.ExpertsProfile;
 import com.spbsu.commons.util.Pair;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
@@ -16,10 +15,8 @@ import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Presence;
 import scala.Option;
 import scala.collection.JavaConversions;
-import scala.concurrent.duration.Duration;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -191,8 +188,27 @@ public class LaborExchange extends UntypedActorAdapter {
     ExpLeagueOrder[] history(String roomId);
     Stream<ExpLeagueOrder> related(JID jid);
     Stream<ExpLeagueOrder> open();
-    Stream<ExpLeagueOrder> closedWithoutFeedback();
+    Stream<ExpLeagueOrder> orders(OrderFilter filter);
 
     Stream<JID> topExperts();
+  }
+
+  public static class OrderFilter {
+    // todo: should be a full-blown rich feature filter
+    private final boolean withoutFeedback;
+    private final EnumSet<ExpLeagueOrder.Status> statuses;
+
+    public OrderFilter(final boolean withoutFeedback, final EnumSet<ExpLeagueOrder.Status> statuses) {
+      this.withoutFeedback = withoutFeedback;
+      this.statuses = statuses;
+    }
+
+    public boolean withoutFeedback() {
+      return withoutFeedback;
+    }
+
+    public EnumSet<ExpLeagueOrder.Status> getStatuses() {
+      return statuses;
+    }
   }
 }

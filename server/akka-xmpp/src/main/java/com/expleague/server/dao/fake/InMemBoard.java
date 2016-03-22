@@ -58,10 +58,10 @@ public class InMemBoard implements LaborExchange.Board {
   }
 
   @Override
-  public Stream<ExpLeagueOrder> closedWithoutFeedback() {
+  public Stream<ExpLeagueOrder> orders(LaborExchange.OrderFilter filter) {
     return history.stream()
-      .filter(o -> o.status() == ExpLeagueOrder.Status.DONE)
-      .filter(o -> o.feedback() == -1);
+      .filter(o -> filter.getStatuses().isEmpty() || filter.getStatuses().contains(o.status()))
+      .filter(o -> !filter.withoutFeedback() || o.feedback() == -1);
   }
 
   @Override
