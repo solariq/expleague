@@ -19,9 +19,15 @@ public interface Archive {
   Dump dump(String local);
   Dump register(String room, String owner);
 
+  interface DumpItem {
+    Stanza stanza();
+    String author();
+    long timestamp();
+  }
+
   interface Dump {
     void accept(Stanza stanza);
-    Stream<Stanza> stream();
+    Stream<DumpItem> stream();
     JID owner();
   }
 }

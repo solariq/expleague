@@ -408,3 +408,17 @@ th.order-urgency {
 th.order-feedback {
     width: 100px;
 }
+
+.message-author {
+    color: black;
+    font-weight: 700;
+    margin-right: 5px;
+}
+
+.message-timestamp {
+    color: #999;
+}
+
+.message code {
+    font-size: 90%;
+}

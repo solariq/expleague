@@ -3,10 +3,12 @@
     <head>
         <title>ExpLeague - Admin</title>
         <link rel="stylesheet" type="text/css" href="/static/css/admin.css" media="screen"/>
+        <link rel="stylesheet" type="text/css" href="/static/css/github.css" media="screen"/>
         <script type="text/javascript" src="/static/js/libs/jquery-2.2.2.min.js">&#160;</script>
         <script type="text/javascript" src="/static/js/libs/underscore-min.js">&#160;</script>
         <script type="text/javascript" src="/static/js/libs/knockout.min.js">&#160;</script>
         <script type="text/javascript" src="/static/js/libs/moment.min.js">&#160;</script>
+        <script type="text/javascript" src="/static/js/libs/highlight.pack.js">&#160;</script>
         <script type="text/javascript" src="/static/js/admin.js">&#160;</script>
     </head>
     <body>
@@ -108,15 +110,24 @@
             </div>
 
             <div class="dump bind-model">
-                <div class="dump" data-bind="foreach: messages">
-                    <div class="message" data-bind="text: $data">
+                <div class="messages" data-bind="foreach: messages">
+                    <div class="message">
+                        <div>
+                            <span class="message-author" data-bind="text: author"></span>
+                            <span class="message-timestamp" data-bind="text: moment(timestamp()).format()"></span>
+                        </div>
+                        <div class="stanza">
+                            <div>
+                                <code class="xml" data-bind="text: stanza"></code>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <script type="application/javascript">
-            Admin.init()
+            Admin.init();
         </script>
     </body>
 </html>

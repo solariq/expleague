@@ -70,7 +70,10 @@ var Admin = {
         var dumpEl = $("#templates").find(".dump").clone();
         $("#content").empty().append(dumpEl);
         var model = ko.mapping.fromJS(dump);
-        ko.applyBindings(model, dumpEl.get(0))
+        ko.applyBindings(model, dumpEl.get(0));
+        dumpEl.find("code.xml").each(function(i, el) {
+            hljs.highlightBlock(el);
+        });
     },
 
     formatExpiration: function(offerModel) {

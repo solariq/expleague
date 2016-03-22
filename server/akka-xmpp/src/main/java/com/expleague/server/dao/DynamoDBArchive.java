@@ -118,8 +118,8 @@ public class DynamoDBArchive implements Archive {
     }
 
     @Override
-    public Stream<Stanza> stream() {
-      return messages.stream().map(msg -> (Stanza)Stanza.create(msg.text));
+    public Stream<DumpItem> stream() {
+      return messages.stream().map(message -> (DumpItem) message);
     }
 
     private JID jid;
@@ -145,7 +145,7 @@ public class DynamoDBArchive implements Archive {
   }
 
   @DynamoDBDocument
-  public static class Message {
+  public static class Message implements DumpItem {
     private String text;
     private String author;
     private long ts;
@@ -156,6 +156,21 @@ public class DynamoDBArchive implements Archive {
       this.author = authorId;
       this.text = message.toString();
       this.ts = ts;
+    }
+
+    @Override
+    public Stanza stanza() {
+      return (Stanza)Stanza.create(text);
+    }
+
+    @Override
+    public String author() {
+      return author;
+    }
+
+    @Override
+    public long timestamp() {
+      return ts;
     }
 
     @DynamoDBAttribute

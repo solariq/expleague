@@ -15,6 +15,7 @@ import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import akka.util.Timeout;
 import com.expleague.server.Roster;
+import com.expleague.server.admin.dto.DumpItemDto;
 import com.expleague.server.admin.dto.ExpertsProfileDto;
 import com.expleague.server.admin.dto.JIDDto;
 import com.expleague.server.admin.dto.OrderDto;
@@ -139,7 +140,7 @@ public class ExpLeagueAdminService extends UntypedActor {
             else if (path.startsWith("/dump/")) {
               final JID jid = JID.parse(path.substring("/dump/".length()));
               final Archive.Dump dump = Archive.instance().dump(jid.local());
-              final List<String> messages = dump.stream().map(Item::xmlString).collect(Collectors.toList());
+              final List<DumpItemDto> messages = dump.stream().map(DumpItemDto::new).collect(Collectors.toList());
               response = getJsonResponse("messages", messages);
             }
           } catch (Exception e) {
@@ -161,7 +162,7 @@ public class ExpLeagueAdminService extends UntypedActor {
     }
 
     protected HttpResponse getJsonResponse(final String name, final Object value) throws JsonProcessingException {
-      final Map<String, Object> map = new HashMap();
+      final Map<String, Object> map = new HashMap<>();
       map.put(name, value);
       return HttpResponse.create().withStatus(200).withEntity(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(map));
     }

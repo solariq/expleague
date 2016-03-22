@@ -79,6 +79,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
         case ACTIVE:
           if (msg.has(Resume.class)) {
             dump.stream()
+                    .map(Archive.DumpItem::stanza)
                     .flatMap(Functions.instancesOf(Message.class))
                     .filter(message -> message.type() == MessageType.GROUP_CHAT)
                     .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
@@ -92,6 +93,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
           }
           else if (msg.has(Start.class)) {
             dump.stream()
+                    .map(Archive.DumpItem::stanza)
                     .flatMap(Functions.instancesOf(Message.class))
                     .filter(message -> message.type() == MessageType.GROUP_CHAT)
                     .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
@@ -134,7 +136,9 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
     final Archive.Dump dump = Archive.instance().dump(roomId);
     if (dump == null)
       return new ExpLeagueOrder[0];
-    dump.stream().forEach(stanza -> {
+    dump.stream()
+      .map(Archive.DumpItem::stanza)
+      .forEach(stanza -> {
       if (!(stanza instanceof Message))
         return;
       final Message message = (Message) stanza;
