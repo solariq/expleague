@@ -74,4 +74,8 @@ public class OfferDto {
       .map(ExpertsProfileDto::new)
       .collect(Collectors.toList());
   }
+
+  public long getStartedMs() {
+    return startedMs;
+  }
 }

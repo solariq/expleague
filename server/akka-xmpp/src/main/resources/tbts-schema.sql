@@ -52,6 +52,8 @@ CREATE TABLE IF NOT EXISTS expleague.Orders (
   eta TIMESTAMP NOT NULL,
   status INTEGER(8),
   score FLOAT(16) DEFAULT -1.0,
+  answer MEDIUMTEXT CHARACTER SET utf8 COLLATE utf8_general_ci,
+  answer_timestamp TIMESTAMP,
 
   PRIMARY KEY (id)
 );

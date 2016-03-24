@@ -74,6 +74,8 @@ public class InMemBoard implements LaborExchange.Board {
     protected final Set<String> tags = new HashSet<>();
 
     protected double score = -1;
+    private String answer;
+    private long answerTimestampMs;
 
     public MyOrder(Offer offer) {
       super(offer);
@@ -130,6 +132,22 @@ public class InMemBoard implements LaborExchange.Board {
       return roles.entrySet().stream().filter(
           e -> !EnumSet.of(Role.NONE, Role.DND).contains(e.getValue())
       ).map(Map.Entry::getKey);
+    }
+
+    @Override
+    public void answer(final String answer, final long timestampMs) {
+      this.answer = answer;
+      this.answerTimestampMs = timestampMs;
+    }
+
+    @Override
+    public String answer() {
+      return answer;
+    }
+
+    @Override
+    public long answerTimestamp() {
+      return answerTimestampMs;
     }
   }
 }

@@ -19,11 +19,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Function;
@@ -44,10 +42,12 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @Override
   public MySQLOrder register(Offer offer) {
     try {
-      final PreparedStatement registerOrder = createStatement("register-order", "INSERT INTO expleague.Orders SET room = ?, offer = ?, eta = ?, status = " + ExpLeagueOrder.Status.OPEN.index(), true);
+      final PreparedStatement registerOrder = createStatement("register-order", "INSERT INTO expleague.Orders SET room = ?, offer = ?, eta = ?, status = " + ExpLeagueOrder.Status.OPEN.index() + ", answer = ?, answer_timestamp = ?", true);
       registerOrder.setString(1, offer.room().local());
       registerOrder.setCharacterStream(2, new StringReader(offer.xmlString()));
       registerOrder.setTimestamp(3, Timestamp.from(offer.expires().toInstant()));
+      registerOrder.setString(4, null);
+      registerOrder.setNull(5, Types.TIMESTAMP);
       registerOrder.execute();
       final MySQLOrder result;
       try (final ResultSet generatedKeys = registerOrder.getGeneratedKeys()) {
@@ -219,6 +219,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       id = resultSet.getInt(1);
       super.status(Status.valueOf((int)resultSet.getByte(5)));
       super.feedback(resultSet.getDouble(6));
+      super.answer(resultSet.getString(7), resultSet.getTimestamp(8).getTime());
       final PreparedStatement restoreRoles = createStatement("roles-restore", "SELECT * FROM expleague.Participants WHERE `order` = ? ORDER BY id");
       restoreRoles.setInt(1, id);
       try (final ResultSet rolesRS = restoreRoles.executeQuery()) {
@@ -279,7 +280,6 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       super.role(jid, role);
       if (role.permanent()) {
         try {
-
           final PreparedStatement changeRole = createStatement("change-role", "INSERT INTO expleague.Participants SET `order` = ?, partisipant = ?, role = ?");
           changeRole.setInt(1, id);
           changeRole.setString(2, jid.local());
@@ -300,6 +300,21 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
         changeRole.setInt(1, id);
         changeRole.setInt(2, tagId);
         changeRole.execute();
+      }
+      catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public void answer(final String answer, final long timestampMs) {
+      try {
+        super.answer(answer, timestampMs);
+        final PreparedStatement answerStatement = createStatement("order-answer", "UPDATE Orders SET answer = ?, answer_timestamp = ? WHERE id = ?");
+        answerStatement.setInt(3, id);
+        answerStatement.setString(1, answer);
+        answerStatement.setTimestamp(2, Timestamp.from(new Date(timestampMs).toInstant()));
+        answerStatement.execute();
       }
       catch (SQLException e) {
         throw new RuntimeException(e);

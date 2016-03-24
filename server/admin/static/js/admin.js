@@ -1,11 +1,19 @@
 var Admin = {
+    experts: null,
+    
     load: function(url, success) {
         $("#content").empty().append('<div class="loader" style=";">Loading...</div>');
         $.ajax({
             type: "GET",
             dataType: "json",
             url: url,
-            success: success,
+            success: function(data) {
+                Admin.experts = {};
+                $.each(data["experts"], function(i, model) {
+                    Admin.experts[model.jid.bare] = model;
+                }); 
+                success(data);
+            },
             error: function(j, s, message) {
                 $("#content").empty().text(message);
             }
@@ -39,9 +47,9 @@ var Admin = {
         });
     },
 
-    loadRelatedHandler: function(expertProfile) {
+    loadRelatedHandler: function(jid) {
         return function() {
-            Admin.loadRelated(expertProfile.jid.bare())
+            Admin.loadRelated(jid.bare())
         }
     },
 
@@ -63,6 +71,7 @@ var Admin = {
         var ordersEl = $("#templates").find(".orders").clone();
         $("#content").empty().append(ordersEl);
         var model = ko.mapping.fromJS(orders);
+        ordersEl.data("model", model);
         ko.applyBindings(model, ordersEl.get(0))
     },
 

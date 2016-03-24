@@ -422,3 +422,8 @@ th.order-feedback {
 .message code {
     font-size: 90%;
 }
+
+.group-separator {
+    background: aliceblue;
+    font-size: 90%;
+}

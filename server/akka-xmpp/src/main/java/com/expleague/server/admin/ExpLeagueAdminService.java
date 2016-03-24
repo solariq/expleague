@@ -14,23 +14,28 @@ import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import akka.util.Timeout;
+import com.expleague.model.Answer;
 import com.expleague.server.Roster;
-import com.expleague.server.admin.dto.DumpItemDto;
-import com.expleague.server.admin.dto.ExpertsProfileDto;
-import com.expleague.server.admin.dto.JIDDto;
-import com.expleague.server.admin.dto.OrderDto;
+import com.expleague.server.admin.dto.*;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.dao.Archive;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
+import com.expleague.xmpp.stanza.Message;
+import com.expleague.xmpp.stanza.Stanza;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Charsets;
+import com.spbsu.commons.util.Pair;
 import com.typesafe.config.Config;
 import org.jetbrains.annotations.NotNull;
+import org.joda.time.*;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
@@ -143,6 +148,31 @@ public class ExpLeagueAdminService extends UntypedActor {
               final List<DumpItemDto> messages = dump.stream().map(DumpItemDto::new).collect(Collectors.toList());
               response = getJsonResponse("messages", messages);
             }
+            else if (path.startsWith("/migrate/answers")) {
+              final Map<ExpLeagueOrder, Pair<String, Long>> toMigrate = new HashMap<>();
+              board.orders(new LaborExchange.OrderFilter(false, EnumSet.noneOf(ExpLeagueOrder.Status.class)))
+              .forEach(order -> {
+                if (order.answer() == null) {
+                  final Archive.Dump dump = Archive.instance().dump(order.offer().room().local());
+                  dump.stream().forEach(dumpItem -> {
+                    final Stanza stanza = dumpItem.stanza();
+                    if (stanza instanceof Message) {
+                      final Message m = (Message) stanza;
+                      if (m.has(Answer.class)) {
+                        toMigrate.put(
+                          order, new Pair<>(m.get(Answer.class).value(), dumpItem.timestamp())
+                        );
+                      }
+                    }
+                  });
+                }
+              });
+              for (Map.Entry<ExpLeagueOrder, Pair<String, Long>> entry : toMigrate.entrySet()) {
+                final Pair<String, Long> value = entry.getValue();
+                entry.getKey().answer(value.getFirst(), value.getSecond());
+              }
+              response = getJsonResponse("results", new ArrayList());
+            }
           } catch (Exception e) {
             final ByteArrayOutputStream out = new ByteArrayOutputStream();
             e.printStackTrace(new PrintStream(out));
@@ -156,14 +186,41 @@ public class ExpLeagueAdminService extends UntypedActor {
     }
 
     protected HttpResponse getOrders(Stream<ExpLeagueOrder> stream) throws JsonProcessingException {
-      final List<OrderDto> history = stream.map(OrderDto::new).collect(Collectors.toList());
-      Collections.reverse(history);
-      return getJsonResponse("orders", history);
+      final List<OrderDto> orders = stream.map(OrderDto::new).collect(Collectors.toList());
+      Collections.reverse(orders);
+
+      final DateTimeFormatter formatter = DateTimeFormat.forPattern("dd-MM-yyyy");
+      final Map<String, List<OrderDto>> history = orders
+        .stream()
+        .collect(Collectors.groupingBy(
+          orderDto -> {
+            final long startedMs = orderDto.getOffer().getStartedMs();
+            return formatter.print(startedMs);
+          }
+        ));
+      final List<OrdersGroupDto> result = new ArrayList<>();
+      for (Map.Entry<String, List<OrderDto>> entry : history.entrySet()) {
+        result.add(new OrdersGroupDto(
+          entry.getKey(),
+          entry.getValue()
+        ));
+      }
+      Collections.sort(result, (o1, o2) -> {
+        final DateTime d2 = DateTime.parse(o2.getGroupName(), formatter);
+        final DateTime d1 = DateTime.parse(o1.getGroupName(), formatter);
+        return d2.compareTo(d1);
+      });
+      return getJsonResponse("orderGroups", result);
     }
 
     protected HttpResponse getJsonResponse(final String name, final Object value) throws JsonProcessingException {
       final Map<String, Object> map = new HashMap<>();
       map.put(name, value);
+      final List<ExpertsProfileDto> experts = LaborExchange.board().topExperts()
+        .map(Roster.instance()::profile)
+        .map(ExpertsProfileDto::new)
+        .collect(Collectors.toList());
+      map.put("experts", experts);
       return HttpResponse.create().withStatus(200).withEntity(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(map));
     }
 

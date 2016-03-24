@@ -1,0 +1,2 @@
+ALTER TABLE Orders ADD COLUMN answer MEDIUMTEXT CHARACTER SET utf8 COLLATE utf8_general_ci;
+ALTER TABLE Orders ADD COLUMN answer_timestamp TIMESTAMP;

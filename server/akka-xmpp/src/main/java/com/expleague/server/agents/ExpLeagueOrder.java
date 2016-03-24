@@ -59,6 +59,9 @@ public abstract class ExpLeagueOrder {
   public abstract Stream<JID> of(Role role);
   public abstract double feedback();
   public abstract String[] tags();
+  public abstract void answer(final String answer, final long timestampMs);
+  public abstract String answer();
+  public abstract long answerTimestamp();
 
   // Write interface
   protected abstract void mapTempRoles(Function<Role, Role> map);
@@ -212,6 +215,7 @@ public abstract class ExpLeagueOrder {
       return Stream.of(Role.values()).filter(s -> s.index == index).findAny().orElse(null);
     }
   }
+
   public enum Status {
     OPEN(0),
     IN_PROGRESS(1),

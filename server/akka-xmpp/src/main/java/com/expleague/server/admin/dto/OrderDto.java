@@ -24,6 +24,12 @@ public class OrderDto {
   @JsonProperty
   private final double feedback;
 
+  @JsonProperty
+  private final String answer;
+
+  @JsonProperty
+  private final long answerTimestamp;
+
   public OrderDto(final ExpLeagueOrder order) {
     this.offer = new OfferDto(order.offer());
     this.status = order.status();
@@ -32,6 +38,12 @@ public class OrderDto {
       order.role(jid)
     )).collect(Collectors.toList());
     this.feedback = order.feedback();
+    this.answer = order.answer();
+    this.answerTimestamp = order.answerTimestamp();
+  }
+
+  public OfferDto getOffer() {
+    return offer;
   }
 
   @JsonIgnoreProperties(ignoreUnknown = true)

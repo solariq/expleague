@@ -86,6 +86,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
             XMPP.send(new Presence(roomAlias(msg.from()), dump.owner(), true), context());
           }
           else if (msg.has(Answer.class)) {
+            order.answer(msg.get(Answer.class).value(), System.currentTimeMillis());
             order = null;
           }
           else if (msg.has(Suspend.class)) {
@@ -137,8 +138,8 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
     if (dump == null)
       return new ExpLeagueOrder[0];
     dump.stream()
-      .map(Archive.DumpItem::stanza)
-      .forEach(stanza -> {
+      .forEach(dumpItem -> {
+      final Stanza stanza = dumpItem.stanza();
       if (!(stanza instanceof Message))
         return;
       final Message message = (Message) stanza;
@@ -164,6 +165,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
         state.refused(message.from());
       }
       else if (message.has(Answer.class)) {
+        current.answer(message.get(Answer.class).value(), dumpItem.timestamp());
         state.close();
       }
       else if (message.has(Feedback.class)) {
