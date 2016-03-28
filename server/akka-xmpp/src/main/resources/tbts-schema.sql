@@ -82,3 +82,11 @@ CREATE TABLE IF NOT EXISTS expleague.Applications (
 
   CONSTRAINT Applications_Users_id_fk FOREIGN KEY (referer) REFERENCES Users (id) ON DELETE SET NULL
 );
+
+CREATE TABLE IF NOT EXISTS expleague.Patterns (
+  name VARCHAR(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  body MEDIUMTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  icon VARCHAR(128),
+
+  PRIMARY KEY (name)
+);

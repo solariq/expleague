@@ -69,8 +69,8 @@ public class Item implements Cloneable {
     }
   };
 
-  public static Item create(CharSequence str) {
-    return tlReader.get().deserialize(str.toString());
+  public static <T extends Item> T create(CharSequence str) {
+    return (T)tlReader.get().deserialize(str.toString());
   }
 
   @Nullable

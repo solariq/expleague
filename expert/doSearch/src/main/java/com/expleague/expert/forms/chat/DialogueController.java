@@ -3,29 +3,32 @@ package com.expleague.expert.forms.chat;
 import com.expleague.expert.forms.MainController;
 import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
+import com.expleague.expert.xmpp.ExpLeagueConnection;
 import com.expleague.expert.xmpp.ExpertEvent;
 import com.expleague.expert.xmpp.ExpertTask;
 import com.expleague.expert.xmpp.events.*;
-import com.expleague.model.Answer;
-import com.expleague.model.ExpertsProfile;
+import com.expleague.model.*;
 import com.expleague.model.Image;
-import com.expleague.model.Offer;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.system.RuntimeUtils;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.URL;
@@ -52,6 +55,8 @@ public class DialogueController implements Action<ExpertEvent> {
   private Text textHolder = new Text();
   private double oldHeight = 0;
   private Action<UserProfile> profileChangeListener = profile -> profile.expert().addListener(DialogueController.this);
+  private FlowPane tags;
+  private FlowPane calls;
 
   @FXML
   public void initialize() {
@@ -162,6 +167,85 @@ public class DialogueController implements Action<ExpertEvent> {
       catch (IOException e) {
         throw new RuntimeException(e);
       }
+  }
+
+  public void accept(TaskAcceptedEvent accepted) {
+    final HBox topic = new HBox();
+    {
+      VBox.setVgrow(topic, Priority.NEVER);
+      tags = new FlowPane();
+      final ImageView plus = createPlus((evt) -> {
+        final ChoiceDialog<Tag> alert = new ChoiceDialog<>();
+        alert.setTitle("Тематика");
+        alert.setHeaderText("Выберите тематику задания");
+        final ObservableList<Tag> items = alert.getItems();
+        ExpLeagueConnection.instance().listTags().filter(tag -> !task.tags().contains(tag)).forEach(items::add);
+        alert.showAndWait().ifPresent(task::tag);
+      });
+      final Text label = new Text("Тематика: ");
+      tags.getChildren().add(plus);
+      topic.getChildren().addAll(label, tags);
+    }
+
+    final HBox calls = new HBox();
+    {
+      VBox.setVgrow(calls, Priority.NEVER);
+      final ImageView plus = createPlus((evt) -> {
+        final TextInputDialog alert = new TextInputDialog();
+        alert.setTitle("Звонок");
+        alert.setHeaderText("По номеру:");
+        alert.showAndWait().ifPresent(task::call);
+      });
+      final Text label = new Text("Звонки: ");
+      this.calls = new FlowPane();
+      this.calls.getChildren().add(plus);
+      calls.getChildren().addAll(label, this.calls);
+    }
+    final VBox toolsBox = new VBox();
+    toolsBox.getChildren().addAll(topic, calls);
+    Platform.runLater(() -> taskViewParent.getChildren().add(toolsBox));
+  }
+
+  @NotNull
+  private ImageView createPlus(EventHandler<MouseEvent> onclick) {
+    final ImageView plus = new ImageView(new javafx.scene.image.Image("/images/add_tag.png"));
+    plus.setFitWidth(14 * 4 / 3.);
+    plus.setPreserveRatio(true);
+    plus.setPickOnBounds(true);
+    plus.setOnMouseClicked(onclick);
+    return plus;
+  }
+
+  public void accept(TaskTagsAssignedEvent assigned) {
+    final List<Node> newTags = new ArrayList<>();
+    assigned.tags().forEach(tag -> {
+      final ImageView cross = new ImageView(new javafx.scene.image.Image("/images/cross.png"));
+      Platform.runLater(() -> {});
+      final StackPane tagItem = new StackPane(new Text((newTags.size() > 0 ? ", " : " ") + tag.name() + " "), new AnchorPane(cross));
+      cross.setFitWidth(10);
+      cross.setPreserveRatio(true);
+      cross.setPickOnBounds(true);
+      cross.setOnMouseClicked((evt) -> {
+        task.untag(tag);
+      });
+      AnchorPane.setRightAnchor(cross, -3.0);
+      AnchorPane.setTopAnchor(cross, 0.0);
+      newTags.add(tagItem);
+    });
+    Platform.runLater(() -> {
+      final ObservableList<Node> children = tags.getChildren();
+      final Node plus = children.get(children.size() - 1);
+      children.clear();
+      children.addAll(newTags);
+      children.add(plus);
+    });
+  }
+
+  public void accept(TaskCallEvent call) {
+    Platform.runLater(() -> {
+      final ObservableList<Node> children = calls.getChildren();
+      children.add(children.size() - 1, new Text((children.size() > 1 ? ", " : "") + call.phone()));
+    });
   }
 
   public void accept(TaskInviteCanceledEvent cancel) {

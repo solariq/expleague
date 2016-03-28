@@ -1,12 +1,12 @@
 package com.expleague.model;
 
 import com.expleague.xmpp.Item;
-import com.expleague.xmpp.JID;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlValue;
+import javax.xml.bind.annotation.*;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * User: solar
@@ -103,6 +103,48 @@ public class Operations {
 
     public String value() {
       return value;
+    }
+  }
+
+  /**
+   * Experts League
+   * Created by solar on 28/03/16.
+   */
+
+  @XmlRootElement
+  public static class Progress extends Command {
+    @XmlElement(name = "tag", namespace = NS)
+    @XmlElementWrapper(name = "assigned", namespace = NS)
+    private List<Tag> assigned;
+
+    @XmlElement(namespace = NS)
+    private URI visited;
+
+    @XmlElement(namespace = NS)
+    private String call;
+
+
+    public Progress(Tag... tag) {
+      assigned = Arrays.asList(tag);
+    }
+
+    public Progress() {
+    }
+
+    public Progress(String phone) {
+      call = phone;
+    }
+
+    public Stream<Tag> assigned() {
+      return assigned.stream();
+    }
+
+    public boolean hasAssigned() {
+      return assigned != null;
+    }
+
+    public String phone() {
+      return call;
     }
   }
 }

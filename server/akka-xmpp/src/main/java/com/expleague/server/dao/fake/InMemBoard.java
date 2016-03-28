@@ -62,6 +62,11 @@ public class InMemBoard implements LaborExchange.Board {
     return history.stream().map(o -> o.of(ACTIVE)).flatMap(s -> s);
   }
 
+  @Override
+  public Stream<String> tags() {
+    return history.stream().flatMap(o -> Stream.of(o.tags())).collect(Collectors.toSet()).stream();
+  }
+
   public static class MyOrder extends ExpLeagueOrder {
     private final Map<JID, Role> roles = new HashMap<>();
     protected final Set<String> tags = new HashSet<>();
@@ -99,6 +104,11 @@ public class InMemBoard implements LaborExchange.Board {
     @Override
     protected void tag(String tag) {
       tags.add(tag);
+    }
+
+    @Override
+    protected void untag(String tag) {
+      tags.remove(tag);
     }
 
     @Override

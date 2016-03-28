@@ -2,11 +2,8 @@ package com.expleague.server.agents;
 
 import akka.actor.*;
 import akka.util.Timeout;
-import com.expleague.model.ExpertsProfile;
+import com.expleague.model.*;
 import com.spbsu.commons.util.Pair;
-import com.expleague.model.Offer;
-import com.expleague.model.Operations;
-import com.expleague.model.ServiceStatus;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.roles.BrokerRole;
 import com.expleague.server.agents.roles.ExpertRole;
@@ -16,10 +13,8 @@ import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Presence;
 import scala.Option;
 import scala.collection.JavaConversions;
-import scala.concurrent.duration.Duration;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -193,5 +188,7 @@ public class LaborExchange extends UntypedActorAdapter {
     Stream<ExpLeagueOrder> open();
 
     Stream<JID> topExperts();
+
+    Stream<String> tags();
   }
 }

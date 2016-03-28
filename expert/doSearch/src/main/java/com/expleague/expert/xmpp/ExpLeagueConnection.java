@@ -2,9 +2,13 @@ package com.expleague.expert.xmpp;
 
 import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
+import com.expleague.model.Operations;
+import com.expleague.model.Pattern;
+import com.expleague.model.Tag;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.control.receipts.Received;
 import com.expleague.xmpp.control.receipts.Request;
+import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.func.impl.WeakListenerHolderImpl;
@@ -33,6 +37,7 @@ import tigase.jaxmpp.core.client.eventbus.EventBus;
 import tigase.jaxmpp.core.client.eventbus.EventHandler;
 import tigase.jaxmpp.core.client.eventbus.EventListener;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
+import tigase.jaxmpp.core.client.xml.DefaultElement;
 import tigase.jaxmpp.core.client.xml.Element;
 import tigase.jaxmpp.core.client.xml.ElementFactory;
 import tigase.jaxmpp.core.client.xml.XMLException;
@@ -66,10 +71,14 @@ import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Experts League
@@ -263,6 +272,10 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
   private Status status = Status.DISCONNECTED;
   @Override
   protected void invoke(Status e) {
+    if (e == Status.CONNECTED) {
+      listTags();
+      listPatterns();
+    }
     status = e;
     super.invoke(e);
   }
@@ -451,6 +464,94 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
         throw new RuntimeException(e);
       }
     });
+  }
+
+  private List<Tag> tags;
+  public Stream<Tag> listTags() {
+    if (tags == null) {
+      if (jaxmpp != null && jaxmpp.isConnected()) {
+        try {
+          final IQ iq = IQ.create();
+          iq.setType(StanzaType.get);
+          final String tagsNs = Operations.NS + "/tags";
+          final Element q = ElementFactory.create("query", null, tagsNs);
+          iq.addChild(q);
+          final Semaphore semaphore = new Semaphore(1);
+          semaphore.acquire();
+          jaxmpp.send(iq, new AsyncCallback() {
+            @Override
+            public void onError(tigase.jaxmpp.core.client.xmpp.stanzas.Stanza stanza, XMPPException.ErrorCondition errorCondition) throws JaxmppException {
+              semaphore.release();
+            }
+
+            @Override
+            public void onSuccess(tigase.jaxmpp.core.client.xmpp.stanzas.Stanza stanza) throws JaxmppException {
+              tags = stanza.getFirstChild("query").getChildren("tag").stream().map(e -> {
+                try {
+                  return (Tag) Item.create(e.getAsString());
+                } catch (XMLException e1) {
+                  throw new RuntimeException(e1);
+                }
+              }).collect(Collectors.toList());
+              semaphore.release();
+            }
+
+            @Override
+            public void onTimeout() throws JaxmppException {
+              semaphore.release();
+            }
+          });
+          semaphore.acquire();
+        } catch (JaxmppException | InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+    return tags != null ? tags.stream() : Stream.empty();
+  }
+
+  private List<Pattern> patterns;
+  public Stream<Pattern> listPatterns() {
+    if (patterns == null) {
+      if (jaxmpp != null && jaxmpp.isConnected()) {
+        try {
+          final IQ iq = IQ.create();
+          iq.setType(StanzaType.get);
+          final String tagsNs = Operations.NS + "/patterns";
+          final Element q = ElementFactory.create("query", null, tagsNs);
+          iq.addChild(q);
+          final Semaphore semaphore = new Semaphore(1);
+          semaphore.acquire();
+          jaxmpp.send(iq, new AsyncCallback() {
+            @Override
+            public void onError(tigase.jaxmpp.core.client.xmpp.stanzas.Stanza stanza, XMPPException.ErrorCondition errorCondition) throws JaxmppException {
+              semaphore.release();
+            }
+
+            @Override
+            public void onSuccess(tigase.jaxmpp.core.client.xmpp.stanzas.Stanza stanza) throws JaxmppException {
+              patterns = stanza.getFirstChild("query").getChildren("pattern").stream().map(e -> {
+                try {
+                  return (Pattern) Item.create(e.getAsString());
+                } catch (XMLException e1) {
+                  throw new RuntimeException(e1);
+                }
+              }).collect(Collectors.toList());
+              semaphore.release();
+            }
+
+            @Override
+            public void onTimeout() throws JaxmppException {
+              semaphore.release();
+            }
+          });
+          semaphore.acquire();
+        } catch (JaxmppException | InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+    return patterns != null ? patterns.stream() : Stream.empty();
   }
 
   public enum Status {

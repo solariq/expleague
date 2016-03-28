@@ -2,6 +2,7 @@
   <dictionary name="solar">
     <words>
       <w>combinator</w>
+      <w>untag</w>
     </words>
   </dictionary>
 </component>
