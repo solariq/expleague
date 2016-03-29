@@ -266,14 +266,14 @@ public class ExpertTask {
   public void tag(Tag tag) {
     tags.add(tag);
     final Operations.Progress progress = new Operations.Progress(tags.toArray(new Tag[tags.size()]));
-    ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.GROUP_CHAT, progress));
+    ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.NORMAL, progress));
     eventsReceiver.accept(new TaskTagsAssignedEvent(progress, this));
   }
 
   public void untag(Tag tag) {
     tags.remove(tag);
     final Operations.Progress progress = new Operations.Progress(tags.toArray(new Tag[tags.size()]));
-    ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.GROUP_CHAT, progress));
+    ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.NORMAL, progress));
     eventsReceiver.accept(new TaskTagsAssignedEvent(progress, this));
   }
 
@@ -285,7 +285,7 @@ public class ExpertTask {
   public void call(String phone) {
     calls.add(phone);
     final Operations.Progress progress = new Operations.Progress(phone);
-    ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.GROUP_CHAT, progress));
+    ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.NORMAL, progress));
     eventsReceiver.accept(new TaskCallEvent(progress, this));
   }
 
