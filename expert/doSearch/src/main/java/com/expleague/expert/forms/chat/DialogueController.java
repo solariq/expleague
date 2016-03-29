@@ -288,6 +288,8 @@ public class DialogueController implements Action<ExpertEvent> {
     controllers.clear();
     Platform.runLater(() -> {
       messagesView.getChildren().clear();
+      taskViewParent.getChildren().clear();
+      taskViewParent.getChildren().add(taskView);
       taskView.getChildren().clear();
       input.setEditable(false);
     });
