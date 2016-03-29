@@ -2,12 +2,15 @@ package com.expleague.expert.forms;
 
 import com.expleague.expert.xmpp.ExpLeagueConnection;
 import com.expleague.expert.xmpp.ExpertTask;
+import com.expleague.model.Pattern;
+import com.expleague.model.Tag;
 import com.expleague.model.patch.Patch;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ToolBar;
 import javafx.scene.image.Image;
 import javafx.scene.input.Clipboard;
@@ -33,6 +36,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
 
@@ -76,9 +80,6 @@ public class AnswerViewController {
     Action insertItalicAction = new Action(Messages.get("MainWindow.insertItalicAction"), "Shortcut+I", ITALIC,
         e -> editorPane.surroundSelection("*", "*"),
         activeFileEditorIsNull);
-    Action insertStrikethroughAction = new Action(Messages.get("MainWindow.insertStrikethroughAction"), "Shortcut+T", STRIKETHROUGH,
-        e -> editorPane.surroundSelection("~~", "~~"),
-        activeFileEditorIsNull);
     Action insertBlockquoteAction = new Action(Messages.get("MainWindow.insertBlockquoteAction"), "Ctrl+Q", QUOTE_LEFT, // not Shortcut+Q because of conflict on Mac
         e -> editorPane.surroundSelection("\n\n> ", ""),
         activeFileEditorIsNull);
@@ -99,21 +100,6 @@ public class AnswerViewController {
     Action insertHeader1Action = new Action(Messages.get("MainWindow.insertHeader1Action"), "Shortcut+1", HEADER,
         e -> editorPane.surroundSelection("\n\n# ", "", Messages.get("MainWindow.insertHeader1Text")),
         activeFileEditorIsNull);
-    Action insertHeader2Action = new Action(Messages.get("MainWindow.insertHeader2Action"), "Shortcut+2", HEADER,
-        e -> editorPane.surroundSelection("\n\n## ", "", Messages.get("MainWindow.insertHeader2Text")),
-        activeFileEditorIsNull);
-    Action insertHeader3Action = new Action(Messages.get("MainWindow.insertHeader3Action"), "Shortcut+3", HEADER,
-        e -> editorPane.surroundSelection("\n\n### ", "", Messages.get("MainWindow.insertHeader3Text")),
-        activeFileEditorIsNull);
-    Action insertHeader4Action = new Action(Messages.get("MainWindow.insertHeader4Action"), "Shortcut+4", HEADER,
-        e -> editorPane.surroundSelection("\n\n#### ", "", Messages.get("MainWindow.insertHeader4Text")),
-        activeFileEditorIsNull);
-    Action insertHeader5Action = new Action(Messages.get("MainWindow.insertHeader5Action"), "Shortcut+5", HEADER,
-        e -> editorPane.surroundSelection("\n\n##### ", "", Messages.get("MainWindow.insertHeader5Text")),
-        activeFileEditorIsNull);
-    Action insertHeader6Action = new Action(Messages.get("MainWindow.insertHeader6Action"), "Shortcut+6", HEADER,
-        e -> editorPane.surroundSelection("\n\n###### ", "", Messages.get("MainWindow.insertHeader6Text")),
-        activeFileEditorIsNull);
 
     Action insertUnorderedListAction = new Action(Messages.get("MainWindow.insertUnorderedListAction"), "Shortcut+U", LIST_UL,
         e -> editorPane.surroundSelection("\n\n* ", ""),
@@ -121,9 +107,15 @@ public class AnswerViewController {
     Action insertOrderedListAction = new Action(Messages.get("MainWindow.insertOrderedListAction"), "Shortcut+Shift+O", LIST_OL,
         e -> editorPane.surroundSelection("\n\n1. ", ""),
         activeFileEditorIsNull);
-    Action insertHorizontalRuleAction = new Action(Messages.get("MainWindow.insertHorizontalRuleAction"), "Shortcut+H", null,
-        e -> editorPane.surroundSelection("\n\n---\n\n", ""),
-        activeFileEditorIsNull);
+
+    final Action insertPattern = new Action(Messages.get("MainWindow.insertPattern"), "Shortcut+P", MAGIC,
+        e -> {
+          final ChoiceDialog<Pattern> alert = new ChoiceDialog<>();
+          alert.getItems().addAll(ExpLeagueConnection.instance().listPatterns().collect(Collectors.toList()));
+          alert.setTitle("Шаблоны");
+          alert.setHeaderText("Выберите шаблон");
+          alert.showAndWait().ifPresent(p -> editorPane.insertText(p.body()));
+        }, activeFileEditorIsNull);
 
     //---- ToolBar ----
 
@@ -144,7 +136,8 @@ public class AnswerViewController {
         insertHeader1Action,
         null,
         insertUnorderedListAction,
-        insertOrderedListAction);
+        insertOrderedListAction,
+        insertPattern);
 
     final UndoManager undoManager =  editorPane.getUndoManager();
     canUndo.bind(undoManager.undoAvailableProperty());

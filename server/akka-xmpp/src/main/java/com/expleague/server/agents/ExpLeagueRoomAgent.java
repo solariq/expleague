@@ -3,6 +3,7 @@ package com.expleague.server.agents;
 import com.expleague.model.Answer;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations.*;
+import com.expleague.model.Tag;
 import com.expleague.server.Roster;
 import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.ActorAdapter;
@@ -16,10 +17,9 @@ import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.func.Functions;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayDeque;
-import java.util.EnumSet;
-import java.util.Queue;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
@@ -81,13 +81,26 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
             dump.stream()
                     .map(Archive.DumpItem::stanza)
                     .flatMap(Functions.instancesOf(Message.class))
-                    .filter(message -> message.type() == MessageType.GROUP_CHAT)
+                    .filter(message -> message.type() == MessageType.GROUP_CHAT || message.has(Command.class))
                     .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
             XMPP.send(new Presence(roomAlias(msg.from()), dump.owner(), true), context());
           }
           else if (msg.has(Answer.class)) {
             order.answer(msg.get(Answer.class).value(), System.currentTimeMillis());
             order = null;
+          }
+          else if (msg.has(Progress.class)) {
+            final Progress progress = msg.get(Progress.class);
+            if (progress.hasAssigned()) {
+              final List<String> oldTags = Arrays.asList(order.tags());
+              final Set<String> newTags = progress.assigned().map(Tag::name).collect(Collectors.toSet());
+              final Set<String> delete = new HashSet<>(oldTags);
+              final Set<String> append = new HashSet<>(newTags);
+              delete.removeAll(newTags);
+              append.removeAll(oldTags);
+              delete.stream().forEach(order::untag);
+              append.stream().forEach(order::tag);
+            }
           }
           else if (msg.has(Suspend.class)) {
             XMPP.send(new Presence(roomAlias(msg.from()), dump.owner(), false), context());
@@ -96,7 +109,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
             dump.stream()
                     .map(Archive.DumpItem::stanza)
                     .flatMap(Functions.instancesOf(Message.class))
-                    .filter(message -> message.type() == MessageType.GROUP_CHAT)
+                    .filter(message -> message.type() == MessageType.GROUP_CHAT || message.has(Command.class))
                     .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
             XMPP.send(new Message(jid, dump.owner(), msg.get(Start.class), Roster.instance().profile(from.bare())), context());
           }

@@ -6,6 +6,7 @@ import com.expleague.server.admin.ExpLeagueAdminService;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
 import com.expleague.server.dao.Archive;
+import com.expleague.server.dao.PatternsRepository;
 import com.expleague.server.services.XMPPServices;
 import com.expleague.util.ios.NotificationsManager;
 import com.google.common.annotations.VisibleForTesting;
@@ -29,6 +30,7 @@ public class ExpLeagueServer {
   private static Roster users;
   private static LaborExchange.Board leBoard;
   private static Archive archive;
+  private static PatternsRepository patterns;
 
   public static void main(String[] args) throws Exception {
     final Config load = ConfigFactory.load();
@@ -58,6 +60,9 @@ public class ExpLeagueServer {
   public static Archive archive() {
     return archive;
   }
+  public static PatternsRepository patterns() {
+    return patterns;
+  }
 
   public static Cfg config() {
     return config;
@@ -69,6 +74,7 @@ public class ExpLeagueServer {
     users = config.roster().newInstance();
     leBoard = config.board().newInstance();
     archive = config.archive().newInstance();
+    patterns = config.patterns().newInstance();
     if (System.getProperty("logger.config") == null)
       LogManager.getLogManager().readConfiguration(ExpLeagueServer.class.getResourceAsStream("/logging.properties"));
     else
@@ -119,6 +125,7 @@ public class ExpLeagueServer {
     private final Class<? extends Archive> archive;
     private final Class<? extends Roster> roster;
     private final Class<? extends LaborExchange.Board> board;
+    private final Class<? extends PatternsRepository> patterns;
     private final Type type;
 
     public ServerCfg(Config load) throws ClassNotFoundException {
@@ -131,6 +138,8 @@ public class ExpLeagueServer {
       board = (Class<? extends LaborExchange.Board>) Class.forName(config.getString("board"));
       //noinspection unchecked
       roster = (Class<? extends Roster>) Class.forName(config.getString("roster"));
+      //noinspection unchecked
+      patterns = (Class<? extends PatternsRepository>) Class.forName(config.getString("patterns"));
       type = Type.valueOf(config.getString("type").toUpperCase());
     }
 
@@ -157,6 +166,10 @@ public class ExpLeagueServer {
     @Override
     public Class<? extends Roster> roster() {
       return roster;
+    }
+
+    public Class<? extends PatternsRepository> patterns() {
+      return patterns;
     }
 
     @Override

@@ -256,10 +256,6 @@ public class Register {
       return (Wizard) getParent();
     }
 
-    public int index() {
-      return getWizard().indexOf(this);
-    }
-
     public void updateButtons() {
       finishButton.setDisable(true);
       nextButton.setDisable(true);

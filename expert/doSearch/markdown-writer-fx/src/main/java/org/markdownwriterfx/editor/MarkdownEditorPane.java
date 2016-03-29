@@ -359,4 +359,8 @@ public class MarkdownEditorPane
 			textArea.replaceSelection(result);
 		});
 	}
+
+	public void insertText(CharSequence body) {
+		textArea.replaceSelection(body.toString());
+	}
 }

@@ -2,10 +2,8 @@ package com.expleague.server.agents;
 
 import akka.actor.*;
 import akka.util.Timeout;
+import com.expleague.model.*;
 import com.spbsu.commons.util.Pair;
-import com.expleague.model.Offer;
-import com.expleague.model.Operations;
-import com.expleague.model.ServiceStatus;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.roles.BrokerRole;
 import com.expleague.server.agents.roles.ExpertRole;
@@ -191,6 +189,8 @@ public class LaborExchange extends UntypedActorAdapter {
     Stream<ExpLeagueOrder> orders(OrderFilter filter);
 
     Stream<JID> topExperts();
+
+    Stream<String> tags();
   }
 
   public static class OrderFilter {

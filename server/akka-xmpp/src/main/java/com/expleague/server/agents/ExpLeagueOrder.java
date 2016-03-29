@@ -67,9 +67,12 @@ public abstract class ExpLeagueOrder {
   protected abstract void mapTempRoles(Function<Role, Role> map);
   protected abstract void role(JID bare, Role checking);
   protected abstract void tag(String tag);
+  protected abstract void untag(String tag);
+
   protected void status(Status status) {
     this.status = status;
   }
+
 
 
   public class State {

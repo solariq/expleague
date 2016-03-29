@@ -1,5 +1,6 @@
 package com.expleague.xmpp.stanza;
 
+import com.expleague.model.Tag;
 import com.spbsu.commons.util.Holder;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;

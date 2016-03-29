@@ -162,18 +162,24 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     });
   }
 
+  @Override
+  public Stream<String> tags() {
+    tags = new TObjectIntHashMap<>();
+    stream("all-tags", "SELECT * FROM expleague.Tags", q -> {}).forEach(rs -> {
+      try {
+        tags.put(rs.getString(2), rs.getInt(1));
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+
+    return tags.keySet().stream();
+  }
+
   private TObjectIntHashMap<String> tags;
   private int tag(String tag) {
-    if (tags == null) {
-      tags = new TObjectIntHashMap<>();
-      stream("all-tags", "SELECT * FROM expleague.Tags", q -> {}).forEach(rs -> {
-        try {
-          tags.put(rs.getString(2), rs.getInt(1));
-        } catch (SQLException e) {
-          throw new RuntimeException(e);
-        }
-      });
-    }
+    if (tags == null || !tags.containsKey(tag))
+      tags();
     if (tags.containsKey(tag))
       return tags.get(tag);
     final PreparedStatement statement = createStatement("add-tag", "INSERT expleague.Tags SET tag = ?", true);
@@ -297,6 +303,21 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
         super.tag(tag);
         final int tagId = MySQLBoard.this.tag(tag);
         final PreparedStatement changeRole = createStatement("append-topic", "INSERT INTO expleague.Topics SET `order` = ?, tag = ?");
+        changeRole.setInt(1, id);
+        changeRole.setInt(2, tagId);
+        changeRole.execute();
+      }
+      catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    protected void untag(String tag) {
+      try {
+        super.tag(tag);
+        final int tagId = MySQLBoard.this.tag(tag);
+        final PreparedStatement changeRole = createStatement("remove-topic", "DELETE FROM expleague.Topics WHERE `order` = ? AND tag = ?");
         changeRole.setInt(1, id);
         changeRole.setInt(2, tagId);
         changeRole.execute();

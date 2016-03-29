@@ -2,9 +2,7 @@ package com.expleague.expert.xmpp;
 
 import com.expleague.expert.forms.AnswerViewController;
 import com.expleague.expert.xmpp.events.*;
-import com.expleague.model.Answer;
-import com.expleague.model.Offer;
-import com.expleague.model.Operations;
+import com.expleague.model.*;
 import com.expleague.model.patch.Patch;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
@@ -21,6 +19,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,25 +75,22 @@ public class ExpertTask {
     }
     //noinspection ResultOfMethodCallIgnored
     patchesRoot.mkdirs();
-    patches.addListener(new ListChangeListener<Patch>() {
-      @Override
-      public void onChanged(Change<? extends Patch> c) {
-        while(c.next()) {
-          if (c.wasAdded()) {
-            for (Patch patch : c.getAddedSubList()) {
-              final File file = new File(patchesRoot, (patchIndex++) + ".xml");
-              patch.file(file);
-              try {
-                StreamTools.writeChars(patch.xmlString(), file);
-              }
-              catch (IOException e) {
-                log.log(Level.SEVERE, "Unable to save patch to: " + file.getAbsolutePath());
-              }
+    patches.addListener((ListChangeListener<Patch>) c -> {
+      while(c.next()) {
+        if (c.wasAdded()) {
+          for (Patch patch : c.getAddedSubList()) {
+            final File file = new File(patchesRoot, (patchIndex++) + ".xml");
+            patch.file(file);
+            try {
+              StreamTools.writeChars(patch.xmlString(), file);
+            }
+            catch (IOException e) {
+              log.log(Level.SEVERE, "Unable to save patch to: " + file.getAbsolutePath());
             }
           }
-          else if (c.wasRemoved()) {
-            c.getRemoved().stream().forEach(p -> p.file().delete());
-          }
+        }
+        else if (c.wasRemoved()) {
+          c.getRemoved().stream().forEach(p -> p.file().delete());
         }
       }
     });
@@ -119,6 +115,19 @@ public class ExpertTask {
           eventsReceiver.accept(new TaskCanceledEvent(command, this));
           state(State.CLOSED);
           break;
+      }
+    }
+    else if (command instanceof Operations.Progress) {
+      final Operations.Progress progress = (Operations.Progress) command;
+
+      if (progress.hasAssigned()) {
+        tags.clear();
+        progress.assigned().forEach(tags::add);
+        eventsReceiver.accept(new TaskTagsAssignedEvent(progress, this));
+      }
+      else if (progress.phone() != null) {
+        calls.add(progress.phone());
+        eventsReceiver.accept(new TaskCallEvent(progress, this));
       }
     }
     else if (command instanceof Operations.Resume) {
@@ -251,6 +260,33 @@ public class ExpertTask {
 
   public JID client() {
     return offer().client();
+  }
+
+  private final List<Tag> tags = new ArrayList<>();
+  public void tag(Tag tag) {
+    tags.add(tag);
+    final Operations.Progress progress = new Operations.Progress(tags.toArray(new Tag[tags.size()]));
+    ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.NORMAL, progress));
+    eventsReceiver.accept(new TaskTagsAssignedEvent(progress, this));
+  }
+
+  public void untag(Tag tag) {
+    tags.remove(tag);
+    final Operations.Progress progress = new Operations.Progress(tags.toArray(new Tag[tags.size()]));
+    ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.NORMAL, progress));
+    eventsReceiver.accept(new TaskTagsAssignedEvent(progress, this));
+  }
+
+  public List<Tag> tags() {
+    return tags;
+  }
+
+  private final List<String> calls = new ArrayList<>();
+  public void call(String phone) {
+    calls.add(phone);
+    final Operations.Progress progress = new Operations.Progress(phone);
+    ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.NORMAL, progress));
+    eventsReceiver.accept(new TaskCallEvent(progress, this));
   }
 
   public enum State {
