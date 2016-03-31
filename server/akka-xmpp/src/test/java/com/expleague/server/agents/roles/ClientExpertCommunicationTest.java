@@ -1,8 +1,13 @@
 package com.expleague.server.agents.roles;
 
 import com.expleague.model.Offer;
+import com.spbsu.commons.util.Pair;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author vpdelta
@@ -762,6 +767,55 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
 
       client.goOnline();
       client.receiveAnswer(expert, "Answer");
+    }};
+  }
+
+  @Test
+  @Ignore /*this is stress test*/
+  public void testManyClientsAskManyQueries() throws Exception {
+    new ScenarioTestKit() {{
+      final int numberOfClients = 100;
+      final Client[] clients = new Client[numberOfClients];
+      for (int i = 0; i < clients.length; i++) {
+        clients[i] = registerClient("client" + i);
+      }
+
+      final int numberOfExperts = 3;
+      final Expert[] experts = new Expert[numberOfExperts];
+      for (int i = 0; i < experts.length; i++) {
+        experts[i] = registerExpert("expert" + i);
+      }
+
+      for (Expert expert : experts) {
+        expert.goOnline();
+      }
+
+      final Set<String> tasks = new HashSet<>();
+
+      final int numberOfTasksPerClient = 2;
+      for (Client client : clients) {
+        client.goOnline();
+        for (int i = 0; i < numberOfTasksPerClient; i++) {
+          final String task = "Task-" + client.getJid().bare().local() + "-" + i;
+          client.query(task);
+          tasks.add(task);
+        }
+        client.goOffline();
+      }
+
+
+      final Set<Offer> receivedOffers = new HashSet<>();
+      final ExpertsGroup expertsGroup = new ExpertsGroup(experts);
+      while (receivedOffers.size() != tasks.size()) {
+        final Pair<Expert, Offer> expertOfferPair = expertsGroup.receiveOffer(offer -> !receivedOffers.contains(offer));
+        System.out.println("Offer received");
+        final Expert expert = expertOfferPair.getFirst();
+        final Offer offer = expertOfferPair.getSecond();
+        receivedOffers.add(offer);
+
+        expert.acceptOffer(offer);
+        expert.sendAnswer(offer, offer.topic());
+      }
     }};
   }
 

@@ -32,7 +32,7 @@ public class InMemArchive implements Archive {
   }
 
   private class MyDump implements Dump {
-    private final List<InMemDumpItem> snapshot = new ArrayList<>();
+    private final List<Stanza> snapshot = new ArrayList<>();
     private final String owner;
 
     private MyDump(String owner) {
@@ -41,48 +41,17 @@ public class InMemArchive implements Archive {
 
     @Override
     public void accept(Stanza stanza) {
-      snapshot.add(new InMemDumpItem(
-        stanza,
-        stanza.from().toString(),
-        System.currentTimeMillis()
-      ));
+      snapshot.add(stanza);
     }
 
     @Override
-    public Stream<DumpItem> stream() {
-      return snapshot.stream().map(inMemDumpItem -> (DumpItem) inMemDumpItem);
+    public Stream<Stanza> stream() {
+      return snapshot.stream();
     }
 
     @Override
     public JID owner() {
       return JID.parse(owner);
-    }
-  }
-
-  private static class InMemDumpItem implements DumpItem {
-    private final Stanza stanza;
-    private final String author;
-    private final long timestamp;
-
-    public InMemDumpItem(final Stanza stanza, final String author, final long timestamp) {
-      this.stanza = stanza;
-      this.author = author;
-      this.timestamp = timestamp;
-    }
-
-    @Override
-    public Stanza stanza() {
-      return stanza;
-    }
-
-    @Override
-    public String author() {
-      return author;
-    }
-
-    @Override
-    public long timestamp() {
-      return timestamp;
     }
   }
 }

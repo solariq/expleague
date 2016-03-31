@@ -94,6 +94,8 @@ public class ExpLeagueServer {
 
     Class<? extends LaborExchange.Board> board();
 
+    Class<? extends PatternsRepository> patterns();
+
     Config config();
 
     default FiniteDuration timeout(final String name) {
@@ -168,6 +170,7 @@ public class ExpLeagueServer {
       return roster;
     }
 
+    @Override
     public Class<? extends PatternsRepository> patterns() {
       return patterns;
     }

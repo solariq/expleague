@@ -71,6 +71,13 @@ var Admin = {
         var ordersEl = $("#templates").find(".orders").clone();
         $("#content").empty().append(ordersEl);
         var model = ko.mapping.fromJS(orders);
+        _.each(model.orderGroups(), function(orderGroup) {
+            _.each(orderGroup.orders(), function(order) {
+                OrderFactory(order);
+                return true;
+            });
+            return true;
+        });
         ordersEl.data("model", model);
         ko.applyBindings(model, ordersEl.get(0))
     },

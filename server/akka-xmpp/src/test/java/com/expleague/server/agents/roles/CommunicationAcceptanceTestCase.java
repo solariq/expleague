@@ -18,10 +18,9 @@ import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.util.Factories;
+import com.spbsu.commons.util.Pair;
 
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -332,6 +331,37 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
             .count() >= 1
         );
       }
+    }
+  }
+
+  public class ExpertsGroup {
+    private final ScenarioTestKit.Expert[] experts;
+
+    public ExpertsGroup(final ScenarioTestKit.Expert[] experts) {
+      this.experts = experts;
+    }
+
+    protected Pair<ScenarioTestKit.Expert, Offer> receiveOffer(final Predicate<Offer> offerFilter) throws Exception {
+      final Map<ActorRef, ScenarioTestKit.Expert> ref2expert = new HashMap<>();
+      for (ScenarioTestKit.Expert expert : experts) {
+        ref2expert.put(expert.getActorRef(), expert);
+      }
+
+      final List<Pair<ScenarioTestKit.Expert, Offer>> candidates = messageCapture.expectAndGet("Offer not received", 10000,
+        records -> records.stream()
+          .filter(messageCaptureRecord -> ref2expert.containsKey(messageCaptureRecord.getTo()))
+          .filter(messageCaptureRecord -> messageCaptureRecord.getMessage() instanceof Message)
+          .filter(messageCaptureRecord -> ((Message) messageCaptureRecord.getMessage()).has(Operations.Invite.class))
+          .filter(messageCaptureRecord -> ((Message) messageCaptureRecord.getMessage()).has(Offer.class))
+          .filter(messageCaptureRecord -> offerFilter.test(((Message) messageCaptureRecord.getMessage()).get(Offer.class)))
+          .map(messageCaptureRecord -> Pair.create(
+            ref2expert.get(messageCaptureRecord.getTo()),
+            ((Message) messageCaptureRecord.getMessage()).get(Offer.class)
+          ))
+          .collect(Collectors.toList())
+      );
+
+      return candidates.get(candidates.size() - 1);
     }
   }
 

@@ -9,6 +9,7 @@
         <script type="text/javascript" src="/static/js/libs/knockout.min.js">&#160;</script>
         <script type="text/javascript" src="/static/js/libs/moment.min.js">&#160;</script>
         <script type="text/javascript" src="/static/js/libs/highlight.pack.js">&#160;</script>
+        <script type="text/javascript" src="/static/js/order.js">&#160;</script>
         <script type="text/javascript" src="/static/js/admin.js">&#160;</script>
     </head>
     <body>
@@ -61,61 +62,62 @@
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: orderGroups">
-                        <tr class="group-separator">
-                            <td colspan="6" data-bind="text: groupName"></td>
-                        </tr>
-                        <!-- ko foreach: orders -->
-                        <tr class="order">
-                            <td><span class="enum-label" data-bind="text: status"></span></td>
-                            <td>
-                                <div>
-                                    <a title="Show dump" href="#" data-bind="text: offer.topic, click: Admin.loadDumpHandler($data)"></a>
-                                </div>
-                                <div>
-                                    Started: <span class="message-timestamp" data-bind="text: moment(offer.startedMs()).format()"></span>
-                                </div>
-                                <div data-bind="if: answer()">
-                                    Completed: <span class="message-timestamp" data-bind="text: moment(answerTimestamp()).format()"></span>
-                                </div>
-                            </td>
-                            <td>
-                                <a title="Show related orders" href="#" data-bind="click: Admin.loadRelatedHandler(offer.client)">
-                                    <span data-bind="text: offer.client.bare"></span>
-                                </a>
-                            </td>
-                            <td>
-                                <!--todo: filter by role-->
-                                <span data-bind="if: participants().length == 0">Nobody</span>
-                                    <span data-bind="if: participants().length > 0">
-                                        <span data-bind="foreach: participants">
-                                            <div data-bind="if: role() != 'OWNER'">
-                                                <div class="participant">
-                                                    <span class="enum-label" data-bind="text: role"></span>
-                                                    <a title="Show related orders" href="#" data-bind="click: Admin.loadRelatedHandler(jid)">
-                                                        <span data-bind="text: Admin.experts[jid.bare()].name"></span>
-                                                    </a>
+                            <tr class="group-separator">
+                                <td colspan="6" data-bind="text: groupName"></td>
+                            </tr>
+
+                            <!-- ko foreach: orders -->
+                            <tr class="order">
+                                <td><span class="enum-label" data-bind="text: status"></span></td>
+                                <td>
+                                    <div>
+                                        <a title="Show dump" href="#" data-bind="text: offer.topic, click: Admin.loadDumpHandler($data)"></a>
+                                    </div>
+                                    <div>
+                                        Started: <span class="message-timestamp" data-bind="text: moment(offer.startedMs()).format()"></span>
+                                    </div>
+                                    <div data-bind="if: hasAnswer()">
+                                        Completed: <span class="message-timestamp" data-bind="text: moment(answerTimestamp()).format()"></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a title="Show related orders" href="#" data-bind="click: Admin.loadRelatedHandler(offer.client)">
+                                        <span data-bind="text: offer.client.bare"></span>
+                                    </a>
+                                </td>
+                                <td>
+                                    <!--todo: filter by role-->
+                                    <span data-bind="if: participants().length == 0">Nobody</span>
+                                        <span data-bind="if: participants().length > 0">
+                                            <span data-bind="foreach: participants">
+                                                <div data-bind="if: role() != 'OWNER'">
+                                                    <div class="participant">
+                                                        <span class="enum-label" data-bind="text: role"></span>
+                                                        <a title="Show related orders" href="#" data-bind="click: Admin.loadRelatedHandler(jid)">
+                                                            <span data-bind="text: Admin.experts[jid.bare()].name"></span>
+                                                        </a>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            </span>
                                         </span>
-                                    </span>
-                            </td>
-                            <td>
-                                <span class="enum-label" data-bind="text: offer.urgency"></span>
-                                <div data-bind="if: answer()">
-                                    Duration: <span data-bind="text: moment(answerTimestamp()).from(offer.startedMs(), true)"></span>
-                                </div>
-                                <div data-bind="if: !answer()">
-                                    Expires: <span data-bind="text: Admin.formatExpiration(offer), attr: {title: Admin.formatDate(offer)}"></span>
-                                </div>
-                            </td>
-                            <td>
+                                </td>
+                                <td>
+                                    <span class="enum-label" data-bind="text: offer.urgency"></span>
+                                    <div data-bind="if: hasAnswer()">
+                                        Duration: <span data-bind="text: moment(answerTimestamp()).from(offer.startedMs(), true)"></span>
+                                    </div>
+                                    <div data-bind="if: !hasAnswer()">
+                                        Expires: <span data-bind="text: Admin.formatExpiration(offer), attr: {title: Admin.formatDate(offer)}"></span>
+                                    </div>
+                                </td>
+                                <td>
                                     <span data-bind="if: feedback() != -1">
                                         <span data-bind="text: feedback"></span>
                                     </span>
-                                <span data-bind="if: feedback() == -1">No feedback</span>
-                            </td>
-                        </tr>
-                        <!-- /ko -->
+                                    <span data-bind="if: feedback() == -1">No feedback</span>
+                                </td>
+                            </tr>
+                            <!-- /ko -->
                         </tbody>
                     </table>
                 </div>

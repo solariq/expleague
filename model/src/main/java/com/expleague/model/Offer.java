@@ -118,7 +118,11 @@ public class Offer extends Item {
   }
 
   public Item[] attachments() {
-    return attachments != null ? attachments.toArray(new Item[attachments.size()]) : new Item[0];
+    try {
+      return attachments != null ? attachments.toArray(new Item[attachments.size()]) : new Item[0];
+    } catch (Exception e) {
+      return new Item[0];
+    }
   }
 
   public Date expires() {
@@ -160,12 +164,15 @@ public class Offer extends Item {
   public Filter filter() {
     if (attachments == null)
       attachments = new ArrayList<>();
-    final Optional<Filter> filterOpt = attachments.stream().filter(a -> a instanceof Filter).map(a -> (Filter) a).findFirst();
-    if (filterOpt.isPresent()) {
-      return filterOpt.get();
-    }
     final Filter result = new Filter();
-    attachments.add(result);
+    try {
+      final Optional<Filter> filterOpt = attachments.stream().filter(a -> a instanceof Filter).map(a -> (Filter) a).findFirst();
+      if (filterOpt.isPresent()) {
+        return filterOpt.get();
+      }
+      attachments.add(result);
+    } catch (Exception e) {
+    }
 
     return result;
   }

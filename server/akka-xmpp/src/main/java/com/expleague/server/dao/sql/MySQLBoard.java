@@ -10,8 +10,6 @@ import com.expleague.server.dao.fake.InMemBoard;
 import com.expleague.xmpp.JID;
 import com.google.common.base.Joiner;
 import com.spbsu.commons.io.StreamTools;
-import com.spbsu.commons.util.cache.CacheStrategy;
-import com.spbsu.commons.util.cache.impl.FixedSizeCache;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -19,12 +17,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.List;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,16 +37,15 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     super(ExpLeagueServer.config().db());
   }
 
-  private final FixedSizeCache<String, ExpLeagueOrder> ordersCache = new FixedSizeCache<>(1000, CacheStrategy.Type.LRU);
+  private final Set<String> replayCheckedRoom = new HashSet<>();
+
   @Override
   public MySQLOrder register(Offer offer) {
     try {
-      final PreparedStatement registerOrder = createStatement("register-order", "INSERT INTO expleague.Orders SET room = ?, offer = ?, eta = ?, status = " + ExpLeagueOrder.Status.OPEN.index() + ", answer = ?, answer_timestamp = ?", true);
+      final PreparedStatement registerOrder = createStatement("register-order", "INSERT INTO expleague.Orders SET room = ?, offer = ?, eta = ?, status = " + ExpLeagueOrder.Status.OPEN.index(), true);
       registerOrder.setString(1, offer.room().local());
       registerOrder.setCharacterStream(2, new StringReader(offer.xmlString()));
       registerOrder.setTimestamp(3, Timestamp.from(offer.expires().toInstant()));
-      registerOrder.setString(4, null);
-      registerOrder.setNull(5, Types.TIMESTAMP);
       registerOrder.execute();
       final MySQLOrder result;
       try (final ResultSet generatedKeys = registerOrder.getGeneratedKeys()) {
@@ -56,7 +54,6 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
         result = new MySQLOrder(id, offer);
       }
       result.role(offer.client(), ExpLeagueOrder.Role.OWNER);
-      ordersCache.put(offer.room().local(), result);
       return result;
     }
     catch (SQLException e) {
@@ -66,86 +63,41 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
 
   @Nullable
   @Override
-  public ExpLeagueOrder active(String roomId) {
-    return ordersCache.get(roomId, id -> {
-      try {
-        final PreparedStatement lookForActive = createStatement("active-order", "SELECT * FROM expleague.Orders WHERE room = ? AND status < " + ExpLeagueOrder.Status.DONE.index());
-        lookForActive.setString(1, id);
-        try (final ResultSet resultSet = lookForActive.executeQuery()) {
-          if (resultSet.next())
-            return new MySQLOrder(resultSet);
-        }
-        final PreparedStatement countOrders = createStatement("count-orders", "SELECT COUNT(*) FROM expleague.Orders WHERE room = ?");
-        countOrders.setString(1, id);
-        final long ordersCount;
-        try (final ResultSet countRS = countOrders.executeQuery()){
-          countRS.next();
-          ordersCount = countRS.getLong(1);
-        }
-        if (ordersCount == 0) {
-          final ExpLeagueOrder[] replay = ExpLeagueRoomAgent.replay(this, roomId);
-          if (replay.length > 0 && replay[replay.length - 1].status() != ExpLeagueOrder.Status.DONE)
-            return replay[replay.length - 1];
-        }
-        return null;
-      }
-      catch (SQLException | IOException e) {
-        throw new RuntimeException(e);
-      }
-    });
+  public ExpLeagueOrder active(final String roomId) {
+    return replayAwareStream(() -> stream(
+      "active-order", "SELECT * FROM expleague.Orders WHERE room = ? AND status < " + ExpLeagueOrder.Status.DONE.index(),
+      stmt -> stmt.setString(1, roomId)
+    ).map(createOrderView())).findFirst().orElse(null);
   }
 
   @Override
-  public ExpLeagueOrder[] history(String roomId) {
-    try {
-      final PreparedStatement lookForActive = createStatement("orders-room", "SELECT * FROM expleague.Orders WHERE room = ?");
-      lookForActive.setString(1, roomId);
-      final List<ExpLeagueOrder> result = new ArrayList<>();
-      int count = 0;
-      try (final ResultSet resultSet = lookForActive.executeQuery()) {
-        while (resultSet.next()) {
-          result.add(new MySQLOrder(resultSet));
-          count++;
-        }
-      }
-      return result.toArray(new ExpLeagueOrder[result.size()]);
-    }
-    catch (SQLException | IOException e) {
-      throw new RuntimeException(e);
-    }
+  public Stream<ExpLeagueOrder> history(final String roomId) {
+    return replayAwareStream(() -> stream(
+      "orders-room", "SELECT * FROM expleague.Orders WHERE room = ?",
+      statement -> statement.setString(1, roomId)
+    ).map(createOrderView()));
   }
 
   @Override
   public Stream<ExpLeagueOrder> related(JID jid) {
-    return stream("related-orders", "SELECT Orders.* " +
+    return replayAwareStream(() -> stream(
+      "related-orders", "SELECT Orders.* " +
         "FROM expleague.Orders INNER JOIN expleague.Participants ON expleague.Orders.id = expleague.Participants.`order` " +
-        "WHERE Participants.partisipant = ?", stmt -> stmt.setString(1, jid.local()))
-        .map(rs -> {
-          try {
-            return new MySQLOrder(rs) {
-              @Override
-              public State state() {
-                throw new IllegalStateException("Related orders are read-only!");
-              }
-            };
-          }
-          catch (SQLException | IOException e) {
-            throw new RuntimeException(e);
-          }
-        });
+        "WHERE Participants.partisipant = ?", stmt -> stmt.setString(1, jid.local())
+    ).map(createOrderView()));
   }
 
   @Override
   public Stream<ExpLeagueOrder> open() {
-    return stream("active-orders", "SELECT Orders.* FROM expleague.Orders WHERE status < " + ExpLeagueOrder.Status.DONE.index(), stmt -> {})
-        .map(createOrder()).filter(o -> o != null);
+    return orders(new LaborExchange.OrderFilter(false, EnumSet.complementOf(EnumSet.of(ExpLeagueOrder.Status.DONE))));
   }
 
   @Override
-  public Stream<ExpLeagueOrder> orders(LaborExchange.OrderFilter filter) {
+  public Stream<ExpLeagueOrder> orders(final LaborExchange.OrderFilter filter) {
     final OrderQuery orderQuery = createQuery(filter);
-    return stream(orderQuery.getName(), orderQuery.getSqlQuery(), stmt -> {})
-      .map(createOrder()).filter(o -> o != null);
+    return replayAwareStream(() -> stream(
+      orderQuery.getName(), orderQuery.getSqlQuery(), stmt -> {})
+      .map(createOrderView()));
   }
 
   @Override
@@ -199,12 +151,15 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   }
 
   @NotNull
-  protected Function<ResultSet, ExpLeagueOrder> createOrder() {
+  protected Function<ResultSet, ExpLeagueOrder> createOrderView() {
     return rs -> {
       try {
-        final MySQLOrder order = new MySQLOrder(rs);
-        ordersCache.put(order.room().local(), order);
-        return (ExpLeagueOrder)order;
+        return new MySQLOrder(rs) {
+          @Override
+          public State state() {
+            throw new IllegalStateException("Related orders are read-only!");
+          }
+        };
       }
       catch (SQLException | IOException e) {
         throw new RuntimeException(e);
@@ -212,7 +167,58 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     };
   }
 
-  private class MySQLOrder extends InMemBoard.MyOrder {
+  protected Stream<ExpLeagueOrder> replayAwareStream(final Supplier<Stream<ExpLeagueOrder>> streamSupplier) {
+    final List<ExpLeagueOrder> orders = new ArrayList<>();
+    final Set<String> rooms = new HashSet<>();
+    streamSupplier.get().forEach(order -> {
+      rooms.add(order.offer().room().local());
+      orders.add(order);
+    });
+
+    boolean replayWasExecuted = false;
+    for (String room : rooms) {
+      if (!replayCheckedRoom.contains(room) && isRoomReplayRequired(room)) {
+        clearRoomBeforeReplay(room);
+        ExpLeagueRoomAgent.replay(this, room);
+        replayWasExecuted = true;
+      }
+      replayCheckedRoom.add(room);
+    }
+
+    if (replayWasExecuted) {
+      return streamSupplier.get();
+    }
+    else {
+      return orders.stream();
+    }
+  }
+
+  protected boolean isRoomReplayRequired(final String roomId) {
+    try {
+      final PreparedStatement countOrders = createStatement("count-orders", "SELECT COUNT(*) FROM Orders, OrderStatusHistory WHERE room = ? AND Orders.id = OrderStatusHistory.`order`");
+      countOrders.setString(1, roomId);
+      final long ordersCount;
+      try (final ResultSet countRS = countOrders.executeQuery()){
+        countRS.next();
+        ordersCount = countRS.getLong(1);
+      }
+      return ordersCount == 0;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  protected void clearRoomBeforeReplay(final String roomId)  {
+    try {
+      final PreparedStatement dropOrders = createStatement("drop-orders", "DELETE FROM Orders WHERE room = ?");
+      dropOrders.setString(1, roomId);
+      dropOrders.execute();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public class MySQLOrder extends InMemBoard.MyOrder {
     private final int id;
 
     public MySQLOrder(int id, Offer offer) {
@@ -221,16 +227,24 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     }
 
     public MySQLOrder(ResultSet resultSet) throws SQLException, IOException {
-      super((Offer)Offer.create(StreamTools.readReader(resultSet.getCharacterStream(3))));
+      super(Offer.create(StreamTools.readReader(resultSet.getCharacterStream(3))));
       id = resultSet.getInt(1);
       super.status(Status.valueOf((int)resultSet.getByte(5)));
       super.feedback(resultSet.getDouble(6));
-      super.answer(resultSet.getString(7), resultSet.getTimestamp(8).getTime());
       final PreparedStatement restoreRoles = createStatement("roles-restore", "SELECT * FROM expleague.Participants WHERE `order` = ? ORDER BY id");
       restoreRoles.setInt(1, id);
       try (final ResultSet rolesRS = restoreRoles.executeQuery()) {
         while (rolesRS.next()) {
           super.role(XMPP.jid(rolesRS.getString(3)), Role.valueOf(rolesRS.getByte(4)));
+        }
+      }
+      final PreparedStatement restoreStatusHistory = createStatement("status-history-restore", "SELECT * FROM expleague.OrderStatusHistory WHERE `order` = ? ORDER BY id");
+      restoreStatusHistory.setInt(1, id);
+      try (final ResultSet statusHistory = restoreStatusHistory.executeQuery()) {
+        while (statusHistory.next()) {
+          super.statusHistory.add(new StatusHistoryRecord(
+            Status.valueOf(statusHistory.getByte(3)), new Date(statusHistory.getTimestamp(4).getTime())
+          ));
         }
       }
     }
@@ -239,10 +253,16 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     protected void status(Status status) {
       try {
         super.status(status);
-        final PreparedStatement feedback = createStatement("status-update", "UPDATE expleague.Orders SET status = ? WHERE id = ?");
-        feedback.setInt(2, id);
-        feedback.setInt(1, status.index());
-        feedback.execute();
+        final PreparedStatement statusUpdate = createStatement("status-update", "UPDATE expleague.Orders SET status = ? WHERE id = ?");
+        statusUpdate.setInt(2, id);
+        statusUpdate.setInt(1, status.index());
+        statusUpdate.execute();
+
+        final PreparedStatement statusHistoryInsert = createStatement("status-history-insert", "INSERT INTO expleague.OrderStatusHistory (`order`, status, timestamp) VALUES(?, ?, ?)");
+        statusHistoryInsert.setInt(1, id);
+        statusHistoryInsert.setByte(2, (byte) status.index());
+        statusHistoryInsert.setTimestamp(3, new Timestamp(currentTimestampMillis()));
+        statusHistoryInsert.execute();
       }
       catch (SQLException e) {
         throw new RuntimeException(e);
@@ -286,10 +306,11 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       super.role(jid, role);
       if (role.permanent()) {
         try {
-          final PreparedStatement changeRole = createStatement("change-role", "INSERT INTO expleague.Participants SET `order` = ?, partisipant = ?, role = ?");
+          final PreparedStatement changeRole = createStatement("change-role", "INSERT INTO expleague.Participants SET `order` = ?, partisipant = ?, role = ?, timestamp = ?");
           changeRole.setInt(1, id);
           changeRole.setString(2, jid.local());
           changeRole.setByte(3, (byte) role.index());
+          changeRole.setTimestamp(4, new Timestamp(currentTimestampMillis()));
           changeRole.execute();
         } catch (SQLException e) {
           throw new RuntimeException(e);
@@ -321,21 +342,6 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
         changeRole.setInt(1, id);
         changeRole.setInt(2, tagId);
         changeRole.execute();
-      }
-      catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    @Override
-    public void answer(final String answer, final long timestampMs) {
-      try {
-        super.answer(answer, timestampMs);
-        final PreparedStatement answerStatement = createStatement("order-answer", "UPDATE Orders SET answer = ?, answer_timestamp = ? WHERE id = ?");
-        answerStatement.setInt(3, id);
-        answerStatement.setString(1, answer);
-        answerStatement.setTimestamp(2, Timestamp.from(new Date(timestampMs).toInstant()));
-        answerStatement.execute();
       }
       catch (SQLException e) {
         throw new RuntimeException(e);

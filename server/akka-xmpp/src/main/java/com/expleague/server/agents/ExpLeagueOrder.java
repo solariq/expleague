@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import com.expleague.model.Offer;
 import com.expleague.xmpp.JID;
 
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -17,6 +18,7 @@ import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
  */
 public abstract class ExpLeagueOrder {
   private static final Logger log = Logger.getLogger(LaborExchange.class.getName());
+  public static final int NO_SNAPSHOT_TIMESTAMP = -1;
 
   public static int SIMULTANEOUSLY_INVITED = 3;
   private final Offer offer;
@@ -24,6 +26,8 @@ public abstract class ExpLeagueOrder {
 
   protected Status status = Status.OPEN;
   private ActorRef broker;
+
+  protected long snapshotTimestamp = NO_SNAPSHOT_TIMESTAMP;
 
   public ExpLeagueOrder(Offer offer) {
     this.offer = offer;
@@ -33,7 +37,7 @@ public abstract class ExpLeagueOrder {
     return status;
   }
 
-  public State state() {
+  protected State state() {
     return state;
   }
 
@@ -59,9 +63,7 @@ public abstract class ExpLeagueOrder {
   public abstract Stream<JID> of(Role role);
   public abstract double feedback();
   public abstract String[] tags();
-  public abstract void answer(final String answer, final long timestampMs);
-  public abstract String answer();
-  public abstract long answerTimestamp();
+  public abstract Stream<StatusHistoryRecord> statusHistoryRecords();
 
   // Write interface
   protected abstract void mapTempRoles(Function<Role, Role> map);
@@ -73,6 +75,16 @@ public abstract class ExpLeagueOrder {
     this.status = status;
   }
 
+  protected long currentTimestampMillis() {
+    if (snapshotTimestamp != -1) {
+      return snapshotTimestamp;
+    }
+    return System.currentTimeMillis();
+  }
+
+  protected Snapshot snapshot(final long timestamp) {
+    return new Snapshot(timestamp);
+  }
 
 
   public class State {
@@ -148,10 +160,6 @@ public abstract class ExpLeagueOrder {
 
     public JID jid() {
       return offer.room();
-    }
-
-    public JID active() {
-      return of(ACTIVE).findAny().orElse(null);
     }
 
     public Offer offer() {
@@ -238,6 +246,39 @@ public abstract class ExpLeagueOrder {
 
     public int index() {
       return index;
+    }
+  }
+
+  public static class StatusHistoryRecord {
+    private final Status status;
+    private final Date date;
+
+    public StatusHistoryRecord(final Status status, final Date date) {
+      this.status = status;
+      this.date = date;
+    }
+
+    public Status getStatus() {
+      return status;
+    }
+
+    public Date getDate() {
+      return date;
+    }
+  }
+
+  protected class Snapshot implements AutoCloseable {
+    public Snapshot(final long timestamp) {
+      snapshotTimestamp = timestamp;
+    }
+
+    public ExpLeagueOrder order() {
+      return ExpLeagueOrder.this;
+    }
+
+    @Override
+    public void close() {
+      snapshotTimestamp = NO_SNAPSHOT_TIMESTAMP;
     }
   }
 }

@@ -25,10 +25,7 @@ public class OrderDto {
   private final double feedback;
 
   @JsonProperty
-  private final String answer;
-
-  @JsonProperty
-  private final long answerTimestamp;
+  private final List<StatusHistoryRecordDto> statusHistoryRecords;
 
   public OrderDto(final ExpLeagueOrder order) {
     this.offer = new OfferDto(order.offer());
@@ -38,8 +35,9 @@ public class OrderDto {
       order.role(jid)
     )).collect(Collectors.toList());
     this.feedback = order.feedback();
-    this.answer = order.answer();
-    this.answerTimestamp = order.answerTimestamp();
+    this.statusHistoryRecords = order.statusHistoryRecords()
+      .map(StatusHistoryRecordDto::new)
+      .collect(Collectors.toList());
   }
 
   public OfferDto getOffer() {
@@ -57,6 +55,20 @@ public class OrderDto {
     public ParticipantDto(final JIDDto jid, final ExpLeagueOrder.Role role) {
       this.jid = jid;
       this.role = role;
+    }
+  }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  public static class StatusHistoryRecordDto {
+    @JsonProperty
+    private ExpLeagueOrder.Status status;
+
+    @JsonProperty
+    private long timestamp;
+
+    public StatusHistoryRecordDto(final ExpLeagueOrder.StatusHistoryRecord statusHistoryRecord) {
+      this.status = statusHistoryRecord.getStatus();
+      this.timestamp = statusHistoryRecord.getDate().getTime();
     }
   }
 }

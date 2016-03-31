@@ -5,8 +5,6 @@ import akka.util.Timeout;
 import com.expleague.model.*;
 import com.spbsu.commons.util.Pair;
 import com.expleague.server.ExpLeagueServer;
-import com.expleague.server.agents.roles.BrokerRole;
-import com.expleague.server.agents.roles.ExpertRole;
 import com.expleague.util.akka.AkkaTools;
 import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.xmpp.JID;
@@ -183,7 +181,7 @@ public class LaborExchange extends UntypedActorAdapter {
     ExpLeagueOrder active(String roomId);
     ExpLeagueOrder register(Offer offer);
 
-    ExpLeagueOrder[] history(String roomId);
+    Stream<ExpLeagueOrder> history(String roomId);
     Stream<ExpLeagueOrder> related(JID jid);
     Stream<ExpLeagueOrder> open();
     Stream<ExpLeagueOrder> orders(OrderFilter filter);

@@ -40,11 +40,8 @@ public class InMemBoard implements LaborExchange.Board {
   }
 
   @Override
-  public ExpLeagueOrder[] history(String roomId) {
-    final List<ExpLeagueOrder> result = history.stream().filter(
-        order -> order.room().local().equals(roomId)
-    ).collect(Collectors.toList());
-    return result.toArray(new ExpLeagueOrder[result.size()]);
+  public Stream<ExpLeagueOrder> history(String roomId) {
+    return history.stream().filter(order -> order.room().local().equals(roomId));
   }
 
   @Override
@@ -77,13 +74,18 @@ public class InMemBoard implements LaborExchange.Board {
   public static class MyOrder extends ExpLeagueOrder {
     private final Map<JID, Role> roles = new HashMap<>();
     protected final Set<String> tags = new HashSet<>();
+    protected final List<StatusHistoryRecord> statusHistory = new ArrayList<>();
 
     protected double score = -1;
-    private String answer;
-    private long answerTimestampMs;
 
     public MyOrder(Offer offer) {
       super(offer);
+    }
+
+    @Override
+    protected void status(final Status status) {
+      super.status(status);
+      statusHistory.add(new StatusHistoryRecord(status, new Date(currentTimestampMillis())));
     }
 
     @Override
@@ -138,26 +140,15 @@ public class InMemBoard implements LaborExchange.Board {
     }
 
     @Override
+    public Stream<StatusHistoryRecord> statusHistoryRecords() {
+      return statusHistory.stream();
+    }
+
+    @Override
     public Stream<JID> participants() {
       return roles.entrySet().stream().filter(
           e -> !EnumSet.of(Role.NONE, Role.DND).contains(e.getValue())
       ).map(Map.Entry::getKey);
-    }
-
-    @Override
-    public void answer(final String answer, final long timestampMs) {
-      this.answer = answer;
-      this.answerTimestampMs = timestampMs;
-    }
-
-    @Override
-    public String answer() {
-      return answer;
-    }
-
-    @Override
-    public long answerTimestamp() {
-      return answerTimestampMs;
     }
   }
 }

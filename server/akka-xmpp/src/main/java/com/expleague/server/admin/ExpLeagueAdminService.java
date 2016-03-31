@@ -14,25 +14,19 @@ import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import akka.util.Timeout;
-import com.expleague.model.Answer;
 import com.expleague.server.Roster;
 import com.expleague.server.admin.dto.*;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.dao.Archive;
-import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
-import com.expleague.xmpp.stanza.Message;
-import com.expleague.xmpp.stanza.Stanza;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Charsets;
-import com.spbsu.commons.util.Pair;
 import com.typesafe.config.Config;
 import org.jetbrains.annotations.NotNull;
-import org.joda.time.*;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -88,9 +82,9 @@ public class ExpLeagueAdminService extends UntypedActor {
 
   public static class Handler extends UntypedActor {
     @Override
-    public void onReceive(final Object message) throws Exception {
-      if (message instanceof HttpRequest) {
-        final HttpRequest request = (HttpRequest) message;
+    public void onReceive(final Object incomingMessage) throws Exception {
+      if (incomingMessage instanceof HttpRequest) {
+        final HttpRequest request = (HttpRequest) incomingMessage;
         final String path = request.getUri().path();
         log.fine(request.method() + " " + path);
         final LaborExchange.Board board = LaborExchange.board();
@@ -132,7 +126,7 @@ public class ExpLeagueAdminService extends UntypedActor {
             }
             else if (path.startsWith("/history/")) {
               final String roomId = path.substring("/history/".length());
-              response = getOrders(Stream.of(board.history(roomId)));
+              response = getOrders(board.history(roomId));
             }
             else if (path.startsWith("/active/")) {
               final String roomId = path.substring("/active/".length());
@@ -147,31 +141,6 @@ public class ExpLeagueAdminService extends UntypedActor {
               final Archive.Dump dump = Archive.instance().dump(jid.local());
               final List<DumpItemDto> messages = dump.stream().map(DumpItemDto::new).collect(Collectors.toList());
               response = getJsonResponse("messages", messages);
-            }
-            else if (path.startsWith("/migrate/answers")) {
-              final Map<ExpLeagueOrder, Pair<String, Long>> toMigrate = new HashMap<>();
-              board.orders(new LaborExchange.OrderFilter(false, EnumSet.noneOf(ExpLeagueOrder.Status.class)))
-              .forEach(order -> {
-                if (order.answer() == null) {
-                  final Archive.Dump dump = Archive.instance().dump(order.offer().room().local());
-                  dump.stream().forEach(dumpItem -> {
-                    final Stanza stanza = dumpItem.stanza();
-                    if (stanza instanceof Message) {
-                      final Message m = (Message) stanza;
-                      if (m.has(Answer.class)) {
-                        toMigrate.put(
-                          order, new Pair<>(m.get(Answer.class).value(), dumpItem.timestamp())
-                        );
-                      }
-                    }
-                  });
-                }
-              });
-              for (Map.Entry<ExpLeagueOrder, Pair<String, Long>> entry : toMigrate.entrySet()) {
-                final Pair<String, Long> value = entry.getValue();
-                entry.getKey().answer(value.getFirst(), value.getSecond());
-              }
-              response = getJsonResponse("results", new ArrayList());
             }
           } catch (Exception e) {
             final ByteArrayOutputStream out = new ByteArrayOutputStream();

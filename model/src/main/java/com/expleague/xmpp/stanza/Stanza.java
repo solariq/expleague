@@ -1,6 +1,7 @@
 package com.expleague.xmpp.stanza;
 
 import com.expleague.model.Tag;
+import com.spbsu.commons.random.FastRandom;
 import com.spbsu.commons.util.Holder;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
@@ -8,6 +9,7 @@ import com.expleague.xmpp.JID;
 import javax.xml.bind.annotation.XmlAttribute;
 import java.nio.ByteBuffer;
 import java.util.Base64;
+import java.util.Optional;
 
 /**
  * User: solar
@@ -27,10 +29,18 @@ public class Stanza extends Item {
     id = generateId();
   }
 
-  private static final ThreadLocal<Holder<Long>> thId = new ThreadLocal<Holder<Long>>() {
+  public static Stanza create(final CharSequence str, final long timestampSec) {
+    final Stanza stanza = (Stanza) Item.create(str);
+    if (!stanza.isTimestampPresent()) {
+      stanza.id = stanza.id + "-" + timestampSec;
+    }
+    return stanza;
+  }
+
+  private static final ThreadLocal<FastRandom> thRandom = new ThreadLocal<FastRandom>() {
     @Override
-    protected Holder<Long> initialValue() {
-      return new Holder<>(((long)Thread.currentThread().hashCode() + System.currentTimeMillis()) << 32);
+    protected FastRandom initialValue() {
+      return new FastRandom(Thread.currentThread().hashCode());
     }
   };
 
@@ -39,17 +49,13 @@ public class Stanza extends Item {
   }
 
   public static String generateId() {
-    final Holder<Long> holder = thId.get();
-    final Long value = holder.getValue();
-    holder.setValue(value + 1);
-    final ByteBuffer buffer = ByteBuffer.allocate(8);
-    buffer.asLongBuffer().put(value);
-    return Base64.getEncoder().encodeToString(buffer.array());
+    return thRandom.get().nextBase64String(10) + "-" + (System.currentTimeMillis() / 1000);
   }
 
   public JID from() {
     return from;
   }
+
   public <S extends Stanza> S from(JID jid) {
     this.from = jid;
     //noinspection unchecked
@@ -59,6 +65,7 @@ public class Stanza extends Item {
   public JID to() {
     return to;
   }
+
   public <S extends Stanza> S to(JID to) {
     this.to = to;
     //noinspection unchecked
@@ -67,6 +74,28 @@ public class Stanza extends Item {
 
   public boolean isBroadcast() {
     return to == null;
+  }
+
+  private boolean isTimestampPresent() {
+    final int separator = id.lastIndexOf('-');
+    if (separator != -1) {
+      try {
+        Long.parseLong(id.substring(separator + 1));
+        return true;
+      } catch (NumberFormatException e) {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  public long getTimestampMs() {
+    if (isTimestampPresent()) {
+      return Long.parseLong(id.substring(id.lastIndexOf('-') + 1)) * 1000;
+    }
+    else {
+      return System.currentTimeMillis();
+    }
   }
 
   public String id() {

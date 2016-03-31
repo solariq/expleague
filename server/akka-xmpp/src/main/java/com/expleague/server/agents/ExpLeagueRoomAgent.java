@@ -79,14 +79,12 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
         case ACTIVE:
           if (msg.has(Resume.class)) {
             dump.stream()
-                    .map(Archive.DumpItem::stanza)
                     .flatMap(Functions.instancesOf(Message.class))
                     .filter(message -> message.type() == MessageType.GROUP_CHAT || message.has(Command.class))
                     .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
             XMPP.send(new Presence(roomAlias(msg.from()), dump.owner(), true), context());
           }
           else if (msg.has(Answer.class)) {
-            order.answer(msg.get(Answer.class).value(), System.currentTimeMillis());
             order = null;
           }
           else if (msg.has(Progress.class)) {
@@ -107,7 +105,6 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
           }
           else if (msg.has(Start.class)) {
             dump.stream()
-                    .map(Archive.DumpItem::stanza)
                     .flatMap(Functions.instancesOf(Message.class))
                     .filter(message -> message.type() == MessageType.GROUP_CHAT || message.has(Command.class))
                     .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
@@ -146,51 +143,65 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
 
   @SuppressWarnings("ConstantConditions")
   public static ExpLeagueOrder[] replay(LaborExchange.Board board, String roomId) {
-    final Queue<ExpLeagueOrder> result = new ArrayDeque<>();
+    final Stack<ExpLeagueOrder> result = new Stack<>();
     final Archive.Dump dump = Archive.instance().dump(roomId);
     if (dump == null)
       return new ExpLeagueOrder[0];
     dump.stream()
-      .forEach(dumpItem -> {
-      final Stanza stanza = dumpItem.stanza();
-      if (!(stanza instanceof Message))
-        return;
-      final Message message = (Message) stanza;
-      final ExpLeagueOrder current = result.peek();
-      final ExpLeagueOrder.State state = current != null ? current.state() : null;
-
-      if (message.has(Create.class)) {
-        result.add(board.register(message.get(Offer.class)));
-      }
-      else if (message.has(Invite.class)) {
-        state.invite(message.from());
-      }
-      else if (message.has(Start.class) || message.has(Resume.class)) {
-        state.enter(message.from());
-      }
-      else if (message.has(Suspend.class)) {
-        state.suspend();
-      }
-      else if (message.has(Cancel.class) && current.role(message.from()) == OWNER) {
-        state.cancel();
-      }
-      else if (message.has(Cancel.class)) {
-        state.refused(message.from());
-      }
-      else if (message.has(Answer.class)) {
-        current.answer(message.get(Answer.class).value(), dumpItem.timestamp());
-        state.close();
-      }
-      else if (message.has(Feedback.class)) {
-        current.feedback(message.get(Feedback.class).stars());
-      }
-    });
+      .flatMap(Functions.instancesOf(Message.class))
+      .forEach(message -> {
+        final JID from = message.from();
+        if (message.has(Create.class) && message.has(Offer.class)) {
+          final Offer offer = message.get(Offer.class);
+          if (isUserMissing(offer.client())) {
+            return;
+          }
+          result.add(board.register(offer));
+        }
+        else if (isUserMissing(from)) {
+          return;
+        }
+        else if (message.has(Message.Subject.class)) {
+          result.add(board.register(Offer.create(message.to(), message.from(), message)));
+        }
+        else if (!result.isEmpty()) {
+          try (final ExpLeagueOrder.Snapshot snapshot = result.lastElement().snapshot(message.getTimestampMs())) {
+            final ExpLeagueOrder order = snapshot.order();
+            final ExpLeagueOrder.State state = order.state();
+            if (message.has(Invite.class)) {
+              state.invite(from);
+            }
+            else if (message.has(Start.class) || message.has(Resume.class)) {
+              state.enter(from);
+            }
+            else if (message.has(Suspend.class)) {
+              state.suspend();
+            }
+            else if (message.has(Cancel.class) && order.role(from) == OWNER) {
+              state.cancel();
+            }
+            else if (message.has(Cancel.class)) {
+              state.refused(from);
+            }
+            else if (message.has(Answer.class)) {
+              state.close();
+            }
+            else if (message.has(Feedback.class)) {
+              order.feedback(message.get(Feedback.class).stars());
+            }
+          }
+        }
+      });
     return result.toArray(new ExpLeagueOrder[result.size()]);
   }
 
+  protected static boolean isUserMissing(final JID userJid) {
+    return Roster.instance().user(userJid.local()) == null;
+  }
+
   private ExpLeagueOrder lastOrder() {
-    final ExpLeagueOrder[] history = LaborExchange.board().history(jid.local());
-    return history.length > 0 ? history[history.length - 1] : null;
+    final Stream<ExpLeagueOrder> history = LaborExchange.board().history(jid.local());
+    return history.reduce((order1, order2) -> order2).orElse(null);
   }
 
   private Offer offer(Message msg) {
@@ -237,7 +248,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
   private Stream<JID> participants() {
     if (order == null || order.status() == ExpLeagueOrder.Status.OPEN)
       return Stream.of(dump.owner());
-    return Stream.of(dump.owner(), order.state().active());
+    return Stream.concat(Stream.of(dump.owner()), order.of(ACTIVE));
   }
 
   private void broadcast(Stanza stanza) {

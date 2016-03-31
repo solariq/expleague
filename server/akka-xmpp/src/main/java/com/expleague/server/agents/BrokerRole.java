@@ -1,4 +1,4 @@
-package com.expleague.server.agents.roles;
+package com.expleague.server.agents;
 
 import akka.actor.AbstractFSM;
 import akka.actor.ActorRef;
@@ -7,8 +7,6 @@ import akka.actor.FSM;
 import akka.util.Timeout;
 import com.expleague.model.Operations.*;
 import com.expleague.server.ExpLeagueServer;
-import com.expleague.server.agents.ExpLeagueOrder;
-import com.expleague.server.agents.XMPP;
 import com.expleague.util.akka.AkkaTools;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
@@ -49,7 +47,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               order.broker(self());
               if (order.status() == IN_PROGRESS) // server was shout down
                 order.state().suspend();
-              final JID expertOnTask = order.state().active();
+              final JID expertOnTask = order.of(ACTIVE).findAny().orElse(null);
               if (order.status() == SUSPENDED && expertOnTask != null) {
                 order.state().suspend();
                 //noinspection ConstantConditions

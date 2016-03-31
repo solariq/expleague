@@ -1,4 +1,4 @@
-package com.expleague.server.agents.roles;
+package com.expleague.server.agents;
 
 import akka.actor.AbstractLoggingFSM;
 import akka.actor.ActorRef;
@@ -8,8 +8,6 @@ import akka.util.Timeout;
 import com.expleague.model.Answer;
 import com.expleague.model.Offer;
 import com.expleague.server.ExpLeagueServer;
-import com.expleague.server.agents.LaborExchange;
-import com.expleague.server.agents.XMPP;
 import com.expleague.util.akka.AkkaTools;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;

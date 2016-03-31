@@ -1,6 +1,6 @@
 package com.expleague.server.admin.dto;
 
-import com.expleague.server.dao.Archive;
+import com.expleague.xmpp.stanza.Stanza;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -16,9 +16,9 @@ public class DumpItemDto {
   @JsonProperty
   private final long timestamp;
 
-  public DumpItemDto(final Archive.DumpItem dumpItem) {
-    this.stanza = dumpItem.stanza().xmlString();
-    this.author = dumpItem.author();
-    this.timestamp = dumpItem.timestamp();
+  public DumpItemDto(final Stanza stanza) {
+    this.stanza = stanza.xmlString();
+    this.author = stanza.from().toString();
+    this.timestamp = stanza.getTimestampMs();
   }
 }

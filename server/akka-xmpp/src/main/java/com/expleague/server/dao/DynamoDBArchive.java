@@ -49,7 +49,7 @@ public class DynamoDBArchive implements Archive {
   @Override
   public synchronized Dump dump(String local) {
     return dumpsCache.get(local, id -> {
-      final RoomArchive archive = mapper.load(RoomArchive.class, id);
+      final RoomArchive archive = mapper.load(getRoomArchiveClass(), id);
       if (archive != null)
         archive.handlers(client, mapper);
       return archive;
@@ -62,6 +62,10 @@ public class DynamoDBArchive implements Archive {
     archive.handlers(client, mapper);
     dumpsCache.put(room, archive);
     return archive;
+  }
+
+  protected Class<? extends RoomArchive> getRoomArchiveClass() {
+    return RoomArchive.class;
   }
 
   @DynamoDBTable(tableName = TBTS_ROOMS)
@@ -118,8 +122,8 @@ public class DynamoDBArchive implements Archive {
     }
 
     @Override
-    public Stream<DumpItem> stream() {
-      return messages.stream().map(message -> (DumpItem) message);
+    public Stream<Stanza> stream() {
+      return messages.stream().map(Message::stanza);
     }
 
     private JID jid;
@@ -145,7 +149,7 @@ public class DynamoDBArchive implements Archive {
   }
 
   @DynamoDBDocument
-  public static class Message implements DumpItem {
+  public static class Message {
     private String text;
     private String author;
     private long ts;
@@ -158,17 +162,14 @@ public class DynamoDBArchive implements Archive {
       this.ts = ts;
     }
 
-    @Override
     public Stanza stanza() {
-      return (Stanza)Stanza.create(text);
+      return Stanza.create(text, ts / 1000);
     }
 
-    @Override
     public String author() {
       return author;
     }
 
-    @Override
     public long timestamp() {
       return ts;
     }

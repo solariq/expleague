@@ -52,8 +52,6 @@ CREATE TABLE IF NOT EXISTS expleague.Orders (
   eta TIMESTAMP NOT NULL,
   status INTEGER(8),
   score FLOAT(16) DEFAULT -1.0,
-  answer MEDIUMTEXT CHARACTER SET utf8 COLLATE utf8_general_ci,
-  answer_timestamp TIMESTAMP,
 
   PRIMARY KEY (id)
 );
@@ -71,6 +69,7 @@ CREATE TABLE IF NOT EXISTS expleague.Participants (
   `order` INTEGER(32) NOT NULL,
   partisipant VARCHAR(64) NOT NULL,
   role INT(8) DEFAULT 0,
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 #   score FLOAT(16) DEFAULT -1.0,
 
   PRIMARY KEY (id),
@@ -91,4 +90,14 @@ CREATE TABLE IF NOT EXISTS expleague.Patterns (
   icon VARCHAR(128),
 
   PRIMARY KEY (name)
+);
+
+CREATE TABLE IF NOT EXISTS expleague.OrderStatusHistory (
+  id INTEGER(32) AUTO_INCREMENT,
+  `order` INTEGER(32) NOT NULL,
+  status INTEGER(8),
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id),
+  CONSTRAINT OrderStatusHistory_Order_id_fk FOREIGN KEY (`order`) REFERENCES Orders (id) ON DELETE CASCADE
 );
