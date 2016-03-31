@@ -196,6 +196,9 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
   }
 
   protected static boolean isUserMissing(final JID userJid) {
+    if (userJid.local() == null) {
+      return false;
+    }
     return Roster.instance().user(userJid.local()) == null;
   }
 

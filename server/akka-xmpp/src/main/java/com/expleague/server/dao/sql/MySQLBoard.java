@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -37,7 +38,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     super(ExpLeagueServer.config().db());
   }
 
-  private final Set<String> replayCheckedRoom = new HashSet<>();
+  private final Map<String, String> replayCheckedRooms = new ConcurrentHashMap<>();
 
   @Override
   public MySQLOrder register(Offer offer) {
@@ -177,12 +178,16 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
 
     boolean replayWasExecuted = false;
     for (String room : rooms) {
-      if (!replayCheckedRoom.contains(room) && isRoomReplayRequired(room)) {
-        clearRoomBeforeReplay(room);
-        ExpLeagueRoomAgent.replay(this, room);
-        replayWasExecuted = true;
+      if (!replayCheckedRooms.containsKey(room)) {
+        synchronized (this) {
+          if (isRoomReplayRequired(room)) {
+            clearRoomBeforeReplay(room);
+            ExpLeagueRoomAgent.replay(this, room);
+            replayWasExecuted = true;
+          }
+        }
+        replayCheckedRooms.put(room, room);
       }
-      replayCheckedRoom.add(room);
     }
 
     if (replayWasExecuted) {

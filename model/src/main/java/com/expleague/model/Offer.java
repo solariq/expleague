@@ -37,7 +37,10 @@ public class Offer extends Item {
   @XmlElement(namespace = Operations.NS)
   private Filter filter;
 
-  @XmlAnyElement(lax = true)
+  @XmlElements(value = {
+    @XmlElement(name="image", namespace = Operations.NS, type = Image.class),
+    @XmlElement(name="experts-filter", namespace = Operations.NS, type = Filter.class)
+  })
   private List<Attachment> attachments;
 
   @XmlAttribute(name = "local")
