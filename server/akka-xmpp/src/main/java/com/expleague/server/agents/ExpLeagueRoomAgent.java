@@ -80,7 +80,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
           if (msg.has(Resume.class)) {
             dump.stream()
                     .flatMap(Functions.instancesOf(Message.class))
-                    .filter(message -> message.type() == MessageType.GROUP_CHAT || message.has(Command.class))
+                    .filter(message -> message.type() == MessageType.GROUP_CHAT || message.has(Progress.class))
                     .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
             XMPP.send(new Presence(roomAlias(msg.from()), dump.owner(), true), context());
           }
@@ -106,7 +106,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
           else if (msg.has(Start.class)) {
             dump.stream()
                     .flatMap(Functions.instancesOf(Message.class))
-                    .filter(message -> message.type() == MessageType.GROUP_CHAT || message.has(Command.class))
+                    .filter(message -> message.type() == MessageType.GROUP_CHAT || message.has(Progress.class))
                     .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
             XMPP.send(new Message(jid, dump.owner(), msg.get(Start.class), Roster.instance().profile(from.bare())), context());
           }
