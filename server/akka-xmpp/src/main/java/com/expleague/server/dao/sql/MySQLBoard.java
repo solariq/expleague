@@ -155,12 +155,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   protected Function<ResultSet, ExpLeagueOrder> createOrderView() {
     return rs -> {
       try {
-        return new MySQLOrder(rs) {
-          @Override
-          public State state() {
-            throw new IllegalStateException("Related orders are read-only!");
-          }
-        };
+        return new MySQLOrder(rs);
       }
       catch (SQLException | IOException e) {
         throw new RuntimeException(e);
