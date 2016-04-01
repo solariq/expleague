@@ -126,11 +126,35 @@
             <div class="experts bind-model">
                 <div data-bind="foreach: experts">
                     <div class="expert-profile">
-                        <img class="expert-avatar" data-bind="attr: {src: avatar}" width="40px" height="40px"/>
-                        <span class="expert-name" data-bind="text: name"></span>
-                        <a title="Show related orders" href="#" data-bind="click: Admin.loadRelatedHandler(jid)">
-                            <span data-bind="text: login"></span>
-                        </a>
+                        <div class="expert-avatar">
+                            <img class="expert-avatar" data-bind="attr: {src: avatar}" width="40px" height="40px"/>
+                        </div>
+                        <div class="expert-details">
+                            <div>
+                                <span class="expert-feature">Name</span>
+                                <span class="expert-name" data-bind="text: name"></span>
+                            </div>
+                            <div>
+                                <span class="expert-feature">Login</span>
+                                <a title="Show related orders" href="#" data-bind="click: Admin.loadRelatedHandler(jid)">
+                                    <span data-bind="text: login"></span>
+                                </a>
+                            </div>
+                            <div>
+                                <span class="expert-feature">Completed tasks</span>
+                                <span class="expert-completed-tasks" data-bind="text: tasks"></span>
+                            </div>
+                            <div>
+                                <span class="expert-feature">Rating</span>
+                                <span class="expert-rating" data-bind="text: rating().toFixed(2) + ' (' + basedOn() + ' feedbacks)'"></span>
+                            </div>
+                            <div>
+                                <span class="expert-feature">Tags</span>
+                                <span class="expert-tags" data-bind="foreach: tags">
+                                    <span class="expert-tag" data-bind="text: name"/>
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

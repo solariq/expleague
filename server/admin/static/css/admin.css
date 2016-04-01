@@ -354,14 +354,45 @@ caption {
     padding: 0 10px;
 }
 
+.expert-profile {
+    clear: both;
+}
+
 .expert-profile, .dump .message {
     padding: 10px;
     margin-bottom: 10px;
     border-bottom: 1px dotted #ccc;
 }
 
-.expert-profile .expert-avatar {
+.expert-profile div.expert-avatar {
+    width: 40px;
+    float: left;
+    padding: 5px;
+}
+
+.expert-profile div.expert-details {
+    margin-left: 80px;
+}
+
+.expert-profile img.expert-avatar {
     margin-right: 10px;
+}
+
+.expert-profile .expert-feature {
+    width: 150px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.expert-profile .expert-tag {
+    padding: 1px 5px 1px 5px;
+    background: #0089e0;
+    color: #fff;
+    font-size: 90%;
+    text-decoration: none;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
 }
 
 .enum-label {
