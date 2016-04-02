@@ -113,6 +113,7 @@ class AppDelegate: UIResponder {
             xmppMessageDeliveryReceipts = XMPPMessageDeliveryReceipts(dispatchQueue: dispatch_get_main_queue())
             xmppMessageDeliveryReceipts!.autoSendMessageDeliveryReceipts = true
             xmppMessageDeliveryReceipts!.autoSendMessageDeliveryRequests = true
+            xmppMessageDeliveryReceipts!.deactivate()
             xmppMessageDeliveryReceipts!.activate(stream)
 
             try stream.connectWithTimeout(XMPPStreamTimeoutNone)
