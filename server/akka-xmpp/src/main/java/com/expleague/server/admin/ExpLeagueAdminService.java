@@ -150,101 +150,7 @@ public class ExpLeagueAdminService extends UntypedActor {
               response = getJsonResponse("messages", messages);
             }
             else if ("/kpi".equals(path)) {
-              final List<TimeSeriesChartDto> charts = new ArrayList<>();
-              final TLongIntHashMap timestamp2TasksCount = new TLongIntHashMap();
-
-              final TLongIntHashMap timestamp2ClosedTaskCount = new TLongIntHashMap();
-              final TLongIntHashMap timestamp2TasksWithFeedbackCount = new TLongIntHashMap();
-
-              final TLongLongHashMap timestamp2TaskDuration = new TLongLongHashMap();
-              final TLongDoubleHashMap timestamp2Feedback = new TLongDoubleHashMap();
-
-              board.orders(new LaborExchange.OrderFilter(false, EnumSet.allOf(ExpLeagueOrder.Status.class))).forEach(
-                order -> {
-                  final long startTimestamp = (long) (order.offer().started() * 1000);
-                  final DateTime startDay = new DateTime(startTimestamp).dayOfMonth().roundFloorCopy();
-                  final DateTime startWeek = new DateTime(startTimestamp).dayOfMonth().roundFloorCopy();
-                  timestamp2TasksCount.adjustOrPutValue(startDay.getMillis(), 1, 1);
-
-                  if (order.status() == ExpLeagueOrder.Status.DONE) {
-                    timestamp2ClosedTaskCount.adjustOrPutValue(startWeek.getMillis(), 1, 1);
-                    final long closeTimestamp = order.statusHistoryRecords()
-                      .filter(statusHistoryRecord -> statusHistoryRecord.getStatus() == ExpLeagueOrder.Status.DONE)
-                      .findFirst().get()
-                      .getDate().getTime();
-
-                    final long durationMinutes = (closeTimestamp - startTimestamp) / (3600 * 1000L);
-                    timestamp2TaskDuration.adjustOrPutValue(startWeek.getMillis(), durationMinutes, durationMinutes);
-
-                    final double feedback = order.feedback();
-                    if (feedback != -1) {
-                      timestamp2TasksWithFeedbackCount.adjustOrPutValue(startWeek.getMillis(), 1, 1);
-                      timestamp2Feedback.adjustOrPutValue(startWeek.getMillis(), feedback, feedback);
-                    }
-                  }
-                }
-              );
-
-              {
-                final List<TimeSeriesDto.PointDto> allTasks = new ArrayList<>();
-                final List<TimeSeriesDto.PointDto> closedTasks = new ArrayList<>();
-                final List<TimeSeriesDto.PointDto> closedWithFeedbackTasks = new ArrayList<>();
-                final long[] keys = timestamp2TasksCount.keys();
-                Arrays.sort(keys);
-                for (long ts : keys) {
-                  allTasks.add(new TimeSeriesDto.PointDto(ts, timestamp2TasksCount.get(ts)));
-                  closedTasks.add(new TimeSeriesDto.PointDto(ts, timestamp2ClosedTaskCount.get(ts)));
-                  closedWithFeedbackTasks.add(new TimeSeriesDto.PointDto(ts, timestamp2TasksWithFeedbackCount.get(ts)));
-                }
-                charts.add(new TimeSeriesChartDto(
-                  "Number of tasks",
-                  "Time",
-                  "Tasks",
-                  Lists.newArrayList(
-                    new TimeSeriesDto("Received tasks", allTasks),
-                    new TimeSeriesDto("Closed tasks", closedTasks),
-                    new TimeSeriesDto("Tasks with feedback", closedWithFeedbackTasks)
-                  )
-                ));
-              }
-
-              {
-                final List<TimeSeriesDto.PointDto> points = new ArrayList<>();
-                final long[] keys = timestamp2TaskDuration.keys();
-                Arrays.sort(keys);
-                for (long ts : keys) {
-                  points.add(new TimeSeriesDto.PointDto(ts, timestamp2TaskDuration.get(ts) / timestamp2ClosedTaskCount.get(ts)));
-                }
-                charts.add(new TimeSeriesChartDto(
-                  "Average task duration",
-                  "Time",
-                  "Minutes",
-                  Lists.newArrayList(new TimeSeriesDto(
-                    "Task duration",
-                    points
-                  ))
-                ));
-              }
-
-              {
-                final List<TimeSeriesDto.PointDto> points = new ArrayList<>();
-                final long[] keys = timestamp2Feedback.keys();
-                Arrays.sort(keys);
-                for (long ts : keys) {
-                  points.add(new TimeSeriesDto.PointDto(ts, timestamp2Feedback.get(ts) / timestamp2TasksWithFeedbackCount.get(ts)));
-                }
-                charts.add(new TimeSeriesChartDto(
-                  "Average task feedback",
-                  "Time",
-                  "Score",
-                  Lists.newArrayList(new TimeSeriesDto(
-                    "Task feedback",
-                    points
-                  ))
-                ));
-              }
-
-              response = getJsonResponse("charts", charts);
+              response = getJsonResponse("charts", prepareKpiCharts(board));
             }
           } catch (Exception e) {
             final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -256,6 +162,104 @@ public class ExpLeagueAdminService extends UntypedActor {
         }
         sender().tell(response, self());
       }
+    }
+
+    @NotNull
+    protected List<TimeSeriesChartDto> prepareKpiCharts(final LaborExchange.Board board) {
+      final List<TimeSeriesChartDto> charts = new ArrayList<>();
+      final TLongIntHashMap timestamp2TasksCount = new TLongIntHashMap();
+
+      final TLongIntHashMap timestamp2ClosedTaskCount = new TLongIntHashMap();
+      final TLongIntHashMap timestamp2TasksWithFeedbackCount = new TLongIntHashMap();
+
+      final TLongLongHashMap timestamp2TaskDuration = new TLongLongHashMap();
+      final TLongDoubleHashMap timestamp2Feedback = new TLongDoubleHashMap();
+
+      board.orders(new LaborExchange.OrderFilter(false, EnumSet.allOf(ExpLeagueOrder.Status.class))).forEach(
+        order -> {
+          final long startTimestamp = (long) (order.offer().started() * 1000);
+          final DateTime startDay = new DateTime(startTimestamp).dayOfMonth().roundFloorCopy();
+          final DateTime startWeek = new DateTime(startTimestamp).dayOfMonth().roundFloorCopy();
+          timestamp2TasksCount.adjustOrPutValue(startDay.getMillis(), 1, 1);
+
+          if (order.status() == ExpLeagueOrder.Status.DONE) {
+            timestamp2ClosedTaskCount.adjustOrPutValue(startWeek.getMillis(), 1, 1);
+            final long closeTimestamp = order.statusHistoryRecords()
+              .filter(statusHistoryRecord -> statusHistoryRecord.getStatus() == ExpLeagueOrder.Status.DONE)
+              .findFirst().get()
+              .getDate().getTime();
+
+            final long durationMinutes = (closeTimestamp - startTimestamp) / (3600 * 1000L);
+            timestamp2TaskDuration.adjustOrPutValue(startWeek.getMillis(), durationMinutes, durationMinutes);
+
+            final double feedback = order.feedback();
+            if (feedback != -1) {
+              timestamp2TasksWithFeedbackCount.adjustOrPutValue(startWeek.getMillis(), 1, 1);
+              timestamp2Feedback.adjustOrPutValue(startWeek.getMillis(), feedback, feedback);
+            }
+          }
+        }
+      );
+
+      {
+        final List<TimeSeriesDto.PointDto> allTasks = new ArrayList<>();
+        final List<TimeSeriesDto.PointDto> closedTasks = new ArrayList<>();
+        final List<TimeSeriesDto.PointDto> closedWithFeedbackTasks = new ArrayList<>();
+        final long[] keys = timestamp2TasksCount.keys();
+        Arrays.sort(keys);
+        for (long ts : keys) {
+          allTasks.add(new TimeSeriesDto.PointDto(ts, timestamp2TasksCount.get(ts)));
+          closedTasks.add(new TimeSeriesDto.PointDto(ts, timestamp2ClosedTaskCount.get(ts)));
+          closedWithFeedbackTasks.add(new TimeSeriesDto.PointDto(ts, timestamp2TasksWithFeedbackCount.get(ts)));
+        }
+        charts.add(new TimeSeriesChartDto(
+          "Number of tasks",
+          "Time",
+          "Tasks",
+          Lists.newArrayList(
+            new TimeSeriesDto("Received tasks", allTasks),
+            new TimeSeriesDto("Closed tasks", closedTasks),
+            new TimeSeriesDto("Tasks with feedback", closedWithFeedbackTasks)
+          )
+        ));
+      }
+
+      {
+        final List<TimeSeriesDto.PointDto> points = new ArrayList<>();
+        final long[] keys = timestamp2TaskDuration.keys();
+        Arrays.sort(keys);
+        for (long ts : keys) {
+          points.add(new TimeSeriesDto.PointDto(ts, timestamp2TaskDuration.get(ts) / timestamp2ClosedTaskCount.get(ts)));
+        }
+        charts.add(new TimeSeriesChartDto(
+          "Average task duration",
+          "Time",
+          "Minutes",
+          Lists.newArrayList(new TimeSeriesDto(
+            "Task duration",
+            points
+          ))
+        ));
+      }
+
+      {
+        final List<TimeSeriesDto.PointDto> points = new ArrayList<>();
+        final long[] keys = timestamp2Feedback.keys();
+        Arrays.sort(keys);
+        for (long ts : keys) {
+          points.add(new TimeSeriesDto.PointDto(ts, timestamp2Feedback.get(ts) / timestamp2TasksWithFeedbackCount.get(ts)));
+        }
+        charts.add(new TimeSeriesChartDto(
+          "Average task feedback",
+          "Time",
+          "Score",
+          Lists.newArrayList(new TimeSeriesDto(
+            "Task feedback",
+            points
+          ))
+        ));
+      }
+      return charts;
     }
 
     protected HttpResponse getOrders(Stream<ExpLeagueOrder> stream) throws JsonProcessingException {
