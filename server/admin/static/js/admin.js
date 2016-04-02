@@ -99,8 +99,63 @@ var Admin = {
     formatDate: function(offerModel) {
         return moment(offerModel.expiresMs()).format();
     },
-    
+
+    loadKpi: function() {
+        Admin.load("/kpi", function(data) {
+            var content = $('#content');
+            content.empty();
+            _.each(data["charts"], function(chart, index) {
+                $("<div id='chart-" + index + "'/>").appendTo(content).highcharts({
+                    chart: {
+                        zoomType: 'x'
+                    },
+                    title: {
+                        text: chart.chartTitle
+                    },
+                    subtitle: {
+                        text: document.ontouchstart === undefined ?
+                            'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        dateTimeLabelFormats: {
+                            month: "%e. %b",
+                            year: "%b"
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: chart.yAxisTitle
+                        }
+                    },
+                    legend: {
+                        enabled: true
+                    },
+                    series: _.map(chart.timeSeries, function(timeSeries) {
+                        var seriesData = _.map(timeSeries.points, function(point) {
+                            return [
+                                point.timestamp,
+                                point.value
+                            ]
+                        });
+                        console.log(JSON.stringify(seriesData));
+                        return {
+                            name: timeSeries.title,
+                            data: seriesData
+                        };
+                    })
+                });
+            });
+        });
+    },
+
     init: function() {
+        Highcharts.setOptions({
+            global: {
+                useUTC: false
+            }
+        });
+
         $(document).ready(function() {
             Admin.loadOpenOrders();
         });

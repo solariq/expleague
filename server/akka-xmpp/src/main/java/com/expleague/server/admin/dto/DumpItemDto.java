@@ -1,11 +1,13 @@
 package com.expleague.server.admin.dto;
 
 import com.expleague.xmpp.stanza.Stanza;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author vpdelta
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DumpItemDto {
   @JsonProperty
   private final String stanza;
