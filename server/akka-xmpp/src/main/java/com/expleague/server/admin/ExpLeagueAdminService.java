@@ -179,23 +179,22 @@ public class ExpLeagueAdminService extends UntypedActor {
         order -> {
           final long startTimestamp = (long) (order.offer().started() * 1000);
           final DateTime startDay = new DateTime(startTimestamp).dayOfMonth().roundFloorCopy();
-          final DateTime startWeek = new DateTime(startTimestamp).dayOfMonth().roundFloorCopy();
           timestamp2TasksCount.adjustOrPutValue(startDay.getMillis(), 1, 1);
 
           if (order.status() == ExpLeagueOrder.Status.DONE) {
-            timestamp2ClosedTaskCount.adjustOrPutValue(startWeek.getMillis(), 1, 1);
+            timestamp2ClosedTaskCount.adjustOrPutValue(startDay.getMillis(), 1, 1);
             final long closeTimestamp = order.statusHistoryRecords()
               .filter(statusHistoryRecord -> statusHistoryRecord.getStatus() == ExpLeagueOrder.Status.DONE)
               .findFirst().get()
               .getDate().getTime();
 
             final long durationMinutes = (closeTimestamp - startTimestamp) / (3600 * 1000L);
-            timestamp2TaskDuration.adjustOrPutValue(startWeek.getMillis(), durationMinutes, durationMinutes);
+            timestamp2TaskDuration.adjustOrPutValue(startDay.getMillis(), durationMinutes, durationMinutes);
 
             final double feedback = order.feedback();
             if (feedback != -1) {
-              timestamp2TasksWithFeedbackCount.adjustOrPutValue(startWeek.getMillis(), 1, 1);
-              timestamp2Feedback.adjustOrPutValue(startWeek.getMillis(), feedback, feedback);
+              timestamp2TasksWithFeedbackCount.adjustOrPutValue(startDay.getMillis(), 1, 1);
+              timestamp2Feedback.adjustOrPutValue(startDay.getMillis(), feedback, feedback);
             }
           }
         }
