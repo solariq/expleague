@@ -28,7 +28,7 @@ public class SSLHelper {
   }
 
   public static ByteBuffer expandBuffer(ByteBuffer buffer, int growth) {
-    final ByteBuffer expand = ByteBuffer.allocate(growth + buffer.limit());
+    final ByteBuffer expand = ByteBuffer.allocate(growth + buffer.position());
     buffer.flip();
     expand.put(buffer);
     return expand;
@@ -46,14 +46,15 @@ public class SSLHelper {
     private ByteBuffer dst = ByteBuffer.allocate(4 * 4096);
     private ByteBuffer src = ByteBuffer.allocate(4 * 4096);
     private final boolean incoming;
+    private final int netSize;
 
     private SSLDirection(boolean incoming) {
       this.incoming = incoming;
+      netSize = sslEngine.getSession().getApplicationBufferSize();
     }
 
     private void process(ByteString msgIn, Consumer<ByteString> consumer) {
       try {
-        final int netSize = sslEngine.getSession().getApplicationBufferSize();
         final ByteBuffer inBuffer = msgIn.asByteBuffer();
         while (inBuffer.remaining() > 0) {
           if (src.remaining() < netSize / 2) {
