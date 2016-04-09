@@ -93,7 +93,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               if (presence.available())
                 return stay();
               explain("Expert has gone offline. Cancelling the check.");
-              task.broker().tell(new Cancel(), self());
+              task.broker().tell(new Ignore(), self());
               return goTo(State.OFFLINE).using(task.clean());
             }
         ).event(Message.class,  // expert accepted check
