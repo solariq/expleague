@@ -25,11 +25,9 @@ import com.relayrides.pushy.apns.P12Util;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.io.StreamTools;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.handler.codec.http2.Http2SecurityUtil;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
-import io.netty.handler.ssl.SupportedCipherSuiteFilter;
 import org.xml.sax.SAXException;
 
 import javax.net.ssl.SSLEngine;
@@ -134,7 +132,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
     final ByteString data = ByteString.fromString(xml);
     if (currentState != ConnectionState.HANDSHAKE && currentState != ConnectionState.STARTTLS) {
       final List<ByteString> encrypted = new ArrayList<>();
-      helper.encrypt(data, encrypted::add, self());
+      helper.encrypt(data, encrypted::add);
       final int size = encrypted.size();
       for (int i = 0; i < size; i++) {
         final Tcp.Command write;
@@ -220,11 +218,22 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         break;
       }
       case AUTHORIZATION: {
+        { // reset factory to be able to work with <?xml?> instructions
+          final AsyncXMLInputFactory factory = new InputFactoryImpl();
+          asyncXml = factory.createAsyncForByteArray();
+          reader = new AsyncJAXBStreamReader(asyncXml, Stream.jaxb());
+        }
+
         businessLogic.tell(new Close(), self());
         newLogic = context().actorOf(Props.create(AuthorizationPhase.class, self(), (Action<String>) id -> XMPPClientConnection.this.id = id), "authorization");
         break;
       }
       case CONNECTED: {
+        { // reset factory to be able to work with <?xml?> instructions
+          final AsyncXMLInputFactory factory = new InputFactoryImpl();
+          asyncXml = factory.createAsyncForByteArray();
+          reader = new AsyncJAXBStreamReader(asyncXml, Stream.jaxb());
+        }
         newLogic = getContext().actorOf(Props.create(ConnectedPhase.class, self(), id), "connected");
         break;
       }

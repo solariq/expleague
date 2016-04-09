@@ -1,6 +1,5 @@
 package com.expleague.server.xmpp;
 
-import akka.actor.ActorRef;
 import akka.util.ByteString;
 
 import javax.net.ssl.SSLEngine;
@@ -27,87 +26,74 @@ public class SSLHelper {
     out = new SSLDirection(false);
   }
 
-  public static ByteBuffer expandBuffer(ByteBuffer buffer, int growth) {
-    final ByteBuffer expand = ByteBuffer.allocate(growth + buffer.position());
-    buffer.flip();
-    expand.put(buffer);
-    return expand;
-  }
-
   public void decrypt(ByteString msgIn, Consumer<ByteString> consumer) {
     in.process(msgIn, consumer);
   }
 
-  public void encrypt(ByteString data, Consumer<ByteString> consumer, ActorRef self) throws SSLException {
+  public void encrypt(ByteString data, Consumer<ByteString> consumer) throws SSLException {
     out.process(data, consumer);
   }
 
   private class SSLDirection {
-    private ByteBuffer dst = ByteBuffer.allocate(4 * 4096);
-    private ByteBuffer src = ByteBuffer.allocate(4 * 4096);
+    private ByteBuffer dst;
+    private ByteBuffer src;
     private final boolean incoming;
-    private final int netSize;
 
     private SSLDirection(boolean incoming) {
       this.incoming = incoming;
-      netSize = sslEngine.getSession().getApplicationBufferSize();
+      if (incoming) {
+        dst = ByteBuffer.allocate(sslEngine.getSession().getApplicationBufferSize());
+        src = ByteBuffer.allocate(sslEngine.getSession().getPacketBufferSize());
+      }
+      else {
+        src = ByteBuffer.allocate(sslEngine.getSession().getApplicationBufferSize());
+        dst = ByteBuffer.allocate(sslEngine.getSession().getPacketBufferSize());
+      }
     }
 
     private void process(ByteString msgIn, Consumer<ByteString> consumer) {
       try {
         final ByteBuffer inBuffer = msgIn.asByteBuffer();
         while (inBuffer.remaining() > 0) {
-          if (src.remaining() < netSize / 2) {
-            src = expandBuffer(src, netSize);
-          }
           if (inBuffer.remaining() > src.remaining()) {
             final ByteBuffer slice = inBuffer.slice();
             slice.limit(src.remaining());
-            inBuffer.position(slice.limit());
+            inBuffer.position(inBuffer.position() + slice.limit());
             src.put(slice);
           }
           else src.put(inBuffer);
-          do {
+          while(true) {
             src.flip();
             final SSLEngineResult r;
             r = incoming ? sslEngine.unwrap(src, dst) : sslEngine.wrap(src, dst);
             switch (r.getStatus()) {
               case BUFFER_OVERFLOW: {
-                // Could attempt to drain the dst buffer of any already obtained
-                // data, but we'll just increase it to the size needed.
-                dst = expandBuffer(dst, netSize);
+                sendChunk(consumer);
                 src.compact();
                 continue;
               }
               case BUFFER_UNDERFLOW: {
-                // Resize buffer if needed.
-                if (netSize > dst.capacity()) {
-                  dst = expandBuffer(dst, netSize);
-                }
-                // Obtain more inbound network data for inSrc,
-                // then retry the operation.
                 return;
-                // other cases: CLOSED, OK.
               }
             }
             dst.flip();
             src.compact();
-            if (dst.limit() > 0) {
-              log.finest(dst.limit() + " bytes " + (incoming ? "received" : "sent"));
-              consumer.accept(ByteString.fromByteBuffer(dst));
-              dst.clear();
-            }
-            else if (r.bytesConsumed() == 0)
-              break;
-            if (src.position() > 0)
-              break;
+            sendChunk(consumer);
+            break;
           }
-          while (true);
         }
       }
       catch (SSLException e) {
         throw new RuntimeException(e);
       }
+    }
+
+    private void sendChunk(Consumer<ByteString> consumer) {
+      if (dst.limit() == 0)
+        return;
+//      log.finest(dst.limit() + " bytes " + (incoming ? "received" : "sent"));
+      consumer.accept(ByteString.fromByteBuffer(dst));
+      dst.clear();
     }
   }
 }

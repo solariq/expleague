@@ -93,7 +93,7 @@ public class AuthorizationPhase extends XMPPPhase {
         }
         else {
           log.log(Level.WARNING, "Exception during authorization", e);
-          throw new RuntimeException(e);
+          answer(new Failure(Failure.Type.NOT_AUTHORIZED, e.getMessage()));
         }
       }
     }
