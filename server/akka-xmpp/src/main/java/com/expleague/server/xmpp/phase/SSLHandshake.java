@@ -4,7 +4,6 @@ import akka.actor.ActorRef;
 import akka.io.Tcp;
 import akka.io.TcpMessage;
 import akka.util.ByteString;
-import com.expleague.server.xmpp.SSLHelper;
 import com.expleague.server.xmpp.XMPPClientConnection;
 import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.xmpp.control.Close;
@@ -34,6 +33,14 @@ public class SSLHandshake extends UntypedActorAdapter {
   private ByteBuffer in = ByteBuffer.allocate(4096);
   private ByteBuffer out = ByteBuffer.allocate(4096);
   private ByteBuffer toSend = ByteBuffer.allocate(4096);
+
+  public static ByteBuffer expandBuffer(ByteBuffer buffer, int growth) {
+    final ByteBuffer expand = ByteBuffer.allocate(growth + buffer.capacity());
+    buffer.flip();
+    expand.put(buffer);
+    return expand;
+  }
+
   public void invoke(Close close) {
     if (in.position() != 0) {
       in.flip();
@@ -45,7 +52,7 @@ public class SSLHandshake extends UntypedActorAdapter {
   public void invoke(Tcp.Received received) throws SSLException {
 //    System.out.println("in: [" + received.data().mkString() + "]");
     if (in.remaining() < received.data().length()) {
-      in = SSLHelper.expandBuffer(in, received.data().length());
+      in = expandBuffer(in, received.data().length());
     }
     received.data().copyToBuffer(in);
     if (finished)
@@ -89,7 +96,7 @@ public class SSLHandshake extends UntypedActorAdapter {
             in.compact();
           }
           else {
-            out = SSLHelper.expandBuffer(out, sslEngine.getSession().getApplicationBufferSize());
+            out = expandBuffer(out, sslEngine.getSession().getApplicationBufferSize());
             log.info("Unwrap buffer overflow. Pos:" + in.position());
           }
           break;
@@ -98,7 +105,7 @@ public class SSLHandshake extends UntypedActorAdapter {
           // cannot call wrap with data left on the buffer
           res = sslEngine.wrap(ByteBuffer.allocate(0), toSend);
           if (res.getStatus() == SSLEngineResult.Status.BUFFER_OVERFLOW)
-            toSend = SSLHelper.expandBuffer(toSend, sslEngine.getSession().getPacketBufferSize());
+            toSend = expandBuffer(toSend, sslEngine.getSession().getPacketBufferSize());
           hsStatus = res.getHandshakeStatus();
           break;
 
