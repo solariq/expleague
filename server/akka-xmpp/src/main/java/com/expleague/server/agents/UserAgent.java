@@ -1,10 +1,9 @@
 package com.expleague.server.agents;
 
 import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
 import akka.actor.PoisonPill;
-import akka.pattern.Patterns;
 import akka.persistence.RecoveryCompleted;
+import com.expleague.model.Answer;
 import com.expleague.model.Delivered;
 import com.expleague.model.Operations;
 import com.expleague.server.Roster;
@@ -19,7 +18,6 @@ import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
-import com.relayrides.pushy.apns.util.TokenUtil;
 import scala.Option;
 import scala.collection.JavaConversions;
 
@@ -156,6 +154,7 @@ public class UserAgent extends PersistentActorAdapter {
     private final XMPPDevice connectedDevice;
     private final ActorRef connection;
     private Queue<Stanza> deliveryQueue = new ArrayDeque<>();
+    private Map<String, Stanza> confirmationAwaitingStanzas = new HashMap<>();
 
     public Courier(XMPPDevice connectedDevice, ActorRef connection) {
       this.connectedDevice = connectedDevice;
@@ -165,42 +164,81 @@ public class UserAgent extends PersistentActorAdapter {
     @Override
     public void onReceiveRecover(Object o) throws Exception {
       if (o instanceof Stanza) {
-        deliveryQueue.add((Stanza) o);
+        final Stanza stanza = (Stanza) o;
+        if (isDeliveryOrderRequired(stanza)) {
+          deliveryQueue.add(stanza);
+        }
+        else {
+          confirmationAwaitingStanzas.put(stanza.id(), stanza);
+        }
       }
       else if (o instanceof Delivered) {
+        final String id = ((Delivered) o).id();
+        confirmationAwaitingStanzas.remove(id);
         deliveryQueue.stream().filter(
-            stanza -> stanza.id().equals(((Delivered)o).id())
+          stanza -> stanza.id().equals(id)
         ).findFirst().ifPresent(deliveryQueue::remove);
       }
-      else if (o instanceof RecoveryCompleted && !deliveryQueue.isEmpty()) {
-        connection.tell(deliveryQueue.peek(), self());
+      else if (o instanceof RecoveryCompleted) {
+        if (!deliveryQueue.isEmpty()) {
+          connection.tell(deliveryQueue.peek(), self());
+        }
+        for (Stanza stanza : confirmationAwaitingStanzas.values()) {
+          connection.tell(stanza, self());
+        }
       }
     }
 
     @ActorMethod
     public void invoke(final Delivered delivered) {
-      final Stanza peek = deliveryQueue.peek();
-      if (peek != null && !peek.id().equals(delivered.id())) {
-        log.warning("Unexpected delivery message id " + delivered.id() + ", retrying to send: " + peek);
-//        connection.tell(peek, self());
-        return;
+      final String id = delivered.id();
+      if (confirmationAwaitingStanzas.containsKey(id)) {
+        confirmationAwaitingStanzas.remove(id);
       }
-      deliveryQueue.poll();
-      if (!deliveryQueue.isEmpty()) {
-        connection.tell(deliveryQueue.peek(), self());
+      else {
+        final Stanza peek = deliveryQueue.peek();
+        if (peek != null && !peek.id().equals(id)) {
+          log.warning("Unexpected delivery message id " + delivered.id() + ", retrying to send: " + peek);
+//        connection.tell(peek, self());
+          return;
+        }
+        deliveryQueue.poll();
+        if (!deliveryQueue.isEmpty()) {
+          connection.tell(deliveryQueue.peek(), self());
+        }
       }
       context().parent().forward(delivered, context());
     }
 
     @ActorMethod
     public void invoke(final Stanza stanza) {
-      if (stanza instanceof Presence) {
-        connection.tell(stanza, self());
-        return;
+      if (isDeliveryConfirmationRequired(stanza)) {
+        if (isDeliveryOrderRequired(stanza)) {
+          if (deliveryQueue.isEmpty()) {
+            connection.tell(stanza, self());
+          }
+          deliveryQueue.add(stanza);
+        }
+        else {
+          confirmationAwaitingStanzas.put(stanza.id(), stanza);
+          connection.tell(stanza, self());
+        }
       }
-      if (deliveryQueue.isEmpty())
+      else {
         connection.tell(stanza, self());
-      deliveryQueue.add(stanza);
+      }
+    }
+
+    protected boolean isDeliveryConfirmationRequired(final Stanza stanza) {
+      return !(stanza instanceof Presence);
+    }
+
+    protected boolean isDeliveryOrderRequired(final Stanza stanza) {
+      if (stanza instanceof Message) {
+        final Message message = (Message) stanza;
+        return message.has(Operations.Command.class) || message.has(Answer.class);
+      }
+      return false;
     }
 
     @Override
