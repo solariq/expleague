@@ -91,7 +91,7 @@ public class SSLHelper {
     private void sendChunk(Consumer<ByteString> consumer) {
       if (dst.limit() == 0)
         return;
-//      log.finest(dst.limit() + " bytes " + (incoming ? "received" : "sent"));
+      log.finest(dst.limit() + " bytes " + (incoming ? "received" : "sent"));
       consumer.accept(ByteString.fromByteBuffer(dst));
       dst.clear();
     }
