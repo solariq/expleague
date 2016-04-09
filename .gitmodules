@@ -7,3 +7,6 @@
 [submodule "expert/browser/markdown-writer-fx"]
 	path = expert/browser/markdown-writer-fx
 	url = /expert/browser/markdown-writer-fx
+[submodule "expert/qt/qxmpp"]
+	path = expert/qt/qxmpp
+	url = /expert/qt/qxmpp

@@ -4,5 +4,7 @@
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/commons" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/expert/qt/qxmpp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/expert/qt/vreen" vcs="Git" />
   </component>
 </project>

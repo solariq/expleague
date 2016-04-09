@@ -585,7 +585,7 @@ class AnswerReceivedModel: ChatCellModel {
     }
 
     func height(maxWidth width: CGFloat) -> CGFloat {
-        return AnswerReceivedCell.height
+        return AnswerReceivedCell.height + (score == nil ? -20 : 0)
     }
     
     func accept(message: ExpLeagueMessage) -> Bool {

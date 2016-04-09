@@ -16,8 +16,8 @@ enum CellAlignment: Int {
 }
 
 class ChatCell: UITableViewCell {
-    static let defaultFont = UIFont(name: "Helvetica", size: 13)!
-    static let topicFont = UIFont.systemFontOfSize(15)
+    static let defaultFont = UIFont(name: "Helvetica", size: 15)!
+    static let topicFont = UIFont.systemFontOfSize(17)
     var controller: OrderDetailsViewController?
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -273,6 +273,7 @@ class AnswerReceivedCell: TaskInProgressCell {
             for i in 0..<stars.count {
                 if(rating == nil) {
                     stars[i].hidden = true
+                    
                 }
                 else {
                     stars[i].hidden = false

@@ -62,7 +62,7 @@ class ExpertsOverviewController: UITableViewController {
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         switch(indexPath.section) {
-        case 0 where my.isEmpty:
+        case 0 where my.isEmpty && top.isEmpty:
             let cell = tableView.dequeueReusableCellWithIdentifier("Empty", forIndexPath: indexPath)
             cell.textLabel!.text = "Нет избранных"
             cell.textLabel!.textAlignment = .Center
@@ -98,7 +98,7 @@ class ExpertsOverviewController: UITableViewController {
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch(section) {
         case 0:
-            return max(my.count, 1)
+            return my.count > 0 ? my.count : (top.count > 0 ? 0 : 1)
         case 1:
             return top.count
         default:

@@ -94,7 +94,7 @@ class HistoryViewController: UITableViewController {
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         switch(indexPath.section) {
-        case 0 where ongoing.isEmpty:
+        case 0 where ongoing.isEmpty && finished.isEmpty:
             let cell = tableView.dequeueReusableCellWithIdentifier("Empty", forIndexPath: indexPath)
             cell.textLabel!.text = "Нет заказов"
             cell.textLabel!.textAlignment = .Center

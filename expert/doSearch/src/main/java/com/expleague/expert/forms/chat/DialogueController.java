@@ -220,7 +220,6 @@ public class DialogueController implements Action<ExpertEvent> {
     final List<Node> newTags = new ArrayList<>();
     assigned.tags().forEach(tag -> {
       final ImageView cross = new ImageView(new javafx.scene.image.Image("/images/cross.png"));
-      Platform.runLater(() -> {});
       final StackPane tagItem = new StackPane(new Text((newTags.size() > 0 ? ", " : " ") + tag.name() + " "), new AnchorPane(cross));
       cross.setFitWidth(10);
       cross.setPreserveRatio(true);

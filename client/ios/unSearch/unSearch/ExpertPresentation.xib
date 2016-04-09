@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9532" systemVersion="15D21" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="10116" systemVersion="15E65" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
@@ -12,13 +12,13 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Имя Эксперта" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ksA-Kh-7sw">
-                    <rect key="frame" x="110" y="4" width="102" height="18"/>
+                    <rect key="frame" x="110" y="8" width="102" height="18"/>
                     <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Работает над вашим заказом" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qt3-Vk-xZk">
-                    <rect key="frame" x="67" y="22" width="187" height="16"/>
+                    <rect key="frame" x="67" y="26" width="187" height="16"/>
                     <fontDescription key="fontDescription" type="system" pointSize="13"/>
                     <color key="textColor" red="0.53725490200000003" green="0.56078431370000004" blue="0.63137254899999995" alpha="1" colorSpace="calibratedRGB"/>
                     <nil key="highlightedColor"/>
@@ -34,7 +34,7 @@
             </subviews>
             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
             <constraints>
-                <constraint firstItem="ksA-Kh-7sw" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="4" id="P2r-iU-aR2"/>
+                <constraint firstItem="ksA-Kh-7sw" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="P2r-iU-aR2"/>
                 <constraint firstItem="Qt3-Vk-xZk" firstAttribute="top" secondItem="ksA-Kh-7sw" secondAttribute="bottom" id="Zdq-4A-eDC"/>
                 <constraint firstItem="ksA-Kh-7sw" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="b1e-V7-YxH"/>
                 <constraint firstItem="Qt3-Vk-xZk" firstAttribute="centerX" secondItem="ksA-Kh-7sw" secondAttribute="centerX" id="jCe-Ls-0gK"/>

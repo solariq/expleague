@@ -118,6 +118,7 @@ class OrderDescriptionViewController: UITableViewController {
         
         orderTextDelegate = OrderTextDelegate(height: orderTextHeight, parent: self)
         orderText.delegate = orderTextDelegate
+        orderText.contentInset = UIEdgeInsetsMake(0, 4, 0, 4);
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -458,6 +459,7 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
 }
 
 class OrderTextDelegate: NSObject, UITextViewDelegate {
+    static let textHeight = CGFloat(35.0)
     static let placeholder = "Найдем для Вас что угодно!"
     static let error_placeholder = "Введите текст запроса"
     var active: Bool = false
@@ -470,7 +472,7 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
                 self.parent.lupa.hidden = true
             }
             textView.textColor = UIColor.blackColor()
-            self.height.constant = max(30.0, self.total - 16.0 - 30.0)
+            self.height.constant = max(OrderTextDelegate.textHeight, self.total - 44)
             self.parent.view!.layoutIfNeeded()
         }
         if (tapDetector == nil) {
@@ -502,7 +504,7 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
         textView.textColor = UIColor.lightGrayColor()
         textView.textAlignment = .Center
         parent.lupa.hidden = false
-        height.constant = 30
+        height.constant = OrderTextDelegate.textHeight
         active = false
     }
     
@@ -518,10 +520,10 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
     var total: CGFloat = 80 {
         didSet {
             if (active) {
-                height.constant = max(30, total - 16.0 - 30.0)
+                height.constant = max(OrderTextDelegate.textHeight, total - 44)
             }
             else {
-                height.constant = 30
+                height.constant = OrderTextDelegate.textHeight
             }
         }
     }
