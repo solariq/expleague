@@ -52,7 +52,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
     log.log(Level.INFO, "Registering device " + query.username());
     XMPPUser associated = null;
     final PreparedStatement associateUser = createStatement("associate-user",
-        "SELECT * FROM expleague.Users WHERE avatar = ? AND avatar IS NOT NULL OR name = ? AND name IS NOT NULL OR id = ?"
+        "SELECT * FROM Users WHERE avatar = ? AND avatar IS NOT NULL OR name = ? AND name IS NOT NULL OR id = ?"
     );
     associateUser.setString(1, query.avatar());
     associateUser.setString(2, query.name());
@@ -66,7 +66,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
     }
     if (associated == null) {
       final PreparedStatement createUser = createStatement("create-user",
-          "INSERT INTO expleague.Users SET id = ?, country = ?, city = ?, name = ?, avatar = ?, age = ?, sex = ?;"
+          "INSERT INTO Users SET id = ?, country = ?, city = ?, name = ?, avatar = ?, age = ?, sex = ?;"
       );
       createUser.setString(1, query.username());
       createUser.setString(2, query.country());
@@ -80,7 +80,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
       log.log(Level.INFO, "Created new user " + associated.name());
     }
     final PreparedStatement register = createStatement("create-device",
-        "INSERT INTO expleague.Devices SET id = ?, user = ?, passwd = ?, platform = ?, expert = ?;"
+        "INSERT INTO Devices SET id = ?, user = ?, passwd = ?, platform = ?, expert = ?;"
     );
     register.setString(1, query.username());
     register.setString(2, associated.id());
@@ -97,7 +97,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
     return usersCache.get(name, id -> {
       try {
         final PreparedStatement userById = createStatement("user-by-name",
-            "SELECT * FROM expleague.Users WHERE id = ?"
+            "SELECT * FROM Users WHERE id = ?"
         );
         userById.setString(1, id);
         try (final ResultSet resultSet = userById.executeQuery()) {
@@ -119,7 +119,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
       try {
         final List<XMPPDevice> result = new ArrayList<>();
         final PreparedStatement devicesByUser = createStatement("devices-by-user",
-            "SELECT id FROM expleague.Devices WHERE user = ?"
+            "SELECT id FROM Devices WHERE user = ?"
         );
         devicesByUser.setString(1, userId);
         try (final ResultSet resultSet = devicesByUser.executeQuery()) {
@@ -141,7 +141,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
     return deviceCache.get(name, id -> {
       try {
         final PreparedStatement byName = createStatement("device-by-name",
-            "SELECT Devices.*, Users.* FROM expleague.Devices, expleague.Users WHERE Devices.id = ? AND Users.id = Devices.user;"
+            "SELECT Devices.*, Users.* FROM Devices, Users WHERE Devices.id = ? AND Users.id = Devices.user;"
         );
         byName.setString(1, id);
         try (final ResultSet resultSet = byName.executeQuery()) {
@@ -157,7 +157,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
               @Override
               public void updateToken(String token) {
                 this.token = token;
-                final PreparedStatement updateToken = createStatement("update-token", "UPDATE expleague.Devices SET token = ? WHERE id = ?");
+                final PreparedStatement updateToken = createStatement("update-token", "UPDATE Devices SET token = ? WHERE id = ?");
                 try {
                   updateToken.setString(1, token);
                   updateToken.setString(2, id);
@@ -192,7 +192,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
   @Override
   public Stream<Tag> specializations(JID jid) {
     return stream("specializations", "SELECT T.tag, S.score " +
-        "FROM expleague.Specializations AS S JOIN expleague.Tags AS T ON S.tag = T.id " +
+        "FROM Specializations AS S JOIN Tags AS T ON S.tag = T.id " +
         "WHERE `owner` = ?",
         stmt -> stmt.setString(1, jid.local()))
         .map(rs -> {
@@ -207,7 +207,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
   @Override
   public void application(Application application, JID referer) {
     try {
-      final PreparedStatement addApplication = createStatement("add-application", "INSERT INTO expleague.Applications SET referer= ?, email = ?");
+      final PreparedStatement addApplication = createStatement("add-application", "INSERT INTO Applications SET referer= ?, email = ?");
       addApplication.setString(2, application.email());
       addApplication.setString(1, referer.local());
       addApplication.execute();

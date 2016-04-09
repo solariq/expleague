@@ -43,7 +43,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @Override
   public MySQLOrder register(Offer offer) {
     try {
-      final PreparedStatement registerOrder = createStatement("register-order", "INSERT INTO expleague.Orders SET room = ?, offer = ?, eta = ?, status = " + ExpLeagueOrder.Status.OPEN.index(), true);
+      final PreparedStatement registerOrder = createStatement("register-order", "INSERT INTO Orders SET room = ?, offer = ?, eta = ?, status = " + ExpLeagueOrder.Status.OPEN.index(), true);
       registerOrder.setString(1, offer.room().local());
       registerOrder.setCharacterStream(2, new StringReader(offer.xmlString()));
       registerOrder.setTimestamp(3, Timestamp.from(offer.expires().toInstant()));
@@ -55,6 +55,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
         result = new MySQLOrder(id, offer);
       }
       result.role(offer.client(), ExpLeagueOrder.Role.OWNER);
+      result.status(ExpLeagueOrder.Status.OPEN);
       return result;
     }
     catch (SQLException e) {
@@ -66,7 +67,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @Override
   public ExpLeagueOrder active(final String roomId) {
     return replayAwareStream(() -> stream(
-      "active-order", "SELECT * FROM expleague.Orders WHERE room = ? AND status < " + ExpLeagueOrder.Status.DONE.index(),
+      "active-order", "SELECT * FROM Orders WHERE room = ? AND status < " + ExpLeagueOrder.Status.DONE.index(),
       stmt -> stmt.setString(1, roomId)
     ).map(createOrderView())).findFirst().orElse(null);
   }
@@ -74,7 +75,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @Override
   public Stream<ExpLeagueOrder> history(final String roomId) {
     return replayAwareStream(() -> stream(
-      "orders-room", "SELECT * FROM expleague.Orders WHERE room = ?",
+      "orders-room", "SELECT * FROM Orders WHERE room = ?",
       statement -> statement.setString(1, roomId)
     ).map(createOrderView()));
   }
@@ -83,7 +84,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   public Stream<ExpLeagueOrder> related(JID jid) {
     return replayAwareStream(() -> stream(
       "related-orders", "SELECT Orders.* " +
-        "FROM expleague.Orders INNER JOIN expleague.Participants ON expleague.Orders.id = expleague.Participants.`order` " +
+        "FROM Orders INNER JOIN Participants ON Orders.id = Participants.`order` " +
         "WHERE Participants.partisipant = ?", stmt -> stmt.setString(1, jid.local())
     ).map(createOrderView()));
   }
@@ -103,9 +104,9 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
 
   @Override
   public Stream<JID> topExperts() {
-    return stream("top-experts", "SELECT U.id, count(*) FROM expleague.Users AS U " +
-        "JOIN expleague.Participants AS P ON U.id = P.partisipant " +
-        "JOIN expleague.Orders AS O ON P.`order` = O.id " +
+    return stream("top-experts", "SELECT U.id, count(*) FROM Users AS U " +
+        "JOIN Participants AS P ON U.id = P.partisipant " +
+        "JOIN Orders AS O ON P.`order` = O.id " +
         "WHERE P.role = " + ExpLeagueOrder.Role.ACTIVE.index() + " GROUP BY U.id", stmt -> {}).map(rs -> {
       try {
         return XMPP.jid(rs.getString(1));
@@ -118,7 +119,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @Override
   public Stream<String> tags() {
     tags = new TObjectIntHashMap<>();
-    stream("all-tags", "SELECT * FROM expleague.Tags", q -> {}).forEach(rs -> {
+    stream("all-tags", "SELECT * FROM Tags", q -> {}).forEach(rs -> {
       try {
         tags.put(rs.getString(2), rs.getInt(1));
       } catch (SQLException e) {
@@ -135,7 +136,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       tags();
     if (tags.containsKey(tag))
       return tags.get(tag);
-    final PreparedStatement statement = createStatement("add-tag", "INSERT expleague.Tags SET tag = ?", true);
+    final PreparedStatement statement = createStatement("add-tag", "INSERT Tags SET tag = ?", true);
     try {
       statement.setString(1, tag);
       statement.executeUpdate();
@@ -231,14 +232,14 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       id = resultSet.getInt(1);
       super.status(Status.valueOf((int)resultSet.getByte(5)));
       super.feedback(resultSet.getDouble(6));
-      final PreparedStatement restoreRoles = createStatement("roles-restore", "SELECT * FROM expleague.Participants WHERE `order` = ? ORDER BY id");
+      final PreparedStatement restoreRoles = createStatement("roles-restore", "SELECT * FROM Participants WHERE `order` = ? ORDER BY id");
       restoreRoles.setInt(1, id);
       try (final ResultSet rolesRS = restoreRoles.executeQuery()) {
         while (rolesRS.next()) {
           super.role(XMPP.jid(rolesRS.getString(3)), Role.valueOf(rolesRS.getByte(4)));
         }
       }
-      final PreparedStatement restoreStatusHistory = createStatement("status-history-restore", "SELECT * FROM expleague.OrderStatusHistory WHERE `order` = ? ORDER BY id");
+      final PreparedStatement restoreStatusHistory = createStatement("status-history-restore", "SELECT * FROM OrderStatusHistory WHERE `order` = ? ORDER BY id");
       restoreStatusHistory.setInt(1, id);
       try (final ResultSet statusHistory = restoreStatusHistory.executeQuery()) {
         while (statusHistory.next()) {
@@ -253,12 +254,12 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     protected void status(Status status) {
       try {
         super.status(status);
-        final PreparedStatement statusUpdate = createStatement("status-update", "UPDATE expleague.Orders SET status = ? WHERE id = ?");
+        final PreparedStatement statusUpdate = createStatement("status-update", "UPDATE Orders SET status = ? WHERE id = ?");
         statusUpdate.setInt(2, id);
         statusUpdate.setInt(1, status.index());
         statusUpdate.execute();
 
-        final PreparedStatement statusHistoryInsert = createStatement("status-history-insert", "INSERT INTO expleague.OrderStatusHistory (`order`, status, timestamp) VALUES(?, ?, ?)");
+        final PreparedStatement statusHistoryInsert = createStatement("status-history-insert", "INSERT INTO OrderStatusHistory (`order`, status, timestamp) VALUES(?, ?, ?)");
         statusHistoryInsert.setInt(1, id);
         statusHistoryInsert.setByte(2, (byte) status.index());
         statusHistoryInsert.setTimestamp(3, new Timestamp(currentTimestampMillis()));
@@ -273,7 +274,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     public void feedback(double stars) {
       try {
         super.feedback(stars);
-        final PreparedStatement feedback = createStatement("feedback-role", "UPDATE expleague.Orders SET score = ? WHERE id = ?");
+        final PreparedStatement feedback = createStatement("feedback-role", "UPDATE Orders SET score = ? WHERE id = ?");
         feedback.setInt(2, id);
         feedback.setDouble(1, stars);
         feedback.execute();
@@ -288,7 +289,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     public String[] tags() {
       if (!tagsAcquired) {
         tagsAcquired = true;
-        super.tags.addAll(stream("order-topics", "SELECT Tags.tag FROM expleague.Topics JOIN expleague.Tags ON Topics.tag = Tags.id WHERE `order` = ?",
+        super.tags.addAll(stream("order-topics", "SELECT Tags.tag FROM Topics JOIN Tags ON Topics.tag = Tags.id WHERE `order` = ?",
             stmt -> stmt.setInt(1, id)
         ).map(rs -> {
           try {
@@ -306,7 +307,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       super.role(jid, role);
       if (role.permanent()) {
         try {
-          final PreparedStatement changeRole = createStatement("change-role", "INSERT INTO expleague.Participants SET `order` = ?, partisipant = ?, role = ?, timestamp = ?");
+          final PreparedStatement changeRole = createStatement("change-role", "INSERT INTO Participants SET `order` = ?, partisipant = ?, role = ?, timestamp = ?");
           changeRole.setInt(1, id);
           changeRole.setString(2, jid.local());
           changeRole.setByte(3, (byte) role.index());
@@ -323,7 +324,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       try {
         super.tag(tag);
         final int tagId = MySQLBoard.this.tag(tag);
-        final PreparedStatement changeRole = createStatement("append-topic", "INSERT INTO expleague.Topics SET `order` = ?, tag = ?");
+        final PreparedStatement changeRole = createStatement("append-topic", "INSERT INTO Topics SET `order` = ?, tag = ?");
         changeRole.setInt(1, id);
         changeRole.setInt(2, tagId);
         changeRole.execute();
@@ -338,7 +339,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       try {
         super.tag(tag);
         final int tagId = MySQLBoard.this.tag(tag);
-        final PreparedStatement changeRole = createStatement("remove-topic", "DELETE FROM expleague.Topics WHERE `order` = ? AND tag = ?");
+        final PreparedStatement changeRole = createStatement("remove-topic", "DELETE FROM Topics WHERE `order` = ? AND tag = ?");
         changeRole.setInt(1, id);
         changeRole.setInt(2, tagId);
         changeRole.execute();

@@ -21,7 +21,7 @@ public class MySQLPatterns extends MySQLOps implements PatternsRepository {
 
   @Override
   public Stream<Pattern> all() {
-    return stream("all-patterns", "SELECT * FROM expleague.Patterns", stmt -> {}).map(rs -> {
+    return stream("all-patterns", "SELECT * FROM Patterns", stmt -> {}).map(rs -> {
       try {
         final String name = rs.getString(1);
         final String body = StreamTools.readReader(rs.getCharacterStream(2)).toString();

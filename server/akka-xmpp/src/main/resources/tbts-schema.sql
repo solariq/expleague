@@ -4,7 +4,7 @@ GRANT ALL ON expleague.* TO 'tigase'@'localhost';
 
 USE expleague;
 
-CREATE TABLE IF NOT EXISTS expleague.Users (
+CREATE TABLE IF NOT EXISTS Users (
   id varchar(64) not null,
   country VARCHAR(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
   city VARCHAR(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS expleague.Users (
   PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS expleague.Devices (
+CREATE TABLE IF NOT EXISTS Devices (
   id VARCHAR(64),
   user VARCHAR(64),
   token VARCHAR(256),
@@ -29,14 +29,14 @@ CREATE TABLE IF NOT EXISTS expleague.Devices (
   CONSTRAINT Devices_Users_id_fk FOREIGN KEY (user) REFERENCES Users (id) ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS expleague.Tags (
+CREATE TABLE IF NOT EXISTS Tags (
   id INTEGER(16) AUTO_INCREMENT,
   tag VARCHAR(64) CHARACTER SET utf8 COLLATE utf8_general_ci,
 
   PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS expleague.Specializations (
+CREATE TABLE IF NOT EXISTS Specializations (
   owner VARCHAR(64),
   tag INTEGER(16),
   score FLOAT(16),
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS expleague.Specializations (
   CONSTRAINT Specializations_Tags_id_fk FOREIGN KEY (tag) REFERENCES Tags (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS expleague.Orders (
+CREATE TABLE IF NOT EXISTS Orders (
   id INTEGER(32) AUTO_INCREMENT,
   room VARCHAR(64) NOT NULL,
   offer MEDIUMTEXT CHARACTER SET utf8 COLLATE utf8_general_ci,
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS expleague.Orders (
   PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS expleague.Topics (
+CREATE TABLE IF NOT EXISTS Topics (
   `order` INTEGER(32) NOT NULL,
   tag INTEGER(16) NOT NULL,
 
@@ -64,27 +64,26 @@ CREATE TABLE IF NOT EXISTS expleague.Topics (
   CONSTRAINT Topics_Tags_id_fk FOREIGN KEY (tag) REFERENCES Tags (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS expleague.Participants (
+CREATE TABLE IF NOT EXISTS Participants (
   id INTEGER(32) AUTO_INCREMENT,
   `order` INTEGER(32) NOT NULL,
   partisipant VARCHAR(64) NOT NULL,
   role INT(8) DEFAULT 0,
   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-#   score FLOAT(16) DEFAULT -1.0,
 
   PRIMARY KEY (id),
   CONSTRAINT Participants_Users_id_fk FOREIGN KEY (partisipant) REFERENCES Users (id) ON DELETE CASCADE,
   CONSTRAINT Participants_Rooms_id_fk FOREIGN KEY (`order`) REFERENCES Orders (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS expleague.Applications (
+CREATE TABLE IF NOT EXISTS Applications (
   email VARCHAR(128) NOT NULL,
   referer VARCHAR(64),
 
   CONSTRAINT Applications_Users_id_fk FOREIGN KEY (referer) REFERENCES Users (id) ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS expleague.Patterns (
+CREATE TABLE IF NOT EXISTS Patterns (
   name VARCHAR(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   body MEDIUMTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   icon VARCHAR(128),
@@ -92,7 +91,7 @@ CREATE TABLE IF NOT EXISTS expleague.Patterns (
   PRIMARY KEY (name)
 );
 
-CREATE TABLE IF NOT EXISTS expleague.OrderStatusHistory (
+CREATE TABLE IF NOT EXISTS OrderStatusHistory (
   id INTEGER(32) AUTO_INCREMENT,
   `order` INTEGER(32) NOT NULL,
   status INTEGER(8),
