@@ -239,6 +239,8 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
           super.role(XMPP.jid(rolesRS.getString(3)), Role.valueOf(rolesRS.getByte(4)));
         }
       }
+
+      super.statusHistory.clear();
       final PreparedStatement restoreStatusHistory = createStatement("status-history-restore", "SELECT * FROM OrderStatusHistory WHERE `order` = ? ORDER BY id");
       restoreStatusHistory.setInt(1, id);
       try (final ResultSet statusHistory = restoreStatusHistory.executeQuery()) {

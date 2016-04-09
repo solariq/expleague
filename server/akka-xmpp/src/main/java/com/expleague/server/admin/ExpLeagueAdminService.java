@@ -28,11 +28,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
-import com.spbsu.commons.util.MultiMap;
 import com.typesafe.config.Config;
 import gnu.trove.map.hash.TLongDoubleHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
 import gnu.trove.map.hash.TLongLongHashMap;
+import gnu.trove.set.hash.TLongHashSet;
 import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -182,19 +182,21 @@ public class ExpLeagueAdminService extends UntypedActor {
           timestamp2TasksCount.adjustOrPutValue(startDay.getMillis(), 1, 1);
 
           if (order.status() == ExpLeagueOrder.Status.DONE) {
-            timestamp2ClosedTaskCount.adjustOrPutValue(startDay.getMillis(), 1, 1);
             final long closeTimestamp = order.statusHistoryRecords()
               .filter(statusHistoryRecord -> statusHistoryRecord.getStatus() == ExpLeagueOrder.Status.DONE)
               .findFirst().get()
               .getDate().getTime();
 
-            final long durationMinutes = (closeTimestamp - startTimestamp) / (3600 * 1000L);
-            timestamp2TaskDuration.adjustOrPutValue(startDay.getMillis(), durationMinutes, durationMinutes);
+            final DateTime closeDay = new DateTime(closeTimestamp).dayOfMonth().roundFloorCopy();
+            timestamp2ClosedTaskCount.adjustOrPutValue(closeDay.getMillis(), 1, 1);
+
+            final long durationMinutes = (closeTimestamp - startTimestamp) / (60 * 1000L);
+            timestamp2TaskDuration.adjustOrPutValue(closeDay.getMillis(), durationMinutes, durationMinutes);
 
             final double feedback = order.feedback();
             if (feedback != -1) {
-              timestamp2TasksWithFeedbackCount.adjustOrPutValue(startDay.getMillis(), 1, 1);
-              timestamp2Feedback.adjustOrPutValue(startDay.getMillis(), feedback, feedback);
+              timestamp2TasksWithFeedbackCount.adjustOrPutValue(closeDay.getMillis(), 1, 1);
+              timestamp2Feedback.adjustOrPutValue(closeDay.getMillis(), feedback, feedback);
             }
           }
         }
@@ -204,12 +206,21 @@ public class ExpLeagueAdminService extends UntypedActor {
         final List<TimeSeriesDto.PointDto> allTasks = new ArrayList<>();
         final List<TimeSeriesDto.PointDto> closedTasks = new ArrayList<>();
         final List<TimeSeriesDto.PointDto> closedWithFeedbackTasks = new ArrayList<>();
-        final long[] keys = timestamp2TasksCount.keys();
-        Arrays.sort(keys);
-        for (long ts : keys) {
-          allTasks.add(new TimeSeriesDto.PointDto(ts, timestamp2TasksCount.get(ts)));
-          closedTasks.add(new TimeSeriesDto.PointDto(ts, timestamp2ClosedTaskCount.get(ts)));
-          closedWithFeedbackTasks.add(new TimeSeriesDto.PointDto(ts, timestamp2TasksWithFeedbackCount.get(ts)));
+        final TLongHashSet keys = new TLongHashSet();
+        keys.addAll(timestamp2TasksCount.keys());
+        keys.addAll(timestamp2ClosedTaskCount.keys());
+        final long[] sortedKeys = keys.toArray();
+        Arrays.sort(sortedKeys);
+        for (long ts : sortedKeys) {
+          if (timestamp2TasksCount.containsKey(ts)) {
+            allTasks.add(new TimeSeriesDto.PointDto(ts, timestamp2TasksCount.get(ts)));
+          }
+          if (timestamp2ClosedTaskCount.containsKey(ts)) {
+            closedTasks.add(new TimeSeriesDto.PointDto(ts, timestamp2ClosedTaskCount.get(ts)));
+          }
+          if (timestamp2TasksWithFeedbackCount.containsKey(ts)) {
+            closedWithFeedbackTasks.add(new TimeSeriesDto.PointDto(ts, timestamp2TasksWithFeedbackCount.get(ts)));
+          }
         }
         charts.add(new TimeSeriesChartDto(
           "Number of tasks",
