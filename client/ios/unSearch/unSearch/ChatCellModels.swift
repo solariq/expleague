@@ -178,9 +178,9 @@ class CompositeCellModel: ChatCellModel {
                 let button = UIButton(type: .Custom)
                 button.setTitle(action.caption, forState: .Normal)
                 if #available(iOS 9.0, *) {
-                    button.addTarget(action, action: "push", forControlEvents: .PrimaryActionTriggered)
+                    button.addTarget(action, action: #selector(ChatAction.push), forControlEvents: .PrimaryActionTriggered)
                 } else {
-                    button.addTarget(action, action: "push", forControlEvents: .TouchUpInside)
+                    button.addTarget(action, action: #selector(ChatAction.push), forControlEvents: .TouchUpInside)
                 }
                 block = button
             }
@@ -397,7 +397,7 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
         }
         setupCell.topic.text = order.offer.topic
         setupCell.textHeight = textHeight(setupCell.textWidth)
-        timer = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: "advanceTimer:", userInfo: setupCell.status, repeats: true)
+        timer = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: #selector(SetupModel.advanceTimer(_:)), userInfo: setupCell.status, repeats: true)
         setupCell.attachments = images.count + (order.offer.local ? 1 : 0)
         setupCell.attachmentsView.dataSource = self
         setupCell.attachmentsView.delegate = self
@@ -517,7 +517,7 @@ class TaskInProgressModel: ChatCellModel {
         if (message.type == .ExpertProgress) {
             let type = message.properties["type"] as? String
             if (type != nil && type! == "pageVisited") {
-                pagesCount++
+                pagesCount += 1
             }
         }
         return message.type == .ExpertProgress || message.type == .ExpertAssignment

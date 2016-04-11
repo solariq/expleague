@@ -28,7 +28,7 @@ extension UIGestureRecognizer {
         self.init()
         
         target.append(Target(closure))
-        self.addTarget(target.last!, action: "invoke")
+        self.addTarget(target.last!, action: #selector(Target.invoke))
     }
 }
 
@@ -43,6 +43,7 @@ private class Target {
     // function that gesture calls, which then
     // calls closure
     /* Note: Note sure why @IBAction is needed here */
+    @objc
     @IBAction func invoke() {
         trailingClosure()
     }

@@ -105,7 +105,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UITextViewD
     override func viewDidLoad() {
         super.viewDidLoad()
         stream.addDelegate(self, delegateQueue: dispatch_get_main_queue())
-        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "dismissKeyboard"))
+        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(SettingsViewController.dismissKeyboard)))
     }
     
     func dismissKeyboard() {
@@ -141,7 +141,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UITextViewD
     func log(msg: String) {
         logView.text = logView.text.stringByAppendingString(msg + "\n")
         timer?.invalidate()
-        timer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: "scrollToBottom", userInfo: nil, repeats: false)
+        timer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: #selector(SettingsViewController.scrollToBottom), userInfo: nil, repeats: false)
     }
     func scrollToBottom() {
         logView.scrollRangeToVisible(NSRange(location: logView.text.characters.count, length: 0))

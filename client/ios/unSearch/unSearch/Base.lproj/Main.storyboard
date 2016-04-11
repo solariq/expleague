@@ -81,6 +81,8 @@
                     </view>
                     <tabBarItem key="tabBarItem" title="Заказ" image="tabbar_order_icon" selectedImage="tabbar_order_icon_active" id="uVD-oP-e01"/>
                     <connections>
+                        <outlet property="buttonBottom" destination="P1w-i4-P9H" id="A64-lK-JAh"/>
+                        <outlet property="buttonTop" destination="CP9-9i-wDf" id="cX1-Im-nzp"/>
                         <outlet property="orderDescription" destination="wb5-4s-rmD" id="gGU-oK-JRH"/>
                     </connections>
                 </viewController>
@@ -506,8 +508,8 @@
                                     <rect key="frame" x="0.0" y="0.0" width="320" height="77"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Здесь должен быть краткий ответ" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VKr-On-Gnc">
-                                            <rect key="frame" x="78" y="30" width="234" height="17"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Здесь должен быть краткий ответ" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VKr-On-Gnc">
+                                            <rect key="frame" x="78" y="29" width="234" height="18"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                             <color key="textColor" red="0.2470588235" green="0.3294117647" blue="0.50980392159999999" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>

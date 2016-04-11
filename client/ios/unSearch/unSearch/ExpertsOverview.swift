@@ -199,7 +199,7 @@ class ChooseExpertViewController: UITableViewController {
         navigationController!.navigationBarHidden = false
         navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
         navigationItem.title = "Выберите эксперта"
-        let button = UIBarButtonItem(title: "Готово", style: .Done, target: self, action: "close")
+        let button = UIBarButtonItem(title: "Готово", style: .Done, target: self, action: #selector(ChooseExpertViewController.close))
         button.tintColor = UIColor.whiteColor()
         navigationItem.setRightBarButtonItem(button, animated: false)
     }

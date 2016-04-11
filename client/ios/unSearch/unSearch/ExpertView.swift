@@ -153,7 +153,7 @@ class ExpLeagueMember: NSObject {
             for i in 0..<order.count {
                 let msg = order.message(i)
                 if (msg.type == .Answer && msg.from.hasSuffix(id.user)) {
-                    count++
+                    count += 1
                     break
                 }
             }

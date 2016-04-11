@@ -22,6 +22,7 @@ class HistoryViewController: UITableViewController {
         AppDelegate.instance.historyView = self
         AppDelegate.instance.split.delegate = self
         self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        populate()
         tracker = XMPPTracker(onMessage: {(message: XMPPMessage) -> Void in
             if (message.from() != AppDelegate.instance.activeProfile!.jid) {
                 self.populate()
@@ -70,9 +71,8 @@ class HistoryViewController: UITableViewController {
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        populate()
         let table = (self.view as! UITableView)
-        table.reloadData()
+//        table.reloadData()
         table.editing = false
         if let order = AppDelegate.instance.activeProfile!.selected, let index = indexOf(order) {
             table.selectRowAtIndexPath(index, animated: false, scrollPosition: .Top)

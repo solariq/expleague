@@ -301,7 +301,7 @@ class FeedbackCell: UIView {
             var index = 0
             for s in stars {
                 s.highlighted = index < rate
-                index++
+                index += 1
             }
             if (rate == 5) {
                 stars[3].highlighted = false
@@ -312,7 +312,7 @@ class FeedbackCell: UIView {
     override func awakeFromNib() {
         super.awakeFromNib()
         //        no.layer.masksToBounds = true
-        addGestureRecognizer(UITapGestureRecognizer(target: self, action: "handleTap:"))
+        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(FeedbackCell.handleTap(_:))))
         NSLayoutConstraint.activateConstraints([
             NSLayoutConstraint(item: self, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: frame.height)
         ])

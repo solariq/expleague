@@ -57,12 +57,12 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         var x = plain - 1
         for i in 0..<groups.count {
             for j in 0..<groups[i].count {
-                x--
+                x -= 1
                 if (x <= 0) {
                     return NSIndexPath(forRow: j, inSection: i)
                 }
             }
-            x--
+            x -= 1
         }
         return nil
     }
@@ -87,12 +87,12 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         while (lastKnownMessage < order.count) {
             if (modelChangeCount > 2) {
                 print("Loop found! Enforce next message")
-                lastKnownMessage++
+                lastKnownMessage += 1
             }
             let msg = order.message(lastKnownMessage)
             print("\(order.jid) -> \(msg.type)")
             if (msg.type != .System && !model.accept(msg)) { // switch model
-                modelChangeCount++
+                modelChangeCount += 1
                 var newModel : ChatCellModel? = nil
                 if (msg.type == .ExpertAssignment) {
                     let expert = msg.expert!
@@ -134,7 +134,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                     continue
                 }
             }
-            lastKnownMessage++
+            lastKnownMessage += 1
             modelChangeCount = 0
         }
         

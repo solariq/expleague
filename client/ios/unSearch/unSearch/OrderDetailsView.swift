@@ -116,7 +116,7 @@ class OrderDetailsView: UIView {
         answerView.translatesAutoresizingMaskIntoConstraints = false
         messagesView.translatesAutoresizingMaskIntoConstraints = false
         bottomView.translatesAutoresizingMaskIntoConstraints = false
-        let pullGesture = UIPanGestureRecognizer(target: self, action: "handlePan:")
+        let pullGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
         pullGesture.delegate = self
         scrollView.addGestureRecognizer(pullGesture)
         answerView.scrollView.panGestureRecognizer.requireGestureRecognizerToFail(pullGesture)
@@ -149,7 +149,7 @@ class OrderDetailsView: UIView {
         NSLayoutConstraint.activateConstraints(constraints)
         messagesView.backgroundView = nil
 
-        addGestureRecognizer(UITapGestureRecognizer(target: self, action: "dismissKeyboard"))
+        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard)))
     }
 
     required init?(coder aDecoder: NSCoder) {

@@ -175,7 +175,7 @@ class ExpLeagueMessage: NSManagedObject {
                         "<div class=\"cut\" id=\"" + id + "\" style=\"display: none\">" + (answerText as NSString).substringWithRange(match.rangeAtIndex(2)) +
                         "\n<a class=\"hide\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">скрыть</a></div>";
                     lastMatchIndex = answerText.startIndex.advancedBy(whole.location).advancedBy(whole.length)
-                    index++
+                    index += 1
                 }
                 finalMD += answerText.substringWithRange(lastMatchIndex..<answerText.endIndex)
                 

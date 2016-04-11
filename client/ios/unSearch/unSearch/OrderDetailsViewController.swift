@@ -115,8 +115,8 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     private var enforceScroll = false
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        NSNotificationCenter.defaultCenter().addObserver(view, selector: "keyboardShown:", name: UIKeyboardWillShowNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(view, selector: "keyboardHidden:", name: UIKeyboardWillHideNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(view, selector: #selector(OrderDetailsView.keyboardShown(_:)), name: UIKeyboardWillShowNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(view, selector: #selector(OrderDetailsView.keyboardHidden(_:)), name: UIKeyboardWillHideNotification, object: nil)
         data.controller = self
         data.sync()
         if (data.order.text.characters.count > 15) {

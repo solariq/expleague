@@ -9,6 +9,8 @@ import MapKit
 import XMPPFramework
 
 class OrderViewController: UIViewController, CLLocationManagerDelegate {
+    @IBOutlet weak var buttonTop: NSLayoutConstraint!
+    @IBOutlet weak var buttonBottom: NSLayoutConstraint!
     @IBOutlet weak var orderDescription: UIView!
     @IBAction func fire(sender: AnyObject) {
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
