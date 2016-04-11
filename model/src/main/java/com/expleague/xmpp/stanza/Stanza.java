@@ -1,15 +1,10 @@
 package com.expleague.xmpp.stanza;
 
-import com.expleague.model.Tag;
-import com.spbsu.commons.random.FastRandom;
-import com.spbsu.commons.util.Holder;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
+import com.spbsu.commons.random.FastRandom;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import java.nio.ByteBuffer;
-import java.util.Base64;
-import java.util.Optional;
 
 /**
  * User: solar
@@ -30,7 +25,7 @@ public class Stanza extends Item {
   }
 
   public static Stanza create(final CharSequence str, final long timestampSec) {
-    final Stanza stanza = (Stanza) Item.create(str);
+    final Stanza stanza = Item.create(str);
     if (!stanza.isTimestampPresent()) {
       stanza.id = stanza.id + "-" + timestampSec;
     }
@@ -62,6 +57,14 @@ public class Stanza extends Item {
     return (S) this;
   }
 
+  @Override
+  public <T extends Item> T copy(){
+    final Stanza clone = super.copy();
+    clone.id = generateId();
+    //noinspection unchecked
+    return (T)clone;
+  }
+
   public JID to() {
     return to;
   }
@@ -80,6 +83,7 @@ public class Stanza extends Item {
     final int separator = id.lastIndexOf('-');
     if (separator != -1) {
       try {
+        //noinspection ResultOfMethodCallIgnored
         Long.parseLong(id.substring(separator + 1));
         return true;
       } catch (NumberFormatException e) {
