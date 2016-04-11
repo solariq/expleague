@@ -182,11 +182,15 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
             (expertRef, task) -> {
               final JID expert = Experts.jid(expertRef);
               explain("Labor exchange send us new candidate: " + expert + ".");
-              if (task.interview(expert) && task.check(expert)) {
+              if (task.role(expert) == ACTIVE) {
+                explain("Working expert emerged! Sending her resume.");
+                expertRef.tell(new Resume(task.order().offer()), self());
+              }
+              else if (task.interview(expert) && task.check(expert)) {
                 explain("Have not seen him before, sending offer.");
                 Experts.tellTo(expert, task.offer(), self(), context());
               }
-              else explain("This candidate has already refused our invitation/check/failed interview. Ignoring.");
+              else explain("This candidate has already refused our invitation/check/failed interview. Ignoring. Role: " + task.role(expert));
               return stay();
             }
         ).event(Cancel.class, // from check
