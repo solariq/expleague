@@ -145,10 +145,7 @@ public class ConnectedPhase extends XMPPPhase {
       }
     }
     else if (message.has(Request.class)) {
-      final Message ack = new Message(message.to(), message.from());
-      final String messageId = message.id();
-      ack.append(new Received(messageId));
-//      log.finest("Server received: " + messageId);
+      final Message ack = new Message(message.from(), new Received(message.id()));
       answer(ack);
     }
   }
