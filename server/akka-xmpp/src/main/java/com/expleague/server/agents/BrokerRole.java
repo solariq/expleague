@@ -102,7 +102,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
                 explain("Have not seen him before, sending offer.");
                 expert.tell(task.order().offer(), self());
               }
-              else explain("This candidate has already refused our invitation/check/failed interview. Ignoring.");
+              else explain("This candidate has already refused our invitation/check/failed interview. Ignoring. Current role: " + task.role(jid));
               return stay();
             }
         ).event(Resume.class,
