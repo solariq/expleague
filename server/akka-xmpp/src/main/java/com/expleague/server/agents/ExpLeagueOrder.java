@@ -139,8 +139,11 @@ public abstract class ExpLeagueOrder {
     }
 
     public ExpLeagueOrder.State ignored(JID expert) {
-      if (role(expert) == INVITED)
+      final Role role = role(expert);
+      if (role == INVITED)
         role(expert, DND);
+      else if (role == CHECKING)
+        role(expert, NONE);
       return this;
     }
 
@@ -152,7 +155,7 @@ public abstract class ExpLeagueOrder {
       final Role role = role(expert);
       final boolean roleDoesntMatch = EnumSet.of(SLACKER, DENIER, DND).contains(role);
       if (roleDoesntMatch) {
-        log.finest("Expert " + expert + " failed interview because it is " + role);
+        log.finest("Expert " + expert + " failed interview because she is " + role);
         return false;
       }
       return offer.fit(expert);

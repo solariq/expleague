@@ -96,8 +96,6 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               final JID jid = Experts.jid(expert);
               explain("Labor exchange send us new candidate: " + jid + ".");
               final ExpLeagueOrder.Role role = task.role(jid);
-              if (role == DND)
-                task.role(jid, NONE);
               if (task.interview(jid) && task.check(jid)) {
                 explain("Have not seen him before, sending offer.");
                 expert.tell(task.order().offer(), self());
