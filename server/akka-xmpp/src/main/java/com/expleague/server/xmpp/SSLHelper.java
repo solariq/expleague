@@ -62,23 +62,20 @@ public class SSLHelper {
             src.put(slice);
           }
           else src.put(inBuffer);
-          while(true) {
+
+          while (src.position() > 0) {
             src.flip();
             final SSLEngineResult r;
             r = incoming ? sslEngine.unwrap(src, dst) : sslEngine.wrap(src, dst);
-            switch (r.getStatus()) {
-              case BUFFER_OVERFLOW: {
-                sendChunk(consumer);
-                src.compact();
-                continue;
-              }
-              case BUFFER_UNDERFLOW: {
-                return;
-              }
-            }
             dst.flip();
             src.compact();
             sendChunk(consumer);
+            switch (r.getStatus()) {
+              case BUFFER_UNDERFLOW:
+                break;
+              default:
+                continue;
+            }
             break;
           }
         }
