@@ -329,18 +329,17 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     public boolean choose() {
       if (offers.isEmpty())
         return false;
+      boolean winnerPreferred = false;
       int winner = 0;
       explain("Choosing the offer between " + offers.size() + " variants.");
       long eta = Long.MAX_VALUE;
       for (int i = 0; i < offers.size(); i++) {
         final Offer offer = offers.get(i);
-        if (offer.filter().isPrefered(jid())) {
-          winner = i;
-          break;
-        }
         final long currentETA = offer.expires().getTime();
-        if (eta < currentETA) {
+        final boolean prefered = offer.filter().isPrefered(jid());
+        if (currentETA < eta|| (prefered && !winnerPreferred)) {
           winner = i;
+          winnerPreferred = prefered;
           eta = currentETA;
         }
       }
