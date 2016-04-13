@@ -1,6 +1,7 @@
 package com.expleague.server.xmpp.phase;
 
 import akka.actor.ActorRef;
+import akka.actor.PoisonPill;
 import akka.io.Tcp;
 import akka.io.TcpMessage;
 import akka.util.ByteString;
@@ -12,6 +13,7 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLException;
 import java.nio.ByteBuffer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -49,7 +51,7 @@ public class SSLHandshake extends UntypedActorAdapter {
     context().stop(self());
   }
 
-  public void invoke(Tcp.Received received) throws SSLException {
+  public void invoke(Tcp.Received received) {
 //    System.out.println("in: [" + received.data().mkString() + "]");
     if (in.remaining() < received.data().length()) {
       in = expandBuffer(in, received.data().length());
@@ -58,60 +60,65 @@ public class SSLHandshake extends UntypedActorAdapter {
     if (finished)
       return;
 
-    SSLEngineResult.HandshakeStatus hsStatus = sslEngine.getHandshakeStatus();
-    while (true) {
-      SSLEngineResult res;
-//      System.out.println(hsStatus.toString());
+    try {
+      SSLEngineResult.HandshakeStatus hsStatus = sslEngine.getHandshakeStatus();
+      while (true) {
+        SSLEngineResult res;
+        //      System.out.println(hsStatus.toString());
 
-      switch (hsStatus) {
-        case FINISHED:
-          send();
-          connection.tell(XMPPClientConnection.ConnectionState.AUTHORIZATION, self());
-          finished = true;
-          if (out.position() != 0)
-            throw new RuntimeException("Buffer overflow after handshake");
-          return;
-        case NEED_TASK:
-          Runnable task;
-          while ((task = sslEngine.getDelegatedTask()) != null)
-            task.run();
-          hsStatus = sslEngine.getHandshakeStatus();
-          break;
-
-        case NEED_UNWRAP:
-          if (in.position() == 0) {
+        switch (hsStatus) {
+          case FINISHED:
             send();
+            connection.tell(XMPPClientConnection.ConnectionState.AUTHORIZATION, self());
+            finished = true;
+            if (out.position() != 0)
+              throw new RuntimeException("Buffer overflow after handshake");
             return;
-          }
-          in.flip();
-          res = sslEngine.unwrap(in, out);
-          final SSLEngineResult.Status status = res.getStatus();
-          if (status == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
-            send();
-            return; // waiting for more data
-          }
-          if (status != SSLEngineResult.Status.BUFFER_OVERFLOW) {
-            hsStatus = res.getHandshakeStatus();
-            out.clear();
-            in.compact();
-          }
-          else {
-            out = expandBuffer(out, sslEngine.getSession().getApplicationBufferSize());
-            log.info("Unwrap buffer overflow. Pos:" + in.position());
-          }
-          break;
-        case NEED_WRAP:
-          // First make sure that the out buffer is completely empty. Since we
-          // cannot call wrap with data left on the buffer
-          res = sslEngine.wrap(ByteBuffer.allocate(0), toSend);
-          if (res.getStatus() == SSLEngineResult.Status.BUFFER_OVERFLOW)
-            toSend = expandBuffer(toSend, sslEngine.getSession().getPacketBufferSize());
-          hsStatus = res.getHandshakeStatus();
-          break;
+          case NEED_TASK:
+            Runnable task;
+            while ((task = sslEngine.getDelegatedTask()) != null)
+              task.run();
+            hsStatus = sslEngine.getHandshakeStatus();
+            break;
 
-        case NOT_HANDSHAKING:
-          throw new IllegalStateException();
+          case NEED_UNWRAP:
+            if (in.position() == 0) {
+              send();
+              return;
+            }
+            in.flip();
+            res = sslEngine.unwrap(in, out);
+            final SSLEngineResult.Status status = res.getStatus();
+            if (status == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
+              send();
+              return; // waiting for more data
+            }
+            if (status != SSLEngineResult.Status.BUFFER_OVERFLOW) {
+              hsStatus = res.getHandshakeStatus();
+              out.clear();
+              in.compact();
+            } else {
+              out = expandBuffer(out, sslEngine.getSession().getApplicationBufferSize());
+              log.info("Unwrap buffer overflow. Pos:" + in.position());
+            }
+            break;
+          case NEED_WRAP:
+            // First make sure that the out buffer is completely empty. Since we
+            // cannot call wrap with data left on the buffer
+            res = sslEngine.wrap(ByteBuffer.allocate(0), toSend);
+            if (res.getStatus() == SSLEngineResult.Status.BUFFER_OVERFLOW)
+              toSend = expandBuffer(toSend, sslEngine.getSession().getPacketBufferSize());
+            hsStatus = res.getHandshakeStatus();
+            break;
+
+          case NOT_HANDSHAKING:
+            throw new IllegalStateException();
+        }
       }
+    }
+    catch (SSLException e) {
+      log.log(Level.WARNING, "Error during handshake, shutting down connection", e);
+      sender().tell(XMPPClientConnection.ConnectionState.CLOSED, self());
     }
   }
 

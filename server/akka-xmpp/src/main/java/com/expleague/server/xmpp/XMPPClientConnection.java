@@ -66,21 +66,15 @@ public class XMPPClientConnection extends UntypedActorAdapter {
 
   public XMPPClientConnection(ActorRef connection) {
     this.connection = connection;
-    try {
-      invoke(ConnectionState.HANDSHAKE);
-    }
-    catch (SSLException e) {
-      throw new RuntimeException(e);
-    }
-    connection.tell(TcpMessage.register(getSelf()), getSelf());
+    invoke(ConnectionState.HANDSHAKE);
+    connection.tell(TcpMessage.register(self()), self());
   }
 
   public void invoke(Tcp.Received msgIn) {
     if (currentState == ConnectionState.HANDSHAKE)
       input(msgIn.data());
-    else if (currentState == ConnectionState.STARTTLS) {
+    else if (currentState == ConnectionState.STARTTLS)
       businessLogic.tell(msgIn, self());
-    }
     else
       helper.decrypt(msgIn.data(), this::input);
   }
@@ -98,6 +92,11 @@ public class XMPPClientConnection extends UntypedActorAdapter {
   }
 
   private void input(ByteString data) {
+    if (data == null) {
+      invoke(ConnectionState.CLOSED);
+      return;
+    }
+
     final byte[] copy = new byte[data.length()];
     data.asByteBuffer().get(copy);
     log.finest(">" + new String(copy, StreamTools.UTF));
@@ -165,7 +164,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
   }
 
   private ConnectionState currentState;
-  public void invoke(ConnectionState state) throws SSLException {
+  public void invoke(ConnectionState state) {
     if (currentState == state)
       return;
 
@@ -238,6 +237,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         break;
       }
       case CLOSED: {
+        connection.tell(PoisonPill.getInstance(), self());
         self().tell(PoisonPill.getInstance(), self());
         return;
       }
@@ -247,7 +247,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
     businessLogic = newLogic;
     currentState = state;
     log.fine("Connection state changed to: " + state);
-    log.finest("BL changed to: " + newLogic.path());
+    log.finest("BL changed to: " + (newLogic != null ? newLogic.path() : null));
   }
 
   private static SslContext getSslContextWithP12File(final File p12File, final String password) throws SSLException {

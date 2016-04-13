@@ -7,6 +7,7 @@ import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLException;
 import java.nio.ByteBuffer;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -30,7 +31,7 @@ public class SSLHelper {
     in.process(msgIn, consumer);
   }
 
-  public void encrypt(ByteString data, Consumer<ByteString> consumer) throws SSLException {
+  public void encrypt(ByteString data, Consumer<ByteString> consumer) {
     out.process(data, consumer);
   }
 
@@ -85,7 +86,8 @@ public class SSLHelper {
         }
       }
       catch (SSLException e) {
-        throw new RuntimeException(e);
+        log.log(Level.WARNING, "SSL exception caught, closing connection", e);
+        consumer.accept(null);
       }
       finally {
         if (msgIn.length() > 2 * sent) {
