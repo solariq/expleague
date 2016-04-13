@@ -9,9 +9,12 @@ import MapKit
 import XMPPFramework
 
 class OrderViewController: UIViewController, CLLocationManagerDelegate {
+    var keyboardTracker: KeyboardStateTracker!
+    
     @IBOutlet weak var buttonTop: NSLayoutConstraint!
     @IBOutlet weak var buttonBottom: NSLayoutConstraint!
     @IBOutlet weak var orderDescription: UIView!
+    
     @IBAction func fire(sender: AnyObject) {
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
         guard controller.orderTextDelegate!.validate() && AppDelegate.instance.ensureConnected({self.fire(self)}) else {
@@ -47,6 +50,13 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        let initialBottom = self.buttonBottom.constant
+        let initialTop = self.buttonTop.constant
+        keyboardTracker = KeyboardStateTracker() { height in
+            self.buttonBottom.constant = height > 0 ? height - self.tabBarController!.tabBar.frame.height + 2 : initialBottom
+            self.buttonTop.constant = height > 0 ? 2 : initialTop
+            self.view.layoutIfNeeded()
+        }
         AppDelegate.instance.orderView = self
         self.locationManager.requestWhenInUseAuthorization()
         if CLLocationManager.locationServicesEnabled() {
@@ -54,6 +64,14 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
             locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
             locationManager.startUpdatingLocation()
         }
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        keyboardTracker.start()
+    }
+
+    override func viewWillDisappear(animated: Bool) {
+        keyboardTracker.stop()
     }
     
     var descriptionController: OrderDescriptionViewController {
@@ -513,7 +531,7 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
     func validate() -> Bool {
         if (parent.orderText.text.isEmpty || parent.orderText.text == OrderTextDelegate.placeholder || parent.orderText.text == OrderTextDelegate.error_placeholder) {
             parent.orderText.text = OrderTextDelegate.error_placeholder
-            parent.orderText.textColor = OngoingOrderStateCell.ERROR_COLOR
+            parent.orderText.textColor = Palette.ERROR
             return false
         }
         return true

@@ -2,6 +2,7 @@ package com.expleague.server.agents;
 
 import akka.actor.ActorRef;
 import com.expleague.model.Offer;
+import com.expleague.model.Tag;
 import com.expleague.xmpp.JID;
 
 import java.util.Date;
@@ -62,7 +63,7 @@ public abstract class ExpLeagueOrder {
   public abstract void feedback(double stars);
   public abstract Stream<JID> of(Role role);
   public abstract double feedback();
-  public abstract String[] tags();
+  public abstract Tag[] tags();
   public abstract Stream<StatusHistoryRecord> statusHistoryRecords();
 
   // Write interface

@@ -206,6 +206,18 @@ class TaskInProgressCell: SimpleChatCell {
             pagesCount.text = parts.joinWithSeparator(" ")
         }
     }
+
+    var calls: Int {
+        get {
+            let parts = callsCount.text!.componentsSeparatedByString(" ")
+            return Int(parts.last!)!
+        }
+        set(calls) {
+            var parts = callsCount.text!.componentsSeparatedByString(" ")
+            parts[parts.count - 1] = String(calls)
+            callsCount.text = parts.joinWithSeparator(" ")
+        }
+    }
     
     private static var heightFromNib: CGFloat = 120;
     override class var height: CGFloat {
@@ -215,9 +227,11 @@ class TaskInProgressCell: SimpleChatCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         controlColor = Palette.ERROR
+        TaskInProgressCell.heightFromNib = frame.height
         patternsView.backgroundView = nil
         patternsView.backgroundColor = UIColor.clearColor()
-        TaskInProgressCell.heightFromNib = frame.height
+        patternsView.registerClass(AttachmentCell.self, forCellWithReuseIdentifier: "PatternCell")
+        patternsView.translatesAutoresizingMaskIntoConstraints = false
     }
 }
 
@@ -394,18 +408,6 @@ class SeparatorView: UIView {
         super.awakeFromNib()
     }
 }
-
-class Palette {
-    static let CONTROL = UIColor(red: 17/256.0, green: 138/256.0, blue: 222/256.0, alpha: 1.0)
-    static let CONTROL_BACKGROUND = UIColor(red: 249/256.0, green: 249/256.0, blue: 249/256.0, alpha: 1.0)
-    static let CHAT_BACKGROUND = UIColor(red: 230/256.0, green: 233/256.0, blue: 234/256.0, alpha: 1.0)
-    static let OK = UIColor(red: 102/256.0, green: 182/256.0, blue: 15/256.0, alpha: 1.0)
-    static let ERROR = UIColor(red: 174/256.0, green: 53/256.0, blue: 53/256.0, alpha: 1.0)
-    static let COMMENT = UIColor(red: 63/256.0, green: 84/256.0, blue: 130/256.0, alpha: 1.0)
-    static let BORDER = UIColor(red: 202/256.0, green: 210/256.0, blue: 227/256.0, alpha: 1.0)
-    static let CORNER_RADIUS = CGFloat(8)
-}
-
 
 enum CellType: Int {
     case Incoming = 0

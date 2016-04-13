@@ -25,10 +25,10 @@ class ExpertsOverviewController: UITableViewController {
         top.removeAll()
         my.removeAll()
         for exp in experts {
-            if (exp.group == "Top") {
+            if (exp.group == .Top) {
                 top.append(exp)
             }
-            else if (exp.group == "Favorites") {
+            else if (exp.group == .Favorites) {
                 my.append(exp)
             }
         }

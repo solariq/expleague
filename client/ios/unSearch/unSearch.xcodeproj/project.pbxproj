@@ -23,13 +23,16 @@
 		D59A36A11C92E2D900A64230 /* arrow_hide.png in Resources */ = {isa = PBXBuildFile; fileRef = D59A369D1C92E2D900A64230 /* arrow_hide.png */; };
 		D59A36A21C92E2D900A64230 /* phone.png in Resources */ = {isa = PBXBuildFile; fileRef = D59A369E1C92E2D900A64230 /* phone.png */; };
 		D59A36A31C92E2D900A64230 /* arrow_cut_open.png in Resources */ = {isa = PBXBuildFile; fileRef = D59A369F1C92E2D900A64230 /* arrow_cut_open.png */; };
+		EE073CFC1CBD303B0056CCDB /* ExpLeagueMember+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE073CF81CBD303B0056CCDB /* ExpLeagueMember+CoreDataProperties.swift */; };
+		EE073CFD1CBD303B0056CCDB /* ExpLeagueMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE073CF91CBD303B0056CCDB /* ExpLeagueMember.swift */; };
+		EE073CFE1CBD303B0056CCDB /* ExpLeagueTag+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE073CFA1CBD303B0056CCDB /* ExpLeagueTag+CoreDataProperties.swift */; };
+		EE073CFF1CBD303B0056CCDB /* ExpLeagueTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE073CFB1CBD303B0056CCDB /* ExpLeagueTag.swift */; };
 		EE0FC7E11C503CB9006F6045 /* OutgoingMessage.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE0FC7E01C503CB9006F6045 /* OutgoingMessage.xib */; };
 		EE1CB81A1C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1CB8181C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift */; };
 		EE1CB81B1C48449D0047DB03 /* ExpLeagueProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1CB8191C48449D0047DB03 /* ExpLeagueProfile.swift */; };
 		EE297ACC1C4A6C79002DE78B /* ConnectionProgressController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE297ACB1C4A6C79002DE78B /* ConnectionProgressController.swift */; };
 		EE2DB1921C4E5AD800F9601D /* ChatInput.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE2DB1911C4E5AD800F9601D /* ChatInput.xib */; };
 		EE2DB1941C4E5E9000F9601D /* ChatInputViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE2DB1931C4E5E9000F9601D /* ChatInputViewController.swift */; };
-		EE3EFCC31C5AA308000CC08E /* UIGestureRecognizerClosure.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3EFCC21C5AA308000CC08E /* UIGestureRecognizerClosure.swift */; };
 		EE5E59A01C5F70720040246E /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE5E599F1C5F70720040246E /* StoreKit.framework */; };
 		EE62BEEF1C452CA1004B6A42 /* OrderDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEEE1C452CA1004B6A42 /* OrderDetailsViewController.swift */; };
 		EE62BF011C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEFD1C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift */; };
@@ -50,10 +53,13 @@
 		EE9EE7A31C577859000E9F46 /* TaskInProgress.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE9EE7A11C577859000E9F46 /* TaskInProgress.xib */; };
 		EEAF257A1C99E4BC00D75745 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EEAF25781C99E4BC00D75745 /* Main.storyboard */; };
 		EEAF257C1C99EF1100D75745 /* owl.wav in Resources */ = {isa = PBXBuildFile; fileRef = EEAF257B1C99EF1100D75745 /* owl.wav */; };
+		EEBCD4BA1CBBEA3500BCB624 /* QueueItem+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEBCD4B81CBBEA3500BCB624 /* QueueItem+CoreDataProperties.swift */; };
+		EEBCD4BB1CBBEA3500BCB624 /* QueueItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEBCD4B91CBBEA3500BCB624 /* QueueItem.swift */; };
 		EEC0FF321C9080D100889E68 /* FeedbackView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEC0FF311C9080D100889E68 /* FeedbackView.xib */; };
 		EEF3E77B1C908EA50050A519 /* Separator.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEF3E77A1C908EA50050A519 /* Separator.xib */; };
 		EEF7BB401C4F9B2700E1B7BD /* ChatCellViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEF7BB3F1C4F9B2700E1B7BD /* ChatCellViews.swift */; };
 		EEF7BB421C4F9B6000E1B7BD /* IncomingMessage.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEF7BB411C4F9B6000E1B7BD /* IncomingMessage.xib */; };
+		EEFBDF471CBBC34F00F484F1 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFBDF461CBBC34F00F484F1 /* Utils.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -78,6 +84,11 @@
 		D59A369D1C92E2D900A64230 /* arrow_hide.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrow_hide.png; sourceTree = "<group>"; };
 		D59A369E1C92E2D900A64230 /* phone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = phone.png; sourceTree = "<group>"; };
 		D59A369F1C92E2D900A64230 /* arrow_cut_open.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrow_cut_open.png; sourceTree = "<group>"; };
+		EE073CEF1CBD2D900056CCDB /* ProfileModel +Queue +Meta.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "ProfileModel +Queue +Meta.xcdatamodel"; sourceTree = "<group>"; };
+		EE073CF81CBD303B0056CCDB /* ExpLeagueMember+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueMember+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		EE073CF91CBD303B0056CCDB /* ExpLeagueMember.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueMember.swift; sourceTree = "<group>"; };
+		EE073CFA1CBD303B0056CCDB /* ExpLeagueTag+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueTag+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		EE073CFB1CBD303B0056CCDB /* ExpLeagueTag.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueTag.swift; sourceTree = "<group>"; };
 		EE0FC7E01C503CB9006F6045 /* OutgoingMessage.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OutgoingMessage.xib; sourceTree = "<group>"; };
 		EE1CB8181C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueProfile+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		EE1CB8191C48449D0047DB03 /* ExpLeagueProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueProfile.swift; sourceTree = "<group>"; };
@@ -85,7 +96,6 @@
 		EE2DB1911C4E5AD800F9601D /* ChatInput.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ChatInput.xib; sourceTree = "<group>"; };
 		EE2DB1931C4E5E9000F9601D /* ChatInputViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatInputViewController.swift; sourceTree = "<group>"; };
 		EE3731AB1C689414007F55B0 /* unSearch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = unSearch.entitlements; sourceTree = "<group>"; };
-		EE3EFCC21C5AA308000CC08E /* UIGestureRecognizerClosure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIGestureRecognizerClosure.swift; sourceTree = "<group>"; };
 		EE5E599F1C5F70720040246E /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		EE62BEEE1C452CA1004B6A42 /* OrderDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderDetailsViewController.swift; sourceTree = "<group>"; };
 		EE62BEFD1C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueMessage+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -106,10 +116,14 @@
 		EE9EE7A11C577859000E9F46 /* TaskInProgress.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TaskInProgress.xib; sourceTree = "<group>"; };
 		EEAF25791C99E4BC00D75745 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		EEAF257B1C99EF1100D75745 /* owl.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = owl.wav; sourceTree = "<group>"; };
+		EEBCD4B71CBBE76A00BCB624 /* ProfileModel +Queue.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "ProfileModel +Queue.xcdatamodel"; sourceTree = "<group>"; };
+		EEBCD4B81CBBEA3500BCB624 /* QueueItem+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "QueueItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		EEBCD4B91CBBEA3500BCB624 /* QueueItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QueueItem.swift; sourceTree = "<group>"; };
 		EEC0FF311C9080D100889E68 /* FeedbackView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FeedbackView.xib; sourceTree = "<group>"; };
 		EEF3E77A1C908EA50050A519 /* Separator.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Separator.xib; sourceTree = "<group>"; };
 		EEF7BB3F1C4F9B2700E1B7BD /* ChatCellViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatCellViews.swift; sourceTree = "<group>"; };
 		EEF7BB411C4F9B6000E1B7BD /* IncomingMessage.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = IncomingMessage.xib; sourceTree = "<group>"; };
+		EEFBDF461CBBC34F00F484F1 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,7 +167,7 @@
 				688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */,
 				688A5ECEAEA343319DDDED6E /* HistoryViewController.swift */,
 				EE297ACB1C4A6C79002DE78B /* ConnectionProgressController.swift */,
-				EE3EFCC21C5AA308000CC08E /* UIGestureRecognizerClosure.swift */,
+				EEFBDF461CBBC34F00F484F1 /* Utils.swift */,
 			);
 			path = unSearch;
 			sourceTree = "<group>";
@@ -226,8 +240,14 @@
 			isa = PBXGroup;
 			children = (
 				EE6EA7CA1C48F79300692406 /* ProfileModel.xcdatamodeld */,
+				EE073CF81CBD303B0056CCDB /* ExpLeagueMember+CoreDataProperties.swift */,
+				EE073CF91CBD303B0056CCDB /* ExpLeagueMember.swift */,
+				EE073CFA1CBD303B0056CCDB /* ExpLeagueTag+CoreDataProperties.swift */,
+				EE073CFB1CBD303B0056CCDB /* ExpLeagueTag.swift */,
 				EE1CB8181C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift */,
 				EE1CB8191C48449D0047DB03 /* ExpLeagueProfile.swift */,
+				EEBCD4B81CBBEA3500BCB624 /* QueueItem+CoreDataProperties.swift */,
+				EEBCD4B91CBBEA3500BCB624 /* QueueItem.swift */,
 				EE62BEFD1C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift */,
 				EE62BEFE1C4802B2004B6A42 /* ExpLeagueMessage.swift */,
 				EE62BEFF1C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift */,
@@ -263,12 +283,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 688A5469209AAF01E88A821B /* Build configuration list for PBXNativeTarget "unSearch" */;
 			buildPhases = (
-				48D5D07AE576D0C4A72FDB94 /* Check Pods Manifest.lock */,
+				48D5D07AE576D0C4A72FDB94 /* 📦 Check Pods Manifest.lock */,
 				688A5E2B1D85BCDA2EA439A6 /* Sources */,
 				688A5B80BF815B303AF99176 /* Frameworks */,
 				688A5B568125A95BA6176F27 /* Resources */,
-				5B9E8B8E88E1279BFCEB914F /* Embed Pods Frameworks */,
-				63B2778C25C767B4354F098C /* Copy Pods Resources */,
+				5B9E8B8E88E1279BFCEB914F /* 📦 Embed Pods Frameworks */,
+				63B2778C25C767B4354F098C /* 📦 Copy Pods Resources */,
+				D4E6DC906B1B20020E430042 /* Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -357,14 +378,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		48D5D07AE576D0C4A72FDB94 /* Check Pods Manifest.lock */ = {
+		48D5D07AE576D0C4A72FDB94 /* 📦 Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "Check Pods Manifest.lock";
+			name = "📦 Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -372,7 +393,37 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		5B9E8B8E88E1279BFCEB914F /* Embed Pods Frameworks */ = {
+		5B9E8B8E88E1279BFCEB914F /* 📦 Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "📦 Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-unSearch/Pods-unSearch-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		63B2778C25C767B4354F098C /* 📦 Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "📦 Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-unSearch/Pods-unSearch-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D4E6DC906B1B20020E430042 /* Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -387,21 +438,6 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-unSearch/Pods-unSearch-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		63B2778C25C767B4354F098C /* Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-unSearch/Pods-unSearch-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -410,26 +446,32 @@
 			buildActionMask = 2147483647;
 			files = (
 				EE62BEEF1C452CA1004B6A42 /* OrderDetailsViewController.swift in Sources */,
-				EE3EFCC31C5AA308000CC08E /* UIGestureRecognizerClosure.swift in Sources */,
 				EE6EA7CC1C48F79300692406 /* ProfileModel.xcdatamodeld in Sources */,
+				EE073CFC1CBD303B0056CCDB /* ExpLeagueMember+CoreDataProperties.swift in Sources */,
 				EE62BF031C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift in Sources */,
 				EE62BF041C4802B2004B6A42 /* ExpLeagueOrder.swift in Sources */,
 				EEF7BB401C4F9B2700E1B7BD /* ChatCellViews.swift in Sources */,
+				EEBCD4BA1CBBEA3500BCB624 /* QueueItem+CoreDataProperties.swift in Sources */,
 				EE62BF021C4802B2004B6A42 /* ExpLeagueMessage.swift in Sources */,
 				EE2DB1941C4E5E9000F9601D /* ChatInputViewController.swift in Sources */,
 				EE62BF011C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift in Sources */,
 				EE1CB81B1C48449D0047DB03 /* ExpLeagueProfile.swift in Sources */,
 				EE62CB511C958E2B00352699 /* ExpertView.swift in Sources */,
+				EE073CFD1CBD303B0056CCDB /* ExpLeagueMember.swift in Sources */,
+				EE073CFF1CBD303B0056CCDB /* ExpLeagueTag.swift in Sources */,
 				688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */,
 				EE297ACC1C4A6C79002DE78B /* ConnectionProgressController.swift in Sources */,
 				688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */,
 				EE70A5341C79C02C00174674 /* EVURLCache.swift in Sources */,
+				EEFBDF471CBBC34F00F484F1 /* Utils.swift in Sources */,
 				EE1CB81A1C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift in Sources */,
 				688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */,
 				688A5675DA0F17BFB8A68FB2 /* HistoryViewController.swift in Sources */,
 				688A597007AAFF6899530EA7 /* ChatCellModels.swift in Sources */,
 				688A599209AAD7BBCC21E8D6 /* OrderDetailsView.swift in Sources */,
 				688A595B1F3387F23AA2CC61 /* ChatModel.swift in Sources */,
+				EE073CFE1CBD303B0056CCDB /* ExpLeagueTag+CoreDataProperties.swift in Sources */,
+				EEBCD4BB1CBBEA3500BCB624 /* QueueItem.swift in Sources */,
 				EE62CB4F1C958E1500352699 /* ExpertsOverview.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -518,6 +560,7 @@
 				SWIFT_INSTALL_OBJC_HEADER = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/**";
 			};
 			name = Debug;
 		};
@@ -557,6 +600,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_INSTALL_OBJC_HEADER = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/**";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -606,9 +650,11 @@
 		EE6EA7CA1C48F79300692406 /* ProfileModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				EE073CEF1CBD2D900056CCDB /* ProfileModel +Queue +Meta.xcdatamodel */,
+				EEBCD4B71CBBE76A00BCB624 /* ProfileModel +Queue.xcdatamodel */,
 				EE6EA7CB1C48F79300692406 /* ProfileModel.xcdatamodel */,
 			);
-			currentVersion = EE6EA7CB1C48F79300692406 /* ProfileModel.xcdatamodel */;
+			currentVersion = EE073CEF1CBD2D900056CCDB /* ProfileModel +Queue +Meta.xcdatamodel */;
 			path = ProfileModel.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

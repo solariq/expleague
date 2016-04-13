@@ -45,6 +45,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 msg.setProperty("read", value: "true")
             }
         }
+        order.badge?.update(order: order)
     }
 
     func sync() {

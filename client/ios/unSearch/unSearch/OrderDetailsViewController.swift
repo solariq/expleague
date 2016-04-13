@@ -115,8 +115,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     private var enforceScroll = false
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        NSNotificationCenter.defaultCenter().addObserver(view, selector: #selector(OrderDetailsView.keyboardShown(_:)), name: UIKeyboardWillShowNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(view, selector: #selector(OrderDetailsView.keyboardHidden(_:)), name: UIKeyboardWillHideNotification, object: nil)
+        detailsView!.keyboardTracker.start();
         data.controller = self
         data.sync()
         if (data.order.text.characters.count > 15) {
@@ -126,6 +125,14 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
             self.title = data.order.text
         }
         enforceScroll = true
+    }
+
+    override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
+        AppDelegate.instance.activeProfile!.selected = nil
+        detailsView!.keyboardTracker.stop();
+        data.markAsRead()
+        data.controller = nil
     }
 
     override func viewDidLayoutSubviews() {
@@ -147,14 +154,6 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         super.viewDidAppear(animated)
         tabBarController?.tabBar.hidden = true
         data.markAsRead()
-    }
-
-    override func viewWillDisappear(animated: Bool) {
-        super.viewWillDisappear(animated)
-        AppDelegate.instance.activeProfile!.selected = nil
-        NSNotificationCenter.defaultCenter().removeObserver(view)
-        data.markAsRead()
-        data.controller = nil
     }
 
     func attach(input: ChatInputViewController) {

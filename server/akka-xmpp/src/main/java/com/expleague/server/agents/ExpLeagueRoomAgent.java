@@ -3,7 +3,6 @@ package com.expleague.server.agents;
 import com.expleague.model.Answer;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations.*;
-import com.expleague.model.Tag;
 import com.expleague.server.Roster;
 import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.ActorAdapter;
@@ -19,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
@@ -89,16 +87,20 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
           }
           else if (msg.has(Progress.class)) {
             final Progress progress = msg.get(Progress.class);
-            if (progress.hasAssigned()) {
-              final List<String> oldTags = Arrays.asList(order.tags());
-              final Set<String> newTags = progress.assigned().map(Tag::name).collect(Collectors.toSet());
-              final Set<String> delete = new HashSet<>(oldTags);
-              final Set<String> append = new HashSet<>(newTags);
-              delete.removeAll(newTags);
-              append.removeAll(oldTags);
-              delete.stream().forEach(order::untag);
-              append.stream().forEach(order::tag);
+            final Progress.MetaChange metaChange = progress.change();
+            if (metaChange != null) {
+              switch (metaChange.target()) {
+                case PATTERNS:
+                  break;
+                case TAGS:
+                  if (metaChange.operation() == Progress.MetaChange.Operation.ADD)
+                    order.tag(metaChange.name());
+                  else
+                    order.untag(metaChange.name());
+                  break;
+              }
             }
+            XMPP.send(new Message(jid, dump.owner(), progress), context());
           }
           else if (msg.has(Suspend.class)) {
             XMPP.send(new Presence(roomAlias(msg.from()), dump.owner(), false), context());
@@ -159,6 +161,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
           result.add(board.register(offer));
         }
         else if (isUserMissing(from)) {
+          //noinspection UnnecessaryReturnStatement
           return;
         }
         else if (message.has(Message.Subject.class)) {
@@ -196,10 +199,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
   }
 
   protected static boolean isUserMissing(final JID userJid) {
-    if (userJid.local() == null) {
-      return false;
-    }
-    return Roster.instance().user(userJid.local()) == null;
+    return userJid.local() != null && Roster.instance().user(userJid.local()) == null;
   }
 
   private ExpLeagueOrder lastOrder() {

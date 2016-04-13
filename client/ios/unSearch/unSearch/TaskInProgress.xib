@@ -54,8 +54,8 @@
                             <constraint firstAttribute="width" constant="45" id="cPK-g1-r6W"/>
                         </constraints>
                     </imageView>
-                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="isX-wP-13W">
-                        <rect key="frame" x="292" y="0.0" width="20" height="61"/>
+                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="isX-wP-13W">
+                        <rect key="frame" x="292" y="4" width="20" height="52"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="20" id="0Gb-NO-hKR"/>
                         </constraints>
@@ -78,8 +78,8 @@
                     <constraint firstItem="K7d-6f-GIZ" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" constant="-15" id="7Wv-SB-yTp"/>
                     <constraint firstItem="enI-d2-JSC" firstAttribute="centerX" secondItem="H2p-sc-9uM" secondAttribute="centerX" id="8lk-Bs-QHl"/>
                     <constraint firstItem="isX-wP-13W" firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailingMargin" id="9cI-dc-Cxi"/>
-                    <constraint firstItem="isX-wP-13W" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="-8" id="Jg5-U5-T5b"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="isX-wP-13W" secondAttribute="bottom" constant="25" id="Onu-rX-auT"/>
+                    <constraint firstItem="isX-wP-13W" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="-4" id="Jg5-U5-T5b"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="isX-wP-13W" secondAttribute="bottom" constant="30" id="Onu-rX-auT"/>
                     <constraint firstItem="K7d-6f-GIZ" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="4" id="QDC-Pg-HFj"/>
                     <constraint firstItem="Bw6-4t-U6S" firstAttribute="centerX" secondItem="H2p-sc-9uM" secondAttribute="centerX" id="Vvy-jP-8pX"/>
                     <constraint firstItem="qmE-ag-Htn" firstAttribute="centerY" secondItem="jLm-Af-C8P" secondAttribute="centerY" id="Wxc-Ac-Dec"/>

@@ -188,7 +188,7 @@ public class LaborExchange extends UntypedActorAdapter {
 
     Stream<JID> topExperts();
 
-    Stream<String> tags();
+    Stream<Tag> tags();
   }
 
   public static class OrderFilter {

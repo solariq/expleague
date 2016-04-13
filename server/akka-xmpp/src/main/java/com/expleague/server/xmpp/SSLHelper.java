@@ -52,6 +52,7 @@ public class SSLHelper {
     }
 
     private void process(ByteString msgIn, Consumer<ByteString> consumer) {
+      int sent = 0;
       try {
         final ByteBuffer inBuffer = msgIn.asByteBuffer();
         while (inBuffer.remaining() > 0) {
@@ -63,18 +64,21 @@ public class SSLHelper {
           }
           else src.put(inBuffer);
 
-          while (src.position() > 0) {
+          while (true) {
             src.flip();
             final SSLEngineResult r;
             r = incoming ? sslEngine.unwrap(src, dst) : sslEngine.wrap(src, dst);
-            dst.flip();
             src.compact();
-            sendChunk(consumer);
+            sent += sendChunk(consumer);
+//            System.out.println(r.getStatus().name());
             switch (r.getStatus()) {
               case BUFFER_UNDERFLOW:
                 break;
-              default:
+              case BUFFER_OVERFLOW:
                 continue;
+              default:
+                if (r.bytesConsumed() != 0 || r.bytesProduced() != 0)
+                  continue;
             }
             break;
           }
@@ -83,14 +87,22 @@ public class SSLHelper {
       catch (SSLException e) {
         throw new RuntimeException(e);
       }
+      finally {
+        if (msgIn.length() > 2 * sent) {
+          System.out.println();
+        }
+        log.finest((incoming ? "Incoming" : "Outgoing") + " stream received: " + msgIn.length() + " sent: " + sent);
+      }
     }
 
-    private void sendChunk(Consumer<ByteString> consumer) {
-      if (dst.limit() == 0)
-        return;
-      log.finest(dst.limit() + " bytes " + (incoming ? "received" : "sent"));
+    private int sendChunk(Consumer<ByteString> consumer) {
+      if (dst.position() == 0)
+        return 0;
+      dst.flip();
+      int result = dst.limit();
       consumer.accept(ByteString.fromByteBuffer(dst));
       dst.clear();
+      return result;
     }
   }
 }

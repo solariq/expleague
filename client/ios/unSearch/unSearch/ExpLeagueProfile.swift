@@ -41,7 +41,7 @@ class ExpLeagueProfile: NSManagedObject {
         self.name = name
         
         self.domain = domain
-        self.port = port
+        self.port = NSNumber(short: port)
         
         self.login = login
         self.passwd = passwd
@@ -59,7 +59,7 @@ class ExpLeagueProfile: NSManagedObject {
     }
     
     override func awakeFromFetch() {
-        orderSelected = Int16(orders.count - 1)
+        orderSelected = NSNumber(long: orders.count - 1)
     }
     
     dynamic var _jid: XMPPJID?
@@ -67,28 +67,45 @@ class ExpLeagueProfile: NSManagedObject {
         return _jid ?? XMPPJID.jidWithString(login + "@" + domain + "/unSearch");
     }
     
-    func expert(login: String) -> ExpLeagueMember? {
-        return experts.filter({$0.login == login}).first
-    }
-    
     var progressBar: ConnectionProgressController? {
         return AppDelegate.instance.connectionProgressView
     }
     
     func order(name name: String) -> ExpLeagueOrder? {
-        let fit = orders.filter({
+        let fit = orders.filter() {
             let order = $0 as! ExpLeagueOrder
             return order.id == name
-        })
+        }
         return fit.count > 0 ? (fit[0] as! ExpLeagueOrder) : nil
+    }
+    
+    func send(msg: XMPPMessage) {
+        let stream = AppDelegate.instance.stream
+        let receiptRequest = DDXMLElement(name: "request", xmlns: "urn:xmpp:receipts")
+        let msgId = stream.generateUUID()
+        msg.addAttributeWithName("id", stringValue: msgId)
+        msg.addChild(receiptRequest)
+        let queue = self.queue?.mutableCopy() as? NSMutableSet ?? NSMutableSet()
+        queue.addObject(QueueItem(message: msg, context: self.managedObjectContext!))
+        self.queue = queue.copy() as? NSSet
+        self.log("Sending: \(msg.XMLString())");
+        stream.sendElement(msg)
+        do {
+            try self.managedObjectContext!.save()
+        } catch {
+            fatalError("Failure to save context: \(error)")
+        }
     }
     
     var selected: ExpLeagueOrder? {
         set (order) {
-            self.orderSelected = order != nil ? Int16(orders.indexOfObject(order!)) : -1
+            self.orderSelected = order != nil ? NSNumber(long: orders.indexOfObject(order!)) : NSNumber(long: -1)
         }
         get {
-            return (self.orderSelected >= 0 && Int(self.orderSelected) < orders.count) ? orders[Int(self.orderSelected)] as? ExpLeagueOrder : nil
+            guard let selected = self.orderSelected?.integerValue else {
+                return nil
+            }
+            return (selected >= 0 && selected < orders.count) ? orders[selected] as? ExpLeagueOrder : nil
         }
     }
     
@@ -110,7 +127,72 @@ class ExpLeagueProfile: NSManagedObject {
         }
     }
     
-    dynamic var experts: [ExpLeagueMember] = []
+    private dynamic var _experts: [ExpLeagueMember]?
+    var experts: [ExpLeagueMember] {
+        if (self._experts == nil) {
+            var _experts: [ExpLeagueMember] = []
+            for expert in self.expertsSet ?? [] {
+                _experts.append(expert as! ExpLeagueMember)
+            }
+            self._experts = _experts
+        }
+        return self._experts!
+    }
+    func register(expert expert: ExpLeagueMember) -> ExpLeagueMember {
+        let experts = expertsSet?.mutableCopy() ?? NSMutableSet()
+        experts.addObject(expert)
+        expertsSet = (experts.copy() as! NSSet)
+        if (_experts != nil) {
+            _experts?.append(expert)
+        }
+        save()
+        return expert
+    }
+    func expert(login id: String, factory: ((NSManagedObjectContext)->ExpLeagueMember)? = nil) -> ExpLeagueMember? {
+        if let existing = experts.filter({return $0.login == id}).first {
+            return existing
+        }
+        if (factory != nil) {
+            return register(expert: factory!(self.managedObjectContext!))
+        }
+        else {
+            return nil
+        }
+    }
+    
+    private dynamic var _tags: [ExpLeagueTag]?
+    var tags: [ExpLeagueTag] {
+        if (self._tags == nil) {
+            var _tags: [ExpLeagueTag] = []
+            for tag in self.tagsSet ?? [] {
+                _tags.append(tag as! ExpLeagueTag)
+            }
+            self._tags = _tags
+        }
+        return self._tags!
+    }
+    func register(tag tag: ExpLeagueTag) -> ExpLeagueTag {
+        let tags = tagsSet?.mutableCopy() ?? NSMutableSet()
+        tags.addObject(tag)
+        tagsSet = (tags.copy() as! NSSet)
+        if (_tags != nil) {
+            _tags?.append(tag)
+        }
+        save()
+        return tag
+    }
+    func tag(name id: String, factory: ((NSManagedObjectContext)->ExpLeagueTag)? = nil) -> ExpLeagueTag? {
+        if let existing = tags.filter({return $0.name == id}).first {
+            return existing
+        }
+        if (factory != nil) {
+            return register(tag: factory!(self.managedObjectContext!))
+        }
+        else {
+            return nil
+        }
+    }
+
     
     dynamic var avatars: [String: String] = [:]
     func avatar(login: String, url urlStr: String?) -> UIImage {
@@ -139,17 +221,13 @@ class ExpLeagueProfile: NSManagedObject {
         let order = ExpLeagueOrder("room-" + login + "-" + rand, offer: offer, context: self.managedObjectContext!)
         let msg = XMPPMessage(type: "normal", to: order.jid)
         msg.addChild(offer.xml)
-        AppDelegate.instance.stream.sendElement(msg)
+        send(msg)
         
-        orderSelected = Int16(orders.count)
+        orderSelected = NSNumber(long: orders.count)
         let mutableItems = orders.mutableCopy() as! NSMutableOrderedSet
         mutableItems.addObject(order)
         orders = mutableItems.copy() as! NSOrderedSet
-        do {
-            try self.managedObjectContext!.save()
-        } catch {
-            fatalError("Failure to save context: \(error)")
-        }
+        save()
         return order
     }
 }
@@ -252,10 +330,27 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
             msg.addChild(token)
             sender.sendElement(msg)
         }
-        let iq = DDXMLElement(name: "iq", xmlns: "jabber:client")
-        iq.addAttributeWithName("type", stringValue: "get")
-        iq.addChild(DDXMLElement(name: "query", xmlns: "jabber:iq:roster"))
-        sender.sendElement(iq)
+        // getting latest experts
+        let rosterIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
+        rosterIq.addAttributeWithName("type", stringValue: "get")
+        rosterIq.addChild(DDXMLElement(name: "query", xmlns: "jabber:iq:roster"))
+        sender.sendElement(rosterIq)
+        
+        // updating tags and patterns
+        let tagsIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
+        tagsIq.addAttributeWithName("type", stringValue: "get")
+        tagsIq.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/tags"))
+        sender.sendElement(tagsIq)
+        
+        let patternsIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
+        patternsIq.addAttributeWithName("type", stringValue: "get")
+        patternsIq.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/patterns"))
+        sender.sendElement(patternsIq)
+        
+        // sending not confirmed messages
+        for item in queue ?? NSSet() {
+            sender.sendElement(try! XMPPMessage.init(XMLString: (item as! QueueItem).body))
+        }
         log("Success!");
     }
     
@@ -268,20 +363,62 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
         log(String(iq))
         if let query = iq.elementForName("query", xmlns: "jabber:iq:roster") {
             for item in query.elementsForName("item") as! [DDXMLElement] {
-                let group = item.elementForName("group").stringValue()
+                let groupStr = item.elementForName("group").stringValue()
+                let group: ExpLeagueMemberGroup
+                switch groupStr {
+                case "Favorites":
+                    group = .Favorites
+                default:
+                    group = .Top
+                }
                 if let profile = item.elementForName("expert", xmlns: "http://expleague.com/scheme") {
-                    let expert = ExpLeagueMember(xml: profile, group: group)
-                    let oldIndex = experts.indexOf({$0.login == expert.login})
-                    if let index = oldIndex {
-                        experts.removeAtIndex(index)
+                    let expert: ExpLeagueMember
+                    if let existing = self.expert(login: profile.attributeStringValueForName("login")) {
+                        existing.update(profile)
+                        expert = existing
                     }
-                    experts.append(expert)
+                    else {
+                        expert = ExpLeagueMember(xml: profile, group: group, context: self.managedObjectContext!)
+                        register(expert: expert)
+                    }
+                    expert.group = group
                     expert.available = profile.attributeBoolValueForName("available")
                 }
             }
             AppDelegate.instance.expertsView?.update()
         }
-        if let from = iq.from(), let order = order(name: from.user) {
+        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/tags") {
+            for tag in query.elementsForName("tag") as! [DDXMLElement] {
+                let name = tag.stringValue()
+                let icon = tag.attributeStringValueForName("icon", withDefaultValue: "named://search_icon")
+                let tag: ExpLeagueTag
+                if let existing = self.tag(name: name) {
+                    existing.updateIcon(icon)
+                }
+                else {
+                    tag = ExpLeagueTag(name: name, icon: icon, type: .Tag, context: self.managedObjectContext!)
+                    register(tag: tag)
+                }
+            }
+        }
+        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/patterns") {
+            for tag in query.elementsForName("pattern") as! [DDXMLElement] {
+                let name = tag.attributeStringValueForName("name")
+                let icons = tag.elementsForName("icon") as! [DDXMLElement]
+                let tag: ExpLeagueTag
+                if let existing = self.tag(name: name) {
+                    if (icons.count > 0) {
+                        existing.updateIcon(icons[0].stringValue())
+                    }
+                }
+                else {
+                    let icon = icons.count > 0 ? icons[0].stringValue() : "named://search_icon"
+                    tag = ExpLeagueTag(name: name, icon: icon, type: .Pattern, context: self.managedObjectContext!)
+                    register(tag: tag)
+                }
+            }
+        }
+        else if let from = iq.from(), let order = order(name: from.user) {
             order.iq(iq: iq)
         }
         return false
@@ -289,7 +426,27 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
     
     func xmppStream(sender: XMPPStream!, didReceiveMessage msg: XMPPMessage!) {
         log(String(msg))
-        if let order = order(name: msg.from().user) {
+        while let receipt = msg.elementForName("received", xmlns: "urn:xmpp:receipts") {
+            let queue = self.queue?.mutableCopy() as? NSMutableSet ?? NSMutableSet()
+            for item in queue {
+                if ((item as! QueueItem).receipt == receipt.attributeStringValueForName("id")) {
+                    queue.removeObject(item)
+                    self.queue = queue.copy() as? NSSet
+                    do {
+                        try self.managedObjectContext!.save()
+                    } catch {
+                        fatalError("Failure to save context: \(error)")
+                    }
+                    break
+                }
+            }
+            msg.removeChildAtIndex(receipt.index())
+        }
+        let receiptRequest = msg.elementForName("request", xmlns: "urn:xmpp:receipts")
+        if (receiptRequest != nil) {
+            msg.removeChildAtIndex(receiptRequest.index())
+        }
+        if let from = msg.from(), let order = order(name: from.user) {
             order.message(message: msg)
         }
         for listenerRef in listeners.copy() as! NSArray {
@@ -299,6 +456,11 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
             else {
                 listeners.removeObject(listenerRef)
             }
+        }
+        if receiptRequest != nil {
+            let receipt = DDXMLElement(name: "received", xmlns: "urn:xmpp:receipts")
+            receipt.addAttributeWithName("id", stringValue: msg.elementID())
+            sender.sendElement(XMPPMessage(type: "normal", child: receipt))
         }
     }
     

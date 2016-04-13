@@ -6,8 +6,7 @@ import com.expleague.server.services.PatternsService;
 import com.expleague.server.services.XMPPServices;
 import com.expleague.xmpp.Item;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import java.util.List;
 
 /**
@@ -21,6 +20,9 @@ public class PatternsQuery extends Item {
   static {
     XMPPServices.register(PATTERNS_SCHEME, PatternsService.class, "patterns");
   }
+  @XmlAttribute
+  private Intent intent;
+
   @XmlElement(name = "pattern", namespace = Operations.NS)
   private List<Pattern> patterns;
 
@@ -28,10 +30,18 @@ public class PatternsQuery extends Item {
     this.patterns = patterns;
   }
 
+  public PatternsQuery(Intent intent) {
+    this.intent = intent;
+  }
+
   public PatternsQuery() {
+  }
+
+  public Intent intent() {
+    return intent != null ? intent : Intent.PRESENTATION;
   }
 
   public List<Pattern> patterns() {
     return patterns;
-    }
+  }
 }

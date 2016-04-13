@@ -11,32 +11,12 @@ class OrderDetailsView: UIView {
     let bottomView = UIView()
     let messagesView = UITableView()
     let answerView = UIWebView()
-
+    
+    var keyboardTracker: KeyboardStateTracker!
     var separator: SeparatorView!
     var messagesViewHConstraint: NSLayoutConstraint!
     var answerViewHConstraint: NSLayoutConstraint!
     var bottomViewBottom: NSLayoutConstraint!
-
-    func keyboardHidden(notification: NSNotification) {
-        let duration = notification.userInfo![UIKeyboardAnimationDurationUserInfoKey] as! NSTimeInterval;
-        let curve = notification.userInfo![UIKeyboardAnimationCurveUserInfoKey] as! UInt
-        let options: UIViewAnimationOptions = [.BeginFromCurrentState, UIViewAnimationOptions(rawValue: (UIViewAnimationOptions.CurveEaseIn.rawValue << curve))]
-        self.bottomViewBottom.constant = 0
-        UIView.animateWithDuration(duration, delay: 0, options: options, animations: { () -> Void in
-            self.layoutIfNeeded()
-        }, completion: nil)
-    }
-
-    func keyboardShown(notification: NSNotification) {
-        let kbSize = (notification.userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue).CGRectValue().size
-        let duration = notification.userInfo![UIKeyboardAnimationDurationUserInfoKey] as! NSTimeInterval;
-        let curve = notification.userInfo![UIKeyboardAnimationCurveUserInfoKey] as! UInt
-        let options: UIViewAnimationOptions = [.BeginFromCurrentState, UIViewAnimationOptions(rawValue: (UIViewAnimationOptions.CurveEaseIn.rawValue << curve))]
-        self.bottomViewBottom.constant = -kbSize.height
-        UIView.animateWithDuration(duration, delay: 0, options: options, animations: { () -> Void in
-            self.layoutIfNeeded()
-        }, completion: nil)
-    }
 
     var bottomContents: UIView? {
         didSet {
@@ -125,6 +105,10 @@ class OrderDetailsView: UIView {
         messagesViewHConstraint = NSLayoutConstraint(item: messagesView, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: -15)
         answerViewHConstraint = NSLayoutConstraint(item: answerView, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: -15)
         bottomViewBottom = NSLayoutConstraint(item: bottomView, attribute: .Bottom, relatedBy: .Equal, toItem: self, attribute: .BottomMargin, multiplier: 1, constant: 0)
+        keyboardTracker = KeyboardStateTracker() { (height: CGFloat) -> () in
+                self.bottomViewBottom.constant = -height;
+                self.layoutIfNeeded()
+        }
         var constraints: [NSLayoutConstraint] = [];
                 // main view constraints
         constraints.append(NSLayoutConstraint(item: scrollView, attribute: .Top, relatedBy: .Equal, toItem: self, attribute: .TopMargin, multiplier: 1, constant: 0))

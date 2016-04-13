@@ -33,7 +33,14 @@ class DataController: NSObject {
             */
             let storeURL = docURL.URLByAppendingPathComponent("ExpLeagueProfiles.sqlite")
             do {
-                try psc.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: storeURL, options: nil)
+                try psc.addPersistentStoreWithType(
+                    NSSQLiteStoreType,
+                    configuration: nil,
+                    URL: storeURL,
+                    options: [
+                        NSMigratePersistentStoresAutomaticallyOption: true,
+                        NSInferMappingModelAutomaticallyOption: true
+                ])
             } catch {
                 fatalError("Error migrating store: \(error)")
             }
@@ -57,6 +64,17 @@ class DataController: NSObject {
             }
         }
     }
+}
+
+class Palette {
+    static let CONTROL = UIColor(red: 17/256.0, green: 138/256.0, blue: 222/256.0, alpha: 1.0)
+    static let CONTROL_BACKGROUND = UIColor(red: 249/256.0, green: 249/256.0, blue: 249/256.0, alpha: 1.0)
+    static let CHAT_BACKGROUND = UIColor(red: 230/256.0, green: 233/256.0, blue: 234/256.0, alpha: 1.0)
+    static let OK = UIColor(red: 102/256.0, green: 182/256.0, blue: 15/256.0, alpha: 1.0)
+    static let ERROR = UIColor(red: 174/256.0, green: 53/256.0, blue: 53/256.0, alpha: 1.0)
+    static let COMMENT = UIColor(red: 63/256.0, green: 84/256.0, blue: 130/256.0, alpha: 1.0)
+    static let BORDER = UIColor(red: 202/256.0, green: 210/256.0, blue: 227/256.0, alpha: 1.0)
+    static let CORNER_RADIUS = CGFloat(8)
 }
 
 @UIApplicationMain
@@ -88,13 +106,12 @@ class AppDelegate: UIResponder {
     let connectionProgressView = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier("progressBar") as! ConnectionProgressController
     
     let stream = XMPPStream()
-    var xmppMessageDeliveryReceipts: XMPPMessageDeliveryReceipts?
     
     var dataController: DataController!
     var token: String?
     
     var activeProfile : ExpLeagueProfile? {
-        let active = profiles?.filter({return $0.active})
+        let active = profiles?.filter({return $0.active.boolValue})
         return active?.count > 0 ? active![0] : nil
     }
     
@@ -106,16 +123,9 @@ class AppDelegate: UIResponder {
         }
         do {
             stream.hostName = activeProfile!.domain;
-            stream.hostPort = UInt16(activeProfile!.port)
+            stream.hostPort = activeProfile!.port.unsignedShortValue
             activeProfile!._jid = nil
             stream.myJID = activeProfile!.jid;
-
-            xmppMessageDeliveryReceipts = XMPPMessageDeliveryReceipts(dispatchQueue: dispatch_get_main_queue())
-            xmppMessageDeliveryReceipts!.autoSendMessageDeliveryReceipts = true
-            xmppMessageDeliveryReceipts!.autoSendMessageDeliveryRequests = true
-            xmppMessageDeliveryReceipts!.deactivate()
-            xmppMessageDeliveryReceipts!.activate(stream)
-
             try stream.connectWithTimeout(XMPPStreamTimeoutNone)
         }
         catch {
@@ -218,7 +228,7 @@ extension AppDelegate: UIApplicationDelegate {
         dataController = DataController(app: self)
         stream.startTLSPolicy = XMPPStreamStartTLSPolicy.Required
         stream.keepAliveInterval = 30
-        stream.enableBackgroundingOnSocket = true
+//        stream.enableBackgroundingOnSocket = true
         
 //        navigation.navigationBar.barTintColor = UIColor(red: 17.0/256, green: 138.0/256, blue: 222.0/256, alpha: 1.0)
         navigation.navigationBar.tintColor = UIColor.whiteColor()
@@ -322,41 +332,5 @@ extension AppDelegate: UIApplicationDelegate {
     
     func application(application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: NSError) {
         print(error)
-    }
-}
-
-extension NSTimer {
-    /**
-     Creates and schedules a one-time `NSTimer` instance.
-     
-     - Parameters:
-     - delay: The delay before execution.
-     - handler: A closure to execute after `delay`.
-     
-     - Returns: The newly-created `NSTimer` instance.
-     */
-    class func schedule(delay delay: NSTimeInterval, handler: NSTimer! -> Void) -> NSTimer {
-        let fireDate = delay + CFAbsoluteTimeGetCurrent()
-        let timer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault, fireDate, 0, 0, 0, handler)
-        CFRunLoopAddTimer(CFRunLoopGetCurrent(), timer, kCFRunLoopCommonModes)
-        return timer
-    }
-    
-    /**
-     Creates and schedules a repeating `NSTimer` instance.
-     
-     - Parameters:
-     - repeatInterval: The interval (in seconds) between each execution of
-     `handler`. Note that individual calls may be delayed; subsequent calls
-     to `handler` will be based on the time the timer was created.
-     - handler: A closure to execute at each `repeatInterval`.
-     
-     - Returns: The newly-created `NSTimer` instance.
-     */
-    class func schedule(repeatInterval interval: NSTimeInterval, handler: NSTimer! -> Void) -> NSTimer {
-        let fireDate = interval + CFAbsoluteTimeGetCurrent()
-        let timer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault, fireDate, interval, 0, 0, handler)
-        CFRunLoopAddTimer(CFRunLoopGetCurrent(), timer, kCFRunLoopCommonModes)
-        return timer
     }
 }

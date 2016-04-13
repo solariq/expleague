@@ -19,10 +19,6 @@ class Weak<T: AnyObject> {
 }
 
 class ExpLeagueOrder: NSManagedObject {
-    var stream: XMPPStream {
-        return AppDelegate.instance.stream
-    }
-
     var count: Int {
         return messagesRaw.count
     }
@@ -53,6 +49,32 @@ class ExpLeagueOrder: NSManagedObject {
         return before - NSDate().timeIntervalSinceReferenceDate
     }
     
+    private dynamic var _icon: UIImage?
+    var typeIcon: UIImage {
+        if (_icon == nil) {
+            var tags: [String] = []
+            for msg in messagesRaw {
+                if let message = msg as? ExpLeagueMessage, let change = message.change {
+                    if (change.target == .Tag) {
+                        switch change.type {
+                        case .Add:
+                            tags.append(change.name)
+                            break
+                        case .Remove:
+                            if let index = tags.indexOf(change.name) {
+                                tags.removeAtIndex(index)
+                            }
+                            break
+                        default: break
+                        }
+                    }
+                }
+            }
+            return tags.isEmpty ? UIImage(named: "search_icon")! : parent.tag(name: tags.last!)?.icon ?? UIImage(named: "search_icon")!
+        }
+        return _icon!
+    }
+    
     func message(index: Int) -> ExpLeagueMessage {
         return messagesRaw[index] as! ExpLeagueMessage
     }
@@ -68,8 +90,7 @@ class ExpLeagueOrder: NSManagedObject {
         save()
     }
 
-    dynamic weak var model: ChatModel?
-    
+
     func iq(iq iq: XMPPIQ) {
     }
     
@@ -80,7 +101,7 @@ class ExpLeagueOrder: NSManagedObject {
         let msg = XMPPMessage(type: "groupchat", to: jid)
         msg.addBody(text)
         message(message:msg)
-        stream.sendElement(msg)
+        parent.send(msg)
     }
     
     func send(xml xml: DDXMLElement) {
@@ -91,7 +112,7 @@ class ExpLeagueOrder: NSManagedObject {
         let msg = XMPPMessage(type: type, to: jid)
         msg.addChild(xml)
         message(message:msg)
-        stream.sendElement(msg)
+        parent.send(msg)
     }
     
     var jid : XMPPJID {
@@ -110,7 +131,7 @@ class ExpLeagueOrder: NSManagedObject {
         flags = flags | ExpLeagueOrderFlags.Canceled.rawValue
         let msg = XMPPMessage(type: "normal", to: jid)
         msg.addChild(DDXMLElement(name: "cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
-        stream.sendElement(msg)
+        parent.send(msg)
         save()
     }
     
@@ -222,16 +243,13 @@ class ExpLeagueOrder: NSManagedObject {
         return _offer!
     }
     
-    private func save() {
-        do {
-            try self.managedObjectContext!.save()
-            model?.sync()
-            if let h = AppDelegate.instance.historyView, tableView = h.view as? UITableView {
-                tableView.reloadData()
-            }
-        } catch {
-            fatalError("Failure to save context: \(error)")
-        }
+    dynamic weak var model: ChatModel?
+    dynamic weak var badge: OrderBadge?
+    
+    override func save() {
+        model?.sync()
+        badge?.update(order: self)
+        super.save()
     }
 }
 

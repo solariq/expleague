@@ -4,9 +4,6 @@ import com.expleague.xmpp.Item;
 
 import javax.xml.bind.annotation.*;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * User: solar
@@ -113,38 +110,66 @@ public class Operations {
 
   @XmlRootElement
   public static class Progress extends Command {
-    @XmlElement(name = "tag", namespace = NS)
-    @XmlElementWrapper(name = "assigned", namespace = NS)
-    private List<Tag> assigned;
-
-    @XmlElement(namespace = NS)
-    private URI visited;
-
-    @XmlElement(namespace = NS)
-    private String call;
-
-
-    public Progress(Tag... tag) {
-      assigned = Arrays.asList(tag);
-    }
+    @XmlElement(name="change", namespace = NS)
+    private MetaChange metaChange;
 
     public Progress() {
     }
 
-    public Progress(String phone) {
-      call = phone;
+    public Progress(MetaChange metaChange) {
+      this.metaChange = metaChange;
     }
 
-    public Stream<Tag> assigned() {
-      return assigned.stream();
+    public MetaChange change() {
+      return metaChange;
     }
 
-    public boolean hasAssigned() {
-      return assigned != null;
-    }
+    @XmlRootElement(name = "change", namespace = "NS")
+    public static class MetaChange {
+      @XmlAttribute
+      private Operation operation;
 
-    public String phone() {
-      return call;
+      @XmlAttribute
+      private Target target;
+
+      @XmlValue
+      private String name;
+
+      @SuppressWarnings("unused")
+      public MetaChange() {}
+
+      public MetaChange(String name, Operation op, Target target) {
+        this.name = name;
+        operation = op;
+        this.target = target;
+      }
+
+      public String name() {
+        return this.name;
+      }
+
+      public Target target() {
+        return this.target;
+      }
+
+      public Operation operation() {
+        return this.operation;
+      }
+
+      @XmlEnum
+      public enum Operation {
+        @XmlEnumValue("add") ADD,
+        @XmlEnumValue("remove") REMOVE,
+        @XmlEnumValue("visit") VISIT
+      }
+
+      @XmlEnum
+      public enum Target {
+        @XmlEnumValue("pattern") PATTERNS,
+        @XmlEnumValue("tag") TAGS,
+        @XmlEnumValue("phone") PHONE,
+        @XmlEnumValue("url") URL,
+      }
     }
   }
 }

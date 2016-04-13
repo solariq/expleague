@@ -33,12 +33,21 @@ public class Tag extends Item {
     this.name = name;
   }
 
+  public Tag(String name, String icon) {
+    this.name = name;
+    this.icon = icon;
+  }
+
   public double score() {
     return score != null ? score : 0.;
   }
 
   public String name() {
     return name;
+  }
+
+  public String icon() {
+    return this.icon;
   }
 
   @Override

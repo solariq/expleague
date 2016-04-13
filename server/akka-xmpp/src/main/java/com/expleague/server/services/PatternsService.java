@@ -1,9 +1,11 @@
 package com.expleague.server.services;
 
+import com.expleague.model.Pattern;
 import com.expleague.model.Tag;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.dao.PatternsRepository;
 import com.expleague.util.akka.UntypedActorAdapter;
+import com.expleague.xmpp.control.expleague.Intent;
 import com.expleague.xmpp.control.expleague.PatternsQuery;
 import com.expleague.xmpp.control.expleague.TagsQuery;
 import com.expleague.xmpp.stanza.Iq;
@@ -16,6 +18,15 @@ import java.util.stream.Collectors;
  */
 public class PatternsService extends UntypedActorAdapter {
   public void invoke(Iq<PatternsQuery> rosterIq) {
-    sender().tell(Iq.answer(rosterIq, new PatternsQuery(PatternsRepository.instance().all().collect(Collectors.toList()))), self());
+    switch (rosterIq.get().intent()) {
+      case PRESENTATION:
+        sender().tell(Iq.answer(rosterIq, new PatternsQuery(PatternsRepository.instance().all().map(
+            Pattern::presentation
+        ).collect(Collectors.toList()))), self());
+        break;
+      case WORK:
+        sender().tell(Iq.answer(rosterIq, new PatternsQuery(PatternsRepository.instance().all().collect(Collectors.toList()))), self());
+        break;
+    }
   }
 }

@@ -114,7 +114,10 @@ public class AnswerViewController {
           alert.getItems().addAll(ExpLeagueConnection.instance().listPatterns().collect(Collectors.toList()));
           alert.setTitle("Шаблоны");
           alert.setHeaderText("Выберите шаблон");
-          alert.showAndWait().ifPresent(p -> editorPane.insertText(p.body()));
+          alert.showAndWait().ifPresent(p -> {
+            editorPane.insertText(p.body());
+            task.use(p);
+          });
         }, activeFileEditorIsNull);
 
     //---- ToolBar ----

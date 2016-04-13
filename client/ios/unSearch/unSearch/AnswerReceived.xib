@@ -55,7 +55,7 @@
                         </constraints>
                     </imageView>
                     <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="isX-wP-13W">
-                        <rect key="frame" x="292" y="0.0" width="20" height="76"/>
+                        <rect key="frame" x="292" y="4" width="20" height="67"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="20" id="0Gb-NO-hKR"/>
                         </constraints>
@@ -116,9 +116,9 @@
                     <constraint firstItem="7xR-it-7RC" firstAttribute="leading" secondItem="FGu-ay-rft" secondAttribute="trailing" id="FT4-fa-nfV"/>
                     <constraint firstItem="Bw6-4t-U6S" firstAttribute="centerX" secondItem="H2p-sc-9uM" secondAttribute="centerX" id="GWz-I1-wY0"/>
                     <constraint firstItem="hJC-g4-iAS" firstAttribute="centerY" secondItem="7xR-it-7RC" secondAttribute="centerY" id="HEc-PB-dNn"/>
-                    <constraint firstItem="isX-wP-13W" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="-8" id="Jg5-U5-T5b"/>
+                    <constraint firstItem="isX-wP-13W" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="-4" id="Jg5-U5-T5b"/>
                     <constraint firstItem="hJC-g4-iAS" firstAttribute="leading" secondItem="7xR-it-7RC" secondAttribute="trailing" id="LiP-sC-h2d"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="isX-wP-13W" secondAttribute="bottom" constant="25" id="Onu-rX-auT"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="isX-wP-13W" secondAttribute="bottom" constant="30" id="Onu-rX-auT"/>
                     <constraint firstItem="K7d-6f-GIZ" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="4" id="QDC-Pg-HFj"/>
                     <constraint firstItem="cN6-UF-wjn" firstAttribute="leading" secondItem="xh6-zX-ERF" secondAttribute="trailing" id="Rcd-nV-7qJ"/>
                     <constraint firstItem="hJC-g4-iAS" firstAttribute="centerX" secondItem="H2p-sc-9uM" secondAttribute="centerX" id="TZZ-3Y-dgb"/>

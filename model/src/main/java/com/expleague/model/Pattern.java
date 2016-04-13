@@ -31,6 +31,11 @@ public class Pattern extends Item {
   public Pattern() {
   }
 
+  public Pattern(String name, String icon) {
+    this.name = name;
+    this.icon = icon;
+  }
+
   @Override
   public String toString() {
     return name;
@@ -38,5 +43,13 @@ public class Pattern extends Item {
 
   public CharSequence body() {
     return body;
+  }
+
+  public String name() {
+    return name;
+  }
+
+  public Pattern presentation() {
+    return new Pattern(name, icon);
   }
 }

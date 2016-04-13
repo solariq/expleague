@@ -3,6 +3,8 @@ package com.expleague.expert.xmpp;
 import com.expleague.expert.forms.AnswerViewController;
 import com.expleague.expert.xmpp.events.*;
 import com.expleague.model.*;
+import com.expleague.model.Operations.Progress;
+import com.expleague.model.Operations.Progress.MetaChange;
 import com.expleague.model.patch.Patch;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
@@ -62,7 +64,7 @@ public class ExpertTask {
       //noinspection ConstantConditions
       for (final File patchFile: patchesRoot.listFiles()) {
         final CharSequence patchText = StreamTools.readFile(patchFile);
-        final Patch patch = (Patch) Patch.create(patchText);
+        final Patch patch = Patch.create(patchText);
         patch.file(patchFile);
         patches.add(patch);
         final String patchFileName = patchFile.getName();
@@ -117,17 +119,32 @@ public class ExpertTask {
           break;
       }
     }
-    else if (command instanceof Operations.Progress) {
-      final Operations.Progress progress = (Operations.Progress) command;
+    else if (command instanceof Progress) {
+      final Progress progress = (Progress) command;
 
-      if (progress.hasAssigned()) {
-        tags.clear();
-        progress.assigned().forEach(tags::add);
-        eventsReceiver.accept(new TaskTagsAssignedEvent(progress, this));
-      }
-      else if (progress.phone() != null) {
-        calls.add(progress.phone());
-        eventsReceiver.accept(new TaskCallEvent(progress, this));
+      final MetaChange change = progress.change();
+      if (change != null) {
+        switch(change.target()) {
+          case PATTERNS: // already in answer
+            break;
+          case TAGS:
+            if (change.operation() == MetaChange.Operation.ADD) {
+              ExpLeagueConnection.instance().listTags().filter(
+                  tag -> tag.name().equals(change.name())
+              ).findFirst().ifPresent(tags::add);
+            }
+            else {
+              ExpLeagueConnection.instance().listTags().filter(
+                  tag -> tag.name().equals(change.name())
+              ).findFirst().ifPresent(tags::remove);
+            }
+            eventsReceiver.accept(new TaskTagsAssignedEvent(progress, this));
+            break;
+          case PHONE:
+            calls.add(change.name());
+            eventsReceiver.accept(new TaskCallEvent(progress, this));
+            break;
+        }
       }
     }
     else if (command instanceof Operations.Resume) {
@@ -175,7 +192,7 @@ public class ExpertTask {
     ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.GROUP_CHAT, msg));
   }
 
-  public void progress(String item) {
+  public void progress(Progress item) {
     ExpLeagueConnection.instance().send(new Message(offer.room(), item));
   }
 
@@ -265,14 +282,20 @@ public class ExpertTask {
   private final List<Tag> tags = new ArrayList<>();
   public void tag(Tag tag) {
     tags.add(tag);
-    final Operations.Progress progress = new Operations.Progress(tags.toArray(new Tag[tags.size()]));
+    final Progress progress = new Progress(new MetaChange(tag.name(), Progress.MetaChange.Operation.ADD, MetaChange.Target.TAGS));
     ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.NORMAL, progress));
     eventsReceiver.accept(new TaskTagsAssignedEvent(progress, this));
   }
 
   public void untag(Tag tag) {
     tags.remove(tag);
-    final Operations.Progress progress = new Operations.Progress(tags.toArray(new Tag[tags.size()]));
+    final Progress progress = new Progress(new Progress.MetaChange(tag.name(), MetaChange.Operation.REMOVE, MetaChange.Target.TAGS));
+    ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.NORMAL, progress));
+    eventsReceiver.accept(new TaskTagsAssignedEvent(progress, this));
+  }
+
+  public void use(Pattern pattern) {
+    final Progress progress = new Progress(new Progress.MetaChange(pattern.name(), Progress.MetaChange.Operation.ADD, MetaChange.Target.PATTERNS));
     ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.NORMAL, progress));
     eventsReceiver.accept(new TaskTagsAssignedEvent(progress, this));
   }
@@ -284,7 +307,7 @@ public class ExpertTask {
   private final List<String> calls = new ArrayList<>();
   public void call(String phone) {
     calls.add(phone);
-    final Operations.Progress progress = new Operations.Progress(phone);
+    final Progress progress = new Progress(new MetaChange(phone, MetaChange.Operation.VISIT, MetaChange.Target.PHONE));
     ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.NORMAL, progress));
     eventsReceiver.accept(new TaskCallEvent(progress, this));
   }

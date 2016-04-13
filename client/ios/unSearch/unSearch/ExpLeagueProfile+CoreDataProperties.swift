@@ -2,7 +2,7 @@
 //  ExpLeagueProfile+CoreDataProperties.swift
 //  unSearch
 //
-//  Created by Igor Kuralenok on 15.01.16.
+//  Created by Igor E. Kuralenok on 12/04/16.
 //  Copyright © 2016 Experts League Inc. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -14,12 +14,16 @@ import CoreData
 
 extension ExpLeagueProfile {
 
-    @NSManaged var active: Bool
+    @NSManaged var active: NSNumber
     @NSManaged var domain: String
-    @NSManaged var port: Int16
     @NSManaged var login: String
-    @NSManaged var passwd: String
     @NSManaged var name: String
+    @NSManaged var orderSelected: NSNumber?
+    @NSManaged var passwd: String
+    @NSManaged var port: NSNumber
     @NSManaged var orders: NSOrderedSet
-    @NSManaged var orderSelected: Int16
+    @NSManaged var queue: NSSet?
+    @NSManaged var expertsSet: NSSet?
+    @NSManaged var tagsSet: NSSet?
+
 }

@@ -78,7 +78,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UITextViewD
         stream.disconnect();
         
         stream.hostName = testing!.domain
-        stream.hostPort = UInt16(testing!.port)
+        stream.hostPort = testing!.port.unsignedShortValue
         stream.startTLSPolicy = XMPPStreamStartTLSPolicy.Required
         stream.myJID = testing!.jid;
         do {
@@ -128,7 +128,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UITextViewD
         testing!.domain = hostParts![0]
         testing!.login = userField.text!
         testing!.passwd = passwdField.text!
-        testing!.port = hostParts!.count > 1 ? Int16(hostParts![1])! : Int16(5222)
+        testing!.port = hostParts!.count > 1 ? NSNumber(short: Int16(hostParts![1])!) : NSNumber(long: 5222)
         do {
             try testing!.managedObjectContext!.save()
         }

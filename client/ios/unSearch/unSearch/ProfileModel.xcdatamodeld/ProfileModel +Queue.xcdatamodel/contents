@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="10171" systemVersion="15E65" minimumToolsVersion="Xcode 7.0">
-    <entity name="Message" representedClassName="unSearch.Data.ExpLeagueMessage" syncable="YES">
+    <entity name="Message" representedClassName="unSearch.ExpLeagueMessage" syncable="YES">
         <attribute name="body" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="from" attributeType="String" syncable="YES"/>
         <attribute name="propertiesRaw" optional="YES" attributeType="String" syncable="YES"/>
@@ -8,7 +8,7 @@
         <attribute name="typeRaw" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <relationship name="parentRaw" maxCount="1" deletionRule="Nullify" destinationEntity="Order" inverseName="messagesRaw" inverseEntity="Order" syncable="YES"/>
     </entity>
-    <entity name="Order" representedClassName="unSearch.Data.ExpLeagueOrder" syncable="YES">
+    <entity name="Order" representedClassName="unSearch.ExpLeagueOrder" syncable="YES">
         <attribute name="archived" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="flags" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="id" attributeType="String" syncable="YES"/>
@@ -17,7 +17,7 @@
         <relationship name="messagesRaw" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Message" inverseName="parentRaw" inverseEntity="Message" spotlightIndexingEnabled="YES" syncable="YES"/>
         <relationship name="parent" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Profile" inverseName="orders" inverseEntity="Profile" syncable="YES"/>
     </entity>
-    <entity name="Profile" representedClassName="unSearch.Data.ExpLeagueProfile" syncable="YES">
+    <entity name="Profile" representedClassName="ExpLeagueProfile" syncable="YES">
         <attribute name="active" attributeType="Boolean" syncable="YES"/>
         <attribute name="domain" attributeType="String" syncable="YES"/>
         <attribute name="login" attributeType="String" syncable="YES"/>
@@ -26,10 +26,17 @@
         <attribute name="passwd" attributeType="String" syncable="YES"/>
         <attribute name="port" attributeType="Integer 16" defaultValueString="5222" syncable="YES"/>
         <relationship name="orders" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Order" inverseName="parent" inverseEntity="Order" syncable="YES"/>
+        <relationship name="queue" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="QueueItem" inverseName="parent" inverseEntity="QueueItem" syncable="YES"/>
+    </entity>
+    <entity name="QueueItem" representedClassName="unSearch.QueueItem" syncable="YES">
+        <attribute name="body" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="receipt" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="parent" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Profile" inverseName="queue" inverseEntity="Profile" syncable="YES"/>
     </entity>
     <elements>
         <element name="Message" positionX="-63" positionY="-18" width="128" height="135"/>
-        <element name="Order" positionX="-261" positionY="-54" width="128" height="150"/>
-        <element name="Profile" positionX="-162" positionY="-9" width="128" height="165"/>
+        <element name="Order" positionX="-261" positionY="-54" width="128" height="30"/>
+        <element name="Profile" positionX="-162" positionY="-9" width="128" height="180"/>
+        <element name="QueueItem" positionX="-162" positionY="36" width="128" height="90"/>
     </elements>
 </model>

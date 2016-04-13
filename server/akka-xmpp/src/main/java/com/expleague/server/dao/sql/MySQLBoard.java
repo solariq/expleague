@@ -1,6 +1,7 @@
 package com.expleague.server.dao.sql;
 
 import com.expleague.model.Offer;
+import com.expleague.model.Tag;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.ExpLeagueRoomAgent;
@@ -117,11 +118,11 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   }
 
   @Override
-  public Stream<String> tags() {
+  public Stream<Tag> tags() {
     tags = new TObjectIntHashMap<>();
     stream("all-tags", "SELECT * FROM Tags", q -> {}).forEach(rs -> {
       try {
-        tags.put(rs.getString(2), rs.getInt(1));
+        tags.put(new Tag(rs.getString(2), rs.getString(3)), rs.getInt(1));
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
@@ -130,15 +131,16 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     return tags.keySet().stream();
   }
 
-  private TObjectIntHashMap<String> tags;
-  private int tag(String tag) {
+  private TObjectIntHashMap<Tag> tags;
+  private int tag(String tagName) {
+    final Tag tag = new Tag(tagName);
     if (tags == null || !tags.containsKey(tag))
       tags();
     if (tags.containsKey(tag))
       return tags.get(tag);
     final PreparedStatement statement = createStatement("add-tag", "INSERT Tags SET tag = ?", true);
     try {
-      statement.setString(1, tag);
+      statement.setString(1, tag.name());
       statement.executeUpdate();
       try (final ResultSet gk = statement.getGeneratedKeys()) {
         gk.next();
@@ -288,14 +290,14 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
 
     boolean tagsAcquired = false;
     @Override
-    public String[] tags() {
+    public Tag[] tags() {
       if (!tagsAcquired) {
         tagsAcquired = true;
-        super.tags.addAll(stream("order-topics", "SELECT Tags.tag FROM Topics JOIN Tags ON Topics.tag = Tags.id WHERE `order` = ?",
+        super.tags.addAll(stream("order-topics", "SELECT Tags.tag, Tags.icon FROM Topics JOIN Tags ON Topics.tag = Tags.id WHERE `order` = ?",
             stmt -> stmt.setInt(1, id)
         ).map(rs -> {
           try {
-            return rs.getString(1);
+            return new Tag(rs.getString(1), rs.getString(2));
           } catch (SQLException e) {
             throw new RuntimeException(e);
           }

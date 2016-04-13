@@ -11,6 +11,25 @@ import CoreData
 import XMPPFramework
 import MMMarkdown
 
+struct ExpLeagueOrderMetaChange {
+    let type: ExpLeagueOrderMetaChangeType
+    let target: ExpLeagueOrderMetaChangeTarget
+    let name: String
+}
+
+enum ExpLeagueOrderMetaChangeType: String {
+    case Add = "add"
+    case Remove = "remove"
+    case Visit = "visit"
+}
+
+enum ExpLeagueOrderMetaChangeTarget: String {
+    case Tag = "tag"
+    case Pattern = "pattern"
+    case Phone = "phone"
+    case Url = "url"
+}
+
 class ExpLeagueMessage: NSManagedObject {
     static let EXP_LEAGUE_SCHEME = "http://expleague.com/scheme"
 
@@ -40,17 +59,42 @@ class ExpLeagueMessage: NSManagedObject {
     }
     
     var expert: ExpLeagueMember? {
-        var expert: ExpLeagueMember?
         if (type == .ExpertAssignment) {
             if (body == nil || body!.isEmpty) {
-                expert = try! ExpLeagueMember(json: properties)
+                return parent.parent.expert(login: properties["login"] as! String, factory: {context in
+                    return try! ExpLeagueMember(json: self.properties, context: context)
+                })
             }
             else {
-                expert = ExpLeagueMember(xml: try! DDXMLElement(XMLString: body))
+                let xml = try! DDXMLElement(XMLString: body)
+                return parent.parent.expert(login: xml.attributeStringValueForName("login"), factory: {context in
+                    return ExpLeagueMember(xml: xml, context: context)
+                })
             }
-            expert = AppDelegate.instance.activeProfile!.expert(expert!.login) ?? expert
         }
-        return expert
+        return nil
+    }
+    
+    var change: ExpLeagueOrderMetaChange? {
+        if (type == .ExpertProgress) {
+            if let xml = try? DDXMLElement(XMLString: body) where body != nil && !body!.isEmpty {
+                if let change = xml.elementForName("change", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+                    return ExpLeagueOrderMetaChange(
+                        type: ExpLeagueOrderMetaChangeType(rawValue: change.attributeStringValueForName("operation"))!,
+                        target: ExpLeagueOrderMetaChangeTarget(rawValue: change.attributeStringValueForName("target"))!,
+                        name: change.stringValue()
+                    )
+                }
+            }
+            else if properties["type"] as? String == "pageVisited" {
+                return ExpLeagueOrderMetaChange(
+                    type: .Visit,
+                    target: .Url,
+                    name: properties["data"] as! String
+                )
+            }
+        }
+        return nil
     }
     
     func setProperty(name: String, value: AnyObject) {
@@ -125,20 +169,16 @@ class ExpLeagueMessage: NSManagedObject {
         }
         if (type == .System) {
             if let element = msg.elementForName("expert", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
-                properties["type"] = "expert"
-                properties["login"] = element.attributeStringValueForName("login")
-                properties["name"] = element.attributeStringValueForName("name")
-                properties["tasks"] = element.attributeStringValueForName("tasks")
-                if let ava = element.elementForName("avatar", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
-                    properties["avatar"] = ava.stringValue()
-                    parent.parent.avatar(properties["login"] as! String, url: ava.stringValue())
-                }
                 type = .ExpertAssignment
                 body = element.XMLString()
             }
-            if let _ = msg.elementForName("cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+            else if let _ = msg.elementForName("cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
                 properties["command"] = "cancel"
                 type = .ExpertCancel
+            }
+            else if let progress = msg.elementForName("progress", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+                body = progress.XMLString()
+                type = .ExpertProgress
             }
             
             if (!textChildren.isEmpty && textChildren[0].stringValue.hasPrefix("{\"type\":\"pageVisited\"")) {
@@ -213,12 +253,7 @@ class ExpLeagueMessage: NSManagedObject {
         archiver.encodeObject(properties)
         archiver.finishEncoding()
         self.propertiesRaw = data.xmpp_base64Encoded()
-        
-        do {
-            try self.managedObjectContext!.save()
-        } catch {
-            fatalError("Failure to save context: \(error)")
-        }
+        self.save()
     }
 
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {

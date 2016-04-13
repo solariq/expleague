@@ -6,6 +6,7 @@ import com.expleague.server.services.TagsService;
 import com.expleague.server.services.XMPPServices;
 import com.expleague.xmpp.Item;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
@@ -24,6 +25,9 @@ public class TagsQuery extends Item {
   @XmlElement(name = "tag", namespace = Operations.NS)
   private List<Tag> tags;
 
+  @XmlAttribute
+  private Intent intent;
+
   public TagsQuery(List<Tag> tags) {
     this.tags = tags;
   }
@@ -31,7 +35,15 @@ public class TagsQuery extends Item {
   public TagsQuery() {
   }
 
+  public TagsQuery(Intent intent) {
+    this.intent = intent;
+  }
+
   public List<Tag> tags() {
     return tags;
+  }
+
+  public Intent intent() {
+    return intent != null ? intent : Intent.PRESENTATION;
   }
 }

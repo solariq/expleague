@@ -37,6 +37,9 @@ class HistoryViewController: UITableViewController {
         finished.removeAll()
         archived.removeAll()
         let orders = AppDelegate.instance.activeProfile?.orders
+        if (orders == nil) {
+            return
+        }
         for orderO in orders! {
             let order = orderO as! ExpLeagueOrder
             if (order.isActive) {
@@ -101,59 +104,12 @@ class HistoryViewController: UITableViewController {
             cell.textLabel!.textColor = UIColor.lightGrayColor()
             return cell
         case 0 where !ongoing.isEmpty:
-            let o = ongoing[indexPath.row]
             let cell = tableView.dequeueReusableCellWithIdentifier("OngoingOrder", forIndexPath: indexPath) as! OngoingOrderStateCell
-            cell.title.text = o.text
-            if (o.count > 0 && o.message(o.count - 1).type == .Answer) {
-                cell.status.textColor = OngoingOrderStateCell.GREEN_COLOR
-                cell.status.text = "ОТВЕТ ГОТОВ"
-            }
-            else if (o.status == .Overtime) {
-                let formatter = NSDateFormatter()
-                formatter.timeStyle = .ShortStyle
-                formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0)
-                formatter.dateFormat = "H'ч 'mm'м'"
-                
-                cell.status.textColor = OngoingOrderStateCell.ERROR_COLOR
-                cell.status.text = "ПРОСРОЧЕН НА \(formatter.stringFromDate(NSDate(timeIntervalSince1970: -o.timeLeft)))"
-            }
-            else if (o.status == .ExpertSearch) {
-                cell.status.textColor = OngoingOrderStateCell.OK_COLOR
-                cell.status.text = "ИЩЕМ ЭКСПЕРТА"
-            }
-            else if (o.status == .Open) {
-                cell.status.textColor = OngoingOrderStateCell.OK_COLOR
-                cell.status.text = "В РАБОТЕ: \(o.expert!.name)"
-            }
-            let formatter = NSDateFormatter()
-            formatter.dateStyle = .ShortStyle;
-            formatter.timeStyle = .ShortStyle;
-            
-            formatter.doesRelativeDateFormatting = true
-            cell.date.text = formatter.stringFromDate(NSDate(timeIntervalSinceReferenceDate: o.started))
-            for view in cell.contentView.subviews {
-                if (view is JSCustomBadge) {
-                    view.removeFromSuperview()
-                }
-            }
-            if (o.unreadCount > 0) {
-                let badge = JSCustomBadge(string: "\(o.unreadCount)")
-                let size = badge.frame.size
-                badge.frame = CGRectMake(cell.frame.maxX - size.width - 4, 4, size.width, size.height)
-                cell.contentView.addSubview(badge)
-            }
+            cell.update(order: ongoing[indexPath.row])
             return cell
         case 1:
-            let o = finished[indexPath.row]
             let cell = tableView.dequeueReusableCellWithIdentifier("FinishedOrder", forIndexPath: indexPath) as! FinishedOrderStateCell
-            cell.title.text = o.text
-            cell.shortAnswer.text = (o.status == .Canceled) ? "ОТМЕНЕН" : o.shortAnswer
-            let formatter = NSDateFormatter()
-            formatter.dateStyle = .ShortStyle;
-            formatter.timeStyle = .ShortStyle;
-            formatter.doesRelativeDateFormatting = true
-            
-            cell.date.text = formatter.stringFromDate(NSDate(timeIntervalSinceReferenceDate: o.started))
+            cell.update(order: finished[indexPath.row])
             return cell
         default:
             return UITableViewCell()
@@ -297,39 +253,81 @@ extension HistoryViewController: UISplitViewControllerDelegate {
             AppDelegate.instance.tabs.tabBar.hidden = false
         }
     }
-
-//    func splitViewController(splitViewController: UISplitViewController, showDetailViewController vc: UIViewController, sender: AnyObject?) -> Bool {
-//        let mvc = vc as! OrderDetailsVeiwController
-//        return false
-//    }
-//
-//    func splitViewController(splitViewController: UISplitViewController, showViewController vc: UIViewController, sender: AnyObject?) -> Bool {
-//        return true
-//    }
-    
-//    func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController: UIViewController, ontoPrimaryViewController primaryViewController: UIViewController) -> Bool {
-//        let mvc = secondaryViewController as! OrderDetailsVeiwController
-//        if (selected != nil) {
-////            mvc.data = model(selected!)
-//            return false
-//        }
-//        return true
-//    }
 }
 
-class OngoingOrderStateCell: UITableViewCell {
-    static let OK_COLOR = UIColor(red: 17.0/256, green: 138.0/256, blue: 222.0/256, alpha: 1.0)
-    static let ERROR_COLOR = UIColor(red: 194.0/256, green: 60.0/256, blue: 60.0/256, alpha: 1.0)
-    static let GREEN_COLOR = UIColor(red: 132.0/256, green: 194.0/256, blue: 11.0/256, alpha: 1.0)
+class OrderBadge: UITableViewCell {
+    @IBOutlet weak var unreadBadge: UILabel!
     @IBOutlet weak var contentTypeIcon: UIImageView!
     @IBOutlet weak var title: UILabel!
+    
+    override func awakeFromNib() {
+        unreadBadge.layer.cornerRadius = unreadBadge.frame.height / 2
+        unreadBadge.clipsToBounds = true
+    }
+    
+    func update(order o: ExpLeagueOrder) {
+        o.badge = self
+        contentTypeIcon.image = o.typeIcon
+        title.text = o.text
+        let unread = o.unreadCount
+        if (unread > 0) {
+            unreadBadge.hidden = false
+            unreadBadge.text = "\(unread)"
+        }
+        else {
+            unreadBadge.hidden = true
+        }
+    }
+}
+
+class OngoingOrderStateCell: OrderBadge {
     @IBOutlet weak var status: UILabel!
     @IBOutlet weak var date: UILabel!
+    
+    override func update(order o: ExpLeagueOrder) {
+        super.update(order: o)
+        if (o.count > 0 && o.message(o.count - 1).type == .Answer) {
+            status.textColor = Palette.OK
+            status.text = "ОТВЕТ ГОТОВ"
+        }
+        else if (o.status == .Overtime) {
+            let formatter = NSDateFormatter()
+            formatter.timeStyle = .ShortStyle
+            formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0)
+            formatter.dateFormat = "H'ч 'mm'м'"
+            
+            status.textColor = Palette.ERROR
+            status.text = "ПРОСРОЧЕН НА \(formatter.stringFromDate(NSDate(timeIntervalSince1970: -o.timeLeft)))"
+        }
+        else if (o.status == .ExpertSearch) {
+            status.textColor = Palette.COMMENT
+            status.text = "ИЩЕМ ЭКСПЕРТА"
+        }
+        else if (o.status == .Open) {
+            status.textColor = Palette.COMMENT
+            status.text = "В РАБОТЕ: \(o.expert!.name)"
+        }
+        let formatter = NSDateFormatter()
+        formatter.dateStyle = .ShortStyle;
+        formatter.timeStyle = .ShortStyle;
+        
+        formatter.doesRelativeDateFormatting = true
+        date.text = formatter.stringFromDate(NSDate(timeIntervalSinceReferenceDate: o.started))
+    }
 }
 
-class FinishedOrderStateCell: UITableViewCell {
-    @IBOutlet weak var contentTypeIcon: UIImageView!
-    @IBOutlet weak var title: UILabel!
+class FinishedOrderStateCell: OrderBadge {
     @IBOutlet weak var shortAnswer: UILabel!
     @IBOutlet weak var date: UILabel!
+    
+    override func update(order o: ExpLeagueOrder) {
+        super.update(order: o)
+        shortAnswer.text = (o.status == .Canceled) ? "ОТМЕНЕН" : o.shortAnswer
+        let formatter = NSDateFormatter()
+        formatter.dateStyle = .ShortStyle;
+        formatter.timeStyle = .ShortStyle;
+        formatter.doesRelativeDateFormatting = true
+        
+        date.text = formatter.stringFromDate(NSDate(timeIntervalSinceReferenceDate: o.started))
+    }
 }

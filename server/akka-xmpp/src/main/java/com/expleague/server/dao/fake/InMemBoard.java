@@ -1,6 +1,7 @@
 package com.expleague.server.dao.fake;
 
 import com.expleague.model.Offer;
+import com.expleague.model.Tag;
 import com.expleague.server.Roster;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
@@ -67,13 +68,13 @@ public class InMemBoard implements LaborExchange.Board {
   }
 
   @Override
-  public Stream<String> tags() {
+  public Stream<Tag> tags() {
     return history.stream().flatMap(o -> Stream.of(o.tags())).collect(Collectors.toSet()).stream();
   }
 
   public static class MyOrder extends ExpLeagueOrder {
     private final Map<JID, Role> roles = new HashMap<>();
-    protected final Set<String> tags = new HashSet<>();
+    protected final Set<Tag> tags = new HashSet<>();
     protected final List<StatusHistoryRecord> statusHistory = new ArrayList<>();
 
     protected double score = -1;
@@ -114,12 +115,12 @@ public class InMemBoard implements LaborExchange.Board {
 
     @Override
     protected void tag(String tag) {
-      tags.add(tag);
+      tags.add(new Tag(tag));
     }
 
     @Override
     protected void untag(String tag) {
-      tags.remove(tag);
+      tags.remove(new Tag(tag));
     }
 
     @Override
@@ -135,8 +136,8 @@ public class InMemBoard implements LaborExchange.Board {
     }
 
     @Override
-    public String[] tags() {
-      return tags.toArray(new String[tags.size()]);
+    public Tag[] tags() {
+      return tags.toArray(new Tag[tags.size()]);
     }
 
     @Override

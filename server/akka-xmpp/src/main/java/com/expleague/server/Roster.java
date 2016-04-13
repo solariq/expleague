@@ -45,7 +45,7 @@ public interface Roster {
           builder.score(feedback);
           if (feedback > 0) {
             Arrays.stream(o.tags()).forEach(tag ->
-                builder.tag(tag, feedback)
+                builder.tag(tag.name(), feedback)
             );
           }
           o.tags();
@@ -73,7 +73,7 @@ public interface Roster {
           final double feedback = o.feedback();
           if (feedback > 0) {
             Arrays.stream(o.tags()).forEach(
-                tag -> builder.tag(tag, feedback)
+                tag -> builder.tag(tag.name(), feedback)
             );
           }
         });

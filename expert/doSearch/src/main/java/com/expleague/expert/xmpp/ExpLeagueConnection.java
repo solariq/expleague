@@ -473,6 +473,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
           iq.setType(StanzaType.get);
           final String tagsNs = Operations.NS + "/tags";
           final Element q = ElementFactory.create("query", null, tagsNs);
+          q.setAttribute("intent", "work");
           iq.addChild(q);
           final Semaphore semaphore = new Semaphore(1);
           semaphore.acquire();
@@ -517,6 +518,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
           iq.setType(StanzaType.get);
           final String tagsNs = Operations.NS + "/patterns";
           final Element q = ElementFactory.create("query", null, tagsNs);
+          q.setAttribute("intent", "work");
           iq.addChild(q);
           final Semaphore semaphore = new Semaphore(1);
           semaphore.acquire();

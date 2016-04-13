@@ -5,6 +5,9 @@ import com.expleague.expert.profile.ProfileManager;
 import com.expleague.expert.profile.UserProfile;
 import com.expleague.expert.xmpp.ExpLeagueConnection;
 import com.expleague.expert.xmpp.ExpertTask;
+import com.expleague.model.Operations;
+import com.expleague.model.Operations.Progress;
+import com.expleague.model.Operations.Progress.MetaChange.Operation;
 import com.expleague.model.patch.ImagePatch;
 import com.expleague.model.patch.LinkPatch;
 import com.expleague.model.patch.TextPatch;
@@ -28,6 +31,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
+
+import static com.expleague.model.Operations.Progress.MetaChange.*;
 
 /**
  * Experts League
@@ -102,8 +107,10 @@ public class doSearch extends Application {
         final UserProfile active = ProfileManager.instance().active();
         final ExpertTask task = active != null ? active.expert().task() : null;
         if (item.startsWith("{\"type\":\"pageVisited\"")) {
-          if (task != null)
-            task.progress(item);
+          if (task != null) {
+            final JsonNode data = mapper.readTree(item).get("data");
+            task.progress(new Progress(new Progress.MetaChange(data.asText(), Operation.VISIT, Target.URL)));
+          }
           else
             response.setStatus(503);
         }

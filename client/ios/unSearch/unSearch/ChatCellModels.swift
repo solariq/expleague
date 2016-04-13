@@ -371,19 +371,19 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
         let timeLeft = order.before - CFAbsoluteTimeGetCurrent()
         switch(order.status) {
         case .Open, .ExpertSearch, .Deciding:
-            label.textColor = UIColor.lightGrayColor()
+            label.textColor = Palette.COMMENT
             label.text = "ОТКРЫТО. Осталось: " + formatPeriodRussian(timeLeft)
             break
         case .Overtime:
-            label.textColor = OngoingOrderStateCell.ERROR_COLOR
+            label.textColor = Palette.ERROR
             label.text = "ПРОСРОЧЕНО НА: " + formatPeriodRussian(-timeLeft)
             break
         case .Canceled:
-            label.textColor = UIColor.yellowColor()
+            label.textColor = Palette.COMMENT
             label.text = "ОТМЕНЕНО"
             break
         case .Closed:
-            label.textColor = OngoingOrderStateCell.GREEN_COLOR
+            label.textColor = Palette.OK
             label.text = "ВЫПОЛНЕНО"
             break
         default:
@@ -488,10 +488,13 @@ class ExpertModel: ChatCellModel {
     }
 }
 
-class TaskInProgressModel: ChatCellModel {
+class TaskInProgressModel: NSObject, ChatCellModel {
 //    let listener: OrderTracker
     var expertProperties = NSMutableDictionary()
     var pagesCount = 0
+    var callsCount = 0
+    var patterns: [ExpLeagueTag] = []
+    
     var type: CellType {
         return .TaskInProgress
     }
@@ -505,19 +508,40 @@ class TaskInProgressModel: ChatCellModel {
             throw ModelErrors.WrongCellType
         }
         eipCell.pages = pagesCount
+        eipCell.calls = callsCount
+        eipCell.topicIcon.image = order.typeIcon
+        
         if (eipCell.action == nil) {
             eipCell.action = {() -> Void in
                 self.order.cancel()
             }
         }
+        eipCell.patternsView.dataSource = self
+        eipCell.patternsView.delegate = self
     }
-    
+
     func accept(message: ExpLeagueMessage) -> Bool {
         expertProperties.addEntriesFromDictionary(message.properties as [NSObject : AnyObject])
-        if (message.type == .ExpertProgress) {
-            let type = message.properties["type"] as? String
-            if (type != nil && type! == "pageVisited") {
+        if let change = message.change {
+            switch change.target {
+            case .Pattern:
+                if let tag = order.parent.tag(name: change.name) {
+                    if (change.type != .Remove) {
+                        patterns.append(tag)
+                    }
+                    else if let index = patterns.indexOf(tag) {
+                        patterns.removeAtIndex(index)
+                    }
+                }
+                break
+            case .Url:
                 pagesCount += 1
+                break
+            case .Phone:
+                callsCount += 1
+                break
+            default:
+                break
             }
         }
         return message.type == .ExpertProgress || message.type == .ExpertAssignment
@@ -526,6 +550,25 @@ class TaskInProgressModel: ChatCellModel {
     let order: ExpLeagueOrder
     init(order: ExpLeagueOrder) {
         self.order = order
+    }
+}
+
+extension TaskInProgressModel: UICollectionViewDelegate, UICollectionViewDataSource {
+    func collectionView(collectionView: UICollectionView, canMoveItemAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return false
+    }
+    
+    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return section > 0 ? 0 : patterns.count
+    }
+    
+    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("PatternCell", forIndexPath: indexPath) as! AttachmentCell
+        let image = UIImageView(image: patterns[indexPath.item].icon)
+        image.contentMode = UIViewContentMode.ScaleAspectFit
+        image.backgroundColor = UIColor.whiteColor()
+        cell.content = image
+        return cell
     }
 }
 
@@ -585,7 +628,7 @@ class AnswerReceivedModel: ChatCellModel {
     }
 
     func height(maxWidth width: CGFloat) -> CGFloat {
-        return AnswerReceivedCell.height + (score == nil ? -20 : 0)
+        return AnswerReceivedCell.height + (score == nil ? -15 : 0)
     }
     
     func accept(message: ExpLeagueMessage) -> Bool {

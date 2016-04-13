@@ -1,6 +1,5 @@
 package com.expleague.server.services;
 
-import com.expleague.model.Tag;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.xmpp.control.expleague.TagsQuery;
@@ -14,6 +13,6 @@ import java.util.stream.Collectors;
  */
 public class TagsService extends UntypedActorAdapter {
   public void invoke(Iq<TagsQuery> rosterIq) {
-    sender().tell(Iq.answer(rosterIq, new TagsQuery(LaborExchange.board().tags().map(Tag::new).collect(Collectors.toList()))), self());
+    sender().tell(Iq.answer(rosterIq, new TagsQuery(LaborExchange.board().tags().collect(Collectors.toList()))), self());
   }
 }
