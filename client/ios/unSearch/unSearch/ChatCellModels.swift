@@ -504,6 +504,7 @@ class TaskInProgressModel: NSObject, ChatCellModel {
     var expertProperties = NSMutableDictionary()
     var pagesCount = 0
     var callsCount = 0
+    var topics: [ExpLeagueTag] = []
     var patterns: [ExpLeagueTag] = []
     
     var type: CellType {
@@ -520,7 +521,7 @@ class TaskInProgressModel: NSObject, ChatCellModel {
         }
         eipCell.pages = pagesCount
         eipCell.calls = callsCount
-        eipCell.topicIcon.image = order.typeIcon
+        eipCell.topicIcon.image = topics.isEmpty ? order.typeIcon : topics.last!.icon
         
         if (eipCell.action == nil) {
             eipCell.action = {() -> Void in
@@ -545,13 +546,21 @@ class TaskInProgressModel: NSObject, ChatCellModel {
                     }
                 }
                 break
+            case .Tag:
+                if let tag = order.parent.tag(name: change.name) {
+                    if (change.type != .Remove) {
+                        topics.append(tag)
+                    }
+                    else if let index = topics.indexOf(tag) {
+                        topics.removeAtIndex(index)
+                    }
+                }
+                break
             case .Url:
                 pagesCount += 1
                 break
             case .Phone:
                 callsCount += 1
-                break
-            default:
                 break
             }
         }

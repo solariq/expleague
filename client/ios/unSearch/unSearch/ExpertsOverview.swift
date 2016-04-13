@@ -281,10 +281,10 @@ class ExpertCell: UITableViewCell {
         avatar.online = expert.available
         switch (expert.group) {
         case .Favorites:
-            tasks.text = "Всего заданий: \(expert.tasks), из них ваших \(expert.myTasks)"
+            tasks.text = "заданий: \(expert.tasks), ваших: \(expert.myTasks)"
             break
         case .Top:
-            tasks.text = "Всего заданий: \(expert.tasks)"
+            tasks.text = "заданий: \(expert.tasks)"
             break
         }
 

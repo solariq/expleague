@@ -13,9 +13,9 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y0Q-pX-UuE">
-                    <rect key="frame" x="30" y="29" width="122" height="47"/>
+                    <rect key="frame" x="30" y="30" width="122" height="46"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                    <state key="normal" title="Нет">
+                    <state key="normal" title="Да">
                         <color key="titleColor" red="0.066666666669999999" green="0.54117647059999996" blue="0.87058823529999996" alpha="1" colorSpace="calibratedRGB"/>
                     </state>
                     <connections>
@@ -23,19 +23,19 @@
                     </connections>
                 </button>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Kp2-BM-aXp">
-                    <rect key="frame" x="168" y="29" width="122" height="47"/>
+                    <rect key="frame" x="168" y="30" width="122" height="46"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                    <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
-                    <state key="normal" title="Да, спасибо">
+                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                    <state key="normal" title="Нет">
                         <color key="titleColor" red="0.066666666666666666" green="0.54117647058823526" blue="0.87058823529411766" alpha="1" colorSpace="calibratedRGB"/>
                     </state>
                     <connections>
                         <action selector="fire:" destination="iN0-l3-epB" eventType="touchUpInside" id="UXC-AB-Tn1"/>
                     </connections>
                 </button>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ВАШ ВОПРОС РЕШЕН?" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6il-Cp-xxQ">
-                    <rect key="frame" x="82" y="8" width="156" height="17"/>
-                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Требуется дополнительная информация?" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6il-Cp-xxQ">
+                    <rect key="frame" x="11" y="8" width="298" height="18"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
