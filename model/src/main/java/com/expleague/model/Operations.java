@@ -109,7 +109,7 @@ public class Operations {
    */
 
   @XmlRootElement
-  public static class Progress extends Command {
+  public static class Progress extends Item {
     @XmlElement(name="change", namespace = NS)
     private MetaChange metaChange;
 
