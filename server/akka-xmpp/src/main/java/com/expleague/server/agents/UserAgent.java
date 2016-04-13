@@ -7,6 +7,7 @@ import com.expleague.model.Answer;
 import com.expleague.model.Delivered;
 import com.expleague.model.Operations;
 import com.expleague.server.Roster;
+import com.expleague.server.Subscription;
 import com.expleague.server.XMPPDevice;
 import com.expleague.server.XMPPUser;
 import com.expleague.util.akka.ActorMethod;
@@ -33,18 +34,13 @@ import java.util.stream.Stream;
 public class UserAgent extends PersistentActorAdapter {
   private static final Logger log = Logger.getLogger(UserAgent.class.getName());
   private final JID bareJid;
-  private final Map<JID, Presence> presenceMap = new HashMap<>();
   private final List<XMPPDevice> connected = new ArrayList<>();
   private final XMPPUser user;
+  private Map<String, Subscription> subscriptions = new HashMap<>();
 
   public UserAgent(JID jid) {
     this.bareJid = jid.bare();
     user = Roster.instance().user(jid.local());
-  }
-
-  @Override
-  protected void init() {
-    XMPP.subscribe(XMPP.jid(), self(), context());
   }
 
   public JID jid() {
@@ -66,6 +62,7 @@ public class UserAgent extends PersistentActorAdapter {
   @ActorMethod
   public void invoke(ConnStatus status) { // connection acquired
     final String resource = status.resource;
+    final JID deviceJid = new JID(jid().local(), jid().domain(), resource);
     final String actorResourceAddr = resource.isEmpty() ? "@@empty@@" : resource.replace('/', '&');
     final Option<ActorRef> option = context().child(actorResourceAddr);
     if (status.connected) {
@@ -86,18 +83,22 @@ public class UserAgent extends PersistentActorAdapter {
           PersistentActorContainer.props(Courier.class, status.device, sender()),
           actorResourceAddr
       );
+      if (!status.device.expert()) {
+        final ClientSubscription subscription = new ClientSubscription(bareJid);
+        subscriptions.put(resource, subscription);
+        XMPP.subscribe(subscription, context());
+      }
       sender().tell(courierRef, self());
-
-      presenceMap.values().stream()
-          .filter(Presence::available)
-          .forEach(p -> sender().tell(p, self()));
     }
     else {
       if (option.isDefined())
         context().stop(option.get());
       connected.remove(status.device);
-      if (connected.isEmpty())
-        invoke(new Presence(new JID(jid().local(), jid().domain(), resource), false));
+      invoke(new Presence(deviceJid, false));
+      final Subscription subscription = subscriptions.remove(resource);
+      if (subscription != null) {
+        XMPP.unsubscribe(subscription, context());
+      }
     }
   }
 
@@ -109,12 +110,7 @@ public class UserAgent extends PersistentActorAdapter {
   @ActorMethod
   public void invoke(final Stanza sta) {
     if (!sta.from().bareEq(jid())) { // incoming
-      if (sta instanceof Presence) {
-        final Presence replace = presenceMap.put(sta.from(), (Presence)sta);
-        if (!sta.equals(replace))
-          toConn(sta);
-      }
-      else if (sta instanceof Message) {
+      if (sta instanceof Message) {
         persist(sta, this::toConn);
       }
       else toConn(sta);
@@ -153,8 +149,8 @@ public class UserAgent extends PersistentActorAdapter {
   public static class Courier extends PersistentActorAdapter {
     private final XMPPDevice connectedDevice;
     private final ActorRef connection;
-    private Queue<Stanza> deliveryQueue = new ArrayDeque<>();
-    private Map<String, Stanza> confirmationAwaitingStanzas = new HashMap<>();
+    private Deque<Stanza> deliveryQueue = new ArrayDeque<>();
+    private Set<String> confirmationAwaitingStanzas = new HashSet<>();
 
     public Courier(XMPPDevice connectedDevice, ActorRef connection) {
       this.connectedDevice = connectedDevice;
@@ -165,72 +161,56 @@ public class UserAgent extends PersistentActorAdapter {
     public void onReceiveRecover(Object o) throws Exception {
       if (o instanceof Stanza) {
         final Stanza stanza = (Stanza) o;
-        if (isDeliveryOrderRequired(stanza)) {
-          deliveryQueue.add(stanza);
-        }
-        else {
-          confirmationAwaitingStanzas.put(stanza.id(), stanza);
-        }
+        deliveryQueue.add(stanza);
       }
       else if (o instanceof Delivered) {
-        final String id = ((Delivered) o).id();
-        confirmationAwaitingStanzas.remove(id);
-        deliveryQueue.stream().filter(
-          stanza -> stanza.id().equals(id)
-        ).findFirst().ifPresent(deliveryQueue::remove);
+        final Iterator<Stanza> riter = deliveryQueue.descendingIterator();
+        while (riter.hasNext()) {
+          if (riter.next().id().equals(((Delivered)o).id())) {
+            riter.remove();
+            break;
+          }
+        }
       }
       else if (o instanceof RecoveryCompleted) {
-        if (!deliveryQueue.isEmpty()) {
-          connection.tell(deliveryQueue.peek(), self());
-        }
-        for (Stanza stanza : confirmationAwaitingStanzas.values()) {
-          connection.tell(stanza, self());
-        }
+        nextChunk();
       }
     }
 
     @ActorMethod
     public void invoke(final Delivered delivered) {
       final String id = delivered.id();
-      if (confirmationAwaitingStanzas.containsKey(id)) {
-        confirmationAwaitingStanzas.remove(id);
+      if (confirmationAwaitingStanzas.remove(id)) {
+        nextChunk();
+        context().parent().forward(delivered, context());
       }
-      else {
-        final Stanza peek = deliveryQueue.peek();
-        if (peek != null && !peek.id().equals(id)) {
-          log.warning("Unexpected delivery message id " + delivered.id() + ", retrying to send: " + peek);
-//        connection.tell(peek, self());
-          return;
-        }
-        deliveryQueue.poll();
-        if (!deliveryQueue.isEmpty()) {
-          connection.tell(deliveryQueue.peek(), self());
-        }
-      }
-      context().parent().forward(delivered, context());
+      else log.warning("Unexpected delivery message id " + delivered.id());
     }
 
     @ActorMethod
     public void invoke(final Stanza stanza) {
-      if (isDeliveryConfirmationRequired(stanza)) {
-        if (isDeliveryOrderRequired(stanza)) {
-          if (deliveryQueue.isEmpty()) {
-            connection.tell(stanza, self());
-          }
-          deliveryQueue.add(stanza);
-        }
-        else {
-          confirmationAwaitingStanzas.put(stanza.id(), stanza);
-          connection.tell(stanza, self());
-        }
+      if (!(stanza instanceof Presence)) { // delivery confirmation required
+        deliveryQueue.add(stanza);
+        nextChunk();
       }
-      else {
-        connection.tell(stanza, self());
-      }
+      else connection.tell(stanza, self());
     }
 
-    protected boolean isDeliveryConfirmationRequired(final Stanza stanza) {
-      return !(stanza instanceof Presence);
+    boolean border = false;
+    private void nextChunk() {
+      if (border && !confirmationAwaitingStanzas.isEmpty())
+        return;
+
+      border = false;
+      Stanza poll;
+      do {
+        poll = deliveryQueue.poll();
+        if (poll == null)
+          break;
+        confirmationAwaitingStanzas.add(poll.id());
+        connection.tell(poll, self());
+      }
+      while(!(border = isDeliveryOrderRequired(poll)));
     }
 
     protected boolean isDeliveryOrderRequired(final Stanza stanza) {
@@ -246,4 +226,5 @@ public class UserAgent extends PersistentActorAdapter {
       return connectedDevice != null ? connectedDevice.user().jid().toString() : "fake";
     }
   }
+
 }

@@ -268,8 +268,10 @@ class AnswerReceivedCell: TaskInProgressCell {
     @IBOutlet var stars: [UIImageView]!
     var id: String?
     
+    private static var heightFromNib1: CGFloat = 120
+
     override class var height: CGFloat {
-        return AnswerReceivedCell.heightFromNib;
+        return AnswerReceivedCell.heightFromNib1
     }
 
     override func awakeFromNib() {
@@ -279,7 +281,7 @@ class AnswerReceivedCell: TaskInProgressCell {
             self.controller!.detailsView!.scrollToAnswer(true)
             self.controller!.answer.stringByEvaluatingJavaScriptFromString("document.getElementById('\(self.id!)').scrollIntoView()")
         }
-        AnswerReceivedCell.heightFromNib = frame.height
+        AnswerReceivedCell.heightFromNib1 = frame.height
     }
     
     var rating: Int? {

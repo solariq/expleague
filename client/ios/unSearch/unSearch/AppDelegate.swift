@@ -191,7 +191,7 @@ class AppDelegate: UIResponder {
             return true
         }
         
-        let alertView = UIAlertController(title: "Experts League", message: "Connecting to server.\n\n", preferredStyle: .Alert)
+        let alertView = UIAlertController(title: "Лига Экспертов", message: "Соединяемся с сервером.\n\n", preferredStyle: .Alert)
         let completion = {
             //  Add your progressbar after alert is shown (and measured)
             let progressController = AppDelegate.instance.connectionProgressView
@@ -205,11 +205,11 @@ class AppDelegate: UIResponder {
             progressController.alert = alertView
             self.connect()
         }
-        alertView.addAction(UIAlertAction(title: "Retry", style: .Default, handler: {(x: UIAlertAction) -> Void in
+        alertView.addAction(UIAlertAction(title: "Еще раз", style: .Default, handler: {(x: UIAlertAction) -> Void in
             self.disconnect()
             success()
         }))
-        alertView.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
+        alertView.addAction(UIAlertAction(title: "Отмена", style: .Cancel, handler: nil))
         window?.rootViewController?.presentViewController(alertView, animated: true, completion: completion)
         return false
     }

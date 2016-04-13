@@ -123,8 +123,19 @@ class ExpLeagueOrder: NSManagedObject {
         return offer.topic
     }
     
-    func cancel() {
-        guard AppDelegate.instance.ensureConnected({self.cancel()}) else {
+    func cancel(needAlert: Bool? = nil) {
+        if (needAlert == nil || needAlert!) {
+            let alertView = UIAlertController(title: "Лига Экспертов", message: "Вы уверены, что хотите отменить задание?", preferredStyle: .Alert)
+            alertView.addAction(UIAlertAction(title: "Да", style: .Default, handler: {(x: UIAlertAction) -> Void in
+                self.cancel(false)
+            }))
+            
+            alertView.addAction(UIAlertAction(title: "Нет", style: .Cancel, handler: nil))
+            AppDelegate.instance.window?.rootViewController?.presentViewController(alertView, animated: true, completion: nil)
+            return
+        }
+
+        guard AppDelegate.instance.ensureConnected({self.cancel(false)}) else {
             return
         }
 

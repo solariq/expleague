@@ -462,13 +462,20 @@ class ExpertModel: ChatCellModel {
         eipCell.name.text = expert.name
         eipCell.avatar.image = expert.avatar
         eipCell.avatar.online = expert.available
-        if (status) {
+        
+        switch (status) {
+        case .OnTask:
             eipCell.status.text = "Работает над вашим заказом"
             eipCell.status.textColor = Palette.COMMENT
-        }
-        else {
+            break
+        case .Canceled:
             eipCell.status.text = "Отказался от задания"
             eipCell.status.textColor = Palette.ERROR
+            break
+        case .Finished:
+            eipCell.status.text = "Работал для вас"
+            eipCell.status.textColor = Palette.COMMENT
+            break
         }
     }
     
@@ -481,11 +488,15 @@ class ExpertModel: ChatCellModel {
     }
     
     let expert: ExpLeagueMember
-    var status = true
+    var status: ExpertModelStatus = .OnTask
     
     init(expert: ExpLeagueMember) {
         self.expert = expert
     }
+}
+
+enum ExpertModelStatus: Int {
+    case OnTask, Canceled, Finished
 }
 
 class TaskInProgressModel: NSObject, ChatCellModel {
@@ -628,7 +639,7 @@ class AnswerReceivedModel: ChatCellModel {
     }
 
     func height(maxWidth width: CGFloat) -> CGFloat {
-        return AnswerReceivedCell.height + (score == nil ? -15 : 0)
+        return AnswerReceivedCell.height + (score == nil ? -20 : 0)
     }
     
     func accept(message: ExpLeagueMessage) -> Bool {

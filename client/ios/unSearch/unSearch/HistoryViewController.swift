@@ -227,7 +227,7 @@ class HistoryViewController: UITableViewController {
 
 extension HistoryViewController: UISplitViewControllerDelegate {
     var selected: ExpLeagueOrder? {
-        return AppDelegate.instance.activeProfile!.selected
+        return AppDelegate.instance.activeProfile?.selected
     }
     
     func primaryViewControllerForCollapsingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {

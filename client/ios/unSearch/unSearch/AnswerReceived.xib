@@ -67,42 +67,42 @@
                         </collectionViewFlowLayout>
                     </collectionView>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="enI-d2-JSC">
-                        <rect key="frame" x="32" y="72" width="256" height="2"/>
+                        <rect key="frame" x="32" y="74" width="256" height="2"/>
                         <color key="backgroundColor" red="0.77647058820000003" green="0.79607843140000001" blue="0.86274509799999999" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="2" id="Vbd-SJ-2RW"/>
                         </constraints>
                     </view>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="star_empty" highlightedImage="star_filled" translatesAutoresizingMaskIntoConstraints="NO" id="FGu-ay-rft">
-                        <rect key="frame" x="123" y="49" width="15" height="15"/>
+                        <rect key="frame" x="123" y="51" width="15" height="15"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="15" id="3rf-vt-OaT"/>
                             <constraint firstAttribute="width" constant="15" id="DgS-7q-WCJ"/>
                         </constraints>
                     </imageView>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="star_empty" highlightedImage="star_filled" translatesAutoresizingMaskIntoConstraints="NO" id="7xR-it-7RC">
-                        <rect key="frame" x="138" y="49" width="15" height="15"/>
+                        <rect key="frame" x="138" y="51" width="15" height="15"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="15" id="BNh-Mo-5YT"/>
                             <constraint firstAttribute="width" constant="15" id="Wa2-Ov-4jG"/>
                         </constraints>
                     </imageView>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="star_empty" highlightedImage="star_filled" translatesAutoresizingMaskIntoConstraints="NO" id="hJC-g4-iAS">
-                        <rect key="frame" x="153" y="49" width="15" height="15"/>
+                        <rect key="frame" x="153" y="51" width="15" height="15"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="15" id="lJM-zp-ATd"/>
                             <constraint firstAttribute="width" constant="15" id="ueN-HO-RBz"/>
                         </constraints>
                     </imageView>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="star_empty" highlightedImage="star_filled" translatesAutoresizingMaskIntoConstraints="NO" id="xh6-zX-ERF">
-                        <rect key="frame" x="168" y="49" width="15" height="15"/>
+                        <rect key="frame" x="168" y="51" width="15" height="15"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="15" id="hEF-Hw-eNN"/>
                             <constraint firstAttribute="width" constant="15" id="vAM-5q-ys7"/>
                         </constraints>
                     </imageView>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="star_empty" highlightedImage="star_filled" translatesAutoresizingMaskIntoConstraints="NO" id="cN6-UF-wjn">
-                        <rect key="frame" x="183" y="49" width="15" height="15"/>
+                        <rect key="frame" x="183" y="51" width="15" height="15"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="15" id="hzB-ja-8s7"/>
                             <constraint firstAttribute="width" constant="15" id="psu-gx-5tn"/>
@@ -125,7 +125,7 @@
                     <constraint firstItem="enI-d2-JSC" firstAttribute="top" secondItem="hJC-g4-iAS" secondAttribute="bottom" constant="8" id="WkW-kD-PMx"/>
                     <constraint firstItem="qmE-ag-Htn" firstAttribute="centerY" secondItem="jLm-Af-C8P" secondAttribute="centerY" id="Wxc-Ac-Dec"/>
                     <constraint firstItem="qmE-ag-Htn" firstAttribute="leading" secondItem="Bw6-4t-U6S" secondAttribute="centerX" constant="10" id="XB2-G9-Qip"/>
-                    <constraint firstItem="mb5-aC-7CY" firstAttribute="top" secondItem="enI-d2-JSC" secondAttribute="bottom" id="j6C-91-YaO"/>
+                    <constraint firstItem="mb5-aC-7CY" firstAttribute="top" secondItem="enI-d2-JSC" secondAttribute="bottom" constant="-2" id="j6C-91-YaO"/>
                     <constraint firstItem="isX-wP-13W" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Bw6-4t-U6S" secondAttribute="trailing" constant="8" id="kkG-42-xef"/>
                     <constraint firstItem="cN6-UF-wjn" firstAttribute="centerY" secondItem="hJC-g4-iAS" secondAttribute="centerY" id="pra-Yi-deG"/>
                     <constraint firstItem="qmE-ag-Htn" firstAttribute="leading" secondItem="jLm-Af-C8P" secondAttribute="trailing" constant="20" id="qLc-ki-8GY"/>

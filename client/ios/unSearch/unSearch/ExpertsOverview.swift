@@ -61,6 +61,8 @@ class ExpertsOverviewController: UITableViewController {
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        let cell: ExpertCell
+        let exp: ExpLeagueMember
         switch(indexPath.section) {
         case 0 where my.isEmpty && top.isEmpty:
             let cell = tableView.dequeueReusableCellWithIdentifier("Empty", forIndexPath: indexPath)
@@ -69,26 +71,16 @@ class ExpertsOverviewController: UITableViewController {
             cell.textLabel!.textColor = UIColor.lightGrayColor()
             return cell
         case 0 where !my.isEmpty:
-            let exp = my[indexPath.row]
-            let cell = tableView.dequeueReusableCellWithIdentifier("FavoriteExpert", forIndexPath: indexPath) as! ExpertCell
-            cell.name.text = exp.name
-            cell.tags.text = exp.tags.joinWithSeparator(", ")
-            cell.avatar.image = exp.avatar
-            cell.avatar.online = exp.available
-            cell.tasks.text = "Ваших заданий: \(exp.myTasks)"
-            return cell
+            exp = my[indexPath.row]
+            cell = tableView.dequeueReusableCellWithIdentifier("FavoriteExpert", forIndexPath: indexPath) as! ExpertCell
         case 1:
-            let exp = top[indexPath.row]
-            let cell = tableView.dequeueReusableCellWithIdentifier("TopExpert", forIndexPath: indexPath) as! ExpertCell
-            cell.name.text = exp.name
-            cell.tags.text = exp.tags.joinWithSeparator(", ")
-            cell.avatar.image = exp.avatar
-            cell.avatar.online = exp.available
-            cell.tasks.text = "Всего заданий: \(exp.tasks)"
-            return cell
+            exp = top[indexPath.row]
+            cell = tableView.dequeueReusableCellWithIdentifier("TopExpert", forIndexPath: indexPath) as! ExpertCell
         default:
             return UITableViewCell()
         }
+        cell.update(exp)
+        return cell
     }
     
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
@@ -122,7 +114,7 @@ class ExpertsOverviewController: UITableViewController {
         case 0:
             label.text = "ИЗБРАННЫЕ"
         case 1:
-            label.text = "ОНЛАЙН"
+            label.text = "ЛУЧШИЕ"
         default:
             label.text = ""
         }
@@ -214,11 +206,7 @@ class ChooseExpertViewController: UITableViewController {
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let exp = experts[indexPath.row]
         let cell = tableView.dequeueReusableCellWithIdentifier("ExpertCell", forIndexPath: indexPath) as! ExpertCell
-        cell.name.text = exp.name
-        cell.tags.text = exp.tags.joinWithSeparator(", ")
-        cell.avatar.image = exp.avatar
-        cell.avatar.online = exp.available
-        cell.tasks.text = "всего заданий: \(exp.tasks)"
+        cell.update(exp)
         return cell
     }
     
@@ -285,6 +273,24 @@ class ExpertCell: UITableViewCell {
     @IBOutlet weak var tags: UILabel!
     @IBOutlet weak var tasks: UILabel!
     @IBOutlet weak var avatar: AvatarView!
+    
+    func update(expert: ExpLeagueMember) {
+        name.text = expert.name
+        tags.text = expert.tags.joinWithSeparator(", ")
+        avatar.image = expert.avatar
+        avatar.online = expert.available
+        switch (expert.group) {
+        case .Favorites:
+            tasks.text = "Всего заданий: \(expert.tasks), из них ваших \(expert.myTasks)"
+            break
+        case .Top:
+            tasks.text = "Всего заданий: \(expert.tasks)"
+            break
+        }
+
+        expert.badge = self
+        layoutIfNeeded()
+    }
 }
 
 

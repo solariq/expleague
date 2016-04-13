@@ -59,15 +59,26 @@ class ExpLeagueMember: NSManagedObject {
     
     var tags: [String] {
         var tags: [String] = []
+        var scores: [String: Double] = [:]
         if let tagsE = xml.elementForName("tags") {
             for tag in tagsE.elementsForName("tag") as! [DDXMLElement] {
-                tags.append(tag.stringValue())
+                let name = tag.stringValue()
+                tags.append(name)
+                scores[name] = tag.attributeDoubleValueForName("score")
             }
+        }
+        tags.sortInPlace() {
+            return scores[$0]! > scores[$1]
         }
         return tags
     }
         
-    dynamic var available: Bool = false
+    dynamic var available: Bool = false {
+        didSet {
+            badge?.update(self)
+            view?.update()
+        }
+    }
     
     var avatar: UIImage {
         return AppDelegate.instance.activeProfile!.avatar(id.user, url: avatarUrl)
@@ -96,6 +107,14 @@ class ExpLeagueMember: NSManagedObject {
     func update(xml: DDXMLElement) {
         self.xmlStr = xml.XMLString()
         self.save();
+    }
+    
+    dynamic weak var badge: ExpertCell?
+    dynamic weak var view: ExpertViewController?
+    override func save() {
+        super.save()
+        badge?.update(self)
+        view?.update()
     }
     
     init(xml: DDXMLElement, group: ExpLeagueMemberGroup, context: NSManagedObjectContext) {

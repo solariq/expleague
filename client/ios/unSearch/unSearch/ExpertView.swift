@@ -57,7 +57,18 @@ class ExpertViewController: UIViewController {
         navigationBar?.setBackgroundImage(UIImage(), forBarMetrics: UIBarMetrics.Default)
         navigationBar?.shadowImage = UIImage()
         navigationBar?.translucent = true
-        
+        AppDelegate.instance.tabs.tabBar.hidden = true
+        update()
+        super.viewWillAppear(animated)
+    }
+    
+    override func viewWillDisappear(animated: Bool) {
+        AppDelegate.instance.tabs.tabBar.hidden = false
+        super.viewWillDisappear(animated)
+    }
+    
+    var expert: ExpLeagueMember!
+    func update() {
         avatar.image = expert.avatar
         avatarBg.image = expert.avatar
         name.text = expert.name
@@ -70,22 +81,15 @@ class ExpertViewController: UIViewController {
             onlineStatus.textColor = Palette.ERROR
         }
         descriptionText.text = "Эксперт в областях: \(expert.tags.joinWithSeparator(", "))\nОбразование: высшее\nВыполнено заказов: \(expert.tasks)"
-        score.text = "\(expert.rating) баллов (\(expert.based) оценок)"
+        score.text = String(format: "%.1f баллов %d оценок", expert.rating, expert.based)
         orders.text = "\(expert.myTasks) заказов выполнено"
-        AppDelegate.instance.tabs.tabBar.hidden = true
-        super.viewWillAppear(animated)
+        view.layoutIfNeeded()
     }
-    
-    override func viewWillDisappear(animated: Bool) {
-        AppDelegate.instance.tabs.tabBar.hidden = false
-        super.viewWillDisappear(animated)
-    }
-    
-    var expert: ExpLeagueMember!
     
     init(expert: ExpLeagueMember) {
         self.expert = expert
         super.init(nibName: "ExpertView", bundle: NSBundle.mainBundle())
+        expert.view = self
     }
 
     required init?(coder aDecoder: NSCoder) {

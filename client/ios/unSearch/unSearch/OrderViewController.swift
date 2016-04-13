@@ -138,7 +138,7 @@ class OrderDescriptionViewController: UITableViewController {
         
         orderTextDelegate = OrderTextDelegate(height: orderTextHeight, parent: self)
         orderText.delegate = orderTextDelegate
-        orderText.contentInset = UIEdgeInsetsMake(0, 4, 0, 4);
+        orderText.textContainerInset = UIEdgeInsetsMake(8, 4, 8, 4);
     }
     
     override func viewDidAppear(animated: Bool) {

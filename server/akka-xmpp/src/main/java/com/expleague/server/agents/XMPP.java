@@ -8,6 +8,7 @@ import akka.util.Timeout;
 import com.expleague.model.Application;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
+import com.expleague.server.Subscription;
 import com.expleague.server.XMPPDevice;
 import com.expleague.util.akka.ActorContainer;
 import com.expleague.util.akka.AkkaTools;
@@ -60,10 +61,13 @@ public class XMPP extends UntypedActorAdapter {
     context.actorSelection(XMPP_ACTOR_PATH).forward(message, context);
   }
 
-  public static void subscribe(JID forJid, ActorRef ref, ActorContext context) {
-    context.actorSelection(XMPP_ACTOR_PATH).tell(new Subscribe(jid(ref), forJid), ref);
+  public static void subscribe(Subscription subscription, ActorContext context) {
+    context.actorSelection(XMPP_ACTOR_PATH).forward(new SubscriptionRequest(subscription, true), context);
   }
 
+  public static void unsubscribe(Subscription subscription, ActorContext context) {
+    context.actorSelection(XMPP_ACTOR_PATH).forward(new SubscriptionRequest(subscription, false), context);
+  }
 
   public static Set<JID> online(ActorContext context) {
     try {
@@ -117,33 +121,25 @@ public class XMPP extends UntypedActorAdapter {
   }
 
   public void invoke(Presence presence) {
-    if (!presence.isBroadcast()) {
+    if (!presence.isBroadcast() || !presenceTracker.updatePresence(presence)) {
       return;
     }
 
-    if (!presenceTracker.updatePresence(presence)) {
-      return;
-    }
-
-    final JID from = presence.from().bare();
+    final JID from = presence.from();
     for (final ActorRef agent : JavaConversions.asJavaCollection(context().children())) {
       final JID actorJid = jid(agent);
-      if (actorJid.local().isEmpty() || actorJid.bareEq(from)) {
-        continue;
-      }
-
       if (subscriptions.isSubscribed(actorJid, from)) {
         agent.tell(presence.<Presence>copy().to(actorJid), self());
       }
     }
   }
 
-  public void invoke(Subscribe subscribe) {
-    subscriptions.subscribe(subscribe);
-    presenceTracker.notifyPresence(
-      subscribe,
-      presence -> sender().tell(presence, self())
-    );
+  public void invoke(SubscriptionRequest request) {
+    if (request.appendOrRemove) {
+      subscriptions.subscribe(request.subscription);
+      presenceTracker.notifyPresence(request.subscription, presence -> XMPP.send(presence, context()));
+    }
+    else subscriptions.unsubscribe(request.subscription);
   }
 
   private ActorRef findOrAllocate(JID jid) {
@@ -176,11 +172,12 @@ public class XMPP extends UntypedActorAdapter {
       return !presence.equals(status.put(from, presence));
     }
 
-    public void notifyPresence(final Subscribe subscribe, final Consumer<Presence> callback) {
-      final Presence presence = status.get(subscribe.forJid);
-      if (presence != null) {
-        callback.accept(presence.<Presence>copy().to(subscribe.from));
-      }
+    public void notifyPresence(final Subscription subscription, Consumer<Presence> callback) {
+      status.forEach((jid, presence) -> {
+        if (subscription.relevant(jid)) {
+          callback.accept(presence.<Presence>copy().to(subscription.who()));
+        }
+      });
     }
 
     public Set<JID> online() {
@@ -188,33 +185,43 @@ public class XMPP extends UntypedActorAdapter {
           entry -> entry.getValue().available()
       ).map(Map.Entry::getKey).collect(Collectors.toSet());
     }
+
+    public Presence status(JID jid) {
+      return status.getOrDefault(jid, new Presence(jid, false));
+    }
   }
 
   public static class Subscriptions {
-    private final Map<JID, Set<JID>> subscription = new HashMap<>();
+    private final Map<JID, Set<Subscription>> subscriptions = new HashMap<>();
 
     public boolean isSubscribed(final JID subscriber, final JID target) {
-      return subscription.getOrDefault(subscriber, Collections.emptySet()).contains(target);
+      return subscriptions.getOrDefault(subscriber, Collections.emptySet()).stream().filter(s -> s.relevant(target)).findAny().isPresent();
     }
 
-    public void subscribe(final Subscribe subscribe) {
-      subscription.compute(subscribe.from, (jid, set) -> {
+    public void subscribe(final Subscription subscription) {
+      subscriptions.compute(subscription.who(), (jid, set) -> {
         if (set == null) {
           set = new HashSet<>();
         }
-        set.add(subscribe.forJid);
+        set.add(subscription);
         return set;
       });
     }
+
+    public void unsubscribe(Subscription subscription) {
+      final Set<Subscription> set = this.subscriptions.get(subscription.who());
+      if (set != null)
+        set.remove(subscription);
+    }
   }
 
-  public static class Subscribe {
-    private final JID from;
-    private final JID forJid;
+  private static class SubscriptionRequest {
+    Subscription subscription;
+    boolean appendOrRemove;
 
-    public Subscribe(JID from, JID forJid) {
-      this.from = from;
-      this.forJid = forJid;
+    public SubscriptionRequest(Subscription subscription, boolean appendOrRemove) {
+      this.subscription = subscription;
+      this.appendOrRemove = appendOrRemove;
     }
   }
 }

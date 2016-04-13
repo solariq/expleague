@@ -127,7 +127,7 @@
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" text="Найдем для Вас что угодно!" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Eab-Fe-9G7">
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" showsHorizontalScrollIndicator="NO" text="Найдем для Вас что угодно!" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Eab-Fe-9G7">
                                                     <rect key="frame" x="12" y="103" width="304" height="35"/>
                                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <constraints>

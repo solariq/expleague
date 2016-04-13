@@ -78,7 +78,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         var modelChangeCount = 0
         
         var expertModel = cells.filter({$0 is ExpertModel}).last as? ExpertModel
-        expertModel = expertModel != nil ? (expertModel!.status ? expertModel : nil) : nil
+        expertModel = expertModel != nil ? (expertModel!.status != .Canceled ? expertModel : nil) : nil
 
         if (model is LookingForExpertModel || model is TaskInProgressModel) {
             cells.removeLast();
@@ -101,18 +101,22 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                         expertModel = ExpertModel(expert: expert)
                         newModel = expertModel
                     }
+                    else {
+                        expertModel?.status = .OnTask
+                    }
                     if progressModel is LookingForExpertModel {
                         progressModel = TaskInProgressModel(order: order)
                     }
                 }
                 else if (msg.type == .ExpertCancel) {
-                    expertModel!.status = false
+                    expertModel!.status = .Canceled
                     expertModel = nil
                 }
                 else if (msg.type == .ExpertProgress) {
                     progressModel?.accept(msg)
                 }
                 else if (msg.type == .Answer) {
+                    expertModel?.status = .Finished
                     let id = "message-\(msg.hashValue)"
                     answer += "\n<div id=\"\(id)\"/>\n"
                     answer += (msg.body!);
