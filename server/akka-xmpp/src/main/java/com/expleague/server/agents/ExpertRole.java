@@ -337,7 +337,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
         final Offer offer = offers.get(i);
         final long currentETA = offer.expires().getTime();
         final boolean prefered = offer.filter().isPrefered(jid());
-        if (currentETA < winnerETA || (prefered && !winnerPreferred)) {
+        if ((prefered && !winnerPreferred) || (currentETA < winnerETA && prefered == winnerPreferred)) {
           winner = i;
           winnerPreferred = prefered;
           winnerETA = currentETA;
