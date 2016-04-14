@@ -72,6 +72,21 @@ public class Iq<T> extends Stanza {
     return answer(request, null);
   }
 
+  public static <T extends Item> Iq<T> create(JID to, IqType type, T item) {
+    final Iq<T> iq = new Iq<>();
+    iq.any = item;
+    iq.to(to);
+    iq.type = type;
+    return iq;
+  }
+
+  public static <T> Iq<T> error(Iq<T> request) {
+    final Iq<T> result = new Iq<>(request.id, IqType.ERROR, null);
+    result.from = request.to;
+    result.to = request.from;
+    return result;
+  }
+
   @XmlAnyElement(lax = true)
   protected T any;
   @XmlElementRef
@@ -114,14 +129,6 @@ public class Iq<T> extends Stanza {
 
   public IqType type() {
     return type;
-  }
-
-  public static <T extends Item> Iq<T> create(JID to, IqType type, T item) {
-    final Iq<T> iq = new Iq<>();
-    iq.any = item;
-    iq.to(to);
-    iq.type = type;
-    return iq;
   }
 
   @XmlEnum

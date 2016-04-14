@@ -143,6 +143,7 @@ class ExpLeagueOrder: NSManagedObject {
         let msg = XMPPMessage(type: "normal", to: jid)
         msg.addChild(DDXMLElement(name: "cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
         parent.send(msg)
+        AppDelegate.instance.historyView?.populate()
         save()
     }
     
@@ -157,6 +158,17 @@ class ExpLeagueOrder: NSManagedObject {
     func close() {
         flags = flags | ExpLeagueOrderFlags.Closed.rawValue
         send(xml: DDXMLElement(name: "done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
+        AppDelegate.instance.historyView?.populate()
+        save()
+    }
+    
+    func emulate() {
+        flags = flags | ExpLeagueOrderFlags.Closed.rawValue | ExpLeagueOrderFlags.Fake.rawValue
+        save()
+    }
+    
+    var fake: Bool {
+        return flags & ExpLeagueOrderFlags.Fake.rawValue != 0
     }
     
     func archive() {
@@ -305,6 +317,11 @@ class ExpLeagueOffer: NSObject {
         return nil
     }
     
+    var room: String {
+        let roomAttr = XMPPJID.jidWithString(self.xml.attributeStringValueForName("room"))
+        return roomAttr.user
+    }
+    
     init(xml: DDXMLElement) {
         self.xml = xml
     }
@@ -381,4 +398,5 @@ enum ExpLeagueOrderFlags: Int16 {
     case Canceled = 2048
     case Archived = 1024
     case Deciding = 512
+    case Fake = 256
 }

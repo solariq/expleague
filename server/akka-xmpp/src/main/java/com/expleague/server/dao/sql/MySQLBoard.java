@@ -111,7 +111,8 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
         "WHERE P.role = " + ExpLeagueOrder.Role.ACTIVE.index() + " GROUP BY U.id", stmt -> {}).map(rs -> {
       try {
         return XMPP.jid(rs.getString(1));
-      } catch (SQLException e) {
+      }
+      catch (SQLException e) {
         throw new RuntimeException(e);
       }
     });
@@ -123,12 +124,27 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     stream("all-tags", "SELECT * FROM Tags", q -> {}).forEach(rs -> {
       try {
         tags.put(new Tag(rs.getString(2), rs.getString(3)), rs.getInt(1));
-      } catch (SQLException e) {
+      }
+      catch (SQLException e) {
         throw new RuntimeException(e);
       }
     });
 
     return tags.keySet().stream();
+  }
+
+  @Nullable
+  @Override
+  public String bestAnswer() {
+    return stream("best-answer", "SELECT room FROM AnswersOfTheWeek WHERE CURRENT_TIME() < DATE_ADD(starts, INTERVAL 1 WEEK) ORDER BY starts DESC", stmt -> {})
+        .map(rs -> {
+          try {
+            return rs.getString(1);
+          }
+          catch (SQLException e) {
+            throw new RuntimeException(e);
+          }
+        }).findFirst().orElse(null);
   }
 
   private TObjectIntHashMap<Tag> tags;

@@ -26,7 +26,7 @@ class XMPPTracker: NSObject {
     }
 }
 
-@objc(ExpLeagueProfile)
+@objc
 class ExpLeagueProfile: NSManagedObject {
     static var active: ExpLeagueProfile {
         return AppDelegate.instance.activeProfile!
@@ -46,13 +46,10 @@ class ExpLeagueProfile: NSManagedObject {
         self.login = login
         self.passwd = passwd
         self.active = false
-        do {
-            try self.managedObjectContext!.save()
-        } catch {
-            fatalError("Failure to save context: \(error)")
-        }
+        save()
     }
     
+    dynamic var receiveAnswerOfTheWeek = false
     private dynamic var listeners: NSMutableArray = []
     func track(tracker: XMPPTracker) {
         listeners.addObject(Weak(tracker))
@@ -224,11 +221,16 @@ class ExpLeagueProfile: NSManagedObject {
         send(msg)
         
         orderSelected = NSNumber(long: orders.count)
+        add(order: order)
+        return order
+    }
+    
+    func add(order order: ExpLeagueOrder) {
         let mutableItems = orders.mutableCopy() as! NSMutableOrderedSet
         mutableItems.addObject(order)
         orders = mutableItems.copy() as! NSOrderedSet
+        AppDelegate.instance.historyView?.populate()
         save()
-        return order
     }
 }
 
@@ -347,6 +349,13 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
         patternsIq.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/patterns"))
         sender.sendElement(patternsIq)
         
+        if (receiveAnswerOfTheWeek) {
+            // answer of the week
+            let aowIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
+            aowIq.addAttributeWithName("type", stringValue: "get")
+            aowIq.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/best-answer"))
+            sender.sendElement(aowIq)
+        }
         // sending not confirmed messages
         for item in queue ?? NSSet() {
             sender.sendElement(try! XMPPMessage.init(XMLString: (item as! QueueItem).body))
@@ -417,6 +426,24 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
                     register(tag: tag)
                 }
             }
+        }
+        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/best-answer") where !iq.isErrorIQ(){
+            let offer = ExpLeagueOffer(xml: query.elementForName("offer", xmlns: "http://expleague.com/scheme"))
+            let order = ExpLeagueOrder(offer.room, offer: offer, context: managedObjectContext!)
+            let content = query.elementForName("content", xmlns: "http://expleague.com/scheme/best-answer")
+            for item in content.elementsForName("message") {
+                let message = XMPPMessage(fromElement: item as! DDXMLElement)
+                order.message(message: message)
+            }
+            order.emulate()
+            for o in orders {
+                let order = o as! ExpLeagueOrder
+                if (order.fake) {
+                    order.archive()
+                }
+            }
+            receiveAnswerOfTheWeek = false
+            self.add(order: order)
         }
         else if let from = iq.from(), let order = order(name: from.user) {
             order.iq(iq: iq)

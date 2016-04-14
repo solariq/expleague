@@ -9,6 +9,7 @@ import com.expleague.util.akka.AkkaTools;
 import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Presence;
+import org.jetbrains.annotations.Nullable;
 import scala.Option;
 import scala.collection.JavaConversions;
 
@@ -189,6 +190,8 @@ public class LaborExchange extends UntypedActorAdapter {
     Stream<JID> topExperts();
 
     Stream<Tag> tags();
+    @Nullable
+    String bestAnswer();
   }
 
   public static class OrderFilter {

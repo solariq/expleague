@@ -193,6 +193,14 @@ public class Offer extends Item {
     return workers != null ? workers.stream() : Stream.empty();
   }
 
+  public void client(JID owner) {
+    this.client = owner;
+  }
+
+  public void room(JID room) {
+    this.room = room;
+  }
+
   @XmlEnum
   public enum Urgency {
     @XmlEnumValue("asap") ASAP(TimeUnit.HOURS.toMillis(1)),

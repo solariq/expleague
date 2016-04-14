@@ -8,11 +8,15 @@ import UIKit
 import JSCustomBadge
 import XMPPFramework
 
+enum HistorySection {
+    case Ongoing, AnswerOfTheWeek, Finished, None
+}
+
 class HistoryViewController: UITableViewController {
     var ongoing: [ExpLeagueOrder] = []
     var finished: [ExpLeagueOrder] = []
     var archived: [ExpLeagueOrder] = []
-    var tracker: XMPPTracker?
+    var answerOfTheWeek: ExpLeagueOrder?
     var cellHeight = CGFloat(0.0)
     
     override func viewDidLoad() {
@@ -23,12 +27,6 @@ class HistoryViewController: UITableViewController {
         AppDelegate.instance.split.delegate = self
         self.navigationItem.rightBarButtonItem = self.editButtonItem()
         populate()
-        tracker = XMPPTracker(onMessage: {(message: XMPPMessage) -> Void in
-            if (message.from() != AppDelegate.instance.activeProfile!.jid) {
-                self.populate()
-                (self.view as! UITableView).reloadData()
-            }
-        })
         (view as! UITableView).registerClass(UITableViewCell.self, forCellReuseIdentifier: "Empty")
     }
     
@@ -48,6 +46,9 @@ class HistoryViewController: UITableViewController {
             else if (order.status == .Archived){
                 archived.append(order)
             }
+            else if (order.fake) {
+                answerOfTheWeek = order
+            }
             else {
                 finished.append(order)
             }
@@ -56,6 +57,7 @@ class HistoryViewController: UITableViewController {
         ongoing.sortInPlace(comparator)
         finished.sortInPlace(comparator)
         archived.sortInPlace(comparator)
+        (view as! UITableView).reloadData()
     }
     
     func indexOf(order: ExpLeagueOrder) -> NSIndexPath? {
@@ -75,13 +77,11 @@ class HistoryViewController: UITableViewController {
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         let table = (self.view as! UITableView)
-//        table.reloadData()
         table.editing = false
         if let order = AppDelegate.instance.activeProfile!.selected, let index = indexOf(order) {
             table.selectRowAtIndexPath(index, animated: false, scrollPosition: .Top)
             self.tableView(table, didSelectRowAtIndexPath: index)
         }
-        AppDelegate.instance.activeProfile!.track(tracker!)
         if (navigationController != nil) {
             navigationController!.navigationBar.setBackgroundImage(UIImage(named: "history_background"), forBarMetrics: .Default)
         }
@@ -90,50 +90,37 @@ class HistoryViewController: UITableViewController {
     override func viewDidAppear(animated: Bool) {
         AppDelegate.instance.tabs.tabBar.hidden = false
     }
-
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        return !(indexPath.section == 0 && indexPath.row == 0 && ongoing.isEmpty)
+    
+    override func viewWillDisappear(animated: Bool) {
+        self.setEditing(false, animated: false)
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        switch(indexPath.section) {
-        case 0 where ongoing.isEmpty && finished.isEmpty:
-            let cell = tableView.dequeueReusableCellWithIdentifier("Empty", forIndexPath: indexPath)
-            cell.textLabel!.text = "Нет заказов"
-            cell.textLabel!.textAlignment = .Center
-            cell.textLabel!.textColor = UIColor.lightGrayColor()
-            return cell
-        case 0 where !ongoing.isEmpty:
-            let cell = tableView.dequeueReusableCellWithIdentifier("OngoingOrder", forIndexPath: indexPath) as! OngoingOrderStateCell
-            cell.update(order: ongoing[indexPath.row])
-            return cell
-        case 1:
-            let cell = tableView.dequeueReusableCellWithIdentifier("FinishedOrder", forIndexPath: indexPath) as! FinishedOrderStateCell
-            cell.update(order: finished[indexPath.row])
-            return cell
-        default:
-            return UITableViewCell()
+    private func section(index i: Int) -> HistorySection {
+        var index = i
+        var result: HistorySection = .None
+        if (index >= 0 && !ongoing.isEmpty) {
+            index -= 1
+            result = .Ongoing
         }
-    }
-    
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        return cellHeight;
-    }
-    
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch(section) {
-        case 0:
-            return max(ongoing.count, 1)
-        case 1:
-            return finished.count
-        default:
-            return 0
+        if (index >= 0 && answerOfTheWeek != nil) {
+            index -= 1
+            result = .AnswerOfTheWeek
         }
+        if (index >= 0 && !finished.isEmpty) {
+            index -= 1
+            result = .Finished
+        }
+        return result
     }
     
-    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 38
+    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+        var result = 0
+        result += ongoing.isEmpty ? 0 : 1
+        result += finished.isEmpty ? 0 : 1
+        result += answerOfTheWeek == nil ? 0 : 1
+        return max(result, 1)
     }
+    
     override func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let label = UILabel()
         label.textColor = UIColor.lightGrayColor()
@@ -142,23 +129,62 @@ class HistoryViewController: UITableViewController {
         label.frame = CGRectMake(15, 0, tableView.frame.width - 15, 38)
         let view = UIView()
         view.addSubview(label)
-        switch(section) {
-        case 0:
-            label.text = "ТЕКУЩИЕ ЗАКАЗЫ"
-        case 1:
+        switch(self.section(index: section)) {
+        case .None, .Ongoing:
+            label.text = "ТЕКУЩИЕ"
+        case .Finished:
             label.text = "ВЫПОЛНЕНО"
-        default:
-            label.text = ""
+        case .AnswerOfTheWeek:
+            label.text = "ОТВЕТ НЕДЕЛИ"
         }
         view.frame = CGRectMake(0, 0, tableView.frame.width, 38)
         view.backgroundColor = UIColor.whiteColor()
         return view
     }
     
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 2
+    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        let cell: UITableViewCell
+        switch(section(index: indexPath.section)) {
+        case .None:
+            cell = tableView.dequeueReusableCellWithIdentifier("Empty", forIndexPath: indexPath)
+            cell.textLabel!.text = "Нет заказов"
+            cell.textLabel!.textAlignment = .Center
+            cell.textLabel!.textColor = UIColor.lightGrayColor()
+        case .Ongoing:
+            let ocell = tableView.dequeueReusableCellWithIdentifier("OngoingOrder", forIndexPath: indexPath) as! OngoingOrderStateCell
+            ocell.update(order: ongoing[indexPath.row])
+            cell = ocell
+        case .AnswerOfTheWeek:
+            let ocell = tableView.dequeueReusableCellWithIdentifier("FinishedOrder", forIndexPath: indexPath) as! FinishedOrderStateCell
+            ocell.update(order: answerOfTheWeek!)
+            cell = ocell
+        case .Finished:
+            let ocell = tableView.dequeueReusableCellWithIdentifier("FinishedOrder", forIndexPath: indexPath) as! FinishedOrderStateCell
+            ocell.update(order: finished[indexPath.row])
+            cell = ocell
+        }
+        return cell
     }
-
+    
+    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+        return cellHeight;
+    }
+    
+    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        switch(self.section(index: section)) {
+        case .None, .AnswerOfTheWeek:
+            return 1
+        case .Ongoing:
+            return ongoing.count
+        case .Finished:
+            return finished.count
+        }
+    }
+    
+    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 38
+    }
+    
     private var models: [String:ChatModel] = [:]
     
     func model(order: ExpLeagueOrder) -> ChatModel {
@@ -172,18 +198,18 @@ class HistoryViewController: UITableViewController {
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let o: ExpLeagueOrder
-        switch(indexPath.section) {
-        case 0 where ongoing.isEmpty:
+        switch(section(index: indexPath.section)) {
+        case .None:
             return;
-        case 0 where !ongoing.isEmpty:
+            
+        case .AnswerOfTheWeek:
+            o = answerOfTheWeek!
+        case .Ongoing:
             o = ongoing[indexPath.row]
-        case 1:
+        case .Finished:
             o = finished[indexPath.row]
-        default:
-            return
         }
         AppDelegate.instance.tabs.tabBar.hidden = true;
-
         AppDelegate.instance.activeProfile!.selected = o
         let messagesView = OrderDetailsViewController(data: model(o))
         splitViewController!.showDetailViewController(messagesView, sender: nil)
@@ -193,35 +219,52 @@ class HistoryViewController: UITableViewController {
         return false
     }
 
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if (editingStyle == .Delete) {
-            if (indexPath.section == 0) {
-                let order = ongoing.removeAtIndex(indexPath.row)
-                tableView.beginUpdates()
-                if (ongoing.isEmpty) {
-                    tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-                }
-                else {
-                    tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-                }
-                tableView.endUpdates()
-                order.archive()
-            }
-            else if (indexPath.section == 1) {
-                let order = finished.removeAtIndex(indexPath.row)
-                tableView.beginUpdates()
-                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-                tableView.endUpdates()
-                order.archive()
-            }
-        }
+    override func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return section(index: indexPath.section) != .None
     }
     
-    override func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        if (indexPath.section == 0 && indexPath.row == 0) {
-            return !ongoing.isEmpty
+    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return section(index: indexPath.section) != .None
+    }
+
+    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+        if (editingStyle == .Delete) {
+            let order: ExpLeagueOrder;
+            let sections = numberOfSectionsInTableView(tableView)
+            let empty: Bool
+            switch section(index: indexPath.section) {
+            case .None:
+                return
+            case .AnswerOfTheWeek:
+                order = answerOfTheWeek!
+                empty = true
+                answerOfTheWeek = nil
+            case .Ongoing:
+                order = ongoing.removeAtIndex(indexPath.row)
+                empty = ongoing.isEmpty
+            case .Finished:
+                order = finished.removeAtIndex(indexPath.row)
+                empty = finished.isEmpty
+            }
+            tableView.beginUpdates()
+            if (empty) {
+                if (sections == 1) {
+                    tableView.reloadSections(NSIndexSet(index: indexPath.section), withRowAnimation: .Fade)
+                }
+                else {
+                    tableView.deleteSections(NSIndexSet(index: indexPath.section), withRowAnimation: .Fade)
+                }
+            }
+            if (sections == 1 && empty) {
+                tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+            }
+            else {
+                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+            }
+            
+            tableView.endUpdates()
+            order.archive()
         }
-        return true
     }
 }
 

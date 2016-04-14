@@ -32,6 +32,12 @@ class ExpertsOverviewController: UITableViewController {
                 my.append(exp)
             }
         }
+        my.sortInPlace() {
+            return $0.myTasks < $1.myTasks
+        }
+        top.sortInPlace() {
+            return $0.tasks < $1.tasks
+        }
         table.reloadData()
     }
     
@@ -89,8 +95,10 @@ class ExpertsOverviewController: UITableViewController {
     
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch(section) {
+        case 0 where my.isEmpty && top.isEmpty:
+            return 1
         case 0:
-            return my.count > 0 ? my.count : (top.count > 0 ? 0 : 1)
+            return my.count > 0 ? my.count : top.count
         case 1:
             return top.count
         default:

@@ -22,7 +22,7 @@
         <relationship name="messagesRaw" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Message" inverseName="parentRaw" inverseEntity="Message" spotlightIndexingEnabled="YES" syncable="YES"/>
         <relationship name="parent" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Profile" inverseName="orders" inverseEntity="Profile" syncable="YES"/>
     </entity>
-    <entity name="Profile" representedClassName="ExpLeagueProfile" syncable="YES">
+    <entity name="Profile" representedClassName="unSearch.ExpLeagueProfile" syncable="YES">
         <attribute name="active" attributeType="Boolean" syncable="YES"/>
         <attribute name="domain" attributeType="String" syncable="YES"/>
         <attribute name="login" attributeType="String" syncable="YES"/>

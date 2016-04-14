@@ -90,11 +90,14 @@ class ExpLeagueMember: NSManagedObject {
             return _myTasks!.integerValue
         }
         var count = 0
-        for o in AppDelegate.instance.activeProfile!.orders where o is ExpLeagueOrder {
+        for o in AppDelegate.instance.activeProfile!.orders {
             let order = o as! ExpLeagueOrder
+            guard !order.fake else {
+                continue
+            }
             for i in 0..<order.count {
                 let msg = order.message(i)
-                if (msg.type == .Answer && msg.from.hasSuffix(id.user)) {
+                if (msg.type == .Answer && msg.from == id.user) {
                     count += 1
                     break
                 }

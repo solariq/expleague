@@ -4,6 +4,7 @@ import com.expleague.expert.profile.UserProfile;
 import com.expleague.expert.xmpp.events.*;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
+import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
@@ -59,7 +60,7 @@ public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> {
             catch (IOException e) {
               throw new RuntimeException(e);
             }
-            task.processCommand(message.get(Operations.Command.class));
+            task.processCommand(message.get(Item.class));
           }
           else log.severe("New task received while having active: " + task.offer() + " ignoring invitation!");
         }
@@ -69,7 +70,7 @@ public class ExpLeagueMember extends WeakListenerHolderImpl<ExpertEvent> {
           check = true;
         }
         else if (task != null) {
-          task.processCommand(message.get(Operations.Command.class));
+          task.processCommand(message.get(Item.class));
         }
         else if (check && message.has(Operations.Cancel.class)) {
           invoke(new CheckCanceledEvent(message));

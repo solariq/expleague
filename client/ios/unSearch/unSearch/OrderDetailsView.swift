@@ -17,6 +17,8 @@ class OrderDetailsView: UIView {
     var messagesViewHConstraint: NSLayoutConstraint!
     var answerViewHConstraint: NSLayoutConstraint!
     var bottomViewBottom: NSLayoutConstraint!
+    var navigationItem: UINavigationItem!
+    var controller: OrderDetailsViewController!
 
     var bottomContents: UIView? {
         didSet {
@@ -47,6 +49,7 @@ class OrderDetailsView: UIView {
         scrollView.setContentOffset(separator.frame.origin, animated: animated)
         separator.backgroundColor = UIColor.whiteColor()
         separator.tagImage.image = UIImage(named: "chat_header_tag")!
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: #selector(shareAnswer))
         inAnswer = true
     }
     
@@ -55,6 +58,42 @@ class OrderDetailsView: UIView {
         separator.backgroundColor = Palette.CHAT_BACKGROUND
         separator.tagImage.image = UIImage(named: "chat_footer_tag")!
         inAnswer = false
+        self.navigationItem.rightBarButtonItem = nil
+    }
+    
+    func shareAnswer() {
+        let fmt = UIMarkupTextPrintFormatter(markupText: self.controller.answerText)
+        
+        // 2. Assign print formatter to UIPrintPageRenderer
+        
+        let render = UIPrintPageRenderer()
+        render.addPrintFormatter(fmt, startingAtPageAtIndex: 0)
+        
+        // 3. Assign paperRect and printableRect
+        
+        let page = CGRect(x: 0, y: 0, width: 595.2, height: 841.8) // A4, 72 dpi
+        let printable = CGRectInset(page, 0, 0)
+        
+        render.setValue(NSValue(CGRect: page), forKey: "paperRect")
+        render.setValue(NSValue(CGRect: printable), forKey: "printableRect")
+        
+        // 4. Create PDF context and draw
+        
+        let pdfData = NSMutableData()
+        UIGraphicsBeginPDFContextToData(pdfData, CGRectZero, nil)
+        
+        for i in 1...render.numberOfPages() {
+            
+            UIGraphicsBeginPDFPage();
+            let bounds = UIGraphicsGetPDFContextBounds()
+            render.drawPageAtIndex(i - 1, inRect: bounds)
+        }
+        
+        UIGraphicsEndPDFContext();
+        
+        let objectsToShare = [pdfData]
+        let activityVC = UIActivityViewController(activityItems: objectsToShare, applicationActivities: nil)
+        window?.rootViewController?.presentViewController(activityVC, animated: true, completion: nil)
     }
     
     func adjustScroll() {

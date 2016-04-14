@@ -48,7 +48,8 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        detailsView!.navigationItem = navigationItem
+        detailsView!.controller = self
         edgesForExtendedLayout = .Bottom
         automaticallyAdjustsScrollViewInsets = false
         addChildViewController(input)

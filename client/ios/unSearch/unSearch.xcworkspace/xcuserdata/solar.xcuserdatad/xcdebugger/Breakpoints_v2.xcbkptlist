@@ -47,7 +47,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "5439"
             endingLineNumber = "5439"
-            landmarkName = "-doWriteData"
+            landmarkName = "-doReadEOF"
             landmarkType = "5">
             <Locations>
                <Location
@@ -58,12 +58,12 @@
                   moduleName = "CocoaAsyncSocket"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/solar/tree/tbts/client/ios/unSearch/Pods/CocoaAsyncSocket/Source/GCD/GCDAsyncSocket.m"
-                  timestampString = "482250884.234873"
+                  timestampString = "482342499.47632"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "5439"
                   endingLineNumber = "5439"
-                  offsetFromSymbolStart = "852">
+                  offsetFromSymbolStart = "964">
                </Location>
                <Location
                   shouldBeEnabled = "Yes"
@@ -73,12 +73,12 @@
                   moduleName = "CocoaAsyncSocket"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/solar/tree/tbts/client/ios/unSearch/Pods/CocoaAsyncSocket/Source/GCD/GCDAsyncSocket.m"
-                  timestampString = "482250884.235038"
+                  timestampString = "482342499.476513"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "5439"
                   endingLineNumber = "5439"
-                  offsetFromSymbolStart = "857">
+                  offsetFromSymbolStart = "972">
                </Location>
             </Locations>
          </BreakpointContent>
@@ -95,7 +95,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "5490"
             endingLineNumber = "5490"
-            landmarkName = "-doWriteData"
+            landmarkName = "-completeCurrentRead"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

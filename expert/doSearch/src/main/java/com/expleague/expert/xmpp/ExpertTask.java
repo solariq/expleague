@@ -98,7 +98,7 @@ public class ExpertTask {
     });
   }
 
-  public void processCommand(Operations.Command command) {
+  public void processCommand(Item command) {
     log(command);
     if (command instanceof Operations.Invite) {
       final Operations.Invite invite = (Operations.Invite) command;

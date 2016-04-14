@@ -2,6 +2,7 @@ package com.expleague.server.agents;
 
 import com.expleague.model.Answer;
 import com.expleague.model.Offer;
+import com.expleague.model.Operations;
 import com.expleague.model.Operations.*;
 import com.expleague.server.Roster;
 import com.expleague.server.dao.Archive;
@@ -100,7 +101,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
                   break;
               }
             }
-            XMPP.send(new Message(jid, dump.owner(), progress), context());
+            sendToOwner(new Message(jid, dump.owner(), progress));
           }
           else if (msg.has(Suspend.class)) {
             XMPP.send(new Presence(roomAlias(msg.from()), dump.owner(), false), context());
@@ -110,15 +111,15 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
                     .flatMap(Functions.instancesOf(Message.class))
                     .filter(message -> message.type() == MessageType.GROUP_CHAT || message.has(Progress.class))
                     .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
-            XMPP.send(new Message(jid, dump.owner(), msg.get(Start.class), Roster.instance().profile(from.bare())), context());
+            sendToOwner(new Message(jid, dump.owner(), msg.get(Start.class), Roster.instance().profile(from.bare())));
           }
           else if (msg.body().startsWith("{\"type\":\"pageVisited\"")) {
-            XMPP.send(new Message(jid, dump.owner(), msg.body()), context());
+            sendToOwner(new Message(jid, dump.owner(), msg.body()));
           }
           break;
         case SLACKER:
           if (msg.has(Cancel.class)) {
-            XMPP.send(new Message(jid, dump.owner(), msg.get(Command.class)), context());
+            sendToOwner(new Message(jid, dump.owner(), msg.get(Command.class)));
           }
           break;
         default:
@@ -141,6 +142,11 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
     if (msg.type() == MessageType.GROUP_CHAT) {
       broadcast(msg);
     }
+  }
+
+  private void sendToOwner(Message message) {
+    dump.accept(message);
+    XMPP.send(message, context());
   }
 
   @SuppressWarnings("ConstantConditions")
@@ -257,7 +263,9 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
   private void broadcast(Stanza stanza) {
     participants()
       .filter(jid -> !jid.bareEq(stanza.from()))
-      .forEach(jid -> XMPP.send(copyFromRoomAlias(stanza, jid), context()));
+      .forEach(jid -> {
+        XMPP.send(copyFromRoomAlias(stanza, jid), context());
+      });
   }
 
   private <S extends Stanza> S copyFromRoomAlias(final S stanza, final JID to) {
