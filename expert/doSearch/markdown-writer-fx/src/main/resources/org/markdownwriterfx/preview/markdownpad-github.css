@@ -135,7 +135,7 @@ a:visited {
 }
 
 a.cut{
-    style="display:block;
+    display:block;
     background-image:url(./images/arrow_cut_close.png);
     background-repeat:no-repeat;
     background-size: contain;
@@ -148,7 +148,7 @@ a.cut{
 }
 
 a.cut_open{
-    style="display:block;
+    display:block;
     background-image:url(./images/arrow_cut_open.png);
     background-repeat:no-repeat;
     background-size: contain;
@@ -159,9 +159,9 @@ a.cut_open{
     margin: 5px 0;
 }
 a.hide{
+    display: block;
     text-decoration: underline;
     color: #000000;
-    display: block;
     text-align: center;
     vertical-align:middle;
     margin-top: 20px
@@ -375,6 +375,7 @@ img.back_to_chat{
 }
 
 .cut{
+    display:none;
     margin-top: 0 px;
     margin-bottom: 0px
 }
