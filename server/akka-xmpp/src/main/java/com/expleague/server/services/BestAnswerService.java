@@ -26,21 +26,6 @@ import java.util.concurrent.TimeUnit;
  * Created by solar on 14/04/16.
  */
 public class BestAnswerService extends UntypedActorAdapter {
-  private static final Timer updateBA = new Timer(true);
-  private static LaborExchange.AnswerOfTheWeek currentRoom = LaborExchange.board().answerOfTheWeek();
-  static {
-    updateBA.schedule(new TimerTask() {
-      @Override
-      public void run() {
-        final LaborExchange.AnswerOfTheWeek newRoom = LaborExchange.board().answerOfTheWeek();
-        if (newRoom != null && !newRoom.equals(currentRoom)) {
-          NotificationsManager.instance().notifyBestAnswer(newRoom);
-          currentRoom = newRoom;
-        }
-      }
-    }, TimeUnit.SECONDS.toMillis(5), TimeUnit.MINUTES.toMillis(5));
-  }
-
   public void invoke(Iq<BestAnswerQuery> rosterIq) {
     final JID requester = rosterIq.from();
     final LaborExchange.AnswerOfTheWeek aow = LaborExchange.board().answerOfTheWeek();

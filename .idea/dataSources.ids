@@ -309,7 +309,12 @@
         <data-type>timestamp</data-type>
         <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
       </column>
-      <key id="83" parent="12" name="PRIMARY">
+      <column id="83" parent="12" name="topic">
+        <mandatory>1</mandatory>
+        <data-type>varchar(128)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <key id="84" parent="12" name="PRIMARY">
         <columns>id</columns>
         <primary>1</primary>
       </key>

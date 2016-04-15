@@ -17,7 +17,10 @@ import io.netty.util.concurrent.Future;
 import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,6 +37,21 @@ public class NotificationsManager {
       instance = new NotificationsManager("certs/apns.p12", "tg30239");
     }
     return instance;
+  }
+
+  private static final Timer updateAOW = new Timer(true);
+  private static LaborExchange.AnswerOfTheWeek currentRoom = LaborExchange.board().answerOfTheWeek();
+  static {
+    updateAOW.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        final LaborExchange.AnswerOfTheWeek newRoom = LaborExchange.board().answerOfTheWeek();
+        if (newRoom != null && !newRoom.equals(currentRoom)) {
+          NotificationsManager.instance().notifyBestAnswer(newRoom);
+          currentRoom = newRoom;
+        }
+      }
+    }, TimeUnit.SECONDS.toMillis(5), TimeUnit.SECONDS.toMillis(5));
   }
 
   private final ApnsClient<SimpleApnsPushNotification> client;
