@@ -25,18 +25,18 @@ class ExpertsOverviewController: UITableViewController {
         top.removeAll()
         my.removeAll()
         for exp in experts {
-            if (exp.group == .Top) {
-                top.append(exp)
-            }
-            else if (exp.group == .Favorites) {
+            if (exp.myTasks > 0) {
                 my.append(exp)
+            }
+            else {
+                top.append(exp)
             }
         }
         my.sortInPlace() {
-            return $0.myTasks < $1.myTasks
+            return $0.myTasks > $1.myTasks
         }
         top.sortInPlace() {
-            return $0.tasks < $1.tasks
+            return $0.tasks > $1.tasks
         }
         table.reloadData()
     }

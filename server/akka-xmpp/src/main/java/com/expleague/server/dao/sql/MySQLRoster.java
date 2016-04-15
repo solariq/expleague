@@ -135,6 +135,18 @@ public class MySQLRoster extends MySQLOps implements Roster {
     });
   }
 
+  @Override
+  public Stream<XMPPDevice> allDevices() {
+    return stream("all-devices", "SELECT id FROM Devices", null).map(rs -> {
+      try {
+        return device(rs.getString(1));
+      }
+      catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
   private final FixedSizeCache<String, XMPPDevice> deviceCache = new FixedSizeCache<>(1000, CacheStrategy.Type.LRU);
   @Override
   public XMPPDevice device(String name) {

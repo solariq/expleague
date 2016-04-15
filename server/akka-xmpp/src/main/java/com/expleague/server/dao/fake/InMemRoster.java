@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * User: solar
@@ -79,6 +80,11 @@ public class InMemRoster implements Roster {
         device -> id.equals(device.user().id())
     ).collect(Collectors.toList());
     return result.toArray(new XMPPDevice[result.size()]);
+  }
+
+  @Override
+  public Stream<XMPPDevice> allDevices() {
+    return devices.values().stream();
   }
 
   @Override

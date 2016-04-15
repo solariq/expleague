@@ -18,16 +18,31 @@ class HistoryViewController: UITableViewController {
     var archived: [ExpLeagueOrder] = []
     var answerOfTheWeek: ExpLeagueOrder?
     var cellHeight = CGFloat(0.0)
+    var selected: ExpLeagueOrder? {
+        didSet {
+            let table = (self.view as! UITableView)
+            if (table.indexPathForSelectedRow != nil) {
+                table.deselectRowAtIndexPath(table.indexPathForSelectedRow!, animated: false)
+            }
+            if selected != nil {
+                if let path = indexOf(selected!) {
+                    table.selectRowAtIndexPath(path, animated: false, scrollPosition: .Top)
+                    tableView(table, didSelectRowAtIndexPath: path)
+                }
+            }
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let cell = (view as! UITableView).dequeueReusableCellWithIdentifier("OngoingOrder") as! OngoingOrderStateCell
+        let table = view as! UITableView
+        let cell = table.dequeueReusableCellWithIdentifier("OngoingOrder") as! OngoingOrderStateCell
+        table.registerClass(UITableViewCell.self, forCellReuseIdentifier: "Empty")
         cellHeight = cell.frame.height
         AppDelegate.instance.historyView = self
         AppDelegate.instance.split.delegate = self
         self.navigationItem.rightBarButtonItem = self.editButtonItem()
         populate()
-        (view as! UITableView).registerClass(UITableViewCell.self, forCellReuseIdentifier: "Empty")
     }
     
     func populate() {
@@ -61,13 +76,21 @@ class HistoryViewController: UITableViewController {
     }
     
     func indexOf(order: ExpLeagueOrder) -> NSIndexPath? {
-        if let index = ongoing.indexOf(order) {
-            return NSIndexPath(forRow: index, inSection: 0)
+        var section: Int?
+        var row: Int?
+        if let index = ongoing.indexOf(order) where index >= 0 {
+            row = index
+            section = 0
         }
-        else if let index = finished.indexOf(order) {
-            return NSIndexPath(forRow: index, inSection: 1)
+        else if order == answerOfTheWeek {
+            row = 0
+            section = ongoing.isEmpty ? 0 : 1
         }
-        return nil
+        else if let index = finished.indexOf(order) where index >= 0 {
+            row = index
+            section = (ongoing.isEmpty ? 0 : 1) + (answerOfTheWeek == nil ? 0 : 1)
+        }
+        return row != nil ? NSIndexPath(forRow: row!, inSection: section!) : nil
     }
     
     let comparator = {(lhs: ExpLeagueOrder, rhs: ExpLeagueOrder) -> Bool in
@@ -78,10 +101,6 @@ class HistoryViewController: UITableViewController {
         super.viewWillAppear(animated)
         let table = (self.view as! UITableView)
         table.editing = false
-        if let order = AppDelegate.instance.activeProfile!.selected, let index = indexOf(order) {
-            table.selectRowAtIndexPath(index, animated: false, scrollPosition: .Top)
-            self.tableView(table, didSelectRowAtIndexPath: index)
-        }
         if (navigationController != nil) {
             navigationController!.navigationBar.setBackgroundImage(UIImage(named: "history_background"), forBarMetrics: .Default)
         }
@@ -210,8 +229,10 @@ class HistoryViewController: UITableViewController {
             o = finished[indexPath.row]
         }
         AppDelegate.instance.tabs.tabBar.hidden = true;
-        AppDelegate.instance.activeProfile!.selected = o
         let messagesView = OrderDetailsViewController(data: model(o))
+        while (navigationController?.childViewControllers.count > 1) {
+            navigationController?.popViewControllerAnimated(false)
+        }
         splitViewController!.showDetailViewController(messagesView, sender: nil)
     }
     
@@ -269,33 +290,29 @@ class HistoryViewController: UITableViewController {
 }
 
 extension HistoryViewController: UISplitViewControllerDelegate {
-    var selected: ExpLeagueOrder? {
-        return AppDelegate.instance.activeProfile?.selected
-    }
-    
-    func primaryViewControllerForCollapsingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
-        if (selected == nil) {
-            AppDelegate.instance.tabs.tabBar.hidden = false
-            return navigationController ?? self
-        }
-        else {
-            if (navigationController != nil) {
-                return navigationController
-            }
-            let mvc = OrderDetailsViewController(data: model(selected!))
-            return mvc
-        }
-    }
-
-    func primaryViewControllerForExpandingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
-        return primaryViewControllerForCollapsingSplitViewController(splitViewController)
-    }
-    
-    func splitViewController(svc: UISplitViewController, willChangeToDisplayMode displayMode: UISplitViewControllerDisplayMode) {
-        if (displayMode != .AllVisible) {
-            AppDelegate.instance.tabs.tabBar.hidden = false
-        }
-    }
+//    func primaryViewControllerForCollapsingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
+//        ret
+//        if (selected == nil) {
+//            AppDelegate.instance.tabs.tabBar.hidden = false
+//            return navigationController ?? self
+//        }
+//        else {
+//            if (navigationController != nil) {
+//                return navigationController
+//            }
+//            return OrderDetailsViewController(data: model(selected!))
+//        }
+//    }
+//
+//    func primaryViewControllerForExpandingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
+//        return primaryViewControllerForCollapsingSplitViewController(splitViewController)
+//    }
+//    
+//    func splitViewController(svc: UISplitViewController, willChangeToDisplayMode displayMode: UISplitViewControllerDisplayMode) {
+//        if (displayMode != .AllVisible) {
+//            AppDelegate.instance.tabs.tabBar.hidden = false
+//        }
+//    }
 }
 
 class OrderBadge: UITableViewCell {

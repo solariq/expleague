@@ -72,7 +72,8 @@ public class MySQLOps {
   public Stream<ResultSet> stream(String name, @Language("MySQL") String stmt, QuerySetup setup) {
     try {
       final PreparedStatement statement = createStatement(name, stmt);
-      setup.setup(statement);
+      if (setup != null)
+        setup.setup(statement);
       return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new ResultSetIterator(statement), 0), false);
     }
     catch (SQLException e) {

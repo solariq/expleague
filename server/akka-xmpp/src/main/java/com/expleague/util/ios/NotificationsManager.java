@@ -3,6 +3,7 @@ package com.expleague.util.ios;
 import com.expleague.model.Answer;
 import com.expleague.model.Operations;
 import com.expleague.server.Roster;
+import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
 import com.relayrides.pushy.apns.ApnsClient;
 import com.relayrides.pushy.apns.PushNotificationResponse;
@@ -68,21 +69,38 @@ public class NotificationsManager {
           notification = new MessageReceivedNotification(token, message.from(), profile, message.body());
         }
       }
-      try {
-        if (notification == null)
-          return;
-        Future<PushNotificationResponse<SimpleApnsPushNotification>> future = client.sendNotification(notification);
-        final PushNotificationResponse<SimpleApnsPushNotification> now = future.get();
-        if (now.isAccepted())
-          log.fine("Successfully have sent push notification to " + message.to().local() + ". Text: " + notification.getPayload());
-        else
-          log.warning("Failed to sent push notification to " + message.to().local() + " with reason: " + now.getRejectionReason() + " token used: " + token);
-      }
-      catch (InterruptedException | ExecutionException e) {
-        log.log(Level.WARNING, "Exception during push notification send.", e);
-      }
+      if (notification == null)
+        return;
+      sendPush(notification, message.to().local());
     }
     else log.warning("Unable to send push notification to " + message.to());
+  }
+
+  private void sendPush(SimpleApnsPushNotification notification, String to) {
+    try {
+      Future<PushNotificationResponse<SimpleApnsPushNotification>> future = client.sendNotification(notification);
+      final PushNotificationResponse<SimpleApnsPushNotification> now = future.get();
+      if (now.isAccepted())
+        log.fine("Successfully have sent push notification to " + to + ". Text: " + notification.getPayload());
+      else
+        log.warning("Failed to sent push notification to " + to + " with reason: " + now.getRejectionReason() + " token used: " + notification.getToken());
+    }
+    catch (InterruptedException | ExecutionException e) {
+      log.log(Level.WARNING, "Exception during push notification send.", e);
+    }
+  }
+
+  public void notifyBestAnswer(LaborExchange.AnswerOfTheWeek aow) {
+    Roster.instance().allDevices().forEach(device -> {
+      if (device.token() != null) {
+        sendPush(new SimpleApnsPushNotification(device.token(), "com.expleague.ios.unSearch", "{\"aps\":{" +
+            "\"alert\": \"Новый ответ недели на тему '" + aow.topic().replace('"', ' ') + "'\", " +
+            "\"content-available\": 1," +
+            "\"sound\": \"owl.wav\"" +
+            "}, \"aow\": \"" + aow.roomId() + "\"}"
+        ), device.name());
+      }
+    });
   }
 
   private static class ExpertFoundNotification extends SimpleApnsPushNotification {

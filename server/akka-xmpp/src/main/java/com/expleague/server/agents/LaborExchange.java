@@ -191,7 +191,35 @@ public class LaborExchange extends UntypedActorAdapter {
 
     Stream<Tag> tags();
     @Nullable
-    String bestAnswer();
+    AnswerOfTheWeek answerOfTheWeek();
+  }
+
+  public static class AnswerOfTheWeek {
+    private final String roomId;
+    private final String topic;
+
+    public AnswerOfTheWeek(String roomId, String topic) {
+      this.roomId = roomId;
+      this.topic = topic;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      return this == o || !(o == null || getClass() != o.getClass()) && roomId.equals(((AnswerOfTheWeek) o).roomId);
+    }
+
+    @Override
+    public int hashCode() {
+      return roomId.hashCode();
+    }
+
+    public String roomId() {
+      return roomId;
+    }
+
+    public String topic() {
+      return topic;
+    }
   }
 
   public static class OrderFilter {

@@ -1,13 +1,11 @@
 package com.expleague.expert.xmpp;
 
 import com.expleague.expert.profile.UserProfile;
-import com.expleague.expert.xmpp.events.*;
+import com.expleague.expert.xmpp.events.CheckCanceledEvent;
+import com.expleague.expert.xmpp.events.CheckEvent;
+import com.expleague.expert.xmpp.events.TaskStartedEvent;
+import com.expleague.expert.xmpp.events.TaskSuspendedEvent;
 import com.expleague.model.Offer;
-import com.expleague.model.Operations;
-import com.expleague.model.Operations.Command;
-import com.expleague.model.Operations.Invite;
-import com.expleague.model.Operations.Progress;
-import com.expleague.model.Operations.Resume;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Iq;

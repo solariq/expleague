@@ -41,10 +41,9 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     func markAsRead() {
         for i in 0..<order.count {
             let msg = order.message(i)
-            if (!msg.isRead) {
-                msg.setProperty("read", value: "true")
-            }
+            msg.read = true
         }
+        order._unreadCount = nil
         order.badge?.update(order: order)
     }
 

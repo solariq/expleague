@@ -116,23 +116,17 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     private var enforceScroll = false
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        detailsView!.keyboardTracker.start();
+        detailsView!.keyboardTracker.start()
         data.controller = self
         data.sync()
-        if (data.order.text.characters.count > 15) {
-            self.title = data.order.text.substringToIndex(data.order.topic.startIndex.advancedBy(15)) + "..."
-        }
-        else {
-            self.title = data.order.text
-        }
         enforceScroll = true
     }
 
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
-        AppDelegate.instance.activeProfile!.selected = nil
-        detailsView!.keyboardTracker.stop();
+        AppDelegate.instance.historyView?.selected = nil
         data.markAsRead()
+        
         data.controller = nil
     }
 
@@ -153,6 +147,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
 
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
+        
         tabBarController?.tabBar.hidden = true
         data.markAsRead()
     }

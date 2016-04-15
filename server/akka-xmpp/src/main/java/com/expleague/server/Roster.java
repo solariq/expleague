@@ -26,6 +26,8 @@ public interface Roster {
   XMPPUser user(String name);
   XMPPDevice[] devices(String id);
 
+  Stream<XMPPDevice> allDevices();
+
   static Roster instance() {
     return ExpLeagueServer.roster();
   }
@@ -81,4 +83,5 @@ public interface Roster {
   }
 
   void application(Application application, JID referer);
+
 }

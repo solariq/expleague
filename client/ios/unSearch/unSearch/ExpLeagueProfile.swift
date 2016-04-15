@@ -94,18 +94,6 @@ class ExpLeagueProfile: NSManagedObject {
         }
     }
     
-    var selected: ExpLeagueOrder? {
-        set (order) {
-            self.orderSelected = order != nil ? NSNumber(long: orders.indexOfObject(order!)) : NSNumber(long: -1)
-        }
-        get {
-            guard let selected = self.orderSelected?.integerValue else {
-                return nil
-            }
-            return (selected >= 0 && selected < orders.count) ? orders[selected] as? ExpLeagueOrder : nil
-        }
-    }
-    
     func imageUrl(imageId: String) -> NSURL {
         if (domain == "localhost") {
             return NSURL(string: "http://localhost:8067/\(imageId)")!
@@ -135,6 +123,7 @@ class ExpLeagueProfile: NSManagedObject {
         }
         return self._experts!
     }
+    
     func register(expert expert: ExpLeagueMember) -> ExpLeagueMember {
         let experts = expertsSet?.mutableCopy() ?? NSMutableSet()
         experts.addObject(expert)
@@ -222,6 +211,7 @@ class ExpLeagueProfile: NSManagedObject {
         
         orderSelected = NSNumber(long: orders.count)
         add(order: order)
+        AppDelegate.instance.historyView?.selected = order
         return order
     }
     

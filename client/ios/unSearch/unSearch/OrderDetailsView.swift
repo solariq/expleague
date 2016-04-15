@@ -43,7 +43,7 @@ class OrderDetailsView: UIView {
             layoutIfNeeded()
         }
     }
-
+    
     var inAnswer = false
     func scrollToAnswer(animated: Bool) {
         scrollView.setContentOffset(separator.frame.origin, animated: animated)

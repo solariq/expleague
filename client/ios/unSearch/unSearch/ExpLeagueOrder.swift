@@ -70,7 +70,7 @@ class ExpLeagueOrder: NSManagedObject {
                     }
                 }
             }
-            return tags.isEmpty ? UIImage(named: "search_icon")! : parent.tag(name: tags.last!)?.icon ?? UIImage(named: "search_icon")!
+            _icon = tags.isEmpty ? UIImage(named: "search_icon")! : parent.tag(name: tags.last!)?.icon ?? UIImage(named: "search_icon")!
         }
         return _icon!
     }
@@ -87,6 +87,8 @@ class ExpLeagueOrder: NSManagedObject {
         if (message.type == .Answer) {
             flags = flags | ExpLeagueOrderFlags.Deciding.rawValue
         }
+        _unreadCount = nil
+        _icon = nil
         save()
     }
 
@@ -168,7 +170,7 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     var fake: Bool {
-        return flags & ExpLeagueOrderFlags.Fake.rawValue != 0
+        return (flags & ExpLeagueOrderFlags.Fake.rawValue) != 0
     }
     
     func archive() {
@@ -221,14 +223,19 @@ class ExpLeagueOrder: NSManagedObject {
         return result != nil && !result!.isEmpty ? result! : "Нет простого ответа"
     }
     
+    dynamic var _unreadCount: NSNumber?
     var unreadCount: Int {
+        guard _unreadCount == nil else {
+            return _unreadCount!.longValue
+        }
         var result = 0
         for i in 0 ..< count {
             let msg = message(i)
             if (msg.type == .ExpertMessage || msg.type == .Answer) {
-                result += (msg.isRead) ? 0 : 1
+                result += msg.read ? 0 : 1
             }
         }
+        _unreadCount = result
         return result
     }
     
@@ -398,5 +405,5 @@ enum ExpLeagueOrderFlags: Int16 {
     case Canceled = 2048
     case Archived = 1024
     case Deciding = 512
-    case Fake = 256
+    case Fake = 4
 }

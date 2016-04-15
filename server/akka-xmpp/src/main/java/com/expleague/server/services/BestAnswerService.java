@@ -6,6 +6,7 @@ import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.UntypedActorAdapter;
+import com.expleague.util.ios.NotificationsManager;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.expleague.BestAnswerQuery;
 import com.expleague.xmpp.stanza.Iq;
@@ -16,19 +17,38 @@ import com.spbsu.commons.util.Holder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Experts League
  * Created by solar on 14/04/16.
  */
 public class BestAnswerService extends UntypedActorAdapter {
+  private static final Timer updateBA = new Timer(true);
+  private static LaborExchange.AnswerOfTheWeek currentRoom = LaborExchange.board().answerOfTheWeek();
+  static {
+    updateBA.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        final LaborExchange.AnswerOfTheWeek newRoom = LaborExchange.board().answerOfTheWeek();
+        if (newRoom != null && !newRoom.equals(currentRoom)) {
+          NotificationsManager.instance().notifyBestAnswer(newRoom);
+          currentRoom = newRoom;
+        }
+      }
+    }, TimeUnit.SECONDS.toMillis(5), TimeUnit.MINUTES.toMillis(5));
+  }
+
   public void invoke(Iq<BestAnswerQuery> rosterIq) {
     final JID requester = rosterIq.from();
-    final String roomId = LaborExchange.board().bestAnswer();
-    if (roomId == null) {
+    final LaborExchange.AnswerOfTheWeek aow = LaborExchange.board().answerOfTheWeek();
+    if (aow == null) {
       sender().tell(Iq.error(rosterIq), self());
       return;
     }
+    final String roomId = aow.roomId();
     final Archive.Dump dump = Archive.instance().dump(roomId);
     final JID owner = dump.owner();
     final List<Stanza> content = new ArrayList<>();

@@ -94,7 +94,7 @@ class AppDelegate: UIResponder {
         return tabs.viewControllers![1] as! UISplitViewController
     }
     
-    var navigation: UINavigationController {
+    private var navigation: UINavigationController {
         get {
             return (split.viewControllers[0] as! UINavigationController)
         }
@@ -174,7 +174,7 @@ class AppDelegate: UIResponder {
             activeProfile?.active = false
         }
         profile.active = true
-        profile.selected = nil
+        profile.receiveAnswerOfTheWeek = profile.receiveAnswerOfTheWeek || profile.orders.count == 0
         
         stream.addDelegate(profile, delegateQueue: dispatch_get_main_queue())
         do {
@@ -250,24 +250,21 @@ extension AppDelegate: UIApplicationDelegate {
         return true
     }
     
-    func applicationWillResignActive(application: UIApplication) {
-    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-    // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
-
-    }
-
-
     func applicationDidEnterBackground(application: UIApplication) {
         disconnect()
     }
     
     func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject], fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
+        if let orderId = userInfo["order"] as? String, let order = activeProfile?.order(name: orderId) {
+            historyView?.selected = order
+            tabs.selectedIndex = 1
+        }
+        else if let _ = userInfo["aow"] as? Bool {
+            activeProfile?.receiveAnswerOfTheWeek = true
+            tabs.selectedIndex = 1
+        }
         disconnect()
         connect()
-        if let order = userInfo["order"] as? String {
-            activeProfile?.selected = activeProfile?.order(name: order)
-        }
-        tabs.selectedIndex = 1
         NSTimer.schedule(delay: 30, handler: {timer in
             completionHandler(.NewData)
         })
@@ -278,52 +275,8 @@ extension AppDelegate: UIApplicationDelegate {
         connect()
     }
 
-
-    func applicationDidBecomeActive(application: UIApplication) {
-        application.applicationIconBadgeNumber = 0
-        connect()
-    }
-
-
     func applicationWillTerminate(application: UIApplication) {
         disconnect()
-    }
-    
-    func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
-        let state = application.applicationState
-        let order = notification.userInfo!["order"] as! String
-        if (state == .Inactive) {
-            print(order)
-            activeProfile?.selected = activeProfile?.order(name: order)
-            tabs.selectedIndex = 1
-            // Application was in the background when notification was delivered.
-        }
-        else {
-//            print(notification.userInfo!["order"]!)
-            
-            // App was running in the foreground. Perhaps
-            // show a UIAlertView to ask them what they want to do?
-        }
-    }
-    
-    func application(application: UIApplication, handleActionWithIdentifier identifier: String?, forLocalNotification notification: UILocalNotification, completionHandler: () -> Void) {
-        let state = application.applicationState
-        if (state == .Inactive) {
-            print(notification.userInfo!["order"]!)
-            // Application was in the background when notification was delivered.
-        }
-        else {
-            print(notification.userInfo!["order"]!)
-
-            // App was running in the foreground. Perhaps
-            // show a UIAlertView to ask them what they want to do?
-        }
-    }
-    
-    func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject]) {
-        let order = userInfo["order"] as! String
-        activeProfile?.selected = activeProfile?.order(name: order)
-        tabs.selectedIndex = 1
     }
     
     func application(application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: NSData) {

@@ -1153,32 +1153,6 @@
             </objects>
             <point key="canvasLocation" x="-530" y="759"/>
         </scene>
-        <!--Navigation Controller-->
-        <scene sceneID="h51-bh-i9w">
-            <objects>
-                <navigationController id="eI5-5x-WMd" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="MmV-OE-pvp">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </navigationBar>
-                </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="h0P-8c-t0d" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-490" y="-597"/>
-        </scene>
-        <!--Navigation Controller-->
-        <scene sceneID="El4-ba-nLx">
-            <objects>
-                <navigationController id="zMz-ds-XcH" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="PJD-g1-fI8">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </navigationBar>
-                </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="2zg-fc-Wah" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-490" y="-597"/>
-        </scene>
     </scenes>
     <resources>
         <image name="I" width="32" height="34"/>

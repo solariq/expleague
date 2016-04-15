@@ -37,8 +37,18 @@ class ExpLeagueMessage: NSManagedObject {
         return type == .System || type == .ExpertAssignment || type == .ExpertProgress
     }
 
-    var isRead: Bool {
-        return properties["read"] as? String == "true"
+    var read: Bool {
+        get {
+            return properties["read"] as? String == "true"
+        }
+        set (v) {
+            guard v != read else {
+                return
+            }
+            setProperty("read", value: v ? "true" : "false")
+            save()
+            parent._unreadCount = nil
+        }
     }
 
     var parent: ExpLeagueOrder {

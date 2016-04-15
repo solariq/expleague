@@ -73,8 +73,8 @@ public class InMemBoard implements LaborExchange.Board {
   }
 
   @Override
-  public String bestAnswer() {
-    return history.isEmpty() ? null : history.get(0).room().local();
+  public LaborExchange.AnswerOfTheWeek answerOfTheWeek() {
+    return history.isEmpty() ? null : new LaborExchange.AnswerOfTheWeek(history.get(0).room().local(), history.get(0).offer().topic());
   }
 
   public static class MyOrder extends ExpLeagueOrder {

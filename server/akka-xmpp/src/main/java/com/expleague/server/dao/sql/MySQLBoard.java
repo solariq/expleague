@@ -135,11 +135,11 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
 
   @Nullable
   @Override
-  public String bestAnswer() {
-    return stream("best-answer", "SELECT room FROM AnswersOfTheWeek WHERE CURRENT_TIME() < DATE_ADD(starts, INTERVAL 1 WEEK) ORDER BY starts DESC", stmt -> {})
+  public LaborExchange.AnswerOfTheWeek answerOfTheWeek() {
+    return stream("best-answer", "SELECT room, topic FROM AnswersOfTheWeek WHERE CURRENT_TIME() < DATE_ADD(starts, INTERVAL 1 WEEK) ORDER BY starts DESC", stmt -> {})
         .map(rs -> {
           try {
-            return rs.getString(1);
+            return new LaborExchange.AnswerOfTheWeek(rs.getString(1), rs.getString(2));
           }
           catch (SQLException e) {
             throw new RuntimeException(e);
