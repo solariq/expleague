@@ -66,4 +66,13 @@ public abstract class ActorAdapter<A extends Actor> {
   public void replyTo(ActorRef recipient, final Object message) {
     recipient.tell(message, self());
   }
+
+  public ActorRef actorOf(final Class<? extends ActorAdapter> adapter, final Object... args) {
+    if (PersistentActorAdapter.class.isAssignableFrom(adapter)) {
+      return context().actorOf(PersistentActorContainer.props(adapter, args));
+    }
+    else {
+      return context().actorOf(ActorContainer.props(adapter, args));
+    }
+  }
 }
