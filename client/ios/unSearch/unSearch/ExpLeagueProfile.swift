@@ -449,11 +449,7 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
                 if ((item as! QueueItem).receipt == receipt.attributeStringValueForName("id")) {
                     queue.removeObject(item)
                     self.queue = queue.copy() as? NSSet
-                    do {
-                        try self.managedObjectContext!.save()
-                    } catch {
-                        fatalError("Failure to save context: \(error)")
-                    }
+                    self.save()
                     break
                 }
             }

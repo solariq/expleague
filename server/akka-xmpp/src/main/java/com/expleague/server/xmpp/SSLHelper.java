@@ -71,7 +71,6 @@ public class SSLHelper {
             r = incoming ? sslEngine.unwrap(src, dst) : sslEngine.wrap(src, dst);
             src.compact();
             sent += sendChunk(consumer);
-//            System.out.println(r.getStatus().name());
             switch (r.getStatus()) {
               case BUFFER_UNDERFLOW:
                 break;
@@ -90,9 +89,6 @@ public class SSLHelper {
         consumer.accept(null);
       }
       finally {
-        if (msgIn.length() > 2 * sent) {
-          System.out.println();
-        }
         log.finest((incoming ? "Incoming" : "Outgoing") + " stream received: " + msgIn.length() + " sent: " + sent);
       }
     }
