@@ -2,6 +2,7 @@ package com.expleague.server;
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import akka.actor.UntypedActor;
 import akka.http.javadsl.Http;
 import akka.http.javadsl.IncomingConnection;
 import akka.http.javadsl.ServerBinding;
@@ -21,9 +22,7 @@ import akka.stream.javadsl.Flow;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import akka.util.Timeout;
-import com.expleague.util.akka.AkkaTools;
-import com.expleague.util.akka.StreamPipe;
-import com.expleague.util.akka.UntypedActorAdapter;
+import com.expleague.util.akka.*;
 import com.expleague.xmpp.BoshBody;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.Stream;
@@ -43,12 +42,12 @@ import java.util.logging.Logger;
  * Date: 24.12.15
  * Time: 14:47
  */
-public class BOSHServer extends UntypedActorAdapter {
+public class BOSHServer extends ActorAdapter<UntypedActor> {
   private static final Logger log = Logger.getLogger(BOSHServer.class.getName());
   private Materializer materializer;
   @Override
   public void preStart() throws Exception {
-    final ActorMaterializerSettings settings = ActorMaterializerSettings.create(getContext().system())
+    final ActorMaterializerSettings settings = ActorMaterializerSettings.create(context().system())
         .withSupervisionStrategy((Function<Throwable, Supervision.Directive>) param -> {
           log.log(Level.SEVERE, "Exception in the BOSH protocol flow", param);
           return Supervision.stop();
@@ -86,7 +85,7 @@ public class BOSHServer extends UntypedActorAdapter {
         response = response.addHeader(AccessControlAllowOrigin.create(HttpOriginRange.ALL));
         try {
           PipedInputStream pis = new PipedInputStream();
-          final ActorRef pipe = context().actorOf(Props.create(StreamPipe.class, pis));
+          final ActorRef pipe = context().actorOf(ActorContainer.props(StreamPipe.class, pis));
           AkkaTools.ask(pipe, new StreamPipe.Open());
           request.entity().getDataBytes().to(Sink.actorRef(pipe, new StreamPipe.Close())).run(materializer);
           final BoshBody boshBody;
@@ -99,7 +98,7 @@ public class BOSHServer extends UntypedActorAdapter {
             final String sid = Stanza.generateId().replace('/', 'b');
             boshBody.sid(sid);
             boshBody.requests(3);
-            context().actorOf(Props.create(BOSHSession.class), sid);
+            context().actorOf(ActorContainer.props(BOSHSession.class), sid);
           }
           else { // synchronous form
             final Option<ActorRef> sessionOpt = context().child(boshBody.sid());

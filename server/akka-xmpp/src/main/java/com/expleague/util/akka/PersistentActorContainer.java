@@ -25,6 +25,18 @@ public class PersistentActorContainer extends UntypedPersistentActor {
   }
 
   @Override
+  public void preStart() throws Exception {
+    super.preStart();
+    getAdapterInstance().preStart();
+  }
+
+  @Override
+  public void postStop() {
+    getAdapterInstance().postStop();
+    super.postStop();
+  }
+
+  @Override
   public void onReceiveRecover(final Object msg) throws Exception {
     getAdapterInstance().onReceiveRecover(msg);
   }

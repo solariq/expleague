@@ -9,6 +9,7 @@ import com.expleague.server.XMPPDevice;
 import com.expleague.server.agents.UserAgent;
 import com.expleague.server.agents.XMPP;
 import com.expleague.server.services.XMPPServices;
+import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Features;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.Bind;
@@ -47,6 +48,7 @@ public class ConnectedPhase extends XMPPPhase {
     answer(new Features(new Bind(), new Session()));
   }
 
+  @ActorMethod
   public void invoke(Iq<?> iq) {
     if (jid().equals(iq.to())) { // incoming
       answer(iq);
@@ -83,16 +85,18 @@ public class ConnectedPhase extends XMPPPhase {
   }
 
   @Override
-  public void postStop() throws Exception {
+  public void postStop() {
     if (agent != null) {
       agent.tell(new UserAgent.ConnStatus(false, jid.resource(), device), self());
     }
   }
 
+  @ActorMethod
   public void invoke(ActorRef courier) {
     this.courier = courier;
   }
 
+  @ActorMethod
   public void invoke(Stanza msg) {
     if (msg instanceof Iq)
       return;
@@ -110,6 +114,7 @@ public class ConnectedPhase extends XMPPPhase {
     }
   }
 
+  @ActorMethod
   public void invoke(Message message) {
     if (message.has(Operations.Token.class)) {
       device.updateToken(TokenUtil.sanitizeTokenString(message.get(Operations.Token.class).value()));
@@ -155,6 +160,7 @@ public class ConnectedPhase extends XMPPPhase {
   }
 
   @SuppressWarnings("UnusedParameters")
+  @ActorMethod
   public void invoke(Close close) throws Exception {
     if (agent != null) {
       agent.tell(new Presence(jid, false), self());

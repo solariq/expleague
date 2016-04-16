@@ -1,6 +1,7 @@
 package com.expleague.server.xmpp.phase;
 
 import akka.actor.ActorRef;
+import com.expleague.util.akka.ActorMethod;
 import com.spbsu.commons.func.Action;
 import com.expleague.server.Roster;
 import com.expleague.server.xmpp.XMPPClientConnection;
@@ -38,6 +39,7 @@ public class AuthorizationPhase extends XMPPPhase {
     auth.fillKnownMechanisms();
   }
 
+  @ActorMethod
   public void invoke(Iq<RegisterQuery> request) {
     final RegisterQuery query = request.get();
     if (query != null) {
@@ -60,12 +62,14 @@ public class AuthorizationPhase extends XMPPPhase {
     }
   }
 
+  @ActorMethod
   public void invoke(Response response) {
     if (sasl == null)
       throw new IllegalStateException();
     processAuth(response.data(), false);
   }
 
+  @ActorMethod
   public void invoke(Auth auth) {
     sasl = this.auth.get(auth.mechanism());
     processAuth(auth.challenge(), true);

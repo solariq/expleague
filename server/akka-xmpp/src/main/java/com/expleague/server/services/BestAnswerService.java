@@ -1,10 +1,13 @@
 package com.expleague.server.services;
 
+import akka.actor.UntypedActor;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.dao.Archive;
+import com.expleague.util.akka.ActorAdapter;
+import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.util.ios.NotificationsManager;
 import com.expleague.xmpp.JID;
@@ -25,7 +28,8 @@ import java.util.concurrent.TimeUnit;
  * Experts League
  * Created by solar on 14/04/16.
  */
-public class BestAnswerService extends UntypedActorAdapter {
+public class BestAnswerService extends ActorAdapter<UntypedActor> {
+  @ActorMethod
   public void invoke(Iq<BestAnswerQuery> rosterIq) {
     final JID requester = rosterIq.from();
     final LaborExchange.AnswerOfTheWeek aow = LaborExchange.board().answerOfTheWeek();

@@ -3,6 +3,7 @@ package com.expleague.server.agents;
 import akka.actor.ActorContext;
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import akka.actor.UntypedActor;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 import com.expleague.model.Application;
@@ -10,10 +11,7 @@ import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
 import com.expleague.server.Subscription;
 import com.expleague.server.XMPPDevice;
-import com.expleague.util.akka.ActorContainer;
-import com.expleague.util.akka.AkkaTools;
-import com.expleague.util.akka.PersistentActorContainer;
-import com.expleague.util.akka.UntypedActorAdapter;
+import com.expleague.util.akka.*;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
@@ -37,7 +35,7 @@ import java.util.stream.Collectors;
  * Date: 14.12.15
  * Time: 21:59
  */
-public class XMPP extends UntypedActorAdapter {
+public class XMPP extends ActorAdapter<UntypedActor> {
   public static final String XMPP_ACTOR_PATH = "/user/xmpp";
   private static final JID myJid = JID.parse(ExpLeagueServer.config().domain());
 
@@ -95,31 +93,37 @@ public class XMPP extends UntypedActorAdapter {
     return JID.parse(ref.path().name().replace('&', '/'));
   }
 
+  @ActorMethod
   public void invoke(Pair<JID, ?> whisper) {
     findOrAllocate(whisper.first).forward(whisper.second, context());
   }
 
   @SuppressWarnings("UnusedParameters")
+  @ActorMethod
   public void invoke(Class<Presence> clazz) {
     sender().tell(presenceTracker.online(), self());
   }
 
+  @ActorMethod
   public void invoke(final JID jid) {
     sender().tell(findOrAllocate(jid), self());
   }
 
+  @ActorMethod
   public void invoke(Stanza stanza) {
     if (!stanza.isBroadcast() && !jid().bareEq(stanza.to())) {
       findOrAllocate(stanza.to()).forward(stanza, context());
     }
   }
 
+  @ActorMethod
   public void invoke(Message message) {
     if (jid().bareEq(message.to()) && message.has(Application.class)) {
       Roster.instance().application(message.get(Application.class), message.from());
     }
   }
 
+  @ActorMethod
   public void invoke(Presence presence) {
     if (!presence.isBroadcast() || !presenceTracker.updatePresence(presence)) {
       return;
@@ -134,6 +138,7 @@ public class XMPP extends UntypedActorAdapter {
     }
   }
 
+  @ActorMethod
   public void invoke(SubscriptionRequest request) {
     if (request.appendOrRemove) {
       subscriptions.subscribe(request.subscription);

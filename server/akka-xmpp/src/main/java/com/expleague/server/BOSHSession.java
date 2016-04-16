@@ -1,18 +1,14 @@
 package com.expleague.server;
 
-import akka.actor.ActorRef;
-import akka.actor.Cancellable;
-import akka.actor.Props;
-import akka.actor.Status;
+import akka.actor.*;
 import akka.io.Tcp;
 import akka.io.TcpMessage;
 import akka.util.Timeout;
+import com.expleague.util.akka.*;
 import com.spbsu.commons.func.Action;
 import com.expleague.server.xmpp.XMPPClientConnection;
 import com.expleague.server.xmpp.phase.AuthorizationPhase;
 import com.expleague.server.xmpp.phase.ConnectedPhase;
-import com.expleague.util.akka.AkkaTools;
-import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.xmpp.BoshBody;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.control.Close;
@@ -33,7 +29,7 @@ import java.util.logging.Logger;
  * Date: 24.12.15
  * Time: 19:56
  */
-public class BOSHSession extends UntypedActorAdapter {
+public class BOSHSession extends ActorAdapter<UntypedActor> {
   private static final Logger log = Logger.getLogger(BOSHSession.class.getName());
   private ActorRef businesLogic;
   private String id;
@@ -42,10 +38,12 @@ public class BOSHSession extends UntypedActorAdapter {
   private Cancellable timeout;
   private boolean connected = false;
 
-  public BOSHSession() {
+  @Override
+  protected void init() {
     invoke(XMPPClientConnection.ConnectionState.AUTHORIZATION);
   }
 
+  @ActorMethod
   public void invoke(BoshBody body) {
     if (this.connection != null)
       this.connection.tell(new ArrayList(), self());
@@ -69,6 +67,7 @@ public class BOSHSession extends UntypedActorAdapter {
     }
   }
 
+  @ActorMethod
   public void invoke(Item item) {
     if (item instanceof BoshBody || item instanceof Open)
       return;
@@ -82,17 +81,19 @@ public class BOSHSession extends UntypedActorAdapter {
   }
 
   @SuppressWarnings("UnusedParameters")
+  @ActorMethod
   public void invoke(TcpMessage cmd) {}
 
+  @ActorMethod
   public void invoke(XMPPClientConnection.ConnectionState state) {
     switch (state) {
       case AUTHORIZATION:
-        businesLogic = context().actorOf(Props.create(AuthorizationPhase.class, self(), (Action<String>) id -> BOSHSession.this.id = id));
+        businesLogic = context().actorOf(ActorContainer.props(AuthorizationPhase.class, self(), (Action<String>) id -> BOSHSession.this.id = id));
         break;
       case CONNECTED:
         connected = true;
         invoke(Timeout.zero());
-        businesLogic = getContext().actorOf(Props.create(ConnectedPhase.class, self(), id));
+        businesLogic = context().actorOf(ActorContainer.props(ConnectedPhase.class, self(), id));
         break;
       case CLOSED:
         businesLogic.tell(new Close(), self());
@@ -102,7 +103,10 @@ public class BOSHSession extends UntypedActorAdapter {
     businesLogic.tell(new Open(), self());
   }
 
+  @ActorMethod
   public void invoke(Tcp.SuspendReading$ ignore) {}
+
+  @ActorMethod
   public void invoke(Status.Failure failure) {
     //noinspection ThrowableResultOfMethodCallIgnored
     if (failure.cause() != null)
@@ -111,6 +115,7 @@ public class BOSHSession extends UntypedActorAdapter {
       log.log(Level.WARNING, failure.toString());
   }
 
+  @ActorMethod
   public void invoke(Failure failure) {
     //noinspection ThrowableResultOfMethodCallIgnored
     if (failure.exception() != null)
@@ -120,6 +125,7 @@ public class BOSHSession extends UntypedActorAdapter {
   }
 
   @SuppressWarnings("UnusedParameters")
+  @ActorMethod
   public void invoke(Timeout to) {
     if (connection != null) {
       connection.tell(new ArrayList<>(outgoing), self());

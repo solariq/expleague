@@ -3,10 +3,9 @@ package com.expleague.server.agents;
 import akka.actor.*;
 import akka.util.Timeout;
 import com.expleague.model.*;
+import com.expleague.util.akka.*;
 import com.spbsu.commons.util.Pair;
 import com.expleague.server.ExpLeagueServer;
-import com.expleague.util.akka.AkkaTools;
-import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Presence;
 import org.jetbrains.annotations.Nullable;
@@ -22,23 +21,26 @@ import java.util.stream.Stream;
  * Date: 17.12.15
  * Time: 15:18
  */
-public class LaborExchange extends UntypedActorAdapter {
+public class LaborExchange extends ActorAdapter<UntypedActor> {
   private static final Logger log = Logger.getLogger(LaborExchange.class.getName());
 
   public static final String EXPERTS_ACTOR_NAME = "experts";
 
   private final Map<String, ActorRef> openPositions = new HashMap<>();
-  public LaborExchange() {
+
+  @Override
+  protected void init() {
     XMPP.send(new Presence(XMPP.jid(), false, new ServiceStatus(0)), context());
   }
 
   @Override
   public void preStart() throws Exception {
     super.preStart();
-    context().actorOf(Props.create(Experts.class), EXPERTS_ACTOR_NAME);
+    context().actorOf(ActorContainer.props(Experts.class), EXPERTS_ACTOR_NAME);
     board().open().forEach(o -> self().tell(o, self()));
   }
 
+  @ActorMethod
   public void invoke(ExpLeagueOrder order) {
     final String roomName = order.room().local();
     log.fine("Labor exchange received order " + roomName + " looking for broker");
@@ -60,6 +62,7 @@ public class LaborExchange extends UntypedActorAdapter {
     }
   }
 
+  @ActorMethod
   public void invoke(ActorRef expertAgent) {
     JavaConversions.asJavaCollection(context().children()).stream()
       .filter(LaborExchange::isBrokerActorRef)
@@ -72,7 +75,7 @@ public class LaborExchange extends UntypedActorAdapter {
 
   public static ActorRef reference(ActorContext context) {
     return AkkaTools.getOrCreate("/user/labor-exchange", context.system(),
-        (name, factory) -> factory.actorOf(Props.create(LaborExchange.class), "labor-exchange")
+        (name, factory) -> factory.actorOf(ActorContainer.props(LaborExchange.class), "labor-exchange")
     );
   }
 
@@ -93,11 +96,13 @@ public class LaborExchange extends UntypedActorAdapter {
    * Date: 19.12.15
    * Time: 17:32
    */
-  public static class Experts extends UntypedActorAdapter {
+  public static class Experts extends ActorAdapter<UntypedActor> {
+    @ActorMethod
     public void invoke(JID jid) {
       sender().tell(AkkaTools.getOrCreate(jid.bare().toString(), context(), () -> Props.create(ExpertRole.class)), self());
     }
 
+    @ActorMethod
     public void invoke(Offer offer) {
       log.fine("Experts department received offer " + offer.room().local());
       JavaConversions.asJavaCollection(context().children()).stream().forEach(
@@ -111,6 +116,8 @@ public class LaborExchange extends UntypedActorAdapter {
     public int readyCount = 0;
     private Map<String, ExpertRole.State> states = new HashMap<>();
     private Cancellable stateTimeout = null;
+
+    @ActorMethod
     public void invoke(ExpertRole.State next) {
       final String key = sender().path().name();
       final ExpertRole.State current = states.get(key);
@@ -119,6 +126,7 @@ public class LaborExchange extends UntypedActorAdapter {
       sendState();
     }
 
+    @ActorMethod
     public void invoke(Pair<Object, JID> whisper) {
       final ActorRef ref;
       final String name = whisper.second.bare().toString();
@@ -137,6 +145,7 @@ public class LaborExchange extends UntypedActorAdapter {
     }
 
     @SuppressWarnings("UnusedParameters")
+    @ActorMethod
     public void invoke(Timeout to) {
       stateTimeout = null;
       sendState();

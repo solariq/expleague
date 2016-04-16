@@ -29,6 +29,12 @@ public abstract class ActorAdapter<A extends Actor> {
   protected void init() {
   }
 
+  protected void preStart() throws Exception {
+  }
+
+  protected void postStop() {
+  }
+
   // todo: in future we can have complete delegation here
   public ActorRef self() {
     return getActor().self();
@@ -51,5 +57,13 @@ public abstract class ActorAdapter<A extends Actor> {
 
   public void unhandled(Object message) {
     this.unhandled.invoke(message);
+  }
+
+  public void reply(final Object message) {
+    replyTo(sender(), message);
+  }
+
+  public void replyTo(ActorRef recipient, final Object message) {
+    recipient.tell(message, self());
   }
 }

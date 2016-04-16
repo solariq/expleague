@@ -21,6 +21,9 @@ import com.expleague.server.admin.series.TimeSeriesDto;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.dao.Archive;
+import com.expleague.util.akka.ActorAdapter;
+import com.expleague.util.akka.ActorContainer;
+import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.JID;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -52,7 +55,7 @@ import java.util.stream.Stream;
 /**
  * @author vpdelta
  */
-public class ExpLeagueAdminService extends UntypedActor {
+public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
   private static final Logger log = Logger.getLogger(ExpLeagueAdminService.class.getName());
 
   private final static ObjectMapper mapper = new DefaultJsonMapper();
@@ -73,13 +76,13 @@ public class ExpLeagueAdminService extends UntypedActor {
     log.fine("Started on port: " + port);
   }
 
-  @Override
+  @ActorMethod
   public void onReceive(Object o) throws Exception {
     if (o instanceof IncomingConnection) {
       final IncomingConnection connection = (IncomingConnection) o;
       log.fine("Accepted new connection from " + connection.remoteAddress());
       connection.handleWithAsyncHandler((Function<HttpRequest, Future<HttpResponse>>) httpRequest -> {
-        final Future ask = (Future) Patterns.ask(context().actorOf(Props.create(Handler.class)), httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
+        final Future ask = (Future) Patterns.ask(context().actorOf(ActorContainer.props(Handler.class)), httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
         //noinspection unchecked
         return (Future<HttpResponse>)ask;
       }, materializer);
@@ -87,81 +90,78 @@ public class ExpLeagueAdminService extends UntypedActor {
     else unhandled(o);
   }
 
-  public static class Handler extends UntypedActor {
-    @Override
-    public void onReceive(final Object incomingMessage) throws Exception {
-      if (incomingMessage instanceof HttpRequest) {
-        final HttpRequest request = (HttpRequest) incomingMessage;
-        final String path = request.getUri().path();
-        log.fine(request.method() + " " + path);
-        final LaborExchange.Board board = LaborExchange.board();
-        HttpResponse response = HttpResponse.create().withStatus(404).withEntity("Page not found");
-        if (request.method() == HttpMethods.GET) {
-          try {
-            if (path.isEmpty() || "/".equals(path)) {
-              final File file = new File("admin/static/index.html");
-              response = HttpResponse.create().withStatus(200).withEntity(HttpEntities.create(ContentTypes.TEXT_HTML_UTF8, file));
-            }
-            else if (path.startsWith("/static")) {
-              final File file = new File("admin/static", path.substring(path.indexOf("static") + 7));
-              if (file.isFile()) {
-                response = HttpResponse.create().withStatus(200).withEntity(HttpEntities.create(getContentType(file), file));
-              }
-              else {
-                response = HttpResponse.create().withStatus(404).withEntity("File not found");
-              }
-            }
-            else if ("/open".equals(path)) {
-              response = getOrders(board.open());
-            }
-            else if ("/closed/without/feedback".equals(path)) {
-              response = getOrders(board.orders(
-                new LaborExchange.OrderFilter(true, EnumSet.of(ExpLeagueOrder.Status.DONE))
-              ));
-            }
-            else if ("/closed".equals(path)) {
-              response = getOrders(board.orders(
-                new LaborExchange.OrderFilter(false, EnumSet.of(ExpLeagueOrder.Status.DONE))
-              ));
-            }
-            else if ("/top/experts".equals(path)) {
-              final List<ExpertsProfileDto> experts = board.topExperts()
-                .map(Roster.instance()::profile)
-                .map(ExpertsProfileDto::new)
-                .collect(Collectors.toList());
-              response = getJsonResponse("experts", experts);
-            }
-            else if (path.startsWith("/history/")) {
-              final String roomId = path.substring("/history/".length());
-              response = getOrders(board.history(roomId));
-            }
-            else if (path.startsWith("/active/")) {
-              final String roomId = path.substring("/active/".length());
-              response = getOrders(Stream.of(board.active(roomId)));
-            }
-            else if (path.startsWith("/related/")) {
-              final JID jid = JID.parse(path.substring("/related/".length()));
-              response = getOrders(board.related(jid));
-            }
-            else if (path.startsWith("/dump/")) {
-              final JID jid = JID.parse(path.substring("/dump/".length()));
-              final Archive.Dump dump = Archive.instance().dump(jid.local());
-              final List<DumpItemDto> messages = dump.stream().map(DumpItemDto::new).collect(Collectors.toList());
-              response = getJsonResponse("messages", messages);
-            }
-            else if ("/kpi".equals(path)) {
-              response = getJsonResponse("charts", prepareKpiCharts(board));
-            }
-          } catch (Exception e) {
-            final ByteArrayOutputStream out = new ByteArrayOutputStream();
-            e.printStackTrace(new PrintStream(out));
-            final String stacktrace = new String(out.toByteArray(), Charsets.UTF_8);
-            response = HttpResponse.create().withStatus(500).withEntity(stacktrace);
-            log.warning(stacktrace);
+  public static class Handler extends ActorAdapter<UntypedActor> {
+    @ActorMethod
+    public void onReceive(final HttpRequest request) throws Exception {
+      final String path = request.getUri().path();
+      log.fine(request.method() + " " + path);
+      final LaborExchange.Board board = LaborExchange.board();
+      HttpResponse response = HttpResponse.create().withStatus(404).withEntity("Page not found");
+      if (request.method() == HttpMethods.GET) {
+        try {
+          if (path.isEmpty() || "/".equals(path)) {
+            final File file = new File("admin/static/index.html");
+            response = HttpResponse.create().withStatus(200).withEntity(HttpEntities.create(ContentTypes.TEXT_HTML_UTF8, file));
           }
+          else if (path.startsWith("/static")) {
+            final File file = new File("admin/static", path.substring(path.indexOf("static") + 7));
+            if (file.isFile()) {
+              response = HttpResponse.create().withStatus(200).withEntity(HttpEntities.create(getContentType(file), file));
+            }
+            else {
+              response = HttpResponse.create().withStatus(404).withEntity("File not found");
+            }
+          }
+          else if ("/open".equals(path)) {
+            response = getOrders(board.open());
+          }
+          else if ("/closed/without/feedback".equals(path)) {
+            response = getOrders(board.orders(
+              new LaborExchange.OrderFilter(true, EnumSet.of(ExpLeagueOrder.Status.DONE))
+            ));
+          }
+          else if ("/closed".equals(path)) {
+            response = getOrders(board.orders(
+              new LaborExchange.OrderFilter(false, EnumSet.of(ExpLeagueOrder.Status.DONE))
+            ));
+          }
+          else if ("/top/experts".equals(path)) {
+            final List<ExpertsProfileDto> experts = board.topExperts()
+              .map(Roster.instance()::profile)
+              .map(ExpertsProfileDto::new)
+              .collect(Collectors.toList());
+            response = getJsonResponse("experts", experts);
+          }
+          else if (path.startsWith("/history/")) {
+            final String roomId = path.substring("/history/".length());
+            response = getOrders(board.history(roomId));
+          }
+          else if (path.startsWith("/active/")) {
+            final String roomId = path.substring("/active/".length());
+            response = getOrders(Stream.of(board.active(roomId)));
+          }
+          else if (path.startsWith("/related/")) {
+            final JID jid = JID.parse(path.substring("/related/".length()));
+            response = getOrders(board.related(jid));
+          }
+          else if (path.startsWith("/dump/")) {
+            final JID jid = JID.parse(path.substring("/dump/".length()));
+            final Archive.Dump dump = Archive.instance().dump(jid.local());
+            final List<DumpItemDto> messages = dump.stream().map(DumpItemDto::new).collect(Collectors.toList());
+            response = getJsonResponse("messages", messages);
+          }
+          else if ("/kpi".equals(path)) {
+            response = getJsonResponse("charts", prepareKpiCharts(board));
+          }
+        } catch (Exception e) {
+          final ByteArrayOutputStream out = new ByteArrayOutputStream();
+          e.printStackTrace(new PrintStream(out));
+          final String stacktrace = new String(out.toByteArray(), Charsets.UTF_8);
+          response = HttpResponse.create().withStatus(500).withEntity(stacktrace);
+          log.warning(stacktrace);
         }
-        sender().tell(response, self());
       }
+      sender().tell(response, self());
     }
 
     @NotNull

@@ -1,9 +1,11 @@
 package com.expleague.server.xmpp.phase;
 
 import akka.actor.ActorRef;
+import akka.actor.UntypedActor;
 import akka.io.TcpMessage;
 import com.expleague.server.xmpp.XMPPClientConnection;
-import com.expleague.util.akka.UntypedActorAdapter;
+import com.expleague.util.akka.ActorAdapter;
+import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.control.Open;
 
@@ -15,7 +17,7 @@ import java.util.logging.Logger;
  * Date: 08.12.15
  * Time: 17:15
  */
-public abstract class XMPPPhase extends UntypedActorAdapter {
+public abstract class XMPPPhase extends ActorAdapter<UntypedActor> {
   private static final Logger log = Logger.getLogger(XMPPPhase.class.getName());
   private final ActorRef connection;
 
@@ -30,6 +32,7 @@ public abstract class XMPPPhase extends UntypedActorAdapter {
     connection.tell(item, self());
   }
 
+  @ActorMethod
   public final void invoke(Open ignore) {
     connection.tell(ignore, self());
     open();

@@ -2,10 +2,13 @@ package com.expleague.server.xmpp.phase;
 
 import akka.actor.ActorRef;
 import akka.actor.PoisonPill;
+import akka.actor.UntypedActor;
 import akka.io.Tcp;
 import akka.io.TcpMessage;
 import akka.util.ByteString;
 import com.expleague.server.xmpp.XMPPClientConnection;
+import com.expleague.util.akka.ActorAdapter;
+import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.xmpp.control.Close;
 
@@ -21,7 +24,7 @@ import java.util.logging.Logger;
  * Date: 12.12.15
  * Time: 21:17
  */
-public class SSLHandshake extends UntypedActorAdapter {
+public class SSLHandshake extends ActorAdapter<UntypedActor> {
   private static final Logger log = Logger.getLogger(SSLHandshake.class.getName());
   private final SSLEngine sslEngine;
   private final ActorRef connection;
@@ -43,6 +46,7 @@ public class SSLHandshake extends UntypedActorAdapter {
     return expand;
   }
 
+  @ActorMethod
   public void invoke(Close close) {
     if (in.position() != 0) {
       in.flip();
@@ -51,6 +55,7 @@ public class SSLHandshake extends UntypedActorAdapter {
     context().stop(self());
   }
 
+  @ActorMethod
   public void invoke(Tcp.Received received) {
 //    System.out.println("in: [" + received.data().mkString() + "]");
     if (in.remaining() < received.data().length()) {
@@ -128,7 +133,7 @@ public class SSLHandshake extends UntypedActorAdapter {
     toSend.flip();
     final ByteString data = ByteString.fromByteBuffer(toSend);
 //    System.out.println("out: [" + data.mkString() + "]");
-    getSender().tell(TcpMessage.write(data), self());
+    sender().tell(TcpMessage.write(data), self());
     toSend.clear();
   }
 }

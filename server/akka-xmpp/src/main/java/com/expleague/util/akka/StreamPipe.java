@@ -1,5 +1,6 @@
 package com.expleague.util.akka;
 
+import akka.actor.UntypedActor;
 import akka.util.ByteString;
 
 import java.io.IOException;
@@ -11,24 +12,27 @@ import java.io.PipedOutputStream;
  * Date: 24.12.15
  * Time: 23:37
  */
-public class StreamPipe extends UntypedActorAdapter {
+public class StreamPipe extends ActorAdapter<UntypedActor> {
   private PipedOutputStream pipeIn;
 
   public StreamPipe(PipedInputStream pis) throws IOException {
     pipeIn = new PipedOutputStream(pis);
   }
 
+  @ActorMethod
   public void invoke(ByteString string) throws IOException {
     byte[] buffer = new byte[string.length()];
     string.copyToArray(buffer);
     pipeIn.write(buffer);
   }
 
+  @ActorMethod
   public void invoke(Close close) throws IOException {
     pipeIn.close();
     context().stop(self());
   }
 
+  @ActorMethod
   public void invoke(Open open) {
     sender().tell(open, self());
   }

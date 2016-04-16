@@ -3,9 +3,12 @@ package com.expleague.server.services;
 import akka.actor.AbstractFSM;
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import akka.actor.UntypedActor;
 import com.expleague.server.Roster;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
+import com.expleague.util.akka.ActorAdapter;
+import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.roster.RosterQuery;
@@ -23,7 +26,8 @@ import static com.expleague.xmpp.control.roster.RosterQuery.RosterItem.Subscript
  * Date: 15.12.15
  * Time: 13:54
  */
-public class RosterService extends UntypedActorAdapter {
+public class RosterService extends ActorAdapter<UntypedActor> {
+  @ActorMethod
   public void invoke(Iq<RosterQuery> rosterIq) {
     final JID from = rosterIq.from();
     final Option<ActorRef> service = context()

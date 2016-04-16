@@ -23,6 +23,9 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.expleague.util.akka.ActorAdapter;
+import com.expleague.util.akka.ActorContainer;
+import com.expleague.util.akka.ActorMethod;
 import com.spbsu.commons.io.StreamTools;
 import org.apache.commons.fileupload.MultipartStream;
 import org.apache.commons.fileupload.ParameterParser;
@@ -42,7 +45,7 @@ import java.util.logging.Logger;
  * Date: 24.11.15
  * Time: 17:42
  */
-public class ImageStorage extends UntypedActor {
+public class ImageStorage extends ActorAdapter<UntypedActor> {
   private static final Logger log = Logger.getLogger(ImageStorage.class.getName());
   private static final String BUCKET_NAME = "tbts-image-storage-main-chunk";
   final AmazonS3Client s3Client;
@@ -64,14 +67,14 @@ public class ImageStorage extends UntypedActor {
     serverSource.to(Sink.actorRef(self(), PoisonPill.getInstance())).run(materializer);
   }
 
-  @Override
+  @ActorMethod
   public void onReceive(Object o) throws Exception {
     if (o instanceof IncomingConnection) {
       final IncomingConnection connection = (IncomingConnection) o;
 
       log.fine("Accepted new connection from " + connection.remoteAddress());
       connection.handleWithAsyncHandler((Function<HttpRequest, Future<HttpResponse>>) httpRequest -> {
-        final Future ask = (Future) Patterns.ask(context().actorOf(Props.create(RequestHandler.class, s3Client)), httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
+        final Future ask = (Future) Patterns.ask(context().actorOf(ActorContainer.props(RequestHandler.class, s3Client)), httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
         //noinspection unchecked
         return (Future<HttpResponse>)ask;
       }, materializer);
@@ -81,19 +84,18 @@ public class ImageStorage extends UntypedActor {
 
   public static void main(String[] args) {
     final ActorSystem system = ActorSystem.create("TBTS_Light_XMPP");
-    system.actorOf(Props.create(ImageStorage.class));
+    system.actorOf(ActorContainer.props(ImageStorage.class));
   }
 
-  private static class RequestHandler extends UntypedActor {
+  private static class RequestHandler extends ActorAdapter<UntypedActor> {
     private final AmazonS3Client s3Client;
 
     public RequestHandler(AmazonS3Client s3Client) {
       this.s3Client = s3Client;
     }
 
-    @Override
-    public void onReceive(Object o) throws Exception {
-      HttpRequest request = (HttpRequest) o;
+    @ActorMethod
+    public void onReceive(final HttpRequest request) throws Exception {
       Uri uri = request.getUri();
       final HttpResponse response;
 
@@ -122,7 +124,7 @@ public class ImageStorage extends UntypedActor {
       }
       else if (request.method() == HttpMethods.POST) {
         log.info("Receiving image");
-        final ActorMaterializer materializer = ActorMaterializer.create(getContext());
+        final ActorMaterializer materializer = ActorMaterializer.create(context());
         final RequestEntity entity = request.entity();
         MediaType.Multipart mediaType = (MediaType.Multipart) entity.getContentType().mediaType();
         final InputStream is = entity.getDataBytes().runWith(StreamConverters.asInputStream(Duration.apply(10, TimeUnit.MINUTES)), materializer);

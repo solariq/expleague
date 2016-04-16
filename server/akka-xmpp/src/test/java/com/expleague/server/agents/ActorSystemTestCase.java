@@ -57,8 +57,8 @@ public class ActorSystemTestCase extends JUnitIOCapture {
 
     public TestKit() {
       super(system);
-      xmpp = system.actorOf(Props.create(XMPPWithMockSupport.class, this), "xmpp");
-      laborExchange = system.actorOf(Props.create(LaborExchange.class), "labor-exchange");
+      xmpp = system.actorOf(ActorContainer.props(XMPPWithMockSupport.class, this), "xmpp");
+      laborExchange = system.actorOf(ActorContainer.props(LaborExchange.class), "labor-exchange");
       registrator = system.actorOf(Props.create(Registrator.class));
       ThreadTools.sleep(50);
     }

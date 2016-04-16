@@ -1,13 +1,13 @@
 package com.expleague.server;
 
 import akka.actor.ActorSystem;
-import akka.actor.Props;
 import com.expleague.server.admin.ExpLeagueAdminService;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
 import com.expleague.server.dao.Archive;
 import com.expleague.server.dao.PatternsRepository;
 import com.expleague.server.services.XMPPServices;
+import com.expleague.util.akka.ActorContainer;
 import com.expleague.util.ios.NotificationsManager;
 import com.google.common.annotations.VisibleForTesting;
 import com.typesafe.config.Config;
@@ -40,15 +40,15 @@ public class ExpLeagueServer {
 
     NotificationsManager.instance();
     // singletons
-    system.actorOf(Props.create(XMPP.class), "xmpp");
-    system.actorOf(Props.create(LaborExchange.class), "labor-exchange");
+    system.actorOf(ActorContainer.props(XMPP.class), "xmpp");
+    system.actorOf(ActorContainer.props(LaborExchange.class), "labor-exchange");
 
     // per node
-    system.actorOf(Props.create(XMPPServices.class), "services");
-    system.actorOf(Props.create(XMPPServer.class), "comm");
-    system.actorOf(Props.create(BOSHServer.class), "bosh");
-    system.actorOf(Props.create(ImageStorage.class), "image-storage");
-    system.actorOf(Props.create(ExpLeagueAdminService.class, load.getConfig("tbts.admin.embedded")), "admin-service");
+    system.actorOf(ActorContainer.props(XMPPServices.class), "services");
+    system.actorOf(ActorContainer.props(XMPPServer.class), "comm");
+    system.actorOf(ActorContainer.props(BOSHServer.class), "bosh");
+    system.actorOf(ActorContainer.props(ImageStorage.class), "image-storage");
+    system.actorOf(ActorContainer.props(ExpLeagueAdminService.class, load.getConfig("tbts.admin.embedded")), "admin-service");
   }
 
   public static Roster roster() {

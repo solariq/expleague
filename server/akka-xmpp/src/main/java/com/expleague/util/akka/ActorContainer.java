@@ -25,6 +25,18 @@ public class ActorContainer extends UntypedActor {
   }
 
   @Override
+  public void preStart() throws Exception {
+    super.preStart();
+    getAdapterInstance().preStart();
+  }
+
+  @Override
+  public void postStop() throws Exception {
+    getAdapterInstance().postStop();
+    super.postStop();
+  }
+
+  @Override
   public void onReceive(final Object message) throws Exception {
     if (ActorFailureChecker.checkIfFailure(getAdapterInstance().getClass(), self().path().name(), message)) {
       return;

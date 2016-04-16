@@ -2,6 +2,7 @@ package com.expleague.server.xmpp.phase;
 
 import akka.actor.ActorRef;
 import com.expleague.server.xmpp.XMPPClientConnection;
+import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Features;
 import com.expleague.xmpp.control.tls.Proceed;
 import com.expleague.xmpp.control.tls.StartTLS;
@@ -18,6 +19,7 @@ public class HandshakePhase extends XMPPPhase {
   }
 
   @SuppressWarnings("UnusedParameters")
+  @ActorMethod
   public void invoke(StartTLS tls) {
     last(new Proceed(), XMPPClientConnection.ConnectionState.STARTTLS);
   }

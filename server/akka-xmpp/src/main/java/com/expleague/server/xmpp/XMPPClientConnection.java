@@ -11,7 +11,9 @@ import com.expleague.server.xmpp.phase.AuthorizationPhase;
 import com.expleague.server.xmpp.phase.ConnectedPhase;
 import com.expleague.server.xmpp.phase.HandshakePhase;
 import com.expleague.server.xmpp.phase.SSLHandshake;
-import com.expleague.util.akka.UntypedActorAdapter;
+import com.expleague.util.akka.ActorAdapter;
+import com.expleague.util.akka.ActorContainer;
+import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.xml.AsyncJAXBStreamReader;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.Stream;
@@ -52,7 +54,7 @@ import java.util.logging.Logger;
  * Time: 19:50
  */
 @SuppressWarnings("unused")
-public class XMPPClientConnection extends UntypedActorAdapter {
+public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
   private static final Logger log = Logger.getLogger(XMPPClientConnection.class.getName());
 
   private ActorRef connection;
@@ -66,10 +68,15 @@ public class XMPPClientConnection extends UntypedActorAdapter {
 
   public XMPPClientConnection(ActorRef connection) {
     this.connection = connection;
+  }
+
+  @Override
+  protected void init() {
     invoke(ConnectionState.HANDSHAKE);
     connection.tell(TcpMessage.register(self()), self());
   }
 
+  @ActorMethod
   public void invoke(Tcp.Received msgIn) {
     if (currentState == ConnectionState.HANDSHAKE)
       input(msgIn.data());
@@ -79,6 +86,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
       helper.decrypt(msgIn.data(), this::input);
   }
 
+  @ActorMethod
   public void invoke(Tcp.Command cmd) {
     connection.tell(cmd, self());
   }
@@ -116,6 +124,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
     }
   }
 
+  @ActorMethod
   public void invoke(Item item) throws SSLException {
     sendItem(item, new Tcp.NoAck(null));
   }
@@ -143,15 +152,17 @@ public class XMPPClientConnection extends UntypedActorAdapter {
       }
     }
     else
-      connection.tell(TcpMessage.write(data, requestedAck), getSelf());
+      connection.tell(TcpMessage.write(data, requestedAck), self());
   }
 
+  @ActorMethod
   public void invoke(Status.Failure failure) {
     if(businessLogic != null)
       businessLogic.tell(PoisonPill.getInstance(), self());
     log.log(Level.SEVERE, "Stream failure", failure.cause());
   }
 
+  @ActorMethod
   public void invoke(Tcp.ConnectionClosed ignore) {
     if(businessLogic != null)
       businessLogic.tell(PoisonPill.getInstance(), self());
@@ -159,11 +170,14 @@ public class XMPPClientConnection extends UntypedActorAdapter {
     log.fine("Client connection closed");
   }
 
+  @ActorMethod
   public void invoke(Terminated who) {
     log.finest("Terminated " + who.actor());
   }
 
   private ConnectionState currentState;
+
+  @ActorMethod
   public void invoke(ConnectionState state) {
     if (currentState == state)
       return;
@@ -176,7 +190,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
     switch (state) {
       case HANDSHAKE: {
         final Source<Tcp.Received, ActorRef> source = Source.actorRef(1000, OverflowStrategy.fail());
-        newLogic = context().actorOf(Props.create(HandshakePhase.class, self()), "handshake");
+        newLogic = context().actorOf(ActorContainer.props(HandshakePhase.class, self()), "handshake");
         break;
       }
       case STARTTLS: {
@@ -206,7 +220,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
           sslEngine.setUseClientMode(false);
 //          sslEngine.setEnableSessionCreation(true);
           sslEngine.setWantClientAuth(false);
-          final ActorRef handshake = getContext().actorOf(Props.create(SSLHandshake.class, self(), sslEngine), "starttls");
+          final ActorRef handshake = context().actorOf(ActorContainer.props(SSLHandshake.class, self(), sslEngine), "starttls");
           sslEngine.beginHandshake();
           helper = new SSLHelper(sslEngine);
           newLogic = handshake;
@@ -224,7 +238,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         }
 
         businessLogic.tell(new Close(), self());
-        newLogic = context().actorOf(Props.create(AuthorizationPhase.class, self(), (Action<String>) id -> XMPPClientConnection.this.id = id), "authorization");
+        newLogic = context().actorOf(ActorContainer.props(AuthorizationPhase.class, self(), (Action<String>) id -> XMPPClientConnection.this.id = id), "authorization");
         break;
       }
       case CONNECTED: {
@@ -233,7 +247,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
           asyncXml = factory.createAsyncForByteArray();
           reader = new AsyncJAXBStreamReader(asyncXml, Stream.jaxb());
         }
-        newLogic = getContext().actorOf(Props.create(ConnectedPhase.class, self(), id), "connected");
+        newLogic = context().actorOf(ActorContainer.props(ConnectedPhase.class, self(), id), "connected");
         break;
       }
       case CLOSED: {
@@ -242,7 +256,7 @@ public class XMPPClientConnection extends UntypedActorAdapter {
         return;
       }
     }
-    connection.tell(TcpMessage.resumeReading(), getSelf());
+    connection.tell(TcpMessage.resumeReading(), self());
     opened = false;
     businessLogic = newLogic;
     currentState = state;
