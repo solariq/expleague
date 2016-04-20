@@ -7,10 +7,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
 import com.amazonaws.services.dynamodbv2.document.internal.InternalUtils;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
-import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
-import com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
+import com.amazonaws.services.dynamodbv2.model.*;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.util.cache.CacheStrategy;
@@ -19,6 +16,8 @@ import com.spbsu.commons.util.cache.impl.FixedSizeCache;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
@@ -28,6 +27,7 @@ import java.util.stream.Stream;
  */
 @SuppressWarnings("unused")
 public class DynamoDBArchive implements Archive {
+  private static final Logger log = Logger.getLogger(DynamoDBArchive.class.getName());
   public static final String TBTS_ROOMS = "tbts-rooms";
   private final DynamoDBMapper mapper;
   private final AmazonDynamoDBAsyncClient client;
@@ -106,19 +106,23 @@ public class DynamoDBArchive implements Archive {
     public void accept(Stanza stanza) {
       final Message message = new Message(stanza.from().toString(), stanza.xmlString(), System.currentTimeMillis());
       messages.add(message);
-      if (messages.size() != 1) {
-        client.updateItem(new UpdateItemRequest()
-            .withTableName(TBTS_ROOMS)
-            .withKey(InternalUtils.toAttributeValueMap(new PrimaryKey("id", id)))
-            .withUpdateExpression("set #m = list_append(#m, :i)")
-            .withExpressionAttributeNames(new HashMap<String, String>() {{
-              put("#m", "messages");
-            }})
-            .withExpressionAttributeValues(new HashMap<String, AttributeValue>(){{
-              put(":i", message.asMap());
-            }}));
+      try {
+        if (messages.size() != 1) {
+          client.updateItem(new UpdateItemRequest()
+              .withTableName(TBTS_ROOMS)
+              .withKey(InternalUtils.toAttributeValueMap(new PrimaryKey("id", id)))
+              .withUpdateExpression("set #m = list_append(#m, :i)")
+              .withExpressionAttributeNames(new HashMap<String, String>() {{
+                put("#m", "messages");
+              }})
+              .withExpressionAttributeValues(new HashMap<String, AttributeValue>() {{
+                put(":i", message.asMap());
+              }}));
+        } else mapper.save(this);
       }
-      else mapper.save(this);
+      catch (ProvisionedThroughputExceededException ptee) {
+        log.log(Level.WARNING, "Unable to deliver message to DynamoDB: " + ptee.getMessage());
+      }
     }
 
     @Override
