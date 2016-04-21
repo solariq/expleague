@@ -158,6 +158,7 @@ a.cut_open{
     color: #000000;
     margin: 5px 0;
 }
+
 a.hide{
     display: block;
     text-decoration: underline;
@@ -376,6 +377,12 @@ img.back_to_chat{
 
 .cut{
     display:none;
-    margin-top: 0 px;
-    margin-bottom: 0px
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.cut_open {
+    display:block;
+    margin-top: 0;
+    margin-bottom: 0;
 }

@@ -267,9 +267,7 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
   private void broadcast(Stanza stanza) {
     participants()
       .filter(jid -> !jid.bareEq(stanza.from()))
-      .forEach(jid -> {
-        XMPP.send(copyFromRoomAlias(stanza, jid), context());
-      });
+      .forEach(jid -> XMPP.send(copyFromRoomAlias(stanza, jid), context()));
   }
 
   private <S extends Stanza> S copyFromRoomAlias(final S stanza, final JID to) {

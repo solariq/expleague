@@ -196,9 +196,7 @@ public class MarkdownEditorPane
 
 	private void textChanged(String newText) {
 		final Pattern cutPattern = Pattern.compile("\\+\\[([^\\]]+)\\]([^-]*(?:-[^\\[][^-]*)*)-\\[\\1\\]");
-		final Pattern checkedPattern = Pattern.compile("\\{checked=true\\}");
 		final Matcher cutMatcher = cutPattern.matcher(newText);
-		final Matcher checkedMatcher = cutPattern.matcher(newText);
 		final StringBuffer buffer = new StringBuffer();
 		int index = 0;
 		while(cutMatcher.find()) {
