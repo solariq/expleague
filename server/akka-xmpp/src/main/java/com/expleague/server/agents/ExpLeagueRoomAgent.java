@@ -2,13 +2,10 @@ package com.expleague.server.agents;
 
 import akka.persistence.RecoveryCompleted;
 import com.expleague.model.Answer;
-import com.expleague.model.Delivered;
 import com.expleague.model.Offer;
-import com.expleague.model.Operations;
 import com.expleague.model.Operations.*;
 import com.expleague.server.Roster;
 import com.expleague.server.dao.Archive;
-import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.PersistentActorAdapter;
 import com.expleague.xmpp.JID;
@@ -20,7 +17,10 @@ import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.func.Functions;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Stack;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -285,7 +285,7 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
 
   @Override
   public String persistenceId() {
-    return jid.toString();
+    return jid.local();
   }
 
   @Override
@@ -293,6 +293,11 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
     if (o instanceof Stanza) {
       final Stanza stanza = (Stanza) o;
       archive.add(stanza);
+    }
+    else if (o instanceof RecoveryCompleted) {
+      if (archive.isEmpty()) {
+        Archive.instance().dump(jid.local()).stream().forEach(archive::add);
+      }
     }
   }
 }
