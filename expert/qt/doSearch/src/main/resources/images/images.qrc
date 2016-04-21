@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/">
+        <file>status/disconnect_h.png</file>
+        <file>status/disconnect.png</file>
+        <file>status/new_task_h.png</file>
+        <file>status/new_task.png</file>
+        <file>status/offline_h.png</file>
+        <file>status/offline.png</file>
+        <file>status/online_h.png</file>
+        <file>status/online.png</file>
+        <file>status/play_h.png</file>
+        <file>status/play.png</file>
+        <file>status/waiting_h.png</file>
+        <file>status/waiting.png</file>
+        <file>md.png</file>
+        <file>avatar.png</file>
+        <file>cross.png</file>
+        <file>chromium.png</file>
+    </qresource>
+</RCC>
