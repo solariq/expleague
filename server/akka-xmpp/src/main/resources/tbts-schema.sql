@@ -80,6 +80,7 @@ CREATE TABLE IF NOT EXISTS Participants (
 CREATE TABLE IF NOT EXISTS Applications (
   email VARCHAR(128) NOT NULL,
   referer VARCHAR(64),
+  notified BOOL NOT NULL DEFAULT FALSE,
 
   CONSTRAINT Applications_Users_id_fk FOREIGN KEY (referer) REFERENCES Users (id) ON DELETE SET NULL
 );
