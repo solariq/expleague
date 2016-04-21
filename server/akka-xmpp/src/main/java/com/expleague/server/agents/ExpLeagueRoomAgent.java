@@ -1,6 +1,8 @@
 package com.expleague.server.agents;
 
+import akka.persistence.RecoveryCompleted;
 import com.expleague.model.Answer;
+import com.expleague.model.Delivered;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
 import com.expleague.model.Operations.*;
@@ -8,6 +10,7 @@ import com.expleague.server.Roster;
 import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
+import com.expleague.util.akka.PersistentActorAdapter;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
@@ -29,10 +32,10 @@ import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
  * Time: 13:18
  */
 @SuppressWarnings("UnusedParameters")
-public class ExpLeagueRoomAgent extends ActorAdapter {
+public class ExpLeagueRoomAgent extends PersistentActorAdapter {
   private static final Logger log = Logger.getLogger(ExpLeagueRoomAgent.class.getName());
   private final JID jid;
-  private Archive.Dump dump;
+  private List<Stanza> archive = new ArrayList<>();
   private ExpLeagueOrder order;
 
   public ExpLeagueRoomAgent(JID jid) {
@@ -41,16 +44,23 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
 
   @Override
   protected void init() {
-    dump = Archive.instance().dump(jid.local());
     order = LaborExchange.board().active(jid.local());
+  }
+
+  public JID owner() {
+    return archive.get(0).from().bare();
   }
 
   @ActorMethod
   public void invoke(Message msg) {
+    persist(msg, this::invokeInner);
+  }
+
+  public void invokeInner(Message msg) {
     final JID from = msg.from();
-    dump(msg);
+    archive.add(msg);
     if (msg.type() == MessageType.GROUP_CHAT &&
-      !(dump.owner().bareEq(from) || order != null && order.role(from) == ACTIVE)
+      !(owner().bareEq(from) || order != null && order.role(from) == ACTIVE)
     ) {
       final Message message = new Message(
         jid,
@@ -77,11 +87,11 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
           break;
         case ACTIVE:
           if (msg.has(Resume.class)) {
-            dump.stream()
+            archive.stream()
                     .flatMap(Functions.instancesOf(Message.class))
                     .filter(message -> message.type() == MessageType.GROUP_CHAT || message.has(Progress.class))
                     .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
-            XMPP.send(new Presence(roomAlias(msg.from()), dump.owner(), true), context());
+            XMPP.send(new Presence(roomAlias(msg.from()), owner(), true), context());
           }
           else if (msg.has(Answer.class)) {
             order = null;
@@ -101,25 +111,25 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
                   break;
               }
             }
-            sendToOwner(new Message(jid, dump.owner(), progress));
+            sendToOwner(new Message(jid, owner(), progress));
           }
           else if (msg.has(Suspend.class)) {
-            XMPP.send(new Presence(roomAlias(msg.from()), dump.owner(), false), context());
+            XMPP.send(new Presence(roomAlias(msg.from()), owner(), false), context());
           }
           else if (msg.has(Start.class)) {
-            dump.stream()
+            archive.stream()
                     .flatMap(Functions.instancesOf(Message.class))
                     .filter(message -> message.type() == MessageType.GROUP_CHAT || message.has(Progress.class))
                     .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
-            sendToOwner(new Message(jid, dump.owner(), msg.get(Start.class), Roster.instance().profile(from.bare())));
+            sendToOwner(new Message(jid, owner(), msg.get(Start.class), Roster.instance().profile(from.bare())));
           }
           else if (msg.body().startsWith("{\"type\":\"pageVisited\"")) {
-            sendToOwner(new Message(jid, dump.owner(), msg.body()));
+            sendToOwner(new Message(jid, owner(), msg.body()));
           }
           break;
         case SLACKER:
           if (msg.has(Cancel.class)) {
-            sendToOwner(new Message(jid, dump.owner(), msg.get(Command.class)));
+            sendToOwner(new Message(jid, owner(), msg.get(Command.class)));
           }
           break;
         default:
@@ -130,7 +140,7 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
       //noinspection ConstantConditions
       lastOrder().feedback(msg.get(Feedback.class).stars());
     }
-    else if (msg.from().bareEq(dump.owner()) && !msg.has(Done.class)){
+    else if (msg.from().bareEq(owner()) && !msg.has(Done.class)){
       final Offer offer = offer(msg);
       if (offer != null) {
         order = LaborExchange.board().register(offer);
@@ -145,8 +155,10 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
   }
 
   private void sendToOwner(Message message) {
-    dump.accept(message);
-    XMPP.send(message, context());
+    persist(message, msg -> {
+      archive.add(message);
+      XMPP.send(message, context());
+    });
   }
 
   @SuppressWarnings("ConstantConditions")
@@ -229,35 +241,27 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
           .filter(expert -> prevOrder.role(expert) == ExpLeagueOrder.Role.ACTIVE)
           .forEach(worker -> result.filter().prefer(worker));
     }
-    else result = Offer.create(jid, dump.owner(), msg);
+    else result = Offer.create(jid, owner(), msg);
     return result;
   }
 
   @ActorMethod
   public void invoke(Presence presence) {
-    dump(presence);
     broadcast(presence);
   }
 
   @ActorMethod
   public void invoke(Iq command) {
-    dump(command);
     XMPP.send(Iq.answer(command), context());
     if (command.type() == Iq.IqType.SET) {
       XMPP.send(new Message(jid, command.from(), "Room set up and unlocked."), context());
     }
   }
 
-  private void dump(Stanza stanza) {
-    if (dump == null)
-      dump = Archive.instance().register(jid.local(), stanza.from().toString());
-    dump.accept(stanza);
-  }
-
   private Stream<JID> participants() {
     if (order == null || order.status() == ExpLeagueOrder.Status.OPEN)
-      return Stream.of(dump.owner());
-    return Stream.concat(Stream.of(dump.owner()), order.of(ACTIVE));
+      return Stream.of(owner());
+    return Stream.concat(Stream.of(owner()), order.of(ACTIVE));
   }
 
   private void broadcast(Stanza stanza) {
@@ -277,5 +281,18 @@ public class ExpLeagueRoomAgent extends ActorAdapter {
   @NotNull
   private JID roomAlias(JID from) {
     return new JID(this.jid.local(), this.jid.domain(), from.local());
+  }
+
+  @Override
+  public String persistenceId() {
+    return jid.toString();
+  }
+
+  @Override
+  public void onReceiveRecover(Object o) throws Exception {
+    if (o instanceof Stanza) {
+      final Stanza stanza = (Stanza) o;
+      archive.add(stanza);
+    }
   }
 }
