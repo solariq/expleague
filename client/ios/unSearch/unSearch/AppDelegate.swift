@@ -10,6 +10,7 @@
 import UIKit
 import XMPPFramework
 import CoreData
+import MMMarkdown
 
 class DataController: NSObject {
     let managedObjectContext = NSManagedObjectContext(concurrencyType: .MainQueueConcurrencyType)
@@ -259,7 +260,7 @@ extension AppDelegate: UIApplicationDelegate {
             historyView?.selected = order
             tabs.selectedIndex = 1
         }
-        else if let _ = userInfo["aow"] as? Bool {
+        else if let _ = userInfo["aow"] as? String {
             activeProfile?.receiveAnswerOfTheWeek = true
             tabs.selectedIndex = 1
         }

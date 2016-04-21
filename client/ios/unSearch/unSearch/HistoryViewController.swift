@@ -19,7 +19,10 @@ class HistoryViewController: UITableViewController {
     var answerOfTheWeek: ExpLeagueOrder?
     var cellHeight = CGFloat(0.0)
     var selected: ExpLeagueOrder? {
-        didSet {
+        willSet(selected) {
+            guard selected != self.selected else {
+                return
+            }
             let table = (self.view as! UITableView)
             if (table.indexPathForSelectedRow != nil) {
                 table.deselectRowAtIndexPath(table.indexPathForSelectedRow!, animated: false)
@@ -230,9 +233,9 @@ class HistoryViewController: UITableViewController {
         }
         AppDelegate.instance.tabs.tabBar.hidden = true;
         let messagesView = OrderDetailsViewController(data: model(o))
-        while (navigationController?.childViewControllers.count > 1) {
-            navigationController?.popViewControllerAnimated(false)
-        }
+//        while (navigationController?.childViewControllers.count > 1) {
+//            navigationController?.popViewControllerAnimated(false)
+//        }
         splitViewController!.showDetailViewController(messagesView, sender: nil)
     }
     

@@ -210,6 +210,7 @@ class ExpLeagueMessage: NSManagedObject {
                     answerText = answerText.substringFromIndex(firstLineEnd)
                     properties["short"] = shortAnswer
                 }
+                answerText = answerText.stringByReplacingOccurrencesOfString("\t", withString: " ")
                 let re = try! NSRegularExpression(pattern: "\\+\\[([^\\]]+)\\]([^-]*(?:-[^\\[][^-]*)*)-\\[\\1\\]", options: [])
                 let matches = re.matchesInString(answerText, options: [], range: NSRange(location: 0, length: answerText.characters.count))
                 
@@ -228,7 +229,6 @@ class ExpLeagueMessage: NSManagedObject {
                     index += 1
                 }
                 finalMD += answerText.substringWithRange(lastMatchIndex..<answerText.endIndex)
-                
                 self.body = try MMMarkdown.HTMLStringWithMarkdown(finalMD, extensions: [
                     .AutolinkedURLs,
                     .FencedCodeBlocks,
