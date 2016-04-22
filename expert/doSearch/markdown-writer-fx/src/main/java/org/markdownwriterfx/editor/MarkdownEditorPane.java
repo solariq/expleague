@@ -204,7 +204,7 @@ public class MarkdownEditorPane
 			final String id_1 = "cuts-" + index + "";
 			cutMatcher.appendReplacement(buffer, "<a class=\"cut\" id=\"" + id_1 + "\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">" + cutMatcher.group(1) + "</a>" +
 					"<div class=\"cut\" id=\"" + id +"\">" + cutMatcher.group(2) +
-					"\n<a class=\"hide\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">скрыть</a></div>");
+					"\n<a class=\"hide\" href=\"#" + id_1 + "\" onclick=\"showHide('" + id + "','" + id_1 + "')\">скрыть</a></div>");
 			index++;
 		}
 		cutMatcher.appendTail(buffer);
