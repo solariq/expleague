@@ -11,7 +11,7 @@ import java.util.function.Consumer;
  */
 public abstract class PersistentActorAdapter extends ActorAdapter<UntypedPersistentActor> {
   public <T> void persist(final T event, final Consumer<? super T> handler) {
-    actor.persist(event, new FromJavaConsumer(handler));
+    actor.persist(event, new FromJavaConsumer<>(handler));
   }
 
   public abstract String persistenceId();

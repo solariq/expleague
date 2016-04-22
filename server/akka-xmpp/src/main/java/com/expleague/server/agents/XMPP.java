@@ -161,7 +161,7 @@ public class XMPP extends ActorAdapter<UntypedActor> {
   @NotNull
   protected Props newActorProps(final JID jid) {
     return jid.domain().startsWith("muc.")
-      ? ActorContainer.props(ExpLeagueRoomAgent.class, jid)
+      ? PersistentActorContainer.props(ExpLeagueRoomAgent.class, jid)
       : PersistentActorContainer.props(UserAgent.class, jid);
   }
 
