@@ -258,6 +258,13 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
     }
   }
 
+  @ActorMethod
+  public void dump(DumpRequest req) {
+    sender().tell(archive, self());
+  }
+
+  public static class DumpRequest {}
+
   private Stream<JID> participants() {
     if (order == null || order.status() == ExpLeagueOrder.Status.OPEN)
       return Stream.of(owner());
