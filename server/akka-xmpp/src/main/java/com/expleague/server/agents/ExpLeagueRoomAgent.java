@@ -294,7 +294,9 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
     }
     else if (o instanceof RecoveryCompleted) {
       if (archive.isEmpty()) {
-        Archive.instance().dump(jid.local()).stream().forEach(archive::add);
+        final Archive.Dump dump = Archive.instance().dump(jid.local());
+        if (dump != null)
+          dump.stream().forEach(archive::add);
       }
     }
   }
