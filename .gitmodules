@@ -9,4 +9,5 @@
 	url = /expert/browser/markdown-writer-fx
 [submodule "expert/qt/qxmpp"]
 	path = expert/qt/qxmpp
-	url = /expert/qt/qxmpp
+	url = git@github.com:qxmpp-project/qxmpp.git
+
