@@ -49,7 +49,7 @@ public class BestAnswerService extends ActorAdapter<UntypedActor> {
     }
     final String roomId = aow.roomId();
     final Timeout timeout = new Timeout(Duration.create(2, TimeUnit.SECONDS));
-    final Future<Object> ask = Patterns.ask(XMPP.register(new JID(roomId, ExpLeagueServer.config().domain(), null), context()), new ExpLeagueRoomAgent.DumpRequest(), timeout);
+    final Future<Object> ask = Patterns.ask(XMPP.register(new JID(roomId, "muc." + ExpLeagueServer.config().domain(), null), context()), new ExpLeagueRoomAgent.DumpRequest(), timeout);
     try {
       //noinspection unchecked
       final List<Stanza> result = (List<Stanza>) Await.result(ask, timeout.duration());
