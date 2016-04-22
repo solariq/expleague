@@ -144,7 +144,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
       catch (SQLException e) {
         throw new RuntimeException(e);
       }
-    });
+    }).filter(d -> d != null);
   }
 
   private final FixedSizeCache<String, XMPPDevice> deviceCache = new FixedSizeCache<>(1000, CacheStrategy.Type.LRU);
