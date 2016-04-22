@@ -1,13 +1,13 @@
 package com.expleague.server.admin;
 
 import akka.actor.PoisonPill;
-import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.http.javadsl.Http;
 import akka.http.javadsl.IncomingConnection;
 import akka.http.javadsl.ServerBinding;
 import akka.http.javadsl.model.*;
 import akka.japi.function.Function;
+import akka.japi.function.Procedure;
 import akka.pattern.Patterns;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
@@ -19,12 +19,15 @@ import com.expleague.server.admin.dto.*;
 import com.expleague.server.admin.series.TimeSeriesChartDto;
 import com.expleague.server.admin.series.TimeSeriesDto;
 import com.expleague.server.agents.ExpLeagueOrder;
+import com.expleague.server.agents.ExpLeagueRoomAgent;
 import com.expleague.server.agents.LaborExchange;
+import com.expleague.server.agents.XMPP;
 import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorContainer;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.JID;
+import com.expleague.xmpp.stanza.Stanza;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,8 +43,10 @@ import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
+import scala.concurrent.duration.FiniteDuration;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -145,9 +150,12 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
             response = getOrders(board.related(jid));
           }
           else if (path.startsWith("/dump/")) {
+            final Timeout timeout = new Timeout(Duration.create(2, TimeUnit.SECONDS));
             final JID jid = JID.parse(path.substring("/dump/".length()));
-            final Archive.Dump dump = Archive.instance().dump(jid.local());
-            final List<DumpItemDto> messages = dump.stream().map(DumpItemDto::new).collect(Collectors.toList());
+            final Future<Object> ask = Patterns.ask(XMPP.register(jid, context()), new ExpLeagueRoomAgent.DumpRequest(), timeout);
+            //noinspection unchecked
+            final List<Stanza> result = (List<Stanza>)Await.result(ask, timeout.duration());
+            final List<DumpItemDto> messages = result.stream().map(DumpItemDto::new).collect(Collectors.toList());
             response = getJsonResponse("messages", messages);
           }
           else if ("/kpi".equals(path)) {
