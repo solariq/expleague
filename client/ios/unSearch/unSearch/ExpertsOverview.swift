@@ -79,6 +79,9 @@ class ExpertsOverviewController: UITableViewController {
         case 0 where !my.isEmpty:
             exp = my[indexPath.row]
             cell = tableView.dequeueReusableCellWithIdentifier("FavoriteExpert", forIndexPath: indexPath) as! ExpertCell
+        case 0 where my.isEmpty:
+            exp = top[indexPath.row]
+            cell = tableView.dequeueReusableCellWithIdentifier("TopExpert", forIndexPath: indexPath) as! ExpertCell
         case 1:
             exp = top[indexPath.row]
             cell = tableView.dequeueReusableCellWithIdentifier("TopExpert", forIndexPath: indexPath) as! ExpertCell
@@ -119,8 +122,15 @@ class ExpertsOverviewController: UITableViewController {
         let view = UIView()
         view.addSubview(label)
         switch(section) {
-        case 0:
+        case 0 where my.isEmpty && top.isEmpty:
             label.text = "ИЗБРАННЫЕ"
+        case 0:
+            if (my.count > 0) {
+                label.text = "ИЗБРАННЫЕ"
+            }
+            else {
+                label.text = "ЛУЧШИЕ"
+            }
         case 1:
             label.text = "ЛУЧШИЕ"
         default:
@@ -132,16 +142,18 @@ class ExpertsOverviewController: UITableViewController {
     }
     
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 2
+        return my.isEmpty || top.isEmpty ? 1 : 2
     }
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let exp: ExpLeagueMember
         switch(indexPath.section) {
-        case 0 where my.isEmpty:
+        case 0 where my.isEmpty && top.isEmpty:
             return;
         case 0 where !my.isEmpty:
             exp = my[indexPath.row]
+        case 0 where my.isEmpty:
+            exp = top[indexPath.row]
         case 1:
             exp = top[indexPath.row]
         default:
@@ -158,7 +170,7 @@ class ExpertsOverviewController: UITableViewController {
     
     override func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
         if (indexPath.section == 0 && indexPath.row == 0) {
-            return !my.isEmpty
+            return !(my.isEmpty && top.isEmpty)
         }
         return true
     }
