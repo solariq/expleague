@@ -44,7 +44,7 @@ class OrderDetailsView: UIView {
         }
     }
     
-    var inAnswer = false
+    private var inAnswer = false
     func scrollToAnswer(animated: Bool) {
         scrollView.setContentOffset(separator.frame.origin, animated: animated)
         separator.backgroundColor = UIColor.whiteColor()

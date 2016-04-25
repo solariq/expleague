@@ -224,7 +224,7 @@ class ExpLeagueMessage: NSManagedObject {
                     finalMD += answerText.substringWithRange(lastMatchIndex..<answerText.startIndex.advancedBy(whole.location))
                     finalMD += "<a class=\"cut\" id=\"" + id_1 + "\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">" + (answerText as NSString).substringWithRange(match.rangeAtIndex(1)) + "</a>" +
                         "<div class=\"cut\" id=\"" + id + "\">" + (answerText as NSString).substringWithRange(match.rangeAtIndex(2)) +
-                        "\n<a class=\"hide\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">скрыть</a></div>";
+                        "\n<a class=\"hide\" href=\"#\(id_1)\" onclick=\"javascript:showHide('" + id + "','" + id_1 + "')\">скрыть</a></div>";
                     lastMatchIndex = answerText.startIndex.advancedBy(whole.location).advancedBy(whole.length)
                     index += 1
                 }
