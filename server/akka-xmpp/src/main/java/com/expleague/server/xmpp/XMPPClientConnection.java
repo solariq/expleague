@@ -43,8 +43,10 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -126,10 +128,7 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
 
   @ActorMethod
   public void invoke(Item item) throws SSLException {
-    sendItem(item, new Tcp.NoAck(null));
-  }
-
-  public void sendItem(Item item, Tcp.Event requestedAck) throws SSLException {
+    Tcp.Event requestedAck = new Tcp.NoAck(null);
     final String xml;
     if (item instanceof Open)
       xml = Item.XMPP_START;
@@ -138,21 +137,45 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
 
     log.finest("<" + xml);
     final ByteString data = ByteString.fromString(xml);
-    if (currentState != ConnectionState.HANDSHAKE && currentState != ConnectionState.STARTTLS) {
-      final List<ByteString> encrypted = new ArrayList<>();
-      helper.encrypt(data, encrypted::add);
-      final int size = encrypted.size();
-      for (int i = 0; i < size; i++) {
-        final Tcp.Command write;
-        if (i < size - 1)
-          write = TcpMessage.write(encrypted.get(i));
-        else
-          write = TcpMessage.write(encrypted.get(i), requestedAck);
-        connection.tell(write, self());
-      }
-    }
+    if (currentState != ConnectionState.HANDSHAKE && currentState != ConnectionState.STARTTLS)
+      helper.encrypt(data, this::output);
     else
-      connection.tell(TcpMessage.write(data, requestedAck), self());
+      output(data);
+  }
+
+  private static class Ack implements Tcp.Event {
+    private static volatile int ackCounter = 0;
+    final int id;
+    Ack() {
+      this.id = ackCounter++;
+    }
+  }
+
+  private Ack current;
+  private final Queue<ByteString> outQueue = new ArrayDeque<>();
+  private void output(ByteString out) {
+    if (current == null)
+      connection.tell(new Tcp.Write(out, current = new Ack()), self());
+    else
+      outQueue.add(out);
+  }
+
+  @ActorMethod
+  public void nextMessage(Ack ack) {
+    if (current == null || ack.id == current.id) {
+      current = null;
+      final ByteString next = outQueue.poll();
+      if (next != null)
+        connection.tell(new Tcp.Write(next, current = new Ack()), self());
+    }
+  }
+
+  @ActorMethod
+  public void failedToSend(Tcp.CommandFailed failed) {
+    log.warning("Unable to send message to " + id + " stopping connection");
+    if(businessLogic != null)
+      businessLogic.tell(PoisonPill.getInstance(), self());
+    else context().stop(self());
   }
 
   @ActorMethod

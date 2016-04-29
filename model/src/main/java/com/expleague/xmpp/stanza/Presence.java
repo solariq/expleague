@@ -8,16 +8,14 @@
 
 package com.expleague.xmpp.stanza;
 
+import com.expleague.xmpp.AnyHolder;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 /**
@@ -64,12 +62,12 @@ import java.util.Optional;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement
-public class Presence extends Stanza {
+public class Presence extends Stanza implements AnyHolder {
   @XmlAttribute
   private PresenceType type;
 
   @XmlAnyElement(lax = true)
-  protected List<Item> any;
+  protected List<Object> any;
 
   @XmlAttribute(name = "lang", namespace = "http://www.w3.org/XML/1998/namespace")
   @XmlSchemaType(name = "language")
@@ -103,20 +101,13 @@ public class Presence extends Stanza {
     return status != null ? status : new Status(type == null ? PresenceType.AVAILABLE : type);
   }
 
-  public <T extends Item> T get(Class<T> clazz) {
-    final Optional<Item> any = this.any != null ? this.any.stream().filter(i -> clazz.isAssignableFrom(i.getClass())).findAny() : Optional.empty();
-    //noinspection unchecked
-    return any.isPresent() ? (T) any.get() : null;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof Presence)) return false;
     Presence presence = (Presence) o;
 
-    if (type != presence.type) return false;
-    return any == presence.any || (any != null && any.equals(presence.any));
+    return type == presence.type && (any == presence.any || (any != null && any.equals(presence.any)));
   }
 
   @Override
@@ -124,6 +115,11 @@ public class Presence extends Stanza {
     int result = type != null ? type.hashCode() : 0;
     result = 31 * result + any.hashCode();
     return result;
+  }
+
+  @Override
+  public List<? super Item> any() {
+    return this.any != null ? this.any : Collections.emptyList();
   }
 
   /**

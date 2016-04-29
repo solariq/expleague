@@ -9,6 +9,7 @@ import com.expleague.server.dao.PatternsRepository;
 import com.expleague.server.services.XMPPServices;
 import com.expleague.util.akka.ActorContainer;
 import com.expleague.util.ios.NotificationsManager;
+import com.expleague.xmpp.Item;
 import com.google.common.annotations.VisibleForTesting;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;

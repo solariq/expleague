@@ -76,7 +76,7 @@ public class ConnectedPhase extends XMPPPhase {
         }
       }
       default:
-        if (iq.to() != null) {
+        if (iq.to() != null && !iq.to().local().isEmpty()) {
           iq.from(jid);
           agent.tell(iq, self());
         }
