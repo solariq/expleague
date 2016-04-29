@@ -164,7 +164,7 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
 
   @ActorMethod
   public void nextMessage(Ack ack) {
-    log.finest("Sent packet " + ack.id + " (" + " bytes)");
+    log.finest("Sent packet " + ack.id + " (" + " bytes) " + (outQueue.isEmpty() ? "" : (outQueue.size() + " more in queue")));
     if (current == null || ack.id == current.id) {
       current = null;
       final ByteString next = outQueue.poll();
