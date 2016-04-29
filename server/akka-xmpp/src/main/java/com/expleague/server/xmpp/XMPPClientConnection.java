@@ -146,8 +146,10 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
   private static class Ack implements Tcp.Event {
     private static volatile int ackCounter = 0;
     final int id;
-    Ack() {
+    final int size;
+    Ack(int size) {
       this.id = ackCounter++;
+      this.size = size;
     }
   }
 
@@ -155,18 +157,19 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
   private final Queue<ByteString> outQueue = new ArrayDeque<>();
   private void output(ByteString out) {
     if (current == null)
-      connection.tell(new Tcp.Write(out, current = new Ack()), self());
+      connection.tell(new Tcp.Write(out, current = new Ack(out.size())), self());
     else
       outQueue.add(out);
   }
 
   @ActorMethod
   public void nextMessage(Ack ack) {
+    log.finest("Sent packet " + ack.id + " (" + " bytes)");
     if (current == null || ack.id == current.id) {
       current = null;
       final ByteString next = outQueue.poll();
       if (next != null)
-        connection.tell(new Tcp.Write(next, current = new Ack()), self());
+        connection.tell(new Tcp.Write(next, current = new Ack(next.size())), self());
     }
   }
 
