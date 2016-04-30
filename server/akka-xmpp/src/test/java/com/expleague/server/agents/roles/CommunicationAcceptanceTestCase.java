@@ -95,6 +95,18 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
   public static class RejectOffer {
   }
 
+  public static class SuspendOffer {
+    private final long delayMs;
+
+    public SuspendOffer(final long delayMs) {
+      this.delayMs = delayMs;
+    }
+
+    public long getDelayMs() {
+      return delayMs;
+    }
+  }
+
   public static class SendAnswer {
     private final JID room;
     private final String answer;
@@ -288,6 +300,17 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
         );
       }
 
+      public void suspendOffer(final Offer offer, final int delayMs) throws Exception {
+        actorRef.tell(new SuspendOffer(delayMs), getRef());
+        messageCapture.expect("Room doesn't received suspend", 10000,
+          records -> records.stream()
+            .flatMap(messages())
+            .filter(message -> message.to().equals(offer.room()))
+            .filter(message -> message.has(Operations.Suspend.class))
+            .count() >= 1
+        );
+      }
+
       public void sendAnswer(final JID room, final String answer) throws Exception {
         actorRef.tell(new SendAnswer(room, answer), getRef());
       }
@@ -463,6 +486,18 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
       assertTrue(isOnline);
       log.finest("RejectOffer with " + jid);
       send(new Message(jid, new Operations.Cancel()));
+    }
+
+    @ActorMethod
+    public void onOffer(SuspendOffer suspendOffer) {
+      assertTrue(isOnline);
+      log.finest("SuspendOffer with " + jid);
+      final long startMs = System.currentTimeMillis();
+      final Operations.Suspend suspend = new Operations.Suspend(
+        startMs,
+        startMs + suspendOffer.getDelayMs()
+      );
+      send(new Message(jid, suspend));
     }
 
     @ActorMethod

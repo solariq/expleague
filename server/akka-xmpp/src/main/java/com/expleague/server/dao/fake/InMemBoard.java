@@ -83,6 +83,7 @@ public class InMemBoard implements LaborExchange.Board {
     protected final List<StatusHistoryRecord> statusHistory = new ArrayList<>();
 
     protected double score = -1;
+    protected long activationTimestampMs = 0;
 
     public MyOrder(Offer offer) {
       super(offer);
@@ -129,6 +130,11 @@ public class InMemBoard implements LaborExchange.Board {
     }
 
     @Override
+    protected void updateActivationTimestampMs(final long timestamp) {
+      activationTimestampMs = timestamp;
+    }
+
+    @Override
     public Stream<JID> of(Role role) {
       return roles.entrySet().stream().filter(
           e -> e.getValue() == role
@@ -148,6 +154,11 @@ public class InMemBoard implements LaborExchange.Board {
     @Override
     public Stream<StatusHistoryRecord> statusHistoryRecords() {
       return statusHistory.stream();
+    }
+
+    @Override
+    public long getActivationTimestampMs() {
+      return activationTimestampMs;
     }
 
     @Override

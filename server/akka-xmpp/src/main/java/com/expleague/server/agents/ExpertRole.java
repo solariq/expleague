@@ -12,10 +12,10 @@ import com.expleague.util.akka.AkkaTools;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
+import com.google.common.collect.Lists;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -68,7 +68,8 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
             (resume, task) -> {
               explain("Resume command received from " + sender() + " sending resume command to the expert");
               XMPP.send(new Message(XMPP.jid(), jid(), new Resume(), resume.offer()), context());
-              return goTo(State.INVITE).using(task.enforce(resume.offer(), sender()));
+              task.appendVariant(resume.offer(), sender());
+              return goTo(State.INVITE);
             }
         ).event(Timeout.class,
             (to, task) -> {
@@ -191,10 +192,16 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
             }
         ).event(Message.class,
             (msg, task) -> {
-              if (msg.get(Cancel.class) != null) {
+              if (msg.has(Cancel.class)) {
                 explain("Expert has canceled task during execution. Notifying broker and going to labor exchange.");
                 task.broker().tell(new Cancel(), self());
                 return laborExchange(task);
+              }
+              else if (msg.has(Suspend.class)) {
+                explain("Expert has suspended task execution. Sending suspend to broker.");
+                task.broker().tell(msg.get(Suspend.class), self());
+                task.removeVariant(task.broker());
+                return goTo(State.READY);
               }
               if (msg.has(Done.class) || msg.has(Answer.class)) { // hack for answer
                 explain("Expert has finished task execution. Notifying broker and going to labor exchange with slight suspension to let user send a message to restart the task.");
@@ -351,8 +358,8 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
         }
       }
 
-      offers = Collections.singletonList(offers.get(winner));
-      brokers = Collections.singletonList(brokers.get(winner));
+      offers = Lists.newArrayList(offers.get(winner));
+      brokers = Lists.newArrayList(brokers.get(winner));
       return true;
     }
 
@@ -369,8 +376,8 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     }
 
     public Variants enforce(Offer offer, ActorRef sender) {
-      offers = Collections.singletonList(offer);
-      brokers = Collections.singletonList(sender);
+      offers = Lists.newArrayList(offer);
+      brokers = Lists.newArrayList(sender);
       return this;
     }
 

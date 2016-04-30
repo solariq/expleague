@@ -188,6 +188,16 @@ public class ExpertTask {
     log(suspend);
   }
 
+  public void postpone(final long intervalMs) {
+    if (state != State.BUSY)
+      return;
+    final long currentTimeMillis = System.currentTimeMillis();
+    final Operations.Suspend suspend = new Operations.Suspend(currentTimeMillis, currentTimeMillis + intervalMs);
+    state(State.SUSPEND);
+    eventsReceiver.accept(new TaskSuspendedEvent(suspend, this));
+    log(suspend);
+  }
+
   public void send(String msg) {
     ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.GROUP_CHAT, msg));
   }

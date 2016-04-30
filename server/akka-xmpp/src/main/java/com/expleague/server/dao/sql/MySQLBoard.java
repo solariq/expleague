@@ -304,6 +304,20 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       }
     }
 
+    @Override
+    protected void updateActivationTimestampMs(final long timestamp) {
+      try {
+        super.updateActivationTimestampMs(timestamp);
+        final PreparedStatement activation = createStatement("activation-timestamp", "UPDATE Orders SET activation_timestamp = ? WHERE id = ?");
+        activation.setInt(2, id);
+        activation.setTimestamp(1, new Timestamp(timestamp));
+        activation.execute();
+      }
+      catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
     boolean tagsAcquired = false;
     @Override
     public Tag[] tags() {

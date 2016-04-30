@@ -11,8 +11,10 @@ import com.expleague.util.akka.AkkaTools;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.random.FastRandom;
+import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,15 +47,26 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               explain("Received new order: " + order + ".");
               sender().tell(new Ok(), self());
               order.broker(self());
-              if (order.status() == IN_PROGRESS) // server was shout down
+
+              if (order.status() == IN_PROGRESS) {// server was shut down
                 order.state().suspend();
+              }
+
               final JID expertOnTask = order.of(ACTIVE).findAny().orElse(null);
               if (order.status() == SUSPENDED && expertOnTask != null) {
-                order.state().suspend();
-                //noinspection ConstantConditions
-                explain("Trying to get active worker " + expertOnTask.local() + " back to the order.");
-                Experts.tellTo(expertOnTask, new Resume(order.offer()), self(), context());
-                return goTo(State.STARVING).using(order.state());
+                final long activationTimestampMs = order.getActivationTimestampMs();
+                final long currentTimeMillis = System.currentTimeMillis();
+                final long suspendIntervalMs = currentTimeMillis - activationTimestampMs;
+                if (suspendIntervalMs > 0) {
+                  AkkaTools.scheduleTimeout(context(), Duration.create(suspendIntervalMs, TimeUnit.MILLISECONDS), self());
+                  return goTo(State.SUSPENDED);
+                }
+                else {
+                  //noinspection ConstantConditions
+                  explain("Trying to get active worker " + expertOnTask.local() + " back to the order.");
+                  Experts.tellTo(expertOnTask, new Resume(order.offer()), self(), context());
+                  return goTo(State.STARVING).using(order.state());
+                }
               }
               else {
                 explain("No active work on order found.");
@@ -249,18 +262,39 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
             (cancel, task) -> cancelTask(task)
         ).event(Suspend.class,
             (suspend, task) -> {
-              explain("Expert suspended his work. Sending notification to the room.");
-              XMPP.send(new Message(Experts.jid(sender()), task.jid(), new Suspend()), context());
-              task.suspend();
-              return goTo(State.STARVING);
+              XMPP.send(new Message(Experts.jid(sender()), task.jid(), suspend), context());
+              final long endTimestampMs = suspend.getEndTimestampMs();
+              final long currentTimeMillis = System.currentTimeMillis();
+              final long suspendIntervalMs = endTimestampMs - currentTimeMillis;
+              if (suspendIntervalMs > 0) {
+                explain("Expert delayed his work for " + (suspendIntervalMs / 60 * 1000) + " minutes. Sending notification to the room.");
+                task.suspend(endTimestampMs);
+                AkkaTools.scheduleTimeout(context(), Duration.create(suspendIntervalMs, TimeUnit.MILLISECONDS), self());
+                return goTo(State.SUSPENDED);
+              }
+              else {
+                explain("Expert suspended his work. Sending notification to the room.");
+                task.suspend();
+                return goTo(State.STARVING);
+              }
             }
         )
     );
 
+    when(State.SUSPENDED,
+      matchEvent(Timeout.class,
+        (to, task) -> {
+          explain("Suspend delay expired. Looking for expert");
+          return lookForExpert(task);
+        }
+      )
+    );
+
     whenUnhandled(matchEvent(
         ActorRef.class,
-        (expert, task) -> {
-          explain("Unemployed expert ignored in improper state");
+        (expertRef, task) -> {
+          final JID expert = Experts.jid(expertRef);
+          explain("Unemployed expert " + expert + " ignored in improper state");
           return stay();
         }
     ).event(ExpLeagueOrder.class,
@@ -343,5 +377,6 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
     STARVING,
     INVITE,
     WORK_TRACKING,
+    SUSPENDED
   }
 }

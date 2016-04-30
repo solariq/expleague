@@ -65,12 +65,14 @@ public abstract class ExpLeagueOrder {
   public abstract double feedback();
   public abstract Tag[] tags();
   public abstract Stream<StatusHistoryRecord> statusHistoryRecords();
+  public abstract long getActivationTimestampMs();
 
   // Write interface
   protected abstract void mapTempRoles(Function<Role, Role> map);
   protected abstract void role(JID bare, Role checking);
   protected abstract void tag(String tag);
   protected abstract void untag(String tag);
+  protected abstract void updateActivationTimestampMs(final long timestamp);
 
   protected void status(Status status) {
     this.status = status;
@@ -175,7 +177,12 @@ public abstract class ExpLeagueOrder {
     }
 
     public void suspend() {
+      suspend(System.currentTimeMillis());
+    }
+
+    public void suspend(final long endTimestampMs) {
       status(Status.SUSPENDED);
+      updateActivationTimestampMs(endTimestampMs);
     }
 
     public ExpLeagueOrder order() {

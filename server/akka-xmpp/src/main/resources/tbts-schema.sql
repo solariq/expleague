@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS Orders (
   eta TIMESTAMP NOT NULL,
   status INTEGER(8),
   score FLOAT(16) DEFAULT -1.0,
+  activation_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
   PRIMARY KEY (id)
 );

@@ -3,7 +3,6 @@ package com.expleague.model;
 import com.expleague.xmpp.Item;
 
 import javax.xml.bind.annotation.*;
-import java.net.URI;
 
 /**
  * User: solar
@@ -79,7 +78,29 @@ public class Operations {
   public static class Done extends Command {}
 
   @XmlRootElement
-  public static class Suspend extends Command {}
+  public static class Suspend extends Command {
+    @XmlAttribute
+    private long startTimestampMs;
+
+    @XmlAttribute
+    private long endTimestampMs;
+
+    public Suspend() {
+    }
+
+    public Suspend(final long startTimestampMs, final long endTimestampMs) {
+      this.startTimestampMs = startTimestampMs;
+      this.endTimestampMs = endTimestampMs;
+    }
+
+    public long getStartTimestampMs() {
+      return startTimestampMs;
+    }
+
+    public long getEndTimestampMs() {
+      return endTimestampMs;
+    }
+  }
 
   @XmlRootElement(name = "feedback")
   public static class Feedback extends Command {

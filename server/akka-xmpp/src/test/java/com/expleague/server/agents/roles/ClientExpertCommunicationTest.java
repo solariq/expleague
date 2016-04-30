@@ -771,6 +771,115 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
   }
 
   @Test
+  public void testExpertSuspendsTask_AnswersNext_ReturnsAndCompletes() throws Exception {
+    new ScenarioTestKit() {{
+      final Client client = registerClient("client");
+      final Expert expert = registerExpert("expert1");
+
+      client.goOnline();
+      client.query("Task");
+      expert.goOnline();
+      final Offer task = expert.receiveOffer("Task");
+      expert.acceptOffer(task);
+      client.receiveStart(expert);
+
+      expert.suspendOffer(task, 1000);
+      client.query("Task2");
+
+      final Offer task2 = expert.receiveOffer(task);
+      expert.acceptOffer(task2);
+      client.receiveStart(expert);
+
+      expert.sendAnswer(task2, "Answer2");
+      client.receiveAnswer(expert, "Answer2");
+
+      final Offer taskResumed = expert.receiveOffer(task2);
+      Assert.assertEquals(task.topic(), taskResumed.topic());
+
+      expert.sendAnswer(taskResumed, "Answer");
+      client.receiveAnswer(expert, "Answer");
+    }};
+  }
+
+  @Test
+  public void testExpertSuspendsTask_AnswersNext_GoesOffline_SuspendedIsNotReassigned_ExpertReturnsAndCompletes() throws Exception {
+    new ScenarioTestKit() {{
+      final Client client = registerClient("client");
+      final Expert expert = registerExpert("expert1");
+      final Expert expert2 = registerExpert("expert2");
+
+      client.goOnline();
+      expert.goOnline();
+
+      client.query("Task");
+      final Offer task = expert.receiveOffer("Task");
+      expert.acceptOffer(task);
+      client.receiveStart(expert);
+
+      expert.suspendOffer(task, 1000);
+      client.query("Task2");
+
+      final Offer task2 = expert.receiveOffer(task);
+      expert.acceptOffer(task2);
+      client.receiveStart(expert);
+
+      expert.goOffline();
+
+      client.query("Task3");
+      expert2.goOnline();
+      final Offer task3 = expert2.receiveOffer(task, task2);
+      expert2.acceptOffer(task3);
+      client.receiveStart(expert2);
+      expert2.sendAnswer(task3, "Answer3");
+      client.receiveAnswer(expert2, "Answer3");
+
+      expert.goOnline();
+      expert.resumeOffer(task2);
+      expert.sendAnswer(task2, "Answer2");
+      client.receiveAnswer(expert, "Answer2");
+
+      final Offer taskResumed = expert.receiveOffer(task2, task3);
+      Assert.assertEquals(task.topic(), taskResumed.topic());
+
+      expert.sendAnswer(taskResumed, "Answer");
+      client.receiveAnswer(expert, "Answer");
+    }};
+  }
+
+  @Test
+  public void testExpertSuspendsTask_GoesOffline_SuspendedIsReassignedAfterTimeout() throws Exception {
+    new ScenarioTestKit() {{
+      final Client client = registerClient("client");
+      final Expert expert = registerExpert("expert1");
+
+      client.goOnline();
+      expert.goOnline();
+
+      client.query("Task");
+      final Offer task = expert.receiveOffer("Task");
+      expert.acceptOffer(task);
+      client.receiveStart(expert);
+
+      final int delayMs = 100;
+      expert.suspendOffer(task, delayMs);
+      expert.goOffline();
+
+      final Expert expert2 = registerExpert("expert2");
+      expert2.goOnline();
+      Thread.sleep(delayMs);
+
+      final Offer reassigned = expert2.receiveOffer();
+      Assert.assertEquals(task.topic(), reassigned.topic());
+      expert2.acceptOffer(reassigned);
+      client.receiveStart(expert2);
+      expert2.sendAnswer(reassigned, "Answer");
+      client.receiveAnswer(expert2, "Answer");
+
+      expert.goOnline();
+    }};
+  }
+
+  @Test
   @Ignore /*this is stress test*/
   public void testManyClientsAskManyQueries() throws Exception {
     new ScenarioTestKit() {{
