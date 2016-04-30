@@ -33,7 +33,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Charsets;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 import com.typesafe.config.Config;
 import gnu.trove.map.hash.TLongDoubleHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
@@ -176,6 +179,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
     protected List<TimeSeriesChartDto> prepareKpiCharts(final LaborExchange.Board board) {
       final List<TimeSeriesChartDto> charts = new ArrayList<>();
       final TLongIntHashMap timestamp2TasksCount = new TLongIntHashMap();
+      final SetMultimap<Long, String> timestamp2UniqueUsers = HashMultimap.create();
 
       final TLongIntHashMap timestamp2ClosedTaskCount = new TLongIntHashMap();
       final TLongIntHashMap timestamp2TasksWithFeedbackCount = new TLongIntHashMap();
@@ -188,6 +192,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           final long startTimestamp = (long) (order.offer().started() * 1000);
           final DateTime startDay = new DateTime(startTimestamp).dayOfMonth().roundFloorCopy();
           timestamp2TasksCount.adjustOrPutValue(startDay.getMillis(), 1, 1);
+          timestamp2UniqueUsers.put(startDay.getMillis(), order.offer().client().bare().getAddr());
 
           if (order.status() == ExpLeagueOrder.Status.DONE) {
             final long closeTimestamp = order.statusHistoryRecords()
@@ -212,6 +217,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
 
       {
         final List<TimeSeriesDto.PointDto> allTasks = new ArrayList<>();
+        final List<TimeSeriesDto.PointDto> uniqueUsers = new ArrayList<>();
         final List<TimeSeriesDto.PointDto> closedTasks = new ArrayList<>();
         final List<TimeSeriesDto.PointDto> closedWithFeedbackTasks = new ArrayList<>();
         final TLongHashSet keys = new TLongHashSet();
@@ -222,6 +228,9 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
         for (long ts : sortedKeys) {
           if (timestamp2TasksCount.containsKey(ts)) {
             allTasks.add(new TimeSeriesDto.PointDto(ts, timestamp2TasksCount.get(ts)));
+          }
+          if (timestamp2UniqueUsers.containsKey(ts)) {
+            uniqueUsers.add(new TimeSeriesDto.PointDto(ts, timestamp2UniqueUsers.get(ts).size()));
           }
           if (timestamp2ClosedTaskCount.containsKey(ts)) {
             closedTasks.add(new TimeSeriesDto.PointDto(ts, timestamp2ClosedTaskCount.get(ts)));
@@ -236,6 +245,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           "Tasks",
           Lists.newArrayList(
             new TimeSeriesDto("Received tasks", allTasks),
+            new TimeSeriesDto("Unique users", uniqueUsers),
             new TimeSeriesDto("Closed tasks", closedTasks),
             new TimeSeriesDto("Tasks with feedback", closedWithFeedbackTasks)
           )
