@@ -56,7 +56,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               if (order.status() == SUSPENDED && expertOnTask != null) {
                 final long activationTimestampMs = order.getActivationTimestampMs();
                 final long currentTimeMillis = System.currentTimeMillis();
-                final long suspendIntervalMs = currentTimeMillis - activationTimestampMs;
+                final long suspendIntervalMs = activationTimestampMs - currentTimeMillis;
                 if (suspendIntervalMs > 0) {
                   AkkaTools.scheduleTimeout(context(), Duration.create(suspendIntervalMs, TimeUnit.MILLISECONDS), self());
                   return goTo(State.SUSPENDED);
