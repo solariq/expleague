@@ -122,6 +122,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     );
     when(State.INVITE,
         matchEvent(Presence.class,
+            (presence, task) -> presence.from().bareEq(jid()),
             (presence, task) -> {
               if (!presence.available()) {
                 explain("Expert has gone offline during invitation. Sending ignore to broker.");
@@ -182,6 +183,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     );
     when(State.BUSY,
         matchEvent(Presence.class,
+            (presence, task) -> presence.from().bareEq(jid()),
             (presence, task) -> {
               if (!presence.available()) {
                 explain("Expert has gone offline during task execution. Sending suspend to broker.");
