@@ -46,7 +46,7 @@ public class MySQLOps {
   public PreparedStatement createStatement(String name, @Language("MySQL") String stmt, boolean returnGenKeys) {
     PreparedStatement preparedStatement = statements.get().get(name);
     try {
-      if (preparedStatement == null || preparedStatement.isClosed() || preparedStatement.getConnection() == null) {
+      if (preparedStatement == null || preparedStatement.isClosed() || preparedStatement.getConnection() == null || conn.isClosed() || !conn.isValid(0)) {
         preparedStatement = conn().prepareStatement(stmt, returnGenKeys ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS);
       }
       preparedStatement.clearParameters();
@@ -60,7 +60,7 @@ public class MySQLOps {
 
   public Connection conn() {
     try {
-      if (conn == null || conn.isClosed()) {
+      if (conn == null || conn.isClosed() || !conn.isValid(0)) {
         conn = DriverManager.getConnection(connectionUrl);
       }
       return conn;
