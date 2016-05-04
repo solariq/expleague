@@ -39,7 +39,7 @@ public:
         m_root->setParentItem(parent);
     }
 
-    Q_INVOKABLE void remove() {
+    Q_INVOKABLE virtual void remove() {
         setActive(false);
         deleteLater();
     }
@@ -95,4 +95,4 @@ private:
 }
 
 QML_DECLARE_TYPE(expleague::Screen)
-#endif // CONTEXT_H
+#endif

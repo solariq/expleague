@@ -12,7 +12,7 @@ class WebScreen: public Screen {
     Q_OBJECT
 
 public:
-    WebScreen(QObject* parent = 0): Screen(QUrl("qrc:/WebScreen.qml"), parent), webView(itemById<QQuickItem>("webView")) {
+    WebScreen(QObject* parent = 0): Screen(QUrl("qrc:/WebScreenView.qml"), parent), webView(itemById<QQuickItem>("webView")) {
         connect(webView, SIGNAL(urlChanged()), SLOT(urlChanged()));
         connect(webView, SIGNAL(titleChanged()), SLOT(titleChanged()));
         connect(webView, SIGNAL(iconChanged()), SLOT(iconChanged()));

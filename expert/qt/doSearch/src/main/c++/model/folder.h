@@ -29,9 +29,11 @@ public:
         return m_active;
     }
 
-    virtual QUrl icon() const = 0;
+    virtual QUrl icon() const {
+        return QUrl("qrc:/md.png");
+    }
 
-    QString caption() const {
+    virtual QString caption() const {
         return "Folder";
     }
 
@@ -106,6 +108,9 @@ protected:
 
         m_screens.append(screen);
         screensChanged();
+        if (m_screens.length() == 1) {
+            screen->setActive(true);
+        }
     }
 
     void insert(int position, Screen* screen) {

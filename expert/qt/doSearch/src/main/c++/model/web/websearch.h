@@ -60,11 +60,10 @@ class WebSearch: public Screen {
     Q_PROPERTY(QQmlListProperty<expleague::SearchRequest> queries READ queries NOTIFY queriesChanged)
 
 public:
-    WebSearch(QObject* parent = 0): Screen(QUrl("qrc:/WebSearch.qml"), parent), webView(itemById<QQuickItem>("webView")) {
+    WebSearch(QObject* parent = 0): Screen(QUrl("qrc:/WebSearchView.qml"), parent), webView(itemById<QQuickItem>("webView")) {
         connect(webView, SIGNAL(urlChanged()), SLOT(urlChanged()));
         connect(webView, SIGNAL(titleChanged()), SLOT(titleChanged()));
         connect(webView, SIGNAL(iconChanged()), SLOT(iconChanged()));
-        qDebug() << QVariant::fromValue(this).type();
         QQuickItem* root = itemById<QQuickItem>("root");
         root->setProperty("owner", QVariant::fromValue(this));
     }

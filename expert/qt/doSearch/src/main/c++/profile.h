@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include <QSharedDataPointer>
+#include <QSharedPointer>
 #include <QStandardPaths>
 #include <QSettings>
 #include <QDir>
@@ -11,128 +11,80 @@
 
 #include <QNetworkAccessManager>
 
+#include <QQuickItem>
+
 #include "task.h"
 
 namespace expleague {
 
-//extern QSettings settings;
-
+class ProfileBuilder;
+class StateSaver;
 class Profile: public QObject {
     Q_OBJECT
 
-    Q_PROPERTY(QString name READ name)
-    Q_PROPERTY(QUrl avatar READ avatar)
-    Q_PROPERTY(expleague::Profile::Sex sex READ sex)
+    Q_PROPERTY(QString name READ name CONSTANT)
+    Q_PROPERTY(QUrl avatar READ avatar CONSTANT)
+    Q_PROPERTY(expleague::Profile::Sex sex READ sex CONSTANT)
 
-    Q_PROPERTY(QString domain READ domain)
-    Q_PROPERTY(QString login READ login)
-    Q_PROPERTY(QString passwd READ passwd)
+    Q_PROPERTY(QString domain READ domain CONSTANT)
+    Q_PROPERTY(QString login READ login CONSTANT)
+    Q_PROPERTY(QString passwd READ passwd CONSTANT)
 
-    Q_PROPERTY(QString jid READ jid NOTIFY jidChanged)
-
-    Q_PROPERTY(QString error READ error NOTIFY errorChanged)
+    Q_PROPERTY(QString deviceJid READ deviceJid CONSTANT)
 
     Q_ENUMS(Sex)
+
 public:
+
+    static QList<Profile*>& list();
+    static void remove(Profile*);
+
     enum Sex: int {
         UNKNOWN = 0,
         FEMALE = 1,
         MALE = 2,
     };
 
-    QString jid() {
-        return settings->value("jid", "").toString();
-    }
-
-    QString deviceJid() {
+    QString deviceJid() const {
         return login() + "@" + domain();
     }
 
-    QString domain() {
-        return settings->value("domain", "expleague.com").toString();
+    QString domain() const {
+        return m_domain;
     }
 
-    QString login() {
-        return settings->value("login", "expert").toString();
+    QString login() const {
+        return m_login;
     }
 
-    QString passwd() {
-        return settings->value("password", "").toString();
+    QString passwd() const {
+        return m_passwd;
     }
 
-    QString name() {
-        return settings->value("name", tr("Неизвестный Эксперт")).toString();
+    QString name() const {
+        return m_name;
     }
 
-    QUrl avatar() {
-        return QUrl(settings->value("avatar", "qrc:/avatar.png").toString());
+    QUrl avatar() const {
+        return m_avatar;
     }
 
-    Sex sex() {
-        return (Sex)settings->value("sex", "0").toInt();
-    }
-
-    QString error() {
-        return m_error;
-    }
-
-signals:
-    void jidChanged(const QString&);
-    void errorChanged(const QString&);
-
-public:
-    void jid(const QString& jid) {
-        settings->setValue("jid", jid);
-        jidChanged(jid);
-    }
-
-    void error(const QString& error) {
-        m_error = error;
-        errorChanged(error);
+    Sex sex() const {
+        return m_sex;
     }
 
 public:
-    explicit Profile(QSettings* settings = 0): settings(settings ? settings : new QSettings()) {
-    }
-
-    const Profile& operator =(const Profile& other) {
-        settings = other.settings;
-        return *this;
-    }
-
-    void remove() {
-        settings->remove("");
-    }
-
-private:    
-    QSharedPointer<QSettings> settings;
-    QString m_error;
-};
-
-class Expert: public Profile {
-    Q_OBJECT
-
-public:
-    static Profile* active();
-
-    enum State {
-        OFFLINE, ONLINE, CHECK, INVITE, IN_FLIGHT
-    };
-
-    State state();
-
-    Task* task();
-
-signals:
-    void stateChanged(State newState);
-
-public:
-    explicit Expert(QSettings* settings);
+    Profile(const QString& domain, const QString& login, const QString& passwd, const QString& name, const QUrl& avatar, Sex sex):
+        m_domain(domain), m_login(login), m_passwd(passwd), m_name(name), m_avatar(avatar), m_sex(sex) {}
 
 private:
-    State e_state = State::OFFLINE;
+    QString m_domain;
+    QString m_login;
+    QString m_passwd;
+    QString m_name;
+    QUrl m_avatar;
+    Sex m_sex;
 };
-
 
 class ProfileBuilder: public QObject {
     Q_OBJECT
@@ -148,7 +100,17 @@ class ProfileBuilder: public QObject {
     Q_PROPERTY(QString login READ login WRITE setLogin NOTIFY loginChanged)
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged)
 
+    Q_PROPERTY(QString error READ error NOTIFY errorChanged)
+    Q_PROPERTY(QString jid READ jid NOTIFY jidChanged)
+
+    Q_PROPERTY(expleague::Profile* result READ result NOTIFY resultChanged)
+
 public:
+
+    QString jid() {
+        return m_jid;
+    }
+
     QString vkUser() {
         return m_vkToken;
     }
@@ -181,7 +143,16 @@ public:
         return m_domain;
     }
 
-    Q_INVOKABLE Profile* build();
+    QString error() {
+        return m_error;
+    }
+
+    Profile* result() {
+        return m_result;
+    }
+
+    Q_INVOKABLE void build();
+
 public: // setters
 
     void setVKUser(const QString&);
@@ -211,6 +182,13 @@ public: // setters
         sexChanged(sex);
     }
 
+    void setError(const QString& error) {
+        m_error = error;
+        errorChanged(error);
+    }
+
+    void setJid(const QString&);
+
 public: // constructors
     explicit ProfileBuilder(QObject* parent = 0): QObject(parent), m_nam(this) {
         connect(&m_nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(finished(QNetworkReply*)));
@@ -223,6 +201,10 @@ signals:
     void domainChanged(const QString&);
     void loginChanged(const QString&);
     void passwordChanged(const QString&);
+
+    void errorChanged(const QString&);
+    void jidChanged(const QString&);
+    void resultChanged(Profile*);
 
 public slots:
     void finished(QNetworkReply*);
@@ -241,12 +223,15 @@ private:
     QString m_login;
     QString m_password;
 
-    QSharedPointer<Profile> result;
+    QString m_error;
+    QString m_jid;
+
+    Profile* m_result = 0;
 };
 
 }
 
 Q_DECLARE_METATYPE(expleague::Profile::Sex)
-Q_DECLARE_METATYPE(expleague::Profile*)
+QML_DECLARE_TYPE(expleague::Profile)
 
 #endif // PROFILE_H

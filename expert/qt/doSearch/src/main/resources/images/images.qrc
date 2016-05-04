@@ -16,5 +16,15 @@
         <file>avatar.png</file>
         <file>cross.png</file>
         <file>chromium.png</file>
+        <file>window/close_active.png</file>
+        <file>window/close_passive.png</file>
+        <file>window/grey.png</file>
+        <file>window/maximize_active.png</file>
+        <file>window/maximize_alt.png</file>
+        <file>window/maximize_passive.png</file>
+        <file>window/minimize_active.png</file>
+        <file>window/minimize_passive.png</file>
+        <file>window/maximize_maximized.png</file>
+        <file>expand.png</file>
     </qresource>
 </RCC>

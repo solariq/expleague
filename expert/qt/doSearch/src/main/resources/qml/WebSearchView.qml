@@ -87,6 +87,7 @@ Item {
             Layout.fillWidth: true
             id: webView
             objectName: "webView"
+            url: "http://www.google.com"
             focus: true
             onNewViewRequested: {
                 console.log("Search click: " + request)

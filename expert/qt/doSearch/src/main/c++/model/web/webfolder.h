@@ -12,9 +12,11 @@
 namespace expleague {
 class WebFolder: public Folder {
     Q_OBJECT
+
 public:
     WebFolder(QObject* parent = 0): Folder(parent) {
         connect(&m_lookup, SIGNAL(finished()), SLOT(dnsRequestFinished()));
+        append(new WebSearch(this));
     }
 
     bool handleOmniboxInput(const QString &text, bool newTab) {

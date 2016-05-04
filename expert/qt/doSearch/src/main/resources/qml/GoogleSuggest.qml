@@ -68,6 +68,7 @@ Rectangle {
                 text: suggestion != null ? suggestion.substring(textToSugget.length) : ""
                 clip: true
             }
+
             Text {
                 id: numberOfResults
                 anchors.verticalCenter: parent.verticalCenter
@@ -85,15 +86,18 @@ Rectangle {
                 textField.text = selected.suggestion
                 googleSuggest.visible = false
                 textField.commit((event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) != 0)
+                event.accepted = true
             }
             else if (event.key == Qt.Key_Down) {
                 if (listView.currentIndex < listView.count - 1) {
                     listView.currentIndex++
                 }
+                event.accepted = true
             }
             else if (event.key == Qt.Key_Escape) {
                 listView.currentIndex = -1
-                textField.focus = true
+                textField.forceActiveFocus()
+                event.accepted = true
             }
             else if (event.key == Qt.Key_Up) {
                 if (listView.currentIndex > 0) {
@@ -101,13 +105,18 @@ Rectangle {
                 }
                 else {
                     listView.currentIndex = -1
-                    textField.focus = true
+                    textField.forceActiveFocus()
                 }
+                event.accepted = true
             }
             else if (event.key == Qt.Key_Tab || event.key == Qt.Key_Right) {
                 var ending = selected.suggestion.substring(googleSuggest.textToSugget.length)
-                var index = ending.search(/\w(\s|[.,\/\\!\?])/)
+                var index = ending.search(/\w\W/)
                 textField.text += index >= 0 ? ending.substring(0, index + 1) : ending
+                textField.text += " "
+                listView.currentIndex = -1
+                textField.forceActiveFocus()
+                event.accepted = true
             }
         }
 
@@ -118,7 +127,6 @@ Rectangle {
             }
             onReleased: {
                 googleSuggest.itemChoosen(xmlModel.get(listView.currentIndex).suggestion);
-                timeToDie = true;
             }
         }
     }

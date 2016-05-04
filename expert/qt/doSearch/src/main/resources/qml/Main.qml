@@ -1,5 +1,7 @@
 import QtQuick 2.5
+import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
+import QtGraphicalEffects 1.0
 import QtWebView 1.0
 import QtQuick.Layouts 1.1
 import QtQuick.Controls.Styles 1.4
@@ -8,305 +10,345 @@ import Qt.labs.settings 1.0
 import ExpLeague 1.0
 
 ApplicationWindow {
-    id: window
+    id: mainWindow
 
     flags:  Qt.FramelessWindowHint|Qt.MacWindowToolBarButtonHint|Qt.WindowMinimizeButtonHint|Qt.WindowMaximizeButtonHint
 
-    property string backgroundColor: "#f0f0f0"
-    property string idleColor: "#e0e0e0"
-    property string activeColor: "#eeeeee"
+    property color backgroundColor: "#e8e8e8"
+    property color navigationColor: Qt.lighter(backgroundColor, 1.05)
+    property color idleColor: Qt.darker(backgroundColor, 1.1)
 
-    Settings {
+    WindowStateSaver {
+        window: mainWindow
         id: mainPageSettings
-        category: "MainPage"
-        property alias x: window.x
-        property alias y: window.y
-        property alias width: window.width
-        property alias height: window.height
+        defaultHeight: 700
+        defaultWidth: 1000
     }
 
     visible: true
 
-    Profile {
-        id: profile
+    Window {
+        id: selectProfile
+        height: 200
+        minimumHeight: height
+        maximumHeight: height
+        width: 350
+        minimumWidth: width
+        maximumWidth: width
+
+        modality: Qt.WindowModal
+        FocusScope {
+            anchors.fill: parent
+            ColumnLayout {
+                anchors.fill: parent
+                Item {Layout.preferredHeight: 15}
+                Label {
+                    Layout.fillWidth: true
+                    horizontalAlignment: "AlignHCenter"
+                    font.bold: true
+                    font.pointSize: 15
+                    text: qsTr("Выберите профиль")
+                }
+
+                Item {Layout.preferredHeight: 5}
+                Rectangle {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    ComboBox {
+                        anchors.margins: 50
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        id: profileSelection
+                        textRole: "deviceJid"
+                        model: root.league.profiles
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Item {Layout.fillWidth: true}
+                    Button {
+                       text: qsTr("Ok")
+                       onClicked: {
+                           root.league.profile = root.league.profiles[profileSelection.currentIndex]
+                           selectProfile.close()
+                       }
+                    }
+
+                    Item {Layout.preferredWidth: 5}
+
+                    Button {
+                       text: qsTr("Отмена")
+                       onClicked: {
+                           selectProfile.close()
+                       }
+                    }
+
+                    Item {Layout.fillWidth: true}
+                }
+                Item {Layout.preferredHeight: 5}
+            }
+        }
     }
 
     Action {
         id: newProfile
-        text: "Новый"
+        text: qsTr("Новый...")
         onTriggered: {
-            profile.register.show()
+            var wizardComponent = Qt.createComponent("ProfileWizard.qml");
+            var wizard = wizardComponent.createObject(mainWindow)
+            wizard.show()
+        }
+    }
+
+    Action {
+        id: switchProfile
+        text: qsTr("Выбрать...")
+        onTriggered: {
+            selectProfile.show()
         }
     }
 
     menuBar: MenuBar {
         Menu {
-            title: "Профиль"
+            title: qsTr("Профиль")
             MenuItem {
                 action: newProfile
             }
             MenuItem {
-                text: "Переключить"
+                action: switchProfile
             }
         }
     }
 
-    Item {
+    Rectangle {
+        color: backgroundColor
         z: parent.z + 10
-        anchors.margins: 3
-        anchors.fill:parent
+        anchors.margins: 2
+        anchors.fill: parent
         ColumnLayout {
-            spacing: 0
             anchors.fill:parent
-            Rectangle {
+            spacing: 0
+
+            Item {
                 Layout.fillWidth: true
-                Layout.minimumHeight: 45
-                Layout.maximumHeight: 45
-                id: navigationBar
-                color: backgroundColor
+                Layout.minimumHeight: 65
+                id: navigation
+
                 RowLayout {
-                    id: toolsRow
                     anchors.fill: parent
-                    anchors.centerIn: parent
-                    z: parent.z + 10
                     spacing: 0
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        spacing: 0
 
-                    Item { Layout.preferredWidth: 5 }
+                        RowLayout {
+                            id: upperNavigation
+                            Layout.fillWidth: true
+                            Layout.minimumHeight: 25
+                            Layout.maximumHeight: 25
+                            spacing: 0
 
-                    Component {
-                        id: folderDelegate
-                        Rectangle {
-                            Layout.preferredWidth: 30
-                            Layout.fillHeight: true
-                            color: backgroundColor
-                            Image {
-                                source: icon
-                                width: 24; height: 24
-
-                                anchors.centerIn: parent
-                                MouseArea {
+                            Item {Layout.minimumWidth: 8}
+                            Item {
+                                id: windowButtonsGroup
+                                z: parent.z + 10
+                                Layout.preferredWidth: 13 * 3 + 5 * 2
+                                Layout.fillHeight: true
+                                RowLayout {
                                     anchors.fill: parent
-                                    onClicked: {
-                                        active = true
+                                    spacing: 6
+                                    WindowButton {
+                                        id: closeButton
+                                        icon: "qrc:/window/close.png"
+
+                                        w: mainWindow
+                                        windowButtons: windowButtons
+                                        Layout.preferredWidth: 13
+                                        Layout.preferredHeight: 13
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        onClicked: {
+                                            console.log("Close called")
+                                            w.close()
+                                        }
+                                    }
+                                    WindowButton {
+                                        id: minimizeButton
+                                        icon: "qrc:/window/minimize.png"
+
+                                        w: mainWindow
+                                        windowButtons: windowButtons
+                                        Layout.preferredWidth: 13
+                                        Layout.preferredHeight: 13
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        onClicked: {
+                                            mainWindow.visibility = Window.Minimized
+                                        }
+                                    }
+                                    WindowButton {
+                                        id: maximizeButton
+                                        icon: "qrc:/window/maximize.png"
+                                        iconMaximized: "qrc:/window/maximize_maximized.png"
+
+                                        w: mainWindow
+                                        windowButtons: windowButtons
+                                        Layout.preferredWidth: 13
+                                        Layout.preferredHeight: 13
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        onClicked: {
+                                            if (mainWindow.visibility == Window.Maximized || mainWindow.visibility == Window.FullScreen) {
+                                                mainWindow.visibility = Window.AutomaticVisibility
+                                            }
+                                            else {
+                                                mainWindow.visibility = Window.FullScreen
+                                            }
+                                        }
+                                    }
+                                }
+                                TransparentMouseArea {
+                                    id: windowButtons
+                                    anchors.fill: parent
+                                }
+                            }
+                            Item {Layout.minimumWidth: 14}
+                            TabButtons {
+                                Layout.topMargin: 5
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+
+                                model: root.contexts
+                                activeColor: mainWindow.navigationColor
+                                idleColor: mainWindow.idleColor
+                            }
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.minimumHeight: 40
+                            Layout.maximumHeight: 40
+
+                            id: bottomNavigation
+                            color: navigationColor
+                            RowLayout {
+                                id: foldersRow
+                                anchors.fill: parent
+                                z: parent.z + 10
+                                spacing: 0
+
+                                Component {
+                                    id: folderDelegate
+                                    Item {
+                                        Layout.preferredWidth: 38
+                                        Layout.fillHeight: true
+                                        Image {
+                                            source: icon
+                                            height: 25
+                                            mipmap: true
+                                            fillMode: Image.PreserveAspectFit
+
+                                            anchors.centerIn: parent
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                onClicked: {
+                                                    active = true
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                Item { Layout.preferredWidth: 5; }
+                                Repeater {
+                                    model: root.context.folders
+                                    delegate: folderDelegate
+                                }
+
+                                Item { Layout.preferredWidth: 5; }
+                                Item {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    Omnibox {
+                                        id: omnibox
+                                        anchors.centerIn: parent
+                                        height: 20
+                                        width: parent.width > 600 ? 600 : parent.width
+                                        text: root.location
                                     }
                                 }
                             }
                         }
                     }
+                    Item {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: 65
 
-                    Repeater {
-                        model: root.context.folders
-                        delegate: folderDelegate
-                    }
+//                        color: mainWindow.navigationColor
+                        StatusAvatar {
+                            anchors.centerIn: parent
+                            height: 49
+                            width: 49
+                            id: status
+                            icon: root.league.profile ? root.league.profile.avatar : "qrc:/avatar.png"
 
-                    Item { Layout.preferredWidth: 5 }
-                    TextField {
-                        Layout.fillWidth: true
-                        id: urlField
-                        text: root.location
-                        selectByMouse: true
-                        inputMethodHints: Qt.ImhNoPredictiveText
-
-                        function commit(tab) {
-                            root.context.handleOmniboxInput(this.text, tab)
-                        }
-
-                        onTextChanged: {
-                            if (!focus)
-                                return
-                            if (text.length > 2) {
-                                suggest.textField = this
-                                suggest.textToSugget = text
-                                suggest.visible = true
-                            }
-                            else {
-                                suggest.visible = false
-                            }
-                        }
-                        onFocusChanged: {
-                            if (focus && !suggest.visible) {
-                                selectAll()
-                            }
-                        }
-
-                        Keys.enabled: true
-                        Keys.onPressed: {
-                            if (!focus)
-                                return
-
-                            if (event.key == Qt.Key_Enter || event.key == Qt.Key_Return) {
-                                focus = false
-                                commit((event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) != 0)
-                                text = Qt.binding(function() {return root.location})
-                                suggest.visible = false
-                            }
-                            else if (event.key == Qt.Key_Down && suggest.visible) {
-                                suggest.focus = true
-                            }
-                            else if (event.key == Qt.Key_Escape && suggest.visible) {
-                                suggest.visible = false
-                            }
+                            size: 49
                         }
                     }
-
-                    Item { Layout.preferredWidth: 5 }
                 }
-                MouseArea {
+                MouseArea{
                     anchors.fill: parent;
-                    property variant startPos: "0,0";
+                    z: parent.z - 10
+                    property point startPos: "0,0";
+                    acceptedButtons: Qt.LeftButton
+
                     onPressed: {
+                        console.log("accepted:" + mouse.accepted)
                         startPos = Qt.point(mouse.x, mouse.y);
                     }
+
                     onPositionChanged: {
                         var d = Qt.point(mouse.x - startPos.x, mouse.y - startPos.y);
-                        window.x =  window.x + d.x
-                        window.y =  window.y + d.y
+                        mainWindow.x = mainWindow.x + d.x
+                        mainWindow.y = mainWindow.y + d.y
                     }
                 }
             }
+            ContextView {
+                id: contextView
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                statusBar: statusBar
+                backgroundColor: mainWindow.backgroundColor
+                activeColor: mainWindow.navigationColor
+                context: root.context
+                window: mainWindow
+            }
             Rectangle {
-                id: tabsContainer
                 Layout.fillWidth: true
                 Layout.minimumHeight: 20
-                Layout.maximumHeight: 20
-                anchors.leftMargin: 5
-                anchors.rightMargin: 5
-                color: backgroundColor
-
-                Component {
-                    id: tabButton
-
-                    Rectangle {
-                        id: tabItem
-                        Layout.minimumHeight: 26
-                        Layout.maximumWidth: 240
-                        Layout.minimumWidth: 50
-                        Layout.bottomMargin: -5
-                        height: tabItemText.height + 2
-                        border.color: "lightgray"
-                        border.width: 1
-                        radius: 5
-                        color: active ? activeColor : idleColor
-
-                        Image {
-                            id: crossIcon
-                            z: parent.z + 10
-                            anchors {
-                                leftMargin: 5
-                                rightMargin: 5
-                                verticalCenter: parent.verticalCenter
-                                verticalCenterOffset: -3
-                                left: parent.left
-                                right: tabItemText.left
-                            }
-                            source: tabMouseArea.containsMouse ? "qrc:/cross.png" : this['icon'] !== null ? icon : ""
-                            visible: tabMouseArea.containsMouse || this['icon'] !== null
-                            fillMode: Image.PreserveAspectFit
-                            height: 14
-                            width: 14
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    remove()
-                                }
-                            }
-                        }
-                        Text {
-                            property bool isLong: name.length >= 30
-                            id: tabItemText
-                            anchors {
-                                leftMargin: 8
-                                centerIn: parent
-                                horizontalCenterOffset: 5
-                                verticalCenterOffset: -3
-                            }
-                            color: "#505050"
-                            text: name
-                        }
-                        states: [
-                            State {
-                                name: "wide text"
-                                when: tabItemText.isLong
-                                PropertyChanges {
-                                    target: tabItemText
-                                    elide: Text.ElideMiddle
-                                    width: 200
-                                }
-                                PropertyChanges {
-                                    target: tabItem
-                                    Layout.preferredWidth: 240
-                                }
-                            },
-                            State {
-                                name: "not wide text"
-                                when: !tabItemText.isLong
-                                PropertyChanges {
-                                    target: tabItemText
-                                    elide: Text.ElideNone
-                                    width: tabItem.width - 40
-                                }
-                                PropertyChanges {
-                                    target: tabItem
-                                    Layout.preferredWidth: tabItemText.paintedWidth + 40
-                                }
-                            }
-                        ]
-
-                        MouseArea {
-                            id: tabMouseArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            onClicked: {
-                                active = true
-                            }
-                        }
-                    }
-                }
-
+                id: statusBar
+                color: navigationColor
                 RowLayout {
-                    spacing: 1
-                    Repeater {
-                        Layout.fillWidth: true
-                        focus: true
-                        id: tabs
-                        delegate: tabButton
-                        model: root.folder != null ? root.folder.screens : empty
-                    }
-                }
-            }
-            Rectangle {
-                id: central
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Connections {
-                    target: root.folder
 
-                    onScreenChanged: {
-                        central.children = []
-                        if (screen != null)
-                            screen.bind(central)
-                    }
                 }
             }
         }
 
         GoogleSuggest {
             id: suggest
-            x: urlField.x
-            y: urlField.y + urlField.height
-            z: urlField.z + 100
+            x: parent.mapFromItem(omnibox.parent, omnibox.x, omnibox.y + omnibox.height).x
+            y: parent.mapFromItem(omnibox.parent, omnibox.x, omnibox.y + omnibox.height).y
+            z: omnibox.z + 100
 
             visible: false
-            width: urlField.width
+            width: omnibox.width
             height: 100
+
+            textField: omnibox
+            textToSugget: omnibox.text
         }
     }
 
-    ListModel {
-        id: empty
-    }
-
-    MouseArea {
+    TransparentMouseArea {
+        property var window: mainWindow
         property point startWPos: "0,0";
         property point startPos: "0,0";
         property size startSize: "0x0";
@@ -315,10 +357,7 @@ ApplicationWindow {
         property bool leftStart: false
         property bool rightStart: false
         property bool resizing: false
-        anchors.fill: parent
-//        anchors.margins: -5
-        propagateComposedEvents: true
-        hoverEnabled: true
+
         acceptedButtons: Qt.LeftButton
 
         function shape() {
@@ -355,19 +394,41 @@ ApplicationWindow {
         }
 
         onMouseXChanged: {
-            if (resizing)
-                return
-            leftStart = Math.abs(mouseX) < 5
-            rightStart = Math.abs(window.width - mouseX) < 5
-            mouse.accepted = shape()
+            if (resizing) {
+                var dX = window.x + mouse.x - startPos.x
+                if (leftStart) {
+                    window.x = startWPos.x + dX
+                    window.width = startSize.width - dX
+                }
+                if (rightStart) {
+                    window.width = startSize.width + dX
+                }
+                mouse.accepted = true
+            }
+            else {
+                leftStart = Math.abs(mouseX) < 5
+                rightStart = Math.abs(window.width - mouseX) < 5
+                mouse.accepted = shape()
+            }
         }
 
         onMouseYChanged: {
-            if (resizing)
-                return
-            topStart = Math.abs(mouseY) < 5
-            bottomStart = Math.abs(window.height - mouseY) < 5
-            mouse.accepted = shape()
+            if (resizing) {
+                var dY = window.y + mouse.y - startPos.y;
+                if (topStart) {
+                    window.y = startWPos.y + dY
+                    window.height = startSize.height - dY
+                }
+                if (bottomStart) {
+                    window.height = startSize.height + dY
+                }
+                mouse.accepted = true
+            }
+            else {
+                topStart = Math.abs(mouseY) < 5
+                bottomStart = Math.abs(window.height - mouseY) < 5
+                mouse.accepted = shape()
+            }
         }
 
         onPressed: {
@@ -382,34 +443,12 @@ ApplicationWindow {
             resizing = mouse.accepted = topStart || bottomStart || leftStart || rightStart
         }
 
-        onClicked: mouse.accepted = false;
         onReleased: {
-            resizing = false
-            mouse.accepted = false;
-        }
-        onDoubleClicked: mouse.accepted = false;
-        onPressAndHold: mouse.accepted = false;
-
-        onPositionChanged: {
-            if (!resizing) {
-                mouse.accepted = false
-                return
+            if (resizing) {
+                resizing = false
+                mouse.accepted = true
             }
-            var d = Qt.point(window.x + mouse.x - startPos.x, window.y + mouse.y - startPos.y);
-            if (leftStart) {
-                window.x = startWPos.x + d.x
-                window.width = startSize.width - d.x
-            }
-            if (rightStart) {
-                window.width = startSize.width + d.x
-            }
-            if (topStart) {
-                window.y = startWPos.y + d.y
-                window.height = startSize.height - d.y
-            }
-            if (bottomStart) {
-                window.height = startSize.height + d.y
-            }
+            else mouse.accepted = false
         }
     }
 }
