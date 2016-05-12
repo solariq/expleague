@@ -118,7 +118,9 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
         ).event(Resume.class,
             (resume, task) -> {
               explain("Expert resumed his work. Sending notification to the room.");
-              XMPP.send(new Message(Experts.jid(sender()), task.jid(), new Resume()), context());
+              final JID expert = Experts.jid(sender());
+              task.enter(expert);
+              XMPP.send(new Message(expert, task.jid(), new Resume()), context());
               return goTo(State.WORK_TRACKING);
             }
         ).event(Cancel.class,
@@ -163,6 +165,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
           (start, task) -> {
             final JID expert = Experts.jid(sender());
             explain("Expert " + expert + " resumed working on task " + task.order().room().local() + ".");
+            task.enter(expert);
             XMPP.send(new Message(expert, task.jid(), new Resume()), context());
             return goTo(State.WORK_TRACKING);
           }
