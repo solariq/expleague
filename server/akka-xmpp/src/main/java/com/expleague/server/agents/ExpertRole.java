@@ -67,7 +67,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
             }
         ).event(Resume.class,
             (resume, task) -> {
-              explain("Resume received, appending as variant " + task.offer().room().local());
+              explain("Resume received, appending as variant " + resume.offer().room().local());
               task.appendVariant(resume.offer(), sender(), resume);
               return stay();
             }
