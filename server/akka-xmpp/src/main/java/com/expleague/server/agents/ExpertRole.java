@@ -16,6 +16,7 @@ import com.google.common.collect.Lists;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -61,25 +62,33 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
         ).event(Offer.class,
             (offer, task) -> {
               explain("Offer received appending as variant");
-              task.appendVariant(offer, sender());
+              task.appendVariant(offer, sender(), new Check());
               return stay();
             }
         ).event(Resume.class,
             (resume, task) -> {
-              explain("Resume command received from " + sender() + " sending resume command to the expert");
-              XMPP.send(new Message(XMPP.jid(), jid(), new Resume(), resume.offer()), context());
-              task.appendVariant(resume.offer(), sender());
-              return goTo(State.INVITE);
+              explain("Resume received, appending as variant " + task.offer().room().local());
+              task.appendVariant(resume.offer(), sender(), resume);
+              return stay();
             }
         ).event(Timeout.class,
             (to, task) -> {
-              if (!task.choose()) {
+              final TaskOption taskOption = task.choose();
+              if (taskOption == null) {
                 timer = AkkaTools.scheduleTimeout(context(), CHOICE_TIMEOUT, self());
                 return stay();
               }
-              explain("Sending offer " + task.offer().room().local() + " to expert.");
-              XMPP.send(new Message(XMPP.jid(), jid(), task.offer()), context());
-              return goTo(State.CHECK);
+              final Command sourceCommand = taskOption.getSourceCommand();
+              if (sourceCommand instanceof Resume) {
+                explain("Resume command received from " + sender() + " sending resume command to the expert");
+                XMPP.send(new Message(XMPP.jid(), jid(), sourceCommand, taskOption.getOffer()), context());
+                return goTo(State.INVITE);
+              }
+              else {
+                explain("Sending offer " + task.offer().room().local() + " to expert.");
+                XMPP.send(new Message(XMPP.jid(), jid(), task.offer()), context());
+                return goTo(State.CHECK);
+              }
             }
         ).event(Cancel.class,
           (cancel, task) -> {
@@ -142,8 +151,8 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               return stay();
             }
         ).event(Cancel.class,  // broker sent cancel
-            (cancel, task) -> task.broker().equals(sender()),
-            (cancel, task) -> {
+          (cancel, task) -> task.broker().equals(sender()),
+          (cancel, task) -> {
               explain("Cancel command received from broker, forwarding to expert and going to labor exchange.");
               final Message message = new Message(task.offer().room(), jid(), cancel, task.offer());
               XMPP.send(message, context());
@@ -287,7 +296,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
       return;
 
     final State to = stateName();
-    final Offer first = stateData() != null && stateData().offers.size() == 1 ? stateData().offer() : null;
+    final Offer first = stateData() != null && stateData().taskOptions.size() == 1 ? stateData().offer() : null;
     log.fine("Expert " + jid() + " state change " + from + " -> " + to +
         (first != null ? " " + first.room().local() : "")
         + " " + explanation);
@@ -314,36 +323,37 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
   }
 
   public class Variants {
-    private List<Offer> offers = new ArrayList<>();
-    private List<ActorRef> brokers = new ArrayList<>();
+    private List<TaskOption> taskOptions = new ArrayList<>();
 
-    public Variants appendVariant(Offer offer, ActorRef broker) {
-      if (offers.indexOf(offer) != -1 || brokers.indexOf(broker) != -1) {
+    public Variants appendVariant(Offer offer, ActorRef broker, Command sourceCommand) {
+      final TaskOption taskOption = new TaskOption(broker, offer, sourceCommand);
+      if (taskOptions.indexOf(taskOption) != -1) {
         return this;
       }
-      offers.add(offer);
-      brokers.add(broker);
+      taskOptions.add(taskOption);
       return this;
     }
 
     public Variants removeVariant(ActorRef broker) {
-      final int indexOf = brokers.indexOf(broker);
-      if (indexOf != -1) {
-        offers.remove(indexOf);
-        brokers.remove(indexOf);
+      final Iterator<TaskOption> iterator = taskOptions.iterator();
+      while (iterator.hasNext()) {
+        if (iterator.next().getBroker().equals(broker)) {
+          iterator.remove();
+        }
       }
       return this;
     }
 
-    public boolean choose() {
-      if (offers.isEmpty())
-        return false;
+    public TaskOption choose() {
+      if (taskOptions.isEmpty())
+        return null;
+
       boolean winnerPreferred = false;
       int winner = 0;
-      explain("Choosing the offer between " + offers.size() + " variants.");
+      explain("Choosing the offer between " + taskOptions.size() + " variants.");
       long winnerETA = Long.MAX_VALUE;
-      for (int i = 0; i < offers.size(); i++) {
-        final Offer offer = offers.get(i);
+      for (int i = 0; i < taskOptions.size(); i++) {
+        final Offer offer = taskOptions.get(i).getOffer();
         final long currentETA = offer.expires().getTime();
         final boolean prefered = offer.filter().isPrefered(jid());
         if ((prefered && !winnerPreferred) || (currentETA < winnerETA && prefered == winnerPreferred)) {
@@ -353,39 +363,37 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
         }
       }
 
-      for (int i = 0; i < brokers.size(); i++) {
+      for (int i = 0; i < taskOptions.size(); i++) {
         if (i != winner) {
-          final ActorRef looser = brokers.get(i);
+          final ActorRef looser = taskOptions.get(i).getBroker();
           looser.tell(new Ignore(), self());
         }
       }
 
-      offers = Lists.newArrayList(offers.get(winner));
-      brokers = Lists.newArrayList(brokers.get(winner));
-      return true;
+      final TaskOption result = taskOptions.get(winner);
+      taskOptions = Lists.newArrayList(result);
+      return result;
     }
 
     public ActorRef broker() {
-      if (brokers.size() != 1)
+      if (taskOptions.size() != 1)
         throw new IllegalStateException("Multiple or zero tasks on state when broker is needed");
-      return brokers.get(0);
+      return taskOptions.get(0).getBroker();
     }
 
     public Offer offer() {
-      if (offers.size() != 1)
+      if (taskOptions.size() != 1)
         throw new IllegalStateException("Multiple or zero tasks on state when offer is needed");
-      return offers.get(0);
+      return taskOptions.get(0).getOffer();
     }
 
     public Variants enforce(Offer offer, ActorRef sender) {
-      offers = Lists.newArrayList(offer);
-      brokers = Lists.newArrayList(sender);
+      taskOptions = Lists.newArrayList(new TaskOption(sender, offer, new Start()));
       return this;
     }
 
     public Variants clean() {
-      offers = new ArrayList<>();
-      brokers = new ArrayList<>();
+      taskOptions = new ArrayList<>();
       return this;
     }
   }

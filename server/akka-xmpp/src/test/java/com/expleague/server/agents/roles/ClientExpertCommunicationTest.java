@@ -880,6 +880,40 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
   }
 
   @Test
+  public void testExpert_ExpertReceivesOfferResumeAndCancel() throws Exception {
+    new ScenarioTestKit() {{
+      final Client client = registerClient("client");
+      final Expert expert1 = registerExpert("expert1");
+      final Expert expert2 = registerExpert("expert2");
+
+      client.goOnline();
+      expert1.goOnline();
+      expert2.goOnline();
+
+      client.query("Task1");
+      final Offer e1task1 = expert1.receiveOffer("Task1");
+      final Offer e2task1 = expert2.receiveOffer("Task1");
+
+      expert1.acceptOffer(e1task1);
+      expert1.goOffline();
+
+      client.query("Task2");
+      expert1.goOnline();
+      expert1.resumeOffer(e1task1);
+
+      final Offer e2task2 = expert2.receiveOffer("Task2");
+
+      expert2.acceptOffer(e2task2);
+      client.receiveStart(expert2);
+      expert2.sendAnswer(e2task2, "Answer2");
+      client.receiveAnswer(expert2, "Answer2");
+
+      expert1.sendAnswer(e1task1, "Answer1");
+      client.receiveAnswer(expert1, "Answer1");
+    }};
+  }
+
+  @Test
   @Ignore /*this is stress test*/
   public void testManyClientsAskManyQueries() throws Exception {
     new ScenarioTestKit() {{

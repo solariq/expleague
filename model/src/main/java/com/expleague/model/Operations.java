@@ -78,6 +78,9 @@ public class Operations {
   public static class Done extends Command {}
 
   @XmlRootElement
+  public static class Check extends Command {}
+
+  @XmlRootElement
   public static class Suspend extends Command {
     @XmlAttribute
     private long startTimestampMs;
