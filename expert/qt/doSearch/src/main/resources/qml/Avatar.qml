@@ -1,10 +1,18 @@
 import QtQuick 2.5
 import QtGraphicalEffects 1.0
 
+import ExpLeague 1.0
+
 Item {
     property int size
-    property string src
-    property bool showStatus
+    property string userId
+    property Member user: root.league.findMember(userId)
+    property string src: user.avatar
+    property bool showStatus: true
+
+    implicitHeight: size
+    implicitWidth: size
+
     Item {
         id: avatar
 
@@ -27,11 +35,11 @@ Item {
         Rectangle {
             id: status
             visible: showStatus
-            height: size/4 -1
-            width: size/4 -1
+            height: Math.max(6, size/4 -1)
+            width: height
             radius: status.width/2
 
-            color: "red"
+            color: user.status == Member.ONLINE ? "green" : "red"
             x: avatar.width - status.width - 2
             y: avatar.height - status.height - 2
             z: avatar.z + 1

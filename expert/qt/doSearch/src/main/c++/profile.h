@@ -74,7 +74,7 @@ public:
     }
 
 public:
-    Profile(const QString& domain, const QString& login, const QString& passwd, const QString& name, const QUrl& avatar, Sex sex):
+    Profile(const QString& domain, const QString& login, const QString& passwd, const QString& name, const QUrl& avatar, Sex sex, QObject* parent = 0): QObject(parent),
         m_domain(domain), m_login(login), m_passwd(passwd), m_name(name), m_avatar(avatar), m_sex(sex) {}
 
 private:
@@ -182,13 +182,6 @@ public: // setters
         sexChanged(sex);
     }
 
-    void setError(const QString& error) {
-        m_error = error;
-        errorChanged(error);
-    }
-
-    void setJid(const QString&);
-
 public: // constructors
     explicit ProfileBuilder(QObject* parent = 0): QObject(parent), m_nam(this) {
         connect(&m_nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(finished(QNetworkReply*)));
@@ -205,6 +198,14 @@ signals:
     void errorChanged(const QString&);
     void jidChanged(const QString&);
     void resultChanged(Profile*);
+
+private slots:
+    void registered(const QString& jid);
+
+    void error(const QString& error) {
+        m_error = error;
+        errorChanged(error);
+    }
 
 public slots:
     void finished(QNetworkReply*);

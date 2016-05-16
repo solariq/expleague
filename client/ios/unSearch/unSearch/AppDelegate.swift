@@ -175,9 +175,8 @@ class AppDelegate: UIResponder {
             activeProfile?.active = false
         }
         profile.active = true
-        profile.receiveAnswerOfTheWeek = profile.receiveAnswerOfTheWeek || profile.orders.count == 0
         
-        stream.addDelegate(profile, delegateQueue: dispatch_get_main_queue())
+        stream.addDelegate(profile, delegateQueue: dispatch_queue_create("ExpLeague XMPP stream", nil))
         do {
             try dataController.managedObjectContext.save()
         }

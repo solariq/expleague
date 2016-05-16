@@ -1,9 +1,21 @@
 import QtQuick 2.0
 
+import ExpLeague 1.0
 Rectangle {
+    id: self
     anchors.fill: parent
     color: "white"
     objectName: "root"
+    property MarkdownEditorScreen owner
+
+    function paste() {
+        var coded = owner.codeClipboard()
+        edit.remove(edit.selectionStart, edit.selectionEnd)
+
+        for(var i = 0; i < coded.length; i++) {
+            edit.insert(edit.cursorPosition, coded[i])
+        }
+    }
 
     FocusScope {
         anchors.fill: parent
@@ -13,9 +25,9 @@ Rectangle {
             contentWidth: edit.paintedWidth
             contentHeight: edit.paintedHeight
             clip: true
+            interactive: false
 
-            function ensureVisible(r)
-            {
+            function ensureVisible(r) {
                 if (contentX >= r.x)
                     contentX = r.x;
                 else if (contentX+width <= r.x+r.width)
@@ -33,8 +45,17 @@ Rectangle {
                 height: flick.height
                 focus: true
                 wrapMode: TextEdit.Wrap
+                selectByMouse: true
 
                 onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
+                Keys.onPressed: {
+                    var control = (event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) != 0
+                    var shift = (event.modifiers & Qt.ShiftModifier) != 0
+                    if (event.key === Qt.Key_V && control || event.key === Qt.Key_Insert && shift) {
+                        self.paste()
+                        event.accepted = true
+                    }
+                }
             }
         }
     }

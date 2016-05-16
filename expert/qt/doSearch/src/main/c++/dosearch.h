@@ -1,10 +1,13 @@
 #ifndef DOSEARCH_H
 #define DOSEARCH_H
 
-#include <QQmlApplicationEngine>
 #include <QQmlListProperty>
+class QQmlApplicationEngine;
+class QSystemTrayIcon;
+class QQuickWindow;
 
 extern QQmlApplicationEngine* rootEngine;
+extern QSystemTrayIcon* trayIcon;
 
 #include "model/context.h"
 #include "model/folder.h"
@@ -24,6 +27,7 @@ class doSearch: public QObject {
     Q_PROPERTY(Screen* screen READ screen NOTIFY screenChanged)
     Q_PROPERTY(League* league READ league CONSTANT)
     Q_PROPERTY(QString location READ location NOTIFY locationChanged)
+    Q_PROPERTY(QQuickWindow* main READ main WRITE setMain NOTIFY mainChanged)
 
 public:
     explicit doSearch(QObject* parent = 0);
@@ -43,17 +47,26 @@ public:
     Folder* folder() { return m_folder; }
     Screen* screen() { return m_screen; }
     QString location() { return m_screen ? m_screen->location() : "";}
+    QQuickWindow* main() { return m_main; }
 
-public:
+public:    
+    static doSearch* instance();
+
     void append(Context* context) {
         assert(context->parent() == this);
         m_contexts.append(context);
         connect(context, SIGNAL(activeChanged()), SLOT(contextStateChanged()));
-        connect(context, SIGNAL(destroyed(QObject*)), SLOT(contextDestroyed(QObject*)));
+        connect(context, SIGNAL(closed()), SLOT(contextClosed()));
         contextsChanged();
         if (m_contexts.length() == 1) {
             context->setActive(true);
         }
+    }
+
+    void restoreState();
+
+    Q_INVOKABLE void setMain(QQuickWindow* main) {
+        m_main = main;
     }
 
 signals:
@@ -62,6 +75,7 @@ signals:
     void folderChanged(Folder*);
     void screenChanged(Screen*);
     void locationChanged(const QString&);
+    void mainChanged(QQuickWindow*);
 
 private slots:
     void folderChangedSlot(Folder* folder) {
@@ -111,33 +125,23 @@ private slots:
         else QObject::disconnect(currentContext, SIGNAL(folderChanged(Folder*)), this, SLOT(folderChangedSlot(Folder*)));
     }
 
-    void contextDestroyed(QObject* obj) {
-        m_contexts.removeOne(qobject_cast<Context*>(obj));
+    void contextClosed() {
+        Context* context = qobject_cast<Context*>(QObject::sender());
+        int index = m_contexts.indexOf(context);
+        m_contexts.removeOne(context);
+        contextsChanged();
+        if (!m_contexts.empty() && context->active())
+            m_contexts[index > 0 ? index - 1 : 0]->setActive(true);
     }
 
 public:
+    friend class StateSaver;
     QList<Context*> m_contexts;
     League m_league;
     Folder* m_folder = 0;
     Screen* m_screen = 0;
     StateSaver* m_saver;
-};
-
-class StateSaver: public QObject {
-    Q_OBJECT
-
-public:
-    void restoreState(doSearch* search);
-
-public slots:
-    void profileChanged(Profile*);
-    void saveProfiles();
-
-public:
-    StateSaver(QObject* parent = 0);
-
-private:
-    QSettings m_settings;
+    QQuickWindow* m_main = 0;
 };
 }
 

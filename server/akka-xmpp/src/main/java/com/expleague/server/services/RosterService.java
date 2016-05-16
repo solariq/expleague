@@ -39,32 +39,47 @@ public class RosterService extends ActorAdapter<UntypedActor> {
     }
     switch (rosterIq.type()) {
       case GET:
-        final RosterQuery query = new RosterQuery();
-        final Set<JID> known = new HashSet<>(100);
         final Set<JID> online = XMPP.online(context());
-        Roster.instance().favorites(rosterIq.from())
-            .filter(known::add)
-            .map(jid -> Roster.instance().profile(jid))
-            .map(p -> {
-              final RosterQuery.RosterItem item = new RosterQuery.RosterItem(p.jid(), FROM, p.name());
-              p.available(online.contains(p.jid()));
-              item.append(p);
-              item.group("Favorites");
-              return item;
-            }).forEach(query::add);
+        if (rosterIq.get().items().isEmpty()) {
+          final RosterQuery query = new RosterQuery();
+          final Set<JID> known = new HashSet<>(100);
+          Roster.instance().favorites(rosterIq.from())
+              .filter(known::add)
+              .map(jid -> Roster.instance().profile(jid))
+              .map(p -> {
+                final RosterQuery.RosterItem item = new RosterQuery.RosterItem(p.jid(), FROM, p.name());
+                p.available(online.contains(p.jid()));
+                item.append(p);
+                item.group("Favorites");
+                return item;
+              }).forEach(query::add);
 
-        LaborExchange.board().topExperts()
-            .filter(known::add)
-            .map(jid -> Roster.instance().profile(jid))
-            .map(p -> {
-              final JID jid = p.jid();
-              final RosterQuery.RosterItem item = new RosterQuery.RosterItem(jid, FROM, p.name());
-              p.available(online.contains(jid));
-              item.append(p);
-              item.group("Top");
-              return item;
-            }).forEach(query::add);
-        sender().tell(Iq.answer(rosterIq, query), self());
+          LaborExchange.board().topExperts()
+              .filter(known::add)
+              .map(jid -> Roster.instance().profile(jid))
+              .map(p -> {
+                final JID jid = p.jid();
+                final RosterQuery.RosterItem item = new RosterQuery.RosterItem(jid, FROM, p.name());
+                p.available(online.contains(jid));
+                item.append(p);
+                item.group("Top");
+                return item;
+              }).forEach(query::add);
+          sender().tell(Iq.answer(rosterIq, query), self());
+        }
+        else {
+          final RosterQuery query = new RosterQuery();
+          rosterIq.get().items().stream()
+              .map(RosterQuery.RosterItem::jid)
+              .map(jid -> Roster.instance().profile(jid))
+              .map(p -> {
+                final RosterQuery.RosterItem item = new RosterQuery.RosterItem(p.jid(), FROM, p.name());
+                p.available(online.contains(p.jid()));
+                item.append(p);
+                return item;
+              }).forEach(query::add);
+          sender().tell(Iq.answer(rosterIq, query), self());
+        }
         break;
       case SET:
         context().actorOf(Props.create(AddBuddy.class), from.bare().toString()).forward(rosterIq, context());

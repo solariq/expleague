@@ -10,6 +10,7 @@ import ExpLeague 1.0
 
 Item {
     property Window window
+    property TagsDialog tagsDialog
     property Item statusBar
 
     property color backgroundColor
@@ -24,6 +25,7 @@ Item {
         RowLayout {
             spacing: 0
             anchors.fill: parent
+
             SplitView {
                 id: mainSplit
                 Layout.fillHeight: true
@@ -51,79 +53,87 @@ Item {
                         id: central
                     }
                 }
-                SplitView {
+                Item {
                     id: rightSide
-                    Layout.minimumWidth: 320
+                    Layout.minimumWidth: 341
                     Layout.fillHeight: true
                     visible: context && !!context.task
-                    orientation: Qt.Vertical
+                    anchors.rightMargin: 21
 
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.minimumHeight: 20
-                        Layout.preferredHeight: taskView.height + 20
+                    SplitView {
+                        orientation: Qt.Vertical
+                        anchors.fill: parent
+                        anchors.rightMargin: 21
 
-                        Rectangle {
-                            color: backgroundColor
+                        ColumnLayout {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 22
-                            RowLayout {
-                                spacing: 3
-                                anchors.fill: parent
-                                Button {
-                                    style: ButtonStyle {
-                                        background: Component {
-                                            Item {
-                                                implicitWidth: 16
-                                                implicitHeight: 16
-                                                Image {
-                                                    anchors.fill: parent
-                                                    fillMode: Image.PreserveAspectFit
-                                                    mipmap: true
-                                                    source: "qrc:/expand.png"
-                                                    rotation: taskView.visible ? 0 : -90
+                            Layout.minimumHeight: 23
+                            Layout.preferredHeight: taskView.height + 23
+                            spacing: 0
+
+                            Rectangle {
+                                color: backgroundColor
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 23
+                                RowLayout {
+                                    spacing: 3
+                                    anchors.fill: parent
+                                    Item {Layout.preferredWidth: 3}
+                                    Button {
+                                        style: ButtonStyle {
+                                            background: Component {
+                                                Item {
+                                                    implicitWidth: 16
+                                                    implicitHeight: 16
+                                                    Image {
+                                                        anchors.fill: parent
+                                                        fillMode: Image.PreserveAspectFit
+                                                        mipmap: true
+                                                        source: "qrc:/expand.png"
+                                                        rotation: taskView.visible ? 0 : -90
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
-                                    property real storedHeight: 0
-                                    onClicked: {
-                                        if (taskView.visible) {
-                                            storedHeight = taskView.parent.height
-                                            taskView.visible = false
+                                        property real storedHeight: 0
+                                        onClicked: {
+                                            if (taskView.visible) {
+                                                storedHeight = taskView.parent.height
+                                                taskView.visible = false
+                                            }
+                                            else {
+                                                taskView.visible = true
+                                                taskView.parent.height = storedHeight
+                                            }
                                         }
-                                        else {
-                                            taskView.visible = true
-                                            taskView.parent.height = storedHeight
-                                        }
                                     }
+                                    Label {
+                                        text: qsTr("Задание")
+                                    }
+                                    Item {Layout.fillWidth: true}
                                 }
-                                Label {
-                                    text: qsTr("Задание")
+                            }
+
+                            OfferView {
+                                Layout.fillHeight: true
+                                Layout.fillWidth: true
+                                id: taskView
+                                visible: true
+                                offer: context.task ? context.task.offer : null
+                                task: context.task
+//                                tagsDialog: tagsDialog
+
+                                Rectangle {
+                                    anchors.fill: parent
+                                    color: activeColor
+                                    z: parent.z - 1
                                 }
-                                Item {Layout.fillWidth: true}
                             }
                         }
-
-                        OfferView {
+                        Rectangle {
                             Layout.fillHeight: true
                             Layout.fillWidth: true
-                            id: taskView
-                            visible: true
-                            offer: context.task.offer
-                            Rectangle {
-                                anchors.fill: parent
-                                color: activeColor
-                                z: parent.z - 1
-                            }
-                        }
-                    }
-                    Rectangle {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        color: backgroundColor
-                        FocusScope {
-                            anchors.fill: parent
+                            color: backgroundColor
                             WebEngineView {
                                 id: preview
 
@@ -135,31 +145,31 @@ Item {
                                 onHtmlChanged: {
                                     var focused = window.activeFocusItem
                                     loadHtml(html)
-                                    focused.forceActiveFocus()
+                                    if (focused)
+                                        focused.forceActiveFocus()
                                 }
 
                                 anchors.fill: parent
                             }
-                            Rectangle {
+                            Chat {
                                 id: dialog
                                 visible: false
-
-                                color: "green"
                                 anchors.fill: parent
+
+                                task: context.task
                             }
                         }
                     }
                 }
             }
-
-            Rectangle {
+            Rectangle{visible: context.task; Layout.preferredWidth: 1; Layout.fillHeight: true; color: "darkgray"}
+            Rectangle{
                 id: rightSidebar
                 Layout.fillHeight: true
-                Layout.minimumWidth: 23
-                Layout.maximumWidth: 23
-                visible: context && !!context.task
+                Layout.preferredWidth: 20
+                visible: context && context.task
 
-                property var active: previewButton
+                property var active: dialogButton
 
                 color: backgroundColor
 
@@ -203,7 +213,7 @@ Item {
                                 onActiveChanged: {
                                     if (active) {
                                         storedWidth = rightSide.width
-                                        rightSide.width = 320
+                                        rightSide.width = 341
                                     }
                                     else {
                                         rightSide.width = storedWidth
@@ -222,6 +232,7 @@ Item {
             }
         }
     }
+
     function rebind(screen) {
         central.children = []
         if (screen)

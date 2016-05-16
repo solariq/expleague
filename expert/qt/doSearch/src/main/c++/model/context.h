@@ -2,13 +2,6 @@
 #define CONTEXT_H
 
 #include <QObject>
-
-#include <QStyle>
-#include <QPixmap>
-#include <QApplication>
-#include <QStyleOptionButton>
-
-#include <QQuickImageProvider>
 #include <QQmlListProperty>
 
 #include "folder.h"
@@ -55,6 +48,8 @@ public:
         return m_active;
     }
 
+    QString id() const { return m_id; }
+
 public:
     Q_INVOKABLE void handleOmniboxInput(const QString& url, bool newTab);
     Q_INVOKABLE bool remove() {
@@ -73,6 +68,7 @@ signals:
     void activeChanged();
     void foldersChanged();
     void folderChanged(Folder* folder);
+    void closed();
 
 private slots:
     void folderStateChanged() {
@@ -82,13 +78,18 @@ private slots:
                 if (folder != current)
                     folder->setActive(false);
             }
-            folderChanged(current);
+            emit folderChanged(current);
         }
     }
 
+    void taskFinished();
+
 public:
     explicit Context(const QString& name = "", QObject* parent = 0);
-    explicit Context(Offer* offer, QObject* parent = 0);
+    explicit Context(Task* offer, QObject* parent = 0);
+    ~Context() {
+        emit closed();
+    }
 
 protected:
     void append(Folder* folder) {
@@ -102,11 +103,13 @@ protected:
     }
 
 private:
+    friend class StateSaver;
     Task* m_task = 0;
     QString m_name;
     QUrl m_icon;
     QList<Folder*> m_folders;
     bool m_active = false;
+    QString m_id;
 };
 }
 

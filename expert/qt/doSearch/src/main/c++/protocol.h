@@ -18,11 +18,14 @@
 #include "task.h"
 
 namespace expleague {
+
+class Member;
+class TaskTag;
+class AnswerPattern;
+
 namespace xmpp {
 
-class Progress: QObject {
-    Q_OBJECT
-
+class Progress {
 public:
     enum Operation {
       PO_ADD,
@@ -31,8 +34,8 @@ public:
     };
 
     enum Target {
-      PO_PATTERNS,
-      PO_TAGS,
+      PO_PATTERN,
+      PO_TAG,
       PO_PHONE,
       PO_URL,
     };
@@ -40,6 +43,11 @@ public:
     Operation operation;
     Target target;
     QString name;
+
+    bool empty() { return name.isEmpty(); }
+
+    QDomElement toXml() const;
+    static Progress fromXml(const QDomElement&);
 };
 
 class ExpLeagueConnection: public QObject {
@@ -55,30 +63,57 @@ public:
         return m_jid;
     }
 
+    bool valid() {
+        return client.isAuthenticated();
+    }
+
 public:
     void connect();
     void disconnect();
-    void sendOk(Offer*);
-    void sendAccept(Offer*);
-    void sendCancel(Offer*);
-    void sendMessage(const QString&);
-    void sendProgress(const Progress&);
-    void sendAnswer(const QString&);
+
+    Member* find(const QString& id);
+
+    void sendOk(Offer* offer) {
+        sendCommand("ok", offer);
+    }
+
+    void sendAccept(Offer *offer) {
+        sendCommand("start", offer);
+    }
+
+    void sendResume(Offer* offer) {
+        sendCommand("resume", offer);
+    }
+
+    void sendCancel(Offer *offer) {
+        sendCommand("cancel", offer);
+    }
+
+    void sendMessage(const QString& to, const QString&);
+    void sendProgress(const QString& to, const Progress& progress);
+    void sendAnswer(const QString& roomId, const QString& answer);
+
+    void sendUserRequest(const QString&);
 
 signals:
     void connected();
     void disconnected();
 
     void receiveCheck(Offer* task);
-
     void receiveInvite(Offer* task);
     void receiveResume(Offer* task);
+    void receiveCancel(Offer* offer);
 
-    void receiveCancel();
-    void receiveMessage(const QString&);
-    void receiveImage(const QPixmap&);
-    void receiveAnswer(const QString&);
-    void receiveProgress(const Progress&);
+    void receiveMessage(const QString& room, const QString& from, const QString&);
+    void receiveImage(const QString& room, const QString& from, const QUrl&);
+    void receiveAnswer(const QString& room, const QString& from, const QString&);
+    void receiveProgress(const QString& room, const QString& from, const Progress&);
+
+    void receiveUser(const Member&);
+    void receiveTag(TaskTag* tag);
+    void receivePattern(AnswerPattern* pattern);
+
+    void xmppError(const QString& error);
 
     void jidChanged(const QString&);
 
@@ -89,16 +124,16 @@ public slots:
     void disconnectedSlot() {
         disconnected();
     }
-    void connectedSlot() {
-        connected();
-        qDebug() << "Connected as " << client.configuration().jid();
-        m_jid = client.configuration().jid();
-        jidChanged(m_jid);
-        { // restore configuration for reconnect purposes
-            client.configuration().setJid(profile()->deviceJid());
-            client.configuration().setResource("doSearchQt-" + QApplication::applicationVersion() + "/expert");
-        }
+    void connectedSlot();
+private slots:
+    void registered() {
+        connect();
     }
+
+    void error(const QString& error) {
+        xmppError(error);
+    }
+
 public:
     explicit ExpLeagueConnection(Profile* profile, QObject* parent = 0);
 
@@ -109,10 +144,39 @@ private:
     QXmppClient client;
     Profile* m_profile;
     QString m_jid;
+    QMap<QString, Member*> m_members_cache;
 };
 
+class Registrator: public QXmppClientExtension {
+    Q_OBJECT
+
+public:
+    explicit Registrator(const Profile* profile, QObject* parent);
+
+    virtual ~Registrator() {
+        qDebug() << "Registrator stopped";
+        connection.disconnect();
+    }
+
+    void start();
+
+signals:
+    void registered(const QString& jid);
+    void error(const QString& error);
+
+protected:
+    bool handleStanza(const QDomElement &stanza);
+
+private:
+    QXmppConfiguration config;
+    QXmppClient connection;
+    QString m_registrationId;
+    const Profile* m_profile;
+};
+}
+
 QXmppElement parse(const QString& str);
-}}
+}
 
 QDebug operator<<(QDebug dbg, const QDomNode& node);
 

@@ -7,16 +7,15 @@ import QtQuick.Layouts 1.1
 
 Button {
     property string icon
-    property var iconPassive: icon.substring(0, icon.length - 4) + "_passive.png"
-    property var iconActive: icon.substring(0, icon.length - 4) + "_active.png"
-    property var iconBg: "qrc:/window/grey.png"
-    property var iconMaximized: iconActive
-    property var w
-//    property var iconAlt
+    property url iconPassive: icon.substring(0, icon.length - 4) + "_passive.png"
+    property url iconActive: icon.substring(0, icon.length - 4) + "_active.png"
+    property url iconBg: "qrc:/window/grey.png"
+    property url iconMaximized: iconActive
+    property Window w
 
     property MouseArea windowButtons
 
-    property var _icon: iconBg
+    property url _icon: iconBg
 
     id: button
     anchors.verticalCenter: parent.verticalCenter
@@ -40,7 +39,7 @@ Button {
         },
         State {
             name: "Window maximized"
-            when: w.visibility == Window.Maximized || w.visibility == Window.FullScreen
+            when: w.visibility === Window.Maximized || w.visibility === Window.FullScreen
             PropertyChanges {
                 target: button
                 _icon: iconMaximized

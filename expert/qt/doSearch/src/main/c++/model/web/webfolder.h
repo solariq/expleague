@@ -16,7 +16,9 @@ class WebFolder: public Folder {
 public:
     WebFolder(QObject* parent = 0): Folder(parent) {
         connect(&m_lookup, SIGNAL(finished()), SLOT(dnsRequestFinished()));
-        append(new WebSearch(this));
+        WebSearch* searchTab = new WebSearch(this);
+        append(searchTab);
+        QObject::connect(searchTab, SIGNAL(queriesChanged()), SLOT(changedRequests()));
     }
 
     bool handleOmniboxInput(const QString &text, bool newTab) {
@@ -37,9 +39,12 @@ public:
         return true;
     }
 
-    WebScreen* createWebTab() {
+    WebScreen* createWebTab(Screen* source = 0) {
+        qDebug() << "Creating new tab at position: " << m_screens.indexOf(source);
         WebScreen* tab = new WebScreen(this);
-        append(tab);
+        if (source)
+            insert(m_screens.indexOf(source), tab);
+        else append(tab);
         tab->setActive(true);
         return tab;
     }
@@ -47,6 +52,11 @@ public:
     virtual QUrl icon() const {
         return QUrl("qrc:/chromium.png");
     }
+
+    QList<SearchRequest*> requests() const;
+
+signals:
+    void requestsChanged();
 
 private slots:
     void dnsRequestFinished(){
@@ -63,6 +73,10 @@ private slots:
 
         search->search(m_text);
         search->setActive(true);
+    }
+
+    void changedRequests() {
+        requestsChanged();
     }
 
     void openUrl(const QUrl& url, bool newTab) {

@@ -77,10 +77,15 @@ extension NSTimer {
 }
 
 extension NSManagedObject {
-    internal func save() {
+    func saveInner() {}
+    internal final func save() {
+        dispatch_async(dispatch_get_main_queue()) {
+            self.saveInner()
+        }
         do {
             try self.managedObjectContext!.save()
-        } catch {
+        }
+        catch {
             fatalError("Failure to save context: \(error)")
         }
     }

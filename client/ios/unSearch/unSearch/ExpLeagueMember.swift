@@ -114,8 +114,7 @@ class ExpLeagueMember: NSManagedObject {
     
     dynamic weak var badge: ExpertCell?
     dynamic weak var view: ExpertViewController?
-    override func save() {
-        super.save()
+    override func saveInner() {
         badge?.update(self)
         view?.update()
     }

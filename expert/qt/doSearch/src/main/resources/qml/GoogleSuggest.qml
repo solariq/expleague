@@ -82,24 +82,24 @@ Rectangle {
         Keys.enabled: true
         Keys.onPressed: {
             var selected = listView.currentIndex >= 0 ? listView.model.get(listView.currentIndex) : ""
-            if (event.key == Qt.Key_Enter || event.key == Qt.Key_Return) {
+            if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
                 textField.text = selected.suggestion
                 googleSuggest.visible = false
                 textField.commit((event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) != 0)
                 event.accepted = true
             }
-            else if (event.key == Qt.Key_Down) {
+            else if (event.key === Qt.Key_Down) {
                 if (listView.currentIndex < listView.count - 1) {
                     listView.currentIndex++
                 }
                 event.accepted = true
             }
-            else if (event.key == Qt.Key_Escape) {
+            else if (event.key === Qt.Key_Escape) {
                 listView.currentIndex = -1
                 textField.forceActiveFocus()
                 event.accepted = true
             }
-            else if (event.key == Qt.Key_Up) {
+            else if (event.key === Qt.Key_Up) {
                 if (listView.currentIndex > 0) {
                     listView.currentIndex--
                 }
@@ -109,7 +109,7 @@ Rectangle {
                 }
                 event.accepted = true
             }
-            else if (event.key == Qt.Key_Tab || event.key == Qt.Key_Right) {
+            else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Right) {
                 var ending = selected.suggestion.substring(googleSuggest.textToSugget.length)
                 var index = ending.search(/\w\W/)
                 textField.text += index >= 0 ? ending.substring(0, index + 1) : ending

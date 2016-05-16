@@ -26,5 +26,15 @@
         <file>window/minimize_passive.png</file>
         <file>window/maximize_maximized.png</file>
         <file>expand.png</file>
+        <file>chat/incoming_tail.png</file>
+        <file>chat/outgoing_tail.png</file>
+        <file>plane_send.png</file>
+        <file>arrow_cut_close.png</file>
+        <file>arrow_cut_open.png</file>
+        <file>arrow_hide.png</file>
+        <file>tools/patterns.png</file>
+        <file>tools/tags.png</file>
+        <file>tools/send.png</file>
+        <file>tools/phone.png</file>
     </qresource>
 </RCC>

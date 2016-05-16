@@ -25,70 +25,42 @@ ApplicationWindow {
         defaultWidth: 1000
     }
 
+    Component.onCompleted: {
+        root.main = mainWindow
+    }
+
     visible: true
 
-    Window {
+    function invite(offer) {
+        console.log("Inviting for " + offer.topic)
+        inviteDialog.offer = offer
+        inviteDialog.invitationTimeout = 5 * 60 * 1000
+        inviteDialog.show()
+    }
+
+    InviteDialog {
+        id: inviteDialog
+        objectName: "invite"
+        visible: false
+        x: (mainWindow.width / 2) - (width / 2)
+        y: 20
+    }
+
+    TagsDialog {
+        id: tagsDialog
+        visible: false
+        x: (mainWindow.width / 2) - (width / 2)
+        y: 20
+
+        league: root.league
+    }
+
+    SelectProfileDialog {
         id: selectProfile
-        height: 200
-        minimumHeight: height
-        maximumHeight: height
-        width: 350
-        minimumWidth: width
-        maximumWidth: width
-
-        modality: Qt.WindowModal
-        FocusScope {
-            anchors.fill: parent
-            ColumnLayout {
-                anchors.fill: parent
-                Item {Layout.preferredHeight: 15}
-                Label {
-                    Layout.fillWidth: true
-                    horizontalAlignment: "AlignHCenter"
-                    font.bold: true
-                    font.pointSize: 15
-                    text: qsTr("Выберите профиль")
-                }
-
-                Item {Layout.preferredHeight: 5}
-                Rectangle {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    ComboBox {
-                        anchors.margins: 50
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        id: profileSelection
-                        textRole: "deviceJid"
-                        model: root.league.profiles
-                    }
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    Item {Layout.fillWidth: true}
-                    Button {
-                       text: qsTr("Ok")
-                       onClicked: {
-                           root.league.profile = root.league.profiles[profileSelection.currentIndex]
-                           selectProfile.close()
-                       }
-                    }
-
-                    Item {Layout.preferredWidth: 5}
-
-                    Button {
-                       text: qsTr("Отмена")
-                       onClicked: {
-                           selectProfile.close()
-                       }
-                    }
-
-                    Item {Layout.fillWidth: true}
-                }
-                Item {Layout.preferredHeight: 5}
-            }
-        }
+        visible: false
+        objectName: "selectProfile"
+        x: mainWindow.width / 2 - width / 2
+        y: 20
     }
 
     Action {
@@ -320,6 +292,7 @@ ApplicationWindow {
                 activeColor: mainWindow.navigationColor
                 context: root.context
                 window: mainWindow
+                tagsDialog: tagsDialog
             }
             Rectangle {
                 Layout.fillWidth: true

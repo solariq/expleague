@@ -49,7 +49,6 @@ class ExpLeagueProfile: NSManagedObject {
         save()
     }
     
-    dynamic var receiveAnswerOfTheWeek = false
     private dynamic var listeners: NSMutableArray = []
     func track(tracker: XMPPTracker) {
         listeners.addObject(Weak(tracker))
@@ -211,7 +210,9 @@ class ExpLeagueProfile: NSManagedObject {
         
         orderSelected = NSNumber(long: orders.count)
         add(order: order)
-        AppDelegate.instance.historyView?.selected = order
+        dispatch_async(dispatch_get_main_queue()) {
+            AppDelegate.instance.historyView?.selected = order
+        }
         return order
     }
     
@@ -219,7 +220,9 @@ class ExpLeagueProfile: NSManagedObject {
         let mutableItems = orders.mutableCopy() as! NSMutableOrderedSet
         mutableItems.addObject(order)
         orders = mutableItems.copy() as! NSOrderedSet
-        AppDelegate.instance.historyView?.populate()
+        dispatch_async(dispatch_get_main_queue()) {
+            AppDelegate.instance.historyView?.populate()
+        }
         save()
     }
 }
@@ -227,7 +230,9 @@ class ExpLeagueProfile: NSManagedObject {
 extension ExpLeagueProfile: XMPPStreamDelegate {
     @objc
     func xmppStreamDidConnect(sender: XMPPStream!) {
-        progressBar?.progress = .Connected
+        dispatch_async(dispatch_get_main_queue()) {
+            self.progressBar?.progress = .Connected
+        }
         
         log("Connected")
         do {
@@ -240,32 +245,42 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
     
     @objc
     func xmppStreamConnectDidTimeout(sender: XMPPStream!) {
-        progressBar?.error("Timeout")
+        dispatch_async(dispatch_get_main_queue()) {
+            self.progressBar?.error("Timeout")
+        }
         log("Timedout");
     }
     
     @objc
     func xmppStreamDidDisconnect(sender: XMPPStream!, withError error: NSError!) {
         let msg = "Disconnected" + (error != nil ? " with error:\n\(error)" : "")
-        progressBar?.error(msg)
+        dispatch_async(dispatch_get_main_queue()) {
+            self.progressBar?.error(msg)
+        }
         log(msg);
     }
     
     @objc
     func xmppStreamDidStartNegotiation(sender: XMPPStream!) {
-        progressBar?.progress = .Negotiations
+        dispatch_async(dispatch_get_main_queue()) {
+            self.progressBar?.progress = .Negotiations
+        }
         log("Starting negotiations")
     }
     
     @objc
     func xmppStream(sender: XMPPStream!, socketDidConnect socket: GCDAsyncSocket!) {
-        progressBar?.progress = .SocketOpened
+        dispatch_async(dispatch_get_main_queue()) {
+            self.progressBar?.progress = .SocketOpened
+        }
         log("Socket opened");
     }
     
     @objc
     func xmppStream(sender: XMPPStream!, willSecureWithSettings settings: NSMutableDictionary!) {
-        progressBar?.progress = .Configuring
+        dispatch_async(dispatch_get_main_queue()) {
+            self.progressBar?.progress = .Configuring
+        }
         log("Configuring");
         settings.setValue(true, forKey: GCDAsyncSocketManuallyEvaluateTrust)
     }
@@ -339,7 +354,7 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
         patternsIq.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/patterns"))
         sender.sendElement(patternsIq)
         
-        if (receiveAnswerOfTheWeek) {
+        if (receiveAnswerOfTheWeek?.boolValue ?? true) {
             // answer of the week
             let aowIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
             aowIq.addAttributeWithName("type", stringValue: "get")
@@ -384,7 +399,9 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
                     expert.available = profile.attributeBoolValueForName("available")
                 }
             }
-            AppDelegate.instance.expertsView?.update()
+            dispatch_async(dispatch_get_main_queue()) {
+                AppDelegate.instance.expertsView?.update()
+            }
         }
         else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/tags") {
             for tag in query.elementsForName("tag") as! [DDXMLElement] {
@@ -464,7 +481,9 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
         }
         for listenerRef in listeners.copy() as! NSArray {
             if let listener = (listenerRef as! Weak<XMPPTracker>).value {
-                listener.onMessage?(message: msg)
+                dispatch_async(dispatch_get_main_queue()) {
+                    listener.onMessage?(message: msg)
+                }
             }
             else {
                 listeners.removeObject(listenerRef)
@@ -490,7 +509,9 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
         
         for listenerRef in listeners.copy() as! NSArray {
             if let listener = (listenerRef as! Weak<XMPPTracker>).value {
-                listener.onPresence?(presence: presence)
+                dispatch_async(dispatch_get_main_queue()) {
+                    listener.onPresence?(presence: presence)
+                }
             }
             else {
                 listeners.removeObject(listenerRef)

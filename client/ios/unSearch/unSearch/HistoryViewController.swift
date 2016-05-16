@@ -233,9 +233,9 @@ class HistoryViewController: UITableViewController {
         }
         AppDelegate.instance.tabs.tabBar.hidden = true;
         let messagesView = OrderDetailsViewController(data: model(o))
-//        while (navigationController?.childViewControllers.count > 1) {
-//            navigationController?.popViewControllerAnimated(false)
-//        }
+        while (navigationController?.childViewControllers.count > 1) {
+            navigationController?.popViewControllerAnimated(false)
+        }
         splitViewController!.showDetailViewController(messagesView, sender: nil)
     }
     

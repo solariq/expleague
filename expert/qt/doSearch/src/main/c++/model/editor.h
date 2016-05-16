@@ -1,20 +1,18 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
-#include <QFile>
-#include <QTextStream>
-#include <QTextDocument>
 #include <QQuickTextDocument>
 
 #include "spellchecker.h"
 using hunspell::SpellChecker;
 
-#include "markdownhighlighter.h"
-#include "styleparser.h"
-
 #include "screen.h"
 
+class MarkdownHighlighter;
 namespace expleague {
+class ReceivedAnswer;
+class Member;
+
 class MarkdownEditorScreen: public Screen {
     Q_OBJECT
 
@@ -22,13 +20,8 @@ class MarkdownEditorScreen: public Screen {
     Q_PROPERTY(QString html READ html NOTIFY htmlChanged)
 
 public:
-    QString name() const {
-        return tr("Ответ");
-    }
-
-    QUrl icon() const {
-        return QUrl("qrc:/md.png");
-    }
+    QString name() const;
+    QUrl icon() const;
 
     QString location() const {
         return "";
@@ -53,6 +46,13 @@ public:
         htmlChanged(html());
     }
 
+    Q_INVOKABLE QStringList codeClipboard();
+
+public slots:
+    void resetText(const QString& text) {
+        m_document->textDocument()->setPlainText(text);
+    }
+
 signals:
     void textChanged(const QString&);
     void htmlChanged(const QString&);
@@ -63,33 +63,23 @@ private slots:
         setText(text);
     }
 
-public:
-    MarkdownEditorScreen(QObject* parent = 0): Screen(QUrl("qrc:/EditorView.qml"), parent){
-        m_editor = findChild<QQuickItem*>("editor");
-        m_document = m_editor->property("textDocument").value<QQuickTextDocument*>();
-        m_highlighter = new MarkdownHighlighter(m_document->textDocument(), &m_spellchecker);
-        m_highlighter->setParent(this);
-        QObject::connect(m_document->textDocument(), SIGNAL(contentsChanged()), this, SLOT(contentChanged()));
-
-        QFile f(":/themes/default.txt");
-        if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            return;
-        }
-
-        QTextStream ts(&f);
-        QString input = ts.readAll();
-
-        // parse the stylesheet
-        PegMarkdownHighlight::StyleParser parser(input);
-        QVector<PegMarkdownHighlight::HighlightingStyle> styles = parser.highlightingStyles(m_document->textDocument()->defaultFont());
-        m_highlighter->setStyles(styles);
+    void authorChanged() {
+        emit Screen::nameChanged(name());
+        emit Screen::iconChanged(icon());
     }
+
+    void acquireFocus();
+
+public:
+    MarkdownEditorScreen(QObject* parent = 0);
+    MarkdownEditorScreen(ReceivedAnswer* answer, QObject* parent = 0);
 
 private:
     QQuickItem* m_editor;
     QQuickTextDocument* m_document;
     MarkdownHighlighter* m_highlighter;
     QString m_text;
+    Member* m_author;
     hunspell::SpellChecker m_spellchecker;
 };
 }

@@ -89,6 +89,7 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
           if (msg.has(Resume.class)) {
             archive.stream()
                     .flatMap(Functions.instancesOf(Message.class))
+                    .filter(message -> message.to().equals(jid))
                     .filter(message -> message.type() == MessageType.GROUP_CHAT || message.has(Progress.class))
                     .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
             XMPP.send(new Presence(roomAlias(msg.from()), owner(), true), context());

@@ -41,7 +41,7 @@ public:
 
     Q_INVOKABLE virtual void remove() {
         setActive(false);
-        deleteLater();
+        delete this;
     }
 
     void setActive(bool newState) {
@@ -58,22 +58,13 @@ signals:
     void locationChanged(const QString&);
 
 protected:
-    explicit Screen(QUrl item, QObject* parent = 0): QObject(parent) {
-        QQmlComponent component(rootEngine, item, QQmlComponent::PreferSynchronous);
-        if (component.isError()) {
-            qWarning() << "Error during screen load";
-            foreach(QQmlError error, component.errors()) {
-                qWarning() << error;
-            }
-        }
-        QQuickItem* root = (QQuickItem*)component.create();
-        root->setParent(this);
-        m_root = root;
-    }
+    explicit Screen(QUrl item, QObject* parent = 0);
 
     QQuickItem* root() {
         return m_root;
     }
+
+    void setupOwner();
 
     template<typename T>
     T* itemById(const QString& id) {
@@ -88,6 +79,7 @@ protected:
     }
 
 private:
+    friend class StateSaver;
     QQuickItem* m_root;
     bool m_active = false;
 };

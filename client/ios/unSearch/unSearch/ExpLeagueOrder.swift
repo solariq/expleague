@@ -145,7 +145,9 @@ class ExpLeagueOrder: NSManagedObject {
         let msg = XMPPMessage(type: "normal", to: jid)
         msg.addChild(DDXMLElement(name: "cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
         parent.send(msg)
-        AppDelegate.instance.historyView?.populate()
+        dispatch_async(dispatch_get_main_queue()) {
+            AppDelegate.instance.historyView?.populate()
+        }
         save()
     }
     
@@ -160,7 +162,9 @@ class ExpLeagueOrder: NSManagedObject {
     func close() {
         flags = flags | ExpLeagueOrderFlags.Closed.rawValue
         send(xml: DDXMLElement(name: "done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
-        AppDelegate.instance.historyView?.populate()
+        dispatch_async(dispatch_get_main_queue()) {
+            AppDelegate.instance.historyView?.populate()
+        }
         save()
     }
     
@@ -276,10 +280,9 @@ class ExpLeagueOrder: NSManagedObject {
     dynamic weak var model: ChatModel?
     dynamic weak var badge: OrderBadge?
     
-    override func save() {
+    override func saveInner() {
         model?.sync()
         badge?.update(order: self)
-        super.save()
     }
 }
 
