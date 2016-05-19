@@ -31,6 +31,13 @@ Context::Context(Task* task, QObject* parent): QObject(parent), m_task(task), m_
     folder->setActive(true);
     QObject::connect(task, SIGNAL(finished()), SLOT(taskFinished()));
     QObject::connect(task, SIGNAL(cancelled()), SLOT(taskFinished()));
+    task->setContext(this);
+}
+
+Context::~Context() {
+    if (m_task)
+        m_task->setContext(0);
+    emit closed();
 }
 
 void Context::taskFinished() {

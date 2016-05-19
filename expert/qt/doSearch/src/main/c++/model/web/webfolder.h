@@ -44,7 +44,10 @@ public:
         WebScreen* tab = new WebScreen(this);
         if (source)
             insert(m_screens.indexOf(source), tab);
-        else append(tab);
+        else if (m_screens.length() == 1)
+            append(tab);
+        else
+            insert(1, tab);
         tab->setActive(true);
         return tab;
     }

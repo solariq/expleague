@@ -125,15 +125,11 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UITextViewD
 
     func textFieldDidEndEditing(textField: UITextField) {
         let hostParts = hostField.text?.componentsSeparatedByString(":")
-        testing!.domain = hostParts![0]
-        testing!.login = userField.text!
-        testing!.passwd = passwdField.text!
-        testing!.port = hostParts!.count > 1 ? NSNumber(short: Int16(hostParts![1])!) : NSNumber(long: 5222)
-        do {
-            try testing!.managedObjectContext!.save()
-        }
-        catch {
-            self.log("Unable to save profile \(testing!.name) because of \(error)!")
+        testing?.update {
+            self.testing!.domain = hostParts![0]
+            self.testing!.login = self.userField.text!
+            self.testing!.passwd = self.passwdField.text!
+            self.testing!.port = hostParts!.count > 1 ? NSNumber(short: Int16(hostParts![1])!) : NSNumber(long: 5222)
         }
     }
     

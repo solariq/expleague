@@ -87,9 +87,7 @@ private slots:
 public:
     explicit Context(const QString& name = "", QObject* parent = 0);
     explicit Context(Task* offer, QObject* parent = 0);
-    ~Context() {
-        emit closed();
-    }
+    virtual ~Context();
 
 protected:
     void append(Folder* folder) {

@@ -143,9 +143,15 @@ void League::disconnected() {
 }
 
 void League::messageReceived(const QString& room, const QString& from, const QString& text) {
+    if (from != m_connection->user())
+        showNotification(tr("Лига Экспертов").toUtf8().data(), (tr("Получено сообщение от ") + from + ": '" + text + "'").toUtf8().data());
+
     foreach(Task* task, m_tasks) {
         if (task->id() == room) {
             task->messageReceived(from, text);
+            if (task->context()) {
+                task->context()->setActive(true);
+            }
             break;
         }
     }

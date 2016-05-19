@@ -21,6 +21,7 @@ class ChatMessage;
 class Member;
 class AnswerPattern;
 class TaskTag;
+class Context;
 namespace xmpp {
 class Progress;
 }
@@ -77,6 +78,7 @@ public:
     QStringList phones() { return m_phones; }
 
     QString id() const;
+    Context* context() const { return m_context; }
 
 public:
     Q_INVOKABLE void sendMessage(const QString& str) const;
@@ -84,6 +86,8 @@ public:
     Q_INVOKABLE void tag(TaskTag*);
     Q_INVOKABLE void pattern(AnswerPattern*);
     Q_INVOKABLE void phone(const QString&);
+
+    void setContext(Context* context) {m_context = context;}
 
 public:
     const QList<ReceivedAnswer*>& receivedAnswers() const { return m_answers; }
@@ -131,6 +135,7 @@ private:
     QList<AnswerPattern*> m_patterns;
     QList<ReceivedAnswer*> m_answers;
     QStringList m_phones;
+    Context* m_context;
 };
 
 class Offer: public QObject {

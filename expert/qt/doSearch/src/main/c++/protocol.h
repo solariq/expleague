@@ -71,6 +71,8 @@ public:
     void connect();
     void disconnect();
 
+    QString id() const { m_jid.section('@', 0, 0); }
+
     Member* find(const QString& id);
 
     void sendOk(Offer* offer) {

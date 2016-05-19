@@ -81,15 +81,12 @@ class ExpLeagueProfile: NSManagedObject {
         let msgId = stream.generateUUID()
         msg.addAttributeWithName("id", stringValue: msgId)
         msg.addChild(receiptRequest)
-        let queue = self.queue?.mutableCopy() as? NSMutableSet ?? NSMutableSet()
-        queue.addObject(QueueItem(message: msg, context: self.managedObjectContext!))
-        self.queue = queue.copy() as? NSSet
         self.log("Sending: \(msg.XMLString())");
         stream.sendElement(msg)
-        do {
-            try self.managedObjectContext!.save()
-        } catch {
-            fatalError("Failure to save context: \(error)")
+        update {
+            let queue = self.queue?.mutableCopy() as? NSMutableSet ?? NSMutableSet()
+            queue.addObject(QueueItem(message: msg, context: self.managedObjectContext!))
+            self.queue = queue.copy() as? NSSet
         }
     }
     
@@ -123,12 +120,12 @@ class ExpLeagueProfile: NSManagedObject {
         return self._experts!
     }
     
-    func register(expert expert: ExpLeagueMember) -> ExpLeagueMember {
+    private func register(expert expert: ExpLeagueMember) -> ExpLeagueMember {
         let experts = expertsSet?.mutableCopy() ?? NSMutableSet()
         experts.addObject(expert)
         expertsSet = (experts.copy() as! NSSet)
-        if (_experts != nil) {
-            _experts?.append(expert)
+        if (self._experts != nil) {
+            self._experts?.append(expert)
         }
         save()
         return expert
@@ -138,7 +135,12 @@ class ExpLeagueProfile: NSManagedObject {
             return existing
         }
         if (factory != nil) {
-            return register(expert: factory!(self.managedObjectContext!))
+            var expert: ExpLeagueMember?
+            dispatch_sync(AppDelegate.instance.xmppQueue) {
+                expert = factory!(self.managedObjectContext!)
+                self.register(expert: expert!)
+            }
+            return expert
         }
         else {
             return nil
@@ -156,28 +158,32 @@ class ExpLeagueProfile: NSManagedObject {
         }
         return self._tags!
     }
-    func register(tag tag: ExpLeagueTag) -> ExpLeagueTag {
+    private func register(tag tag: ExpLeagueTag) -> ExpLeagueTag {
         let tags = tagsSet?.mutableCopy() ?? NSMutableSet()
         tags.addObject(tag)
         tagsSet = (tags.copy() as! NSSet)
         if (_tags != nil) {
             _tags?.append(tag)
         }
-        save()
         return tag
     }
+    
     func tag(name id: String, factory: ((NSManagedObjectContext)->ExpLeagueTag)? = nil) -> ExpLeagueTag? {
         if let existing = tags.filter({return $0.name == id}).first {
             return existing
         }
         if (factory != nil) {
-            return register(tag: factory!(self.managedObjectContext!))
+            var tag: ExpLeagueTag?
+            dispatch_sync(AppDelegate.instance.xmppQueue) {
+                tag = factory!(self.managedObjectContext!)
+                self.register(tag: tag!)
+            }
+            return tag
         }
         else {
             return nil
         }
     }
-
     
     dynamic var avatars: [String: String] = [:]
     func avatar(login: String, url urlStr: String?) -> UIImage {
@@ -199,27 +205,28 @@ class ExpLeagueProfile: NSManagedObject {
         return UIImage(named: "owl_exp")!
     }
         
-    func placeOrder(topic topic: String, urgency: String, local: Bool, location locationOrNil: CLLocationCoordinate2D?, experts: [XMPPJID], images: [String]) -> ExpLeagueOrder {
+    func placeOrder(topic topic: String, urgency: String, local: Bool, location locationOrNil: CLLocationCoordinate2D?, experts: [XMPPJID], images: [String]) {
         var rand = NSUUID().UUIDString;
         rand = rand.substringToIndex(rand.startIndex.advancedBy(8))
-        let offer = ExpLeagueOffer(topic: topic, urgency: urgency, local: local, location: locationOrNil, experts: experts, images: images, started: nil)
-        let order = ExpLeagueOrder("room-" + login + "-" + rand, offer: offer, context: self.managedObjectContext!)
-        let msg = XMPPMessage(type: "normal", to: order.jid)
-        msg.addChild(offer.xml)
-        send(msg)
+        update {
+            let offer = ExpLeagueOffer(topic: topic, urgency: urgency, local: local, location: locationOrNil, experts: experts, images: images, started: nil)
+            let order = ExpLeagueOrder("room-" + self.login + "-" + rand, offer: offer, context: self.managedObjectContext!)
+            let msg = XMPPMessage(type: "normal", to: order.jid)
+            msg.addChild(offer.xml)
+            self.send(msg)
         
-        orderSelected = NSNumber(long: orders.count)
-        add(order: order)
-        dispatch_async(dispatch_get_main_queue()) {
-            AppDelegate.instance.historyView?.selected = order
+            self.orderSelected = NSNumber(long: self.orders.count)
+            self.add(order: order)
+            dispatch_async(dispatch_get_main_queue()) {
+                AppDelegate.instance.historyView?.selected = order
+            }
         }
-        return order
     }
     
     func add(order order: ExpLeagueOrder) {
         let mutableItems = orders.mutableCopy() as! NSMutableOrderedSet
         mutableItems.addObject(order)
-        orders = mutableItems.copy() as! NSOrderedSet
+        self.orders = mutableItems.copy() as! NSOrderedSet
         dispatch_async(dispatch_get_main_queue()) {
             AppDelegate.instance.historyView?.populate()
         }
@@ -388,7 +395,7 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
                 if let profile = item.elementForName("expert", xmlns: "http://expleague.com/scheme") {
                     let expert: ExpLeagueMember
                     if let existing = self.expert(login: profile.attributeStringValueForName("login")) {
-                        existing.update(profile)
+                        existing.updateXml(profile)
                         expert = existing
                     }
                     else {
@@ -466,7 +473,7 @@ extension ExpLeagueProfile: XMPPStreamDelegate {
                 if ((item as! QueueItem).receipt == receipt.attributeStringValueForName("id")) {
                     queue.removeObject(item)
                     self.queue = queue.copy() as? NSSet
-                    self.save()
+                    save()
                     break
                 }
             }

@@ -83,12 +83,12 @@ class ExpLeagueOrder: NSManagedObject {
         let message = ExpLeagueMessage(msg: msg, parent: self, context: self.managedObjectContext!)
         let mutableItems = messagesRaw.mutableCopy() as! NSMutableOrderedSet
         mutableItems.addObject(message)
-        messagesRaw = mutableItems.copy() as! NSOrderedSet
+        self.messagesRaw = mutableItems.copy() as! NSOrderedSet
         if (message.type == .Answer) {
-            flags = flags | ExpLeagueOrderFlags.Deciding.rawValue
+            self.flags = self.flags | ExpLeagueOrderFlags.Deciding.rawValue
         }
-        _unreadCount = nil
-        _icon = nil
+        self._unreadCount = nil
+        self._icon = nil
         save()
     }
 
@@ -141,14 +141,15 @@ class ExpLeagueOrder: NSManagedObject {
             return
         }
 
-        flags = flags | ExpLeagueOrderFlags.Canceled.rawValue
         let msg = XMPPMessage(type: "normal", to: jid)
         msg.addChild(DDXMLElement(name: "cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
         parent.send(msg)
-        dispatch_async(dispatch_get_main_queue()) {
-            AppDelegate.instance.historyView?.populate()
+        update {
+            self.flags = self.flags | ExpLeagueOrderFlags.Canceled.rawValue
+            dispatch_async(dispatch_get_main_queue()) {
+                AppDelegate.instance.historyView?.populate()
+            }
         }
-        save()
     }
     
     func feedback(stars score: Int) {
@@ -160,17 +161,19 @@ class ExpLeagueOrder: NSManagedObject {
     }
 
     func close() {
-        flags = flags | ExpLeagueOrderFlags.Closed.rawValue
         send(xml: DDXMLElement(name: "done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
-        dispatch_async(dispatch_get_main_queue()) {
-            AppDelegate.instance.historyView?.populate()
+        update {
+            self.flags = self.flags | ExpLeagueOrderFlags.Closed.rawValue
+            dispatch_async(dispatch_get_main_queue()) {
+                AppDelegate.instance.historyView?.populate()
+            }
         }
-        save()
     }
     
     func emulate() {
-        flags = flags | ExpLeagueOrderFlags.Closed.rawValue | ExpLeagueOrderFlags.Fake.rawValue
-        save()
+        update {
+            self.flags = self.flags | ExpLeagueOrderFlags.Closed.rawValue | ExpLeagueOrderFlags.Fake.rawValue
+        }
     }
     
     var fake: Bool {
@@ -181,15 +184,17 @@ class ExpLeagueOrder: NSManagedObject {
         if (isActive) {
             cancel()
         }
-        flags |= ExpLeagueOrderFlags.Archived.rawValue
-        save()
+        update {
+            self.flags |= ExpLeagueOrderFlags.Archived.rawValue
+        }
     }
     
     func continueTask() {
         if (status == .Deciding) {
-            flags ^= ExpLeagueOrderFlags.Deciding.rawValue
+            update {
+                self.flags ^= ExpLeagueOrderFlags.Deciding.rawValue
+            }
         }
-        save()
     }
     
     var status: ExpLeagueOrderStatus {
@@ -252,11 +257,7 @@ class ExpLeagueOrder: NSManagedObject {
         self.started = CFAbsoluteTimeGetCurrent()
         self.id = roomId.lowercaseString
         self.topic = offer.xml.XMLString()
-        do {
-            try self.managedObjectContext!.save()
-        } catch {
-            fatalError("Failure to save context: \(error)")
-        }
+        save()
     }
 
     private dynamic var _offer: ExpLeagueOffer?
@@ -280,7 +281,7 @@ class ExpLeagueOrder: NSManagedObject {
     dynamic weak var model: ChatModel?
     dynamic weak var badge: OrderBadge?
     
-    override func saveInner() {
+    override func notify() {
         model?.sync()
         badge?.update(order: self)
     }

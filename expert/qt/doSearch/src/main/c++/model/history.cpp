@@ -324,7 +324,11 @@ void StateSaver::saveRequests() {
 }
 
 void StateSaver::saveScreens() {
-    WebFolder* folder = qobject_cast<WebFolder*>(sender());
+    Folder* folder = qobject_cast<Folder*>(sender());
+    if (!folder) {
+        qWarning() << "Wrong signal source for StateSaver::saveScreens: " << sender();
+        return;
+    }
     Context* context = folder->parent();
     QSettings settings(m_settings->scope(), m_settings->organizationName(), m_settings->applicationName());
 

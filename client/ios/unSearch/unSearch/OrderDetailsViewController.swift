@@ -173,6 +173,10 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
             messages.scrollToRowAtIndexPath(index, atScrollPosition: .Top, animated: true)
         }
     }
+    
+    func close() {
+        navigationController?.popViewControllerAnimated(false)
+    }
 
 
     init(data: ChatModel) {

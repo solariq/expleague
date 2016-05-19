@@ -107,21 +107,20 @@ class ExpLeagueMember: NSManagedObject {
         return count
     }
     
-    func update(xml: DDXMLElement) {
-        self.xmlStr = xml.XMLString()
-        self.save();
+    func updateXml(xml: DDXMLElement) {
+        xmlStr = xml.XMLString()
+        save()
     }
     
     dynamic weak var badge: ExpertCell?
     dynamic weak var view: ExpertViewController?
-    override func saveInner() {
+    override func notify() {
         badge?.update(self)
         view?.update()
     }
     
     init(xml: DDXMLElement, group: ExpLeagueMemberGroup, context: NSManagedObjectContext) {
         super.init(entity: NSEntityDescription.entityForName("Expert", inManagedObjectContext: context)!, insertIntoManagedObjectContext: context)
-
         self.xmlStr = xml.XMLString()
         self.groupInt = NSNumber(short: group.rawValue)
         save()
