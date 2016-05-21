@@ -99,7 +99,7 @@ public:
             if (request->query() == text) {
                 m_queries.removeAt(i);
                 queriesChanged();
-                delete request;
+                request->deleteLater();
             }
         }
     }
@@ -126,10 +126,10 @@ private slots:
         QString queryText = query.queryItemValue("q");
         queryText.replace("+", " ");
         SearchRequest* request = 0;
+        SearchRequest* last = 0;
         if (!m_queries.empty() && m_queries.last()->clicks() == 0) {
-            SearchRequest* last = m_queries.last();
+            last = m_queries.last();
             m_queries.removeLast();
-            last->deleteLater();
         }
         for (int i = 0; i < m_queries.size(); i++) {
             if (m_queries.at(i)->query() == queryText) {
@@ -140,6 +140,7 @@ private slots:
 
         m_queries.append(request ? request : new SearchRequest(queryText, 0, this));
         queriesChanged();
+//        last->deleteLater();
     }
 
     void titleChanged() {

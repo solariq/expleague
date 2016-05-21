@@ -169,6 +169,8 @@ public:
         return m_connection->jid().section('@', 0, 0);
     }
 
+    Q_INVOKABLE QUrl imageUrl(QString imageId) const;
+
     Q_INVOKABLE Member* findMember(const QString& id) const;
     Q_INVOKABLE TaskTag* findTag(const QString& id) const;
     Q_INVOKABLE AnswerPattern* findPattern(const QString& id) const;
@@ -260,7 +262,7 @@ private slots:
         foreach(AnswerPattern* current, m_patterns) {
             if (current->name() == pattern->name()) {
                 m_patterns.removeOne(current);
-                current->deleteLater();
+//                current->deleteLater();
             }
         }
 
@@ -317,10 +319,6 @@ public:
 public:
     explicit ImagesStoreResponse(const QString& id): m_id(id) {}
 
-    ~ImagesStoreResponse() {
-        qDebug() << "Deleting response";
-    }
-
 private:
     QString m_id;
     QQuickTextureFactory* m_result;
@@ -334,6 +332,7 @@ class ImagesStore: public QObject, public QQuickAsyncImageProvider {
 public:
     QQuickImageResponse* requestImageResponse(const QString &id, const QSize &requestedSize);
     QUrl upload(const QImage& image) const;
+    QUrl url(const QString& id) const;
 
 private slots:
     void requestFinished(QNetworkReply* reply);

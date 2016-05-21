@@ -9,6 +9,8 @@
 #include <QSystemTrayIcon>
 #include <QSound>
 
+#include <QImageReader>
+
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QNetworkAccessManager>
@@ -48,7 +50,7 @@ using namespace xmpp;
 void League::setActive(Profile *profile) {
     if (m_connection) {
         m_connection->disconnect();
-        delete m_connection;
+        m_connection->deleteLater();
     }
     if (profile) {
 //        qDebug() << "Activating " << profile->deviceJid();
@@ -210,6 +212,11 @@ QUrl League::uploadImage(const QImage &img) const {
     return m_store->upload(img);
 }
 
+QUrl League::imageUrl(QString imageId) const {
+    return m_store->url(imageId);
+}
+
+
 Task::Task(Offer* offer, QObject* parent): QObject(parent), m_offer(offer) {
     QObject::connect(offer, SIGNAL(cancelled()), this, SLOT(cancelReceived()));
 }
@@ -289,6 +296,7 @@ void Task::sendMessage(const QString &str) const {
 void Task::sendAnswer() {
 //    qDebug() << "Sending answer: " << answer();
     parent()->connection()->sendAnswer(offer()->roomJid(), answer());
+    answerReset("");
     emit finished();
 }
 
@@ -339,7 +347,7 @@ public:
                 }
                 task = m_queue.takeFirst();
             }
-            qDebug() << "Request for " << task->id() << " received";
+//            qDebug() << "Request for " << task->id() << " received";
             QFile cacheFile(m_ava_cache_dir.filePath(task->id()));
             if (!cacheFile.exists()) {
                 m_lock.lock();
@@ -352,15 +360,18 @@ public:
                 m_lock.unlock();
             }
             else {
-                qDebug() << "Cache hit on " << task->id() << " file: " << cacheFile.fileName();
-                task->setResult(QImage(cacheFile.fileName()));
+//                qDebug() << "Cache hit on " << task->id() << " file: " << cacheFile.fileName();
+                QImageReader reader(&cacheFile);
+                reader.setAutoTransform(true);
+
+                task->setResult(reader.read());
             }
         }
     }
 
     void sendRequest(const QString& id) {
         QMutexLocker locker(&m_lock);
-        qDebug() << "Sending images store request " << id;
+//        qDebug() << "Sending images store request " << id;
         QNetworkRequest request(QUrl(baseUrl() + id));
 
         request.setOriginatingObject(m_pending.find(id).value());
@@ -408,17 +419,31 @@ public:
         return QUrl(baseUrl() + imageId);
     }
 
+    QString baseUrl() const {
+        if (m_domain == "localhost")
+            return "http://localhost:8067/";
+        else
+            return "https://img." + m_domain + "/" + IMAGE_STORE_MAGIC + "/";
+    }
+
+    QString cachePath(const QString& id) const {
+        return m_ava_cache_dir.filePath(id);
+    }
+
 public:
     void requestFinished(QNetworkReply* reply) {
         ImagesStoreResponse* firstPending = qobject_cast<ImagesStoreResponse*>(reply->request().originatingObject());
         if (!firstPending)
             return;
-        qDebug() << "Web request finished for " << firstPending->id();
-        QImage img;
-        img.loadFromData(reply->readAll());
+//        qDebug() << "Web request finished for " << firstPending->id();
+        QByteArray content = reply->readAll();
+        QBuffer buffer(&content);
+        QImageReader reader(&buffer);
+        reader.setAutoTransform(true);
+        QImage img = reader.read();
         if (!img.isNull()) {
             QString id = firstPending->id();
-            qDebug() << "Saving image to " << m_ava_cache_dir.filePath(id);
+//            qDebug() << "Saving image to " << m_ava_cache_dir.filePath(id);
             img.save(m_ava_cache_dir.filePath(id));
             {
                 QMutexLocker locker(&m_lock);
@@ -438,14 +463,6 @@ public:
     explicit ImagesStorePrivate(ImagesStore* facade): m_facade(facade), m_nam(new QNetworkAccessManager(facade)) {
         QObject::connect(m_nam, SIGNAL(finished(QNetworkReply*)), facade, SLOT(requestFinished(QNetworkReply*)));
         start();
-    }
-
-private:
-    QString baseUrl() {
-        if (m_domain == "localhost")
-            return "http://localhost:8067/";
-        else
-            return "https://img." + m_domain + "/" + IMAGE_STORE_MAGIC + "/";
     }
 
 private:
@@ -491,8 +508,12 @@ QUrl ImagesStore::upload(const QImage &image) const {
     return m_instance->upload(image);
 }
 
+QUrl ImagesStore::url(const QString &id) const {
+    return QUrl("file:" + m_instance->cachePath(id));
+}
+
 QQuickImageResponse* ImagesStore::requestImageResponse(const QString& id, const QSize&) {
-    qDebug() << "Image requested: " << id;
+//    qDebug() << "Image requested: " << id;
     ImagesStoreResponse* response = new ImagesStoreResponse(id);
     m_instance->enqueue(response);
     return response;

@@ -92,4 +92,9 @@ Window {
             dialog.hide()
         }
     }
+    onVisibleChanged: {
+        if (!visible) {
+            shortAnswer.text = ""
+        }
+    }
 }

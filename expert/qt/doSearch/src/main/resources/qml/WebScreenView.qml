@@ -108,6 +108,12 @@ Item {
 
         WebEngineView {
             id: webView
+            property string html
+
+            onHtmlChanged: {
+                loadHtml(html)
+            }
+
             objectName: "webView"
             focus: true
             Layout.fillWidth: true

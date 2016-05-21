@@ -16,6 +16,7 @@ Item {
     property Task task
     implicitHeight: topic.implicitHeight + 4 +
                     (task ? buttons.height : 0) + 4 +
+                    (offer ? time.height + 4 : 0) +
                     (offer && offer.hasLocation ? 200 + 4 : 0) +
                     ((offer ? offer.images.length * (200 + 4) : 0)) +
                     (tagsView.visible ? tagsView.height + 4 : 0) +
@@ -177,6 +178,25 @@ Item {
             name: "osm"
         }
 
+        Text {
+            Layout.alignment: Qt.AlignHCenter
+            id: time
+            text: {
+                if (!offer)
+                    return ""
+                var d = new Date(Math.abs(offer.timeLeft))
+                return (offer.timeLeft > 0 ? "" : "-") + (d.getUTCHours() + (d.getUTCDate() - 1) * 24) + qsTr(" ч. ") + d.getUTCMinutes() + qsTr(" мин.")
+            }
+            color: {
+                if (!offer)
+                    return "black"
+
+                var urgency = Math.sqrt(Math.max(offer.timeLeft/offer.duration, 0))
+                return Qt.rgba(1-urgency, 0, 0, 1.0)
+            }
+
+        }
+
         TextEdit {
             id: topic
             Layout.alignment: Qt.AlignHCenter
@@ -252,11 +272,12 @@ Item {
             id: map
             visible: offer && offer.hasLocation
 
+            property MapCircle circle
             Layout.columnSpan: 2
             Layout.preferredHeight: 200
             Layout.preferredWidth: 300
             Layout.alignment: Qt.AlignHCenter
-
+            zoomLevel: 12
             plugin: mapPlugin
             center {
                 longitude: offer ? offer.longitude : 0
@@ -264,6 +285,29 @@ Item {
             }
 
             gesture.enabled: true
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    task.context.handleOmniboxInput("qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude, true)
+                }
+            }
+
+            Connections {
+                target: self
+                onOfferChanged: {
+                    if (circle)
+                        map.removeMapItem(circle)
+                    if (offer) {
+                        map.circle = Qt.createQmlObject('import QtLocation 5.3; MapCircle {}', map)
+                        map.circle.center.longitude = offer.longitude
+                        map.circle.center.latitude = offer.latitude
+                        map.circle.radius = 50.0
+                        map.circle.color = 'green'
+                        map.circle.border.width = 3
+                        map.addMapItem(circle)
+                    }
+                }
+            }
         }
 
         Component {
@@ -280,11 +324,19 @@ Item {
                     fillMode: Image.PreserveAspectFit
                     source: "image://store/" + modelData
                     onStatusChanged: {
-                        if (sourceSize.height/sourceSize.width > 2./3.)
+                        if (sourceSize.height/sourceSize.width > 2./3.) {
                             img.height = 200
-                        else
+                            img.width = undefined
+                        }
+                        else {
+                            img.height = undefined
                             img.width = 300
+                        }
                     }
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: task.context.handleOmniboxInput(root.league.imageUrl(modelData), true)
                 }
             }
         }

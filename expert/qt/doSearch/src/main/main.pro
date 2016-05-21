@@ -15,9 +15,9 @@ ICON = resources/doSearch.icns
 RC_ICONS = resources/doSearch.ico
 QMAKE_TARGET_BUNDLE_PREFIX=com.expleague
 
-#CONFIG += staticlib objective_c
+CONFIG += objective_c
 
-#unix:QMAKE_RPATHDIR += /Users/solar/Qt/5.6/clang_64/lib/
+unix:QMAKE_RPATHDIR += /Users/solar/Qt/5.6/clang_64/lib/
 
 SOURCES += \
     c++/main.cpp \
@@ -50,11 +50,11 @@ HEADERS += \
     c++/util/filethrottle.h \
     c++/util/call_once.h
 
-#OBJECTIVE_SOURCES += \
-#    objc/ExpLeagueNotification.mm
+macx: OBJECTIVE_SOURCES += \
+    objc/ExpLeagueNotification.mm
 
-#OBJECTIVE_HEADERS += \
-#    objc/ExpLeagueNotification.h
+macx: OBJECTIVE_HEADERS += \
+    objc/ExpLeagueNotification.h
 
 RESOURCES += resources/qml/qml.qrc \
              resources/images/images.qrc \

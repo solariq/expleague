@@ -20,20 +20,14 @@ public:
         setupOwner();
     }
 
-    bool handleOmniboxInput(const QString &text) {
-        QUrl url(text);
-        if (url.isValid()) {
-            webView->setProperty("url", url);
-        }
-        return url.isValid();
-    }
+    bool handleOmniboxInput(const QString &text);
 
     QUrl icon() const {
         return webView->property("icon").toUrl();
     }
 
     QString location() const {
-        return webView->property("url").toString();
+        return m_url.isEmpty() ? webView->property("url").toString() : m_url;
     }
 
     QString name() const {
@@ -65,6 +59,7 @@ private:
 
 private:
     QQuickItem* webView;
+    QString m_url;
 };
 }
 

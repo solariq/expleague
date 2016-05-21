@@ -129,6 +129,7 @@ void ExpLeagueConnection::messageReceived(const QXmppMessage& msg) {
     Offer* offer = 0;
     QString answer;
     Progress progress;
+    QUrl image;
     foreach (const QXmppElement& element, msg.extensions()) {
         QDomElement xml = element.sourceDomElement();
         if (xml.namespaceURI() == EXP_LEAGUE_NS) {
@@ -149,6 +150,9 @@ void ExpLeagueConnection::messageReceived(const QXmppMessage& msg) {
             }
             else if (xml.localName() == "progress") {
                 progress = Progress::fromXml(xml);
+            }
+            else if (xml.localName() == "image") {
+                image = QUrl(xml.text());
             }
         }
     }
@@ -187,6 +191,9 @@ void ExpLeagueConnection::messageReceived(const QXmppMessage& msg) {
         }
         else if (!progress.empty()) {
             receiveProgress(room, from, progress);
+        }
+        else if (image.isValid()) {
+            receiveImage(room, from, image);
         }
         else if (!msg.body().isEmpty()) {
             receiveMessage(room, from, msg.body());

@@ -14,13 +14,13 @@ Window {
     property color backgroundColor: "#e8e8e8"
     property int invitationTimeout: 0
 
-    width: 350
-    height: 450
+    width: 500
+    height: contents.implicitHeight + caption.implicitHeight + 40
     minimumHeight: height
     maximumHeight: height
     minimumWidth: width
     maximumWidth: width
-    opacity: 0.9
+    opacity: 0.95
 
     modality: Qt.WindowModal
     color: backgroundColor
@@ -77,6 +77,7 @@ Window {
         anchors.fill: parent
         Item {Layout.preferredHeight: 20}
         Text {
+            id: caption
             Layout.alignment: Qt.AlignHCenter
             text: qsTr("Открыто задание")
             font.bold: true
@@ -86,6 +87,7 @@ Window {
             Layout.fillHeight: true
             Layout.fillWidth: true
             GridLayout {
+                id: contents
                 anchors.margins: 15
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
@@ -107,18 +109,19 @@ Window {
 
                 Text {
                     Layout.alignment: Qt.AlignLeft
+                    Layout.maximumHeight: 150
                     text: {
                         if (!offer)
                             return ""
                         var d = new Date(Math.abs(offer.timeLeft))
-                        return (offer.timeLeft > 0 ? "" : "-") + (d.getHours() + (d.getDate() - 1) * 24) + qsTr(" ч. ") + d.getMinutes() + qsTr(" мин.")
+                        return (offer.timeLeft > 0 ? "" : "-") + (d.getUTCHours() + (d.getUTCDate() - 1) * 24) + qsTr(" ч. ") + d.getUTCMinutes() + qsTr(" мин.")
                     }
                     color: {
                         if (!offer)
                             return "black"
 
                         var urgency = Math.sqrt(Math.max(offer.timeLeft/offer.duration, 0))
-                        return Qt.rgba(1.0, urgency, urgency, 1.0)
+                        return Qt.rgba(1-urgency, 0, 0, 1.0)
                     }
                 }
 
@@ -143,9 +146,11 @@ Window {
                 Component {
                     id: imageView
                     Item {
-                        Layout.columnSpan: 2
-                        Layout.preferredHeight: 200
-                        Layout.preferredWidth: 300
+                        id: imageContainer
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: implicitWidth
+                        implicitHeight: img.height
+                        implicitWidth: img.width
 
                         Image {
                             id: img
@@ -154,20 +159,47 @@ Window {
                             fillMode: Image.PreserveAspectFit
                             source: "image://store/" + modelData
                             onStatusChanged: {
-                                if (sourceSize.height/sourceSize.width > 2./3.)
-                                    img.height = 200
-                                else
-                                    img.width = 300
+                                if (sourceSize.height/sourceSize.width > 2./3.) {
+                                    img.height = imageContainer.height
+                                    img.width = imageContainer.height * sourceSize.width/sourceSize.height
+                                }
+                                else {
+                                    img.height = imageContainer.width * sourceSize.height/sourceSize.width
+                                    img.width = imageContainer.width
+                                }
                             }
                         }
                     }
                 }
 
-                Repeater {
-                    model: offer ? offer.images : []
-                    delegate: imageView
-                }
+                ScrollView {
+                    visible: offer && offer.images.length > 0
+                    Layout.columnSpan: 2
+                    Layout.preferredHeight: 200
+                    Layout.maximumWidth: 400
+                    Layout.preferredWidth: imagesRow.implicitWidth
+                    Layout.alignment: Qt.AlignHCenter
+                    RowLayout {
+                        id: imagesRow
+                        height: 200
+                        width: implicitWidth
+                        spacing: 5
+                        implicitWidth: {
+                            var result = 0
+                            for (var i = 0; i < children.length; i++) {
+                                if (i > 0)
+                                    result += 5
+                                result += children[i].implicitWidth
+                            }
+                            return result
+                        }
 
+                        Repeater {
+                            model: offer ? offer.images : []
+                            delegate: imageView
+                        }
+                    }
+                }
 
                 Item {Layout.fillHeight:true; Layout.columnSpan: 2}
                 Button {
@@ -182,6 +214,7 @@ Window {
                     Layout.preferredWidth: 130
                     action: accept
                 }
+                Item {Layout.preferredHeight: 5; Layout.columnSpan: 2}
             }
         }
         Keys.onEscapePressed: {

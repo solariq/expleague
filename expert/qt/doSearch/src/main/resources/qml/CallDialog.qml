@@ -90,4 +90,8 @@ Window {
             dialog.hide()
         }
     }
+    onVisibleChanged: {
+        if (!visible)
+            phoneNumber.text = ""
+    }
 }

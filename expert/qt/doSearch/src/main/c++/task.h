@@ -59,6 +59,7 @@ class Task: public QObject {
     Q_OBJECT
 
     Q_PROPERTY(expleague::Offer* offer READ offer CONSTANT)
+    Q_PROPERTY(expleague::Context* context READ context CONSTANT)
     Q_PROPERTY(QQmlListProperty<expleague::Bubble> chat READ chat NOTIFY chatChanged)
     Q_PROPERTY(QString answer READ answer WRITE setAnswer NOTIFY answerChanged)
     Q_PROPERTY(QQmlListProperty<expleague::TaskTag> tags READ tags NOTIFY tagsChanged)
@@ -206,7 +207,7 @@ public:
     }
 
     long timeLeft() const {
-        return QDateTime::currentDateTime().msecsTo(m_started.addMSecs(duration()));
+        return QDateTime::currentDateTimeUtc().msecsTo(m_started.addMSecs(duration()));
     }
 
 public:

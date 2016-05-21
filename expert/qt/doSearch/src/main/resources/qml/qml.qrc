@@ -25,5 +25,6 @@
         <file>PatternsDialog.qml</file>
         <file>SendDialog.qml</file>
         <file>CallDialog.qml</file>
+        <file>ScrollBar.qml</file>
     </qresource>
 </RCC>

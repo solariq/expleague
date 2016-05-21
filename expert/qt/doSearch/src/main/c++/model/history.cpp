@@ -202,7 +202,7 @@ Folder* StateSaver::loadFolder(Context* parent, QSettings* settings) {
 
     int active = settings->value("active").toInt();
     int count = settings->beginReadArray("screen");
-    qDebug() << " contains " << count << " screen(s). " << active << " is active";
+//    qDebug() << " contains " << count << " screen(s). " << active << " is active";
     for (int s = 0; s < count; s++) {
         settings->setArrayIndex(s);
         Screen* const screen = StateSaver::loadScreen(result, settings);
@@ -243,7 +243,7 @@ void StateSaver::save(Screen* screen, QSettings* settings) {
 
 Screen* StateSaver::loadScreen(Folder* parent, QSettings* settings) {
     QString type = settings->value("type").toString();
-    qDebug() << "Loading screen of type " << type;
+//    qDebug() << "Loading screen of type " << type;
     if (type == "web") {
         WebScreen* web = new WebScreen(parent);
         web->handleOmniboxInput(settings->value("location").toString());

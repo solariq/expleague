@@ -36,6 +36,7 @@ Item {
 
                 ColumnLayout {
                     Layout.fillWidth: true
+
                     spacing: 0
                     TabButtons {
                         id: tabs
@@ -147,6 +148,15 @@ Item {
                                     loadHtml(html)
                                     if (focused)
                                         focused.forceActiveFocus()
+                                }
+
+                                onUrlChanged: {
+                                    var url = "" + preview.url
+                                    if (url.length > 0 && url != "about:blank") {
+//                                        console.log("Preview attempts to load" + url)
+                                        preview.goBack()
+                                        context.handleOmniboxInput(url, false)
+                                    }
                                 }
 
                                 anchors.fill: parent

@@ -13,5 +13,7 @@
         <file>sounds/owl.wav</file>
         <file>markdownpad-github.css</file>
         <file>md-scripts.js</file>
+        <file>html/yandex-map.html</file>
+        <file>html/yandex-map.js</file>
     </qresource>
 </RCC>

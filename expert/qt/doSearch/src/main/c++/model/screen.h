@@ -41,7 +41,7 @@ public:
 
     Q_INVOKABLE virtual void remove() {
         setActive(false);
-        delete this;
+        deleteLater();
     }
 
     void setActive(bool newState) {

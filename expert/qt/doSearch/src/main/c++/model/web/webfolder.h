@@ -21,23 +21,7 @@ public:
         QObject::connect(searchTab, SIGNAL(queriesChanged()), SLOT(changedRequests()));
     }
 
-    bool handleOmniboxInput(const QString &text, bool newTab) {
-        QString finalText;
-        if (text.startsWith("http:") || text.startsWith("https:") || text.startsWith("ftp:") || text.startsWith("ftps:") || text.startsWith("about:")) { // protocols
-            QUrl url(text);
-
-            if (url.isValid()) {
-                openUrl(url, newTab);
-                return true;
-            }
-        }
-        QString domain = text.split("/")[0];
-        m_text = text;
-        m_newTab = newTab;
-        m_lookup.setName(domain);
-        m_lookup.lookup();
-        return true;
-    }
+    bool handleOmniboxInput(const QString &text, bool newTab);
 
     WebScreen* createWebTab(Screen* source = 0) {
         qDebug() << "Creating new tab at position: " << m_screens.indexOf(source);

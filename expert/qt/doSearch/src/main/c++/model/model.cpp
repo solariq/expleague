@@ -24,7 +24,7 @@ bool isSearch(const QUrl& url) {
 Context::Context(const QString& name, QObject* parent): QObject(parent), m_name(name), m_icon(QUrl("qrc:/chromium.png")), m_id(name) {
 }
 
-Context::Context(Task* task, QObject* parent): QObject(parent), m_task(task), m_name(task->offer()->topic()), m_icon("qrc:/avatar.png"), m_id(task->id()) {
+Context::Context(Task* task, QObject* parent): QObject(parent), m_task(task), m_name(task->offer()->topic().replace('\n', " ")), m_icon("qrc:/avatar.png"), m_id(task->id()) {
     qDebug() << "Creating context for task " << task->id() << " (" << task << ")";
     AnswersFolder* folder = new AnswersFolder(m_task, this);
     append(folder);

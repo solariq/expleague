@@ -7,6 +7,7 @@ import Qt.labs.controls 1.0
 import ExpLeague 1.0
 
 Rectangle {
+    id: self
     property Task task
     color: Qt.rgba(230/256.0, 233/256.0, 234/256.0, 1.0)
 
@@ -22,8 +23,8 @@ Rectangle {
                 if (button.visible) {
                     height += button.implicitHeight
                 }
-                if (image.visible) {
-                    height += image.implicitHeight
+                if (imageContainer.visible) {
+                    height += imageContainer.implicitHeight
                 }
                 return height
             }
@@ -35,10 +36,10 @@ Rectangle {
                 if (button.visible) {
                     width += button.implicitWidth
                 }
-                if (image.visible) {
-                    width += image.implicitWidth
+                if (imageContainer.visible) {
+                    width += imageContainer.implicitWidth
                 }
-                return width
+                return Math.min(width, self.width - 50)
             }
 
             TextEdit {
@@ -46,9 +47,12 @@ Rectangle {
                 anchors.fill: parent
                 visible: model.text.length > 0 && !model.action
                 text: model.text
+                wrapMode: TextEdit.WrapAnywhere
+
                 horizontalAlignment: Qt.AlignLeft
                 renderType: Text.NativeRendering
                 selectByMouse: true
+                readOnly: true
             }
 
             Button {
@@ -62,13 +66,38 @@ Rectangle {
                 }
             }
 
-            Image {
-                id: image
-                anchors.fill: parent
+            Item {
+                id: imageContainer
                 visible: model.reference.length > 0
-                source: model.reference
-                height: Math.min(implicitHeight, 200)
-                fillMode: Image.PreserveAspectFit
+                implicitHeight: image.height
+                implicitWidth: image.width
+
+                Image {
+                    id: image
+                    anchors.centerIn: parent
+                    source: model.reference
+                    fillMode: Image.PreserveAspectFit
+                    mipmap: true
+                    autoTransform: true
+                    onStatusChanged: {
+                        var w = (column.width - 30)
+                        if (sourceSize.height/sourceSize.width > 2./3.) {
+                            image.height = w * 2./3.
+                            image.width = image.height * sourceSize.width/sourceSize.height
+                        }
+                        else {
+                            image.width = w
+                            image.height = w * sourceSize.height/sourceSize.width
+                        }
+                    }
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        var split = model.reference.split('/')
+                        task.context.handleOmniboxInput(root.league.imageUrl(split[split.length - 1]), true)
+                    }
+                }
             }
         }
     }
@@ -77,7 +106,7 @@ Rectangle {
         id: bubble
 
         Item {
-            Layout.fillWidth: true
+            width: column.width
             implicitHeight: content.implicitHeight
 
             Avatar {
@@ -176,21 +205,17 @@ Rectangle {
     }
 
     ColumnLayout {
+        id: column
         anchors.fill: parent
-        Item {
+        ScrollView {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            ColumnLayout {
-                anchors.fill: parent
-                spacing: 3
-                Item {Layout.preferredHeight: 1}
+            Column {
+                spacing: 5
+                Item {height: 5}
                 Repeater {
                     model: task ? task.chat : []
                     delegate: bubble
-
-                    Component.onCompleted:  {
-                        console.log("Chat model: " + model)
-                    }
                 }
                 Item {Layout.fillHeight: true}
             }
