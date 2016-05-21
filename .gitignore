@@ -21,3 +21,5 @@ client/ios/unSearch/Pods/
 client/ios/unSearch/Podfile.lock
 client/ios/unSearch/.idea/workspace.xml
 client/ios/unSearch/unSearch.xcworkspace/xcuserdata/
+
+expert/qt/build*/**
