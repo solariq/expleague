@@ -162,12 +162,12 @@ static void parse_references(parser_data *p_data);
 
 
 
-static char **get_element_type_names()
+static const char **get_element_type_names()
 {
-    static char **elem_type_names = NULL;
+    static const char **elem_type_names = NULL;
     if (elem_type_names == NULL)
     {
-        elem_type_names = (char **)malloc(sizeof(char*) * pmh_NUM_LANG_TYPES);
+        elem_type_names = (const char **)malloc(sizeof(char*) * pmh_NUM_LANG_TYPES);
         int i;
         for (i = 0; i < pmh_NUM_LANG_TYPES; i++)
             elem_type_names[i] = NULL;
@@ -199,14 +199,14 @@ static char **get_element_type_names()
     return elem_type_names;
 }
 
-pmh_element_type pmh_element_type_from_name(char *name)
+pmh_element_type pmh_element_type_from_name(const char *name)
 {
-    char **elem_type_names = get_element_type_names();
+    const char **elem_type_names = get_element_type_names();
     
     int i;
     for (i = 0; i < pmh_NUM_LANG_TYPES; i++)
     {
-        char *i_name = elem_type_names[i];
+        const char *i_name = elem_type_names[i];
         if (i_name == NULL)
             continue;
         if (strcmp(i_name, name) == 0)
@@ -216,10 +216,9 @@ pmh_element_type pmh_element_type_from_name(char *name)
     return pmh_NO_TYPE;
 }
 
-char *pmh_element_name_from_type(pmh_element_type type)
-{
-    char **elem_type_names = get_element_type_names();
-    char* ret = elem_type_names[type];
+const char *pmh_element_name_from_type(pmh_element_type type) {
+    const char **elem_type_names = get_element_type_names();
+    const char* ret = elem_type_names[type];
     if (ret == NULL)
         return "unknown type";
     return ret;
@@ -728,7 +727,7 @@ static pmh_realelement *copy_element(parser_data *p_data, pmh_realelement *elem)
 }
 
 /* construct pmh_EXTRA_TEXT pmh_realelement */
-static pmh_realelement *mk_etext(parser_data *p_data, char *string)
+static pmh_realelement *mk_etext(parser_data *p_data, const char *string)
 {
     pmh_realelement *result;
     assert(string != NULL);
@@ -1144,7 +1143,7 @@ YY_LOCAL(int) yymatchChar(GREG *G, int c)
   return 0;
 }
 
-YY_LOCAL(int) yymatchString(GREG *G, char *s)
+YY_LOCAL(int) yymatchString(GREG *G, const char *s)
 {
   int yysav= G->pos;
   while (*s)

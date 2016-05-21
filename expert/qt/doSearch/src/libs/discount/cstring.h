@@ -74,4 +74,8 @@ extern int Csprintf(Cstring *, char *, ...);
 extern int Cswrite(Cstring *, char *, int);
 extern void Csreparse(Cstring *, char *, int, int);
 
+#define strncasecmp(a, b, c) strncmp(a, b, c)
+#define random rand
+#define srandom srand
+
 #endif/*_CSTRING_D*/

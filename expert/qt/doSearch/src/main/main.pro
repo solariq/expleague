@@ -15,9 +15,9 @@ ICON = resources/doSearch.icns
 RC_ICONS = resources/doSearch.ico
 QMAKE_TARGET_BUNDLE_PREFIX=com.expleague
 
-CONFIG += staticlib objective_c
+#CONFIG += staticlib objective_c
 
-unix:QMAKE_RPATHDIR += /Users/solar/Qt/5.6/clang_64/lib/
+#unix:QMAKE_RPATHDIR += /Users/solar/Qt/5.6/clang_64/lib/
 
 SOURCES += \
     c++/main.cpp \
@@ -50,11 +50,11 @@ HEADERS += \
     c++/util/filethrottle.h \
     c++/util/call_once.h
 
-OBJECTIVE_SOURCES += \
-    objc/ExpLeagueNotification.mm
+#OBJECTIVE_SOURCES += \
+#    objc/ExpLeagueNotification.mm
 
-OBJECTIVE_HEADERS += \
-    objc/ExpLeagueNotification.h
+#OBJECTIVE_HEADERS += \
+#    objc/ExpLeagueNotification.h
 
 RESOURCES += resources/qml/qml.qrc \
              resources/images/images.qrc \
@@ -64,12 +64,12 @@ DISTFILES += resources/doSearch.ico
 DISTFILES += resources/doSearch.icns
 
 win32:CONFIG(release, debug|release): LIBS += \
-    -L$$OUT_PWD/../libs/qxmpp/src/release/ -lqxmpp \
+    -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp0 \
     -L$$OUT_PWD/../libs/discount/release/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/release/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/release/ -lcutemarked
 else:win32:CONFIG(debug, debug|release): LIBS += \
-    -L$$OUT_PWD/../libs/qxmpp/src/debug/ -lqxmpp_d \
+    -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d0 \
     -L$$OUT_PWD/../libs/discount/debug/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/debug/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/debug/ -lcutemarked
@@ -89,7 +89,7 @@ win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../libs/peg-markdown-h
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../libs/peg-markdown-highlight/debug/ -lpmh
 else:unix: LIBS += -L$$OUT_PWD/../libs/peg-markdown-highlight/ -lpmh
 
-LIBS += -framework AppKit
+unix:LIBS += -framework AppKit
 
 INCLUDEPATH += \
     $$PWD/../libs/qxmpp/src/client $$PWD/../libs/qxmpp/src/base \

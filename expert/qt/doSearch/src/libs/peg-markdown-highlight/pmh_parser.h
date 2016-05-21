@@ -74,7 +74,7 @@ void pmh_free_elements(pmh_element **elems);
 * 
 * \sa pmh_element_type
 */
-char *pmh_element_name_from_type(pmh_element_type type);
+const char *pmh_element_name_from_type(pmh_element_type type);
 
 /**
 * \brief Get element type from a name
@@ -85,5 +85,5 @@ char *pmh_element_name_from_type(pmh_element_type type);
 * 
 * \sa pmh_element_type
 */
-pmh_element_type pmh_element_type_from_name(char *name);
+pmh_element_type pmh_element_type_from_name(const char *name);
 

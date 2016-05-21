@@ -22,7 +22,7 @@ using hunspell::SpellChecker;
 #include <QDir>
 #include <QDirIterator>
 
-#include <spellchecker/dictionary.h>
+#include <dictionary.h>
 #include <datalocation.h>
 
 QMap<QString, Dictionary> SpellChecker::availableDictionaries()

@@ -39,7 +39,7 @@ Item {
             width: height
             radius: status.width/2
 
-            color: user.status == Member.ONLINE ? "green" : "red"
+            color: user && user.status == Member.ONLINE ? "green" : "red"
             x: avatar.width - status.width - 2
             y: avatar.height - status.height - 2
             z: avatar.z + 1

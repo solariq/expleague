@@ -96,7 +96,7 @@ static void free_raw_attributes(raw_attribute *list)
 
 
 static void report_error(style_parser_data *p_data,
-                         int line_number, char *str, ...)
+                         int line_number, const char *str, ...)
 {
     if (p_data->error_callback == NULL)
         return;
@@ -284,7 +284,7 @@ pmh_attr_type pmh_attr_type_from_name(char *name)
     return pmh_attr_type_other;
 }
 
-char *pmh_attr_name_from_type(pmh_attr_type type)
+const char *pmh_attr_name_from_type(pmh_attr_type type)
 {
     switch (type)
     {

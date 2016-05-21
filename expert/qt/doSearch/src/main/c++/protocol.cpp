@@ -28,7 +28,7 @@ ExpLeagueConnection::ExpLeagueConnection(Profile* p, QObject* parent): QObject(p
     QObject::connect(&client, SIGNAL(iqReceived(QXmppIq)), this, SLOT(iqReceived(QXmppIq)));
     QObject::connect(&client, SIGNAL(messageReceived(QXmppMessage)), this, SLOT(messageReceived(QXmppMessage)));
 
-    client.logger()->setLoggingType(QXmppLogger::StdoutLogging);
+    client.logger()->setLoggingType(QXmppLogger::FileLogging);
     client.logger()->setMessageTypes(QXmppLogger::AnyMessage);
 }
 
@@ -376,6 +376,8 @@ QXmppElement parse(const QString& str) {
 
 Registrator::Registrator(const Profile* profile, QObject* parent): m_profile(profile) {
     setParent(parent);
+    QObject::connect(&connection, SIGNAL(disconnected()), SLOT(disconnected()));
+    connection.addExtension(this);
 }
 
 void Registrator::start() {
@@ -387,7 +389,6 @@ void Registrator::start() {
     config.setResource("expert");
     config.setAutoReconnectionEnabled(false);
     config.setKeepAliveInterval(55);
-    connection.addExtension(this);
     connection.connectToServer(config);
     qDebug() << "Connection started";
 }
@@ -436,8 +437,8 @@ bool Registrator::handleStanza(const QDomElement &stanza) {
     }
     else if (stanza.tagName() == "iq" && stanza.attribute("id") == m_registrationId) {
         if (stanza.attribute("type") == "result") {
-//            qDebug() << "Profile successfully registered. Reconnecting..." << stanza;
-            client()->configuration().setAutoReconnectionEnabled(true);
+            qDebug() << "Profile successfully registered. Reconnecting..." << stanza;
+            m_reconnecting = true;
             client()->disconnectFromServer();
         }
         else if (stanza.attribute("type") == "error") {
@@ -449,6 +450,14 @@ bool Registrator::handleStanza(const QDomElement &stanza) {
     }
     return false;
 }
+
+void Registrator::disconnected() {
+    if (m_reconnecting) {
+        m_reconnecting = false;
+        start();
+    }
+}
+
 }
 
 Offer::Offer(QDomElement xml, QObject *parent): QObject(parent) {
@@ -466,14 +475,14 @@ Offer::Offer(QDomElement xml, QObject *parent): QObject(parent) {
         if (element.isNull())
             continue;
         if (element.tagName() == "topic") {
-            qDebug() << "Topic " << element.text();
+//            qDebug() << "Topic " << element.text();
             m_topic = element.text();
         }
         else if (element.tagName() == "location") {
             m_location.reset(new QGeoCoordinate(
                                  element.attribute("latitude").toDouble(),
                                  element.attribute("longitude").toDouble()));
-            qDebug() << "Location " << *m_location;
+//            qDebug() << "Location " << *m_location;
         }
         else if (element.tagName() == "image") {
             m_images.append(QUrl(element.text()).path().section('/', -1, -1));

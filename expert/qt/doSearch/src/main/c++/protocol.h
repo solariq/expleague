@@ -71,7 +71,7 @@ public:
     void connect();
     void disconnect();
 
-    QString id() const { m_jid.section('@', 0, 0); }
+    QString id() const { return m_jid.section('@', 0, 0); }
 
     Member* find(const QString& id);
 
@@ -166,6 +166,9 @@ signals:
     void registered(const QString& jid);
     void error(const QString& error);
 
+private slots:
+    void disconnected();
+
 protected:
     bool handleStanza(const QDomElement &stanza);
 
@@ -173,6 +176,7 @@ private:
     QXmppConfiguration config;
     QXmppClient connection;
     QString m_registrationId;
+    bool m_reconnecting = false;
     const Profile* m_profile;
 };
 }

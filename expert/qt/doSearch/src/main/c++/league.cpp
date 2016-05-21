@@ -1,5 +1,7 @@
 #include <QThread>
 #include <QRunnable>
+#include <QMutex>
+#include <QMutexLocker>
 #include <QQueue>
 #include <QWaitCondition>
 #include <QMultiMap>
@@ -27,6 +29,7 @@ int showNotification(const char* titleC, const char* detailsC);
 #else
 int showNotification(const char* titleC, const char* detailsC) {
     trayIcon->showMessage(QString::fromUtf8(titleC), QString::fromUtf8(detailsC));
+    return 1;
 }
 #endif
 
@@ -143,7 +146,7 @@ void League::disconnected() {
 }
 
 void League::messageReceived(const QString& room, const QString& from, const QString& text) {
-    if (from != m_connection->user())
+    if (from != m_connection->id())
         showNotification(tr("Лига Экспертов").toUtf8().data(), (tr("Получено сообщение от ") + from + ": '" + text + "'").toUtf8().data());
 
     foreach(Task* task, m_tasks) {

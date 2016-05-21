@@ -1,6 +1,9 @@
 #ifndef TASK_H
 #define TASK_H
 
+#include <memory>
+#include <functional>
+
 #include <QObject>
 #include <QList>
 #include <QMap>
