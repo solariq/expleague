@@ -10,6 +10,7 @@
 #include <QtWebView/QtWebView>
 #include <QStyleOptionButton>
 #include <QStyle>
+#include <QTextCodec>
 
 #include "expleague.h"
 #include "model/history.h"
@@ -25,15 +26,12 @@ QSystemTrayIcon* trayIcon;
 doSearch* root;
 
 int main(int argc, char *argv[]) {
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     QApplication app(argc, argv);
 
     QtWebEngine::initialize();
     QQmlApplicationEngine engine;
     rootEngine = &engine;
-//    QSystemTrayIcon myTrayIcon;
-//    trayIcon = &myTrayIcon;
-//    trayIcon->setVisible(false);
-//    trayIcon->showMessage("Hello ", "World");
 
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
     QQmlContext* context = engine.rootContext();
