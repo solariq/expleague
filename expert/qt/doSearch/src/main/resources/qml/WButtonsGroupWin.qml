@@ -12,7 +12,11 @@ Item {
         spacing: 6
         WindowButton {
             id: minimizeButton
-            icon: "qrc:/window/minimize.png"
+            iconHover: "image://standard/SP_TitleBarMinButton_h"
+            iconPressed: "image://standard/SP_TitleBarMinButton_a"
+            iconBg: "image://standard/SP_TitleBarMinButton_d"
+//            iconPassive: "image://standard/SP_TitleBarMinButton"
+            iconPassive: "image://standard/SP_TitleBarCloseButton_a"
 
             w: win
             windowButtons: windowButtons
@@ -25,8 +29,12 @@ Item {
         }
         WindowButton {
             id: maximizeButton
-            icon: "qrc:/window/maximize.png"
-            iconMaximized: "qrc:/window/maximize_maximized.png"
+
+            iconHover: "image://standard/SP_TitleBarMaxButton_h"
+            iconPressed: "image://standard/SP_TitleBarMaxButton_a"
+            iconBg: "image://standard/SP_TitleBarMaxButton_d"
+//            iconPassive: "image://standard/SP_TitleBarMaxButton"
+            iconPassive: "image://standard/SP_TitleBarCloseButton_h"
 
             w: win
             windowButtons: windowButtons
@@ -44,10 +52,10 @@ Item {
         }
         WindowButton {
             id: closeButton
-            iconHover: "images:/standard/SP_TitleBarCloseButton_h"
-            iconPressed: "images:/standard/SP_TitleBarCloseButton_a"
-            iconBg: "images:/standard/SP_TitleBarCloseButton"
-            iconPassive: "images:/standard/SP_TitleBarCloseButton"
+            iconHover: "image://standard/SP_TitleBarCloseButton_h"
+            iconPressed: "image://standard/SP_TitleBarCloseButton_a"
+            iconBg: "image://standard/SP_TitleBarCloseButton_d"
+            iconPassive: "image://standard/SP_TitleBarCloseButton"
 
             w: win
             windowButtons: windowButtons

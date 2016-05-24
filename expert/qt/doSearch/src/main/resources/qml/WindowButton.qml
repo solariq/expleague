@@ -32,7 +32,7 @@ Button {
     states: [
         State {
             name: "pressed"
-            when: pressed
+            when: button.pressed
             PropertyChanges {
                 target: button
                 _icon: iconPressed

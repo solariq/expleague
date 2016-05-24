@@ -82,15 +82,12 @@ public:
 
     QPixmap requestPixmap(const QString& id, QSize*, const QSize &requestedSize) {
         QIcon icon;
-        QStyleOptionButton option;
-        option.state = QStyle::State_Sunken/* : QStyle::State_Raised*/;
-        option.features |= QStyleOptionButton::Flat;
 
         if (id.startsWith("SP_MessageBoxWarning")) {
-             icon = m_style->standardIcon(QStyle::SP_MessageBoxWarning, &option);
+             icon = m_style->standardIcon(QStyle::SP_MessageBoxWarning);
         }
         else if (id.startsWith("SP_TitleBarCloseButton")) {
-             icon = m_style->standardIcon(QStyle::SP_TitleBarCloseButton, &option);
+             icon = m_style->standardIcon(QStyle::SP_TitleBarCloseButton);
         }
         else if (id.startsWith("SP_TitleBarMaxButton")) {
              icon = m_style->standardIcon(QStyle::SP_TitleBarMaxButton);
@@ -102,11 +99,13 @@ public:
         if(icon.isNull())
             return QPixmap(requestedSize);
 
-//        qDebug() << "Received request on " << id << " of size " << requestedSize << ". Found " << icon << " pixmap: " << icon.pixmap(requestedSize);
         QIcon::Mode mode = id.endsWith("_h") ? QIcon::Active : QIcon::Normal;
-        QIcon::State state = id.endsWith("_a") ? QIcon::On : QIcon::Off;
+        QIcon::State state = id.endsWith("_d") ? QIcon::Off : QIcon::On;
+        if (id.endsWith("_a"))
+            mode = QIcon::Selected;
 
-        return requestedSize.isValid() ? icon.pixmap(requestedSize, mode, state) : icon.pixmap(16);
+//        qDebug() << "Received request on " << id << " of size " << requestedSize << " mode: " << mode << " state: " << state <<  ". Found " << icon << " pixmap: " << icon.pixmap(requestedSize);
+        return requestedSize.isValid() ? icon.pixmap(requestedSize, mode, state) : icon.pixmap(16, mode, state);
     }
 private:
     QStyle* m_style = QApplication::style();

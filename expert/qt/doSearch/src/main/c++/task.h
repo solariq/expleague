@@ -17,9 +17,6 @@
 #include <QAbstractItemModel>
 #include <QQmlListProperty>
 
-#include <QQmlEngine>
-#include <QDebug>
-
 class QTimer;
 namespace expleague {
 class League;
@@ -269,10 +266,6 @@ public:
     explicit ChatMessage(const QString& text, QObject* parent = 0): QObject(parent), m_text(text) {}
     explicit ChatMessage(const QUrl& imageUrl, QObject* parent = 0): QObject(parent), m_reference(imageUrl) {}
     explicit ChatMessage(std::function<void ()> action, const QString& description, QObject* parent = 0): QObject(parent), m_text(description), m_action(action), m_action_available(true) {}
-
-    virtual ~ChatMessage() {
-        qDebug() << "Message destroyed from context: " << QQmlEngine::objectOwnership(this);
-    }
 
 private:
     QUrl m_reference;

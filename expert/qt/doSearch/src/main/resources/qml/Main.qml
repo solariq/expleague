@@ -12,7 +12,11 @@ import ExpLeague 1.0
 ApplicationWindow {
     id: mainWindow
 
-    flags:  Qt.FramelessWindowHint|Qt.MacWindowToolBarButtonHint|Qt.WindowMinimizeButtonHint|Qt.WindowMaximizeButtonHint
+    flags: {
+        if (Qt.platform.os === "osx")
+            return Qt.FramelessWindowHint | Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint
+        return 134279169
+    }
 
     property color backgroundColor: "#e8e8e8"
     property color navigationColor: Qt.lighter(backgroundColor, 1.05)
@@ -147,13 +151,13 @@ ApplicationWindow {
                                 idleColor: mainWindow.idleColor
                             }
                             Item {Layout.minimumWidth: 14; visible: Qt.platform.os !== "osx"}
-                            WButtonsGroupWin {
-                                Layout.preferredWidth: implicitWidth
-                                Layout.fillHeight: true
-                                win: mainWindow
+//                            WButtonsGroupWin {
+//                                Layout.preferredWidth: implicitWidth
+//                                Layout.fillHeight: true
+//                                win: mainWindow
 
-                                visible: Qt.platform.os !== "osx"
-                            }
+//                                visible: Qt.platform.os !== "osx"
+//                            }
 
                         }
                         Rectangle {
