@@ -25,7 +25,7 @@ Context::Context(const QString& name, QObject* parent): QObject(parent), m_name(
 }
 
 Context::Context(Task* task, QObject* parent): QObject(parent), m_task(task), m_name(task->offer()->topic().replace('\n', " ")), m_icon("qrc:/avatar.png"), m_id(task->id()) {
-    qDebug() << "Creating context for task " << task->id() << " (" << task << ")";
+//    qDebug() << "Creating context for task " << task->id() << " (" << task << ")";
     AnswersFolder* folder = new AnswersFolder(m_task, this);
     append(folder);
     folder->setActive(true);
@@ -75,7 +75,7 @@ void AnswersFolder::answerReceived(ReceivedAnswer* answer) {
     append(answerScreen);
 }
 
-Screen::Screen(QUrl item, QObject *parent): QObject(parent) {
+Screen::Screen(QUrl item, QObject *parent): QObject(parent), m_context(rootEngine) {
     QQmlComponent component(rootEngine, item, QQmlComponent::PreferSynchronous);
     if (component.isError()) {
         qWarning() << "Error during screen load";
@@ -83,13 +83,11 @@ Screen::Screen(QUrl item, QObject *parent): QObject(parent) {
             qWarning() << error;
         }
     }
-    QQuickItem* instance = (QQuickItem*)component.create();
-    instance->setParent(this);
+    QQuickItem* instance = (QQuickItem*)component.create(&m_context);
     m_root = instance;
 }
 
 void Screen::setupOwner() {
-//    qDebug() << "setting owner property for " << m_root->objectName() << " owner: " << this;
     QVariant owner;
     owner.setValue(this);
     m_root->setProperty("owner", owner);

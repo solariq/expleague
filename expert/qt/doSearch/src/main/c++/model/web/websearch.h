@@ -64,8 +64,7 @@ public:
         connect(webView, SIGNAL(urlChanged()), SLOT(urlChanged()));
         connect(webView, SIGNAL(titleChanged()), SLOT(titleChanged()));
         connect(webView, SIGNAL(iconChanged()), SLOT(iconChanged()));
-        QQuickItem* root = itemById<QQuickItem>("root");
-        root->setProperty("owner", QVariant::fromValue(this));
+        setupOwner();
     }
 
     bool handleOmniboxInput(const QString &text) {

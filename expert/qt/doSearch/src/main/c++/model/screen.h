@@ -8,6 +8,7 @@
 #include <QQmlListProperty>
 #include <QQmlComponent>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
 
 extern QQmlApplicationEngine* rootEngine;
 
@@ -81,6 +82,7 @@ protected:
 private:
     friend class StateSaver;
     QQuickItem* m_root;
+    QQmlContext m_context;
     bool m_active = false;
 };
 

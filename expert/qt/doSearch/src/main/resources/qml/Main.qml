@@ -81,7 +81,8 @@ ApplicationWindow {
         }
     }
 
-    menuBar: MenuBar {
+    MenuBar {
+        id: menu
         Menu {
             title: qsTr("Профиль")
             MenuItem {
@@ -92,6 +93,8 @@ ApplicationWindow {
             }
         }
     }
+
+    menuBar: Qt.platform.os === "osx" ? menu : undefined
 
     Rectangle {
         color: backgroundColor
@@ -123,67 +126,17 @@ ApplicationWindow {
                             spacing: 0
 
                             Item {Layout.minimumWidth: 8}
-                            Item {
-                                id: windowButtonsGroup
-                                z: parent.z + 10
-                                Layout.preferredWidth: 13 * 3 + 5 * 2
+
+                            WButtonsGroupMac {
+                                Layout.preferredWidth: implicitWidth
                                 Layout.fillHeight: true
-                                RowLayout {
-                                    anchors.fill: parent
-                                    spacing: 6
-                                    WindowButton {
-                                        id: closeButton
-                                        icon: "qrc:/window/close.png"
+                                win: mainWindow
 
-                                        w: mainWindow
-                                        windowButtons: windowButtons
-                                        Layout.preferredWidth: 13
-                                        Layout.preferredHeight: 13
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        onClicked: {
-                                            console.log("Close called")
-                                            w.close()
-                                        }
-                                    }
-                                    WindowButton {
-                                        id: minimizeButton
-                                        icon: "qrc:/window/minimize.png"
-
-                                        w: mainWindow
-                                        windowButtons: windowButtons
-                                        Layout.preferredWidth: 13
-                                        Layout.preferredHeight: 13
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        onClicked: {
-                                            mainWindow.visibility = Window.Minimized
-                                        }
-                                    }
-                                    WindowButton {
-                                        id: maximizeButton
-                                        icon: "qrc:/window/maximize.png"
-                                        iconMaximized: "qrc:/window/maximize_maximized.png"
-
-                                        w: mainWindow
-                                        windowButtons: windowButtons
-                                        Layout.preferredWidth: 13
-                                        Layout.preferredHeight: 13
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        onClicked: {
-                                            if (mainWindow.visibility == Window.Maximized || mainWindow.visibility == Window.FullScreen) {
-                                                mainWindow.visibility = Window.AutomaticVisibility
-                                            }
-                                            else {
-                                                mainWindow.visibility = Window.FullScreen
-                                            }
-                                        }
-                                    }
-                                }
-                                TransparentMouseArea {
-                                    id: windowButtons
-                                    anchors.fill: parent
-                                }
+                                visible: Qt.platform.os === "osx"
                             }
-                            Item {Layout.minimumWidth: 14}
+
+                            Item {Layout.minimumWidth: 14; visible: Qt.platform.os === "osx"}
+
                             TabButtons {
                                 Layout.topMargin: 5
                                 Layout.fillWidth: true
@@ -193,6 +146,15 @@ ApplicationWindow {
                                 activeColor: mainWindow.navigationColor
                                 idleColor: mainWindow.idleColor
                             }
+                            Item {Layout.minimumWidth: 14; visible: Qt.platform.os !== "osx"}
+                            WButtonsGroupWin {
+                                Layout.preferredWidth: implicitWidth
+                                Layout.fillHeight: true
+                                win: mainWindow
+
+                                visible: Qt.platform.os !== "osx"
+                            }
+
                         }
                         Rectangle {
                             Layout.fillWidth: true

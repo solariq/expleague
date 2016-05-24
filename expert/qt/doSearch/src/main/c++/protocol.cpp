@@ -28,6 +28,7 @@ ExpLeagueConnection::ExpLeagueConnection(Profile* p, QObject* parent): QObject(p
     QObject::connect(&client, SIGNAL(iqReceived(QXmppIq)), this, SLOT(iqReceived(QXmppIq)));
     QObject::connect(&client, SIGNAL(messageReceived(QXmppMessage)), this, SLOT(messageReceived(QXmppMessage)));
 
+//    client.logger()->setLoggingType(QXmppLogger::StdoutLogging);
     client.logger()->setLoggingType(QXmppLogger::FileLogging);
     client.logger()->setMessageTypes(QXmppLogger::AnyMessage);
 }
@@ -126,7 +127,7 @@ enum Command {
 
 void ExpLeagueConnection::messageReceived(const QXmppMessage& msg) {
     Command cmd = ELC_CHECK;
-    Offer* offer = 0;
+    std::unique_ptr<Offer> offer = 0;
     QString answer;
     Progress progress;
     QUrl image;
@@ -143,7 +144,7 @@ void ExpLeagueConnection::messageReceived(const QXmppMessage& msg) {
                 cmd = ELC_INVITE;
             }
             else if (xml.localName() == "offer") {
-                offer = new Offer(xml);
+                offer.reset(new Offer(xml));
             }
             else if (xml.localName() == "answer") {
                 answer = xml.text();
@@ -159,21 +160,18 @@ void ExpLeagueConnection::messageReceived(const QXmppMessage& msg) {
     if (offer) {
         switch (cmd) {
         case ELC_CANCEL:
-            receiveCancel(offer);
+            receiveCancel(*offer);
             break;
         case ELC_CHECK:
-            receiveCheck(offer);
-            sendOk(offer);
+            receiveCheck(*offer);
             break;
         case ELC_INVITE:
-            receiveInvite(offer);
+            receiveInvite(*offer);
             break;
         case ELC_RESUME:
-            receiveResume(offer);
+            receiveResume(*offer);
             break;
         }
-        if (!offer->parent())
-            delete offer;
     }
     else {
         QString room;
@@ -209,7 +207,7 @@ void ExpLeagueConnection::messageReceived(const QXmppMessage& msg) {
 
 void ExpLeagueConnection::connectedSlot() {
     connected();
-    qDebug() << "Connected as " << client.configuration().jid();
+//    qDebug() << "Connected as " << client.configuration().jid();
     m_jid = client.configuration().jid();
     jidChanged(m_jid);
     { // requesting tags
@@ -388,7 +386,7 @@ Registrator::Registrator(const Profile* profile, QObject* parent): m_profile(pro
 }
 
 void Registrator::start() {
-    qDebug() << "Starting registration of " << m_profile->login() + "@" + m_profile->domain();
+//    qDebug() << "Starting registration of " << m_profile->login() + "@" + m_profile->domain();
     config.setJid(m_profile->login() + "@" + m_profile->domain());
     config.setPassword(m_profile->passwd());
     config.setHost(m_profile->domain());
@@ -397,7 +395,7 @@ void Registrator::start() {
     config.setAutoReconnectionEnabled(false);
     config.setKeepAliveInterval(55);
     connection.connectToServer(config);
-    qDebug() << "Connection started";
+//    qDebug() << "Connection started";
 }
 
 bool Registrator::handleStanza(const QDomElement &stanza) {
@@ -444,7 +442,7 @@ bool Registrator::handleStanza(const QDomElement &stanza) {
     }
     else if (stanza.tagName() == "iq" && stanza.attribute("id") == m_registrationId) {
         if (stanza.attribute("type") == "result") {
-            qDebug() << "Profile successfully registered. Reconnecting..." << stanza;
+//            qDebug() << "Profile successfully registered. Reconnecting..." << stanza;
             m_reconnecting = true;
             client()->disconnectFromServer();
         }
@@ -475,7 +473,6 @@ Offer::Offer(QDomElement xml, QObject *parent): QObject(parent) {
     m_room = xml.attribute("room");
     m_client = xml.attribute("client");
     m_started = QDateTime::fromTime_t(uint(xml.attribute("started").toDouble()));
-    qDebug() << m_started;
     m_local = xml.attribute("local") == "true";
     for(int i = 0; i < xml.childNodes().length(); i++) {
         QDomElement element = xml.childNodes().at(i).toElement();
@@ -489,7 +486,7 @@ Offer::Offer(QDomElement xml, QObject *parent): QObject(parent) {
             m_location.reset(new QGeoCoordinate(
                                  element.attribute("latitude").toDouble(),
                                  element.attribute("longitude").toDouble()));
-//            qDebug() << "Location " << *m_location;
+            qDebug() << "Location " << *m_location;
         }
         else if (element.tagName() == "image") {
             m_images.append(QUrl(element.text()).path().section('/', -1, -1));

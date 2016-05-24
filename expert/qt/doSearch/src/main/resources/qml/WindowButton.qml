@@ -8,9 +8,10 @@ import QtQuick.Layouts 1.1
 Button {
     property string icon
     property url iconPassive: icon.substring(0, icon.length - 4) + "_passive.png"
-    property url iconActive: icon.substring(0, icon.length - 4) + "_active.png"
+    property url iconHover: icon.substring(0, icon.length - 4) + "_active.png"
+    property url iconPressed: icon.substring(0, icon.length - 4) + "_active.png"
     property url iconBg: "qrc:/window/grey.png"
-    property url iconMaximized: iconActive
+    property url iconMaximized: iconHover
     property Window w
 
     property MouseArea windowButtons
@@ -29,6 +30,14 @@ Button {
         }
     }
     states: [
+        State {
+            name: "pressed"
+            when: pressed
+            PropertyChanges {
+                target: button
+                _icon: iconPressed
+            }
+        },
         State {
             name: "Window background"
             when: !w.active && !windowButtons.containsMouse
@@ -58,7 +67,7 @@ Button {
             when: windowButtons.containsMouse
             PropertyChanges {
                 target: button
-                _icon: iconActive
+                _icon: iconHover
             }
         }
     ]

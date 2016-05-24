@@ -201,36 +201,37 @@ private slots:
 
     void disconnected();
 
-    void checkReceived(Offer* offer) {
-        offer = normalizeOffer(offer);
+    void checkReceived(const Offer& offer) {
+        Offer* roffer = registerOffer(offer);
+        m_connection->sendOk(roffer);
         m_status = LS_CHECK;
         statusChanged(m_status);
     }
 
-    void inviteReceived(Offer* offer);
+    void inviteReceived(const Offer& offer);
 
-    void resumeReceived(Offer* offer) {
-        offer = normalizeOffer(offer);
-        startTask(offer);
-        m_connection->sendResume(offer);
+    void resumeReceived(const Offer& offer) {
+        Offer* roffer = registerOffer(offer);
+        startTask(roffer);
+        m_connection->sendResume(roffer);
     }
 
-    void cancelReceived(Offer* offer) {
-        offer = normalizeOffer(offer);
-        offer->cancelled();
+    void cancelReceived(const Offer& offer) {
+        Offer* roffer = registerOffer(offer);
+        roffer->cancelled();
         m_status = LS_ONLINE;
         statusChanged(m_status);
     }
 
-    void acceptInvitation(Offer* offer) {
-        offer = normalizeOffer(offer);
-        startTask(offer);
-        m_connection->sendAccept(offer);
+    void acceptInvitation(const Offer& offer) {
+        Offer* roffer = registerOffer(offer);
+        startTask(roffer);
+        m_connection->sendAccept(roffer);
     }
 
-    void rejectInvitation(Offer* offer) {
-        offer = normalizeOffer(offer);
-        m_connection->sendCancel(offer);
+    void rejectInvitation(const Offer& offer) {
+        Offer* roffer = registerOffer(offer);
+        m_connection->sendCancel(roffer);
         m_status = LS_ONLINE;
         statusChanged(m_status);
     }
@@ -282,7 +283,7 @@ protected:
     doSearch* parent() const;
 
 private:
-    Offer* normalizeOffer(Offer*);
+    Offer* registerOffer(const Offer&);
     void startTask(Offer* offer);
 
 private:
@@ -300,7 +301,7 @@ class ImagesStoreResponse: public QQuickImageResponse {
 
 public:
     QQuickTextureFactory* textureFactory() const {
-        qDebug() << "Result image: " << m_result;
+//        qDebug() << "Result image: " << m_result;
         return m_result;
     }
 
@@ -313,7 +314,7 @@ public:
     void setResult(const QImage& image) {
         m_result = QQuickTextureFactory::textureFactoryForImage(image);
         emit QQuickImageResponse::finished();
-        qDebug() << "Image acquired " << image;
+//        qDebug() << "Image acquired " << image;
     }
 
 public:

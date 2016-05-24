@@ -67,7 +67,7 @@ void StateSaver::restoreState(doSearch* search) {
             settings.endGroup();
         }
 
-        qDebug() << profiles;
+//        qDebug() << profiles;
         QString activeProfileName = settings.value("profile", profiles.length() > 0 ? profiles.at(0)->deviceJid() : "").toString();
         foreach (const Profile* profile, profiles) {
             if (profile->deviceJid() == activeProfileName) {
@@ -184,7 +184,7 @@ Folder* StateSaver::loadFolder(Context* parent, QSettings* settings) {
     Folder* result = 0;
     WebFolder* webResult = 0;
     QString type = settings->value("type").toString();
-    qDebug() << "Loading '" + type + "' folder";
+//    qDebug() << "Loading '" + type + "' folder";
     if (type == "web") {
         webResult = new WebFolder(parent);
         WebSearch* search = qobject_cast<WebSearch*>(webResult->m_screens[0]);

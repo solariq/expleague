@@ -22,7 +22,7 @@ void setupScreenDefaults();
 QQmlApplicationEngine* rootEngine;
 QSystemTrayIcon* trayIcon;
 
-std::unique_ptr<doSearch> root;
+doSearch* root;
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -40,9 +40,9 @@ int main(int argc, char *argv[]) {
 
     setupScreenDefaults();
 
-    root.reset(new doSearch(&app));
+    root = new doSearch(&app);
     declareTypes();
-    context->setContextProperty("root", root.get());
+    context->setContextProperty("root", root);
     root->restoreState();
     engine.load(QUrl(QStringLiteral("qrc:/Main.qml")));
     qDebug() << engine.rootObjects().first();
@@ -88,24 +88,27 @@ public:
         option.state = QStyle::State_Sunken/* : QStyle::State_Raised*/;
         option.features |= QStyleOptionButton::Flat;
 
-        if (id == "SP_MessageBoxWarning") {
+        if (id.startsWith("SP_MessageBoxWarning")) {
              icon = m_style->standardIcon(QStyle::SP_MessageBoxWarning, &option);
         }
-        else if (id == "SP_TitleBarCloseButton") {
+        else if (id.startsWith("SP_TitleBarCloseButton")) {
              icon = m_style->standardIcon(QStyle::SP_TitleBarCloseButton, &option);
         }
-        else if (id == "SP_TitleBarMaxButton") {
-             icon = m_style->standardIcon(QStyle::SP_TitleBarShadeButton);
+        else if (id.startsWith("SP_TitleBarMaxButton")) {
+             icon = m_style->standardIcon(QStyle::SP_TitleBarMaxButton);
         }
-        else if (id == "SP_TitleBarMinButton") {
-             icon = m_style->standardIcon(QStyle::SP_TitleBarUnshadeButton);
+        else if (id.startsWith("SP_TitleBarMinButton")) {
+             icon = m_style->standardIcon(QStyle::SP_TitleBarMinButton);
         }
 
         if(icon.isNull())
             return QPixmap(requestedSize);
 
 //        qDebug() << "Received request on " << id << " of size " << requestedSize << ". Found " << icon << " pixmap: " << icon.pixmap(requestedSize);
-        return requestedSize.isValid() ? icon.pixmap(requestedSize) : icon.pixmap(16);
+        QIcon::Mode mode = id.endsWith("_h") ? QIcon::Active : QIcon::Normal;
+        QIcon::State state = id.endsWith("_a") ? QIcon::On : QIcon::Off;
+
+        return requestedSize.isValid() ? icon.pixmap(requestedSize, mode, state) : icon.pixmap(16);
     }
 private:
     QStyle* m_style = QApplication::style();

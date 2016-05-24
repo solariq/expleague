@@ -90,14 +90,21 @@ Item {
                 MenuItem {
                     action: disconnectAction
                 }
+                MenuSeparator {}
+
+                MenuItem {
+                    action: newProfile
+                    text: qsTr("Новый профиль...")
+                }
+                MenuItem {
+                    action: switchProfile
+                    text: qsTr("Переключить профиль...")
+                }
+
+                MenuSeparator {}
                 MenuItem {
                     id: statusMenuRefuse
                     text: qsTr("Отказаться от задания")
-                    enabled: statusMenu.refuse
-                }
-                MenuItem {
-                    id: trash
-                    text: status.state
                     enabled: statusMenu.refuse
                 }
             }

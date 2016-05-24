@@ -26,5 +26,7 @@
         <file>SendDialog.qml</file>
         <file>CallDialog.qml</file>
         <file>ScrollBar.qml</file>
+        <file>WButtonsGroupMac.qml</file>
+        <file>WButtonsGroupWin.qml</file>
     </qresource>
 </RCC>

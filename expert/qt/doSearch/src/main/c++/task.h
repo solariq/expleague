@@ -11,9 +11,14 @@
 #include <QDateTime>
 #include <QDomElement>
 
-#include <QGeoCoordinate>
+#include <QMutex>
 
+#include <QGeoCoordinate>
+#include <QAbstractItemModel>
 #include <QQmlListProperty>
+
+#include <QQmlEngine>
+#include <QDebug>
 
 class QTimer;
 namespace expleague {
@@ -67,9 +72,7 @@ class Task: public QObject {
     Q_PROPERTY(QStringList phones READ phones NOTIFY phonesChanged)
 
 public:
-    Offer* offer() const {
-        return m_offer;
-    }
+    Offer* offer() const { return m_offer; }
 
     QQmlListProperty<Bubble> chat() { return QQmlListProperty<Bubble>(this, m_chat); }
 
@@ -267,6 +270,10 @@ public:
     explicit ChatMessage(const QUrl& imageUrl, QObject* parent = 0): QObject(parent), m_reference(imageUrl) {}
     explicit ChatMessage(std::function<void ()> action, const QString& description, QObject* parent = 0): QObject(parent), m_text(description), m_action(action), m_action_available(true) {}
 
+    virtual ~ChatMessage() {
+        qDebug() << "Message destroyed from context: " << QQmlEngine::objectOwnership(this);
+    }
+
 private:
     QUrl m_reference;
     QString m_text;
@@ -274,16 +281,31 @@ private:
     bool m_action_available = false;
 };
 
-class Bubble: public QObject {
+class Bubble: public QAbstractListModel {
     Q_OBJECT
 
-    Q_PROPERTY(QQmlListProperty<expleague::ChatMessage> messages READ messages NOTIFY messagesChanged)
     Q_PROPERTY(bool incoming READ incoming CONSTANT)
     Q_PROPERTY(QString from READ from CONSTANT)
 
 public:
-    QQmlListProperty<ChatMessage> messages() {
-        return QQmlListProperty<ChatMessage>(this, m_messages);
+
+    QVariant data(const QModelIndex &index, int role) const {
+        QMutexLocker lock(&m_lock);
+        QVariant var;
+        if (role == Qt::UserRole)
+            var.setValue(m_messages.at(index.row()));
+        return var;
+    }
+
+    int rowCount(const QModelIndex &) const {
+        QMutexLocker lock(&m_lock);
+        return m_messages.size();
+    }
+
+    QHash<int, QByteArray> roleNames() const {
+        QHash<int, QByteArray> result;
+        result[Qt::UserRole] = "msg";
+        return result;
     }
 
     QString from() const {
@@ -294,19 +316,19 @@ public:
 
 public:
     void append(ChatMessage* msg) {
+        QMutexLocker lock(&m_lock);
+        beginInsertRows(QModelIndex(), m_messages.size(), m_messages.size());
         m_messages.append(msg);
-        messagesChanged();
+        endInsertRows();
     }
 
-signals:
-    void messagesChanged();
-
 public:
-    Bubble(const QString& from = "me", QObject* parent = 0): QObject(parent), m_from(from) {}
+    explicit Bubble(const QString& from = "me", QObject* parent = 0): QAbstractListModel(parent), m_from(from), m_lock(QMutex::RecursionMode::Recursive) {}
 
 private:
     QString m_from;
     QList<ChatMessage*> m_messages;
+    mutable QMutex m_lock;
 };
 
 }

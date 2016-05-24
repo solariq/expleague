@@ -3,6 +3,7 @@ import QtQuick.Window 2.0
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Layouts 1.1
+import QtQuick.Dialogs 1.2
 
 import QtWebEngine 1.2
 
@@ -17,6 +18,25 @@ Item {
     property alias activeColor: tabs.activeColor
 
     property Context context
+
+    MessageDialog {
+        id: taskCancelledDialog
+        title: qsTr("Задание закрыто")
+        text: qsTr("Задание отменено сервером, обычно такое случается, если клиент отменил задание.")
+        onAccepted: {
+            visible = false
+        }
+
+        visible: false
+    }
+
+    Connections {
+        target: context.task
+
+        onCancelled: {
+            taskCancelledDialog.visible = true
+        }
+    }
 
     Rectangle {
         antialiasing: true

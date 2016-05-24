@@ -22,7 +22,7 @@ extern "C" {
 namespace expleague {
 
 MarkdownEditorScreen::MarkdownEditorScreen(QObject* parent): Screen(QUrl("qrc:/EditorView.qml"), parent) {
-    m_editor = findChild<QQuickItem*>("editor");
+    m_editor = itemById<QQuickItem>("editor");
     m_document = m_editor->property("textDocument").value<QQuickTextDocument*>();
     League* league = doSearch::instance()->league();
     m_author = league->findMember(league->id());

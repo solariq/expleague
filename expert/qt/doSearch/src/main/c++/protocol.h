@@ -101,10 +101,10 @@ signals:
     void connected();
     void disconnected();
 
-    void receiveCheck(Offer* task);
-    void receiveInvite(Offer* task);
-    void receiveResume(Offer* task);
-    void receiveCancel(Offer* offer);
+    void receiveCheck(const Offer& task);
+    void receiveInvite(const Offer& task);
+    void receiveResume(const Offer& task);
+    void receiveCancel(const Offer& offer);
 
     void receiveMessage(const QString& room, const QString& from, const QString&);
     void receiveImage(const QString& room, const QString& from, const QUrl&);

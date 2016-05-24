@@ -46,7 +46,6 @@ bool WebScreen::handleOmniboxInput(const QString &text) {
             content.insert(bodyIndex, script);
         else
             content = script + content;
-        qDebug() << content;
         QVariant returnedValue;
         webView->setProperty("html", content);
     }

@@ -22,10 +22,11 @@ Rectangle {
         anchors.fill: parent
         frameVisible: true
         TextEdit {
+            id: edit
+            objectName: "editor"
+
             width: Math.max(implicitWidth, self.width)
             height: Math.max(implicitHeight, self.height)
-            objectName: "editor"
-            id: edit
             focus: true
             wrapMode: TextEdit.Wrap
             selectByMouse: true

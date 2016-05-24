@@ -295,8 +295,8 @@ Item {
             Connections {
                 target: self
                 onOfferChanged: {
-                    if (circle)
-                        map.removeMapItem(circle)
+                    if (map.circle)
+                        map.removeMapItem(map.circle)
                     if (offer) {
                         map.circle = Qt.createQmlObject('import QtLocation 5.3; MapCircle {}', map)
                         map.circle.center.longitude = offer.longitude
@@ -304,7 +304,7 @@ Item {
                         map.circle.radius = 50.0
                         map.circle.color = 'green'
                         map.circle.border.width = 3
-                        map.addMapItem(circle)
+                        map.addMapItem(map.circle)
                     }
                 }
             }

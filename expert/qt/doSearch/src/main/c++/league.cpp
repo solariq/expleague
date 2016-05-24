@@ -57,10 +57,10 @@ void League::setActive(Profile *profile) {
         m_connection = new xmpp::ExpLeagueConnection(profile, this);
         QObject::connect(m_connection, SIGNAL(connected()), SLOT(connected()));
         QObject::connect(m_connection, SIGNAL(disconnected()), SLOT(disconnected()));
-        QObject::connect(m_connection, SIGNAL(receiveCheck(Offer*)), SLOT(checkReceived(Offer*)));
-        QObject::connect(m_connection, SIGNAL(receiveInvite(Offer*)), SLOT(inviteReceived(Offer*)));
-        QObject::connect(m_connection, SIGNAL(receiveResume(Offer*)), SLOT(resumeReceived(Offer*)));
-        QObject::connect(m_connection, SIGNAL(receiveCancel(Offer*)), SLOT(cancelReceived(Offer*)));
+        QObject::connect(m_connection, SIGNAL(receiveCheck(const Offer&)), SLOT(checkReceived(const Offer&)));
+        QObject::connect(m_connection, SIGNAL(receiveInvite(const Offer&)), SLOT(inviteReceived(const Offer&)));
+        QObject::connect(m_connection, SIGNAL(receiveResume(const Offer&)), SLOT(resumeReceived(const Offer&)));
+        QObject::connect(m_connection, SIGNAL(receiveCancel(const Offer&)), SLOT(cancelReceived(const Offer&)));
         QObject::connect(m_connection, SIGNAL(receiveTag(TaskTag*)), SLOT(tagReceived(TaskTag*)));
         QObject::connect(m_connection, SIGNAL(receivePattern(AnswerPattern*)), SLOT(patternReceived(AnswerPattern*)));
         QObject::connect(m_connection, SIGNAL(receiveMessage(QString,QString,QString)), SLOT(messageReceived(QString,QString,QString)));
@@ -92,7 +92,6 @@ TaskTag* League::findTag(const QString &id) const {
 }
 
 void League::startTask(Offer* offer) {
-    offer = normalizeOffer(offer);
     Task* task = new Task(offer, this);
     m_tasks.append(task);
     QObject::connect(task, SIGNAL(finished()), SLOT(taskFinished()));
@@ -104,17 +103,17 @@ void League::startTask(Offer* offer) {
     context->setActive(true);
 }
 
-void League::inviteReceived(Offer* offer) {
-    offer = normalizeOffer(offer);
+void League::inviteReceived(const Offer& offer) {
+    Offer* roffer = registerOffer(offer);
     QSound::play(":/sounds/owl.wav");
 
-    showNotification(tr("Лига Экспертов").toUtf8().data(), (tr("Открыто задание на тему: '") + offer->topic() + "'").toUtf8().data());
+    showNotification(tr("Лига Экспертов").toUtf8().data(), (tr("Открыто задание на тему: '") + roffer->topic() + "'").toUtf8().data());
 
     QQuickWindow* inviteDialog = doSearch::instance()->main()->findChild<QQuickWindow*>("invite");
     if (inviteDialog) {
         QVariant ret;
         QVariant offerValue;
-        offerValue.setValue(offer);
+        offerValue.setValue(roffer);
         QMetaObject::invokeMethod(doSearch::instance()->main(), "invite",
                                   Q_RETURN_ARG(QVariant, ret),
                                   Q_ARG(QVariant, offerValue));
@@ -122,21 +121,19 @@ void League::inviteReceived(Offer* offer) {
         QObject::connect(inviteDialog, SIGNAL(accepted(Offer*)), this, SLOT(acceptInvitation(Offer*)));
     }
 
-    receivedInvite(offer);
+    receivedInvite(roffer);
     m_status = LS_INVITE;
     statusChanged(m_status);
 }
 
-Offer* League::normalizeOffer(Offer* offer) {
-    QString roomId = offer->room();
-    if (m_offers.contains(roomId)) {
-        offer = m_offers[roomId];
-    }
-    else {
-        offer->setParent(this);
-        m_offers[offer->room()] = offer;
-    }
-    return offer;
+Offer* League::registerOffer(const Offer& offer) {
+    QString roomId = offer.room();
+    Offer* result;
+    if (m_offers.contains(roomId))
+        result = m_offers[roomId];
+    else
+        m_offers[roomId] = result = new Offer(offer.toXml(), this);
+    return result;
 }
 
 void League::disconnected() {
@@ -301,7 +298,7 @@ void Task::sendAnswer() {
 }
 
 void Task::tag(TaskTag* tag) {
-    qDebug() << "Sending tag: " << tag;
+//    qDebug() << "Sending tag: " << tag;
     m_tags.append(tag);
     tagsChanged();
     parent()->connection()->sendProgress(offer()->roomJid(), {xmpp::Progress::PO_ADD, xmpp::Progress::PO_TAG, tag->name()});

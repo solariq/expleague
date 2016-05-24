@@ -15,7 +15,8 @@ Rectangle {
         id: message
 
         Item {
-            implicitHeight: {
+            x: 0
+            height: {
                 var height = 0;
                 if (text.visible) {
                     height += text.implicitHeight
@@ -24,11 +25,11 @@ Rectangle {
                     height += button.implicitHeight
                 }
                 if (imageContainer.visible) {
-                    height += imageContainer.implicitHeight
+                    height += imageContainer.height
                 }
-                return height
+                return Math.max(20, height)
             }
-            implicitWidth: {
+            width: {
                 var width = 0;
                 if (text.visible) {
                     width += text.implicitWidth
@@ -37,16 +38,16 @@ Rectangle {
                     width += button.implicitWidth
                 }
                 if (imageContainer.visible) {
-                    width += imageContainer.implicitWidth
+                    width += imageContainer.width
                 }
-                return Math.min(width, self.width - 50)
+                return Math.max(Math.min(width, self.width - 50), 20)
             }
 
             TextEdit {
                 id: text
                 anchors.fill: parent
-                visible: model.text.length > 0 && !model.action
-                text: model.text
+                visible: msg.text.length > 0 && !msg.action
+                text: msg.text
                 wrapMode: TextEdit.WrapAnywhere
 
                 horizontalAlignment: Qt.AlignLeft
@@ -58,8 +59,8 @@ Rectangle {
             Button {
                 id: button
                 anchors.fill: parent
-                visible: model.text.length > 0 && model.action
-                text: model.text
+                visible: msg.text.length > 0 && msg.action
+                text: msg.text
 
                 onClicked: {
                     fire()
@@ -68,14 +69,14 @@ Rectangle {
 
             Item {
                 id: imageContainer
-                visible: model.reference.length > 0
-                implicitHeight: image.height
-                implicitWidth: image.width
+                visible: msg.reference.length > 0
+                height: image.height
+                width: image.width
 
                 Image {
                     id: image
                     anchors.centerIn: parent
-                    source: model.reference
+                    source: msg.reference
                     fillMode: Image.PreserveAspectFit
                     mipmap: true
                     autoTransform: true
@@ -94,7 +95,7 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        var split = model.reference.split('/')
+                        var split = msg.reference.split('/')
                         task.context.handleOmniboxInput(root.league.imageUrl(split[split.length - 1]), true)
                     }
                 }
@@ -139,18 +140,31 @@ Rectangle {
             Rectangle {
                 id: content
 
-                implicitHeight: messagesView.implicitHeight + 8
-                implicitWidth: messagesView.implicitWidth + 8
+                implicitHeight: messagesView.contentHeight + 8
+                implicitWidth: messagesView.contentWidth + 8
 
                 color: incoming ? "white" : "#A2DCF4"
                 radius: 8
 
-                ColumnLayout {
-                    anchors.centerIn: parent
+                ListView {
                     id: messagesView
-                    Repeater {
-                        model: messages
-                        delegate: message
+
+                    anchors.centerIn: parent
+                    width: contentWidth
+                    height: contentHeight
+                    orientation: ListView.TopToBottom
+
+                    model: modelData
+                    interactive: false
+
+                    delegate: message
+
+                    contentWidth: {
+                        var result = 0
+                        for(var child in contentItem.children) {
+                            result = Math.max(result, contentItem.children[child].width)
+                        }
+                        return result
                     }
                 }
             }
