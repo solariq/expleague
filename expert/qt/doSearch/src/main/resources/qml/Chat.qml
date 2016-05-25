@@ -65,7 +65,7 @@ Rectangle {
                 text: msg.text
 
                 onClicked: {
-                    fire()
+                    msg.fire()
                 }
             }
 

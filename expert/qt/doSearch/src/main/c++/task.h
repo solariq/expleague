@@ -17,6 +17,8 @@
 #include <QAbstractItemModel>
 #include <QQmlListProperty>
 
+#include <QDebug>
+
 class QTimer;
 namespace expleague {
 class League;

@@ -174,8 +174,8 @@ Item {
                                 onUrlChanged: {
                                     var url = "" + preview.url
 //                                    console.log("New url: " + url)
-                                    if (url.length > 0 && url != "about:blank" && !url.indexOf("data:") === 0) {
-//                                        console.log("Preview attempts to load" + url)
+                                    if (url.length > 0 && url != "about:blank" && url.indexOf("data:") !== 0) {
+                                        console.log("Preview attempts to load" + url)
                                         preview.goBack()
                                         context.handleOmniboxInput(url, false)
                                     }

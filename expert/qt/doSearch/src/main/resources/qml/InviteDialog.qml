@@ -30,6 +30,13 @@ Window {
     signal accepted(Offer offer)
     signal rejected(Offer offer)
 
+    Connections {
+        target: offer
+        onCancelled: {
+            dialog.visible = false
+        }
+    }
+
     Timer {
         interval: 500; running: true; repeat: true
         onTriggered: {

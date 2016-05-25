@@ -466,6 +466,7 @@ void Registrator::disconnected() {
 }
 
 Offer::Offer(QDomElement xml, QObject *parent): QObject(parent) {
+    qDebug() << "Offer: " << xml;
     if (xml.attribute("urgency") == "day")
         m_urgency = Offer::Urgency::TU_DAY;
     else if (xml.attribute("urgency") == "asap")
@@ -530,14 +531,15 @@ QDomElement Offer::toXml() const {
     result.setAttribute("room", m_room);
     result.setAttribute("client", m_client);
     result.setAttribute("local", m_local ? "true" : "false");
-    result.setAttribute("urhency", urgencyToString(m_urgency));
+    result.setAttribute("started", m_started.toTime_t());
+    result.setAttribute("urgency", urgencyToString(m_urgency));
     QDomElement topic = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "topic");
     topic.appendChild(holder.createTextNode(m_topic));
     result.appendChild(topic);
     if (m_location) {
         QDomElement location = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "location");
-        location.setAttribute("latitude", m_location->latitude());
-        location.setAttribute("longitude", m_location->longitude());
+        location.setAttribute("latitude", QString::number(m_location->latitude()));
+        location.setAttribute("longitude", QString::number(m_location->longitude()));
         result.appendChild(location);
     }
     foreach(const QUrl& url, m_images) {

@@ -29,8 +29,11 @@ Item {
             }
         }
         onFocusChanged: {
-            if (!focus)
+            if (!focus) {
+                if (!suggest.focus)
+                    suggest.visible = false
                 return
+            }
             if (!suggest.visible) {
                 selectAll()
             }
@@ -46,7 +49,7 @@ Item {
             if (!focus)
                 return
 
-            if (event.key == Qt.Key_Enter || event.key == Qt.Key_Return) {
+            if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
                 focus = false
                 commit((event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) != 0)
                 text = Qt.binding(function() {return root.location})
