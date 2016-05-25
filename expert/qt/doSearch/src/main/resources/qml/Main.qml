@@ -9,18 +9,17 @@ import Qt.labs.settings 1.0
 
 import ExpLeague 1.0
 
+import "."
+
 ApplicationWindow {
     id: mainWindow
+    property QtObject activeDialog
 
     flags: {
         if (Qt.platform.os === "osx")
             return Qt.FramelessWindowHint | Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint
         return 134279169
     }
-
-    property color backgroundColor: "#e8e8e8"
-    property color navigationColor: Qt.lighter(backgroundColor, 1.05)
-    property color idleColor: Qt.darker(backgroundColor, 1.1)
 
     WindowStateSaver {
         window: mainWindow
@@ -36,10 +35,16 @@ ApplicationWindow {
     visible: true
 
     function invite(offer) {
-        console.log("Inviting for " + offer.topic)
         inviteDialog.offer = offer
         inviteDialog.invitationTimeout = 5 * 60 * 1000
-        inviteDialog.show()
+        showDialog(inviteDialog)
+    }
+
+    function showDialog(dialog) {
+        if (activeDialog && activeDialog.visible)
+            activeDialog.visible = false
+        activeDialog = dialog
+        activeDialog.visible = true
     }
 
     InviteDialog {
@@ -48,6 +53,9 @@ ApplicationWindow {
         visible: false
         x: (mainWindow.width / 2) - (width / 2)
         y: 20
+
+        onAccepted: root.league.acceptInvitation(inviteDialog.offer)
+        onRejected: root.league.rejectInvitation(inviteDialog.offer)
     }
 
     TagsDialog {
@@ -73,7 +81,7 @@ ApplicationWindow {
         onTriggered: {
             var wizardComponent = Qt.createComponent("ProfileWizard.qml");
             var wizard = wizardComponent.createObject(mainWindow)
-            wizard.show()
+            showDialog(wizard)
         }
     }
 
@@ -81,7 +89,7 @@ ApplicationWindow {
         id: switchProfile
         text: qsTr("Выбрать...")
         onTriggered: {
-            selectProfile.show()
+            showDialog(selectProfile)
         }
     }
 
@@ -101,7 +109,7 @@ ApplicationWindow {
     menuBar: Qt.platform.os === "osx" ? menu : undefined
 
     Rectangle {
-        color: backgroundColor
+        color: Palette.backgroundColor
         z: parent.z + 10
         anchors.margins: 2
         anchors.fill: parent
@@ -147,8 +155,6 @@ ApplicationWindow {
                                 Layout.fillHeight: true
 
                                 model: root.contexts
-                                activeColor: mainWindow.navigationColor
-                                idleColor: mainWindow.idleColor
                             }
                             Item {Layout.minimumWidth: 14; visible: Qt.platform.os !== "osx"}
 //                            WButtonsGroupWin {
@@ -166,7 +172,7 @@ ApplicationWindow {
                             Layout.maximumHeight: 40
 
                             id: bottomNavigation
-                            color: navigationColor
+                            color: Palette.navigationColor
                             RowLayout {
                                 id: foldersRow
                                 anchors.fill: parent
@@ -254,17 +260,18 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 statusBar: statusBar
-                backgroundColor: mainWindow.backgroundColor
-                activeColor: mainWindow.navigationColor
                 context: root.context
                 window: mainWindow
                 tagsDialog: tagsDialog
             }
             Rectangle {
+                id: statusBar
+
                 Layout.fillWidth: true
                 Layout.minimumHeight: 20
-                id: statusBar
-                color: navigationColor
+
+                visible: false
+                color: Palette.navigationColor
                 RowLayout {
 
                 }

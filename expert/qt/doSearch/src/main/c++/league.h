@@ -184,6 +184,17 @@ public:
 
     static League* instance();
 
+    Q_INVOKABLE void acceptInvitation(Offer* offer) {
+        startTask(offer);
+        m_connection->sendAccept(offer);
+    }
+
+    Q_INVOKABLE void rejectInvitation(Offer* offer) {
+        m_connection->sendCancel(offer);
+        m_status = LS_ONLINE;
+        statusChanged(m_status);
+    }
+
 signals:
     void statusChanged(Status status);
     void profileChanged(Profile* profile);
@@ -219,19 +230,6 @@ private slots:
     void cancelReceived(const Offer& offer) {
         Offer* roffer = registerOffer(offer);
         roffer->cancelled();
-        m_status = LS_ONLINE;
-        statusChanged(m_status);
-    }
-
-    void acceptInvitation(const Offer& offer) {
-        Offer* roffer = registerOffer(offer);
-        startTask(roffer);
-        m_connection->sendAccept(roffer);
-    }
-
-    void rejectInvitation(const Offer& offer) {
-        Offer* roffer = registerOffer(offer);
-        m_connection->sendCancel(roffer);
         m_status = LS_ONLINE;
         statusChanged(m_status);
     }

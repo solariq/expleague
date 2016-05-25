@@ -109,17 +109,13 @@ void League::inviteReceived(const Offer& offer) {
 
     showNotification(tr("Лига Экспертов").toUtf8().data(), (tr("Открыто задание на тему: '") + roffer->topic() + "'").toUtf8().data());
 
-    QQuickWindow* inviteDialog = doSearch::instance()->main()->findChild<QQuickWindow*>("invite");
-    if (inviteDialog) {
-        QVariant ret;
-        QVariant offerValue;
-        offerValue.setValue(roffer);
-        QMetaObject::invokeMethod(doSearch::instance()->main(), "invite",
-                                  Q_RETURN_ARG(QVariant, ret),
-                                  Q_ARG(QVariant, offerValue));
-        QObject::connect(inviteDialog, SIGNAL(rejected(Offer*)), this, SLOT(rejectInvitation(Offer*)));
-        QObject::connect(inviteDialog, SIGNAL(accepted(Offer*)), this, SLOT(acceptInvitation(Offer*)));
-    }
+    QVariant ret;
+    QVariant offerValue;
+    offerValue.setValue(roffer);
+    QMetaObject::invokeMethod(doSearch::instance()->main(), "invite",
+                              Q_RETURN_ARG(QVariant, ret),
+                              Q_ARG(QVariant, offerValue)
+    );
 
     receivedInvite(roffer);
     m_status = LS_INVITE;
@@ -223,7 +219,7 @@ League* Task::parent() const {
 }
 
 void Task::answerReceived(const QString &from, const QString& text) {
-    ReceivedAnswer* answer = new ReceivedAnswer(doSearch::instance()->league()->findMember(from), text, this);
+    ReceivedAnswer* answer = new ReceivedAnswer(parent()->findMember(from), text, this);
     m_answers.append(answer);
     receivedAnswer(answer);
 
@@ -232,16 +228,19 @@ void Task::answerReceived(const QString &from, const QString& text) {
     bubble->append(new ChatMessage([answer]() -> void {
         answer->requestFocus();
     }, "Ответ", this));
+    emit chatChanged();
 }
 
 void Task::messageReceived(const QString& from, const QString& text) {
     Bubble* bubble = this->bubble(from);
     bubble->append(new ChatMessage(text, this));
+    emit chatChanged();
 }
 
 void Task::imageReceived(const QString& from, const QUrl& id) {
     Bubble* bubble = this->bubble(from);
     bubble->append(new ChatMessage(id, this));
+    emit chatChanged();
 }
 
 template <typename T>
@@ -276,11 +275,21 @@ void Task::progressReceived(const QString&, const xmpp::Progress& progress) {
     }
 }
 
+void Task::setContext(Context *context) {
+    m_context = context;
+    if (context)
+        QObject::connect(context, SIGNAL(visitedUrl(QUrl)), this, SLOT(urlVisited(QUrl)));
+}
+
+void Task::urlVisited(const QUrl& url) const {
+    parent()->connection()->sendProgress(offer()->roomJid(), {Progress::PO_VISIT, Progress::PO_URL, url.toString()});
+}
+
 Bubble* Task::bubble(const QString& from) {
     Bubble* bubble;
     if (m_chat.isEmpty() || m_chat.last()->from() != from) {
         m_chat.append(bubble = new Bubble(from, this));
-        chatChanged();
+        bubblesChanged();
     }
     else bubble = m_chat.last();
     return bubble;
@@ -314,6 +323,11 @@ void Task::phone(const QString& phone) {
     m_phones.append(phone);
     phonesChanged();
     parent()->connection()->sendProgress(offer()->roomJid(), {xmpp::Progress::PO_ADD, xmpp::Progress::PO_PHONE, phone});
+}
+
+void Task::cancel() {
+    parent()->connection()->sendCancel(offer());
+    finished();
 }
 
 QString Task::id() const  {

@@ -27,7 +27,7 @@ public:
     }
 
     QString location() const {
-        return m_url.isEmpty() ? webView->property("url").toString() : m_url;
+        return m_url;
     }
 
     QString name() const {
@@ -41,9 +41,7 @@ public:
     Q_INVOKABLE QQuickItem* landing();
 
 private slots:
-    void urlChanged() {
-        locationChanged(location());
-    }
+    void urlChanged();
 
     void titleChanged() {
         nameChanged(name());

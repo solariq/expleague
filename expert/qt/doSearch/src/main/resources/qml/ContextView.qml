@@ -9,13 +9,14 @@ import QtWebEngine 1.2
 
 import ExpLeague 1.0
 
+import "."
+
 Item {
     property Window window
     property TagsDialog tagsDialog
     property Item statusBar
 
     property color backgroundColor
-    property alias activeColor: tabs.activeColor
 
     property Context context
 
@@ -34,14 +35,14 @@ Item {
         target: context.task
 
         onCancelled: {
-            taskCancelledDialog.visible = true
+            window.showDialog(taskCancelledDialog)
         }
     }
 
     Rectangle {
         antialiasing: true
         anchors.fill: parent
-        color: backgroundColor
+        color: Palette.backgroundColor
         RowLayout {
             spacing: 0
             anchors.fill: parent
@@ -65,12 +66,11 @@ Item {
 
                         model: context && context.folder ? context.folder.screens : []
                         position: true
-                        activeColor: activeColor
                     }
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        color: backgroundColor
+                        color: Palette.backgroundColor
                         id: central
                     }
                 }
@@ -93,7 +93,7 @@ Item {
                             spacing: 0
 
                             Rectangle {
-                                color: backgroundColor
+                                color: Palette.backgroundColor
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 23
                                 RowLayout {
@@ -146,7 +146,7 @@ Item {
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    color: activeColor
+                                    color: Palette.activeColor
                                     z: parent.z - 1
                                 }
                             }
@@ -154,12 +154,13 @@ Item {
                         Rectangle {
                             Layout.fillHeight: true
                             Layout.fillWidth: true
-                            color: backgroundColor
+                            color: Palette.backgroundColor
                             WebEngineView {
                                 id: preview
 
                                 visible: true
                                 focus: false
+                                url: "about:blank"
 
                                 property string html: ""
 
@@ -172,7 +173,8 @@ Item {
 
                                 onUrlChanged: {
                                     var url = "" + preview.url
-                                    if (url.length > 0 && url != "about:blank") {
+//                                    console.log("New url: " + url)
+                                    if (url.length > 0 && url != "about:blank" && !url.indexOf("data:") === 0) {
 //                                        console.log("Preview attempts to load" + url)
                                         preview.goBack()
                                         context.handleOmniboxInput(url, false)
@@ -201,7 +203,7 @@ Item {
 
                 property var active: dialogButton
 
-                color: backgroundColor
+                color: Palette.backgroundColor
 
                 RowLayout {
                     rotation: 90

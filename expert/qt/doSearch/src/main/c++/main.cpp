@@ -39,11 +39,11 @@ int main(int argc, char *argv[]) {
     setupScreenDefaults();
 
     root = new doSearch(&app);
+
     declareTypes();
     context->setContextProperty("root", root);
     root->restoreState();
     engine.load(QUrl(QStringLiteral("qrc:/Main.qml")));
-    qDebug() << engine.rootObjects().first();
     if (engine.rootObjects().isEmpty())
         return -1;
 

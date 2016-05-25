@@ -1,5 +1,7 @@
 import QtQuick 2.0
 
+import "."
+
 Rectangle {
     property bool hovered
     property alias text: dialog.text
@@ -13,8 +15,8 @@ Rectangle {
     clip: false
     color: {
         if (active)
-            return Qt.darker(idleColor, 1.1)
-        return hovered ? idleColor : backgroundColor
+            return Qt.darker(Palette.idleColor, 1.1)
+        return hovered ? Palette.idleColor : Palette.backgroundColor
     }
     Text {
         renderType: Text.NativeRendering

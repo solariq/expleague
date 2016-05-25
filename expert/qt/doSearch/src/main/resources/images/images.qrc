@@ -36,5 +36,20 @@
         <file>tools/tags.png</file>
         <file>tools/send.png</file>
         <file>tools/phone.png</file>
+        <file>icons/25x25/bold.png</file>
+        <file>icons/25x25/bold@2x.png</file>
+        <file>icons/default/icons/bold.png</file>
+        <file>icons/default/icons/bold@2x.png</file>
+        <file>icons/25x25/bullets.png</file>
+        <file>icons/25x25/cut.png</file>
+        <file>icons/25x25/enum.png</file>
+        <file>icons/25x25/header.png</file>
+        <file>icons/25x25/image.png</file>
+        <file>icons/25x25/italic.png</file>
+        <file>icons/25x25/link.png</file>
+        <file>icons/25x25/list.png</file>
+        <file>icons/25x25/quote.png</file>
+        <file>icons/25x25/splitter.png</file>
+        <file>icons/25x25/table.png</file>
     </qresource>
 </RCC>

@@ -6,6 +6,8 @@ import Qt.labs.controls 1.0
 
 import ExpLeague 1.0
 
+import "."
+
 Rectangle {
     id: self
     property Task task
@@ -222,9 +224,13 @@ Rectangle {
         id: column
         anchors.fill: parent
         ScrollView {
+            id: chatContainer
             Layout.fillWidth: true
             Layout.fillHeight: true
+            horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
+            verticalScrollBarPolicy: Qt.ScrollBarAsNeeded
             Column {
+                id: chat
                 spacing: 5
                 Item {height: 5}
                 Repeater {
@@ -232,7 +238,11 @@ Rectangle {
                     delegate: bubble
                 }
                 Item {Layout.fillHeight: true}
+                onHeightChanged: {
+                    chatContainer.flickableItem.contentY = Math.max(0, height - chatContainer.height)
+                }
             }
+
         }
 
         TextArea {
@@ -241,8 +251,8 @@ Rectangle {
             wrapMode: TextEdit.WrapAnywhere
             placeholderText: qsTr("Напишите сообщение клиенту")
             background: Rectangle {
-                color: send.enabled ? "white" : "#353637"
-                border.color: send.enabled ? "#bdbebf" : "transparent"
+                color: send.enabled ? "white" : Palette.chatBackgroundColor
+                border.color: send.enabled ? Palette.focusBorderColor : "transparent"
             }
             Keys.onPressed: {
                 if ((event.key === Qt.Key_Enter || event.key === Qt.Key_Return) && ((event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) !== 0)) {

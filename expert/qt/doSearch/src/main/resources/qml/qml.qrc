@@ -28,5 +28,8 @@
         <file>ScrollBar.qml</file>
         <file>WButtonsGroupMac.qml</file>
         <file>WButtonsGroupWin.qml</file>
+        <file>ToolbarButton.qml</file>
+        <file>qmldir</file>
+        <file>Palette.qml</file>
     </qresource>
 </RCC>

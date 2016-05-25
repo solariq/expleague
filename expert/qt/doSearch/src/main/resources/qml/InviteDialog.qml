@@ -7,11 +7,13 @@ import QtLocation 5.3
 
 import ExpLeague 1.0
 
+import "."
+
 Window {
     id: dialog
 
     property Offer offer
-    property color backgroundColor: "#e8e8e8"
+    property color backgroundColor: Palette.backgroundColor
     property int invitationTimeout: 0
 
     width: 500
@@ -27,13 +29,6 @@ Window {
 
     signal accepted(Offer offer)
     signal rejected(Offer offer)
-
-//    Connections {
-//        target: offer
-//        onCancelled: {
-//            dialog.hide()
-//        }
-//    }
 
     Timer {
         interval: 500; running: true; repeat: true

@@ -69,6 +69,7 @@ signals:
     void foldersChanged();
     void folderChanged(Folder* folder);
     void closed();
+    void visitedUrl(const QUrl& url);
 
 private slots:
     void folderStateChanged() {

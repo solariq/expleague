@@ -62,7 +62,7 @@ class Task: public QObject {
 
     Q_PROPERTY(expleague::Offer* offer READ offer CONSTANT)
     Q_PROPERTY(expleague::Context* context READ context CONSTANT)
-    Q_PROPERTY(QQmlListProperty<expleague::Bubble> chat READ chat NOTIFY chatChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::Bubble> chat READ chat NOTIFY bubblesChanged)
     Q_PROPERTY(QString answer READ answer WRITE setAnswer NOTIFY answerChanged)
     Q_PROPERTY(QQmlListProperty<expleague::TaskTag> tags READ tags NOTIFY tagsChanged)
     Q_PROPERTY(QQmlListProperty<expleague::AnswerPattern> patterns READ patterns NOTIFY patternsChanged)
@@ -90,8 +90,9 @@ public:
     Q_INVOKABLE void tag(TaskTag*);
     Q_INVOKABLE void pattern(AnswerPattern*);
     Q_INVOKABLE void phone(const QString&);
+    Q_INVOKABLE void cancel();
 
-    void setContext(Context* context) {m_context = context;}
+    void setContext(Context* context);
 
 public:
     const QList<ReceivedAnswer*>& receivedAnswers() const { return m_answers; }
@@ -101,6 +102,7 @@ public:
     Task(Offer* offer = 0, QObject* parent = 0);
 
 signals:
+    void bubblesChanged();
     void chatChanged();
 
     void answerChanged(const QString&);
@@ -126,6 +128,8 @@ public slots:
     void answerReceived(const QString& from, const QString& text);
     void progressReceived(const QString& from, const xmpp::Progress& progress);
     void cancelReceived() { cancelled(); }
+
+    void urlVisited(const QUrl&) const;
 
 private:
     Bubble* bubble(const QString& from);

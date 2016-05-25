@@ -2,6 +2,8 @@
 #include "web/websearch.h"
 #include "web/webscreen.h"
 
+#include "context.h"
+
 #include <QFile>
 
 namespace expleague {
@@ -51,6 +53,15 @@ bool WebScreen::handleOmniboxInput(const QString &text) {
     }
     else webView->setProperty("url", url);
     return true;
+}
+
+void WebScreen::urlChanged() {
+    QString url = webView->property("url").toString();
+    if (m_url == url)
+        return;
+    m_url = url;
+    locationChanged(m_url);
+    owner()->parent()->visitedUrl(QUrl(url));
 }
 
 QQuickItem* WebSearch::landing() {

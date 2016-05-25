@@ -9,6 +9,8 @@ import QtLocation 5.3
 
 import ExpLeague 1.0
 
+import "."
+
 Item {
     id: self
 //    property TagsDialog tagsDialog
@@ -68,7 +70,7 @@ Item {
     ColumnLayout {
         anchors.fill: parent
         Rectangle {
-            color: backgroundColor
+            color: Palette.backgroundColor
             visible: task
             Layout.preferredHeight: 33
             Layout.fillWidth: true
@@ -77,97 +79,26 @@ Item {
                 id: buttons
                 spacing: 3
                 Item {Layout.preferredWidth: 1}
-                Button {
+
+                ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
-
-                    style: ButtonStyle {
-                        background: Rectangle {
-                            implicitHeight: 29
-                            implicitWidth: 29
-                            radius: 4
-                            color: control.pressed ? backgroundColor : navigationColor
-                            Image {
-                                height: 25
-                                width: 25
-                                anchors.centerIn: parent
-                                source: "qrc:/tools/send.png"
-                                mipmap: true
-                            }
-                        }
-                    }
-
-                    onClicked: {
-                        sendDialog.visible = true
-                    }
+                    icon: "qrc:/tools/send.png"
+                    onClicked: sendDialog.visible = true
                 }
-                Button {
+                ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
-
-                    style: ButtonStyle {
-                        background: Rectangle {
-                            implicitHeight: 29
-                            implicitWidth: 29
-                            radius: 4
-                            color: control.pressed ? backgroundColor : navigationColor
-                            Image {
-                                height: 25
-                                width: 25
-                                anchors.centerIn: parent
-                                source: "qrc:/tools/tags.png"
-                                mipmap: true
-                            }
-                        }
-                    }
-
-                    onClicked: {
-                        tagsDialog.visible = true
-                    }
+                    icon: "qrc:/tools/tags.png"
+                    onClicked: tagsDialog.visible = true
                 }
-                Button {
+                ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
-
-                    style: ButtonStyle {
-                        background: Rectangle {
-                            implicitHeight: 29
-                            implicitWidth: 29
-                            radius: 4
-                            color: control.pressed ? backgroundColor : navigationColor
-                            Image {
-                                height: 25
-                                width: 25
-                                anchors.centerIn: parent
-                                source: "qrc:/tools/patterns.png"
-                                mipmap: true
-                            }
-                        }
-                    }
-
-                    onClicked: {
-                        patternsDialog.visible = true
-                    }
+                    icon: "qrc:/tools/patterns.png"
+                    onClicked: patternsDialog.visible = true
                 }
-                Button {
+                ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
-
-                    style: ButtonStyle {
-                        background: Rectangle {
-                            implicitHeight: 29
-                            implicitWidth: 29
-                            radius: 4
-                            color: control.pressed ? backgroundColor : navigationColor
-                            Image {
-                                height: 25
-                                width: 25
-                                anchors.centerIn: parent
-                                source: "qrc:/tools/phone.png"
-                                mipmap: true
-                            }
-                        }
-                    }
-
-                    onClicked: {
-                        callDialog.visible = true
-                    }
+                    icon: "qrc:/tools/phone.png"
+                    onClicked: callDialog.visible = true
                 }
                 Item { Layout.fillWidth: true }
             }
