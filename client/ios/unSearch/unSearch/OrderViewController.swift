@@ -20,7 +20,7 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
         guard controller.orderTextDelegate!.validate() && AppDelegate.instance.ensureConnected({self.fire(self)}) else {
             return
         }
-        if (controller.isLocal.on && location == nil) {
+        if (controller.isLocal.on && controller.location == nil) {
             let alertView = UIAlertController(title: "Заказ", message: "На данный момент ваша геопозиция не найдена. Подождите несколько секунд, или отключите настройку \"рядом со мной\".", preferredStyle: .Alert)
             alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
             presentViewController(alertView, animated: true, completion: nil)
@@ -37,7 +37,7 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
             topic: controller.orderText.text,
             urgency: controller.urgency.on ? "asap" : "day",
             local: controller.isLocal.on,
-            location: self.location,
+            location: controller.location,
             experts: controller.experts.map{ return $0.id },
             images: controller.attachments.ids
         )
@@ -58,12 +58,6 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
             self.view.layoutIfNeeded()
         }
         AppDelegate.instance.orderView = self
-        self.locationManager.requestWhenInUseAuthorization()
-        if CLLocationManager.locationServicesEnabled() {
-            locationManager.delegate = self
-            locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-            locationManager.startUpdatingLocation()
-        }
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -77,13 +71,8 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
     var descriptionController: OrderDescriptionViewController {
         return self.childViewControllers[0] as! OrderDescriptionViewController
     }
-    
-    let locationManager = CLLocationManager()
-    var location: CLLocationCoordinate2D?
-    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        location = manager.location?.coordinate
-    }
 }
+
 class OrderDescriptionViewController: UITableViewController {
     let error_color = UIColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 0.1)
     let rowHeight = 62;
@@ -109,7 +98,8 @@ class OrderDescriptionViewController: UITableViewController {
     var pickerDelegate: ImagePickerDelegate?
     var orderTextDelegate: OrderTextDelegate?
     var experts: [ExpLeagueMember] = []
-    
+    var location: CLLocationCoordinate2D?
+
     func append(expert exp: ExpLeagueMember) {
         if (!experts.contains(exp)) {
             experts.append(exp)
@@ -242,11 +232,11 @@ class OrderDescriptionViewController: UITableViewController {
     }
     
     override func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        return 3...5 ~= indexPath.item
+        return 2...5 ~= indexPath.item
     }
     
     override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
-        return 3...5 ~= indexPath.item ? indexPath : nil
+        return 2...5 ~= indexPath.item ? indexPath : nil
     }
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
@@ -257,6 +247,11 @@ class OrderDescriptionViewController: UITableViewController {
             let chooseExpert = ChooseExpertViewController(parent: self)
             
             let navigation = UINavigationController(rootViewController: chooseExpert)
+            self.presentViewController(navigation, animated: true, completion: nil)
+        }
+        else if (indexPath.item == 2) {
+            let searchLocationController = SearchLocationDialogController(parent: self)
+            let navigation = UINavigationController(rootViewController: searchLocationController)
             self.presentViewController(navigation, animated: true, completion: nil)
         }
     }
