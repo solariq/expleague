@@ -1,6 +1,6 @@
 var Admin = {
     config: {
-        PAGE_UPDATE_INTERVAL_MS: 10 * 60 * 1000
+        PAGE_UPDATE_INTERVAL_MS: 3 * 60 * 1000
     },
     experts: null,
 

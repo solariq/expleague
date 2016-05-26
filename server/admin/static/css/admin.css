@@ -462,6 +462,6 @@ th.order-feedback {
 
 .offer-topic {
     max-width: 300px;
-    word-break: break-all;
+    word-break: normal;
     word-wrap: break-word;
 }
