@@ -6,10 +6,12 @@
 
 # # Win
 # cd C:\Users\solar\Documents\GitHub\expleague\expert\qt\build-doSearch-Desktop_Qt_5_6_0_MSVC2015_64bit-Release\src\main\release
-# mkdir temp
-# c:\Qt\5.6\msvc2015_64\bin\windeployqt.exe --release --pdb --qmldir ..\..\..\..\doSearch\src\main\resources\qml\ --dir .\temp -geoservices .\doSearch.exe
-# copy ..\..\libs\qxmpp\src\qxmpp0.dll .\temp\
-# copy .\doSearch.exe .\temp\
+# mkdir doSearch
+# c:\Qt\5.6\msvc2015_64\bin\windeployqt.exe --release --pdb --qmldir ..\..\..\..\doSearch\src\main\resources\qml\ --dir .\doSearch -geoservices .\doSearch.exe
+# cp /Volumes/C/Windows//System32/ssleay32.dll ./doSearch/
+# cp /Volumes/C/Windows//System32/libeay32.dll ./doSearch/
+# copy .\doSearch.exe .\doSearch\
+# zip -r ./doSearch-0.1.zip ./doSearch
 
 # # Mac
 # mkdir -p ./doSearch.app/Contents/PlugIns/geoservices
@@ -18,8 +20,7 @@
 # mkdir temp
 # mv ./doSearch.app/ ./temp/
 # hdiutil create -volname doSearch -srcfolder ./temp/ -ov -format UDZO doSearch.dmg
-
-VERSION = 0.1.1
+VERSION = 0.1.2
 
 QT += widgets core network location concurrent positioning gui quick webview xml webenginewidgets multimedia
 

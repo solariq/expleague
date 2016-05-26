@@ -5,7 +5,7 @@
 
 #include <QtNetwork>
 #include <QHostInfo>
-#include <QJsonDocument>
+#include <QDomDocument>
 
 #include "profile.h"
 #include "protocol.h"
@@ -21,31 +21,34 @@ QList<Profile*>& Profile::list() {
 
 void ProfileBuilder::setVKUser(const QString &vkName) {
     this->m_vkUser = vkName;
-    QUrl vkapiGet(VK_API + "users.get?user_ids=" + vkName + "&fields=photo_max,city,country,sex&v=5.45&lang=ru");
+    QUrl vkapiGet(VK_API + "users.get.xml?user_ids=" + vkName + "&fields=photo_max,city,country,sex&v=5.45&lang=ru");
     setLogin("vk-" + vkName + "-" + QHostInfo::localHostName());
     m_nam.get(QNetworkRequest(vkapiGet));
 }
 
 void ProfileBuilder::finished(QNetworkReply *reply) {
-    QJsonParseError error;
     QByteArray data = reply->readAll();
-    QJsonDocument json(QJsonDocument::fromJson(data, &error));
-    if (error.error != QJsonParseError::NoError) {
-        qWarning() << "Unable to parse answer from social net: " << QString::fromUtf8(data);
+    QDomDocument doc;
+    QString error;
+    doc.setContent(data, &error);
+//    qDebug() << "Parsing vk answer: " << QString::fromUtf8(data);
+    if (!error.isEmpty()) {
+        qWarning() << "Unable to parse answer from social net: " << error << " data:\n" << QString::fromUtf8(data);
         return;
     }
-    foreach (QJsonValue userV, json.object()["response"].toArray()) {
-        QJsonObject user = userV.toObject();
-        if (QString::number(user["id"].toInt()) == m_vkUser) {
-            QString name = user["first_name"].toString() + " " + user["last_name"].toString();
-            QUrl avatar(user["photo_max"].toString());
-            Profile::Sex sex = (Profile::Sex)user["sex"].toInt();
-            qDebug() << "name: " << name << " ava: " << avatar;
+    for (int i = 0; i < doc.documentElement().childNodes().length(); i++) {
+        QDomElement user = doc.documentElement().childNodes().at(i).toElement();
+        if (user.firstChildElement("id").text() == m_vkUser) {
+            QString name = user.firstChildElement("first_name").text() + " " + user.firstChildElement("last_name").text();
+            QUrl avatar(user.firstChildElement("photo_max").text());
+            Profile::Sex sex = (Profile::Sex)user.firstChildElement("sex").text().toInt();
+//            qDebug() << "name: " << name << " ava: " << avatar;
             m_name = name; nameChanged(name);
             m_avatar = avatar; avatarChanged(avatar);
             m_sex = sex; sexChanged(sex);
         }
     }
+
 }
 
 void ProfileBuilder::registered(const QString& jid) { // registration complete, registration jid received
