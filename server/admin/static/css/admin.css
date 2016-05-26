@@ -461,13 +461,7 @@ th.order-feedback {
 }
 
 .offer-topic {
-    max-width: 500px;
+    max-width: 300px;
     word-break: break-all;
-    word-wrap: break-word;
-}
-
-.offer-topic a {
-    max-width: 700px;
-    word-break: normal;
     word-wrap: break-word;
 }
