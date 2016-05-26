@@ -111,7 +111,7 @@ p .right {
 }
 
 a {
-    text-decoration: underline;
+    text-decoration: none;
     color: #06c;
 }
 a:visited {
@@ -122,6 +122,7 @@ a:focus {
 }
 a:hover {
     color: #09f;
+    text-decoration: underline;
 }
 a:active {
     color: #bf00ff;
@@ -329,7 +330,7 @@ caption {
 }
 
 #admin #menu {
-    width: 180px;
+    width: 18%;
     float: left;
 }
 
@@ -349,7 +350,7 @@ caption {
 }
 
 #admin #content {
-    width: 1200px;
+    width: 80%;
     float: left;
     padding: 0 10px;
 }
@@ -457,4 +458,16 @@ th.order-feedback {
 .group-separator {
     background: aliceblue;
     font-size: 90%;
+}
+
+.offer-topic {
+    max-width: 500px;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+
+.offer-topic a {
+    max-width: 500px;
+    word-break: break-all;
+    word-wrap: break-word;
 }
