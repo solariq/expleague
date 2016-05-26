@@ -100,6 +100,16 @@
                                             </div>
                                         </span>
                                     </span>
+                                    <span data-bind="if: offer.filter.prefer().length > 0">
+                                        <span data-bind="foreach: offer.filter.prefer">
+                                            <div class="participant">
+                                                <span class="enum-label">PREFER</span>
+                                                <a title="Show related orders" href="#" data-bind="click: Admin.loadRelatedHandler($data)">
+                                                    <span data-bind="text: Admin.experts[bare()].name"></span>
+                                                </a>
+                                            </div>
+                                        </span>
+                                    </span>
                                     <!--todo: filter by role-->
                                     <span data-bind="if: participants().length == 0">Nobody</span>
                                     <span data-bind="if: participants().length > 0">
