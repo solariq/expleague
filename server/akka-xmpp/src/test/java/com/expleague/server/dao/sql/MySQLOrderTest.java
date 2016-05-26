@@ -47,7 +47,7 @@ public class MySQLOrderTest {
       new Message(client, room, new Message.Subject("offer"))
     ));
     order.tag("tag");
-    assertTrue(Arrays.asList(order.tags()).contains("tag"));
+    assertEquals("tag", order.tags()[0].name());
   }
 
   @Test
@@ -61,7 +61,7 @@ public class MySQLOrderTest {
     ));
     board.open().collect(Collectors.toList());
     order.tag("tag");
-    assertTrue(Arrays.asList(order.tags()).contains("tag"));
+    assertEquals("tag", order.tags()[0].name());
   }
 
   @Test
@@ -80,6 +80,24 @@ public class MySQLOrderTest {
     assertEquals(2, statusHistoryRecords.size());
     assertEquals(ExpLeagueOrder.Status.OPEN, statusHistoryRecords.get(0).getStatus());
     assertEquals(ExpLeagueOrder.Status.DONE, statusHistoryRecords.get(1).getStatus());
+  }
+
+  @Test
+  public void testRegisterOrderAddParticipantsGetRelated() throws Exception {
+    final JID client = registerUser("x@b.c");
+    final JID expert = registerUser("expert@b.c");
+    final JID room = JID.parse("a@b.c");
+    final MySQLBoard.MySQLOrder order = board.register(Offer.create(
+      room,
+      client,
+      new Message(client, room, new Message.Subject("offer"))
+    ));
+    order.role(expert, ExpLeagueOrder.Role.CANDIDATE);
+    order.role(expert, ExpLeagueOrder.Role.INVITED);
+    order.role(expert, ExpLeagueOrder.Role.ACTIVE);
+    final List<ExpLeagueOrder> related = board.related(expert).collect(Collectors.toList());
+    assertEquals(1, related.size());
+    assertEquals(order.room(), related.get(0).room());
   }
 
   @NotNull
