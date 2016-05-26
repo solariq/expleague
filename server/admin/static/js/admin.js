@@ -14,7 +14,8 @@ var Admin = {
                 Admin.experts = {};
                 $.each(data["experts"], function(i, model) {
                     Admin.experts[model.jid.bare] = model;
-                }); 
+                    console.log("Got expert: " + model.jid.bare);
+                });
                 success(data);
             },
             error: function(j, s, message) {
