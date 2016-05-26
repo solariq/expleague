@@ -4,9 +4,27 @@
 #
 #-------------------------------------------------
 
-VERSION = 0.1
+# # Win
+# cd C:\Users\solar\Documents\GitHub\expleague\expert\qt\build-doSearch-Desktop_Qt_5_6_0_MSVC2015_64bit-Release\src\main\release
+# mkdir temp
+# c:\Qt\5.6\msvc2015_64\bin\windeployqt.exe --release --pdb --qmldir ..\..\..\..\doSearch\src\main\resources\qml\ --dir .\temp -geoservices .\doSearch.exe
+# copy ..\..\libs\qxmpp\src\qxmpp0.dll .\temp\
+# copy .\doSearch.exe .\temp\
 
-QT += widgets core network concurrent positioning gui quick webview xml webenginewidgets multimedia
+# # Mac
+# mkdir -p ./doSearch.app/Contents/PlugIns/geoservices
+# cp ~/Qt/5.6/clang_64/plugins/geoservices/libqtgeoservices_osm.dylib ./doSearch.app/Contents/PlugIns/geoservices/
+# ~/Qt/5.6/clang_64/bin/macdeployqt ./doSearch.app -verbose=1 -qmldir=/Users/solar/tree/tbts/expert/qt/doSearch/src/main/resources/qml/
+# mkdir temp
+# mv ./doSearch.app/ ./temp/
+# hdiutil create -volname doSearch -srcfolder ./temp/ -ov -format UDZO doSearch.dmg
+
+VERSION = 0.1.1
+
+QT += widgets core network location concurrent positioning gui quick webview xml webenginewidgets multimedia
+
+qml.path += resources/qml
+target.path += ../../bin
 
 TARGET = doSearch
 TEMPLATE = app
@@ -15,9 +33,12 @@ ICON = resources/doSearch.icns
 RC_ICONS = resources/doSearch.ico
 QMAKE_TARGET_BUNDLE_PREFIX=com.expleague
 
-macx: CONFIG += staticlib objective_c
+QMAKE_CXXFLAGS += -DQXMPP_STATIC
 
-unix:QMAKE_RPATHDIR += /Users/solar/Qt/5.6/clang_64/lib/
+macx: CONFIG += static objective_c
+else:win32: CONFIG += static console
+
+macx:QMAKE_RPATHDIR += /Users/solar/Qt/5.6/clang_64/lib/
 
 SOURCES += \
     c++/main.cpp \
@@ -61,11 +82,14 @@ RESOURCES += resources/qml/qml.qrc \
              resources/images/images.qrc \
              resources/misc.qrc
 
-DISTFILES += resources/doSearch.ico
+DISTFILES += resources/doSearch.ico \
+    config.xml \
+    package.xml
 DISTFILES += resources/doSearch.icns
 
 win32:CONFIG(release, debug|release): LIBS += \
-    -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp0 \
+#    -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp \
+    $$OUT_PWD/../libs/qxmpp/src/qxmpp.lib \
     -L$$OUT_PWD/../libs/discount/release/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/release/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/release/ -lcutemarked
@@ -90,7 +114,7 @@ win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../libs/peg-markdown-h
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../libs/peg-markdown-highlight/debug/ -lpmh
 else:unix: LIBS += -L$$OUT_PWD/../libs/peg-markdown-highlight/ -lpmh
 
-unix:LIBS += -framework AppKit
+macx:LIBS += -framework AppKit
 
 INCLUDEPATH += \
     $$PWD/../libs/qxmpp/src/client $$PWD/../libs/qxmpp/src/base \
