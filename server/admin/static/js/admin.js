@@ -1,6 +1,9 @@
 var Admin = {
+    config: {
+        PAGE_UPDATE_INTERVAL_MS: 3 * 60 * 1000
+    },
     experts: null,
-    
+
     load: function(url, success) {
         $("#content").empty().append('<div class="loader" style=";">Loading...</div>');
         $.ajax({
@@ -11,7 +14,8 @@ var Admin = {
                 Admin.experts = {};
                 $.each(data["experts"], function(i, model) {
                     Admin.experts[model.jid.bare] = model;
-                }); 
+                    console.log("Got expert: " + model.jid.bare);
+                });
                 success(data);
             },
             error: function(j, s, message) {
@@ -19,21 +23,46 @@ var Admin = {
             }
         });
     },
-    
+
+    scheduledUpdates: [],
+    schedule: function(id, callback, intervalMs) {
+        callback();
+        Admin.scheduledUpdates = [id];
+        var fn = function() {
+            if (Admin.scheduledUpdates.indexOf(id) != -1) {
+                console.log("Scheduled update for " + id + " is in progress, updates: " + JSON.stringify(Admin.scheduledUpdates));
+                callback();
+                console.log("Scheduled update for " + id + " completed");
+                setTimeout(fn, intervalMs);
+            }
+        };
+        setTimeout(fn, intervalMs);
+    },
+
+    loadUpdatablePage: function(url, success) {
+        Admin.schedule(
+            url,
+            function() {
+                Admin.load(url, success);
+            },
+            Admin.config.PAGE_UPDATE_INTERVAL_MS
+        );
+    },
+
     loadOpenOrders: function() {
-        Admin.load("/open", function(data) {
+        Admin.loadUpdatablePage("/open", function(data) {
             Admin.bindOrders(data);
         });
     },
 
     loadClosedWithoutFeedbackOrders: function() {
-        Admin.load("/closed/without/feedback", function(data) {
+        Admin.loadUpdatablePage("/closed/without/feedback", function(data) {
             Admin.bindOrders(data);
         });
     },
 
     loadClosedOrders: function() {
-        Admin.load("/closed", function(data) {
+        Admin.loadUpdatablePage("/closed", function(data) {
             Admin.bindOrders(data);
         });
     },
@@ -62,7 +91,7 @@ var Admin = {
     },
 
     loadRelated: function(jid) {
-        Admin.load("/related/" + jid, function(data) {
+        Admin.loadUpdatablePage("/related/" + jid, function(data) {
             Admin.bindOrders(data);
         });
     },
@@ -138,7 +167,6 @@ var Admin = {
                                 point.value
                             ]
                         });
-                        console.log(JSON.stringify(seriesData));
                         return {
                             name: timeSeries.title,
                             data: seriesData

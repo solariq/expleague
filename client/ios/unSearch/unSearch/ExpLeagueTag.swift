@@ -41,8 +41,8 @@ class ExpLeagueTag: NSManagedObject {
     }
     
     func updateIcon(icon: String) {
-        self.iconStr = icon
-        self.save()
+        iconStr = icon
+        save()
     }
     
     init(name: String, icon: String, type: ExpLeagueTagType, context: NSManagedObjectContext) {

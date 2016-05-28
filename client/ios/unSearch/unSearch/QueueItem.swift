@@ -21,5 +21,6 @@ class QueueItem: NSManagedObject {
         super.init(entity: NSEntityDescription.entityForName("QueueItem", inManagedObjectContext: context)!, insertIntoManagedObjectContext: context)
         self.body = message.XMLString()
         self.receipt = message.elementID()
+        save()
     }
 }

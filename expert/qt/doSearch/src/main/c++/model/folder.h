@@ -98,6 +98,7 @@ signals:
     void captionChanged(const QString&);
     void activeChanged();
     void screenChanged(Screen* screen);
+    void screenOpened(Screen* screen);
     void screensChanged();
 
 protected:
@@ -125,15 +126,18 @@ protected:
         screensChanged();
     }
 
-    Screen* at(int index) {
+    Screen* at(int index) const {
         if (index < 0 || index >= m_screens.size())
             return 0;
         return m_screens[index];
     }
 
-private:
-    bool m_active = false;
+protected:
     QList<Screen*> m_screens;
+
+private:
+    friend class StateSaver;
+    bool m_active = false;
 };
 }
 

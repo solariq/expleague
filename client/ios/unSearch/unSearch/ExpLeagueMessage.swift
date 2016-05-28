@@ -45,8 +45,9 @@ class ExpLeagueMessage: NSManagedObject {
             guard v != read else {
                 return
             }
-            setProperty("read", value: v ? "true" : "false")
-            save()
+            update {
+                self.setProperty("read", value: v ? "true" : "false")
+            }
             parent._unreadCount = nil
         }
     }
@@ -115,11 +116,8 @@ class ExpLeagueMessage: NSManagedObject {
         let archiver = NSKeyedArchiver(forWritingWithMutableData: data)
         archiver.encodeObject(properties.copy() as! NSDictionary)
         archiver.finishEncoding()
-        self.propertiesRaw = data.xmpp_base64Encoded()
-        do {
-            try self.managedObjectContext!.save()
-        } catch {
-            fatalError("Failure to save context: \(error)")
+        update {
+            self.propertiesRaw = data.xmpp_base64Encoded()
         }
     }
     

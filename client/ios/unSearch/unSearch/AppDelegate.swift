@@ -13,7 +13,7 @@ import CoreData
 import MMMarkdown
 
 class DataController: NSObject {
-    let managedObjectContext = NSManagedObjectContext(concurrencyType: .MainQueueConcurrencyType)
+    let managedObjectContext = NSManagedObjectContext(concurrencyType: .PrivateQueueConcurrencyType)
     init(app: AppDelegate) {
         super.init()
         // This resource is the same name as your xcdatamodeld contained in your project.
@@ -85,6 +85,8 @@ class AppDelegate: UIResponder {
     }
     
     var window: UIWindow?
+    let xmppQueue = dispatch_queue_create("ExpLeague XMPP stream", nil)
+    
     var tabs: UITabBarController {
         get {
             return window!.rootViewController as! UITabBarController
@@ -175,9 +177,8 @@ class AppDelegate: UIResponder {
             activeProfile?.active = false
         }
         profile.active = true
-        profile.receiveAnswerOfTheWeek = profile.receiveAnswerOfTheWeek || profile.orders.count == 0
         
-        stream.addDelegate(profile, delegateQueue: dispatch_get_main_queue())
+        stream.addDelegate(profile, delegateQueue: xmppQueue)
         do {
             try dataController.managedObjectContext.save()
         }

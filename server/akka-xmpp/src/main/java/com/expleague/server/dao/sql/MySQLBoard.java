@@ -84,9 +84,9 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @Override
   public Stream<ExpLeagueOrder> related(JID jid) {
     return replayAwareStream(() -> stream(
-      "related-orders", "SELECT Orders.* " +
-        "FROM Orders INNER JOIN Participants ON Orders.id = Participants.`order` " +
-        "WHERE Participants.partisipant = ?", stmt -> stmt.setString(1, jid.local())
+      "related-orders", "SELECT Orders.* FROM Orders WHERE EXISTS(" +
+          "SELECT NULL FROM Participants WHERE Orders.id = Participants.`order` AND Participants.partisipant = ?" +
+        ")", stmt -> stmt.setString(1, jid.local())
     ).map(createOrderView()));
   }
 

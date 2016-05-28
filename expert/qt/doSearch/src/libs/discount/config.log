@@ -1,0 +1,74 @@
+[echo ...Configuring for [markdown]
+Looking for cpp
+CPP=[/usr/bin/cpp], CPPFLAGS=[]
+looking for install
+ (/usr/bin/install)
+checking out the C compiler
+-rwxrwxr-x  1 solar  staff  8704 Apr 30 17:06 ngc34488
+-rw-rw-r--  1 solar  staff    61 Apr 30 17:05 ngc34488.c
+drwxrwxr-x  3 solar  staff   102 Apr 30 17:06 ngc34488.dSYM
+checking for "volatile" keyword
+checking for "const" keyword
+Checking for "inline" keyword
+defining WORD & DWORD scalar types
+looking for header WinDef.h
+test failed:  command was cc -Wno-implicit-int -c -o ngc34488.o ngc34488.c
+output:
+ngc34488.c:2:10: fatal error: 'WinDef.h' file not found
+#include <WinDef.h>
+         ^
+1 error generated.
+offending sources:
+ngc34488.c:
+/* AC_CHECK_HEADERS */
+#include <WinDef.h>
+int main() { }
+ngc34488.c:28:2: warning: implicitly declaring library function 'exit' with type 'void (int) __attribute__((noreturn))' [-Wimplicit-function-declaration]
+        exit(1);
+        ^
+ngc34488.c:28:2: note: include the header <stdlib.h> or explicitly provide a declaration for 'exit'
+1 warning generated.
+looking for header libgen.h
+looking for header stdlib.h
+looking for the alloca function
+looking for header pwd.h
+looking for the getpwuid function
+looking for the srandom function
+looking for the bzero function
+ngc34488.c:4:5: warning: implicitly declaring library function 'bzero' with type 'void (void *, unsigned long)' [-Wimplicit-function-declaration]
+    bzero((char*)0,0);
+    ^
+ngc34488.c:4:5: note: include the header <strings.h> or explicitly provide a declaration for 'bzero'
+1 warning generated.
+looking for the random function
+looking for the strcasecmp function
+ngc34488.c:1:6: warning: incompatible redeclaration of library function 'strcasecmp' [-Wincompatible-library-redeclaration]
+void strcasecmp();
+     ^
+ngc34488.c:1:6: note: 'strcasecmp' is a builtin with type 'int (const char *, const char *)'
+1 warning generated.
+looking for the strncasecmp function
+ngc34488.c:1:6: warning: incompatible redeclaration of library function 'strncasecmp' [-Wincompatible-library-redeclaration]
+void strncasecmp();
+     ^
+ngc34488.c:1:6: note: 'strncasecmp' is a builtin with type 'int (const char *, const char *, unsigned long)'
+1 warning generated.
+looking for the fchdir function
+looking for header malloc.h
+test failed:  command was cc -Wno-implicit-int -c -o ngc34488.o ngc34488.c
+output:
+ngc34488.c:2:10: fatal error: 'malloc.h' file not found
+#include <malloc.h>
+         ^
+1 error generated.
+offending sources:
+ngc34488.c:
+/* AC_CHECK_HEADERS */
+#include <malloc.h>
+int main() { }
+find is /usr/bin/find
+/bin/ln exists, and ln -s works
+sed is /usr/bin/sed
+generating Makefile
+generating version.c
+generating mkdio.h

@@ -1,6 +1,9 @@
 #ifndef TASK_H
 #define TASK_H
 
+#include <memory>
+#include <functional>
+
 #include <QObject>
 #include <QList>
 #include <QMap>
@@ -8,59 +11,141 @@
 #include <QDateTime>
 #include <QDomElement>
 
-#include <QGeoCoordinate>
+#include <QMutex>
 
+#include <QGeoCoordinate>
+#include <QAbstractItemModel>
 #include <QQmlListProperty>
 
+#include <QDebug>
+
+class QTimer;
 namespace expleague {
-class ExpLeagueConnection;
+class League;
 class Offer;
 class Bubble;
 class ChatMessage;
+class Member;
+class AnswerPattern;
+class TaskTag;
+class Context;
+namespace xmpp {
+class Progress;
+}
+
+class ReceivedAnswer: public QObject {
+    Q_OBJECT
+
+    Q_PROPERTY(QString text READ text CONSTANT)
+    Q_PROPERTY(Member* author READ author CONSTANT)
+public:
+    QString text() {
+        return m_text;
+    }
+
+    Member* author() {
+        return m_author;
+    }
+
+signals:
+    void requestFocus();
+
+public:
+    ReceivedAnswer(QObject* parent = 0): QObject(parent) {}
+    ReceivedAnswer(Member* author, const QString& text, QObject* parent = 0): QObject(parent), m_text(text), m_author(author) {}
+
+private:
+    QString m_text;
+    Member* m_author;
+};
 
 class Task: public QObject {
     Q_OBJECT
 
     Q_PROPERTY(expleague::Offer* offer READ offer CONSTANT)
-    Q_PROPERTY(QQmlListProperty<Bubble> chat READ chat NOTIFY chatChanged)
+    Q_PROPERTY(expleague::Context* context READ context CONSTANT)
+    Q_PROPERTY(QQmlListProperty<expleague::Bubble> chat READ chat NOTIFY bubblesChanged)
     Q_PROPERTY(QString answer READ answer WRITE setAnswer NOTIFY answerChanged)
-    Q_PROPERTY(QStringList answers READ answers CONSTANT)
+    Q_PROPERTY(QQmlListProperty<expleague::TaskTag> tags READ tags NOTIFY tagsChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::AnswerPattern> patterns READ patterns NOTIFY patternsChanged)
+    Q_PROPERTY(QStringList phones READ phones NOTIFY phonesChanged)
 
 public:
-    Offer* offer() const {
-        return m_offer;
-    }
+    Offer* offer() const { return m_offer; }
 
-    QQmlListProperty<Bubble> chat() {
-        return QQmlListProperty<Bubble>(this, m_chat);
-    }
+    QQmlListProperty<Bubble> chat() { return QQmlListProperty<Bubble>(this, m_chat); }
 
-    QString answer() {
-        return m_answer;
-    }
+    QString answer() const { return m_answer; }
 
-    QStringList answers() {
-        return m_answers;
-    }
+    QQmlListProperty<ReceivedAnswer> answers() { return QQmlListProperty<ReceivedAnswer>(this, m_answers); }
+
+    QQmlListProperty<TaskTag> tags() { return QQmlListProperty<TaskTag>(this, m_tags); }
+    QQmlListProperty<AnswerPattern> patterns() { return QQmlListProperty<AnswerPattern>(this, m_patterns); }
+    QStringList phones() { return m_phones; }
+
+    QString id() const;
+    Context* context() const { return m_context; }
 
 public:
+    Q_INVOKABLE void sendMessage(const QString& str) const;
+    Q_INVOKABLE void sendAnswer();
+    Q_INVOKABLE void tag(TaskTag*);
+    Q_INVOKABLE void pattern(AnswerPattern*);
+    Q_INVOKABLE void phone(const QString&);
+    Q_INVOKABLE void cancel();
+
+    void setContext(Context* context);
+
+public:
+    const QList<ReceivedAnswer*>& receivedAnswers() const { return m_answers; }
+    League* parent() const;
+
+public:
+    Task(Offer* offer = 0, QObject* parent = 0);
+
+signals:
+    void bubblesChanged();
+    void chatChanged();
+
+    void answerChanged(const QString&);
+    void answerReset(const QString&);
+
+    void tagsChanged();
+    void patternsChanged();
+    void phonesChanged();
+
+    void receivedAnswer(ReceivedAnswer*);
+    void receivedProgress(const xmpp::Progress&);
+    void finished();
+    void cancelled();
+
+public slots:
     void setAnswer(const QString& answer) {
         m_answer = answer;
         answerChanged(answer);
     }
 
-public:
-    Task(Offer* offer = 0, QObject* parent = 0): QObject(parent), m_offer(offer) {}
+    void messageReceived(const QString& from, const QString& text);
+    void imageReceived(const QString& from, const QUrl& id);
+    void answerReceived(const QString& from, const QString& text);
+    void progressReceived(const QString& from, const xmpp::Progress& progress);
+    void cancelReceived() { cancelled(); }
 
-signals:
-    void chatChanged();
-    void answerChanged(const QString&);
+    void urlVisited(const QUrl&) const;
+
+private:
+    Bubble* bubble(const QString& from);
 
 private:
     Offer* m_offer;
     QList<Bubble*> m_chat;
     QString m_answer;
-    QStringList m_answers;
+
+    QList<TaskTag*> m_tags;
+    QList<AnswerPattern*> m_patterns;
+    QList<ReceivedAnswer*> m_answers;
+    QStringList m_phones;
+    Context* m_context;
 };
 
 class Offer: public QObject {
@@ -72,7 +157,11 @@ class Offer: public QObject {
     Q_PROPERTY(bool local READ local CONSTANT)
     Q_PROPERTY(bool hasLocation READ hasLocation CONSTANT)
     Q_PROPERTY(QGeoCoordinate location READ location CONSTANT)
-    Q_PROPERTY(QTime timeLeft READ timeLeft NOTIFY timeTick)
+    Q_PROPERTY(double latitude READ latitude CONSTANT)
+    Q_PROPERTY(double longitude READ longitude CONSTANT)
+    Q_PROPERTY(long duration READ duration CONSTANT)
+    Q_PROPERTY(QStringList images READ images CONSTANT)
+    Q_PROPERTY(long timeLeft READ timeLeft NOTIFY timeTick)
 
     Q_ENUMS(Urgency)
     Q_ENUMS(FilterType)
@@ -88,36 +177,43 @@ public:
         TFT_PREFER,
     };
 
-    QString roomJid() {
-        return m_room;
+    QString roomJid() const { return m_room; }
+
+    QString room() const { return m_room.section('@', 0, 0); }
+
+    QString topic() const { return m_topic; }
+
+    QString client() const { return m_client; }
+
+    bool local() const { return m_local; }
+
+    bool hasLocation() const { return m_location.get(); }
+
+    QGeoCoordinate location() { return hasLocation() ? *m_location : QGeoCoordinate(-10, 300); }
+
+    double longitude() const {
+        return hasLocation() ? m_location->longitude() : -10;
     }
 
-    QString room() {
-        return m_room.section('@', 0);
+    double latitude() const {
+        return hasLocation() ? m_location->latitude() : -10;
     }
 
-    QString topic() {
-        return m_topic;
+    QStringList images() const {
+        return m_images;
     }
 
-    QString client() {
-        return m_client;
+    long duration() const {
+        switch (m_urgency) {
+        case TU_DAY:
+            return 24 * 60 * 60 * 1000;
+        case TU_ASAP:
+            return 60 * 60 * 1000;
+        }
     }
 
-    bool local() {
-        return m_local;
-    }
-
-    bool hasLocation() {
-        return m_location.get();
-    }
-
-    QGeoCoordinate location() {
-        return hasLocation() ? *m_location : QGeoCoordinate();
-    }
-
-    QTime timeLeft() {
-        return QTime();
+    long timeLeft() const {
+        return QDateTime::currentDateTimeUtc().msecsTo(m_started.addMSecs(duration()));
     }
 
 public:
@@ -125,10 +221,14 @@ public:
     explicit Offer(QObject *parent = 0): QObject(parent) {}
 
 public:
-    QDomElement toXml();
+    QDomElement toXml() const;
 
 signals:
     void timeTick();
+    void cancelled();
+
+private slots:
+    void tick();
 
 private:
     Urgency m_urgency = TU_DAY;
@@ -136,101 +236,98 @@ private:
     QString m_room;
     QString m_client;
     QString m_topic;
-    QList<QUrl> m_attachments;
+    QStringList m_images;
     QMap<QString, FilterType> m_filter;
     std::unique_ptr<QGeoCoordinate> m_location;
     QDateTime m_started;
+    QTimer* m_timer;
 };
 
 class ChatMessage: public QObject {
     Q_OBJECT
 
-    Q_PROPERTY(expleague::ChatMessage::Type type READ type CONSTANT)
-    Q_PROPERTY(QUrl reference READ reference CONSTANT)
+    Q_PROPERTY(QString reference READ reference CONSTANT)
     Q_PROPERTY(QString text READ text CONSTANT)
-
-    Q_ENUMS(Type)
+    Q_PROPERTY(bool action READ action CONSTANT)
 
 public:
-    enum Type {
-        CMT_EMPTY,
-        CMT_IMAGE,
-        CMT_TEXT,
-        CMT_ACTION,
-    };
-
-    Type type() {
-        if (m_reference.get()) {
-            return CMT_IMAGE;
-        }
-        else if (m_text.get()) {
-            return CMT_TEXT;
-        }
-        else if (m_action) {
-            return CMT_ACTION;
-        }
-        return CMT_EMPTY;
-    }
-
-    QUrl reference() {
-        return *m_reference;
+    QString reference() {
+        return m_reference.toString();
     }
 
     QString text() {
-        return *m_text;
+        return m_text;
+    }
+
+    bool action() {
+        return m_action_available;
     }
 
     Q_INVOKABLE void fire() {
-        (*m_action)();
+        m_action();
     }
 
 public:
-    explicit ChatMessage(const QString& text, QObject* parent = 0): QObject(parent), m_text(new QString(text)) {}
-    explicit ChatMessage(const QUrl& imageUrl, QObject* parent = 0): QObject(parent), m_reference(new QUrl(imageUrl)) {}
-    explicit ChatMessage(void (*action)(), QObject* parent = 0): QObject(parent), m_action(action) {}
+    explicit ChatMessage(QObject* parent = 0): QObject(parent) {}
+    explicit ChatMessage(const QString& text, QObject* parent = 0): QObject(parent), m_text(text) {}
+    explicit ChatMessage(const QUrl& imageUrl, QObject* parent = 0): QObject(parent), m_reference(imageUrl) {}
+    explicit ChatMessage(std::function<void ()> action, const QString& description, QObject* parent = 0): QObject(parent), m_text(description), m_action(action), m_action_available(true) {}
 
 private:
-    std::unique_ptr<QUrl> m_reference;
-    std::unique_ptr<QString> m_text;
-    void (*m_action)();
+    QUrl m_reference;
+    QString m_text;
+    std::function<void ()> m_action;
+    bool m_action_available = false;
 };
 
-class Bubble: public QObject {
+class Bubble: public QAbstractListModel {
     Q_OBJECT
 
-    Q_PROPERTY(QQmlListProperty<ChatMessage> messages READ messages NOTIFY messagesChanged)
     Q_PROPERTY(bool incoming READ incoming CONSTANT)
-    Q_PROPERTY(QUrl avatar READ avatar CONSTANT)
+    Q_PROPERTY(QString from READ from CONSTANT)
 
 public:
-    QQmlListProperty<ChatMessage> messages() {
-        return QQmlListProperty<ChatMessage>(this, m_messages);
+
+    QVariant data(const QModelIndex &index, int role) const {
+        QMutexLocker lock(&m_lock);
+        QVariant var;
+        if (role == Qt::UserRole)
+            var.setValue(m_messages.at(index.row()));
+        return var;
     }
 
-    bool incoming() {
-        return m_incoming;
+    int rowCount(const QModelIndex &) const {
+        QMutexLocker lock(&m_lock);
+        return m_messages.size();
     }
 
-    QUrl avatar() {
-        return m_avatar;
+    QHash<int, QByteArray> roleNames() const {
+        QHash<int, QByteArray> result;
+        result[Qt::UserRole] = "msg";
+        return result;
     }
+
+    QString from() const {
+        return m_from;
+    }
+
+    bool incoming() const;
 
 public:
     void append(ChatMessage* msg) {
+        QMutexLocker lock(&m_lock);
+        beginInsertRows(QModelIndex(), m_messages.size(), m_messages.size());
         m_messages.append(msg);
-        messagesChanged();
+        endInsertRows();
     }
 
-signals:
-    void messagesChanged();
-
 public:
-    Bubble(bool incoming, const QUrl& avatar, QObject* parent = 0): QObject(parent), m_incoming(incoming), m_avatar(avatar) {}
+    explicit Bubble(const QString& from = "me", QObject* parent = 0): QAbstractListModel(parent), m_from(from), m_lock(QMutex::RecursionMode::Recursive) {}
 
 private:
-    bool m_incoming;
-    QUrl m_avatar;
+    QString m_from;
     QList<ChatMessage*> m_messages;
+    mutable QMutex m_lock;
 };
 
 }
@@ -239,4 +336,8 @@ private:
 
 QML_DECLARE_TYPE(expleague::Task)
 QML_DECLARE_TYPE(expleague::Offer)
+QML_DECLARE_TYPE(expleague::Bubble)
+QML_DECLARE_TYPE(expleague::ChatMessage)
+QML_DECLARE_TYPE(expleague::ReceivedAnswer)
+
 #endif // TASK_H

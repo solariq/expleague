@@ -2,13 +2,12 @@ import QtQuick 2.5
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 
+import "."
+
 Item {
     property alias model: repeater.model
 
     property bool position: false
-    property color activeColor
-    property color idleColor: Qt.darker(activeColor, 1.05)
-    property color textColor: "#505050"
 
     anchors.leftMargin: 5
     anchors.rightMargin: 5
@@ -27,7 +26,7 @@ Item {
             border.color: "lightgray"
             border.width: 1
             radius: 5
-            color: active ? activeColor : idleColor
+            color: active ? Palette.activeColor : Palette.idleColor
 
             Image {
                 id: crossIcon
@@ -61,7 +60,7 @@ Item {
                     horizontalCenterOffset: 5
                     verticalCenterOffset: position ? +2 : -2
                 }
-                color: textColor
+                color: Palette.textColor
                 text: name.replace("\n", " ")
             }
             states: [

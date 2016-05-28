@@ -9,14 +9,17 @@ import Qt.labs.settings 1.0
 
 import ExpLeague 1.0
 
+import "."
+
 ApplicationWindow {
     id: mainWindow
+    property QtObject activeDialog
 
-    flags:  Qt.FramelessWindowHint|Qt.MacWindowToolBarButtonHint|Qt.WindowMinimizeButtonHint|Qt.WindowMaximizeButtonHint
-
-    property color backgroundColor: "#e8e8e8"
-    property color navigationColor: Qt.lighter(backgroundColor, 1.05)
-    property color idleColor: Qt.darker(backgroundColor, 1.1)
+    flags: {
+        if (Qt.platform.os === "osx")
+            return Qt.FramelessWindowHint | Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint
+        return 134279169
+    }
 
     WindowStateSaver {
         window: mainWindow
@@ -25,70 +28,51 @@ ApplicationWindow {
         defaultWidth: 1000
     }
 
+    Component.onCompleted: {
+        root.main = mainWindow
+    }
+
     visible: true
 
-    Window {
+    function invite(offer) {
+        inviteDialog.offer = offer
+        inviteDialog.invitationTimeout = 5 * 60 * 1000
+        showDialog(inviteDialog)
+    }
+
+    function showDialog(dialog) {
+        if (activeDialog && activeDialog.visible)
+            activeDialog.visible = false
+        activeDialog = dialog
+        activeDialog.visible = true
+    }
+
+    InviteDialog {
+        id: inviteDialog
+        objectName: "invite"
+        visible: false
+        x: (mainWindow.width / 2) - (width / 2)
+        y: 20
+
+        onAccepted: root.league.acceptInvitation(inviteDialog.offer)
+        onRejected: root.league.rejectInvitation(inviteDialog.offer)
+    }
+
+    TagsDialog {
+        id: tagsDialog
+        visible: false
+        x: (mainWindow.width / 2) - (width / 2)
+        y: 20
+
+        league: root.league
+    }
+
+    SelectProfileDialog {
         id: selectProfile
-        height: 200
-        minimumHeight: height
-        maximumHeight: height
-        width: 350
-        minimumWidth: width
-        maximumWidth: width
-
-        modality: Qt.WindowModal
-        FocusScope {
-            anchors.fill: parent
-            ColumnLayout {
-                anchors.fill: parent
-                Item {Layout.preferredHeight: 15}
-                Label {
-                    Layout.fillWidth: true
-                    horizontalAlignment: "AlignHCenter"
-                    font.bold: true
-                    font.pointSize: 15
-                    text: qsTr("Выберите профиль")
-                }
-
-                Item {Layout.preferredHeight: 5}
-                Rectangle {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    ComboBox {
-                        anchors.margins: 50
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        id: profileSelection
-                        textRole: "deviceJid"
-                        model: root.league.profiles
-                    }
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    Item {Layout.fillWidth: true}
-                    Button {
-                       text: qsTr("Ok")
-                       onClicked: {
-                           root.league.profile = root.league.profiles[profileSelection.currentIndex]
-                           selectProfile.close()
-                       }
-                    }
-
-                    Item {Layout.preferredWidth: 5}
-
-                    Button {
-                       text: qsTr("Отмена")
-                       onClicked: {
-                           selectProfile.close()
-                       }
-                    }
-
-                    Item {Layout.fillWidth: true}
-                }
-                Item {Layout.preferredHeight: 5}
-            }
-        }
+        visible: false
+        objectName: "selectProfile"
+        x: mainWindow.width / 2 - width / 2
+        y: 20
     }
 
     Action {
@@ -97,7 +81,7 @@ ApplicationWindow {
         onTriggered: {
             var wizardComponent = Qt.createComponent("ProfileWizard.qml");
             var wizard = wizardComponent.createObject(mainWindow)
-            wizard.show()
+            showDialog(wizard)
         }
     }
 
@@ -105,11 +89,12 @@ ApplicationWindow {
         id: switchProfile
         text: qsTr("Выбрать...")
         onTriggered: {
-            selectProfile.show()
+            showDialog(selectProfile)
         }
     }
 
-    menuBar: MenuBar {
+    MenuBar {
+        id: menu
         Menu {
             title: qsTr("Профиль")
             MenuItem {
@@ -121,8 +106,10 @@ ApplicationWindow {
         }
     }
 
+    menuBar: Qt.platform.os === "osx" ? menu : undefined
+
     Rectangle {
-        color: backgroundColor
+        color: Palette.backgroundColor
         z: parent.z + 10
         anchors.margins: 2
         anchors.fill: parent
@@ -151,76 +138,33 @@ ApplicationWindow {
                             spacing: 0
 
                             Item {Layout.minimumWidth: 8}
-                            Item {
-                                id: windowButtonsGroup
-                                z: parent.z + 10
-                                Layout.preferredWidth: 13 * 3 + 5 * 2
+
+                            WButtonsGroupMac {
+                                Layout.preferredWidth: implicitWidth
                                 Layout.fillHeight: true
-                                RowLayout {
-                                    anchors.fill: parent
-                                    spacing: 6
-                                    WindowButton {
-                                        id: closeButton
-                                        icon: "qrc:/window/close.png"
+                                win: mainWindow
 
-                                        w: mainWindow
-                                        windowButtons: windowButtons
-                                        Layout.preferredWidth: 13
-                                        Layout.preferredHeight: 13
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        onClicked: {
-                                            console.log("Close called")
-                                            w.close()
-                                        }
-                                    }
-                                    WindowButton {
-                                        id: minimizeButton
-                                        icon: "qrc:/window/minimize.png"
-
-                                        w: mainWindow
-                                        windowButtons: windowButtons
-                                        Layout.preferredWidth: 13
-                                        Layout.preferredHeight: 13
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        onClicked: {
-                                            mainWindow.visibility = Window.Minimized
-                                        }
-                                    }
-                                    WindowButton {
-                                        id: maximizeButton
-                                        icon: "qrc:/window/maximize.png"
-                                        iconMaximized: "qrc:/window/maximize_maximized.png"
-
-                                        w: mainWindow
-                                        windowButtons: windowButtons
-                                        Layout.preferredWidth: 13
-                                        Layout.preferredHeight: 13
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        onClicked: {
-                                            if (mainWindow.visibility == Window.Maximized || mainWindow.visibility == Window.FullScreen) {
-                                                mainWindow.visibility = Window.AutomaticVisibility
-                                            }
-                                            else {
-                                                mainWindow.visibility = Window.FullScreen
-                                            }
-                                        }
-                                    }
-                                }
-                                TransparentMouseArea {
-                                    id: windowButtons
-                                    anchors.fill: parent
-                                }
+                                visible: Qt.platform.os === "osx"
                             }
-                            Item {Layout.minimumWidth: 14}
+
+                            Item {Layout.minimumWidth: 14; visible: Qt.platform.os === "osx"}
+
                             TabButtons {
                                 Layout.topMargin: 5
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
 
                                 model: root.contexts
-                                activeColor: mainWindow.navigationColor
-                                idleColor: mainWindow.idleColor
                             }
+                            Item {Layout.minimumWidth: 14; visible: Qt.platform.os !== "osx"}
+//                            WButtonsGroupWin {
+//                                Layout.preferredWidth: implicitWidth
+//                                Layout.fillHeight: true
+//                                win: mainWindow
+
+//                                visible: Qt.platform.os !== "osx"
+//                            }
+
                         }
                         Rectangle {
                             Layout.fillWidth: true
@@ -228,7 +172,7 @@ ApplicationWindow {
                             Layout.maximumHeight: 40
 
                             id: bottomNavigation
-                            color: navigationColor
+                            color: Palette.navigationColor
                             RowLayout {
                                 id: foldersRow
                                 anchors.fill: parent
@@ -316,16 +260,18 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 statusBar: statusBar
-                backgroundColor: mainWindow.backgroundColor
-                activeColor: mainWindow.navigationColor
                 context: root.context
                 window: mainWindow
+                tagsDialog: tagsDialog
             }
             Rectangle {
+                id: statusBar
+
                 Layout.fillWidth: true
                 Layout.minimumHeight: 20
-                id: statusBar
-                color: navigationColor
+
+                visible: false
+                color: Palette.navigationColor
                 RowLayout {
 
                 }

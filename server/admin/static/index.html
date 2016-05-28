@@ -26,10 +26,10 @@
                         Open orders
                     </div>
                     <div class="item" onclick="Admin.loadClosedWithoutFeedbackOrders()">
-                        Closed orders without feedback
+                        Closed (no feedback)
                     </div>
                     <div class="item" onclick="Admin.loadClosedOrders()">
-                        Closed orders
+                        Closed (all)
                     </div>
                     <div class="item" onclick="Admin.loadTopExperts()">
                         Experts
@@ -74,7 +74,7 @@
                             <tr class="order">
                                 <td><span class="enum-label" data-bind="text: status"></span></td>
                                 <td>
-                                    <div>
+                                    <div class="offer-topic">
                                         <a title="Show dump" href="#" data-bind="text: offer.topic, click: Admin.loadDumpHandler($data)"></a>
                                     </div>
                                     <div>
@@ -90,20 +90,40 @@
                                     </a>
                                 </td>
                                 <td>
+                                    <span data-bind="if: offer.filter.accept().length > 0">
+                                        <span data-bind="foreach: offer.filter.accept">
+                                            <div class="participant">
+                                                <span class="enum-label">ACCEPT</span>
+                                                <a title="Show related orders" href="#" data-bind="click: Admin.loadRelatedHandler($data)">
+                                                    <span data-bind="text: Admin.experts[bare()].name"></span>
+                                                </a>
+                                            </div>
+                                        </span>
+                                    </span>
+                                    <span data-bind="if: offer.filter.prefer().length > 0">
+                                        <span data-bind="foreach: offer.filter.prefer">
+                                            <div class="participant">
+                                                <span class="enum-label">PREFER</span>
+                                                <a title="Show related orders" href="#" data-bind="click: Admin.loadRelatedHandler($data)">
+                                                    <span data-bind="text: Admin.experts[bare()].name"></span>
+                                                </a>
+                                            </div>
+                                        </span>
+                                    </span>
                                     <!--todo: filter by role-->
                                     <span data-bind="if: participants().length == 0">Nobody</span>
-                                        <span data-bind="if: participants().length > 0">
-                                            <span data-bind="foreach: participants">
-                                                <div data-bind="if: role() != 'OWNER'">
-                                                    <div class="participant">
-                                                        <span class="enum-label" data-bind="text: role"></span>
-                                                        <a title="Show related orders" href="#" data-bind="click: Admin.loadRelatedHandler(jid)">
-                                                            <span data-bind="text: Admin.experts[jid.bare()].name"></span>
-                                                        </a>
-                                                    </div>
+                                    <span data-bind="if: participants().length > 0">
+                                        <span data-bind="foreach: participants">
+                                            <div data-bind="if: role() != 'OWNER'">
+                                                <div class="participant">
+                                                    <span class="enum-label" data-bind="text: role"></span>
+                                                    <a title="Show related orders" href="#" data-bind="click: Admin.loadRelatedHandler(jid)">
+                                                        <span data-bind="text: Admin.experts[jid.bare()].name"></span>
+                                                    </a>
                                                 </div>
-                                            </span>
+                                            </div>
                                         </span>
+                                    </span>
                                 </td>
                                 <td>
                                     <span class="enum-label" data-bind="text: offer.urgency"></span>

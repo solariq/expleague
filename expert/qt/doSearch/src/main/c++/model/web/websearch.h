@@ -19,12 +19,16 @@ bool isSearch(const QUrl& url);
 class SearchRequest: public QObject {
     Q_OBJECT
 
-    Q_PROPERTY(QString query READ query WRITE setQuery NOTIFY queryChanged)
+    Q_PROPERTY(QString query READ query CONSTANT)
     Q_PROPERTY(int clicks READ clicks NOTIFY clicksChanged)
 
 public:
     QString query() {
         return m_query;
+    }
+
+    int clicks() {
+        return m_clicks;
     }
 
 public:
@@ -33,17 +37,13 @@ public:
         queryChanged(query);
     }
 
-    void registerClick(WebScreen* screen) {
-        m_associated += screen;
+    void registerClick(WebScreen*) {
+        m_clicks++;
         clicksChanged();
     }
 
-    int clicks() {
-        return m_associated.size();
-    }
-
 public:
-    SearchRequest(const QString& query = "", QObject* parent = 0): QObject(parent), m_query(query) {}
+    SearchRequest(const QString& query = "", int clicks = 0, QObject* parent = 0): QObject(parent), m_query(query), m_clicks(clicks) {}
 
 signals:
     void queryChanged(const QString&);
@@ -51,7 +51,7 @@ signals:
 
 private:
     QString m_query;
-    QList<WebScreen*> m_associated;
+    int m_clicks;
 };
 
 class WebSearch: public Screen {
@@ -64,8 +64,7 @@ public:
         connect(webView, SIGNAL(urlChanged()), SLOT(urlChanged()));
         connect(webView, SIGNAL(titleChanged()), SLOT(titleChanged()));
         connect(webView, SIGNAL(iconChanged()), SLOT(iconChanged()));
-        QQuickItem* root = itemById<QQuickItem>("root");
-        root->setProperty("owner", QVariant::fromValue(this));
+        setupOwner();
     }
 
     bool handleOmniboxInput(const QString &text) {
@@ -106,6 +105,11 @@ public:
 
     Q_INVOKABLE QQuickItem* landing();
 
+public:
+    void append(const QString& query, int clicks) {
+        m_queries.append(new SearchRequest(query, clicks, this));
+    }
+
 signals:
     void queriesChanged();
 
@@ -121,10 +125,10 @@ private slots:
         QString queryText = query.queryItemValue("q");
         queryText.replace("+", " ");
         SearchRequest* request = 0;
+        SearchRequest* last = 0;
         if (!m_queries.empty() && m_queries.last()->clicks() == 0) {
-            SearchRequest* last = m_queries.last();
+            last = m_queries.last();
             m_queries.removeLast();
-            last->deleteLater();
         }
         for (int i = 0; i < m_queries.size(); i++) {
             if (m_queries.at(i)->query() == queryText) {
@@ -133,8 +137,9 @@ private slots:
             }
         }
 
-        m_queries.append(request ? request : new SearchRequest(queryText, this));
+        m_queries.append(request ? request : new SearchRequest(queryText, 0, this));
         queriesChanged();
+//        last->deleteLater();
     }
 
     void titleChanged() {

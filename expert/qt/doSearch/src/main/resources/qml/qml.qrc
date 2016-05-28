@@ -1,0 +1,35 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Main.qml</file>
+        <file>WebTab.qml</file>
+        <file>ProfileWizard.qml</file>
+        <file>WebScreenView.qml</file>
+        <file>GoogleSuggest.qml</file>
+        <file>WebSearchView.qml</file>
+        <file>TransparentMouseArea.qml</file>
+        <file>WindowButton.qml</file>
+        <file>WindowStateSaver.qml</file>
+        <file>Avatar.qml</file>
+        <file>StatusAvatar.qml</file>
+        <file>Omnibox.qml</file>
+        <file>TabButtons.qml</file>
+        <file>ContextView.qml</file>
+        <file>WizardPage.qml</file>
+        <file>SidebarButton.qml</file>
+        <file>EditorView.qml</file>
+        <file>OfferView.qml</file>
+        <file>Chat.qml</file>
+        <file>InviteDialog.qml</file>
+        <file>SelectProfileDialog.qml</file>
+        <file>TagsDialog.qml</file>
+        <file>PatternsDialog.qml</file>
+        <file>SendDialog.qml</file>
+        <file>CallDialog.qml</file>
+        <file>ScrollBar.qml</file>
+        <file>WButtonsGroupMac.qml</file>
+        <file>WButtonsGroupWin.qml</file>
+        <file>ToolbarButton.qml</file>
+        <file>qmldir</file>
+        <file>Palette.qml</file>
+    </qresource>
+</RCC>

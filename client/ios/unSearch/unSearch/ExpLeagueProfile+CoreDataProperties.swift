@@ -19,6 +19,7 @@ extension ExpLeagueProfile {
     @NSManaged var login: String
     @NSManaged var name: String
     @NSManaged var orderSelected: NSNumber?
+    @NSManaged var receiveAnswerOfTheWeek: NSNumber?
     @NSManaged var passwd: String
     @NSManaged var port: NSNumber
     @NSManaged var orders: NSOrderedSet

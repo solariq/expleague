@@ -8,6 +8,7 @@
 #include "../screen.h"
 
 namespace expleague {
+class WebFolder;
 class WebScreen: public Screen {
     Q_OBJECT
 
@@ -16,22 +17,17 @@ public:
         connect(webView, SIGNAL(urlChanged()), SLOT(urlChanged()));
         connect(webView, SIGNAL(titleChanged()), SLOT(titleChanged()));
         connect(webView, SIGNAL(iconChanged()), SLOT(iconChanged()));
+        setupOwner();
     }
 
-    bool handleOmniboxInput(const QString &text) {
-        QUrl url(text);
-        if (url.isValid()) {
-            webView->setProperty("url", url);
-        }
-        return url.isValid();
-    }
+    bool handleOmniboxInput(const QString &text);
 
     QUrl icon() const {
         return webView->property("icon").toUrl();
     }
 
     QString location() const {
-        return webView->property("url").toString();
+        return m_url;
     }
 
     QString name() const {
@@ -42,10 +38,10 @@ public:
         return webView;
     }
 
+    Q_INVOKABLE QQuickItem* landing();
+
 private slots:
-    void urlChanged() {
-        locationChanged(location());
-    }
+    void urlChanged();
 
     void titleChanged() {
         nameChanged(name());
@@ -54,9 +50,14 @@ private slots:
     void iconChanged() {
         Screen::iconChanged(icon());
     }
+private:
+    WebFolder* owner() {
+        return (WebFolder*)parent();
+    }
 
 private:
     QQuickItem* webView;
+    QString m_url;
 };
 }
 

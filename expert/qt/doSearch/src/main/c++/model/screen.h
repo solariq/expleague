@@ -8,6 +8,7 @@
 #include <QQmlListProperty>
 #include <QQmlComponent>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
 
 extern QQmlApplicationEngine* rootEngine;
 
@@ -58,22 +59,13 @@ signals:
     void locationChanged(const QString&);
 
 protected:
-    explicit Screen(QUrl item, QObject* parent = 0): QObject(parent) {
-        QQmlComponent component(rootEngine, item, QQmlComponent::PreferSynchronous);
-        if (component.isError()) {
-            qWarning() << "Error during screen load";
-            foreach(QQmlError error, component.errors()) {
-                qWarning() << error;
-            }
-        }
-        QQuickItem* root = (QQuickItem*)component.create();
-        root->setParent(this);
-        m_root = root;
-    }
+    explicit Screen(QUrl item, QObject* parent = 0);
 
     QQuickItem* root() {
         return m_root;
     }
+
+    void setupOwner();
 
     template<typename T>
     T* itemById(const QString& id) {
@@ -88,7 +80,9 @@ protected:
     }
 
 private:
+    friend class StateSaver;
     QQuickItem* m_root;
+    QQmlContext m_context;
     bool m_active = false;
 };
 

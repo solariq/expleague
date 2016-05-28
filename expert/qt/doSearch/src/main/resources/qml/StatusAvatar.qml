@@ -1,11 +1,27 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
+import QtQuick.Dialogs 1.2
 
 import ExpLeague 1.0
 
 Item {
     property alias icon: avatar.src
     property int size
+
+    MessageDialog {
+        id: refuseDialog
+        title: qsTr("Отказаться от задания")
+        text: qsTr("Вы уверены, что хотите отказаться от этого задания?")
+        visible: false
+        standardButtons: StandardButton.Yes | StandardButton.No
+        onYes: {
+            root.context.task.cancel()
+            visible = false
+        }
+        onNo: {
+            visible = false
+        }
+    }
 
     Action {
         id: connectAction
@@ -22,6 +38,15 @@ Item {
         enabled: statusMenu.disconnect
         onTriggered: {
             root.league.disconnect()
+        }
+    }
+
+    Action {
+        id: refuseAction
+        text: qsTr("Отказаться от задания")
+        enabled: statusMenu.refuse
+        onTriggered: {
+            refuseDialog.visible = true
         }
     }
 
@@ -90,15 +115,25 @@ Item {
                 MenuItem {
                     action: disconnectAction
                 }
+                MenuSeparator {visible: Qt.platform.os !== "osx"}
+
+                MenuItem {
+                    visible: Qt.platform.os !== "osx"
+                    action: newProfile
+                    text: qsTr("Новый профиль...")
+                }
+                MenuItem {
+                    visible: Qt.platform.os !== "osx"
+                    action: switchProfile
+                    text: qsTr("Переключить профиль...")
+                }
+
+                MenuSeparator {}
                 MenuItem {
                     id: statusMenuRefuse
                     text: qsTr("Отказаться от задания")
                     enabled: statusMenu.refuse
-                }
-                MenuItem {
-                    id: trash
-                    text: status.state
-                    enabled: statusMenu.refuse
+                    action: refuseAction
                 }
             }
             states: [

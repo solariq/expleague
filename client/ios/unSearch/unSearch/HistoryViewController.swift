@@ -218,6 +218,7 @@ class HistoryViewController: UITableViewController {
         return model!
     }
     
+    private weak var details: OrderDetailsViewController?
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let o: ExpLeagueOrder
         switch(section(index: indexPath.section)) {
@@ -232,10 +233,11 @@ class HistoryViewController: UITableViewController {
             o = finished[indexPath.row]
         }
         AppDelegate.instance.tabs.tabBar.hidden = true;
+        if (details != nil) {
+            details!.close()
+        }
         let messagesView = OrderDetailsViewController(data: model(o))
-//        while (navigationController?.childViewControllers.count > 1) {
-//            navigationController?.popViewControllerAnimated(false)
-//        }
+        details = messagesView
         splitViewController!.showDetailViewController(messagesView, sender: nil)
     }
     
@@ -293,6 +295,12 @@ class HistoryViewController: UITableViewController {
 }
 
 extension HistoryViewController: UISplitViewControllerDelegate {
+    func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController: UIViewController, ontoPrimaryViewController primaryViewController: UIViewController) -> Bool {
+        if let navigation = secondaryViewController as? UINavigationController, let _ = navigation.topViewController as? OrderDetailsViewController {
+            return true
+        }
+        return false;
+    }
 //    func primaryViewControllerForCollapsingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
 //        ret
 //        if (selected == nil) {

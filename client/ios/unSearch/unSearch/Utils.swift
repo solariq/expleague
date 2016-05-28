@@ -77,11 +77,23 @@ extension NSTimer {
 }
 
 extension NSManagedObject {
-    internal func save() {
+    func notify() {}
+    
+    func update(todo: () -> ()) {
+        dispatch_async(AppDelegate.instance.xmppQueue) {
+            todo()
+            self.save()
+        }
+    }
+    internal final func save() {
         do {
             try self.managedObjectContext!.save()
-        } catch {
+        }
+        catch {
             fatalError("Failure to save context: \(error)")
+        }
+        dispatch_async(dispatch_get_main_queue()) {
+            self.notify()
         }
     }
 }

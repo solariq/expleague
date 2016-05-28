@@ -22,8 +22,8 @@ public class FilterDto {
   private List<JIDDto> prefer;
 
   public FilterDto(final Filter filter) {
-    this.reject = filter.rejected().map(JIDDto::new).collect(Collectors.toList());
-    this.accept = filter.accepted().map(JIDDto::new).collect(Collectors.toList());
-    this.prefer = filter.preferred().map(JIDDto::new).collect(Collectors.toList());
+    this.reject = filter.rejected().map(JIDDto::new).distinct().collect(Collectors.toList());
+    this.accept = filter.accepted().map(JIDDto::new).distinct().collect(Collectors.toList());
+    this.prefer = filter.preferred().map(JIDDto::new).distinct().collect(Collectors.toList());
   }
 }
