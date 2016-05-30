@@ -167,12 +167,14 @@ public class MySQLRoster extends MySQLOps implements Roster {
                 resultSet.getString(3)
             ){
               @Override
-              public void updateToken(String token) {
+              public void updateDevice(String token, String clientVersion) {
                 this.token = token;
-                final PreparedStatement updateToken = createStatement("update-token", "UPDATE Devices SET token = ? WHERE id = ?");
+                this.clientVersion = clientVersion;
+                final PreparedStatement updateToken = createStatement("update-token", "UPDATE Devices SET token = ?, platform = ? WHERE id = ?");
                 try {
                   updateToken.setString(1, token);
-                  updateToken.setString(2, id);
+                  updateToken.setString(2, clientVersion);
+                  updateToken.setString(3, id);
                   updateToken.execute();
                 }
                 catch (SQLException e) {

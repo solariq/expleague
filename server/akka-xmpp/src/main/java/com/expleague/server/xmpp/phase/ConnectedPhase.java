@@ -117,7 +117,8 @@ public class ConnectedPhase extends XMPPPhase {
   @ActorMethod
   public void invoke(Message message) {
     if (message.has(Operations.Token.class)) {
-      device.updateToken(TokenUtil.sanitizeTokenString(message.get(Operations.Token.class).value()));
+      final Operations.Token token = message.get(Operations.Token.class);
+      device.updateDevice(TokenUtil.sanitizeTokenString(token.value()), token.client());
     }
   }
 
