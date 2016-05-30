@@ -77,7 +77,7 @@ public class NotificationsManager {
     if (client != null && device.platform().startsWith("iOS") && token.length() > 0) {
       if (device.build() > 22) {
         sendPush(
-            new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{}, \"id\": \"" + message.id() + "\"}", tomorrow()),
+            new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{\"content-available\": 1}, \"id\": \"" + message.id() + "\"}", tomorrow()),
             device.user().name()
         );
       }
