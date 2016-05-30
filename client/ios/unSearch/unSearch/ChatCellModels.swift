@@ -216,7 +216,7 @@ class CompositeCellModel: ChatCellModel {
 
         cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .Height, relatedBy: .GreaterThanOrEqual, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: ceil(height + 10)))
         cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .Width, relatedBy: .GreaterThanOrEqual, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: ceil(width + 12)))
-        print("Cell: \(cell.dynamicType), content size: (\(width), \(height)), cell size: \(cell.frame.size)")
+//        print("Cell: \(cell.dynamicType), content size: (\(width), \(height)), cell size: \(cell.frame.size)")
     }
 
     private func blockSize(width width: CGFloat, index: Int) -> CGSize {
@@ -613,7 +613,7 @@ class LookingForExpertModel: ChatCellModel {
             self.order.cancel()
         }
         if (lfeCell.progress != nil) {
-            if (AppDelegate.instance.stream.isConnected()) {
+            if (ExpLeagueProfile.state.status == .Connected) {
                 lfeCell.progress.startAnimating()
             } else {
                 lfeCell.progress.stopAnimating()

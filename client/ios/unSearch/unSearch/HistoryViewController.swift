@@ -27,11 +27,9 @@ class HistoryViewController: UITableViewController {
             if (table.indexPathForSelectedRow != nil) {
                 table.deselectRowAtIndexPath(table.indexPathForSelectedRow!, animated: false)
             }
-            if selected != nil {
-                if let path = indexOf(selected!) {
-                    table.selectRowAtIndexPath(path, animated: false, scrollPosition: .Top)
-                    tableView(table, didSelectRowAtIndexPath: path)
-                }
+            if let sel = selected, let path = indexOf(sel) {
+                table.selectRowAtIndexPath(path, animated: false, scrollPosition: .Top)
+                tableView(table, didSelectRowAtIndexPath: path)
             }
         }
     }
@@ -43,20 +41,21 @@ class HistoryViewController: UITableViewController {
         table.registerClass(UITableViewCell.self, forCellReuseIdentifier: "Empty")
         cellHeight = cell.frame.height
         AppDelegate.instance.historyView = self
-        AppDelegate.instance.split.delegate = self
         self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        QObject.connect(AppDelegate.instance, signal: #selector(AppDelegate.activate(_:)), receiver: self, slot: #selector(self.populate))
         populate()
+    }
+    
+    deinit {
+        QObject.disconnect(self)
     }
     
     func populate() {
         ongoing.removeAll()
         finished.removeAll()
         archived.removeAll()
-        let orders = AppDelegate.instance.activeProfile?.orders
-        if (orders == nil) {
-            return
-        }
-        for orderO in orders! {
+        let orders = AppDelegate.instance.activeProfile?.orders ?? []
+        for orderO in orders {
             let order = orderO as! ExpLeagueOrder
             if (order.isActive) {
                 ongoing.append(order)
@@ -71,7 +70,7 @@ class HistoryViewController: UITableViewController {
                 finished.append(order)
             }
         }
-        
+//        print("Populate results: \(ongoing.count)/\(finished.count)/\(archived.count)")
         ongoing.sortInPlace(comparator)
         finished.sortInPlace(comparator)
         archived.sortInPlace(comparator)
@@ -218,7 +217,6 @@ class HistoryViewController: UITableViewController {
         return model!
     }
     
-    private weak var details: OrderDetailsViewController?
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let o: ExpLeagueOrder
         switch(section(index: indexPath.section)) {
@@ -233,12 +231,14 @@ class HistoryViewController: UITableViewController {
             o = finished[indexPath.row]
         }
         AppDelegate.instance.tabs.tabBar.hidden = true;
-        if (details != nil) {
-            details!.close()
-        }
         let messagesView = OrderDetailsViewController(data: model(o))
-        details = messagesView
-        splitViewController!.showDetailViewController(messagesView, sender: nil)
+        if (splitViewController!.collapsed) {
+            navigationController!.popToRootViewControllerAnimated(true);
+            navigationController!.pushViewController(messagesView, animated: true)
+        }
+        else {
+            splitViewController!.showDetailViewController(messagesView, sender: self)
+        }
     }
     
     override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
@@ -292,38 +292,6 @@ class HistoryViewController: UITableViewController {
             order.archive()
         }
     }
-}
-
-extension HistoryViewController: UISplitViewControllerDelegate {
-    func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController: UIViewController, ontoPrimaryViewController primaryViewController: UIViewController) -> Bool {
-        if let navigation = secondaryViewController as? UINavigationController, let _ = navigation.topViewController as? OrderDetailsViewController {
-            return true
-        }
-        return false;
-    }
-//    func primaryViewControllerForCollapsingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
-//        ret
-//        if (selected == nil) {
-//            AppDelegate.instance.tabs.tabBar.hidden = false
-//            return navigationController ?? self
-//        }
-//        else {
-//            if (navigationController != nil) {
-//                return navigationController
-//            }
-//            return OrderDetailsViewController(data: model(selected!))
-//        }
-//    }
-//
-//    func primaryViewControllerForExpandingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
-//        return primaryViewControllerForCollapsingSplitViewController(splitViewController)
-//    }
-//    
-//    func splitViewController(svc: UISplitViewController, willChangeToDisplayMode displayMode: UISplitViewControllerDisplayMode) {
-//        if (displayMode != .AllVisible) {
-//            AppDelegate.instance.tabs.tabBar.hidden = false
-//        }
-//    }
 }
 
 class OrderBadge: UITableViewCell {

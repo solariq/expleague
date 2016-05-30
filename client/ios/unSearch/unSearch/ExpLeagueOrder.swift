@@ -80,29 +80,30 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     func message(message msg: XMPPMessage) {
-        let message = ExpLeagueMessage(msg: msg, parent: self, context: self.managedObjectContext!)
-        let mutableItems = messagesRaw.mutableCopy() as! NSMutableOrderedSet
-        mutableItems.addObject(message)
-        self.messagesRaw = mutableItems.copy() as! NSOrderedSet
-        if (message.type == .Answer) {
-            self.flags = self.flags | ExpLeagueOrderFlags.Deciding.rawValue
+        update {
+            let message = ExpLeagueMessage(msg: msg, parent: self, context: self.managedObjectContext!)
+            self.messagesRaw = self.messagesRaw.append(message)
+            if (message.type == .Answer) {
+                self.flags = self.flags | ExpLeagueOrderFlags.Deciding.rawValue
+                Notifications.notifyAnswerReceived(self)
+            }
+            else if (message.type == .ExpertAssignment) {
+                Notifications.notifyExpertFound(self)
+            }
+            else if (message.type == .ExpertMessage) {
+                Notifications.notifyMessageReceived(self, message: message)
+            }
+            self._unreadCount = nil
+            self._icon = nil
         }
-        self._unreadCount = nil
-        self._icon = nil
-        save()
-    }
-
-
-    func iq(iq iq: XMPPIQ) {
-    }
-    
-    func presence(presence presence: XMPPPresence) {
     }
     
     func send(text text: String) {
         let msg = XMPPMessage(type: "groupchat", to: jid)
         msg.addBody(text)
-        message(message:msg)
+        update {
+            self.message(message:msg)
+        }
         parent.send(msg)
     }
     
@@ -113,7 +114,9 @@ class ExpLeagueOrder: NSManagedObject {
     func send(xml xml: DDXMLElement, type: String) {
         let msg = XMPPMessage(type: type, to: jid)
         msg.addChild(xml)
-        message(message:msg)
+        update {
+            self.message(message: msg)
+        }
         parent.send(msg)
     }
     
@@ -137,13 +140,9 @@ class ExpLeagueOrder: NSManagedObject {
             return
         }
 
-        guard AppDelegate.instance.ensureConnected({self.cancel(false)}) else {
-            return
-        }
-
         let msg = XMPPMessage(type: "normal", to: jid)
         msg.addChild(DDXMLElement(name: "cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
-        parent.send(msg)
+        self.parent.send(msg)
         update {
             self.flags = self.flags | ExpLeagueOrderFlags.Canceled.rawValue
             dispatch_async(dispatch_get_main_queue()) {

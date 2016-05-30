@@ -86,11 +86,11 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
 
         while (lastKnownMessage < order.count) {
             if (modelChangeCount > 2) {
-                print("Loop found! Enforce next message")
+                AppDelegate.instance.activeProfile!.log("Loop found in the chat model! Enforcing next message.")
                 lastKnownMessage += 1
             }
             let msg = order.message(lastKnownMessage)
-            print("\(order.jid) -> \(msg.type)")
+//            print("\(order.jid) -> \(msg.type)")
             if (msg.type != .System && !model.accept(msg)) { // switch model
                 modelChangeCount += 1
                 var newModel : ChatCellModel? = nil

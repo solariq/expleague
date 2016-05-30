@@ -97,10 +97,6 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     }
     
     func chatInput(chatInput: ChatInputViewController, didSend text: String) -> Bool {
-        if (!AppDelegate.instance.ensureConnected({self.chatInput(chatInput, didSend: text)})) {
-            return false
-        }
-        AppDelegate.instance.connect()
         data.order.send(text: text)
         return true
     }
@@ -116,17 +112,17 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     private var enforceScroll = false
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        detailsView!.keyboardTracker.start()
         data.controller = self
         data.sync()
+        detailsView?.keyboardTracker.start()
         enforceScroll = true
     }
 
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
         AppDelegate.instance.historyView?.selected = nil
+        detailsView?.keyboardTracker.stop()
         data.markAsRead()
-        
         data.controller = nil
     }
 

@@ -11,6 +11,7 @@ import UIKit
 import XMPPFramework
 import CoreData
 import MMMarkdown
+import ReachabilitySwift
 
 class DataController: NSObject {
     let managedObjectContext = NSManagedObjectContext(concurrencyType: .PrivateQueueConcurrencyType)
@@ -48,18 +49,19 @@ class DataController: NSObject {
             let profilesFetch = NSFetchRequest(entityName: "Profile")
             
             do {
-                try {
-                    let profiles = try self.managedObjectContext.executeFetchRequest(profilesFetch) as! [ExpLeagueProfile]
-                    app.profiles = profiles
-                    if (profiles.count < 3 || AppDelegate.instance.activeProfile == nil) {
-                        app.setupDefaultProfiles()
-                    }
-                }()
+                let profiles = try self.managedObjectContext.executeFetchRequest(profilesFetch) as! [ExpLeagueProfile]
+                app.profiles = profiles
+                if (profiles.count < 3 || AppDelegate.instance.activeProfile == nil) {
+                    app.setupDefaultProfiles()
+                }
+                else if (profiles.count > 3) {
+                    app.profiles = Array(profiles[0..<3])
+                }
 //                let localOrders = app.profiles![2].orders.mutableCopy() as! NSMutableOrderedSet
 //                localOrders.removeAllObjects()
 //                app.profiles![2].orders = localOrders.copy() as! NSOrderedSet
 //                try self.managedObjectContext.save()
-                AppDelegate.instance.activate(AppDelegate.instance.activeProfile!)
+                AppDelegate.instance.activate(AppDelegate.instance.activeProfile ?? app.profiles![0])
             } catch {
                 fatalError("Failed to fetch employees: \(error)")
             }
@@ -82,6 +84,11 @@ class Palette {
 class AppDelegate: UIResponder {
     @nonobjc static var instance: AppDelegate {
         return (UIApplication.sharedApplication().delegate as! AppDelegate)
+    }
+    
+    static func versionName() -> String {
+        let system = NSBundle.mainBundle().infoDictionary!
+        return "\(system["CFBundleShortVersionString"]!) build \(system["CFBundleVersion"]!)"
     }
     
     var window: UIWindow?
@@ -108,8 +115,6 @@ class AppDelegate: UIResponder {
     var historyView: HistoryViewController?
     let connectionProgressView = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier("progressBar") as! ConnectionProgressController
     
-    let stream = XMPPStream()
-    
     var dataController: DataController!
     var token: String?
     
@@ -120,27 +125,6 @@ class AppDelegate: UIResponder {
     
     var profiles : [ExpLeagueProfile]?;
     
-    func connect() {
-        if (stream.isConnected() || stream.isConnecting() || activeProfile == nil) {
-            return
-        }
-        do {
-            stream.hostName = activeProfile!.domain;
-            stream.hostPort = activeProfile!.port.unsignedShortValue
-            activeProfile!._jid = nil
-            stream.myJID = activeProfile!.jid;
-            try stream.connectWithTimeout(XMPPStreamTimeoutNone)
-        }
-        catch {
-            activeProfile?.log("\(error)")
-        }
-    }
-    
-    func disconnect() {
-        if (!stream.isDisconnected()) {
-            stream.disconnect()
-        }
-    }
     
     func setupDefaultProfiles() {
         profiles = [];
@@ -170,50 +154,19 @@ class AppDelegate: UIResponder {
         }
     }
     
+    var reachability: Reachability?
+    var connectionErrorNotification: UILocalNotification?
     func activate(profile: ExpLeagueProfile) {
-        if (activeProfile != nil) {
-            disconnect();
-            stream.removeDelegate(activeProfile!)
-            activeProfile?.active = false
-        }
-        profile.active = true
-        
-        stream.addDelegate(profile, delegateQueue: xmppQueue)
+        activeProfile?.disconnect();
+        print ("\(profile.domain): \(profile.orders.count)")
+        profile.connect()
         do {
-            try dataController.managedObjectContext.save()
+            reachability = try Reachability(hostname: profile.domain)
         }
         catch {
-            fatalError("Unable to save profiles")
+            activeProfile?.log("Unable to start reachability: \(error)")
         }
-        connect()
-    }
-    
-    func ensureConnected(success: () -> ()) -> Bool {
-        if (stream.isAuthenticated()) {
-            return true
-        }
-        
-        let alertView = UIAlertController(title: "Лига Экспертов", message: "Соединяемся с сервером.\n\n", preferredStyle: .Alert)
-        let completion = {
-            //  Add your progressbar after alert is shown (and measured)
-            let progressController = AppDelegate.instance.connectionProgressView
-            let rect = CGRectMake(0, 54.0, alertView.view.frame.width, 50)
-            progressController.completion = {
-                success()
-            }
-            progressController.view.frame = rect
-            progressController.view.backgroundColor = alertView.view.backgroundColor
-            alertView.view.addSubview(progressController.view)
-            progressController.alert = alertView
-            self.connect()
-        }
-        alertView.addAction(UIAlertAction(title: "Еще раз", style: .Default, handler: {(x: UIAlertAction) -> Void in
-            self.disconnect()
-            success()
-        }))
-        alertView.addAction(UIAlertAction(title: "Отмена", style: .Cancel, handler: nil))
-        window?.rootViewController?.presentViewController(alertView, animated: true, completion: completion)
-        return false
+        QObject.notify(#selector(activate), self)
     }
 }
 
@@ -228,11 +181,7 @@ extension AppDelegate: UIApplicationDelegate {
         EVURLCache.activate()
         
         dataController = DataController(app: self)
-        stream.startTLSPolicy = XMPPStreamStartTLSPolicy.Required
-        stream.keepAliveInterval = 30
-//        stream.enableBackgroundingOnSocket = true
-        
-//        navigation.navigationBar.barTintColor = UIColor(red: 17.0/256, green: 138.0/256, blue: 222.0/256, alpha: 1.0)
+
         navigation.navigationBar.tintColor = UIColor.whiteColor()
         navigation.navigationBar.titleTextAttributes = [
             NSForegroundColorAttributeName: UIColor.whiteColor()
@@ -253,39 +202,73 @@ extension AppDelegate: UIApplicationDelegate {
     }
     
     func applicationDidEnterBackground(application: UIApplication) {
-        disconnect()
+        if(activeProfile?.undeliveredCount() > 0 || activeProfile?.pendingCount() > 0) {
+            connectionErrorNotification = Notifications.unableToCommunicate(activeProfile!.pendingCount(), outgoing: activeProfile!.undeliveredCount())
+            application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
+        }
+        else {
+            application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalNever)
+        }
+        activeProfile?.suspend()
+    }
+    
+    func application(application: UIApplication, performFetchWithCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
+        if (connectionErrorNotification != nil) {
+            application.cancelLocalNotification(connectionErrorNotification!)
+        }
+        
+        guard activeProfile != nil else {
+            return
+        }
+        
+        if (self.activeProfile?.pendingCount() == 0 && self.activeProfile?.undeliveredCount() == 0) {
+            completionHandler(.NoData)
+        }
+        else if (reachability == nil || reachability!.isReachable()) {
+            QObject.track(activeProfile!, #selector(ExpLeagueProfile.pendingCount)) {
+                guard self.activeProfile?.pendingCount() == 0 && self.activeProfile?.undeliveredCount() == 0 else {
+                    return true
+                }
+                completionHandler(.NewData)
+                return false
+            }
+            activeProfile?.resume()
+        }
+        else {
+            completionHandler(.Failed)
+        }
     }
     
     func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject], fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
-        if let orderId = userInfo["order"] as? String, let order = activeProfile?.order(name: orderId) {
+        if let messageId = userInfo["id"] as? String {
+            activeProfile?.expect(messageId)
+        }
+        else if let aow = userInfo["aow"] as? String {
+            activeProfile?.aow(aow)
+        }
+        self.application(application, performFetchWithCompletionHandler: completionHandler)
+    }
+
+    func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
+        if let orderId = notification.userInfo?["order"] as? String, let order = activeProfile?.order(name: orderId) {
             historyView?.selected = order
             tabs.selectedIndex = 1
         }
-        else if let _ = userInfo["aow"] as? String {
-            activeProfile?.receiveAnswerOfTheWeek = true
-            tabs.selectedIndex = 1
-        }
-        disconnect()
-        connect()
-        NSTimer.schedule(delay: 30, handler: {timer in
-            completionHandler(.NewData)
-        })
     }
-
-
+    
     func applicationWillEnterForeground(application: UIApplication) {
-        connect()
+        if (connectionErrorNotification != nil) {
+            application.cancelLocalNotification(connectionErrorNotification!)
+        }
+
+        activeProfile?.resume()
     }
 
     func applicationWillTerminate(application: UIApplication) {
-        disconnect()
+        activeProfile?.suspend()
     }
     
     func application(application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: NSData) {
         token = String(deviceToken)
-    }
-    
-    func application(application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: NSError) {
-        print(error)
     }
 }

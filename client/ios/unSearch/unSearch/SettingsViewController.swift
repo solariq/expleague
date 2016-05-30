@@ -26,7 +26,7 @@ class AboutViewController: UIViewController {
             application.setStringValue(self.friend)
             let msg = XMPPMessage(type: "normal", child: application)
             msg.addAttributeWithName("to", stringValue: AppDelegate.instance.activeProfile!.domain)
-            AppDelegate.instance.stream.sendElement(msg)
+            ExpLeagueProfile.active.send(msg)
         }))
         alert.addAction(UIAlertAction(title: "Отмена", style: .Cancel, handler: nil))
         self.presentViewController(alert, animated: true, completion: nil)
@@ -47,7 +47,7 @@ class AboutViewController: UIViewController {
         inviteButton.layer.borderWidth = 2
         inviteButton.clipsToBounds = true
         let system = NSBundle.mainBundle().infoDictionary!
-        build.text = "Version \(system["CFBundleShortVersionString"]!) build \(system["CFBundleVersion"]!)\n\(system["BuildDate"]!)"
+        build.text = "Version \(AppDelegate.versionName())\n\(system["BuildDate"])"
         navigationController!.navigationBar.setBackgroundImage(UIImage(named: "history_background"), forBarMetrics: .Default)
         navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
         navigationController!.navigationBar.tintColor = UIColor.whiteColor()

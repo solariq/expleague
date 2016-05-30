@@ -17,9 +17,6 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
     
     @IBAction func fire(sender: AnyObject) {
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
-        guard controller.orderTextDelegate!.validate() && AppDelegate.instance.ensureConnected({self.fire(self)}) else {
-            return
-        }
         if (controller.isLocal.on && location == nil) {
             let alertView = UIAlertController(title: "Заказ", message: "На данный момент ваша геопозиция не найдена. Подождите несколько секунд, или отключите настройку \"рядом со мной\".", preferredStyle: .Alert)
             alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
