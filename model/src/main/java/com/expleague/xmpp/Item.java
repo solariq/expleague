@@ -58,6 +58,7 @@ public class Item implements Cloneable {
       return new XmlInputter();
     }
   };
+
   protected static ThreadLocal<ObjectMapper> tlObjectMapper = new ThreadLocal<ObjectMapper>() {
     @Override
     protected ObjectMapper initialValue() {
@@ -174,10 +175,15 @@ public class Item implements Cloneable {
   }
 
   private static class XmlInputter {
-    private final AsyncXMLStreamReader<AsyncByteArrayFeeder> asyncXml;
-    private final AsyncJAXBStreamReader reader;
+    private static final int MAXIMUM_BUFFER_SIZE = 1 << 20;
+    private AsyncXMLStreamReader<AsyncByteArrayFeeder> asyncXml;
+    private AsyncJAXBStreamReader reader;
 
     public XmlInputter() {
+      init();
+    }
+
+    void init() {
       final AsyncXMLInputFactory factory = new InputFactoryImpl();
       asyncXml = factory.createAsyncForByteArray();
       reader = new AsyncJAXBStreamReader(asyncXml, Stream.jaxb());
@@ -189,8 +195,8 @@ public class Item implements Cloneable {
         throw new RuntimeException(e);
       }
     }
-
     Item result;
+    int deserializedLength;
 
     public Item deserialize(String xmlForm) {
       return deserialize(xmlForm.getBytes(StreamTools.UTF));
@@ -198,6 +204,9 @@ public class Item implements Cloneable {
 
     public Item deserialize(byte[] xmlForm) {
       try {
+        deserializedLength += xmlForm.length;
+        if (deserializedLength > MAXIMUM_BUFFER_SIZE)
+          init();
         asyncXml.getInputFeeder().feedInput(xmlForm, 0, xmlForm.length);
         reader.drain(o -> {
           if (o instanceof Item)
