@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import StoreKit
 import XMPPFramework
 
 class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSenderQueue {
@@ -88,6 +89,18 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
                     break
                 case .Closed:
                     detailsView?.bottomContents = nil
+                    break
+                case .Save:
+                    let ask = NSBundle.mainBundle().loadNibNamed("SaveView", owner: self, options: [:])[0] as! SaveCell
+                    ask.ok = {
+                        self.data.order.markSaved()
+                        self.state = .Closed
+                    }
+                    
+                    ask.cancel = {
+                        self.state = .Closed
+                    }
+                    detailsView!.bottomContents = ask
                     break
                 }
                 self.view.layoutIfNeeded()
@@ -190,18 +203,31 @@ class FeedbackViewController: UIViewController {
     @IBOutlet weak var cancelButton: UIButton!
     @IBOutlet weak var scoreButton: UIButton!
     @IBAction func fire(sender: AnyObject) {
-        parent.data.order.feedback(stars: feedback.rate)
-        if (feedback.rate == 4) {
-            UIApplication.sharedApplication().openURL(NSURL(string: "https://www.paypal.me/expleague/30")!)
+        if (rate == 4) {
+            iapRequest("com.expleague.unSearch.Star30r")
         }
-        else if (feedback.rate == 5) {
-            UIApplication.sharedApplication().openURL(NSURL(string: "https://www.paypal.me/expleague/150")!)
+        else if (rate == 5) {
+            iapRequest("com.expleague.unSearch.Star150r")
         }
-        self.dismissViewControllerAnimated(true, completion: nil)
+        else {
+            parent.data.order.feedback(stars: rate!)
+            self.dismissViewControllerAnimated(true, completion: nil)
+        }
     }
     @IBAction func cancel(sender: AnyObject) {
         self.dismissViewControllerAnimated(true, completion: nil)
     }
+    
+    @IBOutlet var stars: [UIImageView]!
+    @IBOutlet weak var text: UITextView!
+    
+    private func iapRequest(id: String) {
+        let productRequest = SKProductsRequest(productIdentifiers: [id])
+        productRequest.delegate = self
+        productRequest.start()
+    }
+    
+    var rate: Int?
     override func viewDidLoad() {
         feedback.layer.cornerRadius = Palette.CORNER_RADIUS
         feedback.clipsToBounds = true
@@ -209,8 +235,76 @@ class FeedbackViewController: UIViewController {
         scoreButton.clipsToBounds = true
         cancelButton.layer.cornerRadius = Palette.CORNER_RADIUS
         cancelButton.clipsToBounds = true
+        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:))))
+        SKPaymentQueue.defaultQueue().addTransactionObserver(self)
+        updateDescription(nil, order: parent.data.order)
     }
     
+    func handleTap(recognizer: UITapGestureRecognizer) {
+        let tap = recognizer.locationInView(feedback)
+        var minDistance = CGFloat.infinity;
+        for i in 0..<stars.count {
+            let rect = stars[i].frame
+            let starCenter = CGPointMake(rect.origin.x + rect.width / 2, rect.origin.y + rect.height / 2)
+            let distance = self.distance(tap, starCenter)
+            if (distance < 20 && distance < minDistance) {
+                rate = i + 1
+                minDistance = distance
+            }
+        }
+        updateDescription(rate, order: parent.data.order);
+    }
+    
+    func updateDescription(rate: Int?, order: ExpLeagueOrder) {
+        if (rate == nil || rate! == 0) {
+            let pages = parent.data.lastAnswer?.progress.pagesCount ?? 0
+            let calls = parent.data.lastAnswer?.progress.callsCount ?? 0
+            text.text = "Чтобы найти ответ на Ваш вопрос эксперт просмотрел \(pages) страниц\(Lang.rusNumEnding(pages, variants: ["", "ы", ""])), сделал \(calls) звон\(Lang.rusNumEnding(calls, variants: ["ок", "ка", "ков"]))."
+            scoreButton.enabled = false
+            return
+        }
+        for i in 0..<stars.count {
+            stars[i].highlighted = i < rate
+        }
+        switch rate! {
+        case 5:
+            let text = NSMutableAttributedString()
+            text.appendAttributedString(NSAttributedString(string: "Отличный ответ! Не ожидал такого.\nБольшое спасибо эксперту.\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFontOfSize(13)]))
+            text.appendAttributedString(NSAttributedString(string: "\n150р", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
+            self.text.attributedText = text
+        case 4:
+            let text = NSMutableAttributedString()
+            text.appendAttributedString(NSAttributedString(string: "Хороший ответ. Именно это и ожидалось.\nСпасибо эксперту.\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFontOfSize(13)]))
+            text.appendAttributedString(NSAttributedString(string: "\n30р", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
+            self.text.attributedText = text
+        case 3:
+            let text = NSMutableAttributedString()
+            text.appendAttributedString(NSAttributedString(string: "Нормальный ответ, но хотелось большего.\n\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFontOfSize(13)]))
+            text.appendAttributedString(NSAttributedString(string: "\n0р", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
+            self.text.attributedText = text
+        case 2:
+            let text = NSMutableAttributedString()
+            text.appendAttributedString(NSAttributedString(string: "Старались, но не смогли мне помочь.\n\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFontOfSize(13)]))
+            text.appendAttributedString(NSAttributedString(string: "\n0р", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
+            self.text.attributedText = text
+        case 1:
+            let text = NSMutableAttributedString()
+            text.appendAttributedString(NSAttributedString(string: "Только зря потратил время.\n\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFontOfSize(13)]))
+            text.appendAttributedString(NSAttributedString(string: "\n0р", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
+            self.text.attributedText = text
+        default:
+            break
+        }
+        text.textAlignment = .Center
+        scoreButton.enabled = true
+    }
+    
+    func distance(p1: CGPoint, _ p2: CGPoint) -> CGFloat {
+        let xDist = p2.x - p1.x
+        let yDist = p2.y - p1.y
+        return sqrt((xDist * xDist) + (yDist * yDist));
+    }
+
     let parent: OrderDetailsViewController
     init(parent: OrderDetailsViewController) {
         self.parent = parent
@@ -219,6 +313,42 @@ class FeedbackViewController: UIViewController {
 
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+}
+
+extension FeedbackViewController: SKProductsRequestDelegate {
+    func productsRequest(request: SKProductsRequest, didReceiveResponse response: SKProductsResponse) {
+        guard response.products.count == 1 else {
+            let alert = UIAlertController(title: "unSearch", message: "Не удалось запросить платеж", preferredStyle: .Alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+            self.showViewController(alert, sender: self)
+            print("No store products \(request) found")
+            return
+        }
+        let payment = SKPayment(product: response.products[0])
+        SKPaymentQueue.defaultQueue().addPayment(payment)
+    }
+}
+
+extension FeedbackViewController: SKPaymentTransactionObserver {
+    func paymentQueue(queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
+        for transaction:AnyObject in transactions {
+            if let trans:SKPaymentTransaction = transaction as? SKPaymentTransaction{
+                switch trans.transactionState {
+                case .Purchased:
+                    parent.data.order.feedback(stars: rate!)
+                    self.dismissViewControllerAnimated(true, completion: nil)
+                    SKPaymentQueue.defaultQueue().finishTransaction(transaction as! SKPaymentTransaction)
+                    break;
+                case .Failed:
+                    print("Purchased Failed");
+                    SKPaymentQueue.defaultQueue().finishTransaction(transaction as! SKPaymentTransaction)
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
     }
 }
 

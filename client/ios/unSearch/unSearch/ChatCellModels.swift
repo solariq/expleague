@@ -525,7 +525,7 @@ class TaskInProgressModel: NSObject, ChatCellModel {
         
         if (eipCell.action == nil) {
             eipCell.action = {() -> Void in
-                self.order.cancel()
+                self.order.cancel(eipCell.controller!)
             }
         }
         eipCell.patternsView.dataSource = self
@@ -610,7 +610,7 @@ class LookingForExpertModel: ChatCellModel {
         }
         self.cell = lfeCell
         lfeCell.action = {
-            self.order.cancel()
+            self.order.cancel(lfeCell.controller!)
         }
         if (lfeCell.progress != nil) {
             if (ExpLeagueProfile.state.status == .Connected) {

@@ -15,6 +15,7 @@ import ReachabilitySwift
 
 class DataController: NSObject {
     let managedObjectContext = NSManagedObjectContext(concurrencyType: .PrivateQueueConcurrencyType)
+    let group = dispatch_group_create()
     init(app: AppDelegate) {
         super.init()
         // This resource is the same name as your xcdatamodeld contained in your project.
@@ -27,7 +28,7 @@ class DataController: NSObject {
         }
         let psc = NSPersistentStoreCoordinator(managedObjectModel: mom)
         self.managedObjectContext.persistentStoreCoordinator = psc
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
+        dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
             let urls = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)
             let docURL = urls[urls.endIndex-1]
             /* The directory the application uses to store the Core Data store file.
@@ -51,17 +52,16 @@ class DataController: NSObject {
             do {
                 let profiles = try self.managedObjectContext.executeFetchRequest(profilesFetch) as! [ExpLeagueProfile]
                 app.profiles = profiles
-                if (profiles.count < 3 || AppDelegate.instance.activeProfile == nil) {
-                    app.setupDefaultProfiles()
-                }
-                else if (profiles.count > 3) {
+                if (profiles.count > 3) {
                     app.profiles = Array(profiles[0..<3])
                 }
 //                let localOrders = app.profiles![2].orders.mutableCopy() as! NSMutableOrderedSet
 //                localOrders.removeAllObjects()
 //                app.profiles![2].orders = localOrders.copy() as! NSOrderedSet
 //                try self.managedObjectContext.save()
-                AppDelegate.instance.activate(AppDelegate.instance.activeProfile ?? app.profiles![0])
+                if (profiles.count > 0) {
+                    AppDelegate.instance.activate(profiles.filter({$0.active.boolValue}).first ?? profiles[0])
+                }
             } catch {
                 fatalError("Failed to fetch employees: \(error)")
             }
@@ -94,11 +94,7 @@ class AppDelegate: UIResponder {
     var window: UIWindow?
     let xmppQueue = dispatch_queue_create("ExpLeague XMPP stream", nil)
     
-    var tabs: UITabBarController {
-        get {
-            return window!.rootViewController as! UITabBarController
-        }
-    }
+    var tabs: TabsViewController!
 
     var split: UISplitViewController {
         return tabs.viewControllers![1] as! UISplitViewController
@@ -113,15 +109,10 @@ class AppDelegate: UIResponder {
     var orderView: OrderViewController?
     var expertsView: ExpertsOverviewController?
     var historyView: HistoryViewController?
-    let connectionProgressView = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier("progressBar") as! ConnectionProgressController
-    
     var dataController: DataController!
     var token: String?
     
-    var activeProfile : ExpLeagueProfile? {
-        let active = profiles?.filter({return $0.active.boolValue})
-        return active?.count > 0 ? active![0] : nil
-    }
+    var activeProfile: ExpLeagueProfile?
     
     var profiles : [ExpLeagueProfile]?;
     
@@ -160,6 +151,7 @@ class AppDelegate: UIResponder {
         activeProfile?.disconnect();
         print ("\(profile.domain): \(profile.orders.count)")
         profile.connect()
+        activeProfile = profile
         do {
             reachability = try Reachability(hostname: profile.domain)
         }
@@ -168,10 +160,19 @@ class AppDelegate: UIResponder {
         }
         QObject.notify(#selector(activate), self)
     }
+    
+    func prepareBackground(application: UIApplication) {
+        if(activeProfile?.busy ?? false) {
+            connectionErrorNotification = Notifications.unableToCommunicate(activeProfile!.incoming, outgoing: activeProfile!.outgoing)
+            application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
+        }
+        else {
+            application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalNever)
+        }
+    }
 }
 
 extension AppDelegate: UIApplicationDelegate {
-
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         EVURLCache.LOGGING = false
         EVURLCache.MAX_FILE_SIZE = 26
@@ -181,17 +182,6 @@ extension AppDelegate: UIApplicationDelegate {
         EVURLCache.activate()
         
         dataController = DataController(app: self)
-
-        navigation.navigationBar.tintColor = UIColor.whiteColor()
-        navigation.navigationBar.titleTextAttributes = [
-            NSForegroundColorAttributeName: UIColor.whiteColor()
-        ]
-        
-        for b in tabs.tabBar.items! {
-            b.image = b.image?.imageWithRenderingMode(.AlwaysOriginal)
-            b.selectedImage = b.selectedImage?.imageWithRenderingMode(.AlwaysOriginal)
-            b.setTitleTextAttributes([NSForegroundColorAttributeName: Palette.CONTROL], forState: .Selected)
-        }
         
         application.statusBarStyle = .LightContent
         application.registerForRemoteNotifications()
@@ -202,49 +192,60 @@ extension AppDelegate: UIApplicationDelegate {
     }
     
     func applicationDidEnterBackground(application: UIApplication) {
-        if(activeProfile?.undeliveredCount() > 0 || activeProfile?.pendingCount() > 0) {
-            connectionErrorNotification = Notifications.unableToCommunicate(activeProfile!.pendingCount(), outgoing: activeProfile!.undeliveredCount())
-            application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
-        }
-        else {
-            application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalNever)
-        }
+        prepareBackground(application)
         activeProfile?.suspend()
+    }
+    
+    func applicationDidBecomeActive(application: UIApplication) {
+        if (connectionErrorNotification != nil) {
+            application.cancelLocalNotification(connectionErrorNotification!)
+        }
+        dispatch_group_wait(dataController.group, DISPATCH_TIME_FOREVER)
+        activeProfile?.resume()
     }
     
     func application(application: UIApplication, performFetchWithCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
         if (connectionErrorNotification != nil) {
             application.cancelLocalNotification(connectionErrorNotification!)
         }
-        
-        guard activeProfile != nil else {
+        guard activeProfile != nil && application.applicationState != .Active else {
+            completionHandler(.NewData)
             return
         }
         
-        if (self.activeProfile?.pendingCount() == 0 && self.activeProfile?.undeliveredCount() == 0) {
+        if (!activeProfile!.busy) {
             completionHandler(.NoData)
         }
         else if (reachability == nil || reachability!.isReachable()) {
-            QObject.track(activeProfile!, #selector(ExpLeagueProfile.pendingCount)) {
-                guard self.activeProfile?.pendingCount() == 0 && self.activeProfile?.undeliveredCount() == 0 else {
+            QObject.track(activeProfile!, #selector(ExpLeagueProfile.busyChanged)) {
+                guard !self.activeProfile!.busy else {
                     return true
                 }
-                completionHandler(.NewData)
+                if (self.connectionErrorNotification != nil) {
+                    application.cancelLocalNotification(self.connectionErrorNotification!)
+                }
+                self.prepareBackground(application)
+                self.activeProfile!.suspend()
+                dispatch_async(dispatch_get_main_queue()) {
+                    completionHandler(.NewData)
+                }
                 return false
             }
             activeProfile?.resume()
         }
         else {
             completionHandler(.Failed)
+            self.prepareBackground(application)
         }
     }
     
     func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject], fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
+        print("Received remote notification: \(userInfo)")
         if let messageId = userInfo["id"] as? String {
-            activeProfile?.expect(messageId)
+            activeProfile!.expect(messageId)
         }
         else if let aow = userInfo["aow"] as? String {
-            activeProfile?.aow(aow)
+            activeProfile!.aow(aow)
         }
         self.application(application, performFetchWithCompletionHandler: completionHandler)
     }
@@ -256,19 +257,22 @@ extension AppDelegate: UIApplicationDelegate {
         }
     }
     
-    func applicationWillEnterForeground(application: UIApplication) {
-        if (connectionErrorNotification != nil) {
-            application.cancelLocalNotification(connectionErrorNotification!)
-        }
-
-        activeProfile?.resume()
-    }
-
     func applicationWillTerminate(application: UIApplication) {
         activeProfile?.suspend()
     }
     
     func application(application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: NSData) {
         token = String(deviceToken)
+    }
+}
+
+class TabsViewController: UITabBarController {
+    override func viewDidLoad() {
+        AppDelegate.instance.tabs = self
+        for b in tabBar.items! {
+            b.image = b.image?.imageWithRenderingMode(.AlwaysOriginal)
+            b.selectedImage = b.selectedImage?.imageWithRenderingMode(.AlwaysOriginal)
+            b.setTitleTextAttributes([NSForegroundColorAttributeName: Palette.CONTROL], forState: .Selected)
+        }
     }
 }

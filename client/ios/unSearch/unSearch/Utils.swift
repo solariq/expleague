@@ -199,3 +199,22 @@ class KeyboardStateTracker: NSObject {
     }
 }
 
+class Lang {
+    static func rusNumEnding(count: Int, variants: [String]) -> String {
+        let num = count % 100
+        if (num >= 11 && num <= 19) {
+            return variants[2];
+        }
+        else {
+            switch num % 10 {
+            case 1:
+                return variants[0]
+            case 2, 3, 4:
+                return variants[1]
+            default:
+                return variants[2];
+            }
+        }
+    }
+}
+

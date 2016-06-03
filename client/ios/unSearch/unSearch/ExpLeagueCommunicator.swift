@@ -21,19 +21,19 @@ enum ExpLeagueCommunicatorStatus: Int {
 }
 
 class ExpLeagueCommunicatorState {
-    let owner: ExpLeagueCommunicator
+    let owner: ExpLeagueCommunicator?
     var mode: ExpLeagueCommunicatorMode {
         didSet {
-            owner.stateChanged()
+            owner?.stateChanged()
         }
     }
     var status: ExpLeagueCommunicatorStatus {
         didSet {
-            owner.stateChanged()
+            owner?.stateChanged()
         }
     }
     
-    init(_ owner: ExpLeagueCommunicator, mode: ExpLeagueCommunicatorMode, status: ExpLeagueCommunicatorStatus) {
+    init(_ owner: ExpLeagueCommunicator?, mode: ExpLeagueCommunicatorMode, status: ExpLeagueCommunicatorStatus) {
         self.owner = owner
         self.mode = mode
         self.status = status
@@ -41,7 +41,7 @@ class ExpLeagueCommunicatorState {
     
     internal func disconnect() {
         if (status == .Connected) {
-            status = owner.pending.isEmpty && owner.queue.isEmpty && mode == .Background ? .Idle : .Acquiring
+            status = !owner!.profile.busy && mode == .Background ? .Idle : .Acquiring
         }
     }
     
@@ -56,7 +56,6 @@ internal class ExpLeagueCommunicator: NSObject {
     static let DEBUG = false
     // MARK: - *** Public members ***
     var state: ExpLeagueCommunicatorState!
-    
     func stateChanged() {
         QObject.notify(#selector(self.stateChanged), self)
     }
@@ -66,8 +65,16 @@ internal class ExpLeagueCommunicator: NSObject {
     }
     
     func expect(id: String) {
+        if (ExpLeagueCommunicator.DEBUG) {
+            print("Expecting: \(id)")
+        }
         self.pending.append(id)
-        tick()
+        if (self.state.status == .Idle) {
+            self.state.status = .Acquiring
+        }
+        else {
+            tick()
+        }
     }
     
     func send(msg: XMPPMessage) {
@@ -97,7 +104,7 @@ internal class ExpLeagueCommunicator: NSObject {
     }
     
     private var queue: [XMPPMessage] = []
-    private var pending: [String] = []
+    internal var pending: [String] = []
     
     private var timer: NSTimer?
     private var connectionAttempts = 0
@@ -105,26 +112,40 @@ internal class ExpLeagueCommunicator: NSObject {
     private func tick() {
         timer?.invalidate()
         timer = nil
-        
+        if (state.status == .Connected) {
+            connectionAttempts = 0
+        }
         switch state.status {
-        case .Idle where state.mode == .Background,
-             .Acquiring where connectionAttempts > 10 && state.mode == .Background,
-             .Connected where pending.isEmpty && queue.isEmpty && state.mode == .Background:
+        case .Acquiring where connectionAttempts > 30 && state.mode == .Background,
+             .Connected where !profile.busy && state.mode == .Background:
+            if (ExpLeagueCommunicator.DEBUG) {
+                print("Disconnecting")
+            }
             stream.disconnect()
             
         case .Idle where state.mode == .Foreground, .Acquiring:
-            guard (!stream.isAuthenticated() && !stream.isConnecting() && !stream.isAuthenticating()) else {
+            connectionAttempts += 1
+            guard !stream.isAuthenticated() else {
                 break
             }
-            connectionAttempts += 1
+            
+            guard (!stream.isConnecting() && !stream.isAuthenticating()) else {
+                if (connectionAttempts + 1) % 10 == 0 {
+                    stream.disconnect()
+                }
+
+                break
+            }
+            if (ExpLeagueCommunicator.DEBUG) {
+                print("Connecting")
+            }
             do {
-                try stream.connectWithTimeout(20.0)
+                try stream.connectWithTimeout(XMPPStreamTimeoutNone)
             }
             catch {
                 profile.log("Unable to start the stream: \(error)")
             }
         default:
-            connectionAttempts = 0
             break
         }
         
@@ -146,15 +167,15 @@ internal class ExpLeagueCommunicator: NSObject {
         stream.myJID = profile.jid
         stream.startTLSPolicy = XMPPStreamStartTLSPolicy.Required
         stream.keepAliveInterval = 30
-        stream.enableBackgroundingOnSocket = true
+//        stream.enableBackgroundingOnSocket = true
         super.init()
+        stream.addDelegate(self, delegateQueue: thread)
         state = ExpLeagueCommunicatorState(self, mode: .Background, status: .Idle)
         profile.visitQueue({msg in self.queue.append(msg)})
-        self.pending.appendContentsOf(profile.pending)
-        if (!queue.isEmpty || !pending.isEmpty) {
+//        self.pending.appendContentsOf(profile.pending)
+        if (profile.busy) {
             state.status = .Acquiring
         }
-        stream.addDelegate(self, delegateQueue: thread)
         QObject.connect(self, signal: #selector(self.stateChanged), receiver: self, slot: #selector(self.tick))
     }
 
@@ -244,7 +265,6 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
     func xmppStreamDidAuthenticate(sender: XMPPStream!) {
         connectionAttempts = 0
         state.status = .Connected
-        stateChanged()
         profile._jid = sender.myJID
         
         // updating client version and token
@@ -403,10 +423,8 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         if (ExpLeagueCommunicator.DEBUG) {
             print(presence)
         }
-        if let from = presence.from(), let user = from.user {
-            if let expert = profile.experts.filter({$0.id.user == user}).first {
-                expert.available = presence.type() == "available"
-            }
+        if let from = presence.from(), let user = from.user, let expert = profile.experts.filter({$0.id.user == user}).first {
+            expert.available = presence.type() == "available"
         }
         
         notify { listener in

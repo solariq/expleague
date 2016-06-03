@@ -42,6 +42,11 @@ class HistoryViewController: UITableViewController {
         cellHeight = cell.frame.height
         AppDelegate.instance.historyView = self
         self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        self.navigationController?.navigationBar.tintColor = UIColor.whiteColor()
+        self.navigationController?.navigationBar.titleTextAttributes = [
+            NSForegroundColorAttributeName: UIColor.whiteColor()
+        ]
+
         QObject.connect(AppDelegate.instance, signal: #selector(AppDelegate.activate(_:)), receiver: self, slot: #selector(self.populate))
         populate()
     }
@@ -54,6 +59,7 @@ class HistoryViewController: UITableViewController {
         ongoing.removeAll()
         finished.removeAll()
         archived.removeAll()
+        answerOfTheWeek = nil
         let orders = AppDelegate.instance.activeProfile?.orders ?? []
         for orderO in orders {
             let order = orderO as! ExpLeagueOrder
@@ -255,7 +261,7 @@ class HistoryViewController: UITableViewController {
 
     override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
         if (editingStyle == .Delete) {
-            let order: ExpLeagueOrder;
+            let order: ExpLeagueOrder
             let sections = numberOfSectionsInTableView(tableView)
             let empty: Bool
             switch section(index: indexPath.section) {
@@ -268,29 +274,49 @@ class HistoryViewController: UITableViewController {
             case .Ongoing:
                 order = ongoing.removeAtIndex(indexPath.row)
                 empty = ongoing.isEmpty
+                let alertView: UIAlertController
+                if !(order.count > 0 && order.message(order.count - 1).type == .Answer) {
+                    alertView = UIAlertController(title: "unSearch", message: "Вы уверены, что хотите отменить задание?", preferredStyle: .Alert)
+                }
+                else {
+                    alertView = UIAlertController(title: "unSearch", message: "Вы не поставили оценку. Действительно оставить эксперта без оценки?", preferredStyle: .Alert)
+                }
+                
+                alertView.addAction(UIAlertAction(title: "Да", style: .Default, handler: {(x: UIAlertAction) -> Void in
+                    self.delete(indexPath, sections: sections, empty: empty)
+                    order.archive()
+                }))
+                alertView.addAction(UIAlertAction(title: "Нет", style: .Cancel, handler: nil))
+                presentViewController(alertView, animated: true, completion: nil)
+                return
             case .Finished:
                 order = finished.removeAtIndex(indexPath.row)
                 empty = finished.isEmpty
             }
-            tableView.beginUpdates()
-            if (empty) {
-                if (sections == 1) {
-                    tableView.reloadSections(NSIndexSet(index: indexPath.section), withRowAnimation: .Fade)
-                }
-                else {
-                    tableView.deleteSections(NSIndexSet(index: indexPath.section), withRowAnimation: .Fade)
-                }
-            }
-            if (sections == 1 && empty) {
-                tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-            }
-            else {
-                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-            }
-            
-            tableView.endUpdates()
+            delete(indexPath, sections: sections, empty: empty)
             order.archive()
         }
+    }
+    
+    private func delete(indexPath: NSIndexPath, sections: Int, empty: Bool) {
+        tableView.beginUpdates()
+        if (empty) {
+            if (sections == 1) {
+                tableView.reloadSections(NSIndexSet(index: indexPath.section), withRowAnimation: .Fade)
+            }
+            else {
+                tableView.deleteSections(NSIndexSet(index: indexPath.section), withRowAnimation: .Fade)
+            }
+        }
+        if (sections == 1 && empty) {
+            tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+        }
+        else {
+            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+        }
+        
+        tableView.endUpdates()
+        
     }
 }
 

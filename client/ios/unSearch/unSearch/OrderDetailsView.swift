@@ -46,6 +46,10 @@ class OrderDetailsView: UIView {
     
     private var inAnswer = false
     func scrollToAnswer(animated: Bool) {
+        guard !controller.answerText.isEmpty else {
+            scrollToChat(animated)
+            return
+        }
         scrollView.setContentOffset(separator.frame.origin, animated: animated)
         separator.backgroundColor = UIColor.whiteColor()
         separator.tagImage.image = UIImage(named: "chat_header_tag")!
@@ -93,7 +97,7 @@ class OrderDetailsView: UIView {
         
         let objectsToShare = [pdfData]
         let activityVC = UIActivityViewController(activityItems: objectsToShare, applicationActivities: nil)
-        window?.rootViewController?.presentViewController(activityVC, animated: true, completion: nil)
+        controller.presentViewController(activityVC, animated: true, completion: nil)
     }
     
     func adjustScroll() {

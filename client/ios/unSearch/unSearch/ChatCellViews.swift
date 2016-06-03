@@ -301,53 +301,12 @@ class AnswerReceivedCell: TaskInProgressCell {
 }
 
 class FeedbackCell: UIView {
-    @IBOutlet weak var buttonWidth: NSLayoutConstraint!
-    @IBOutlet weak var leftBlockCenter: NSLayoutConstraint!
-    @IBOutlet var stars: [UIImageView]!
-    @IBOutlet weak var bottle: UIImageView!
-    @IBOutlet weak var bottles: UIImageView!
-    @IBAction func fire(sender: AnyObject) {
-        fire?()
-    }
-    
-    var fire: (() -> ())?
-    
-    var rate: Int = 0 {
-        didSet {
-            var index = 0
-            for s in stars {
-                s.highlighted = index < rate
-                index += 1
-            }
-            if (rate == 5) {
-                stars[3].highlighted = false
-            }
-        }
-    }
-    
     override func awakeFromNib() {
         super.awakeFromNib()
         //        no.layer.masksToBounds = true
-        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(FeedbackCell.handleTap(_:))))
-        NSLayoutConstraint.activateConstraints([
-            NSLayoutConstraint(item: self, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: frame.height)
-        ])
-    }
-    
-    func handleTap(recognizer: UITapGestureRecognizer) {
-        let tap = recognizer.locationInView(self)
-        for i in 0..<stars.count {
-            let rect = stars[i].frame
-            if (distance(tap, CGPointMake(rect.origin.x + rect.width / 2, rect.origin.y + rect.height / 2)) < 30) {
-                rate = i + 1
-            }
-        }
-    }
-    
-    func distance(p1: CGPoint, _ p2: CGPoint) -> CGFloat {
-        let xDist = p2.x - p1.x
-        let yDist = p2.y - p1.y
-        return sqrt((xDist * xDist) + (yDist * yDist));
+//        NSLayoutConstraint.activateConstraints([
+//            NSLayoutConstraint(item: self, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: frame.height)
+//        ])
     }
 }
 
@@ -398,6 +357,39 @@ class ContinueCell: UIView {
         NSLayoutConstraint.activateConstraints([
             NSLayoutConstraint(item: self, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: frame.height)
         ])
+    }
+}
+
+class SaveCell: UIView {
+    @IBOutlet weak var no: UIButton!
+    @IBOutlet weak var yes: UIButton!
+    @IBAction func cancel(sender: AnyObject) {
+        ok?()
+    }
+    @IBAction func fire(sender: UIButton) {
+        cancel?()
+    }
+    
+    var ok: (() -> ())?
+    var cancel: (() -> ())?
+    
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        yes.backgroundColor = UIColor.whiteColor()
+        yes.layer.borderWidth = 2
+        yes.layer.borderColor = Palette.CONTROL.CGColor
+        yes.layer.cornerRadius = 8
+        //        yes.layer.masksToBounds = true
+        no.backgroundColor = UIColor.whiteColor()
+        no.layer.borderWidth = 2
+        no.layer.borderColor = Palette.CONTROL.CGColor
+        no.layer.cornerRadius = 8
+        //        no.layer.masksToBounds = true
+        
+        NSLayoutConstraint.activateConstraints([
+            NSLayoutConstraint(item: self, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: frame.height)
+            ])
     }
 }
 

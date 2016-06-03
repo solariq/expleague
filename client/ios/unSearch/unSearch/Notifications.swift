@@ -12,8 +12,8 @@ import NotificationCenter
 class Notifications {
     static func unableToCommunicate(incoming: Int, outgoing: Int) -> UILocalNotification {
         let notification = UILocalNotification()
-        notification.fireDate = NSDate(timeIntervalSinceNow: 10)
-//        notification.fireDate = NSDate(timeIntervalSinceNow: 5 * 60)
+//        notification.fireDate = NSDate(timeIntervalSinceNow: 10)
+        notification.fireDate = NSDate(timeIntervalSinceNow: 5 * 60)
         notification.alertBody = "Не удалось доставить \(incoming > 0 ? "\(incoming) входящих" : "")\(incoming > 0 && outgoing > 0 ? " и " : "")\(outgoing > 0 ? "\(outgoing) исходящих" : ""). Войдите в приложение, и мы попробуем еще раз"
         notification.alertAction = "Cейчас"
         notification.soundName = "owl.wav"
@@ -48,7 +48,7 @@ class Notifications {
             return
         }
         let notification = UILocalNotification()
-        notification.alertBody = "Получен ответ на задание от \(order.expert): \(order.shortAnswer)"
+        notification.alertBody = "Получен ответ на задание от \(order.experts.last?.name ?? "unknown"): \(order.shortAnswer)"
         notification.soundName = "owl.wav"
         notification.userInfo = ["order" : order.id]
         UIApplication.sharedApplication().scheduleLocalNotification(notification)
@@ -59,7 +59,7 @@ class Notifications {
             return
         }
         let notification = UILocalNotification()
-        notification.alertBody = "Получено сообщение от \(order.expert!.name): '\(message.body)'"
+        notification.alertBody = "Получено сообщение от \(order.expert!.name): '\(message.body!)'"
         notification.soundName = "owl.wav"
         notification.userInfo = ["order" : order.id]
         UIApplication.sharedApplication().scheduleLocalNotification(notification)

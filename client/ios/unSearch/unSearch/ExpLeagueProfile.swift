@@ -40,10 +40,6 @@ class ExpLeagueProfile: NSManagedObject {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
     
-    var pending: [String] {
-        return pendingStr?.componentsSeparatedByString(" ") ?? []
-    }
-    
     private dynamic var communicator: ExpLeagueCommunicator?
     init(_ name: String, domain: String, login: String, passwd: String, port: Int16, context: NSManagedObjectContext) {
         super.init(entity: NSEntityDescription.entityForName("Profile", inManagedObjectContext: context)!, insertIntoManagedObjectContext: context)
@@ -56,6 +52,18 @@ class ExpLeagueProfile: NSManagedObject {
         self.passwd = passwd
         self.active = false
         save()
+    }
+
+    var expectingAOW: Bool {
+        return receiveAnswerOfTheWeek?.boolValue ?? false
+    }
+    
+    var busy: Bool {
+        return incoming > 0 || outgoing > 0 || expectingAOW
+    }
+    
+    func busyChanged() {
+        QObject.notify(#selector(self.busyChanged), self)
     }
     
     func disconnect() {
@@ -91,20 +99,23 @@ class ExpLeagueProfile: NSManagedObject {
     }
     
     func expect(id: String) {
-        update {
-            self.pendingStr = (self.pendingStr != nil ? self.pendingStr! + " " : "") + id
+        updateSync {
+            for order in self.orders {
+                for message in (order as! ExpLeagueOrder).messagesRaw {
+                    if let msg = message as? ExpLeagueMessage where msg.id == id {
+                        return
+                    }
+                }
+            }
+//            self.pendingStr = (self.pendingStr != nil ? self.pendingStr! + " " : "") + id
             self.communicator!.expect(id)
-            QObject.notify(#selector(self.pendingCount), self)
+            self.incomingChanged()
         }
     }
     
     dynamic var _jid: XMPPJID?
     var jid: XMPPJID! {
         return _jid ?? XMPPJID.jidWithString(login + "@" + domain + "/unSearch");
-    }
-    
-    var progressBar: ConnectionProgressController? {
-        return AppDelegate.instance.connectionProgressView
     }
     
     func order(name name: String) -> ExpLeagueOrder? {
@@ -138,7 +149,7 @@ class ExpLeagueProfile: NSManagedObject {
     }
     
     func aow(title: String) {
-        update {
+        updateSync {
             self.aowTitle = title
             self.receiveAnswerOfTheWeek = true
         }
@@ -159,7 +170,7 @@ class ExpLeagueProfile: NSManagedObject {
     internal func enqueue(msg: XMPPMessage) {
         update {
             self.queue = (self.queue ?? NSOrderedSet()).append(QueueItem(message: msg, context: self.managedObjectContext!))
-            QObject.notify(#selector(self.undeliveredCount), self)
+            self.outgoingChanged()
         }
     }
     
@@ -287,35 +298,40 @@ class ExpLeagueProfile: NSManagedObject {
             }
         }
         receiveAnswerOfTheWeek = false
+        busyChanged()
         add(order: order)
         Notifications.notifyBestAnswer(order, title: aowTitle ?? "")
     }
     
-    func undeliveredCount() -> Int {
+    var outgoing: Int {
         return queue != nil ? queue!.count : 0
     }
 
-    func pendingCount() -> Int {
-        return pending.count
+    var incoming: Int {
+        return communicator?.pending.count ?? 0
+    }
+    
+    func outgoingChanged() {
+        busyChanged()
+        QObject.notify(#selector(self.outgoingChanged), self)
+    }
+    
+    func incomingChanged() {
+        busyChanged()
+        QObject.notify(#selector(self.incomingChanged), self)
     }
 
     func delivered(outgoing msg: XMPPMessage) {
         update {
             self.queue = (self.queue ?? NSOrderedSet()).removeAll() {(i: QueueItem) -> Bool in i.receipt == msg.elementID()}
-            QObject.notify(#selector(self.undeliveredCount), self)
+            self.outgoingChanged()
         }
     }
     
     func delivered(incoming msg: XMPPMessage) {
-        update {
-            var pending = self.pending
-            pending.removeOne(msg.elementID())
-            self.pendingStr = pending.joinWithSeparator(" ")
-            QObject.notify(#selector(self.pendingCount), self)
-        }
+        incomingChanged()
     }
 
-    
     func visitQueue(visitor: (XMPPMessage)->()) {
         for item in queue ?? NSOrderedSet() {
             visitor(try! XMPPMessage(XMLString: (item as! QueueItem).body))

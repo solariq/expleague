@@ -159,7 +159,7 @@ class OrderDescriptionViewController: UITableViewController {
     @IBOutlet weak var owlY: NSLayoutConstraint!
     
     internal func adjustSizes(height: CGFloat) {
-        print("\(height), \(sizeOfInput(height))")
+//        print("\(height), \(sizeOfInput(height))")
         let inputHeight = sizeOfInput(height)
         if (inputHeight > 130) {
             unSearchLabel.hidden = false
@@ -456,8 +456,8 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
                 queue.report(imageId!, status: true)
             }
         }
-        print("Loaded: " + imageId!)
-        print(response);
+//        print("Loaded: " + imageId!)
+//        print(response);
 //        self.uploadButton.enabled = true
     }
     

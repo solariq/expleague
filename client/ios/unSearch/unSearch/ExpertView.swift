@@ -80,7 +80,16 @@ class ExpertViewController: UIViewController {
             onlineStatus.text = "Оффлайн"
             onlineStatus.textColor = Palette.ERROR
         }
-        descriptionText.text = "Эксперт в областях: \(expert.tags.joinWithSeparator(", "))\nОбразование: высшее\nВыполнено заказов: \(expert.tasks)"
+        let text = NSMutableAttributedString()
+        let tags = expert.tags.count > 8 ? Array(expert.tags[0..<8]) : expert.tags
+        text.appendAttributedString(NSAttributedString(string: "Эксперт в областях: ", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
+        text.appendAttributedString(NSAttributedString(string: tags.joinWithSeparator(", "), attributes: [NSFontAttributeName: UIFont.systemFontOfSize(15)]))
+        text.appendAttributedString(NSAttributedString(string: "\nОбразование: ", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
+        text.appendAttributedString(NSAttributedString(string: "высшее", attributes: [NSFontAttributeName: UIFont.systemFontOfSize(15)]))
+        text.appendAttributedString(NSAttributedString(string: "\nВыполнено заказов: ", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
+        text.appendAttributedString(NSAttributedString(string: "\(expert.tasks)", attributes: [NSFontAttributeName: UIFont.systemFontOfSize(15)]))
+        descriptionText.attributedText = text
+        descriptionText.textColor = Palette.COMMENT
         score.text = String(format: "%.1f баллов %d оценок", expert.rating, expert.based)
         orders.text = "\(expert.myTasks) заказов выполнено"
         view.layoutIfNeeded()

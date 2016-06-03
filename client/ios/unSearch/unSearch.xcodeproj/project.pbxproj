@@ -52,6 +52,8 @@
 		EE70A5381C7FA3EA00174674 /* markdownpad-github.css in Resources */ = {isa = PBXBuildFile; fileRef = EE70A5361C7FA3EA00174674 /* markdownpad-github.css */; };
 		EE70A5391C7FA3EA00174674 /* md-scripts.js in Resources */ = {isa = PBXBuildFile; fileRef = EE70A5371C7FA3EA00174674 /* md-scripts.js */; };
 		EE755C551C57E9110018AF12 /* Setup.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE755C541C57E9110018AF12 /* Setup.xib */; };
+		EE8259B31D0058970051CB2E /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8259B21D0058970051CB2E /* WelcomeViewController.swift */; };
+		EE8259B51D0096490051CB2E /* SaveView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE8259B41D0096490051CB2E /* SaveView.xib */; };
 		EE9EE79F1C576587000E9F46 /* LookingForExpert.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE9EE79E1C576587000E9F46 /* LookingForExpert.xib */; };
 		EE9EE7A31C577859000E9F46 /* TaskInProgress.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE9EE7A11C577859000E9F46 /* TaskInProgress.xib */; };
 		EEAF257A1C99E4BC00D75745 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EEAF25781C99E4BC00D75745 /* Main.storyboard */; };
@@ -119,6 +121,8 @@
 		EE70A5361C7FA3EA00174674 /* markdownpad-github.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "markdownpad-github.css"; sourceTree = "<group>"; };
 		EE70A5371C7FA3EA00174674 /* md-scripts.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "md-scripts.js"; sourceTree = "<group>"; };
 		EE755C541C57E9110018AF12 /* Setup.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Setup.xib; sourceTree = "<group>"; };
+		EE8259B21D0058970051CB2E /* WelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
+		EE8259B41D0096490051CB2E /* SaveView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SaveView.xib; sourceTree = "<group>"; };
 		EE9EE79E1C576587000E9F46 /* LookingForExpert.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LookingForExpert.xib; sourceTree = "<group>"; };
 		EE9EE7A11C577859000E9F46 /* TaskInProgress.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TaskInProgress.xib; sourceTree = "<group>"; };
 		EEAF25791C99E4BC00D75745 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -177,6 +181,7 @@
 				EEFBDF461CBBC34F00F484F1 /* Utils.swift */,
 				EE18F7821CF76FF9007E9ED8 /* Notifications.swift */,
 				EE18F7881CF87858007E9ED8 /* QObject.swift */,
+				EE8259B21D0058970051CB2E /* WelcomeViewController.swift */,
 			);
 			path = unSearch;
 			sourceTree = "<group>";
@@ -239,6 +244,7 @@
 				EE0FC7E01C503CB9006F6045 /* OutgoingMessage.xib */,
 				EEC0FF311C9080D100889E68 /* FeedbackView.xib */,
 				EE2DB1911C4E5AD800F9601D /* ChatInput.xib */,
+				EE8259B41D0096490051CB2E /* SaveView.xib */,
 				EEF3E77A1C908EA50050A519 /* Separator.xib */,
 				688A50479C578C8365DA8927 /* ContinueView.xib */,
 			);
@@ -366,6 +372,7 @@
 				EE70A5381C7FA3EA00174674 /* markdownpad-github.css in Resources */,
 				EEAF257A1C99E4BC00D75745 /* Main.storyboard in Resources */,
 				EEAF257C1C99EF1100D75745 /* owl.wav in Resources */,
+				EE8259B51D0096490051CB2E /* SaveView.xib in Resources */,
 				EE755C551C57E9110018AF12 /* Setup.xib in Resources */,
 				EE70A5391C7FA3EA00174674 /* md-scripts.js in Resources */,
 				EE62CB551C975A9600352699 /* ExpertCell.xib in Resources */,
@@ -456,6 +463,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EE18F7851CF77660007E9ED8 /* ExpLeagueCommunicator.swift in Sources */,
+				EE8259B31D0058970051CB2E /* WelcomeViewController.swift in Sources */,
 				EE62BEEF1C452CA1004B6A42 /* OrderDetailsViewController.swift in Sources */,
 				EE6EA7CC1C48F79300692406 /* ProfileModel.xcdatamodeld in Sources */,
 				EE18F7831CF76FF9007E9ED8 /* Notifications.swift in Sources */,
@@ -571,6 +579,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_INSTALL_OBJC_HEADER = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "unSearch/unSearch-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/**";
@@ -612,6 +621,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_INSTALL_OBJC_HEADER = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "unSearch/unSearch-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/**";
 				VALIDATE_PRODUCT = YES;

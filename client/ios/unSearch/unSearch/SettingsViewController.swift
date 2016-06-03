@@ -9,8 +9,12 @@ import XMPPFramework
 import CloudKit
 
 class AboutViewController: UIViewController {
+    var initialized = false
     @IBOutlet var stars: [UIImageView]!
     
+    @IBOutlet weak var topConstraint: NSLayoutConstraint!
+    @IBOutlet weak var evaluateLabel: UILabel!
+    @IBOutlet weak var slogan: UILabel!
     @IBOutlet weak var navigationBar: UINavigationBar!
     @IBOutlet weak var build: UILabel!
     @IBOutlet weak var inviteButton: UIButton!
@@ -41,13 +45,29 @@ class AboutViewController: UIViewController {
     
     var friend: String?
     
+    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+        guard initialized else {
+            return
+        }
+        let isLandscape = size.height < size.width
+//        slogan.hidden = isLandscape
+        build.hidden = isLandscape
+        evaluateLabel.hidden = isLandscape
+        topConstraint.constant = size.height * 0.1
+        for s in stars {
+            s.hidden = isLandscape
+        }
+    }
     override func viewDidLoad() {
+        super.viewDidLoad()
+        initialized = true
         inviteButton.layer.cornerRadius = inviteButton.frame.height / 2
         inviteButton.layer.borderColor = Palette.CONTROL.CGColor
         inviteButton.layer.borderWidth = 2
         inviteButton.clipsToBounds = true
+        topConstraint.constant = view.frame.height * 0.1
         let system = NSBundle.mainBundle().infoDictionary!
-        build.text = "Version \(AppDelegate.versionName())\n\(system["BuildDate"])"
+        build.text = "Version \(AppDelegate.versionName())\n\(system["BuildDate"] ?? "")"
         navigationController!.navigationBar.setBackgroundImage(UIImage(named: "history_background"), forBarMetrics: .Default)
         navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
         navigationController!.navigationBar.tintColor = UIColor.whiteColor()
