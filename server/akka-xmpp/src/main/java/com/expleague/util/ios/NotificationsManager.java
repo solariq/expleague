@@ -75,6 +75,22 @@ public class NotificationsManager {
       return;
     String token = device.token();
     if (client != null && device.platform().startsWith("iOS") && token.length() > 0) {
+      log.info("Sending push notification from " + message.from());
+      SimpleApnsPushNotification notification = null;
+      if (message.from().resource().isEmpty()) { // system message
+        if (message.has(Operations.Start.class) && message.has(ExpertsProfile.class)) {
+          notification = new ExpertFoundNotification(token, message.from(), message.get(ExpertsProfile.class));
+        }
+      } else {
+        final ExpertsProfile profile = Roster.instance().profile(XMPP.jid(message.from().resource()));
+        if (message.has(Answer.class)) {
+          notification = new ResponseReceivedNotification(token, message.from(), profile);
+        } else if (!message.body().isEmpty()) {
+          notification = new MessageReceivedNotification(token, message.from(), profile, message.body());
+        }
+      }
+      if (notification == null)
+        return;
       if (device.build() > 22) {
         sendPush(
             new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{\"content-available\": 1}, \"id\": \"" + message.id() + "\"}", tomorrow()),
@@ -82,22 +98,6 @@ public class NotificationsManager {
         );
       }
       else {
-        log.info("Sending push notification from " + message.from());
-        SimpleApnsPushNotification notification = null;
-        if (message.from().resource().isEmpty()) { // system message
-          if (message.has(Operations.Start.class) && message.has(ExpertsProfile.class)) {
-            notification = new ExpertFoundNotification(token, message.from(), message.get(ExpertsProfile.class));
-          }
-        } else {
-          final ExpertsProfile profile = Roster.instance().profile(XMPP.jid(message.from().resource()));
-          if (message.has(Answer.class)) {
-            notification = new ResponseReceivedNotification(token, message.from(), profile);
-          } else if (!message.body().isEmpty()) {
-            notification = new MessageReceivedNotification(token, message.from(), profile, message.body());
-          }
-        }
-        if (notification == null)
-          return;
         sendPush(notification, message.to().local());
       }
     }
