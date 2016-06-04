@@ -160,7 +160,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         tabBarController?.tabBar.hidden = true
         data.markAsRead()
     }
-
+    
     func attach(input: ChatInputViewController) {
         self.presentViewController(picker, animated: true, completion: nil)
         input.progress.tintColor = UIColor.blueColor()
@@ -238,6 +238,16 @@ class FeedbackViewController: UIViewController {
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:))))
         SKPaymentQueue.defaultQueue().addTransactionObserver(self)
         updateDescription(nil, order: parent.data.order)
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        parent.detailsView?.keyboardTracker.stop()
+    }
+
+    override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
+        parent.detailsView?.keyboardTracker.start()
     }
     
     func handleTap(recognizer: UITapGestureRecognizer) {

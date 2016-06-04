@@ -26,18 +26,29 @@ class WelcomeViewController: UIViewController {
     var active: Bool = false
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController!.navigationBar.hidden = true
+        navigationController!.navigationBarHidden = true
         enterCodeButton.layer.cornerRadius = enterCodeButton.frame.height / 2
         enterCodeButton.clipsToBounds = true
         sendRequestButton.layer.cornerRadius = enterCodeButton.frame.height / 2
         sendRequestButton.clipsToBounds = true
         buyButton.layer.cornerRadius = enterCodeButton.frame.height / 2
         buyButton.clipsToBounds = true
+//        self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        self.navigationController?.navigationBar.tintColor = UIColor.whiteColor()
+        self.navigationController?.navigationBar.titleTextAttributes = [
+            NSForegroundColorAttributeName: UIColor.whiteColor()
+        ]
+
     }
     
     override func viewWillAppear(animated: Bool) {
-        navigationController!.navigationBar.hidden = true
+        navigationController!.navigationBarHidden = true
     }
+    
+    override func preferredStatusBarStyle() -> UIStatusBarStyle {
+        return .LightContent
+    }
+    
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         guard AppDelegate.instance.activeProfile == nil else {

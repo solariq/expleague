@@ -183,7 +183,7 @@ extension AppDelegate: UIApplicationDelegate {
         
         dataController = DataController(app: self)
         
-        application.statusBarStyle = .LightContent
+//        application.statusBarStyle = .LightContent
         application.registerForRemoteNotifications()
         let settings = UIUserNotificationSettings(forTypes: [.Alert, .Sound], categories: [])
         application.registerUserNotificationSettings(settings)

@@ -106,6 +106,7 @@
                             <constraint firstItem="Z9d-7S-uAC" firstAttribute="centerX" secondItem="bjS-pN-BeT" secondAttribute="centerX" id="woQ-Yk-jap"/>
                         </constraints>
                     </view>
+                    <extendedEdge key="edgesForExtendedLayout" bottom="YES"/>
                     <navigationItem key="navigationItem" id="CjY-bW-Cpk"/>
                     <nil key="simulatedTopBarMetrics"/>
                     <connections>
@@ -114,7 +115,7 @@
                         <outlet property="owlImage" destination="Z9d-7S-uAC" id="g3V-aG-ffk"/>
                         <outlet property="sendRequestButton" destination="Upo-9d-PUL" id="RPP-mv-hGY"/>
                         <outlet property="topConstraint" destination="LQJ-iR-9eS" id="gUu-g7-lHH"/>
-                        <segue destination="49e-Tb-3d3" kind="show" identifier="Start" id="9k0-yp-pyJ"/>
+                        <segue destination="49e-Tb-3d3" kind="presentation" identifier="Start" modalPresentationStyle="fullScreen" modalTransitionStyle="coverVertical" id="9k0-yp-pyJ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="mvk-yA-dth" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -215,7 +216,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="u2B-Id-j2V" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-3078" y="-96"/>
+            <point key="canvasLocation" x="-2952" y="-63"/>
         </scene>
         <!--Tabs View Controller-->
         <scene sceneID="yl2-sM-qoP">
@@ -646,7 +647,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rB5-Zq-35N" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-955" y="-1493.5"/>
+            <point key="canvasLocation" x="-959" y="-1493.5"/>
         </scene>
         <!--Вся история-->
         <scene sceneID="SfJ-Uw-cHc">

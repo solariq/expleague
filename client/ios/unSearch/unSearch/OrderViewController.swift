@@ -71,6 +71,10 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
         keyboardTracker.stop()
     }
     
+    override func preferredStatusBarStyle() -> UIStatusBarStyle {
+        return .Default
+    }
+    
     var descriptionController: OrderDescriptionViewController {
         return self.childViewControllers[0] as! OrderDescriptionViewController
     }
