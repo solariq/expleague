@@ -40,7 +40,21 @@ class ExpLeagueOrder: NSManagedObject {
         }
         return lastExpert
     }
-    
+
+    var experts: [ExpLeagueMember] {
+        var result: [ExpLeagueMember] = []
+        for i in 0 ..< count {
+            let msg = message(i)
+            if (msg.type == .ExpertAssignment){
+                result.append(msg.expert!)
+            }
+            else if (msg.type == .ExpertCancel) {
+                result.removeLast()
+            }
+        }
+        return result
+    }
+
     var before: NSTimeInterval {
         return started + offer.duration
     }
@@ -80,29 +94,30 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     func message(message msg: XMPPMessage) {
-        let message = ExpLeagueMessage(msg: msg, parent: self, context: self.managedObjectContext!)
-        let mutableItems = messagesRaw.mutableCopy() as! NSMutableOrderedSet
-        mutableItems.addObject(message)
-        self.messagesRaw = mutableItems.copy() as! NSOrderedSet
-        if (message.type == .Answer) {
-            self.flags = self.flags | ExpLeagueOrderFlags.Deciding.rawValue
+        update {
+            let message = ExpLeagueMessage(msg: msg, parent: self, context: self.managedObjectContext!)
+            self.messagesRaw = self.messagesRaw.append(message)
+            if (message.type == .Answer) {
+                self.flags = self.flags | ExpLeagueOrderFlags.Deciding.rawValue
+                Notifications.notifyAnswerReceived(self)
+            }
+            else if (message.type == .ExpertAssignment) {
+                Notifications.notifyExpertFound(self)
+            }
+            else if (message.type == .ExpertMessage) {
+                Notifications.notifyMessageReceived(self, message: message)
+            }
+            self._unreadCount = nil
+            self._icon = nil
         }
-        self._unreadCount = nil
-        self._icon = nil
-        save()
-    }
-
-
-    func iq(iq iq: XMPPIQ) {
-    }
-    
-    func presence(presence presence: XMPPPresence) {
     }
     
     func send(text text: String) {
         let msg = XMPPMessage(type: "groupchat", to: jid)
         msg.addBody(text)
-        message(message:msg)
+        update {
+            self.message(message:msg)
+        }
         parent.send(msg)
     }
     
@@ -113,7 +128,9 @@ class ExpLeagueOrder: NSManagedObject {
     func send(xml xml: DDXMLElement, type: String) {
         let msg = XMPPMessage(type: type, to: jid)
         msg.addChild(xml)
-        message(message:msg)
+        update {
+            self.message(message: msg)
+        }
         parent.send(msg)
     }
     
@@ -125,25 +142,21 @@ class ExpLeagueOrder: NSManagedObject {
         return offer.topic
     }
     
-    func cancel(needAlert: Bool? = nil) {
-        if (needAlert == nil || needAlert!) {
-            let alertView = UIAlertController(title: "Лига Экспертов", message: "Вы уверены, что хотите отменить задание?", preferredStyle: .Alert)
+    func cancel(ownerVC: UIViewController? = nil) {
+        if let vc = ownerVC {
+            let alertView = UIAlertController(title: "unSearch", message: "Вы уверены, что хотите отменить задание?", preferredStyle: .Alert)
             alertView.addAction(UIAlertAction(title: "Да", style: .Default, handler: {(x: UIAlertAction) -> Void in
-                self.cancel(false)
+                self.cancel(nil)
             }))
             
             alertView.addAction(UIAlertAction(title: "Нет", style: .Cancel, handler: nil))
-            AppDelegate.instance.window?.rootViewController?.presentViewController(alertView, animated: true, completion: nil)
-            return
-        }
-
-        guard AppDelegate.instance.ensureConnected({self.cancel(false)}) else {
+            vc.presentViewController(alertView, animated: true, completion: nil)
             return
         }
 
         let msg = XMPPMessage(type: "normal", to: jid)
         msg.addChild(DDXMLElement(name: "cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
-        parent.send(msg)
+        self.parent.send(msg)
         update {
             self.flags = self.flags | ExpLeagueOrderFlags.Canceled.rawValue
             dispatch_async(dispatch_get_main_queue()) {
@@ -176,8 +189,13 @@ class ExpLeagueOrder: NSManagedObject {
         }
     }
     
+    func markSaved() {
+        update {
+            self.flags = self.flags | ExpLeagueOrderFlags.Saved.rawValue
+        }
+    }
     var fake: Bool {
-        return (flags & ExpLeagueOrderFlags.Fake.rawValue) != 0
+        return (flags & ExpLeagueOrderFlags.Fake.rawValue) != 0 && (flags & ExpLeagueOrderFlags.Saved.rawValue == 0)
     }
     
     func archive() {
@@ -410,4 +428,5 @@ enum ExpLeagueOrderFlags: Int16 {
     case Archived = 1024
     case Deciding = 512
     case Fake = 4
+    case Saved = 8
 }

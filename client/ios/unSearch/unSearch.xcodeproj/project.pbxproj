@@ -19,11 +19,6 @@
 		688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */; };
 		688A5F9437AF93713CFE361E /* AnswerReceived.xib in Resources */ = {isa = PBXBuildFile; fileRef = 688A5C34FC2CDD0C969E8E4D /* AnswerReceived.xib */; };
 		688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A57432F80F266C309E3F5 /* SettingsViewController.swift */; };
-		6C0463F11CF9E3E80046E602 /* OrderLocationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0463F01CF9E3E80046E602 /* OrderLocationType.swift */; };
-		6C0463F31CF9E4740046E602 /* OrderLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0463F21CF9E4740046E602 /* OrderLocation.swift */; };
-		6C0463F71CF9FAE10046E602 /* LocationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0463F51CF9EFA70046E602 /* LocationProvider.swift */; };
-		6C76178E1CE75B26004E4074 /* SearchLocationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C76178D1CE75B26004E4074 /* SearchLocationController.swift */; };
-		6C7617901CE79D2A004E4074 /* SearchLocationDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6C76178F1CE79D2A004E4074 /* SearchLocationDialog.xib */; };
 		D59A36A01C92E2D900A64230 /* arrow_cut_close.png in Resources */ = {isa = PBXBuildFile; fileRef = D59A369C1C92E2D900A64230 /* arrow_cut_close.png */; };
 		D59A36A11C92E2D900A64230 /* arrow_hide.png in Resources */ = {isa = PBXBuildFile; fileRef = D59A369D1C92E2D900A64230 /* arrow_hide.png */; };
 		D59A36A21C92E2D900A64230 /* phone.png in Resources */ = {isa = PBXBuildFile; fileRef = D59A369E1C92E2D900A64230 /* phone.png */; };
@@ -33,6 +28,9 @@
 		EE073CFE1CBD303B0056CCDB /* ExpLeagueTag+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE073CFA1CBD303B0056CCDB /* ExpLeagueTag+CoreDataProperties.swift */; };
 		EE073CFF1CBD303B0056CCDB /* ExpLeagueTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE073CFB1CBD303B0056CCDB /* ExpLeagueTag.swift */; };
 		EE0FC7E11C503CB9006F6045 /* OutgoingMessage.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE0FC7E01C503CB9006F6045 /* OutgoingMessage.xib */; };
+		EE18F7831CF76FF9007E9ED8 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE18F7821CF76FF9007E9ED8 /* Notifications.swift */; };
+		EE18F7851CF77660007E9ED8 /* ExpLeagueCommunicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE18F7841CF77660007E9ED8 /* ExpLeagueCommunicator.swift */; };
+		EE18F7891CF87858007E9ED8 /* QObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE18F7881CF87858007E9ED8 /* QObject.swift */; };
 		EE1CB81A1C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1CB8181C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift */; };
 		EE1CB81B1C48449D0047DB03 /* ExpLeagueProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1CB8191C48449D0047DB03 /* ExpLeagueProfile.swift */; };
 		EE297ACC1C4A6C79002DE78B /* ConnectionProgressController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE297ACB1C4A6C79002DE78B /* ConnectionProgressController.swift */; };
@@ -54,6 +52,8 @@
 		EE70A5381C7FA3EA00174674 /* markdownpad-github.css in Resources */ = {isa = PBXBuildFile; fileRef = EE70A5361C7FA3EA00174674 /* markdownpad-github.css */; };
 		EE70A5391C7FA3EA00174674 /* md-scripts.js in Resources */ = {isa = PBXBuildFile; fileRef = EE70A5371C7FA3EA00174674 /* md-scripts.js */; };
 		EE755C551C57E9110018AF12 /* Setup.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE755C541C57E9110018AF12 /* Setup.xib */; };
+		EE8259B31D0058970051CB2E /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8259B21D0058970051CB2E /* WelcomeViewController.swift */; };
+		EE8259B51D0096490051CB2E /* SaveView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE8259B41D0096490051CB2E /* SaveView.xib */; };
 		EE9EE79F1C576587000E9F46 /* LookingForExpert.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE9EE79E1C576587000E9F46 /* LookingForExpert.xib */; };
 		EE9EE7A31C577859000E9F46 /* TaskInProgress.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE9EE7A11C577859000E9F46 /* TaskInProgress.xib */; };
 		EEAF257A1C99E4BC00D75745 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EEAF25781C99E4BC00D75745 /* Main.storyboard */; };
@@ -84,11 +84,6 @@
 		688A5D254FAD2FD2CCCC8DF6 /* unSearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = unSearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		688A5DF0D4232A94DBB4A7CB /* ChatModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatModel.swift; sourceTree = "<group>"; };
 		688A5ECEAEA343319DDDED6E /* HistoryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
-		6C0463F01CF9E3E80046E602 /* OrderLocationType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderLocationType.swift; sourceTree = "<group>"; };
-		6C0463F21CF9E4740046E602 /* OrderLocation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderLocation.swift; sourceTree = "<group>"; };
-		6C0463F51CF9EFA70046E602 /* LocationProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationProvider.swift; sourceTree = "<group>"; };
-		6C76178D1CE75B26004E4074 /* SearchLocationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchLocationController.swift; sourceTree = "<group>"; };
-		6C76178F1CE79D2A004E4074 /* SearchLocationDialog.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SearchLocationDialog.xib; sourceTree = "<group>"; };
 		D0806994D5FE374ABCB8A184 /* Pods_unSearch.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_unSearch.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D59A369C1C92E2D900A64230 /* arrow_cut_close.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrow_cut_close.png; sourceTree = "<group>"; };
 		D59A369D1C92E2D900A64230 /* arrow_hide.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrow_hide.png; sourceTree = "<group>"; };
@@ -100,6 +95,10 @@
 		EE073CFA1CBD303B0056CCDB /* ExpLeagueTag+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueTag+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		EE073CFB1CBD303B0056CCDB /* ExpLeagueTag.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueTag.swift; sourceTree = "<group>"; };
 		EE0FC7E01C503CB9006F6045 /* OutgoingMessage.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OutgoingMessage.xib; sourceTree = "<group>"; };
+		EE18F7821CF76FF9007E9ED8 /* Notifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
+		EE18F7841CF77660007E9ED8 /* ExpLeagueCommunicator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueCommunicator.swift; sourceTree = "<group>"; };
+		EE18F7881CF87858007E9ED8 /* QObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QObject.swift; sourceTree = "<group>"; };
+		EE18F78A1CF9BAED007E9ED8 /* ProfileModel +Queue +Meta +Pending.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "ProfileModel +Queue +Meta +Pending.xcdatamodel"; sourceTree = "<group>"; };
 		EE1CB8181C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueProfile+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		EE1CB8191C48449D0047DB03 /* ExpLeagueProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpLeagueProfile.swift; sourceTree = "<group>"; };
 		EE297ACB1C4A6C79002DE78B /* ConnectionProgressController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionProgressController.swift; sourceTree = "<group>"; };
@@ -122,6 +121,8 @@
 		EE70A5361C7FA3EA00174674 /* markdownpad-github.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "markdownpad-github.css"; sourceTree = "<group>"; };
 		EE70A5371C7FA3EA00174674 /* md-scripts.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "md-scripts.js"; sourceTree = "<group>"; };
 		EE755C541C57E9110018AF12 /* Setup.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Setup.xib; sourceTree = "<group>"; };
+		EE8259B21D0058970051CB2E /* WelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
+		EE8259B41D0096490051CB2E /* SaveView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SaveView.xib; sourceTree = "<group>"; };
 		EE9EE79E1C576587000E9F46 /* LookingForExpert.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LookingForExpert.xib; sourceTree = "<group>"; };
 		EE9EE7A11C577859000E9F46 /* TaskInProgress.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TaskInProgress.xib; sourceTree = "<group>"; };
 		EEAF25791C99E4BC00D75745 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -160,7 +161,6 @@
 		688A5994FE17EAF8576C2131 /* unSearch */ = {
 			isa = PBXGroup;
 			children = (
-				6C0463F41CF9EF750046E602 /* Location */,
 				D59A369B1C92E2CC00A64230 /* src_images */,
 				EE70A5351C7FA32600174674 /* Web */,
 				EE3731AB1C689414007F55B0 /* unSearch.entitlements */,
@@ -179,7 +179,9 @@
 				688A5ECEAEA343319DDDED6E /* HistoryViewController.swift */,
 				EE297ACB1C4A6C79002DE78B /* ConnectionProgressController.swift */,
 				EEFBDF461CBBC34F00F484F1 /* Utils.swift */,
-				6C76178D1CE75B26004E4074 /* SearchLocationController.swift */,
+				EE18F7821CF76FF9007E9ED8 /* Notifications.swift */,
+				EE18F7881CF87858007E9ED8 /* QObject.swift */,
+				EE8259B21D0058970051CB2E /* WelcomeViewController.swift */,
 			);
 			path = unSearch;
 			sourceTree = "<group>";
@@ -192,16 +194,6 @@
 				8605A9C421A901ED42F97CFE /* Pods */,
 				9C4570206917EC63AFB195ED /* Frameworks */,
 			);
-			sourceTree = "<group>";
-		};
-		6C0463F41CF9EF750046E602 /* Location */ = {
-			isa = PBXGroup;
-			children = (
-				6C0463F01CF9E3E80046E602 /* OrderLocationType.swift */,
-				6C0463F21CF9E4740046E602 /* OrderLocation.swift */,
-				6C0463F51CF9EFA70046E602 /* LocationProvider.swift */,
-			);
-			name = Location;
 			sourceTree = "<group>";
 		};
 		8605A9C421A901ED42F97CFE /* Pods */ = {
@@ -251,8 +243,8 @@
 				EEF7BB411C4F9B6000E1B7BD /* IncomingMessage.xib */,
 				EE0FC7E01C503CB9006F6045 /* OutgoingMessage.xib */,
 				EEC0FF311C9080D100889E68 /* FeedbackView.xib */,
-				6C76178F1CE79D2A004E4074 /* SearchLocationDialog.xib */,
 				EE2DB1911C4E5AD800F9601D /* ChatInput.xib */,
+				EE8259B41D0096490051CB2E /* SaveView.xib */,
 				EEF3E77A1C908EA50050A519 /* Separator.xib */,
 				688A50479C578C8365DA8927 /* ContinueView.xib */,
 			);
@@ -275,6 +267,7 @@
 				EE62BEFE1C4802B2004B6A42 /* ExpLeagueMessage.swift */,
 				EE62BEFF1C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift */,
 				EE62BF001C4802B2004B6A42 /* ExpLeagueOrder.swift */,
+				EE18F7841CF77660007E9ED8 /* ExpLeagueCommunicator.swift */,
 			);
 			name = Data;
 			sourceTree = "<group>";
@@ -379,6 +372,7 @@
 				EE70A5381C7FA3EA00174674 /* markdownpad-github.css in Resources */,
 				EEAF257A1C99E4BC00D75745 /* Main.storyboard in Resources */,
 				EEAF257C1C99EF1100D75745 /* owl.wav in Resources */,
+				EE8259B51D0096490051CB2E /* SaveView.xib in Resources */,
 				EE755C551C57E9110018AF12 /* Setup.xib in Resources */,
 				EE70A5391C7FA3EA00174674 /* md-scripts.js in Resources */,
 				EE62CB551C975A9600352699 /* ExpertCell.xib in Resources */,
@@ -388,7 +382,6 @@
 				D59A36A11C92E2D900A64230 /* arrow_hide.png in Resources */,
 				688A50BC12A73F2E37A3EF75 /* LaunchScreen.storyboard in Resources */,
 				EE2DB1921C4E5AD800F9601D /* ChatInput.xib in Resources */,
-				6C7617901CE79D2A004E4074 /* SearchLocationDialog.xib in Resources */,
 				EE62CB571C9834D000352699 /* ExpertPresentation.xib in Resources */,
 				EE9EE79F1C576587000E9F46 /* LookingForExpert.xib in Resources */,
 				D59A36A21C92E2D900A64230 /* phone.png in Resources */,
@@ -469,28 +462,28 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EE18F7851CF77660007E9ED8 /* ExpLeagueCommunicator.swift in Sources */,
+				EE8259B31D0058970051CB2E /* WelcomeViewController.swift in Sources */,
 				EE62BEEF1C452CA1004B6A42 /* OrderDetailsViewController.swift in Sources */,
 				EE6EA7CC1C48F79300692406 /* ProfileModel.xcdatamodeld in Sources */,
+				EE18F7831CF76FF9007E9ED8 /* Notifications.swift in Sources */,
 				EE073CFC1CBD303B0056CCDB /* ExpLeagueMember+CoreDataProperties.swift in Sources */,
 				EE62BF031C4802B2004B6A42 /* ExpLeagueOrder+CoreDataProperties.swift in Sources */,
 				EE62BF041C4802B2004B6A42 /* ExpLeagueOrder.swift in Sources */,
 				EEF7BB401C4F9B2700E1B7BD /* ChatCellViews.swift in Sources */,
 				EEBCD4BA1CBBEA3500BCB624 /* QueueItem+CoreDataProperties.swift in Sources */,
-				6C0463F11CF9E3E80046E602 /* OrderLocationType.swift in Sources */,
 				EE62BF021C4802B2004B6A42 /* ExpLeagueMessage.swift in Sources */,
 				EE2DB1941C4E5E9000F9601D /* ChatInputViewController.swift in Sources */,
 				EE62BF011C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift in Sources */,
 				EE1CB81B1C48449D0047DB03 /* ExpLeagueProfile.swift in Sources */,
 				EE62CB511C958E2B00352699 /* ExpertView.swift in Sources */,
 				EE073CFD1CBD303B0056CCDB /* ExpLeagueMember.swift in Sources */,
-				6C0463F31CF9E4740046E602 /* OrderLocation.swift in Sources */,
 				EE073CFF1CBD303B0056CCDB /* ExpLeagueTag.swift in Sources */,
 				688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */,
 				EE297ACC1C4A6C79002DE78B /* ConnectionProgressController.swift in Sources */,
 				688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */,
-				6C76178E1CE75B26004E4074 /* SearchLocationController.swift in Sources */,
 				EE70A5341C79C02C00174674 /* EVURLCache.swift in Sources */,
-				6C0463F71CF9FAE10046E602 /* LocationProvider.swift in Sources */,
+				EE18F7891CF87858007E9ED8 /* QObject.swift in Sources */,
 				EEFBDF471CBBC34F00F484F1 /* Utils.swift in Sources */,
 				EE1CB81A1C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift in Sources */,
 				688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */,
@@ -586,6 +579,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_INSTALL_OBJC_HEADER = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "unSearch/unSearch-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/**";
@@ -627,6 +621,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_INSTALL_OBJC_HEADER = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "unSearch/unSearch-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/**";
 				VALIDATE_PRODUCT = YES;
@@ -678,11 +673,12 @@
 		EE6EA7CA1C48F79300692406 /* ProfileModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				EE18F78A1CF9BAED007E9ED8 /* ProfileModel +Queue +Meta +Pending.xcdatamodel */,
 				EE073CEF1CBD2D900056CCDB /* ProfileModel +Queue +Meta.xcdatamodel */,
 				EEBCD4B71CBBE76A00BCB624 /* ProfileModel +Queue.xcdatamodel */,
 				EE6EA7CB1C48F79300692406 /* ProfileModel.xcdatamodel */,
 			);
-			currentVersion = EE073CEF1CBD2D900056CCDB /* ProfileModel +Queue +Meta.xcdatamodel */;
+			currentVersion = EE18F78A1CF9BAED007E9ED8 /* ProfileModel +Queue +Meta +Pending.xcdatamodel */;
 			path = ProfileModel.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

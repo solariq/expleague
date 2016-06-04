@@ -182,35 +182,35 @@ public class EVURLCache : NSURLCache {
         return storagePath;
     }
     
+    static func md5(string string: String) -> String {
+        var digest = [UInt8](count: Int(CC_MD5_DIGEST_LENGTH), repeatedValue: 0)
+        if let data = string.dataUsingEncoding(NSUTF8StringEncoding) {
+            CC_MD5(data.bytes, CC_LONG(data.length), &digest)
+        }
+        
+        var digestHex = ""
+        for index in 0..<Int(CC_MD5_DIGEST_LENGTH) {
+            digestHex += String(format: "%02x", digest[index])
+        }
+        
+        return digestHex
+    }
+    
     // build up the complete storrage path for a request plus root folder.
     public static func storagePathForRequest(request: NSURLRequest, rootPath: String) -> String {
         var localUrl: String!
-        let host: String = request.URL?.host ?? "default"
+        let host: String = request.URL!.host ?? "default"
         
         // The filename could be forced by the remote server. This could be used to force multiple url's to the same cache file
-        if let cacheKey = request.valueForHTTPHeaderField(URLCACHE_CACHE_KEY) {
-            localUrl = "\(host)/\(cacheKey)"
-        } else {
-            if let path = request.URL?.relativePath {
-                localUrl = "\(host)\(path)"
-            } else {
-                NSLog("WARNING: Unable to get the path from the request: \(request)")
-            }
-        }
-        
+        localUrl = "\(host)/\(md5(string: request.URL?.absoluteString ?? ""))"
         // Without an extension it's treated as a folder and the file will be called index.html
-        if let storageFile: String = localUrl.componentsSeparatedByString("/").last {
-            if !storageFile.containsString(".")  {
-                localUrl = "/\(localUrl)/index.html"
+        if let storageFile: String = request.URL?.absoluteString.componentsSeparatedByString("/").last where storageFile.containsString(".")  {
+            if let fileExtension = storageFile.componentsSeparatedByString(".").last {
+                localUrl = "\(localUrl).\(fileExtension)"
             }
         }
         
-        // Force case insensitive compare (OSX filesystem can be case sensitive)
-        if FORCE_LOWERCASE {
-            localUrl = "\(rootPath)/\(localUrl.lowercaseString)"
-        } else {
-            localUrl = "\(rootPath)/\(localUrl)"
-        }
+        localUrl = "\(rootPath)/\(localUrl)"
         
         // Cleanup
         if localUrl.hasPrefix("file:") {
@@ -218,6 +218,7 @@ public class EVURLCache : NSURLCache {
         }
         localUrl = localUrl.stringByReplacingOccurrencesOfString("//", withString: "/")
         localUrl = localUrl.stringByReplacingOccurrencesOfString("//", withString: "/")
+//        print("storing \(request.URL!) as  \(localUrl)")
         return localUrl
     }
     
@@ -233,10 +234,8 @@ public class EVURLCache : NSURLCache {
     
     // Check if we have a network connection
     private static func networkAvailable() -> Bool {
-        let reachability: Reachability
         do {
-            reachability = try Reachability.reachabilityForInternetConnection()
-            return reachability.isReachable()
+            return try Reachability.reachabilityForInternetConnection().isReachable()
         } catch {
             debugLog("Unable to create Reachability")
             return false

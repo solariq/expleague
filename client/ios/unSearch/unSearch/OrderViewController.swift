@@ -17,9 +17,6 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
     
     @IBAction func fire(sender: AnyObject) {
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
-        guard controller.orderTextDelegate!.validate() && AppDelegate.instance.ensureConnected({self.fire(self)}) else {
-            return
-        }
         if (controller.location.isLocalOrder() && controller.location.getLocation() == nil) {
             let alertView = UIAlertController(title: "Заказ", message: "На данный момент ваша геопозиция не найдена. Подождите несколько секунд, или отключите настройку \"рядом со мной\".", preferredStyle: .Alert)
             alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
@@ -68,6 +65,10 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
         keyboardTracker.stop()
     }
     
+    override func preferredStatusBarStyle() -> UIStatusBarStyle {
+        return .Default
+    }
+
     var descriptionController: OrderDescriptionViewController {
         return self.childViewControllers[0] as! OrderDescriptionViewController
     }
@@ -99,7 +100,7 @@ class OrderDescriptionViewController: UITableViewController {
     var orderTextDelegate: OrderTextDelegate?
     var experts: [ExpLeagueMember] = []
     var location: OrderLocation! = OrderLocation()
-    
+
     let locationProvider = LocationProvider()
 
     func append(expert exp: ExpLeagueMember) {
@@ -155,7 +156,7 @@ class OrderDescriptionViewController: UITableViewController {
     @IBOutlet weak var owlY: NSLayoutConstraint!
     
     internal func adjustSizes(height: CGFloat) {
-        print("\(height), \(sizeOfInput(height))")
+//        print("\(height), \(sizeOfInput(height))")
         let inputHeight = sizeOfInput(height)
         if (inputHeight > 130) {
             unSearchLabel.hidden = false
@@ -261,20 +262,20 @@ class OrderDescriptionViewController: UITableViewController {
         }
         else if (indexPath.item == 2) {
             let alertController = UIAlertController(title: "Связать с гео-позицией", message: nil, preferredStyle: .ActionSheet)
-            
+
             let useCurrentLocationActionHandler = { (action: UIAlertAction!) -> Void in
                 self.location.setCurrentLocation(self.locationProvider)
                 self.update()
             }
-            
+
             let showMapActionHandler = { (action: UIAlertAction!) -> Void in
                 self.update()
-                
+
                 let navigation = UINavigationController(rootViewController: SearchLocationController(parent: self, locationProvider: self.locationProvider))
                 self.presentViewController(navigation, animated: true, completion: nil)
             }
-            
-            
+
+
             let cancelActionHandler = { (action: UIAlertAction!) -> Void in
                 self.location.clearLocation()
                 self.update()
@@ -486,8 +487,8 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
                 queue.report(imageId!, status: true)
             }
         }
-        print("Loaded: " + imageId!)
-        print(response);
+//        print("Loaded: " + imageId!)
+//        print(response);
 //        self.uploadButton.enabled = true
     }
     

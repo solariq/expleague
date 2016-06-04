@@ -201,6 +201,10 @@ public class Offer extends Item {
     this.room = room;
   }
 
+  public void attach(Image image) {
+    attachments.add(image);
+  }
+
   @XmlEnum
   public enum Urgency {
     @XmlEnumValue("asap") ASAP(TimeUnit.HOURS.toMillis(1)),

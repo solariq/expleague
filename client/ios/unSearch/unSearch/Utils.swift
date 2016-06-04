@@ -76,6 +76,54 @@ extension NSTimer {
     }
 }
 
+extension NSSet {
+    func append(item: Element) -> NSSet {
+        let mutable = mutableCopy() as! NSMutableSet
+        mutable.addObject(item)
+        return mutable.copy() as! NSSet
+    }
+    
+    func removeOne(item: Element) -> NSSet {
+        let mutable = mutableCopy() as! NSMutableSet
+        mutable.removeObject(item)
+        return mutable.copy() as! NSSet
+    }
+
+    func filter<T>(predicate p: (T) -> Bool) -> NSSet {
+        let mutable = mutableCopy() as! NSMutableSet
+        for item in mutable {
+            if (p(item as! T)) {
+                mutable.removeObject(item)
+            }
+        }
+        return mutable.copy() as! NSSet
+    }
+}
+
+extension NSOrderedSet {
+    func append(item: Element) -> NSOrderedSet {
+        let mutable = mutableCopy() as! NSMutableOrderedSet
+        mutable.addObject(item)
+        return mutable.copy() as! NSOrderedSet
+    }
+    
+    func remove(item: Element) -> NSOrderedSet {
+        let mutable = mutableCopy() as! NSMutableOrderedSet
+        mutable.removeObject(item)
+        return mutable.copy() as! NSOrderedSet
+    }
+    
+    func removeAll<T>(predicate p: (T) -> Bool) -> NSOrderedSet {
+        let mutable = mutableCopy() as! NSMutableOrderedSet
+        for item in mutable {
+            if (p(item as! T)) {
+                mutable.removeObject(item)
+            }
+        }
+        return mutable.copy() as! NSOrderedSet
+    }
+}
+
 extension NSManagedObject {
     func notify() {}
     
@@ -85,6 +133,14 @@ extension NSManagedObject {
             self.save()
         }
     }
+    
+    func updateSync(todo: () -> ()) {
+        dispatch_sync(AppDelegate.instance.xmppQueue) {
+            todo()
+            self.save()
+        }
+    }
+    
     internal final func save() {
         do {
             try self.managedObjectContext!.save()
@@ -95,6 +151,16 @@ extension NSManagedObject {
         dispatch_async(dispatch_get_main_queue()) {
             self.notify()
         }
+    }
+}
+
+extension Array where Element : Equatable {
+    mutating func removeOne(item: Generator.Element) -> Bool {
+        if let idx = indexOf({$0 == item}) {
+            removeAtIndex(idx)
+            return true
+        }
+        return false
     }
 }
 
@@ -130,6 +196,25 @@ class KeyboardStateTracker: NSObject {
     let closure: (CGFloat) -> ()
     init(_ closure: (CGFloat)->()) {
         self.closure = closure;
+    }
+}
+
+class Lang {
+    static func rusNumEnding(count: Int, variants: [String]) -> String {
+        let num = count % 100
+        if (num >= 11 && num <= 19) {
+            return variants[2];
+        }
+        else {
+            switch num % 10 {
+            case 1:
+                return variants[0]
+            case 2, 3, 4:
+                return variants[1]
+            default:
+                return variants[2];
+            }
+        }
     }
 }
 

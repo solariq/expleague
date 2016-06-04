@@ -20,10 +20,12 @@ extension ExpLeagueProfile {
     @NSManaged var name: String
     @NSManaged var orderSelected: NSNumber?
     @NSManaged var receiveAnswerOfTheWeek: NSNumber?
+    @NSManaged var aowTitle: String?
     @NSManaged var passwd: String
     @NSManaged var port: NSNumber
     @NSManaged var orders: NSOrderedSet
-    @NSManaged var queue: NSSet?
+    @NSManaged var queue: NSOrderedSet?
+    @NSManaged var pendingStr: String?
     @NSManaged var expertsSet: NSSet?
     @NSManaged var tagsSet: NSSet?
 
