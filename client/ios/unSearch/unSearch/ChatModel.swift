@@ -11,6 +11,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     private var lastKnownMessage: Int = 0
     let order: ExpLeagueOrder
     let lock: dispatch_queue_t
+    var lastAnswer: AnswerReceivedModel?
 
     weak var controller: OrderDetailsViewController? {
         didSet {
@@ -53,6 +54,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         }
     }
     
+    
     func translateToIndex(plain: Int) -> NSIndexPath? {
         var x = plain - 1
         for i in 0..<groups.count {
@@ -67,7 +69,21 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         return nil
     }
 
+    private var finished = true
+    private func rebuild() {
+        finished = true
+        cells.removeAll()
+        lastAnswer = nil
+        lastKnownMessage = 0
+        syncInner()
+    }
+    
     private func syncInner() {
+        guard finished else {
+            rebuild()
+            return
+        }
+        finished = false
         var progressModel = cells.last is TaskInProgressModel || cells.last is LookingForExpertModel ? cells.last : nil
         if (cells.isEmpty) {
             cells.append(SetupModel(order: order))
@@ -86,11 +102,11 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
 
         while (lastKnownMessage < order.count) {
             if (modelChangeCount > 2) {
-                print("Loop found! Enforce next message")
+                AppDelegate.instance.activeProfile!.log("Loop found in the chat model! Enforcing next message.")
                 lastKnownMessage += 1
             }
             let msg = order.message(lastKnownMessage)
-            print("\(order.jid) -> \(msg.type)")
+//            print("\(order.jid) -> \(msg.type)")
             if (msg.type != .System && !model.accept(msg)) { // switch model
                 modelChangeCount += 1
                 var newModel : ChatCellModel? = nil
@@ -120,7 +136,9 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                     answer += "\n<div id=\"\(id)\"/>\n"
                     answer += (msg.body!);
                     answer += "\n<a class=\"back_to_chat\" href='unSearch:///chat-messages#\(cells.count)'>Обратно в чат</a>\n"
-                    newModel = AnswerReceivedModel(id: id, progress: (progressModel as? TaskInProgressModel) ?? TaskInProgressModel(order: order))
+                    lastAnswer = AnswerReceivedModel(id: id, progress: (progressModel as? TaskInProgressModel) ?? TaskInProgressModel(order: order))
+                    newModel = lastAnswer
+                    
                     progressModel = nil
                 }
                 else if (msg.type == .ExpertMessage) {
@@ -147,7 +165,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             state = .Ask
             break
         case .Closed, .Canceled:
-            state = .Closed
+            state = order.fake ? .Save : .Closed
             break
         default:
             state = .Chat
@@ -159,6 +177,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         updateGroups()
         controller?.messages.reloadData()
         controller?.answerText = answer
+        finished = true
         dispatch_async(dispatch_get_main_queue()){
             self.controller?.scrollToLastMessage()
         }
@@ -279,6 +298,7 @@ class ChatAction: NSObject {
 
 enum ChatState: Int {
     case Chat = 0
+    case Save = 1
     case Ask = 2
     case Closed = 3
 }

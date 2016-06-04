@@ -119,11 +119,16 @@ public class Operations {
 
   @XmlRootElement
   public static class Token extends Item {
+    @XmlAttribute
+    private String client;
     @XmlValue
     private String value;
 
     public String value() {
       return value;
+    }
+    public String client() {
+      return client;
     }
   }
 

@@ -7,3 +7,4 @@
 //#import "AsyncSocket.h"
 //#import "JSCustomBadge.h"
 //#import "JSCustomBadge"
+#import <CommonCrypto/CommonCrypto.h>

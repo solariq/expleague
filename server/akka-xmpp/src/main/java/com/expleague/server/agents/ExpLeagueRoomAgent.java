@@ -2,6 +2,7 @@ package com.expleague.server.agents;
 
 import akka.persistence.RecoveryCompleted;
 import com.expleague.model.Answer;
+import com.expleague.model.Image;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations.*;
 import com.expleague.server.Roster;
@@ -228,13 +229,16 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
 
   private Offer offer(Message msg) {
     final Offer result;
-    if (!msg.has(Offer.class) && msg.body().isEmpty())
+    if (!msg.has(Offer.class) && msg.body().isEmpty() && !msg.has(Image.class))
       return null;
     final ExpLeagueOrder prevOrder = lastOrder();
     if (prevOrder != null) {
       final Offer prevOffer = prevOrder.offer();
       result = prevOffer.copy();
-      result.topic(result.topic() + "\n" + msg.body());
+      result.topic(result.topic() + "\n" + (msg.body().length() > 0 ? msg.body() : "Приложение"));
+      if (msg.has(Image.class)) {
+        result.attach(msg.get(Image.class));
+      }
       prevOrder.participants()
           .filter(expert -> EnumSet.of(SLACKER, DENIER).contains(prevOrder.role(expert)))
           .forEach(slacker -> result.filter().reject(slacker));

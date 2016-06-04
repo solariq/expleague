@@ -56,8 +56,9 @@ public class InMemRoster implements Roster {
     }
     final XMPPDevice result = new XMPPDevice(associated, query.username(), query.passwd(), query.expert(), query.platform(), null) {
       @Override
-      public void updateToken(String token) {
+      public void updateDevice(String token, String clientVersion) {
         this.token = token;
+        this.clientVersion = clientVersion;
       }
     };
     devices.put(result.name(), result);

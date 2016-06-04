@@ -17,9 +17,6 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
     
     @IBAction func fire(sender: AnyObject) {
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
-        guard controller.orderTextDelegate!.validate() && AppDelegate.instance.ensureConnected({self.fire(self)}) else {
-            return
-        }
         if (controller.isLocal.on && location == nil) {
             let alertView = UIAlertController(title: "Заказ", message: "На данный момент ваша геопозиция не найдена. Подождите несколько секунд, или отключите настройку \"рядом со мной\".", preferredStyle: .Alert)
             alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
@@ -72,6 +69,10 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
 
     override func viewWillDisappear(animated: Bool) {
         keyboardTracker.stop()
+    }
+    
+    override func preferredStatusBarStyle() -> UIStatusBarStyle {
+        return .Default
     }
     
     var descriptionController: OrderDescriptionViewController {
@@ -162,7 +163,7 @@ class OrderDescriptionViewController: UITableViewController {
     @IBOutlet weak var owlY: NSLayoutConstraint!
     
     internal func adjustSizes(height: CGFloat) {
-        print("\(height), \(sizeOfInput(height))")
+//        print("\(height), \(sizeOfInput(height))")
         let inputHeight = sizeOfInput(height)
         if (inputHeight > 130) {
             unSearchLabel.hidden = false
@@ -459,8 +460,8 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
                 queue.report(imageId!, status: true)
             }
         }
-        print("Loaded: " + imageId!)
-        print(response);
+//        print("Loaded: " + imageId!)
+//        print(response);
 //        self.uploadButton.enabled = true
     }
     
