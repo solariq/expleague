@@ -20,7 +20,7 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
         guard controller.orderTextDelegate!.validate() && AppDelegate.instance.ensureConnected({self.fire(self)}) else {
             return
         }
-        if (controller.isLocal.on && controller.location == nil) {
+        if (controller.location.isLocalOrder() && controller.location.getLocation() == nil) {
             let alertView = UIAlertController(title: "Заказ", message: "На данный момент ваша геопозиция не найдена. Подождите несколько секунд, или отключите настройку \"рядом со мной\".", preferredStyle: .Alert)
             alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
             presentViewController(alertView, animated: true, completion: nil)
@@ -36,8 +36,8 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
         AppDelegate.instance.activeProfile!.placeOrder(
             topic: controller.orderText.text,
             urgency: controller.urgency.on ? "asap" : "day",
-            local: controller.isLocal.on,
-            location: controller.location,
+            local: controller.location.isLocalOrder(),
+            location: controller.location.getLocation(),
             experts: controller.experts.map{ return $0.id },
             images: controller.attachments.ids
         )
@@ -78,7 +78,6 @@ class OrderDescriptionViewController: UITableViewController {
     let rowHeight = 62;
     @IBOutlet weak var lupa: UIImageView!
 
-    @IBOutlet weak var isLocal: UISwitch!
     @IBOutlet weak var urgency: UISwitch!
     @IBOutlet weak var urgencyLabel: UILabel!
     @IBOutlet weak var owlIcon: UIImageView!
@@ -91,6 +90,7 @@ class OrderDescriptionViewController: UITableViewController {
     @IBOutlet weak var orderTextBackground: UIView!
     @IBOutlet weak var attachmentsView: UICollectionView!
     @IBOutlet weak var expertsDescription: UILabel!
+    @IBOutlet weak var locationDescription: UILabel!
 
     let attachments = AttachmentsViewDelegate()
     var orderTextBGColor: UIColor?
@@ -98,7 +98,9 @@ class OrderDescriptionViewController: UITableViewController {
     var pickerDelegate: ImagePickerDelegate?
     var orderTextDelegate: OrderTextDelegate?
     var experts: [ExpLeagueMember] = []
-    var location: CLLocationCoordinate2D?
+    var location: OrderLocation! = OrderLocation()
+    
+    let locationProvider = LocationProvider()
 
     func append(expert exp: ExpLeagueMember) {
         if (!experts.contains(exp)) {
@@ -109,6 +111,7 @@ class OrderDescriptionViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.locationProvider.setUpLocationProvider()
         orderTextBGColor = orderTextBackground.backgroundColor
 
         (view as! UITableView).allowsSelection = true
@@ -174,7 +177,6 @@ class OrderDescriptionViewController: UITableViewController {
     }
     
     internal func clear() {
-        isLocal.on = false
         urgency.on = false
         orderTextDelegate!.clear(orderText)
         attachments.clear()
@@ -208,6 +210,14 @@ class OrderDescriptionViewController: UITableViewController {
         }
         else {
             expertsDescription.text = "Автоматически"
+        }
+        switch self.location.locationType! {
+        case .NoLocation:
+            locationDescription.text = "Не выбрано"
+        case .CurrentLocation:
+            locationDescription.text = "Рядом со мной"
+        case .CustomLocation:
+            locationDescription.text = "Выбрано на карте"
         }
     }
 
@@ -250,9 +260,31 @@ class OrderDescriptionViewController: UITableViewController {
             self.presentViewController(navigation, animated: true, completion: nil)
         }
         else if (indexPath.item == 2) {
-            let searchLocationController = SearchLocationDialogController(parent: self)
-            let navigation = UINavigationController(rootViewController: searchLocationController)
-            self.presentViewController(navigation, animated: true, completion: nil)
+            let alertController = UIAlertController(title: "Связать с гео-позицией", message: nil, preferredStyle: .ActionSheet)
+            
+            let useCurrentLocationActionHandler = { (action: UIAlertAction!) -> Void in
+                self.location.setCurrentLocation(self.locationProvider)
+                self.update()
+            }
+            
+            let showMapActionHandler = { (action: UIAlertAction!) -> Void in
+                self.update()
+                
+                let navigation = UINavigationController(rootViewController: SearchLocationController(parent: self, locationProvider: self.locationProvider))
+                self.presentViewController(navigation, animated: true, completion: nil)
+            }
+            
+            
+            let cancelActionHandler = { (action: UIAlertAction!) -> Void in
+                self.location.clearLocation()
+                self.update()
+            }
+
+            alertController.addAction(UIAlertAction(title: "Искать рядом со мной", style: .Default, handler: useCurrentLocationActionHandler))
+            alertController.addAction(UIAlertAction(title: "Выбрать на карте", style: .Default, handler: showMapActionHandler))
+            alertController.addAction(UIAlertAction(title: "Не использовать гео-позицию", style: .Default, handler: cancelActionHandler))
+            alertController.addAction(UIAlertAction(title: "Отмена", style: .Cancel, handler: nil))
+            self.presentViewController(alertController, animated: true, completion: nil)
         }
     }
 }

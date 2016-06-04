@@ -19,6 +19,9 @@
 		688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */; };
 		688A5F9437AF93713CFE361E /* AnswerReceived.xib in Resources */ = {isa = PBXBuildFile; fileRef = 688A5C34FC2CDD0C969E8E4D /* AnswerReceived.xib */; };
 		688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A57432F80F266C309E3F5 /* SettingsViewController.swift */; };
+		6C0463F11CF9E3E80046E602 /* OrderLocationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0463F01CF9E3E80046E602 /* OrderLocationType.swift */; };
+		6C0463F31CF9E4740046E602 /* OrderLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0463F21CF9E4740046E602 /* OrderLocation.swift */; };
+		6C0463F71CF9FAE10046E602 /* LocationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0463F51CF9EFA70046E602 /* LocationProvider.swift */; };
 		6C76178E1CE75B26004E4074 /* SearchLocationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C76178D1CE75B26004E4074 /* SearchLocationController.swift */; };
 		6C7617901CE79D2A004E4074 /* SearchLocationDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6C76178F1CE79D2A004E4074 /* SearchLocationDialog.xib */; };
 		D59A36A01C92E2D900A64230 /* arrow_cut_close.png in Resources */ = {isa = PBXBuildFile; fileRef = D59A369C1C92E2D900A64230 /* arrow_cut_close.png */; };
@@ -81,6 +84,9 @@
 		688A5D254FAD2FD2CCCC8DF6 /* unSearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = unSearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		688A5DF0D4232A94DBB4A7CB /* ChatModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatModel.swift; sourceTree = "<group>"; };
 		688A5ECEAEA343319DDDED6E /* HistoryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
+		6C0463F01CF9E3E80046E602 /* OrderLocationType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderLocationType.swift; sourceTree = "<group>"; };
+		6C0463F21CF9E4740046E602 /* OrderLocation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderLocation.swift; sourceTree = "<group>"; };
+		6C0463F51CF9EFA70046E602 /* LocationProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationProvider.swift; sourceTree = "<group>"; };
 		6C76178D1CE75B26004E4074 /* SearchLocationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchLocationController.swift; sourceTree = "<group>"; };
 		6C76178F1CE79D2A004E4074 /* SearchLocationDialog.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SearchLocationDialog.xib; sourceTree = "<group>"; };
 		D0806994D5FE374ABCB8A184 /* Pods_unSearch.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_unSearch.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -154,6 +160,7 @@
 		688A5994FE17EAF8576C2131 /* unSearch */ = {
 			isa = PBXGroup;
 			children = (
+				6C0463F41CF9EF750046E602 /* Location */,
 				D59A369B1C92E2CC00A64230 /* src_images */,
 				EE70A5351C7FA32600174674 /* Web */,
 				EE3731AB1C689414007F55B0 /* unSearch.entitlements */,
@@ -185,6 +192,16 @@
 				8605A9C421A901ED42F97CFE /* Pods */,
 				9C4570206917EC63AFB195ED /* Frameworks */,
 			);
+			sourceTree = "<group>";
+		};
+		6C0463F41CF9EF750046E602 /* Location */ = {
+			isa = PBXGroup;
+			children = (
+				6C0463F01CF9E3E80046E602 /* OrderLocationType.swift */,
+				6C0463F21CF9E4740046E602 /* OrderLocation.swift */,
+				6C0463F51CF9EFA70046E602 /* LocationProvider.swift */,
+			);
+			name = Location;
 			sourceTree = "<group>";
 		};
 		8605A9C421A901ED42F97CFE /* Pods */ = {
@@ -459,18 +476,21 @@
 				EE62BF041C4802B2004B6A42 /* ExpLeagueOrder.swift in Sources */,
 				EEF7BB401C4F9B2700E1B7BD /* ChatCellViews.swift in Sources */,
 				EEBCD4BA1CBBEA3500BCB624 /* QueueItem+CoreDataProperties.swift in Sources */,
+				6C0463F11CF9E3E80046E602 /* OrderLocationType.swift in Sources */,
 				EE62BF021C4802B2004B6A42 /* ExpLeagueMessage.swift in Sources */,
 				EE2DB1941C4E5E9000F9601D /* ChatInputViewController.swift in Sources */,
 				EE62BF011C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift in Sources */,
 				EE1CB81B1C48449D0047DB03 /* ExpLeagueProfile.swift in Sources */,
 				EE62CB511C958E2B00352699 /* ExpertView.swift in Sources */,
 				EE073CFD1CBD303B0056CCDB /* ExpLeagueMember.swift in Sources */,
+				6C0463F31CF9E4740046E602 /* OrderLocation.swift in Sources */,
 				EE073CFF1CBD303B0056CCDB /* ExpLeagueTag.swift in Sources */,
 				688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */,
 				EE297ACC1C4A6C79002DE78B /* ConnectionProgressController.swift in Sources */,
 				688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */,
 				6C76178E1CE75B26004E4074 /* SearchLocationController.swift in Sources */,
 				EE70A5341C79C02C00174674 /* EVURLCache.swift in Sources */,
+				6C0463F71CF9FAE10046E602 /* LocationProvider.swift in Sources */,
 				EEFBDF471CBBC34F00F484F1 /* Utils.swift in Sources */,
 				EE1CB81A1C48449D0047DB03 /* ExpLeagueProfile+CoreDataProperties.swift in Sources */,
 				688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */,

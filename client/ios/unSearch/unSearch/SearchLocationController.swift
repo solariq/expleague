@@ -9,17 +9,19 @@
 import Foundation
 import MapKit
 
-class SearchLocationController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate, UIGestureRecognizerDelegate {
+class SearchLocationController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDelegate {
     let parent: OrderDescriptionViewController
     let mapView: MKMapView
  
-    let locationManager = CLLocationManager()
     var location: CLLocationCoordinate2D?
     var deviceLocation: CLLocationCoordinate2D?
+    var locationProvider: LocationProvider!
 
-    init(parent: OrderDescriptionViewController) {
+    init(parent: OrderDescriptionViewController, locationProvider: LocationProvider!) {
         self.parent = parent
-        self.location = parent.location
+        self.location = parent.location.getLocation()
+        self.locationProvider = locationProvider
+        
         self.mapView = MKMapView()
         super.init(nibName: nil, bundle: nil)
     }
@@ -31,13 +33,6 @@ class SearchLocationController: UIViewController, CLLocationManagerDelegate, MKM
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        locationManager.requestWhenInUseAuthorization()
-        if CLLocationManager.locationServicesEnabled() {
-            locationManager.delegate = self
-            locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-            locationManager.startUpdatingLocation()
-        }
-
         print("Map dialog loaded")
         
         self.mapView.delegate = self
@@ -47,11 +42,17 @@ class SearchLocationController: UIViewController, CLLocationManagerDelegate, MKM
         tapRecognizer.numberOfTapsRequired = 1
         tapRecognizer.numberOfTouchesRequired = 1
         tapRecognizer.delegate = self
-        
+
+        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(SearchLocationController.handlePan(_:)))
+        panRecognizer.minimumNumberOfTouches = 1
+        panRecognizer.maximumNumberOfTouches = 1
+        panRecognizer.delegate = self
+
         self.mapView.addGestureRecognizer(tapRecognizer)
+        self.mapView.addGestureRecognizer(panRecognizer)
  
         if (self.location == nil) {
-            if let currentLocation = self.locationManager.location {
+            if let currentLocation = self.locationProvider.locationManager.location {
                 self.updateLocation(currentLocation.coordinate)
             }
         }
@@ -75,10 +76,10 @@ class SearchLocationController: UIViewController, CLLocationManagerDelegate, MKM
         view = self.mapView
     }
     
-    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        self.deviceLocation = manager.location?.coordinate
+    func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWithGestureRecognizer otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
     }
-    
+
     func handleTap(recognizer: UITapGestureRecognizer) {
         if (recognizer.state != UIGestureRecognizerState.Ended) {
             return
@@ -90,24 +91,37 @@ class SearchLocationController: UIViewController, CLLocationManagerDelegate, MKM
         updateLocation(self.mapView.convertPoint(touchPoint, toCoordinateFromView: self.mapView))
     }
     
+    func handlePan(recognizer: UIPanGestureRecognizer) {
+        switch (recognizer.state) {
+        case .Began:
+            let translate = recognizer.translationInView(self.mapView)
+        case .Changed:
+            let translate = recognizer.translationInView(self.mapView)
+        case .Ended:
+            print("Pan arrived")
+            let translate = recognizer.translationInView(self.mapView)
+            let touchPoint = CGPoint(x:recognizer.view!.center.x, y:recognizer.view!.center.y)
+            updateLocation(self.mapView.convertPoint(touchPoint, toCoordinateFromView: self.mapView))
+        default:
+            break
+        }
+    }
     
     func approve() {
-        parent.location = location
-        parent.isLocal.setOn(true, animated: false)
+        parent.location.setLocation(location)
         parent.update()
         dismissViewControllerAnimated(true, completion: nil)
     }
     
     func cancel() {
-        parent.location = nil
-        parent.isLocal.setOn(false, animated: false)
+        parent.location.clearLocation()
         parent.update()
         dismissViewControllerAnimated(true, completion: nil)
     }
 
     func updateLocation(optCoordinate: CLLocationCoordinate2D?) {
         if let coordinate = optCoordinate {
-            self.mapView.setRegion(MKCoordinateRegion(center: coordinate, span: MKCoordinateSpanMake(0.05, 0.05)), animated: true)
+            self.mapView.setRegion(MKCoordinateRegion(center: coordinate, span: MKCoordinateSpanMake(0.005, 0.005)), animated: true)
             let point = MKPointAnnotation()
             point.coordinate = coordinate
             self.mapView.removeAnnotations(self.mapView.annotations)
@@ -137,19 +151,16 @@ class SearchLocationDialogController: UIViewController {
     @IBOutlet weak var cancelButton: UIButton!
     
     @IBAction func useCurrentLocation(sender: AnyObject) {
-        parent.isLocal.setOn(true, animated: false)
         parent.update()
         self.dismissViewControllerAnimated(true, completion: nil)
     }
 
     @IBAction func chooseLocation(sender: AnyObject) {
-        parent.isLocal.setOn(true, animated: false)
         parent.update()
         self.dismissViewControllerAnimated(true, completion: nil)
     }
 
     @IBAction func cancel(sender: AnyObject) {
-        parent.isLocal.setOn(false, animated: false)
         parent.update()
         self.dismissViewControllerAnimated(true, completion: nil)
     }
