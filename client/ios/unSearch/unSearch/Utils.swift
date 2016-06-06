@@ -164,6 +164,12 @@ extension Array where Element : Equatable {
     }
 }
 
+extension String {
+    func matches(regexp re: String) -> Bool {
+        return rangeOfString(re, options: [.RegularExpressionSearch], range: nil, locale: nil) == startIndex..<endIndex
+    }
+}
+
 class KeyboardStateTracker: NSObject {
     func start() {
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(KeyboardStateTracker.keyboardShown(_:)), name: UIKeyboardWillShowNotification, object: nil)
@@ -215,6 +221,29 @@ class Lang {
                 return variants[2];
             }
         }
+    }
+}
+
+extension UINavigationController {
+    public override func shouldAutorotate() -> Bool {
+        guard visibleViewController as? UIAlertController == nil else {
+            return super.shouldAutorotate()
+        }
+        return visibleViewController?.shouldAutorotate() ?? true
+    }
+    
+    public override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
+        guard visibleViewController as? UIAlertController == nil else {
+            return super.supportedInterfaceOrientations()
+        }
+        return visibleViewController?.supportedInterfaceOrientations() ?? [.All]
+    }
+    
+    public override func preferredInterfaceOrientationForPresentation() -> UIInterfaceOrientation {
+        guard visibleViewController as? UIAlertController == nil else {
+            return super.preferredInterfaceOrientationForPresentation()
+        }
+        return visibleViewController?.preferredInterfaceOrientationForPresentation() ?? .Portrait
     }
 }
 
