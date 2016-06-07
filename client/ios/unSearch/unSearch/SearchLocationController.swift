@@ -16,6 +16,8 @@ class SearchLocationController: UIViewController, MKMapViewDelegate, UIGestureRe
     var location: CLLocationCoordinate2D?
     var deviceLocation: CLLocationCoordinate2D?
     var locationProvider: LocationProvider!
+    
+    var annotation: MKPointAnnotation?
 
     init(parent: OrderDescriptionViewController, locationProvider: LocationProvider!) {
         self.parent = parent
@@ -92,19 +94,13 @@ class SearchLocationController: UIViewController, MKMapViewDelegate, UIGestureRe
     }
     
     func handlePan(recognizer: UIPanGestureRecognizer) {
-        switch (recognizer.state) {
-        case .Began:
-            let translate = recognizer.translationInView(self.mapView)
-        case .Changed:
-            let translate = recognizer.translationInView(self.mapView)
-        case .Ended:
-            print("Pan arrived")
-            let translate = recognizer.translationInView(self.mapView)
-            let touchPoint = CGPoint(x:recognizer.view!.center.x, y:recognizer.view!.center.y)
-            updateLocation(self.mapView.convertPoint(touchPoint, toCoordinateFromView: self.mapView))
-        default:
-            break
-        }
+    }
+    
+    func mapView(mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        let touchPoint = CGPoint(x: mapView.center.x, y:mapView.center.y)
+        let coordinate = self.mapView.convertPoint(touchPoint, toCoordinateFromView: self.mapView)
+        self.updateLocation(coordinate)
+        print("regionDidChangeAnimated: \(coordinate)")
     }
     
     func approve() {
@@ -121,11 +117,13 @@ class SearchLocationController: UIViewController, MKMapViewDelegate, UIGestureRe
 
     func updateLocation(optCoordinate: CLLocationCoordinate2D?) {
         if let coordinate = optCoordinate {
-            self.mapView.setRegion(MKCoordinateRegion(center: coordinate, span: MKCoordinateSpanMake(0.005, 0.005)), animated: true)
-            let point = MKPointAnnotation()
-            point.coordinate = coordinate
-            self.mapView.removeAnnotations(self.mapView.annotations)
-            self.mapView.addAnnotation(point)
+            //self.mapView.setRegion(MKCoordinateRegion(center: coordinate, span: MKCoordinateSpanMake(0, 0)), animated: false)
+            if (self.annotation == nil) {
+                self.annotation = MKPointAnnotation()
+                self.mapView.addAnnotation(self.annotation!)
+                self.mapView.selectAnnotation(self.annotation!, animated: false)
+            }
+            self.annotation!.coordinate = coordinate
             self.location = coordinate
             print("Location update completed: \(coordinate)")
         }
