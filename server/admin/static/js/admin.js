@@ -4,7 +4,7 @@ var Admin = {
     },
     experts: null,
 
-    load: function(url, success) {
+    loadImpl: function(url, success) {
         $("#content").empty().append('<div class="loader" style=";">Loading...</div>');
         $.ajax({
             type: "GET",
@@ -25,6 +25,11 @@ var Admin = {
     },
 
     scheduledUpdates: [],
+
+    clearSchedule: function() {
+        Admin.scheduledUpdates = [];
+    },
+    
     schedule: function(id, callback, intervalMs) {
         callback();
         Admin.scheduledUpdates = [id];
@@ -39,11 +44,16 @@ var Admin = {
         setTimeout(fn, intervalMs);
     },
 
+    loadPage: function(url, success) {
+        Admin.clearSchedule();
+        Admin.loadImpl(url, success);
+    },
+
     loadUpdatablePage: function(url, success) {
         Admin.schedule(
             url,
             function() {
-                Admin.load(url, success);
+                Admin.loadImpl(url, success);
             },
             Admin.config.PAGE_UPDATE_INTERVAL_MS
         );
@@ -68,7 +78,7 @@ var Admin = {
     },
 
     loadTopExperts: function() {
-        Admin.load("/top/experts", function(data) {
+        Admin.loadPage("/top/experts", function(data) {
             var experts = $("#templates").find(".experts").clone();
             $("#content").empty().append(experts);
             var model = ko.mapping.fromJS(data);
@@ -84,7 +94,7 @@ var Admin = {
 
     loadDumpHandler: function(order) {
         return function() {
-            Admin.load("/dump/" + order.offer.room.bare(), function(data) {
+            Admin.loadPage("/dump/" + order.offer.room.bare(), function(data) {
                 Admin.bindDump(data);
             });
         }
@@ -107,7 +117,6 @@ var Admin = {
             });
             return true;
         });
-        ordersEl.data("model", model);
         ko.applyBindings(model, ordersEl.get(0))
     },
 
@@ -130,7 +139,7 @@ var Admin = {
     },
 
     loadKpi: function() {
-        Admin.load("/kpi", function(data) {
+        Admin.loadPage("/kpi", function(data) {
             var content = $('#content');
             content.empty();
             _.each(data["charts"], function(chart, index) {
