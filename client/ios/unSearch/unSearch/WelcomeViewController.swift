@@ -26,23 +26,22 @@ class WelcomeViewController: UIViewController {
     var active: Bool = false
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController!.navigationBarHidden = true
         enterCodeButton.layer.cornerRadius = enterCodeButton.frame.height / 2
         enterCodeButton.clipsToBounds = true
         sendRequestButton.layer.cornerRadius = enterCodeButton.frame.height / 2
         sendRequestButton.clipsToBounds = true
         buyButton.layer.cornerRadius = enterCodeButton.frame.height / 2
         buyButton.clipsToBounds = true
-//        self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        let bar:UINavigationBar! =  self.navigationController?.navigationBar
+        
+        bar.setBackgroundImage(UIImage(), forBarMetrics: UIBarMetrics.Default)
+        bar.shadowImage = UIImage()
+        bar.backgroundColor = UIColor(red: 0.0, green: 0.3, blue: 0.5, alpha: 0.0)
+        bar.translucent = true
         self.navigationController?.navigationBar.tintColor = UIColor.whiteColor()
         self.navigationController?.navigationBar.titleTextAttributes = [
             NSForegroundColorAttributeName: UIColor.whiteColor()
         ]
-
-    }
-    
-    override func viewWillAppear(animated: Bool) {
-        navigationController!.navigationBarHidden = true
     }
     
     override func preferredStatusBarStyle() -> UIStatusBarStyle {
@@ -61,6 +60,18 @@ class WelcomeViewController: UIViewController {
             return false
         }
         active = true
+    }
+    
+    override func shouldAutorotate() -> Bool {
+        return false
+    }
+    
+    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
+        return [.Portrait]
+    }
+    
+    override func preferredInterfaceOrientationForPresentation() -> UIInterfaceOrientation {
+        return .Portrait
     }
 }
 
@@ -98,14 +109,26 @@ extension WelcomeViewController: SKPaymentTransactionObserver {
 }
 
 class SendRequestViewController: UIViewController {
+    static let emailPattern = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}"
     @IBOutlet weak var emailText: UITextField!
     @IBOutlet weak var sendRequestButton: UIButton!
     @IBAction func sendRequest(sender: AnyObject) {
-        let data = NSData(contentsOfURL: NSURL(string: "https://www.expleague.com/act/sendComment.php?email=\(emailText.text)&id=\(UIDevice.currentDevice().identifierForVendor!.hashValue)")!)
-        if let d = data, let dataStr = NSString(data: d, encoding: NSUTF8StringEncoding) where dataStr.hasSuffix("1") {
-            let alert = UIAlertController(title: "unSearch", message: "Ваша заявка успешно зарегистрирована", preferredStyle: .Alert)
+        let text = emailText.text ?? ""
+        guard text.matches(regexp: SendRequestViewController.emailPattern) else {
+            let alert = UIAlertController(title: "unSearch", message: "Введенная строка не похожа на E-mail", preferredStyle: .Alert)
             alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
             self.presentViewController(alert, animated: true, completion: nil)
+            return
+        }
+
+        let data = NSData(contentsOfURL: NSURL(string: "https://www.expleague.com/act/sendComment.php?email=\(text)&id=\(abs(UIDevice.currentDevice().identifierForVendor!.UUIDString.hashValue))")!)
+        if let d = data, let dataStr = NSString(data: d, encoding: NSUTF8StringEncoding) where dataStr.hasSuffix("1") {
+            let alert = UIAlertController(title: "unSearch", message: "Ваша заявка успешно зарегистрирована", preferredStyle: .Alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: {action in
+                self.navigationController!.popViewControllerAnimated(true)
+            }))
+            self.presentViewController(alert, animated: true, completion: nil)
+            emailText.text = ""
         }
         else {
             let alert = UIAlertController(title: "unSearch", message: "Не удалось зарегистрировать заявку, попробуйте позже", preferredStyle: .Alert)
@@ -114,14 +137,28 @@ class SendRequestViewController: UIViewController {
             self.presentViewController(alert, animated: true, completion: nil)
         }
     }
-
-    override func viewWillAppear(animated: Bool) {
-        navigationController!.navigationBar.hidden = false
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        sendRequestButton.layer.cornerRadius = sendRequestButton.frame.height / 2
+        sendRequestButton.clipsToBounds = true
     }
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         emailText.becomeFirstResponder()
+    }
+    
+    override func shouldAutorotate() -> Bool {
+        return false
+    }
+    
+    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
+        return [.Portrait]
+    }
+    
+    override func preferredInterfaceOrientationForPresentation() -> UIInterfaceOrientation {
+        return .Portrait
     }
 }
 
@@ -133,9 +170,11 @@ class EnterCodeViewController: UIViewController {
             return
         }
         if let enteredCode = UInt64(accessCode.text!) {
-            let code = enteredCode + UInt64(UIDevice.currentDevice().identifierForVendor!.hashValue)
-            guard code % 14340987 != 0 else {
-                dismissViewControllerAnimated(true) {
+            let deviceId = UInt64(abs(UIDevice.currentDevice().identifierForVendor!.UUIDString.hashValue))
+            let code = enteredCode + deviceId
+            if (code % 14340987 == 0) {
+                navigationController!.popViewControllerAnimated(true)
+                dispatch_async(dispatch_get_main_queue()) {
                     AppDelegate.instance.setupDefaultProfiles()
                 }
                 return
@@ -146,12 +185,26 @@ class EnterCodeViewController: UIViewController {
         self.presentViewController(alert, animated: true, completion: nil)
     }
 
-    override func viewWillAppear(animated: Bool) {
-        navigationController!.navigationBar.hidden = false
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        enterButton.layer.cornerRadius = enterButton.frame.height / 2
+        enterButton.clipsToBounds = true
     }
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         accessCode.becomeFirstResponder()
+    }
+
+    override func shouldAutorotate() -> Bool {
+        return false
+    }
+    
+    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
+        return [.Portrait]
+    }
+    
+    override func preferredInterfaceOrientationForPresentation() -> UIInterfaceOrientation {
+        return .Portrait
     }
 }
