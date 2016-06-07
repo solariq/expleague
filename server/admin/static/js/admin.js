@@ -1,11 +1,11 @@
 var Admin = {
     config: {
-        PAGE_UPDATE_INTERVAL_MS: 3 * 60 * 1000
+        PAGE_UPDATE_INTERVAL_MS: 1 * 1000
     },
     experts: null,
 
     loadImpl: function(url, success) {
-        $("#content").empty().append('<div class="loader" style=";">Loading...</div>');
+        Admin.resetContent().append('<div class="loader" style=";">Loading...</div>');
         $.ajax({
             type: "GET",
             dataType: "json",
@@ -19,7 +19,7 @@ var Admin = {
                 success(data);
             },
             error: function(j, s, message) {
-                $("#content").empty().text(message);
+                Admin.resetContent().text(message);
             }
         });
     },
@@ -80,7 +80,7 @@ var Admin = {
     loadTopExperts: function() {
         Admin.loadPage("/top/experts", function(data) {
             var experts = $("#templates").find(".experts").clone();
-            $("#content").empty().append(experts);
+            Admin.resetContent().append(experts);
             var model = ko.mapping.fromJS(data);
             ko.applyBindings(model, experts.get(0))
         });
@@ -106,9 +106,18 @@ var Admin = {
         });
     },
 
+    resetContent: function() {
+        var content = $("#content");
+        content.children().each(function() {
+            ko.cleanNode(this);
+        });
+        content.empty();
+        return content;
+    },
+
     bindOrders: function(orders) {
         var ordersEl = $("#templates").find(".orders").clone();
-        $("#content").empty().append(ordersEl);
+        Admin.resetContent().append(ordersEl);
         var model = ko.mapping.fromJS(orders);
         _.each(model.orderGroups(), function(orderGroup) {
             _.each(orderGroup.orders(), function(order) {
@@ -122,7 +131,7 @@ var Admin = {
 
     bindDump: function(dump) {
         var dumpEl = $("#templates").find(".dump").clone();
-        $("#content").empty().append(dumpEl);
+        Admin.resetContent().append(dumpEl);
         var model = ko.mapping.fromJS(dump);
         ko.applyBindings(model, dumpEl.get(0));
         dumpEl.find("code.xml").each(function(i, el) {
@@ -140,8 +149,7 @@ var Admin = {
 
     loadKpi: function() {
         Admin.loadPage("/kpi", function(data) {
-            var content = $('#content');
-            content.empty();
+            var content = Admin.resetContent();
             _.each(data["charts"], function(chart, index) {
                 $("<div id='chart-" + index + "'/>").appendTo(content).highcharts({
                     chart: {
