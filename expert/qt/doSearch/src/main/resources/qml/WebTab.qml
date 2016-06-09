@@ -1,5 +1,5 @@
 import QtQuick 2.5
-import QtWebEngine 1.2
+import QtWebEngine 1.4
 
 Item {
     property var webView: webView

@@ -132,8 +132,10 @@ Item {
             id: topic
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: parent.width - 20
+            Layout.maximumWidth: parent.width - 20
             horizontalAlignment: Qt.AlignHCenter
             renderType: Text.NativeRendering
+            wrapMode: Text.WordWrap
             text: offer ? offer.topic : ""
             selectByMouse: true
         }

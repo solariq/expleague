@@ -12,18 +12,20 @@ class WebFolder;
 class WebScreen: public Screen {
     Q_OBJECT
 
+    Q_PROPERTY(QQuickItem* webView READ webView CONSTANT)
+
 public:
-    WebScreen(QObject* parent = 0): Screen(QUrl("qrc:/WebScreenView.qml"), parent), webView(itemById<QQuickItem>("webView")) {
-        connect(webView, SIGNAL(urlChanged()), SLOT(urlChanged()));
-        connect(webView, SIGNAL(titleChanged()), SLOT(titleChanged()));
-        connect(webView, SIGNAL(iconChanged()), SLOT(iconChanged()));
+    WebScreen(QObject* parent = 0): Screen(QUrl("qrc:/WebScreenView.qml"), parent), m_web_view(itemById<QQuickItem>("webView")) {
+        connect(m_web_view, SIGNAL(urlChanged()), SLOT(urlChanged()));
+        connect(m_web_view, SIGNAL(titleChanged()), SLOT(titleChanged()));
+        connect(m_web_view, SIGNAL(iconChanged()), SLOT(iconChanged()));
         setupOwner();
     }
 
     bool handleOmniboxInput(const QString &text);
 
     QUrl icon() const {
-        return webView->property("icon").toUrl();
+        return m_web_view->property("icon").toUrl();
     }
 
     QString location() const {
@@ -31,11 +33,11 @@ public:
     }
 
     QString name() const {
-        return webView->property("title").toString();
+        return m_web_view->property("title").toString();
     }
 
-    QQuickItem* webEngine() {
-        return webView;
+    QQuickItem* webView() {
+        return m_web_view;
     }
 
     Q_INVOKABLE QQuickItem* landing();
@@ -56,7 +58,7 @@ private:
     }
 
 private:
-    QQuickItem* webView;
+    QQuickItem* m_web_view;
     QString m_url;
 };
 }

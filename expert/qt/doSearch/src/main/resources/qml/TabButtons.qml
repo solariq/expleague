@@ -54,6 +54,7 @@ Item {
             Text {
                 property bool isLong: name.length >= 30
                 id: tabItemText
+                renderType: Text.NativeRendering
                 anchors {
                     leftMargin: 8
                     centerIn: parent

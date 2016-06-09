@@ -58,12 +58,13 @@ class WebSearch: public Screen {
     Q_OBJECT
 
     Q_PROPERTY(QQmlListProperty<expleague::SearchRequest> queries READ queries NOTIFY queriesChanged)
+    Q_PROPERTY(QQuickItem* webView READ webView CONSTANT)
 
 public:
-    WebSearch(QObject* parent = 0): Screen(QUrl("qrc:/WebSearchView.qml"), parent), webView(itemById<QQuickItem>("webView")) {
-        connect(webView, SIGNAL(urlChanged()), SLOT(urlChanged()));
-        connect(webView, SIGNAL(titleChanged()), SLOT(titleChanged()));
-        connect(webView, SIGNAL(iconChanged()), SLOT(iconChanged()));
+    WebSearch(QObject* parent = 0): Screen(QUrl("qrc:/WebSearchView.qml"), parent), m_web_view(itemById<QQuickItem>("webView")) {
+        connect(m_web_view, SIGNAL(urlChanged()), SLOT(urlChanged()));
+        connect(m_web_view, SIGNAL(titleChanged()), SLOT(titleChanged()));
+        connect(m_web_view, SIGNAL(iconChanged()), SLOT(iconChanged()));
         setupOwner();
     }
 
@@ -73,23 +74,27 @@ public:
     }
 
     QUrl icon() const {
-        return webView->property("icon").toUrl();
+        return m_web_view->property("icon").toUrl();
     }
 
     QString location() const {
-        return webView->property("url").toString();
+        return m_web_view->property("url").toString();
     }
 
     QString name() const {
-        return webView->property("title").toString();
+        return m_web_view->property("title").toString();
     }
 
     QQmlListProperty<SearchRequest> queries() {
         return QQmlListProperty<SearchRequest>(this, m_queries);
     }
 
+    QQuickItem* webView() const {
+        return m_web_view;
+    }
+
     Q_INVOKABLE void search(const QString& text) {
-        webView->setProperty("url", QUrl("https://www.google.ru/search?q=" + QUrl::toPercentEncoding(text)));
+        m_web_view->setProperty("url", QUrl("https://www.google.ru/search?q=" + QUrl::toPercentEncoding(text)));
     }
 
     Q_INVOKABLE void wipeQuery(const QString& text) {
@@ -119,7 +124,7 @@ private slots:
     }
 
     void urlChanged() { // google only
-        QUrl url = webView->property("url").toUrl();
+        QUrl url = m_web_view->property("url").toUrl();
         locationChanged(url.toString());
         QUrlQuery query(url.hasFragment() ? url.fragment() : url.query());
         QString queryText = query.queryItemValue("q");
@@ -151,7 +156,7 @@ private slots:
     }
 
 private:
-    QQuickItem* webView;
+    QQuickItem* m_web_view;
     QList<SearchRequest*> m_queries;
 };
 }
