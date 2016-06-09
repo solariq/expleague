@@ -5,7 +5,6 @@
 
 import Foundation
 import UIKit
-import JSCustomBadge
 import XMPPFramework
 
 enum HistorySection {
@@ -275,7 +274,7 @@ class HistoryViewController: UITableViewController {
                 order = ongoing.removeAtIndex(indexPath.row)
                 empty = ongoing.isEmpty
                 let alertView: UIAlertController
-                if !(order.count > 0 && order.message(order.count - 1).type == .Answer) {
+                if (order.messages.last?.type == .Answer) {
                     alertView = UIAlertController(title: "unSearch", message: "Вы уверены, что хотите отменить задание?", preferredStyle: .Alert)
                 }
                 else {
@@ -351,7 +350,7 @@ class OngoingOrderStateCell: OrderBadge {
     
     override func update(order o: ExpLeagueOrder) {
         super.update(order: o)
-        if (o.count > 0 && o.message(o.count - 1).type == .Answer) {
+        if (o.messages.last?.type == .Answer) {
             status.textColor = Palette.OK
             status.text = "ОТВЕТ ГОТОВ"
         }
@@ -370,7 +369,7 @@ class OngoingOrderStateCell: OrderBadge {
         }
         else if (o.status == .Open) {
             status.textColor = Palette.COMMENT
-            status.text = "В РАБОТЕ: \(o.expert!.name)"
+            status.text = "В РАБОТЕ: \(o.activeExpert?.name ?? "")"
         }
         let formatter = NSDateFormatter()
         formatter.dateStyle = .ShortStyle;

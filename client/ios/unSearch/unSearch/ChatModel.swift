@@ -40,11 +40,9 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     }
 
     func markAsRead() {
-        for i in 0..<order.count {
-            let msg = order.message(i)
+        order.messages.forEach{msg in
             msg.read = true
         }
-        order._unreadCount = nil
         order.badge?.update(order: order)
     }
 
@@ -99,14 +97,17 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             cells.removeLast();
             model = cells.last!
         }
-
-        while (lastKnownMessage < order.count) {
+        let messages = order.messages
+        while (lastKnownMessage < messages.count) {
             if (modelChangeCount > 2) {
                 AppDelegate.instance.activeProfile!.log("Loop found in the chat model! Enforcing next message.")
                 lastKnownMessage += 1
+                guard lastKnownMessage < messages.count else {
+                    break
+                }
             }
-            let msg = order.message(lastKnownMessage)
-//            print("\(order.jid) -> \(msg.type)")
+            let msg = messages[lastKnownMessage]
+            print("\(order.jid) -> \(msg.type)")
             if (msg.type != .System && !model.accept(msg)) { // switch model
                 modelChangeCount += 1
                 var newModel : ChatCellModel? = nil

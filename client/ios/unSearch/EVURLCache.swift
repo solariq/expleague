@@ -16,7 +16,6 @@ import ReachabilitySwift
 #endif
 
 public class EVURLCache : NSURLCache {
-    
     public static var URLCACHE_CACHE_KEY = "MobileAppCacheKey" // Add this header variable to the response if you want to save the response using this key as the filename.
     public static var URLCACHE_EXPIRATION_AGE_KEY = "MobileAppExpirationAgeKey" // Add this header variable to the response to set the expiration age.
     public static var MAX_AGE = "604800000" // The default maximum age of a cached file in miliseconds. (1 weeks)

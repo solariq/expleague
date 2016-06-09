@@ -49,6 +49,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        PurchaseHelper.instance.register(["com.expleague.unSearch.Star30r", "com.expleague.unSearch.Star150r"])
         detailsView!.navigationItem = navigationItem
         detailsView!.controller = self
         edgesForExtendedLayout = .Bottom
@@ -123,6 +124,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     }
     
     private var enforceScroll = false
+    private var shown = false
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         data.controller = self
@@ -137,6 +139,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         detailsView?.keyboardTracker.stop()
         data.markAsRead()
         data.controller = nil
+        shown = false
     }
 
     override func viewDidLayoutSubviews() {
@@ -158,8 +161,17 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         super.viewDidAppear(animated)
         
         tabBarController?.tabBar.hidden = true
+        if (data.order.unreadCount == 0 && state == .Ask) {
+            dispatch_async(dispatch_get_main_queue()) {
+                let alert = UIAlertController(title: "unSearch", message: "Не забудьте оценить ответ эксперта!", preferredStyle: .Alert)
+                alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                self.presentViewController(alert, animated: true, completion: nil)
+            }
+        }
         data.markAsRead()
+        shown = true
     }
+    
     
     func attach(input: ChatInputViewController) {
         self.presentViewController(picker, animated: true, completion: nil)
@@ -180,6 +192,9 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     func scrollToLastMessage() {
         if let index = data.lastIndex {
             messages.scrollToRowAtIndexPath(index, atScrollPosition: .Top, animated: true)
+        }
+        if (shown) {
+            data.markAsRead()
         }
     }
     
@@ -202,12 +217,30 @@ class FeedbackViewController: UIViewController {
     @IBOutlet weak var feedback: FeedbackCell!
     @IBOutlet weak var cancelButton: UIButton!
     @IBOutlet weak var scoreButton: UIButton!
+    
+    private var busy = false
     @IBAction func fire(sender: AnyObject) {
-        if (rate == 4) {
-            iapRequest("com.expleague.unSearch.Star30r")
+        guard !busy else {
+            return
         }
-        else if (rate == 5) {
-            iapRequest("com.expleague.unSearch.Star150r")
+        let rate = self.rate
+        if (rate == 4 || rate == 5) {
+            busy = true
+            let purchaseId = rate == 4 ? "com.expleague.unSearch.Star30r" : "com.expleague.unSearch.Star150r"
+            PurchaseHelper.instance.request(purchaseId) {rc in
+                switch(rc) {
+                case .Accepted:
+                    self.parent.data.order.feedback(stars: rate!)
+                    self.dismissViewControllerAnimated(true, completion: nil)
+                case .Error:
+                    let alert = UIAlertController(title: "unSearch", message: "Не удалось провести платеж!", preferredStyle: .Alert)
+                    alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                    self.presentViewController(alert, animated: true, completion: nil)
+                case .Rejected:
+                    break
+                }
+                self.busy = false
+            }
         }
         else {
             parent.data.order.feedback(stars: rate!)
@@ -221,12 +254,6 @@ class FeedbackViewController: UIViewController {
     @IBOutlet var stars: [UIImageView]!
     @IBOutlet weak var text: UITextView!
     
-    private func iapRequest(id: String) {
-        let productRequest = SKProductsRequest(productIdentifiers: [id])
-        productRequest.delegate = self
-        productRequest.start()
-    }
-    
     var rate: Int?
     override func viewDidLoad() {
         feedback.layer.cornerRadius = Palette.CORNER_RADIUS
@@ -236,7 +263,6 @@ class FeedbackViewController: UIViewController {
         cancelButton.layer.cornerRadius = Palette.CORNER_RADIUS
         cancelButton.clipsToBounds = true
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:))))
-        SKPaymentQueue.defaultQueue().addTransactionObserver(self)
         updateDescription(nil, order: parent.data.order)
     }
     
@@ -323,42 +349,6 @@ class FeedbackViewController: UIViewController {
 
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-}
-
-extension FeedbackViewController: SKProductsRequestDelegate {
-    func productsRequest(request: SKProductsRequest, didReceiveResponse response: SKProductsResponse) {
-        guard response.products.count == 1 else {
-            let alert = UIAlertController(title: "unSearch", message: "Не удалось запросить платеж", preferredStyle: .Alert)
-            alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-            self.showViewController(alert, sender: self)
-            print("No store products \(request) found")
-            return
-        }
-        let payment = SKPayment(product: response.products[0])
-        SKPaymentQueue.defaultQueue().addPayment(payment)
-    }
-}
-
-extension FeedbackViewController: SKPaymentTransactionObserver {
-    func paymentQueue(queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
-        for transaction:AnyObject in transactions {
-            if let trans:SKPaymentTransaction = transaction as? SKPaymentTransaction{
-                switch trans.transactionState {
-                case .Purchased:
-                    parent.data.order.feedback(stars: rate!)
-                    self.dismissViewControllerAnimated(true, completion: nil)
-                    SKPaymentQueue.defaultQueue().finishTransaction(transaction as! SKPaymentTransaction)
-                    break;
-                case .Failed:
-                    print("Purchased Failed");
-                    SKPaymentQueue.defaultQueue().finishTransaction(transaction as! SKPaymentTransaction)
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
     }
 }
 

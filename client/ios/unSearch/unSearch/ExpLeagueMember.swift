@@ -95,13 +95,7 @@ class ExpLeagueMember: NSManagedObject {
             guard !order.fake else {
                 continue
             }
-            for i in 0..<order.count {
-                let msg = order.message(i)
-                if (msg.type == .Answer && msg.from == id.user) {
-                    count += 1
-                    break
-                }
-            }
+            count += order.messages.filter{msg in msg.type == .Answer && msg.from == id.user}.isEmpty ? 0 : 1
         }
         _myTasks = count
         return count

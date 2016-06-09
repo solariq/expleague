@@ -15,12 +15,27 @@ class WelcomeViewController: UIViewController {
     @IBOutlet weak var owlImage: UIImageView!
     
     @IBOutlet weak var buyButton: UIButton!
+    private var busy = false
     @IBAction func buy(sender: AnyObject) {
-        let request = SKProductsRequest(productIdentifiers: ["com.expleague.unSearch.access"])
-        request.delegate = self
-        request.start()
+        guard !busy else {
+            return
+        }
+        PurchaseHelper.instance.request("com.expleague.unSearch.access") { rc in
+            switch rc {
+            case .Accepted:
+                AppDelegate.instance.setupDefaultProfiles()
+            case .Error:
+                let alert = UIAlertController(title: "unSearch", message: "Не удалось провести платеж!", preferredStyle: .Alert)
+                alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                self.presentViewController(alert, animated: true, completion: nil)
+            case .Rejected:
+                break
+            }
+            self.busy = false
+        }
     }
 
+    @IBOutlet weak var descriptionText: UITextView!
     @IBOutlet weak var enterCodeButton: UIButton!
     @IBOutlet weak var sendRequestButton: UIButton!
     var active: Bool = false
@@ -32,6 +47,17 @@ class WelcomeViewController: UIViewController {
         sendRequestButton.clipsToBounds = true
         buyButton.layer.cornerRadius = enterCodeButton.frame.height / 2
         buyButton.clipsToBounds = true
+        PurchaseHelper.instance.register(["com.expleague.unSearch.access"])
+        
+        let descriptionText = NSMutableAttributedString()
+        descriptionText.appendAttributedString(NSAttributedString(string: "В настоящий момент доступ к приложению "))
+        descriptionText.appendAttributedString(NSAttributedString(string: "ограничен", attributes: [
+            NSLinkAttributeName: NSURL(string: "https://www.expleague.com/accessrules/")!
+        ]))
+        self.descriptionText.attributedText = descriptionText
+        self.descriptionText.font = UIFont.systemFontOfSize(15)
+        self.descriptionText.textAlignment = .Center
+        self.descriptionText.textColor = UIColor.whiteColor()
         let bar:UINavigationBar! =  self.navigationController?.navigationBar
         
         bar.setBackgroundImage(UIImage(), forBarMetrics: UIBarMetrics.Default)
@@ -75,39 +101,6 @@ class WelcomeViewController: UIViewController {
     }
 }
 
-extension WelcomeViewController: SKProductsRequestDelegate {
-    func productsRequest(request: SKProductsRequest, didReceiveResponse response: SKProductsResponse) {
-        guard response.products.count == 1 else {
-            let alert = UIAlertController(title: "unSearch", message: "Не удалось запросить платеж", preferredStyle: .Alert)
-            alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-            self.presentViewController(alert, animated: true, completion: nil)
-            return
-        }
-        let payment = SKPayment(product: response.products[0])
-        SKPaymentQueue.defaultQueue().addPayment(payment)
-    }
-}
-
-extension WelcomeViewController: SKPaymentTransactionObserver {
-    func paymentQueue(queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
-        for transaction:AnyObject in transactions {
-            if let trans:SKPaymentTransaction = transaction as? SKPaymentTransaction{
-                switch trans.transactionState {
-                case .Purchased:
-                    AppDelegate.instance.setupDefaultProfiles()
-                    SKPaymentQueue.defaultQueue().finishTransaction(transaction as! SKPaymentTransaction)
-                    break;
-                case .Failed:
-                    SKPaymentQueue.defaultQueue().finishTransaction(transaction as! SKPaymentTransaction)
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-    }
-}
-
 class SendRequestViewController: UIViewController {
     static let emailPattern = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}"
     @IBOutlet weak var emailText: UITextField!
@@ -123,7 +116,7 @@ class SendRequestViewController: UIViewController {
 
         let data = NSData(contentsOfURL: NSURL(string: "https://www.expleague.com/act/sendComment.php?email=\(text)&id=\(abs(UIDevice.currentDevice().identifierForVendor!.UUIDString.hashValue))")!)
         if let d = data, let dataStr = NSString(data: d, encoding: NSUTF8StringEncoding) where dataStr.hasSuffix("1") {
-            let alert = UIAlertController(title: "unSearch", message: "Ваша заявка успешно зарегистрирована", preferredStyle: .Alert)
+            let alert = UIAlertController(title: "unSearch", message: "Поздравляем! Ваша заявка успешно принята. Вы получите письмо с кодом для активации приложения, как только очередь дойдет до вас.", preferredStyle: .Alert)
             alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: {action in
                 self.navigationController!.popViewControllerAnimated(true)
             }))
@@ -147,6 +140,11 @@ class SendRequestViewController: UIViewController {
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         emailText.becomeFirstResponder()
+    }
+    
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?){
+        view.endEditing(true)
+        super.touchesBegan(touches, withEvent: event)
     }
     
     override func shouldAutorotate() -> Bool {
@@ -196,6 +194,11 @@ class EnterCodeViewController: UIViewController {
         accessCode.becomeFirstResponder()
     }
 
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?){
+        view.endEditing(true)
+        super.touchesBegan(touches, withEvent: event)
+    }
+    
     override func shouldAutorotate() -> Bool {
         return false
     }

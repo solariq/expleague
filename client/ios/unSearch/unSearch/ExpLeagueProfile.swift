@@ -36,6 +36,10 @@ class ExpLeagueProfile: NSManagedObject {
         return AppDelegate.instance.activeProfile!.communicator!.state
     }
     
+    var thread: dispatch_queue_t {
+        return AppDelegate.instance.xmppQueue
+    }
+    
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
