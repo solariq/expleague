@@ -7,6 +7,7 @@ import Foundation
 import UIKit
 import MapKit
 import XMPPFramework
+import SDCAlertView
 
 class OrderViewController: UIViewController, CLLocationManagerDelegate {
     var keyboardTracker: KeyboardStateTracker!
@@ -252,41 +253,93 @@ class OrderDescriptionViewController: UITableViewController {
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         if (indexPath.item == 4) {
-            self.presentViewController(picker, animated: true, completion: nil)
+            showAttachmentChoiceAlert();
         }
         else if (indexPath.item == 3) {
-            let chooseExpert = ChooseExpertViewController(parent: self)
-            
-            let navigation = UINavigationController(rootViewController: chooseExpert)
-            self.presentViewController(navigation, animated: true, completion: nil)
+            showExpertChoiceView();
         }
         else if (indexPath.item == 2) {
-            let alertController = UIAlertController(title: "Связать с гео-позицией", message: nil, preferredStyle: .ActionSheet)
-
-            let useCurrentLocationActionHandler = { (action: UIAlertAction!) -> Void in
-                self.location.setCurrentLocation(self.locationProvider)
-                self.update()
-            }
-
-            let showMapActionHandler = { (action: UIAlertAction!) -> Void in
-                self.update()
-
-                let navigation = UINavigationController(rootViewController: SearchLocationController(parent: self, locationProvider: self.locationProvider))
-                self.presentViewController(navigation, animated: true, completion: nil)
-            }
-
-
-            let cancelActionHandler = { (action: UIAlertAction!) -> Void in
-                self.location.clearLocation()
-                self.update()
-            }
-
-            alertController.addAction(UIAlertAction(title: "Искать рядом со мной", style: .Default, handler: useCurrentLocationActionHandler))
-            alertController.addAction(UIAlertAction(title: "Выбрать на карте", style: .Default, handler: showMapActionHandler))
-            alertController.addAction(UIAlertAction(title: "Не использовать гео-позицию", style: .Default, handler: cancelActionHandler))
-            alertController.addAction(UIAlertAction(title: "Отмена", style: .Cancel, handler: nil))
-            self.presentViewController(alertController, animated: true, completion: nil)
+            showLocationChoiceAlert();
         }
+    }
+    
+    func showAttachmentChoiceAlert() {
+        let showCameraCapture = { (action: AlertAction!) -> Void in
+            let navigation = UINavigationController(rootViewController: CameraCaptureController())
+            self.presentViewController(navigation, animated: true, completion: nil)
+            self.update()
+        }
+        
+        let showImagePicker = { (action: AlertAction!) -> Void in
+            self.update()
+            self.presentViewController(self.picker, animated: true, completion: nil)
+        }
+        
+        
+        let showAttachments = { (action: AlertAction!) -> Void in
+            self.update()
+        }
+        
+        let alertController = AlertController(title: "Добавить вложение", message: nil, preferredStyle: .ActionSheet)
+
+        let layout = UICollectionViewFlowLayout()
+        layout.sectionInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        layout.itemSize = CGSize(width: 80, height: 80)
+
+        let attachmentsView = UICollectionView(frame: alertController.contentView.frame, collectionViewLayout: layout)
+        let attachments = ImageCollectionPreviewDelegate()
+        attachmentsView.delegate = attachments
+        attachmentsView.dataSource = attachments
+        attachmentsView.userInteractionEnabled = true
+        attachmentsView.allowsSelection = true
+        attachmentsView.backgroundColor = UIColor.whiteColor()
+        //attachmentsView.backgroundView = UIView(frame: CGRectZero);
+        attachmentsView.layoutMargins = UIEdgeInsetsZero
+        attachmentsView.registerClass(ImagePreview.self, forCellWithReuseIdentifier: "ImagePreview")
+        attachments.view = attachmentsView
+
+        attachments.fetchPhotoAtIndexFromEnd(0)
+        alertController.contentView.addSubview(attachmentsView)
+        alertController.addAction(AlertAction(title: "Сделать снимок", style: .Default, handler: showCameraCapture))
+        alertController.addAction(AlertAction(title: "Добавить фото", style: .Default, handler: showImagePicker))
+        //alertController.addAction(UIAlertAction(title: "Просмотреть вложения", style: .Default, handler: showAttachments))
+        alertController.addAction(AlertAction(title: "Отменить", style: .Preferred, handler: nil))
+        alertController.present()
+    }
+    
+    func showExpertChoiceView() {
+        let chooseExpert = ChooseExpertViewController(parent: self)
+        
+        let navigation = UINavigationController(rootViewController: chooseExpert)
+        self.presentViewController(navigation, animated: true, completion: nil)
+    }
+
+    func showLocationChoiceAlert() {
+        let alertController = UIAlertController(title: "Связать с гео-позицией", message: nil, preferredStyle: .ActionSheet)
+        
+        let useCurrentLocationActionHandler = { (action: UIAlertAction!) -> Void in
+            self.location.setCurrentLocation(self.locationProvider)
+            self.update()
+        }
+        
+        let showMapActionHandler = { (action: UIAlertAction!) -> Void in
+            self.update()
+            
+            let navigation = UINavigationController(rootViewController: SearchLocationController(parent: self, locationProvider: self.locationProvider))
+            self.presentViewController(navigation, animated: true, completion: nil)
+        }
+        
+        
+        let cancelActionHandler = { (action: UIAlertAction!) -> Void in
+            self.location.clearLocation()
+            self.update()
+        }
+        
+        alertController.addAction(UIAlertAction(title: "Искать рядом со мной", style: .Default, handler: useCurrentLocationActionHandler))
+        alertController.addAction(UIAlertAction(title: "Выбрать на карте", style: .Default, handler: showMapActionHandler))
+        alertController.addAction(UIAlertAction(title: "Не использовать гео-позицию", style: .Default, handler: cancelActionHandler))
+        alertController.addAction(UIAlertAction(title: "Отменить", style: .Cancel, handler: nil))
+        self.presentViewController(alertController, animated: true, completion: nil)
     }
 }
 

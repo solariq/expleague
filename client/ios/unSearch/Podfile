@@ -7,4 +7,5 @@ target 'unSearch' do
   pod 'JSCustomBadge'
   pod 'MMMarkdown'
   pod 'ReachabilitySwift'
+  pod 'SDCAlertView', '~> 5.1'
 end

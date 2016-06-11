@@ -64,8 +64,8 @@ class SearchLocationController: UIViewController, MKMapViewDelegate, UIGestureRe
         
         navigationController!.navigationBarHidden = false
         navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.blackColor()]
-        navigationItem.title = "Искать рядом"
-        let doneButton = UIBarButtonItem(title: "Готово", style: .Done, target: self, action: #selector(SearchLocationController.approve))
+        navigationItem.title = nil
+        let doneButton = UIBarButtonItem(title: "Искать здесь", style: .Done, target: self, action: #selector(SearchLocationController.approve))
         doneButton.tintColor = UIColor.blackColor()
         navigationItem.setRightBarButtonItem(doneButton, animated: false)
         
