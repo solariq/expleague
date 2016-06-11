@@ -29,5 +29,6 @@ Button {
                 mipmap: true
             }
         }
+        label: Item {}
     }
 }

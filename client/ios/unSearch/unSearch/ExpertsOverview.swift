@@ -194,9 +194,7 @@ extension ExpertsOverviewController: UISplitViewControllerDelegate {
 }
 
 class ChooseExpertViewController: UITableViewController {
-    var experts: [ExpLeagueMember] {
-        return AppDelegate.instance.activeProfile!.experts
-    }
+    var experts: [ExpLeagueMember] = []
     
     let parent: OrderDescriptionViewController
     
@@ -216,7 +214,11 @@ class ChooseExpertViewController: UITableViewController {
         navigationItem.setRightBarButtonItem(button, animated: false)
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewWillAppear(animated: Bool) {
+        experts = ExpLeagueProfile.active.experts.sort {
+            return $0.myTasks != $1._myTasks ? $0.myTasks > $1.myTasks : $0.tasks > $1.tasks
+        }
+        (view as! UITableView).reloadData()
     }
     
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {

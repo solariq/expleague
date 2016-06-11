@@ -9,6 +9,7 @@ using hunspell::SpellChecker;
 #include "screen.h"
 
 class MarkdownHighlighter;
+class QThread;
 namespace expleague {
 class ReceivedAnswer;
 class Member;
@@ -18,6 +19,7 @@ class MarkdownEditorScreen: public Screen {
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QString html READ html NOTIFY htmlChanged)
+    Q_PROPERTY(QQuickItem* editor READ editor NOTIFY htmlChanged)
 
 public:
     QString name() const;
@@ -31,21 +33,20 @@ public:
         return false;
     }
 
-    QString text() {
+    QString text() const {
         return m_text;
     }
 
     QString html();
 
+    QQuickItem* editor() const {
+        return m_editor;
+    }
+
 public:
     void remove() {}
 
-    void setText(const QString& text) {
-        m_text = text;
-        textChanged(text);
-        htmlChanged(html());
-    }
-
+    void setText(const QString& text);
     Q_INVOKABLE QStringList codeClipboard();
 
 public slots:
@@ -71,7 +72,7 @@ private slots:
     void acquireFocus();
 
 public:
-    MarkdownEditorScreen(QObject* parent = 0);
+    MarkdownEditorScreen(QObject* parent = 0, bool editable = true);
     MarkdownEditorScreen(ReceivedAnswer* answer, QObject* parent = 0);
 
 private:
@@ -79,6 +80,8 @@ private:
     QQuickTextDocument* m_document;
     MarkdownHighlighter* m_highlighter;
     QString m_text;
+    QString m_html;
+    QThread* m_html_thread;
     Member* m_author;
     hunspell::SpellChecker m_spellchecker;
 };

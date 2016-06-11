@@ -131,5 +131,7 @@ DEPENDPATH += \
     $$PWD/../libs/peg-markdown-highlight \
     $$PWD/../libs/cutemarked
 
+PRE_TARGETDEPS += $$OUT_PWD/../libs/cutemarked/libcutemarked.a
+
 INSTALLS = target qml
 

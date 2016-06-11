@@ -10,12 +10,10 @@ import CloudKit
 
 class AboutViewController: UIViewController {
     var initialized = false
-    @IBOutlet var stars: [UIImageView]!
     
+    @IBOutlet weak var instructionsButton: UIButton!
     @IBOutlet weak var topConstraint: NSLayoutConstraint!
-    @IBOutlet weak var evaluateLabel: UILabel!
     @IBOutlet weak var slogan: UILabel!
-    @IBOutlet weak var navigationBar: UINavigationBar!
     @IBOutlet weak var build: UILabel!
     @IBOutlet weak var inviteButton: UIButton!
     @IBAction func invite(sender: AnyObject) {
@@ -43,6 +41,10 @@ class AboutViewController: UIViewController {
         navigationController!.pushViewController(settings, animated: true)
     }
     
+    @IBAction func instructions(sender: AnyObject) {
+        UIApplication.sharedApplication().openURL(NSURL(string: "https://www.expleague.com/help/")!)
+    }
+    
     var friend: String?
     
     override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
@@ -50,14 +52,11 @@ class AboutViewController: UIViewController {
             return
         }
         let isLandscape = size.height < size.width
-//        slogan.hidden = isLandscape
         build.hidden = isLandscape
-        evaluateLabel.hidden = isLandscape
+        instructionsButton.hidden = isLandscape
         topConstraint.constant = size.height * 0.1
-        for s in stars {
-            s.hidden = isLandscape
-        }
     }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         initialized = true
@@ -67,7 +66,8 @@ class AboutViewController: UIViewController {
         inviteButton.clipsToBounds = true
         topConstraint.constant = view.frame.height * 0.1
         let system = NSBundle.mainBundle().infoDictionary!
-        build.text = "Version \(AppDelegate.versionName())\n\(system["BuildDate"] ?? "")"
+        let date: String = system["BuildDate"] as? String ?? ""
+        build.text = "Version \(AppDelegate.versionName())\n\(date)"
         navigationController!.navigationBar.setBackgroundImage(UIImage(named: "history_background"), forBarMetrics: .Default)
         navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
         navigationController!.navigationBar.tintColor = UIColor.whiteColor()

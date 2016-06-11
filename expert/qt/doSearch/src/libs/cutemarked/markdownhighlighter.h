@@ -23,7 +23,6 @@ extern "C" {
 #include "pmh_definitions.h"
 }
 #include "definitions.h"
-#include "highlightworkerthread.h"
 
 namespace hunspell {
 class SpellChecker;
@@ -35,9 +34,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter
 
 public:
     MarkdownHighlighter(QTextDocument *document, hunspell::SpellChecker *spellChecker);
-    ~MarkdownHighlighter();
     
-    void reset();
     void setStyles(const QVector<PegMarkdownHighlight::HighlightingStyle> &styles);
     void setSpellingCheckEnabled(bool enabled);
     void setYamlHeaderSupportEnabled(bool enabled);
@@ -45,16 +42,10 @@ public:
 protected:
     void highlightBlock(const QString &textBlock) Q_DECL_OVERRIDE;
 
-private slots:
-    void resultReady(pmh_element **elements, unsigned long base_offset);
-
 private:
-    void applyFormat(unsigned long pos, unsigned long end, QTextCharFormat format, bool merge);
     void checkSpelling(const QString &textBlock);
 
-    HighlightWorkerThread *workerThread;
     QVector<PegMarkdownHighlight::HighlightingStyle> highlightingStyles;
-    QString previousText;
     QTextCharFormat spellFormat;
     hunspell::SpellChecker *spellChecker;
     bool spellingCheckEnabled;

@@ -1,1 +1,4 @@
 singleton Palette Palette.qml
+singleton EditorActions EditorActions.qml
+singleton BrowserActions BrowserActions.qml
+singleton CommonActions CommonActions.qml

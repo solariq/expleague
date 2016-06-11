@@ -104,6 +104,72 @@ ApplicationWindow {
                 action: switchProfile
             }
         }
+
+        Menu {
+            title: qsTr("Правка")
+            MenuItem {
+                action: CommonActions.undo
+            }
+            MenuItem {
+                action: CommonActions.redo
+            }
+            MenuSeparator{}
+            MenuItem {
+                action: CommonActions.cut
+            }
+            MenuItem {
+                action: CommonActions.copy
+            }
+            MenuItem {
+                action: CommonActions.paste
+            }
+            MenuSeparator{}
+            MenuItem {
+                action: CommonActions.selectAll
+            }
+            MenuSeparator{}
+            Menu {
+                title: qsTr("Редактор")
+                enabled: EditorActions.editor
+                MenuItem {
+                    action: EditorActions.makeBold
+                }
+                MenuItem {
+                    action: EditorActions.makeItalic
+                }
+                MenuItem {
+                    action: EditorActions.insertHeader3
+                }
+                MenuItem {
+                    action: EditorActions.insertImage
+                }
+                MenuItem {
+                    action: EditorActions.insertLink
+                }
+                MenuItem {
+                    action: EditorActions.insertSplitter
+                }
+                MenuItem {
+                    action: EditorActions.makeCut
+                }
+                MenuItem {
+                    action: EditorActions.insertCitation
+                }
+                MenuItem {
+                    action: EditorActions.makeEnumeration
+                }
+                MenuItem {
+                    action: EditorActions.makeList
+                }
+                MenuItem {
+                    action: EditorActions.insertTable
+                }
+            }
+            MenuSeparator {}
+            MenuItem {
+                action: CommonActions.searchOnPage
+            }
+        }
     }
 
     menuBar: Qt.platform.os === "osx" ? menu : undefined

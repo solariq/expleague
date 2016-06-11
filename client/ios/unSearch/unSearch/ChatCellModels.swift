@@ -397,7 +397,7 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
         }
         setupCell.topic.text = order.offer.topic
         setupCell.textHeight = textHeight(setupCell.textWidth)
-        timer = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: #selector(SetupModel.advanceTimer(_:)), userInfo: setupCell.status, repeats: true)
+        timer = NSTimer.scheduledTimerWithTimeInterval(30, target: self, selector: #selector(SetupModel.advanceTimer(_:)), userInfo: setupCell.status, repeats: true)
         setupCell.attachments = images.count + (order.offer.local ? 1 : 0)
         setupCell.attachmentsView.dataSource = self
         setupCell.attachmentsView.delegate = self
