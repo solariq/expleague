@@ -393,29 +393,35 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         if (ExpLeagueCommunicator.DEBUG) {
             print(msg)
         }
+        var delivered: [XMPPMessage] = []
         while let receipt = msg.elementForName("received", xmlns: "urn:xmpp:receipts") {
             let id = receipt.attributeStringValueForName("id")
-            let current = self.queue.filter({$0.elementID() == id}).first
-            if let message = current {
-                queue.removeOne(message)
-                profile.delivered(outgoing: message)
+            if let msg = self.queue.filter({$0.elementID() == id}).first {
+                delivered.append(msg)
             }
             msg.removeChildAtIndex(receipt.index())
         }
+        var receipt: DDXMLElement?
         if let receiptRequest = msg.elementForName("request", xmlns: "urn:xmpp:receipts") {
             msg.removeChildAtIndex(receiptRequest.index())
-            let receipt = DDXMLElement(name: "received", xmlns: "urn:xmpp:receipts")
-            receipt.addAttributeWithName("id", stringValue: msg.elementID())
-            sender.sendElement(XMPPMessage(type: "normal", child: receipt))
+            receipt = DDXMLElement(name: "received", xmlns: "urn:xmpp:receipts")
+            receipt!.addAttributeWithName("id", stringValue: msg.elementID())
         }
         if let from = msg.from(), let order = profile.order(name: from.user) {
             order.message(message: msg)
         }
+        notify { listener in
+            listener.onMessage?(message: msg)
+        }
+        if (receipt != nil) {
+            sender.sendElement(XMPPMessage(type: "normal", child: receipt))
+        }
         if (pending.removeOne(msg.elementID())) {
             profile.delivered(incoming: msg)
         }
-        notify { listener in
-            listener.onMessage?(message: msg)
+        delivered.forEach{ msg in
+            queue.removeOne(msg)
+            profile.delivered(outgoing: msg)
         }
     }
     

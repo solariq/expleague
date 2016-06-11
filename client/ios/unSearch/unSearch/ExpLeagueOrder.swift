@@ -19,39 +19,48 @@ class Weak<T: AnyObject> {
 }
 
 class ExpLeagueOrder: NSManagedObject {
-    var count: Int {
-        return messagesRaw.count
-    }
-    
     var isActive: Bool {
         return status != .Closed && status != .Archived && status != .Canceled
     }
     
-    var expert: ExpLeagueMember? {
-        var lastExpert: ExpLeagueMember? = nil
-        for i in 0 ..< count {
-            let msg = message(i)
-            if (msg.type == .ExpertAssignment){
-                lastExpert = msg.expert
-            }
-            else if (msg.type == .ExpertCancel || msg.type == .Answer) {
-                lastExpert = nil
-            }
-        }
-        return lastExpert
+    var activeExpert: ExpLeagueMember? {
+        let result = experts.last
+        return _expertActive ? result : nil
     }
-
+    
+    private dynamic var _experts: [ExpLeagueMember]?
+    private dynamic var _expertActive = false
     var experts: [ExpLeagueMember] {
+        guard _experts == nil else {
+            return _experts!
+        }
         var result: [ExpLeagueMember] = []
-        for i in 0 ..< count {
-            let msg = message(i)
+        var active = false
+        for msg in messages {
             if (msg.type == .ExpertAssignment){
                 result.append(msg.expert!)
+                active = true
             }
             else if (msg.type == .ExpertCancel) {
                 result.removeLast()
+                active = false
+            }
+            else if (msg.type == .Answer) {
+                active = false
             }
         }
+        _expertActive = active
+        _experts = result
+        return result
+    }
+    
+    private dynamic var _messages: [ExpLeagueMessage]?
+    var messages: [ExpLeagueMessage] {
+        guard _messages == nil else {
+            return _messages!
+        }
+        let result: [ExpLeagueMessage] = self.messagesRaw.array as! [ExpLeagueMessage]
+        self._messages = result
         return result
     }
 
@@ -65,50 +74,45 @@ class ExpLeagueOrder: NSManagedObject {
     
     private dynamic var _icon: UIImage?
     var typeIcon: UIImage {
-        if (_icon == nil) {
-            var tags: [String] = []
-            for msg in messagesRaw {
-                if let message = msg as? ExpLeagueMessage, let change = message.change {
-                    if (change.target == .Tag) {
-                        switch change.type {
-                        case .Add:
-                            tags.append(change.name)
-                            break
-                        case .Remove:
-                            if let index = tags.indexOf(change.name) {
-                                tags.removeAtIndex(index)
-                            }
-                            break
-                        default: break
-                        }
+        guard _icon == nil else {
+            return _icon!
+        }
+        var tags: [String] = []
+        for message in messages {
+            if let change = message.change where change.target == .Tag {
+                switch change.type {
+                case .Add:
+                    tags.append(change.name)
+                    break
+                case .Remove:
+                    if let index = tags.indexOf(change.name) {
+                        tags.removeAtIndex(index)
                     }
+                    break
+                default: break
                 }
             }
-            _icon = tags.isEmpty ? UIImage(named: "search_icon")! : parent.tag(name: tags.last!)?.icon ?? UIImage(named: "search_icon")!
         }
-        return _icon!
+        let result = tags.isEmpty ? UIImage(named: "search_icon")! : parent.tag(name: tags.last!)?.icon ?? UIImage(named: "search_icon")!
+        _icon = result
+        return result
     }
     
-    func message(index: Int) -> ExpLeagueMessage {
-        return messagesRaw[index] as! ExpLeagueMessage
-    }
-    
-    func message(message msg: XMPPMessage) {
-        update {
-            let message = ExpLeagueMessage(msg: msg, parent: self, context: self.managedObjectContext!)
-            self.messagesRaw = self.messagesRaw.append(message)
-            if (message.type == .Answer) {
-                self.flags = self.flags | ExpLeagueOrderFlags.Deciding.rawValue
-                Notifications.notifyAnswerReceived(self)
-            }
-            else if (message.type == .ExpertAssignment) {
-                Notifications.notifyExpertFound(self)
-            }
-            else if (message.type == .ExpertMessage) {
-                Notifications.notifyMessageReceived(self, message: message)
-            }
-            self._unreadCount = nil
-            self._icon = nil
+    internal func message(message msg: XMPPMessage) {
+        let message = ExpLeagueMessage(msg: msg, parent: self, context: self.managedObjectContext!)
+        messagesRaw = messagesRaw.append(message)
+        if (message.type == .Answer) {
+            flags = flags | ExpLeagueOrderFlags.Deciding.rawValue
+        }
+        save()
+        if (message.type == .Answer) {
+            Notifications.notifyAnswerReceived(self, answer: message)
+        }
+        else if (message.type == .ExpertAssignment) {
+            Notifications.notifyExpertFound(self)
+        }
+        else if (message.type == .ExpertMessage) {
+            Notifications.notifyMessageReceived(self, message: message)
         }
     }
     
@@ -116,7 +120,7 @@ class ExpLeagueOrder: NSManagedObject {
         let msg = XMPPMessage(type: "groupchat", to: jid)
         msg.addBody(text)
         update {
-            self.message(message:msg)
+            self.message(message: msg)
         }
         parent.send(msg)
     }
@@ -228,7 +232,7 @@ class ExpLeagueOrder: NSManagedObject {
         else if (flags & ExpLeagueOrderFlags.Deciding.rawValue != 0) {
             return .Deciding
         }
-        else if (expert == nil) {
+        else if (activeExpert == nil) {
             return .ExpertSearch
         }
         else if (before - CFAbsoluteTimeGetCurrent() > 0) {
@@ -239,15 +243,19 @@ class ExpLeagueOrder: NSManagedObject {
         }
     }
     
+    dynamic var _shortAnswer: String?
     var shortAnswer: String {
-        var result: String? = nil
-        for i in 0 ..< count {
-            let msg = message(i)
-            if (msg.type == .Answer) {
-                result = msg.properties["short"] as? String
-            }
+        guard _shortAnswer == nil else {
+            return _shortAnswer!
         }
-        return result != nil && !result!.isEmpty ? result! : "Нет простого ответа"
+        
+        var result: String? = nil
+        if let answer = messages.filter({msg in msg.type == .Answer}).last {
+            result = answer.properties["short"] as? String
+        }
+        result = result ?? "Нет простого ответа"
+        _shortAnswer = result!
+        return result!
     }
     
     dynamic var _unreadCount: NSNumber?
@@ -255,13 +263,7 @@ class ExpLeagueOrder: NSManagedObject {
         guard _unreadCount == nil else {
             return _unreadCount!.longValue
         }
-        var result = 0
-        for i in 0 ..< count {
-            let msg = message(i)
-            if (msg.type == .ExpertMessage || msg.type == .Answer) {
-                result += msg.read ? 0 : 1
-            }
-        }
+        let result = messages.filter({$0.type == .ExpertMessage || $0.type == .Answer}).filter({!$0.read}).count
         _unreadCount = result
         return result
     }
@@ -298,6 +300,14 @@ class ExpLeagueOrder: NSManagedObject {
     
     dynamic weak var model: ChatModel?
     dynamic weak var badge: OrderBadge?
+    
+    override func invalidate() {
+        _shortAnswer = nil
+        _experts = nil
+        _icon = nil
+        _unreadCount = nil
+        _messages = nil
+    }
     
     override func notify() {
         model?.sync()

@@ -37,18 +37,18 @@ class Notifications {
             return
         }
         let notification = UILocalNotification()
-        notification.alertBody = "Эксперт найден! Для Вас работает \(order.expert!.name)"
+        notification.alertBody = "Эксперт найден! Для Вас работает \(order.activeExpert?.name ?? "эксперт")"
         notification.soundName = "owl.wav"
         notification.userInfo = ["order" : order.id]
         UIApplication.sharedApplication().scheduleLocalNotification(notification)
     }
     
-    static func notifyAnswerReceived(order: ExpLeagueOrder) {
+    static func notifyAnswerReceived(order: ExpLeagueOrder, answer: ExpLeagueMessage) {
         guard UIApplication.sharedApplication().applicationState != .Active else {
             return
         }
         let notification = UILocalNotification()
-        notification.alertBody = "Получен ответ на задание от \(order.experts.last?.name ?? "unknown"): \(order.shortAnswer)"
+        notification.alertBody = "Получен ответ на задание от \(answer.expert?.name ?? "эксперта"): \(order.shortAnswer)"
         notification.soundName = "owl.wav"
         notification.userInfo = ["order" : order.id]
         UIApplication.sharedApplication().scheduleLocalNotification(notification)
@@ -59,9 +59,10 @@ class Notifications {
             return
         }
         let notification = UILocalNotification()
-        notification.alertBody = "Получено сообщение от \(order.expert!.name): '\(message.body!)'"
+        notification.alertBody = "Получено сообщение от \(message.expert?.name ?? "эксперта"): '\(message.body!)'"
         notification.soundName = "owl.wav"
         notification.userInfo = ["order" : order.id]
         UIApplication.sharedApplication().scheduleLocalNotification(notification)
+        print("Message notification sent")
     }
 }

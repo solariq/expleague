@@ -80,7 +80,10 @@ Window {
         Item {Layout.preferredHeight: 20}
         Text {
             id: caption
+            Layout.maximumWidth: parent.width - 20
             Layout.alignment: Qt.AlignHCenter
+            renderType: Text.NativeRendering
+            wrapMode: Text.WordWrap
             text: qsTr("Открыто задание")
             font.bold: true
             font.pointSize: 16
@@ -101,6 +104,9 @@ Window {
 
                 Text {
                     Layout.alignment: Qt.AlignLeft
+                    Layout.maximumWidth: parent.width/1.5 - 10
+                    renderType: Text.NativeRendering
+                    wrapMode: Text.WordWrap
                     text: offer ? offer.topic : ""
                     font.bold: true
                 }
@@ -112,6 +118,8 @@ Window {
                 Text {
                     Layout.alignment: Qt.AlignLeft
                     Layout.maximumHeight: 150
+                    renderType: Text.NativeRendering
+                    wrapMode: Text.WordWrap
                     text: {
                         if (!offer)
                             return ""

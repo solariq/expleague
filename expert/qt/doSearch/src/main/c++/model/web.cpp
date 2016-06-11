@@ -49,14 +49,14 @@ bool WebScreen::handleOmniboxInput(const QString &text) {
         else
             content = script + content;
         QVariant returnedValue;
-        webView->setProperty("html", content);
+        m_web_view->setProperty("html", content);
     }
-    else webView->setProperty("url", url);
+    else m_web_view->setProperty("url", url);
     return true;
 }
 
 void WebScreen::urlChanged() {
-    QString url = webView->property("url").toString();
+    QString url = m_web_view->property("url").toString();
     if (m_url == url)
         return;
     m_url = url;
@@ -67,12 +67,12 @@ void WebScreen::urlChanged() {
 QQuickItem* WebSearch::landing() {
     WebScreen* screen = owner()->createWebTab();
     m_queries.last()->registerClick(screen);
-    return screen->webEngine();
+    return screen->webView();
 }
 
 QQuickItem* WebScreen::landing() {
     WebScreen* screen = owner()->createWebTab(this);
-    return screen->webEngine();
+    return screen->webView();
 }
 
 QList<SearchRequest*> WebFolder::requests() const {

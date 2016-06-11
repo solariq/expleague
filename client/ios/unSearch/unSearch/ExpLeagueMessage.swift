@@ -47,8 +47,8 @@ class ExpLeagueMessage: NSManagedObject {
             }
             update {
                 self.setProperty("read", value: v ? "true" : "false")
+                self.parent._unreadCount = nil
             }
-            parent._unreadCount = nil
         }
     }
 
@@ -83,7 +83,7 @@ class ExpLeagueMessage: NSManagedObject {
                 })
             }
         }
-        return nil
+        return parent.parent.expert(login: from)
     }
     
     var change: ExpLeagueOrderMetaChange? {
@@ -157,6 +157,7 @@ class ExpLeagueMessage: NSManagedObject {
         return properties["id"] as? String
     }
     
+    
     init(msg: XMPPMessage, parent: ExpLeagueOrder, context: NSManagedObjectContext) {
         super.init(entity: NSEntityDescription.entityForName("Message", inManagedObjectContext: context)!, insertIntoManagedObjectContext: context)
         let attrs = msg.attributesAsDictionary()
@@ -213,7 +214,7 @@ class ExpLeagueMessage: NSManagedObject {
                     answerText = answerText.substringFromIndex(firstLineEnd)
                     properties["short"] = shortAnswer
                 }
-                answerText = answerText.stringByReplacingOccurrencesOfString("\t", withString: " ")
+//                answerText = answerText.stringByReplacingOccurrencesOfString("\t", withString: " ")
                 let re = try! NSRegularExpression(pattern: "\\+\\[([^\\]]+)\\]([^-]*(?:-[^\\[][^-]*)*)-\\[\\1\\]", options: [])
                 let matches = re.matchesInString(answerText, options: [], range: NSRange(location: 0, length: answerText.characters.count))
                 

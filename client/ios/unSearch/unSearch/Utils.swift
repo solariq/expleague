@@ -126,6 +126,7 @@ extension NSOrderedSet {
 
 extension NSManagedObject {
     func notify() {}
+    func invalidate() {}
     
     func update(todo: () -> ()) {
         dispatch_async(AppDelegate.instance.xmppQueue) {
@@ -148,6 +149,7 @@ extension NSManagedObject {
         catch {
             fatalError("Failure to save context: \(error)")
         }
+        invalidate()
         dispatch_async(dispatch_get_main_queue()) {
             self.notify()
         }
@@ -163,6 +165,13 @@ extension Array where Element : Equatable {
         return false
     }
 }
+
+extension Array {
+    mutating func removeFirstOrNone() -> Generator.Element? {
+        return isEmpty ? nil : removeFirst()
+    }
+}
+
 
 extension String {
     func matches(regexp re: String) -> Bool {

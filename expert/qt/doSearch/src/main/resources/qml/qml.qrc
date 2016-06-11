@@ -31,5 +31,8 @@
         <file>ToolbarButton.qml</file>
         <file>qmldir</file>
         <file>Palette.qml</file>
+        <file>EditorActions.qml</file>
+        <file>BrowserActions.qml</file>
+        <file>CommonActions.qml</file>
     </qresource>
 </RCC>

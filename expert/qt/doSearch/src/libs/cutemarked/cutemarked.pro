@@ -5,11 +5,9 @@ TARGET = cutemarked
 CONFIG += staticlib
 
 SOURCES += \
-    highlightworkerthread.cpp \
     markdownhighlighter.cpp
 
 HEADERS += \
-    highlightworkerthread.h \
     markdownhighlighter.h
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../peg-markdown-highlight/release/ -lpmh
@@ -28,8 +26,4 @@ DEPENDPATH += $$PWD/../hunspell
 
 unix:!macx {
   PKGCONFIG += hunspell
-}
-
-macx {
-  LIBS += -lhunspell
 }
