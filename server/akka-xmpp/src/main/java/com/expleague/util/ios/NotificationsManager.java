@@ -94,7 +94,7 @@ public class NotificationsManager {
       if (device.build() > 22) {
         sendPush(
             new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{\"content-available\": 1}, \"id\": \"" + message.id() + "\"}", tomorrow()),
-            device.user().name()
+            device.user().id()
         );
       }
       else {

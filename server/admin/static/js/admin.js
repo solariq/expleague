@@ -4,8 +4,8 @@ var Admin = {
     },
     experts: null,
 
-    load: function(url, success) {
-        $("#content").empty().append('<div class="loader" style=";">Loading...</div>');
+    loadImpl: function(url, success) {
+        Admin.resetContent().append('<div class="loader" style=";">Loading...</div>');
         $.ajax({
             type: "GET",
             dataType: "json",
@@ -19,31 +19,39 @@ var Admin = {
                 success(data);
             },
             error: function(j, s, message) {
-                $("#content").empty().text(message);
+                Admin.resetContent().text(message);
             }
         });
     },
 
     scheduledUpdates: [],
+
+    clearSchedule: function() {
+        Admin.scheduledUpdates = [];
+    },
+    
     schedule: function(id, callback, intervalMs) {
         callback();
         Admin.scheduledUpdates = [id];
         var fn = function() {
             if (Admin.scheduledUpdates.indexOf(id) != -1) {
-                console.log("Scheduled update for " + id + " is in progress, updates: " + JSON.stringify(Admin.scheduledUpdates));
                 callback();
-                console.log("Scheduled update for " + id + " completed");
                 setTimeout(fn, intervalMs);
             }
         };
         setTimeout(fn, intervalMs);
     },
 
+    loadPage: function(url, success) {
+        Admin.clearSchedule();
+        Admin.loadImpl(url, success);
+    },
+
     loadUpdatablePage: function(url, success) {
         Admin.schedule(
             url,
             function() {
-                Admin.load(url, success);
+                Admin.loadImpl(url, success);
             },
             Admin.config.PAGE_UPDATE_INTERVAL_MS
         );
@@ -68,9 +76,9 @@ var Admin = {
     },
 
     loadTopExperts: function() {
-        Admin.load("/top/experts", function(data) {
+        Admin.loadPage("/top/experts", function(data) {
             var experts = $("#templates").find(".experts").clone();
-            $("#content").empty().append(experts);
+            Admin.resetContent().append(experts);
             var model = ko.mapping.fromJS(data);
             ko.applyBindings(model, experts.get(0))
         });
@@ -84,7 +92,7 @@ var Admin = {
 
     loadDumpHandler: function(order) {
         return function() {
-            Admin.load("/dump/" + order.offer.room.bare(), function(data) {
+            Admin.loadPage("/dump/" + order.offer.room.bare(), function(data) {
                 Admin.bindDump(data);
             });
         }
@@ -96,9 +104,18 @@ var Admin = {
         });
     },
 
+    resetContent: function() {
+        var content = $("#content");
+        content.children().each(function() {
+            ko.cleanNode(this);
+        });
+        content.empty();
+        return content;
+    },
+
     bindOrders: function(orders) {
         var ordersEl = $("#templates").find(".orders").clone();
-        $("#content").empty().append(ordersEl);
+        Admin.resetContent().append(ordersEl);
         var model = ko.mapping.fromJS(orders);
         _.each(model.orderGroups(), function(orderGroup) {
             _.each(orderGroup.orders(), function(order) {
@@ -107,13 +124,12 @@ var Admin = {
             });
             return true;
         });
-        ordersEl.data("model", model);
         ko.applyBindings(model, ordersEl.get(0))
     },
 
     bindDump: function(dump) {
         var dumpEl = $("#templates").find(".dump").clone();
-        $("#content").empty().append(dumpEl);
+        Admin.resetContent().append(dumpEl);
         var model = ko.mapping.fromJS(dump);
         ko.applyBindings(model, dumpEl.get(0));
         dumpEl.find("code.xml").each(function(i, el) {
@@ -130,9 +146,8 @@ var Admin = {
     },
 
     loadKpi: function() {
-        Admin.load("/kpi", function(data) {
-            var content = $('#content');
-            content.empty();
+        Admin.loadPage("/kpi", function(data) {
+            var content = Admin.resetContent();
             _.each(data["charts"], function(chart, index) {
                 $("<div id='chart-" + index + "'/>").appendTo(content).highcharts({
                     chart: {
