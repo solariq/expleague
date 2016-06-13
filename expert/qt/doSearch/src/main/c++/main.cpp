@@ -21,13 +21,20 @@ void declareTypes();
 void setupScreenDefaults();
 
 QQmlApplicationEngine* rootEngine;
+#ifndef Q_OS_MAC
 QSystemTrayIcon* trayIcon;
+#endif
 
 doSearch* root;
 
 int main(int argc, char *argv[]) {
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     QApplication app(argc, argv);
+#ifndef Q_OS_MAC
+    trayIcon = new QSystemTrayIcon();
+    trayIcon->setIcon(QIcon(":/avatar.png"));
+    trayIcon->show();
+#endif
 
     QtWebEngine::initialize();
     QQmlApplicationEngine engine;

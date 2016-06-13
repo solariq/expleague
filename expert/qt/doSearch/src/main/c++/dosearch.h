@@ -7,7 +7,9 @@ class QSystemTrayIcon;
 class QQuickWindow;
 
 extern QQmlApplicationEngine* rootEngine;
+#ifndef Q_OS_MAC
 extern QSystemTrayIcon* trayIcon;
+#endif
 
 #include "model/context.h"
 #include "model/folder.h"
