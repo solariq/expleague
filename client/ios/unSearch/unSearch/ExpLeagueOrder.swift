@@ -243,7 +243,7 @@ class ExpLeagueOrder: NSManagedObject {
         }
     }
     
-    dynamic var _shortAnswer: String?
+    private dynamic var _shortAnswer: String?
     var shortAnswer: String {
         guard _shortAnswer == nil else {
             return _shortAnswer!
@@ -258,7 +258,7 @@ class ExpLeagueOrder: NSManagedObject {
         return result!
     }
     
-    dynamic var _unreadCount: NSNumber?
+    internal dynamic var _unreadCount: NSNumber?
     var unreadCount: Int {
         guard _unreadCount == nil else {
             return _unreadCount!.longValue
