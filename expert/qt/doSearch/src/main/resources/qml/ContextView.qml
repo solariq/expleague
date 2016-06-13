@@ -78,7 +78,7 @@ Item {
                     id: rightSide
                     Layout.minimumWidth: 341
                     Layout.fillHeight: true
-                    visible: context && !!context.task
+                    visible: context && !!context.task && rightSidebar.active
                     anchors.rightMargin: 21
 
                     SplitView {
@@ -229,7 +229,7 @@ Item {
                             }
                         }
                         onClicked: {
-                            rightSidebar.active = dialogButton
+                            rightSidebar.active = rightSidebar.active !== dialogButton ? dialogButton : null
                         }
                     }
                     Button {
@@ -256,7 +256,7 @@ Item {
                             }
                         }
                         onClicked: {
-                            rightSidebar.active = previewButton
+                            rightSidebar.active = rightSidebar.active !== previewButton ? previewButton : null
                         }
                     }
                     Item {Layout.fillWidth: true}
