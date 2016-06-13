@@ -270,7 +270,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               final long currentTimeMillis = System.currentTimeMillis();
               final long suspendIntervalMs = endTimestampMs - currentTimeMillis;
               if (suspendIntervalMs > 0) {
-                explain("Expert delayed his work for " + (suspendIntervalMs / 60 * 1000) + " minutes. Sending notification to the room.");
+                explain("Expert delayed his work for " + (suspendIntervalMs / 60 / 1000) + " minutes. Sending notification to the room.");
                 task.suspend(endTimestampMs);
                 AkkaTools.scheduleTimeout(context(), Duration.create(suspendIntervalMs, TimeUnit.MILLISECONDS), self());
                 return goTo(State.SUSPENDED);

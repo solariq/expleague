@@ -8,6 +8,7 @@
 #include <QMap>
 
 #include <QDomElement>
+#include <QDateTime>
 #include <QApplication>
 #include <QPixmap>
 
@@ -91,6 +92,8 @@ public:
         sendCommand("cancel", offer);
     }
 
+    void sendSuspend(Offer *offer, long seconds);
+
     void sendMessage(const QString& to, const QString&);
     void sendProgress(const QString& to, const Progress& progress);
     void sendAnswer(const QString& roomId, const QString& answer);
@@ -140,7 +143,7 @@ public:
     explicit ExpLeagueConnection(Profile* profile, QObject* parent = 0);
 
 private:
-    void sendCommand(const QString& cmd, Offer* context = 0);
+    void sendCommand(const QString& cmd, Offer* context = 0, std::function<void (QDomElement* element)> init = 0);
 
 private:
     QXmppClient client;

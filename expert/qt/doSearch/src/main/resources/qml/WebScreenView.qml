@@ -14,15 +14,6 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-//        RowLayout {
-//            Layout.fillWidth: true
-//            Text {
-//                text: "Width: " + (root.parent !== null ? root.parent.width : "No parent")
-//            }
-//            Text {
-//                text: "Height: " + (root.parent !== null ? root.parent.height : "No parent")
-//            }
-//        }
 
         WebEngineView {
             id: webView
@@ -32,20 +23,32 @@ Item {
                 loadHtml(html)
             }
 
+            function find(text) {
+                findText(text)
+            }
+
             objectName: "webView"
             focus: true
             Layout.fillWidth: true
             Layout.fillHeight: true
 
             settings {
+                autoLoadImages: true
+                javascriptEnabled: true
+                errorPageEnabled: false
+
+                fullScreenSupportEnabled: false
+
                 javascriptCanAccessClipboard: true
                 pluginsEnabled: true
             }
 
+            profile.httpUserAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36"
+
             onNewViewRequested: {
                 if (!request.userInitiated)
                     print("Warning: Blocked a popup window.")
-                else request.openIn(root.owner.landing())
+                else request.openIn(root.owner.landing(request.destination !== WebEngineView.NewViewInBackgroundTab))
     //            else if (request.destination == WebEngineView.NewViewInTab) {
     //                var tab = tabs.createEmptyTab(currentWebView.profile)
     //                tabs.currentIndex = tabs.count - 1
@@ -64,4 +67,8 @@ Item {
 
         }
     }
+//    Component.onDestruction: {
+//        console.log("Trigger RequestClose")
+//        webView.triggerWebAction(WebEngineView.RequestClose)
+//    }
 }

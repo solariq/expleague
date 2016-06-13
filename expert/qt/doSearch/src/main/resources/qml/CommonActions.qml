@@ -16,6 +16,8 @@ Item {
     property Action undo: undoAction
     property Action redo: redoAction
     property Action searchOnPage: searchOnPageAction
+    property Action searchInternet: searchInternetAction
+    property Action searchSite: searchSiteAction
 
     property QtObject screen: {
         return root.context.folder.screen
@@ -34,6 +36,13 @@ Item {
     property TextEdit editor: {
         if (screen && screen.toString().indexOf("MarkdownEditorScreen") >= 0) {
             return screen.editor
+        }
+        return null
+    }
+
+    property var omnibox: {
+        if (root.main) {
+            return root.main.omnibox
         }
         return null
     }
@@ -139,8 +148,31 @@ Item {
 
     Action {
         id: searchOnPageAction
+        shortcut: "Ctrl+F"
         text: qsTr("Поиск на странице")
         onTriggered: {
+            omnibox.select("page")
+            omnibox.forceActiveFocus()
+        }
+    }
+
+    Action {
+        id: searchInternetAction
+        shortcut: "Ctrl+S"
+        text: qsTr("Поиск в интернете")
+        onTriggered: {
+            omnibox.select("internet")
+            omnibox.forceActiveFocus()
+        }
+    }
+
+    Action {
+        id: searchSiteAction
+        shortcut: "Ctrl+Shift+S"
+        text: qsTr("Поиск на текущем сайте")
+        onTriggered: {
+            omnibox.select("site")
+            omnibox.forceActiveFocus()
         }
     }
 }

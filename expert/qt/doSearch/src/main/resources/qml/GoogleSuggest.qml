@@ -11,8 +11,8 @@ Rectangle {
     property Item textField
     property string textToSugget
     property string dsParam
+    property alias list: listView
     property int rowHeight: 20
-    height: rowHeight*listView.count
 
     signal itemChoosen(string suggestion);
 
@@ -36,6 +36,7 @@ Rectangle {
         highlight: Rectangle { color: Qt.rgba(0,0,0,0.1); z: listView.z+10 }
         highlightFollowsCurrentItem: true
         interactive: false
+        implicitHeight: xmlModel.count * rowHeight
         currentIndex: -1
         clip: true
 
@@ -129,12 +130,11 @@ Rectangle {
                 googleSuggest.itemChoosen(xmlModel.get(listView.currentIndex).suggestion);
             }
         }
-    }
-
-    onFocusChanged: {
-        if (focus) {
-            listView.forceActiveFocus()
-            listView.currentIndex = 0
+        onFocusChanged: {
+            if (focus) {
+                listView.forceActiveFocus()
+                listView.currentIndex = 0
+            }
         }
     }
 }

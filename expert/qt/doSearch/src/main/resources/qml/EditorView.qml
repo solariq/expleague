@@ -29,7 +29,7 @@ Item {
 //                Item {Layout.preferredWidth: 0}
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
-                    action: EditorActions.makeBoldAction
+                    action: EditorActions.makeBold
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
@@ -115,6 +115,7 @@ Item {
                     onCursorRectangleChanged: scroll.ensureVisible(cursorRectangle)
                     renderType: Text.NativeRendering
                     function paste() {
+                        console.log("Paste called")
                         var coded = owner.codeClipboard()
                         edit.remove(edit.selectionStart, edit.selectionEnd)
 
@@ -127,7 +128,7 @@ Item {
                         var control = (event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) != 0
                         var shift = (event.modifiers & Qt.ShiftModifier) != 0
                         if (event.key === Qt.Key_V && control || event.key === Qt.Key_Insert && shift) {
-                            self.paste()
+                            edit.paste()
                             event.accepted = true
                         }
                     }

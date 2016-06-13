@@ -40,7 +40,7 @@ public:
         return m_web_view;
     }
 
-    Q_INVOKABLE QQuickItem* landing();
+    Q_INVOKABLE QQuickItem* landing(bool activate);
 
 private slots:
     void urlChanged();

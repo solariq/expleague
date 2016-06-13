@@ -67,6 +67,7 @@ public:
 
     Q_INVOKABLE void setMain(QQuickWindow* main) {
         m_main = main;
+        mainChanged(main);
     }
 
 signals:

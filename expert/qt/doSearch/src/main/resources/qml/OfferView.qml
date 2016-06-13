@@ -66,6 +66,15 @@ Item {
         }
     }
 
+    SuspendDialog {
+        id: suspendDialog
+        visible: false
+
+        onSuspend: {
+            self.task.suspend(time)
+        }
+    }
+
 
     ColumnLayout {
         anchors.fill: parent
@@ -99,6 +108,12 @@ Item {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/phone.png"
                     onClicked: callDialog.visible = true
+                }
+
+                ToolbarButton {
+                    Layout.alignment: Qt.AlignVCenter
+                    icon: "qrc:/tools/suspend.png"
+                    onClicked: suspendDialog.visible = true
                 }
                 Item { Layout.fillWidth: true }
             }
