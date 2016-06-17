@@ -47,6 +47,14 @@ Item {
         return null
     }
 
+    function focusWebView() {
+        var focus = root.main.activeFocusItem
+        while (focus && focus.toString().indexOf("QQuickWebEngineView") < 0) {
+            focus = focus.parent
+        }
+        return focus
+    }
+
     Action {
         id: closeTabAction
         text: qsTr("Закрыть таб")
@@ -61,9 +69,13 @@ Item {
         id: copyAction
         text: qsTr("Скопировать")
         shortcut: StandardKey.Copy
-        enabled: (editor && editor.selectionStart != editor.selectionEnd) || webView
+        enabled: true//(editor && editor.selectionStart != editor.selectionEnd) || webView
         onTriggered: {
-            if (webView) {
+            var focused = focusWebView()
+            if (focused) {
+                focused.triggerWebAction(WebEngineView.Copy)
+            }
+            else if (webView) {
                 webView.triggerWebAction(WebEngineView.Copy)
             }
             else if (editor) {

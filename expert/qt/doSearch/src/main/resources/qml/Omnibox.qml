@@ -31,7 +31,6 @@ Item {
             input.focus = true
         }
     }
-
     RowLayout {
         anchors.fill: parent
         spacing: 0
@@ -122,6 +121,13 @@ Item {
                 }
                 else if (event.key === Qt.Key_Escape && completion && completion.visible) {
                     completion.visible = false
+                }
+            }
+            Connections {
+                target: suggest
+                onItemChoosen: {
+                    text = suggestion
+                    self.commit(false)
                 }
             }
         }

@@ -176,6 +176,9 @@ ApplicationWindow {
             MenuItem {
                 action: CommonActions.searchOnPage
             }
+            MenuItem {
+                action: CommonActions.closeTab
+            }
         }
     }
 

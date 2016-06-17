@@ -114,6 +114,8 @@ Item {
                     selectByMouse: true
                     onCursorRectangleChanged: scroll.ensureVisible(cursorRectangle)
                     renderType: Text.NativeRendering
+                    font.pointSize: 14
+
                     function paste() {
                         console.log("Paste called")
                         var coded = owner.codeClipboard()

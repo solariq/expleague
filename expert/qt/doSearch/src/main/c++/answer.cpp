@@ -112,7 +112,7 @@ MarkdownEditorScreen::MarkdownEditorScreen(ReceivedAnswer* answer, QObject* pare
     m_text = answer->text();
     m_html = buildHtmlByMD(m_text);
     m_author = answer->author();
-    m_editor->setProperty("enabled", false);
+    m_editor->setProperty("readOnly", true);
     m_document->textDocument()->setPlainText(m_text);
     QObject::connect(answer->author(), SIGNAL(nameChanged(QString)), this, SLOT(authorChanged()));
     QObject::connect(answer->author(), SIGNAL(avatarChanged(QUrl)), this, SLOT(authorChanged()));
