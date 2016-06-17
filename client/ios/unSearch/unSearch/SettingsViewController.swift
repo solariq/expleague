@@ -17,7 +17,7 @@ class AboutViewController: UIViewController {
     @IBOutlet weak var build: UILabel!
     @IBOutlet weak var inviteButton: UIButton!
     @IBAction func invite(sender: AnyObject) {
-        let alert = UIAlertController(title: "Оставьте заявку", message: "С целью сохранения высокого качества работы экспертов и отсутствия очередей, доступ к приложению в данный момент ограничен. Оставьте e-mail Вашего друга и мы свяжемся с ним как только появится возможность.", preferredStyle: .Alert)
+        let alert = UIAlertController(title: "Оставьте заявку", message: "С целью сохранения высокого качества работы экспертов и отсутствия очередей, доступ к приложению в данный момент ограничен. Оставьте e-mail вашего друга, и мы свяжемся с ним как только появится возможность.", preferredStyle: .Alert)
         alert.addTextFieldWithConfigurationHandler { (text: UITextField) -> Void in
             text.placeholder = "Введите адрес"
             text.keyboardType = .EmailAddress

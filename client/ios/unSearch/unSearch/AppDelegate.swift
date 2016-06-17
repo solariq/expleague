@@ -163,6 +163,7 @@ class AppDelegate: UIResponder {
     
     func prepareBackground(application: UIApplication) {
         if(activeProfile?.busy ?? false) {
+            activeProfile?.log("Setting up local communication error notification because of \(activeProfile!.incoming) incoming and \(activeProfile!.outgoing) outgoing messages")
             connectionErrorNotification = Notifications.unableToCommunicate(activeProfile!.incoming, outgoing: activeProfile!.outgoing)
             application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
         }
@@ -212,7 +213,6 @@ extension AppDelegate: UIApplicationDelegate {
             completionHandler(.NewData)
             return
         }
-        
         if (!activeProfile!.busy) {
             completionHandler(.NoData)
         }
@@ -220,9 +220,6 @@ extension AppDelegate: UIApplicationDelegate {
             QObject.track(activeProfile!, #selector(ExpLeagueProfile.busyChanged)) {
                 guard !self.activeProfile!.busy else {
                     return true
-                }
-                if (self.connectionErrorNotification != nil) {
-                    application.cancelLocalNotification(self.connectionErrorNotification!)
                 }
                 self.prepareBackground(application)
                 self.activeProfile!.suspend()
@@ -234,8 +231,10 @@ extension AppDelegate: UIApplicationDelegate {
             activeProfile?.resume()
         }
         else {
-            completionHandler(.Failed)
             self.prepareBackground(application)
+            dispatch_async(dispatch_get_main_queue()) {
+                completionHandler(.Failed)
+            }
         }
     }
     

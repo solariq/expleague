@@ -481,7 +481,7 @@ class ImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigati
 
 class OrderTextDelegate: NSObject, UITextViewDelegate {
     static let textHeight = CGFloat(35.0)
-    static let placeholder = "Найдем для Вас что угодно!"
+    static let placeholder = "Найдем для вас что угодно!"
     static let error_placeholder = "Введите текст запроса"
     var active: Bool = false
     var tapDetector: UIGestureRecognizer?

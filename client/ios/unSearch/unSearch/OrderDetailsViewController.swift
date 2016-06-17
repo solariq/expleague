@@ -295,7 +295,7 @@ class FeedbackViewController: UIViewController {
         if (rate == nil || rate! == 0) {
             let pages = parent.data.lastAnswer?.progress.pagesCount ?? 0
             let calls = parent.data.lastAnswer?.progress.callsCount ?? 0
-            text.text = "Чтобы найти ответ на Ваш вопрос эксперт просмотрел \(pages) страниц\(Lang.rusNumEnding(pages, variants: ["", "ы", ""])), сделал \(calls) звон\(Lang.rusNumEnding(calls, variants: ["ок", "ка", "ков"]))."
+            text.text = "Чтобы найти ответ на ваш вопрос, эксперт просмотрел \(pages) страниц\(Lang.rusNumEnding(pages, variants: ["", "ы", ""])), сделал \(calls) звон\(Lang.rusNumEnding(calls, variants: ["ок", "ка", "ков"]))."
             scoreButton.enabled = false
             return
         }

@@ -56,12 +56,20 @@ class ExpLeagueOrder: NSManagedObject {
     
     private dynamic var _messages: [ExpLeagueMessage]?
     var messages: [ExpLeagueMessage] {
+        let _messages = self._messages
         guard _messages == nil else {
             return _messages!
         }
         let result: [ExpLeagueMessage] = self.messagesRaw.array as! [ExpLeagueMessage]
         self._messages = result
         return result
+    }
+    
+    func messagesChanged() {
+        _unreadCount = nil
+        _messages = nil
+        QObject.notify(#selector(messagesChanged), self)
+        notify()
     }
 
     var before: NSTimeInterval {
@@ -105,6 +113,7 @@ class ExpLeagueOrder: NSManagedObject {
             flags = flags | ExpLeagueOrderFlags.Deciding.rawValue
         }
         save()
+        messagesChanged()
         if (message.type == .Answer) {
             Notifications.notifyAnswerReceived(self, answer: message)
         }
@@ -298,20 +307,14 @@ class ExpLeagueOrder: NSManagedObject {
         return _offer!
     }
     
-    dynamic weak var model: ChatModel?
-    dynamic weak var badge: OrderBadge?
-    
     override func invalidate() {
         _shortAnswer = nil
         _experts = nil
         _icon = nil
-        _unreadCount = nil
-        _messages = nil
     }
     
     override func notify() {
-        model?.sync()
-        badge?.update(order: self)
+        QObject.notify(#selector(self.notify), self)
     }
 }
 
