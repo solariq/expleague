@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4B4AB6C90F3595DA927AD4FC /* Pods_unSearch.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F49B01E300E063C42C4EAE6 /* Pods_unSearch.framework */; };
+		4B4AB6C90F3595DA927AD4FC /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		688A50BC12A73F2E37A3EF75 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 688A5389D422FDF184F24FF8 /* LaunchScreen.storyboard */; };
 		688A521E5814896E25462F09 /* ContinueView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 688A50479C578C8365DA8927 /* ContinueView.xib */; };
 		688A535C37173628E8F51CDC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 688A54C1275EF718A177A20D /* Assets.xcassets */; };
@@ -25,6 +25,7 @@
 		6C5D34F11D0C41670050CF3E /* CameraCaptureController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5D34F01D0C41670050CF3E /* CameraCaptureController.swift */; };
 		6C76178E1CE75B26004E4074 /* SearchLocationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C76178D1CE75B26004E4074 /* SearchLocationController.swift */; };
 		6C7617901CE79D2A004E4074 /* SearchLocationDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6C76178F1CE79D2A004E4074 /* SearchLocationDialog.xib */; };
+		6C9936391D0C84AF00FCCC75 /* AddAttachmentAlert.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6C9936381D0C84AF00FCCC75 /* AddAttachmentAlert.xib */; };
 		6CFC5AE91D0C60410006336B /* ImageAttachmentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CFC5AE81D0C60410006336B /* ImageAttachmentPreview.swift */; };
 		D59A36A01C92E2D900A64230 /* arrow_cut_close.png in Resources */ = {isa = PBXBuildFile; fileRef = D59A369C1C92E2D900A64230 /* arrow_cut_close.png */; };
 		D59A36A11C92E2D900A64230 /* arrow_hide.png in Resources */ = {isa = PBXBuildFile; fileRef = D59A369D1C92E2D900A64230 /* arrow_hide.png */; };
@@ -97,8 +98,8 @@
 		6C5D34F01D0C41670050CF3E /* CameraCaptureController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraCaptureController.swift; sourceTree = "<group>"; };
 		6C76178D1CE75B26004E4074 /* SearchLocationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchLocationController.swift; sourceTree = "<group>"; };
 		6C76178F1CE79D2A004E4074 /* SearchLocationDialog.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SearchLocationDialog.xib; sourceTree = "<group>"; };
+		6C9936381D0C84AF00FCCC75 /* AddAttachmentAlert.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AddAttachmentAlert.xib; sourceTree = "<group>"; };
 		6CFC5AE81D0C60410006336B /* ImageAttachmentPreview.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageAttachmentPreview.swift; sourceTree = "<group>"; };
-		D0806994D5FE374ABCB8A184 /* Pods_unSearch.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_unSearch.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE053AF093E286ACDC53E101 /* Pods-unSearch.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-unSearch.debug.xcconfig"; path = "Pods/Target Support Files/Pods-unSearch/Pods-unSearch.debug.xcconfig"; sourceTree = "<group>"; };
 		D59A369C1C92E2D900A64230 /* arrow_cut_close.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrow_cut_close.png; sourceTree = "<group>"; };
 		D59A369D1C92E2D900A64230 /* arrow_hide.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrow_hide.png; sourceTree = "<group>"; };
@@ -159,7 +160,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EE5E59A01C5F70720040246E /* StoreKit.framework in Frameworks */,
-				4B4AB6C90F3595DA927AD4FC /* Pods_unSearch.framework in Frameworks */,
+				4B4AB6C90F3595DA927AD4FC /* (null) in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,6 +240,7 @@
 			isa = PBXGroup;
 			children = (
 				6CFC5AE81D0C60410006336B /* ImageAttachmentPreview.swift */,
+				6C9936381D0C84AF00FCCC75 /* AddAttachmentAlert.xib */,
 			);
 			name = Attachments;
 			sourceTree = "<group>";
@@ -257,7 +259,6 @@
 			isa = PBXGroup;
 			children = (
 				EE5E599F1C5F70720040246E /* StoreKit.framework */,
-				7F49B01E300E063C42C4EAE6 /* Pods_unSearch.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -419,6 +420,7 @@
 				EE70A5381C7FA3EA00174674 /* markdownpad-github.css in Resources */,
 				EEAF257A1C99E4BC00D75745 /* Main.storyboard in Resources */,
 				EEAF257C1C99EF1100D75745 /* owl.wav in Resources */,
+				6C9936391D0C84AF00FCCC75 /* AddAttachmentAlert.xib in Resources */,
 				EE8259B51D0096490051CB2E /* SaveView.xib in Resources */,
 				EE755C551C57E9110018AF12 /* Setup.xib in Resources */,
 				EE70A5391C7FA3EA00174674 /* md-scripts.js in Resources */,

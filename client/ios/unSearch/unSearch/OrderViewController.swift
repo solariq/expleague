@@ -253,7 +253,14 @@ class OrderDescriptionViewController: UITableViewController {
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         if (indexPath.item == 4) {
-            showAttachmentChoiceAlert();
+            let feedback = AddAttachmentAlertController()
+            feedback.modalPresentationStyle = .OverCurrentContext
+            self.providesPresentationContextTransitionStyle = true;
+            self.definesPresentationContext = true;
+            
+            self.presentViewController(feedback, animated: true, completion: nil)
+
+            //showAttachmentChoiceAlert();
         }
         else if (indexPath.item == 3) {
             showExpertChoiceView();
@@ -284,7 +291,7 @@ class OrderDescriptionViewController: UITableViewController {
 
         let layout = UICollectionViewFlowLayout()
         layout.sectionInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
-        layout.itemSize = CGSize(width: 80, height: 80)
+        layout.itemSize = CGSize(width: 200, height: 200)
 
         let attachmentsView = UICollectionView(frame: alertController.contentView.frame, collectionViewLayout: layout)
         let attachments = ImageCollectionPreviewDelegate()
@@ -295,11 +302,19 @@ class OrderDescriptionViewController: UITableViewController {
         attachmentsView.backgroundColor = UIColor.whiteColor()
         //attachmentsView.backgroundView = UIView(frame: CGRectZero);
         attachmentsView.layoutMargins = UIEdgeInsetsZero
+        attachmentsView.translatesAutoresizingMaskIntoConstraints = false
         attachmentsView.registerClass(ImagePreview.self, forCellWithReuseIdentifier: "ImagePreview")
         attachments.view = attachmentsView
 
-        attachments.fetchPhotoAtIndexFromEnd(0)
         alertController.contentView.addSubview(attachmentsView)
+
+        attachments.fetchPhotoAtIndexFromEnd(0)
+
+        attachmentsView.reloadData()
+        attachmentsView.performBatchUpdates(nil, completion: nil)
+        attachmentsView.collectionViewLayout.invalidateLayout()
+        attachmentsView.collectionViewLayout.prepareLayout()
+
         alertController.addAction(AlertAction(title: "Сделать снимок", style: .Default, handler: showCameraCapture))
         alertController.addAction(AlertAction(title: "Добавить фото", style: .Default, handler: showImagePicker))
         //alertController.addAction(UIAlertAction(title: "Просмотреть вложения", style: .Default, handler: showAttachments))

@@ -9,6 +9,16 @@
 import Foundation
 import Photos
 
+class AddAttachmentAlertController: UIViewController {
+    init() {
+        super.init(nibName: "AddAttachmentAlert", bundle: nil)
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
 class ImageCollectionPreviewDelegate: NSObject, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     var view: UICollectionView?
     var cells: [UIImage] = []
@@ -20,8 +30,6 @@ class ImageCollectionPreviewDelegate: NSObject, UICollectionViewDelegateFlowLayo
     
     func append(image: UIImage) {
         cells.append(image)
-        view?.reloadData()
-        view?.performBatchUpdates(nil, completion: nil)
     }
     
     func remove(index: Int) {
@@ -49,7 +57,16 @@ class ImageCollectionPreviewDelegate: NSObject, UICollectionViewDelegateFlowLayo
         }))
         return cell
     }
-    
+
+    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
+        let max = CGSizeMake(collectionView.frame.width - 32, collectionView.frame.height - 4)
+        if indexPath.item < count {
+            let image = cells[indexPath.item]
+            return CGSizeMake(image.size.width / image.size.height * max.height, max.height)
+        }
+        return max
+    }
+
     func fetchPhotoAtIndexFromEnd(index:Int) {
         
         let imgManager = PHImageManager.defaultManager()
@@ -104,6 +121,13 @@ class ImagePreview: UICollectionViewCell {
         self.contentView.addSubview(self.image)
         //self.viewForBaselineLayout().addSubview(self.image)
         print("Image preview is created")
+
+        layer.cornerRadius = Palette.CORNER_RADIUS
+        layer.masksToBounds = true
+        backgroundColor = UIColor.clearColor()
+        backgroundView = nil
+        translatesAutoresizingMaskIntoConstraints = false
+        contentView.translatesAutoresizingMaskIntoConstraints = false
     }
     
     required init?(coder aDecoder: NSCoder) {
