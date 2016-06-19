@@ -68,7 +68,7 @@ internal class ExpLeagueCommunicator: NSObject {
         if (ExpLeagueCommunicator.DEBUG) {
             print("Expecting: \(id)")
         }
-        self.pending.append(id)
+        self.pending.insert(id)
         if (self.state.status == .Idle) {
             self.state.status = .Acquiring
         }
@@ -104,7 +104,7 @@ internal class ExpLeagueCommunicator: NSObject {
     }
     
     private var queue: [XMPPMessage] = []
-    internal var pending: [String] = []
+    internal var pending = Set<String>()
     
     private var timer: NSTimer?
     private var connectionAttempts = 0
@@ -416,7 +416,7 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         if (receipt != nil) {
             sender.sendElement(XMPPMessage(type: "normal", child: receipt))
         }
-        if (pending.removeOne(msg.elementID())) {
+        if ((pending.remove(msg.elementID())) != nil) {
             profile.delivered(incoming: msg)
         }
         delivered.forEach{ msg in

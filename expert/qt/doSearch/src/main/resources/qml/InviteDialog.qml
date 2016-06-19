@@ -102,10 +102,11 @@ Window {
                     text: qsTr("На тему: ")
                 }
 
-                Text {
+                TextEdit {
                     Layout.alignment: Qt.AlignLeft
                     Layout.maximumWidth: parent.width/1.5 - 10
                     renderType: Text.NativeRendering
+                    readOnly: true
                     wrapMode: Text.WordWrap
                     text: offer ? offer.topic : ""
                     font.bold: true

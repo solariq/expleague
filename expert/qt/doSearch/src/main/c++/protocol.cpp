@@ -247,15 +247,25 @@ Member* ExpLeagueConnection::find(const QString &id) {
     return member;
 }
 
-void ExpLeagueConnection::sendCommand(const QString& command, Offer* task) {
+void ExpLeagueConnection::sendCommand(const QString& command, Offer* task, std::function<void (QDomElement* element)> init) {
     QXmppMessage msg("", profile()->domain());
     QDomDocument holder;
     QXmppElementList protocol;
-
-    protocol.append(QXmppElement(holder.createElementNS(EXP_LEAGUE_NS, command)));
+    QDomElement commandXml = holder.createElementNS(EXP_LEAGUE_NS, command);
+    if (init)
+        init(&commandXml);
+    protocol.append(QXmppElement(commandXml));
     protocol.append(QXmppElement(task->toXml()));
     msg.setExtensions(protocol);
     client.sendPacket(msg);
+}
+
+void ExpLeagueConnection::sendSuspend(Offer *offer, long seconds) {
+    sendCommand("suspend", offer, [this, seconds](QDomElement* command) {
+        QDateTime now = QDateTime::currentDateTimeUtc();
+        command->setAttribute("start", now.toMSecsSinceEpoch() / (double)1000);
+        command->setAttribute("end", now.addSecs(seconds).toMSecsSinceEpoch() / (double)1000);
+    });
 }
 
 void ExpLeagueConnection::sendMessage(const QString& to, const QString& text) {

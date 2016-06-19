@@ -92,7 +92,7 @@ void StateSaver::save(Context* context, QSettings* settings) {
         restoreContext(context);
     QDir contextDataDir = CONTEXT_DIR;
     if (context->task())
-        FileWriteThrottle::enqueue({contextDataDir.absoluteFilePath(context->task()->id() + "answer.txt"), context->task()->answer()});
+        FileWriteThrottle::enqueue({contextDataDir.absoluteFilePath(context->task()->id() + "/answer.txt"), context->task()->answer()});
 
     settings->setValue("active", context->m_folders.indexOf(context->folder()));
     settings->beginWriteArray("folder");

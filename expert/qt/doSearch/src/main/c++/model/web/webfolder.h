@@ -23,8 +23,8 @@ public:
 
     bool handleOmniboxInput(const QString &text, bool newTab);
 
-    WebScreen* createWebTab(Screen* source = 0) {
-        qDebug() << "Creating new tab at position: " << m_screens.indexOf(source);
+    WebScreen* createWebTab(bool activate, Screen* source = 0) {
+//        qDebug() << "Creating new tab at position: " << m_screens.indexOf(source);
         WebScreen* tab = new WebScreen(this);
         if (source)
             insert(m_screens.indexOf(source), tab);
@@ -32,7 +32,8 @@ public:
             append(tab);
         else
             insert(1, tab);
-        tab->setActive(true);
+        if (activate)
+            tab->setActive(true);
         return tab;
     }
 
@@ -46,22 +47,7 @@ signals:
     void requestsChanged();
 
 private slots:
-    void dnsRequestFinished(){
-        if (m_lookup.error() == QDnsLookup::NoError) { // seems to be domain!
-            openUrl(QUrl("http://" + m_text), m_newTab);
-            return;
-        }
-        // search fallback
-        WebSearch* search;
-        if (!(search = dynamic_cast<WebSearch*>(at(0)))) {
-            search = new WebSearch(this);
-            insert(0, search);
-        }
-
-        search->search(m_text);
-        search->setActive(true);
-    }
-
+    void dnsRequestFinished();
     void changedRequests() {
         requestsChanged();
     }
@@ -69,7 +55,7 @@ private slots:
     void openUrl(const QUrl& url, bool newTab) {
         WebScreen* active = dynamic_cast<WebScreen*>(screen());
         if (!active || newTab)
-            active = createWebTab();
+            active = createWebTab(true);
         active->handleOmniboxInput(url.toString());
     }
 

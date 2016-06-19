@@ -14,6 +14,7 @@ import "."
 ApplicationWindow {
     id: mainWindow
     property QtObject activeDialog
+    property alias omnibox: omnibox
 
     flags: {
         if (Qt.platform.os === "osx")
@@ -167,7 +168,16 @@ ApplicationWindow {
             }
             MenuSeparator {}
             MenuItem {
+                action: CommonActions.searchInternet
+            }
+            MenuItem {
+                action: CommonActions.searchSite
+            }
+            MenuItem {
                 action: CommonActions.searchOnPage
+            }
+            MenuItem {
+                action: CommonActions.closeTab
             }
         }
     }
@@ -278,6 +288,7 @@ ApplicationWindow {
                                     Layout.fillHeight: true
                                     Omnibox {
                                         id: omnibox
+                                        window: mainWindow
                                         anchors.centerIn: parent
                                         height: 20
                                         width: parent.width > 600 ? 600 : parent.width
@@ -349,10 +360,9 @@ ApplicationWindow {
             x: parent.mapFromItem(omnibox.parent, omnibox.x, omnibox.y + omnibox.height).x
             y: parent.mapFromItem(omnibox.parent, omnibox.x, omnibox.y + omnibox.height).y
             z: omnibox.z + 100
-
             visible: false
             width: omnibox.width
-            height: 100
+            height: Math.min(rowHeight*20, list.implicitHeight)
 
             textField: omnibox
             textToSugget: omnibox.text

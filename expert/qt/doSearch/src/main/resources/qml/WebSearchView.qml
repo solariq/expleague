@@ -162,8 +162,13 @@ Item {
             url: "http://www.google.com"
             focus: true
             onNewViewRequested: {
-                console.log("Search click: " + request)
-                request.openIn(owner.landing())
+                console.log("Search click: " + request.destination)
+                if (request.destination === WebEngineView.NewViewInBackgroundTab) {
+                    request.openIn(owner.landing(false))
+                }
+                else {
+                    request.openIn(owner.landing(true))
+                }
             }
         }
     }

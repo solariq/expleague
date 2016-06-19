@@ -95,7 +95,7 @@ win32:CONFIG(release, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/hunspell/release/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/release/ -lcutemarked
 else:win32:CONFIG(debug, debug|release): LIBS += \
-    -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d0 \
+    -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d \
     -L$$OUT_PWD/../libs/discount/debug/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/debug/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/debug/ -lcutemarked
@@ -131,7 +131,8 @@ DEPENDPATH += \
     $$PWD/../libs/peg-markdown-highlight \
     $$PWD/../libs/cutemarked
 
-PRE_TARGETDEPS += $$OUT_PWD/../libs/cutemarked/libcutemarked.a
+unix:PRE_TARGETDEPS += $$OUT_PWD/../libs/cutemarked/libcutemarked.a
+else:win32: PRE_TARGETDEPS += $$OUT_PWD/../libs/cutemarked/debug/cutemarked.lib
 
 INSTALLS = target qml
 

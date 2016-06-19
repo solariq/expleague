@@ -9,9 +9,7 @@ Button {
 
     Component.onCompleted: {
         if (action) {
-//            console.log(action.iconSource);
             icon = action.iconSource
-            action.iconSource = undefined
         }
     }
 

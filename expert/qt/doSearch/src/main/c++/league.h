@@ -81,8 +81,8 @@ class TaskTag: public QObject {
     Q_PROPERTY(QUrl icon READ icon CONSTANT)
 public:
 
-    QString name() { return m_name; }
-    QUrl icon() { return m_icon; }
+    QString name() const { return m_name; }
+    QUrl icon() const { return m_icon; }
 
 public:
     TaskTag(const QString& name = "", const QUrl& icon = QUrl("qrc:/avatar.png"), QObject* parent = 0): QObject(parent), m_name(name), m_icon(icon){}
@@ -100,9 +100,9 @@ class AnswerPattern: public QObject {
     Q_PROPERTY(QString text READ text CONSTANT)
 public:
 
-    QString name() { return m_name; }
-    QUrl icon() { return m_icon; }
-    QString text() { return m_text; }
+    QString name() const { return m_name; }
+    QUrl icon() const { return m_icon; }
+    QString text() const { return m_text; }
 
 public:
     AnswerPattern(const QString& name = "", const QUrl& icon = QUrl("qrc:/avatar.png"), const QString& text = "", QObject* parent = 0): QObject(parent), m_name(name), m_icon(icon), m_text(text) {}
@@ -253,6 +253,9 @@ private slots:
         }
 
         m_tags.append(tag);
+        qSort(m_tags.begin(), m_tags.end(), [](const TaskTag* a, const TaskTag* b) {
+            return a->name() < b->name();
+        });
         tagsChanged();
     }
 
@@ -266,6 +269,10 @@ private slots:
         }
 
         m_patterns.append(pattern);
+        qSort(m_patterns.begin(), m_patterns.end(), [](const AnswerPattern* a, const AnswerPattern* b) {
+            return a->name() < b->name();
+        });
+
         patternsChanged();
     }
 

@@ -78,7 +78,7 @@ public:
     }
 
     QString location() const {
-        return m_web_view->property("url").toString();
+        return m_queries.empty() ? "" : m_queries.last()->query();
     }
 
     QString name() const {
@@ -108,7 +108,7 @@ public:
         }
     }
 
-    Q_INVOKABLE QQuickItem* landing();
+    Q_INVOKABLE QQuickItem* landing(bool activate);
 
 public:
     void append(const QString& query, int clicks) {
@@ -144,7 +144,8 @@ private slots:
 
         m_queries.append(request ? request : new SearchRequest(queryText, 0, this));
         queriesChanged();
-//        last->deleteLater();
+        locationChanged(location());
+        last->deleteLater();
     }
 
     void titleChanged() {

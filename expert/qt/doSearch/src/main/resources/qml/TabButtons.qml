@@ -8,6 +8,8 @@ Item {
     property alias model: repeater.model
 
     property bool position: false
+    property real activeLeft
+    property real activeRight
 
     anchors.leftMargin: 5
     anchors.rightMargin: 5
@@ -27,6 +29,17 @@ Item {
             border.width: 1
             radius: 5
             color: active ? Palette.activeColor : Palette.idleColor
+
+            Connections {
+                target: modelData
+                onActiveChanged: {
+                    if (modelData.active) {
+                        console.log("active changed to " + modelData)
+                        activeRight = tabItem.x + tabItem.width
+                        activeLeft = tabItem.x
+                    }
+                }
+            }
 
             Image {
                 id: crossIcon
@@ -104,14 +117,33 @@ Item {
         }
     }
 
-    RowLayout {
-        spacing: 1
-        Repeater {
-            id: repeater
-            Layout.fillWidth: true
-            focus: true
-            delegate: tabButton
-            model: model
+    Flickable {
+        id: container
+        anchors.fill: parent
+
+        contentHeight: buttons.implicitHeight
+        contentWidth: buttons.implicitWidth
+
+        boundsBehavior: Flickable.StopAtBounds
+        RowLayout {
+            id: buttons
+            spacing: 1
+            Repeater {
+                id: repeater
+                Layout.fillWidth: true
+                focus: true
+                delegate: tabButton
+                model: model
+            }
+        }
+    }
+    onActiveLeftChanged: {
+        console.log("left margin: " + activeLeft + " current: " + container.contentX)
+        if (activeLeft < container.contentX) {
+            container.contentX = activeLeft
+        }
+        else if (activeRight > container.contentX + container.width) {
+            container.contentX = activeRight - container.width
         }
     }
 }
