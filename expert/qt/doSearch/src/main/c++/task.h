@@ -93,6 +93,7 @@ public:
     Q_INVOKABLE void pattern(AnswerPattern*);
     Q_INVOKABLE void phone(const QString&);
     Q_INVOKABLE void cancel();
+    Q_INVOKABLE void suspend(int seconds);
 
     void setContext(Context* context);
 

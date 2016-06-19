@@ -202,6 +202,8 @@ public class Offer extends Item {
   }
 
   public void attach(Image image) {
+    if (attachments == null)
+      attachments = new ArrayList<>();
     attachments.add(image);
   }
 

@@ -75,7 +75,7 @@ void AnswersFolder::answerReceived(ReceivedAnswer* answer) {
     append(answerScreen);
 }
 
-Screen::Screen(QUrl item, QObject *parent): QObject(parent), m_context(rootEngine) {
+Screen::Screen(const QUrl& item, QObject *parent): QObject(parent), m_context(rootEngine) {
     QQmlComponent component(rootEngine, item, QQmlComponent::PreferSynchronous);
     if (component.isError()) {
         qWarning() << "Error during screen load";
@@ -83,8 +83,26 @@ Screen::Screen(QUrl item, QObject *parent): QObject(parent), m_context(rootEngin
             qWarning() << error;
         }
     }
-    QQuickItem* instance = (QQuickItem*)component.create(&m_context);
-    m_root = instance;
+    m_root = (QQuickItem*)component.create(&m_context);
+    connect(m_root, &QQuickItem::destroyed, [this](){
+//        qDebug() << "Root destroyed";
+        this->m_root = 0;
+    });
+}
+
+Screen::~Screen() {
+}
+
+void Screen::bind(QQuickItem* parent) {
+    QVariant v;
+    v.setValue(parent);
+    m_root->setParentItem(parent);
+    m_root->setParent(parent);
+}
+
+void Screen::unbind() {
+    m_root->setParentItem(0);
+    m_root->setParent(this);
 }
 
 void Screen::setupOwner() {

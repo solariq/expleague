@@ -52,7 +52,16 @@ class PurchaseHelper: NSObject {
     }
     
     func register(ids: [String]) {
-        let request = SKProductsRequest(productIdentifiers: Set<String>(ids))
+        var remaining = ids
+        for id in ids {
+            if (products[id] != nil) {
+                remaining.removeOne(id)
+            }
+        }
+        guard !remaining.isEmpty else {
+            return
+        }
+        let request = SKProductsRequest(productIdentifiers: Set<String>(remaining))
         request.delegate = self
         request.start()
     }

@@ -51,5 +51,6 @@
         <file>icons/25x25/quote.png</file>
         <file>icons/25x25/splitter.png</file>
         <file>icons/25x25/table.png</file>
+        <file>tools/suspend.png</file>
     </qresource>
 </RCC>

@@ -10,7 +10,6 @@ import UIKit
 class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     private var lastKnownMessage: Int = 0
     let order: ExpLeagueOrder
-    let lock: dispatch_queue_t
     var lastAnswer: AnswerReceivedModel?
 
     weak var controller: OrderDetailsViewController? {
@@ -43,15 +42,13 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         order.messages.forEach{msg in
             msg.read = true
         }
-        order.badge?.update(order: order)
     }
 
     func sync() {
-        dispatch_sync(lock){
+        dispatch_async(dispatch_get_main_queue()){
             self.syncInner()
         }
     }
-    
     
     func translateToIndex(plain: Int) -> NSIndexPath? {
         var x = plain - 1
@@ -179,9 +176,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         controller?.messages.reloadData()
         controller?.answerText = answer
         finished = true
-        dispatch_async(dispatch_get_main_queue()){
-            self.controller?.scrollToLastMessage()
-        }
+        self.controller?.scrollToLastMessage()
     }
 
     private var cells: [ChatCellModel] = [];
@@ -276,10 +271,12 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
 
     init(order: ExpLeagueOrder) {
         self.order = order
-        self.lock = dispatch_queue_create("com.expleague.LockQueue\(order.jid.user)", nil)
         super.init()
-        order.model = self
-        sync()
+        QObject.connect(order, signal: #selector(ExpLeagueOrder.messagesChanged), receiver: self, slot: #selector(self.sync))
+    }
+    
+    deinit {
+        QObject.disconnect(self)
     }
 }
 

@@ -34,11 +34,8 @@ public:
     virtual bool handleOmniboxInput(const QString&) = 0;
 
 public:
-    Q_INVOKABLE void bind(QQuickItem* parent) {
-        QVariant v;
-        v.setValue(parent);
-        m_root->setParentItem(parent);
-    }
+    Q_INVOKABLE void bind(QQuickItem* parent);
+    Q_INVOKABLE void unbind();
 
     Q_INVOKABLE virtual void remove() {
         setActive(false);
@@ -48,6 +45,8 @@ public:
     void setActive(bool newState) {
         if (newState != m_active) {
             m_active = newState;
+            if (!m_active)
+                unbind();
             activeChanged();
         }
     }
@@ -59,11 +58,10 @@ signals:
     void locationChanged(const QString&);
 
 protected:
-    explicit Screen(QUrl item, QObject* parent = 0);
+    explicit Screen(const QUrl& item, QObject* parent = 0);
+    virtual ~Screen();
 
-    QQuickItem* root() {
-        return m_root;
-    }
+    QQuickItem* root() { return m_root; }
 
     void setupOwner();
 

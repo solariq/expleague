@@ -82,26 +82,26 @@ public class Operations {
 
   @XmlRootElement
   public static class Suspend extends Command {
-    @XmlAttribute
-    private long startTimestampMs;
+    @XmlAttribute(name="start")
+    private double startTimestamp;
 
-    @XmlAttribute
-    private long endTimestampMs;
+    @XmlAttribute(name="end")
+    private double endTimestamp;
 
     public Suspend() {
     }
 
     public Suspend(final long startTimestampMs, final long endTimestampMs) {
-      this.startTimestampMs = startTimestampMs;
-      this.endTimestampMs = endTimestampMs;
+      this.startTimestamp = startTimestampMs / 1000.;
+      this.endTimestamp = endTimestampMs / 1000.;
     }
 
     public long getStartTimestampMs() {
-      return startTimestampMs;
+      return (long)(startTimestamp * 1000);
     }
 
     public long getEndTimestampMs() {
-      return endTimestampMs;
+      return (long)(endTimestamp * 1000);
     }
   }
 

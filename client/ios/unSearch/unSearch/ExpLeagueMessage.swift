@@ -45,10 +45,8 @@ class ExpLeagueMessage: NSManagedObject {
             guard v != read else {
                 return
             }
-            update {
-                self.setProperty("read", value: v ? "true" : "false")
-                self.parent._unreadCount = nil
-            }
+            self.setProperty("read", value: v ? "true" : "false")
+            self.parent.messagesChanged()
         }
     }
 
@@ -116,7 +114,7 @@ class ExpLeagueMessage: NSManagedObject {
         let archiver = NSKeyedArchiver(forWritingWithMutableData: data)
         archiver.encodeObject(properties.copy() as! NSDictionary)
         archiver.finishEncoding()
-        update {
+        updateSync {
             self.propertiesRaw = data.xmpp_base64Encoded()
         }
     }

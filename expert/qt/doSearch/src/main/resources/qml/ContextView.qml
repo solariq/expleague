@@ -78,7 +78,7 @@ Item {
                     id: rightSide
                     Layout.minimumWidth: 341
                     Layout.fillHeight: true
-                    visible: context && !!context.task
+                    visible: context && !!context.task && rightSidebar.active
                     anchors.rightMargin: 21
 
                     SplitView {
@@ -175,9 +175,8 @@ Item {
                                     var url = "" + preview.url
 //                                    console.log("New url: " + url)
                                     if (url.length > 0 && url != "about:blank" && url.indexOf("data:") !== 0) {
-                                        console.log("Preview attempts to load" + url)
                                         preview.goBack()
-                                        context.handleOmniboxInput(url, false)
+                                        context.handleOmniboxInput(url, true)
                                     }
                                 }
 
@@ -229,7 +228,7 @@ Item {
                             }
                         }
                         onClicked: {
-                            rightSidebar.active = dialogButton
+                            rightSidebar.active = rightSidebar.active !== dialogButton ? dialogButton : null
                         }
                     }
                     Button {
@@ -256,7 +255,7 @@ Item {
                             }
                         }
                         onClicked: {
-                            rightSidebar.active = previewButton
+                            rightSidebar.active = rightSidebar.active !== previewButton ? previewButton : null
                         }
                     }
                     Item {Layout.fillWidth: true}
@@ -275,6 +274,7 @@ Item {
     }
 
     onContextChanged: {
+        preview.html = ""
         if (context) {
             if (context.folder) {
                 rebind(context.folder.screen)

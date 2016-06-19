@@ -27,29 +27,26 @@ Window {
     modality: Qt.WindowModal
     color: backgroundColor
 
-    signal appendTag(TaskTag tag)
+    signal suspend(int time)
+    function time() {
+        return ((parseInt("0" + days.text) * 24 + parseInt("0" + hours.text)) * 60 + parseInt("0" + minutes.text)) * 60
+    }
+
     Action {
         id: accept
-        text: qsTr("Добавить")
+        text: qsTr("Да")
         enabled: {
-            if (!task || tags.currentIndex < 0)
-                return false
-            var tag = league.tags[tags.currentIndex]
-            for (var i = 0; i < task.tags.length; i++) {
-                if (task.tags[i] === tag)
-                    return false
-            }
-            return true
+            return time() > 0
         }
         onTriggered: {
-            dialog.appendTag(league.tags[tags.currentIndex])
+            suspend(time())
             dialog.hide()
         }
     }
 
     Action {
         id: reject
-        text: qsTr("Отменить")
+        text: qsTr("Нет")
         onTriggered: {
             dialog.hide()
         }
@@ -59,10 +56,14 @@ Window {
         anchors.fill: parent
         Item {Layout.preferredHeight: 20}
         Text {
+            Layout.preferredWidth: 300
             Layout.alignment: Qt.AlignHCenter
-            text: qsTr("Добавить тег к заданию")
+            text: qsTr("Вы действительно хотите преостановить выполнение задания?")
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+            renderType: Text.NativeRendering
             font.bold: true
-            font.pointSize: 16
+            font.pointSize: 15
         }
         Item {
             Layout.alignment: Qt.AlignHCenter
@@ -75,13 +76,38 @@ Window {
                 columns: 2
 
                 Layout.alignment: Qt.AlignHCenter
-                ComboBox {
-                    Layout.columnSpan: 2
-                    Layout.alignment: Qt.AlignHCenter
+                Text {
+                    renderType: Text.NativeRendering
+                    Layout.alignment: Qt.AlignLeft
+                    text: "Отложить на сколько"
+                }
 
-                    id: tags
-                    textRole: "name"
-                    model: league.tags
+                RowLayout {
+                    Layout.columnSpan: 1
+                    Layout.alignment: Qt.AlignLeft
+                    TextField {
+                        Layout.preferredWidth: 20
+                        id: days
+                    }
+                    Text {
+                        text: "дней"
+                    }
+                    TextField {
+                        Layout.preferredWidth: 20
+                        id: hours
+                    }
+                    Text {
+                        width: 30
+                        text: "ч."
+                    }
+                    TextField {
+                        Layout.preferredWidth: 20
+                        id: minutes
+                    }
+                    Text {
+                        width: 30
+                        text: "м."
+                    }
                 }
 
                 Item {Layout.fillHeight:true; Layout.columnSpan: 2}

@@ -34,5 +34,6 @@
         <file>EditorActions.qml</file>
         <file>BrowserActions.qml</file>
         <file>CommonActions.qml</file>
+        <file>SuspendDialog.qml</file>
     </qresource>
 </RCC>

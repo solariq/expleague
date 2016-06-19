@@ -330,6 +330,11 @@ void Task::cancel() {
     finished();
 }
 
+void Task::suspend(int seconds) {
+    parent()->connection()->sendSuspend(offer(), seconds);
+    finished();
+}
+
 QString Task::id() const  {
     return m_offer ? m_offer->room() : "";
 }
