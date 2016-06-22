@@ -77,7 +77,13 @@ public class Item implements Cloneable {
     }
     catch (Exception e) {
       inputter.init();
-      return (T)inputter.deserialize(str.toString());
+      try {
+        return (T) inputter.deserialize(str.toString());
+      }
+      catch (Exception ee) {
+        log.log(Level.WARNING, "Unable to parse message: " + str.toString(), ee);
+        return null;
+      }
     }
   }
 
