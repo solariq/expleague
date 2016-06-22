@@ -95,39 +95,43 @@ public class NotificationsManager extends ActorAdapter<UntypedActor> {
 
   @ActorMethod
   public void tick(Timeout to) {
-    { // notify scheduled
-      final Date now = new Date();
-      undelivered.values().forEach(queue -> {
-        SimpleApnsPushNotification notification = null;
-        final Iterator<ScheduledNotification> it = queue.iterator();
-        while (it.hasNext()) {
-          ScheduledNotification next = it.next();
-          if (next.when.after(now))
-            break;
-          notification = next.notification;
-          it.remove();
+    try {
+      { // notify scheduled
+        final Date now = new Date();
+        undelivered.values().forEach(queue -> {
+          SimpleApnsPushNotification notification = null;
+          final Iterator<ScheduledNotification> it = queue.iterator();
+          while (it.hasNext()) {
+            ScheduledNotification next = it.next();
+            if (next.when.after(now))
+              break;
+            notification = next.notification;
+            it.remove();
+          }
+          sendPush(notification);
+        });
+      }
+
+      { // cleanup
+        final String[] keys = undelivered.keySet().toArray(new String[undelivered.size()]);
+        for (String key : keys) {
+          if (undelivered.get(key).isEmpty())
+            undelivered.remove(key);
         }
-        sendPush(notification);
-      });
-    }
+      }
 
-    { // cleanup
-      final String[] keys = undelivered.keySet().toArray(new String[undelivered.size()]);
-      for (String key : keys) {
-        if (undelivered.get(key).isEmpty())
-          undelivered.remove(key);
+      { // aow
+        final LaborExchange.AnswerOfTheWeek aow = LaborExchange.board().answerOfTheWeek();
+        if (aow != null && !aow.equals(this.aow)) {
+          AOWNotificationScheduler scheduler = new AOWNotificationScheduler(aow);
+          Roster.instance().allDevices().forEach(device -> schedule("aow", scheduler, device));
+          this.aow = aow;
+        }
       }
     }
-
-    { // aow
-      final LaborExchange.AnswerOfTheWeek aow = LaborExchange.board().answerOfTheWeek();
-      if (aow != null && !aow.equals(this.aow)) {
-        AOWNotificationScheduler scheduler = new AOWNotificationScheduler(aow);
-        Roster.instance().allDevices().forEach(device -> schedule("aow", scheduler, device));
-        this.aow = aow;
-      }
+    finally {
+      AkkaTools.scheduleTimeout(context(), Duration.apply(5, TimeUnit.SECONDS), self()); // tick
     }
-    AkkaTools.scheduleTimeout(context(), Duration.apply(5, TimeUnit.SECONDS), self()); // tick
   }
 
   @Override
@@ -152,6 +156,8 @@ public class NotificationsManager extends ActorAdapter<UntypedActor> {
   }
 
   private void sendPush(SimpleApnsPushNotification notification) {
+    if (notification == null)
+      return;
     try {
       Future<PushNotificationResponse<SimpleApnsPushNotification>> future = client.sendNotification(notification);
       final PushNotificationResponse<SimpleApnsPushNotification> now = future.get();
