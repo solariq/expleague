@@ -33,9 +33,8 @@ class DataController: NSObject {
         /* The directory the application uses to store the Core Data store file.
          This code uses a file named "DataModel.sqlite" in the application's documents directory.
         */
-        let storeURL = docURL.URLByAppendingPathComponent("ExpLeagueProfiles1.sqlite")
+        let storeURL = docURL.URLByAppendingPathComponent("ExpLeagueProfiles.sqlite")
         do {
-            try! NSFileManager.defaultManager().removeItemAtURL(docURL.URLByAppendingPathComponent("ExpLeagueProfiles1.sqlite"))
             try psc.addPersistentStoreWithType(
                 NSSQLiteStoreType,
                 configuration: nil,
@@ -139,7 +138,7 @@ class AppDelegate: UIResponder {
             profiles!.append(ExpLeagueProfile("Local", domain: "172.21.211.153", login: login, passwd: passwd, port: 5222, context: dataController.managedObjectContext))
         }
         if (activeProfile == nil) {
-            activate(profiles![2]);
+            activate(profiles![0]);
         }
 
         do {
@@ -169,7 +168,7 @@ class AppDelegate: UIResponder {
     func prepareBackground(application: UIApplication) {
         if(activeProfile?.busy ?? false) {
             activeProfile?.log("Setting up local communication error notification because of \(activeProfile!.incoming) incoming and \(activeProfile!.outgoing) outgoing messages")
-            connectionErrorNotification = Notifications.unableToCommunicate(activeProfile!.incoming, outgoing: activeProfile!.outgoing)
+            connectionErrorNotification = Notifications.unableToCommunicate(activeProfile!.incoming, outgoing: activeProfile!.outgoing, aow: activeProfile!.expectingAOW)
             application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
         }
         else {

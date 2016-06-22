@@ -119,7 +119,7 @@ class ExpLeagueProfile: NSManagedObject {
     
     dynamic var _jid: XMPPJID?
     var jid: XMPPJID! {
-        return _jid ?? XMPPJID.jidWithString(login + "@" + domain + "/unSearch");
+        return _jid ?? XMPPJID.jidWithString(login + "@" + domain + "/unSearch")
     }
     
     func order(name name: String) -> ExpLeagueOrder? {

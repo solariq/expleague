@@ -17,7 +17,7 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
     
     @IBAction func fire(sender: AnyObject) {
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
-        guard !controller.orderText.text.isEmpty else {
+        guard controller.orderTextDelegate!.validate() else {
             return
         }
         guard !controller.isLocal.on || location != nil else {
@@ -533,6 +533,9 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
     }
     
     func validate() -> Bool {
+        parent.orderText.text = parent.orderText.text.stringByTrimmingCharactersInSet(
+            NSCharacterSet.whitespaceAndNewlineCharacterSet()
+        )
         if (parent.orderText.text.isEmpty || parent.orderText.text == OrderTextDelegate.placeholder || parent.orderText.text == OrderTextDelegate.error_placeholder) {
             parent.orderText.text = OrderTextDelegate.error_placeholder
             parent.orderText.textColor = Palette.ERROR

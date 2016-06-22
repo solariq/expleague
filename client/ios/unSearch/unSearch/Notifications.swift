@@ -10,11 +10,11 @@ import Foundation
 import NotificationCenter
 
 class Notifications {
-    static func unableToCommunicate(incoming: Int, outgoing: Int) -> UILocalNotification {
+    static func unableToCommunicate(incoming: Int, outgoing: Int, aow: Bool) -> UILocalNotification {
         let notification = UILocalNotification()
 //        notification.fireDate = NSDate(timeIntervalSinceNow: 10)
         notification.fireDate = NSDate(timeIntervalSinceNow: 5 * 60)
-        notification.alertBody = "Не удалось доставить \(incoming > 0 ? "\(incoming) входящих" : "")\(incoming > 0 && outgoing > 0 ? " и " : "")\(outgoing > 0 ? "\(outgoing) исходящих" : ""). Войдите в приложение, и мы попробуем еще раз"
+        notification.alertBody = "Не удалось доставить \(aow ? "ответ недели, " : "") \(incoming > 0 ? "\(incoming) входящих" : "")\(incoming > 0 && outgoing > 0 ? " и " : "")\(outgoing > 0 ? "\(outgoing) исходящих" : ""). Войдите в приложение, и мы попробуем еще раз"
         notification.alertAction = "Cейчас"
         notification.soundName = "owl.wav"
         UIApplication.sharedApplication().scheduleLocalNotification(notification)
