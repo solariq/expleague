@@ -71,7 +71,14 @@ public class Item implements Cloneable {
   };
 
   public static <T extends Item> T create(CharSequence str) {
-    return (T)tlReader.get().deserialize(str.toString());
+    final XmlInputter inputter = tlReader.get();
+    try {
+      return (T)inputter.deserialize(str.toString());
+    }
+    catch (Exception e) {
+      inputter.init();
+      return (T)inputter.deserialize(str.toString());
+    }
   }
 
   @Nullable
