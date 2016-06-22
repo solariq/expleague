@@ -68,6 +68,7 @@ class ExpLeagueOrder: NSManagedObject {
     func messagesChanged() {
         _unreadCount = nil
         _messages = nil
+        _experts = nil
         QObject.notify(#selector(messagesChanged), self)
         notify()
     }
@@ -178,9 +179,12 @@ class ExpLeagueOrder: NSManagedObject {
         }
     }
     
-    func feedback(stars score: Int) {
+    func feedback(stars score: Int, payment: String?) {
         let feedback = DDXMLElement(name: "feedback", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
         feedback.addAttributeWithName("stars", integerValue: score)
+        if let id = payment {
+            feedback.addAttributeWithName("payment", stringValue: id)
+        }
         send(xml: feedback)
         
         close()
@@ -190,9 +194,6 @@ class ExpLeagueOrder: NSManagedObject {
         send(xml: DDXMLElement(name: "done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
         update {
             self.flags = self.flags | ExpLeagueOrderFlags.Closed.rawValue
-            dispatch_async(dispatch_get_main_queue()) {
-                AppDelegate.instance.historyView?.populate()
-            }
         }
     }
     
@@ -311,6 +312,7 @@ class ExpLeagueOrder: NSManagedObject {
         _shortAnswer = nil
         _experts = nil
         _icon = nil
+        notify()
     }
     
     override func notify() {

@@ -299,6 +299,10 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         patternsIq.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/patterns"))
         sender.sendElement(patternsIq)
         
+        // restore rooms if needed
+        let restore = DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/restore")
+        stream.sendElement(XMPPIQ(type: "get", child: restore))
+
         if (profile.receiveAnswerOfTheWeek?.boolValue ?? true) {
             // answer of the week
             let aowIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
@@ -376,7 +380,7 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
                 }
             }
         }
-        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/best-answer") where !iq.isErrorIQ(){
+        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/best-answer") where !iq.isErrorIQ() {
             let offer = ExpLeagueOffer(xml: query.elementForName("offer", xmlns: "http://expleague.com/scheme"))
             let order = ExpLeagueOrder(offer.room, offer: offer, context: profile.managedObjectContext!)
             let content = query.elementForName("content", xmlns: "http://expleague.com/scheme/best-answer")
@@ -385,6 +389,30 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
                 order.message(message: message)
             }
             profile.add(aow: order)
+        }
+        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/dump-room") where !iq.isErrorIQ() {
+            let offer = ExpLeagueOffer(xml: query.elementForName("offer", xmlns: "http://expleague.com/scheme"))
+            let order = ExpLeagueOrder(offer.room, offer: offer, context: profile.managedObjectContext!)
+            let content = query.elementForName("content", xmlns: "http://expleague.com/scheme/dump-room")
+            for item in content.elementsForName("message") {
+                let message = XMPPMessage(fromElement: item as! DDXMLElement)
+                order.message(message: message)
+            }
+            profile.add(order: order)
+            let restore = DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/restore")
+            stream.sendElement(XMPPIQ(type: "get", child: restore))
+        }
+        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/restore") where !iq.isErrorIQ() {
+            for room in query.elementsForName("room") {
+                let roomId = (room as! DDXMLElement).stringValue()
+                guard self.profile.order(name: roomId) == nil else {
+                    continue
+                }
+                let dumpRequest = DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/dump-room")
+                dumpRequest.addAttributeWithName("room", stringValue: roomId)
+                stream.sendElement(XMPPIQ(type: "get", child: dumpRequest))
+                break // one at a time
+            }
         }
         return false
     }

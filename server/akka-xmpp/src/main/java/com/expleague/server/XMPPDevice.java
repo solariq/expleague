@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  * Time: 18:39
  */
 public abstract class XMPPDevice {
-  private final XMPPUser user;
+  private XMPPUser user;
   private final String passwd;
   private final String name;
   private final boolean expert;
@@ -66,5 +66,9 @@ public abstract class XMPPDevice {
       return matcher.group(4);
     }
     return "unknown";
+  }
+
+  public void updateUser(XMPPUser user) {
+    this.user = user;
   }
 }

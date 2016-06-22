@@ -249,7 +249,8 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       super(Offer.create(StreamTools.readReader(resultSet.getCharacterStream(3))));
       id = resultSet.getInt(1);
       super.status(Status.valueOf((int)resultSet.getByte(5)));
-      super.feedback(resultSet.getDouble(6));
+      super.feedback(resultSet.getDouble(6),resultSet.getString(8));
+      super.updateActivationTimestampMs(resultSet.getLong(7));
       final PreparedStatement restoreRoles = createStatement("roles-restore", "SELECT * FROM Participants WHERE `order` = ? ORDER BY id");
       restoreRoles.setInt(1, id);
       try (final ResultSet rolesRS = restoreRoles.executeQuery()) {
@@ -291,12 +292,13 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     }
 
     @Override
-    public void feedback(double stars) {
+    public void feedback(double stars, String payment) {
       try {
-        super.feedback(stars);
-        final PreparedStatement feedback = createStatement("feedback-role", "UPDATE Orders SET score = ? WHERE id = ?");
-        feedback.setInt(2, id);
+        super.feedback(stars, payment);
+        final PreparedStatement feedback = createStatement("feedback-role", "UPDATE Orders SET score = ?, payment = ? WHERE id = ?");
+        feedback.setInt(3, id);
         feedback.setDouble(1, stars);
+        feedback.setString(2, payment);
         feedback.execute();
       }
       catch (SQLException e) {

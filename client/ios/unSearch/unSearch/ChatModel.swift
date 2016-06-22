@@ -272,7 +272,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     init(order: ExpLeagueOrder) {
         self.order = order
         super.init()
-        QObject.connect(order, signal: #selector(ExpLeagueOrder.messagesChanged), receiver: self, slot: #selector(self.sync))
+        QObject.connect(order, signal: #selector(ExpLeagueOrder.notify), receiver: self, slot: #selector(self.sync))
     }
     
     deinit {

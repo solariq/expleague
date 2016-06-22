@@ -13,6 +13,7 @@ import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.expleague.BestAnswerQuery;
+import com.expleague.xmpp.control.expleague.DumpRoomQuery;
 import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Stanza;
@@ -32,47 +33,34 @@ import java.util.logging.Logger;
  * Experts League
  * Created by solar on 14/04/16.
  */
-public class BestAnswerService extends ActorAdapter<UntypedActor> {
-  private static final Logger log = Logger.getLogger(BestAnswerService.class.getName());
+public class DumpRoomService extends ActorAdapter<UntypedActor> {
+  private static final Logger log = Logger.getLogger(DumpRoomService.class.getName());
   @ActorMethod
-  public void invoke(Iq<BestAnswerQuery> rosterIq) {
-    final JID requester = rosterIq.from();
-    final LaborExchange.AnswerOfTheWeek aow = LaborExchange.board().answerOfTheWeek();
-    if (aow == null) {
+  public void invoke(Iq<DumpRoomQuery> rosterIq) {
+    final String roomId = rosterIq.get().room();
+    if (roomId == null) {
       sender().tell(Iq.error(rosterIq), self());
       return;
     }
-    final String roomId = aow.roomId();
     final Timeout timeout = new Timeout(Duration.create(2, TimeUnit.SECONDS));
-    final Future<Object> ask = Patterns.ask(XMPP.register(new JID(roomId, "muc." + ExpLeagueServer.config().domain(), null), context()), new ExpLeagueRoomAgent.DumpRequest(), timeout);
+    final JID roomJid = new JID(roomId, "muc." + ExpLeagueServer.config().domain(), null);
+    final Future<Object> ask = Patterns.ask(XMPP.register(roomJid, context()), new ExpLeagueRoomAgent.DumpRequest(), timeout);
     try {
       //noinspection unchecked
       final List<Stanza> result = (List<Stanza>) Await.result(ask, timeout.duration());
       final List<Stanza> content = new ArrayList<>();
       final Holder<Offer> offerHolder = new Holder<>();
-      final JID owner = result.get(0).from();
       result.stream().flatMap(Functions.instancesOf(Message.class)).forEach(message -> {
-        if (message.from().bareEq(owner)) {
-          final Message copy = message.copy();
-          if (copy.has(Offer.class) && !offerHolder.filled()) {
-            final Offer offer = copy.get(Offer.class);
-            offer.client(requester);
-            offer.room(JID.parse(roomId + "-copy-" + requester.local() + "@muc." + ExpLeagueServer.config().domain()));
-            offerHolder.setValue(offer);
-          }
-          else if (!copy.has(Operations.Command.class)){
-            copy.from(requester);
-            content.add(copy);
-          }
+        if (message.has(Offer.class) && !offerHolder.filled()) {
+          final Offer offer = message.get(Offer.class);
+          offer.room(roomJid);
+          offerHolder.setValue(offer);
         }
-        else if (message.to().bareEq(owner) || message.type() == Message.MessageType.GROUP_CHAT) {
-          final Stanza copy = message.copy();
-          copy.to(requester);
-          content.add(copy);
-        }
+        else
+          content.add(message);
       });
       if (offerHolder.filled())
-        sender().tell(Iq.answer(rosterIq, new BestAnswerQuery(offerHolder.getValue(), content)), self());
+        sender().tell(Iq.answer(rosterIq, new DumpRoomQuery(offerHolder.getValue(), content)), self());
       else
         sender().tell(Iq.error(rosterIq), self());
     }

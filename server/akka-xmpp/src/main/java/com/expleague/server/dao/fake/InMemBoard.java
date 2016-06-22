@@ -84,6 +84,7 @@ public class InMemBoard implements LaborExchange.Board {
 
     protected double score = -1;
     protected long activationTimestampMs = 0;
+    protected String payment;
 
     public MyOrder(Offer offer) {
       super(offer);
@@ -96,8 +97,9 @@ public class InMemBoard implements LaborExchange.Board {
     }
 
     @Override
-    public void feedback(double stars) {
-      score = stars;
+    public void feedback(double stars, String payment) {
+      this.score = stars;
+      this.payment = payment;
     }
 
     @Override
@@ -157,8 +159,13 @@ public class InMemBoard implements LaborExchange.Board {
     }
 
     @Override
-    public long getActivationTimestampMs() {
+    public long activationTimestampMs() {
       return activationTimestampMs;
+    }
+
+    @Override
+    public String payment() {
+      return payment;
     }
 
     @Override

@@ -31,15 +31,15 @@ public class Mechanisms extends XMPPFeature {
   public void fillKnownMechanisms() {
     final Enumeration<SaslServerFactory> factories = Sasl.getSaslServerFactories();
     final AuthMechanismXmlAdapter adapter = new AuthMechanismXmlAdapter();
-    while (factories.hasMoreElements()) {
-      final SaslServerFactory saslServerFactory = factories.nextElement();
-      for (final String mech : saslServerFactory.getMechanismNames(Collections.emptyMap())) {
-//        System.out.println(mech);
-        if ("GSSAPI".equals(mech)) // skip kerberos from MS
-          continue;
-        mechanisms.add(adapter.unmarshal(mech));
-      }
-    }
+//    while (factories.hasMoreElements()) {
+//      final SaslServerFactory saslServerFactory = factories.nextElement();
+//      for (final String mech : saslServerFactory.getMechanismNames(Collections.emptyMap())) {
+////        System.out.println(mech);
+//        if ("GSSAPI".equals(mech)) // skip kerberos from MS
+//          continue;
+//        mechanisms.add(adapter.unmarshal(mech));
+//      }
+//    }
     mechanisms.add(adapter.unmarshal("PLAIN"));
   }
 
