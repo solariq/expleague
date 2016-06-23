@@ -127,7 +127,7 @@ public class NotificationsManager extends ActorAdapter<UntypedActor> {
         }
         else if (aow != null && !aow.equals(this.aow)) {
           AOWNotificationScheduler scheduler = new AOWNotificationScheduler(aow);
-          Roster.instance().allDevices().forEach(device -> schedule("aow", scheduler, device));
+          Roster.instance().allDevices().forEach(device -> schedule(aow.roomId(), scheduler, device));
           this.aow = aow;
         }
       }

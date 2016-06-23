@@ -6,9 +6,11 @@ import akka.util.Timeout;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
 import com.expleague.server.ExpLeagueServer;
+import com.expleague.server.XMPPDevice;
 import com.expleague.server.agents.ExpLeagueRoomAgent;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
+import com.expleague.server.notifications.NotificationsManager;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.JID;
@@ -71,8 +73,10 @@ public class BestAnswerService extends ActorAdapter<UntypedActor> {
           content.add(copy);
         }
       });
-      if (offerHolder.filled())
+      if (offerHolder.filled()) {
         sender().tell(Iq.answer(rosterIq, new BestAnswerQuery(offerHolder.getValue(), content)), self());
+        NotificationsManager.delivered(roomId, XMPPDevice.fromJid(rosterIq.from()), context());
+      }
       else
         sender().tell(Iq.error(rosterIq), self());
     }

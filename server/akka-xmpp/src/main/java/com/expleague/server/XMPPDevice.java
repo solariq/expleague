@@ -1,5 +1,8 @@
 package com.expleague.server;
 
+import com.expleague.xmpp.JID;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,5 +73,13 @@ public abstract class XMPPDevice {
 
   public void updateUser(XMPPUser user) {
     this.user = user;
+  }
+
+  @Nullable
+  public static XMPPDevice fromJid(JID from) {
+    if (from.resource() == null || from.resource().isEmpty())
+      return null;
+    final String[] split = from.resource().split("/");
+    return Roster.instance().device(split[0]);
   }
 }
