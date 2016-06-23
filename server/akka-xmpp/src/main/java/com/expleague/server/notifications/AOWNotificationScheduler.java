@@ -25,7 +25,7 @@ class AOWNotificationScheduler extends NotificationScheduler {
         "\"alert\": \"Новый ответ недели на тему '" + topic + "'\", " +
         "\"content-available\": 1," +
         "\"sound\": \"owl.wav\"" +
-        "}, \"aow\": \"" + topic + "\"}"
+        "}, \"aow\": \"" + aow.roomId() + "\"}"
     );
   }
 
