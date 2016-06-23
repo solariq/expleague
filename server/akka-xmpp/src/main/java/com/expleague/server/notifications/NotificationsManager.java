@@ -122,7 +122,10 @@ public class NotificationsManager extends ActorAdapter<UntypedActor> {
 
       { // aow
         final LaborExchange.AnswerOfTheWeek aow = LaborExchange.board().answerOfTheWeek();
-        if (aow != null && !aow.equals(this.aow)) {
+        if (this.aow == null) {
+          this.aow = aow;
+        }
+        else if (aow != null && !aow.equals(this.aow)) {
           AOWNotificationScheduler scheduler = new AOWNotificationScheduler(aow);
           Roster.instance().allDevices().forEach(device -> schedule("aow", scheduler, device));
           this.aow = aow;
