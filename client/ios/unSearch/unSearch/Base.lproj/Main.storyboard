@@ -56,23 +56,8 @@
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                 <dataDetectorType key="dataDetectorTypes" link="YES"/>
                             </textView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Upo-9d-PUL">
-                                <rect key="frame" x="50" y="275" width="220" height="40"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="ukH-sO-58D"/>
-                                    <constraint firstAttribute="width" constant="220" id="xvx-tn-EJl"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <state key="normal" title="Получить доступ">
-                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <connections>
-                                    <segue destination="KJI-Ee-k6Q" kind="show" id="J1y-oR-ZzA"/>
-                                </connections>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IWl-TW-2JH">
-                                <rect key="frame" x="50" y="215" width="220" height="40"/>
+                                <rect key="frame" x="50" y="275" width="220" height="40"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="VDP-8U-ZCl"/>
@@ -92,6 +77,21 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Upo-9d-PUL">
+                                <rect key="frame" x="50" y="215" width="220" height="40"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="ukH-sO-58D"/>
+                                    <constraint firstAttribute="width" constant="220" id="xvx-tn-EJl"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <state key="normal" title="Получить доступ">
+                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <segue destination="KJI-Ee-k6Q" kind="show" id="J1y-oR-ZzA"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -99,19 +99,19 @@
                             <constraint firstAttribute="trailingMargin" secondItem="40s-BD-130" secondAttribute="trailing" constant="-20" id="Cwg-fv-mWf"/>
                             <constraint firstItem="Kca-f0-2rJ" firstAttribute="top" secondItem="iwV-ws-Rvv" secondAttribute="bottom" constant="24" id="K3S-CV-Uvc"/>
                             <constraint firstItem="40s-BD-130" firstAttribute="top" secondItem="bjS-pN-BeT" secondAttribute="topMargin" id="Ke7-BY-sbx"/>
-                            <constraint firstItem="dAc-hA-kHr" firstAttribute="top" secondItem="Upo-9d-PUL" secondAttribute="bottom" constant="20" id="Mfx-iA-V0y"/>
                             <constraint firstItem="Z9d-7S-uAC" firstAttribute="top" secondItem="RAg-qJ-B6N" secondAttribute="bottom" constant="8" id="OyZ-n6-6wG"/>
                             <constraint firstItem="Kca-f0-2rJ" firstAttribute="centerX" secondItem="Z9d-7S-uAC" secondAttribute="centerX" id="XbQ-VQ-r4Q"/>
                             <constraint firstItem="iwV-ws-Rvv" firstAttribute="centerX" secondItem="Z9d-7S-uAC" secondAttribute="centerX" id="YbB-JF-Izo"/>
-                            <constraint firstItem="Upo-9d-PUL" firstAttribute="top" secondItem="IWl-TW-2JH" secondAttribute="bottom" constant="20" id="beQ-vs-x5S"/>
+                            <constraint firstItem="Upo-9d-PUL" firstAttribute="top" secondItem="Kca-f0-2rJ" secondAttribute="bottom" id="bkf-L1-6G3"/>
                             <constraint firstItem="dAc-hA-kHr" firstAttribute="centerX" secondItem="Z9d-7S-uAC" secondAttribute="centerX" id="c35-Ke-a4R"/>
                             <constraint firstItem="Upo-9d-PUL" firstAttribute="centerX" secondItem="Z9d-7S-uAC" secondAttribute="centerX" id="e3b-WB-lS0"/>
                             <constraint firstItem="IWl-TW-2JH" firstAttribute="centerX" secondItem="Z9d-7S-uAC" secondAttribute="centerX" id="fKp-04-U94"/>
-                            <constraint firstItem="IWl-TW-2JH" firstAttribute="top" secondItem="Kca-f0-2rJ" secondAttribute="bottom" id="lBM-6x-Bt1"/>
+                            <constraint firstItem="dAc-hA-kHr" firstAttribute="top" secondItem="IWl-TW-2JH" secondAttribute="bottom" constant="20" id="sOv-x5-r9U"/>
                             <constraint firstItem="has-HE-6kg" firstAttribute="top" secondItem="40s-BD-130" secondAttribute="bottom" id="tsD-0C-Xkn"/>
                             <constraint firstItem="iwV-ws-Rvv" firstAttribute="top" secondItem="Z9d-7S-uAC" secondAttribute="bottom" constant="8" id="uZj-iM-ekK"/>
                             <constraint firstItem="RAg-qJ-B6N" firstAttribute="top" secondItem="gQe-Bc-F6Z" secondAttribute="bottom" constant="-31" id="vHz-ew-5oj"/>
                             <constraint firstItem="RAg-qJ-B6N" firstAttribute="centerX" secondItem="Z9d-7S-uAC" secondAttribute="centerX" id="vNJ-5T-erp"/>
+                            <constraint firstItem="IWl-TW-2JH" firstAttribute="top" secondItem="Upo-9d-PUL" secondAttribute="bottom" constant="20" id="wGv-NH-7oB"/>
                             <constraint firstItem="Z9d-7S-uAC" firstAttribute="centerX" secondItem="bjS-pN-BeT" secondAttribute="centerX" id="woQ-Yk-jap"/>
                         </constraints>
                     </view>
@@ -235,7 +235,7 @@
         <!--Tabs View Controller-->
         <scene sceneID="yl2-sM-qoP">
             <objects>
-                <tabBarController id="49e-Tb-3d3" customClass="TabsViewController" customModule="unSearch" customModuleProvider="target" sceneMemberID="viewController">
+                <tabBarController storyboardIdentifier="tabs" id="49e-Tb-3d3" customClass="TabsViewController" customModule="unSearch" customModuleProvider="target" sceneMemberID="viewController">
                     <nil key="simulatedBottomBarMetrics"/>
                     <tabBar key="tabBar" contentMode="scaleToFill" id="W28-zg-YXA">
                         <rect key="frame" x="0.0" y="975" width="768" height="49"/>
@@ -1183,6 +1183,16 @@
                                     <action selector="instructions:" destination="BVX-oa-pIt" eventType="touchUpInside" id="LJg-lu-obn"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2ZF-pm-hvA">
+                                <rect key="frame" x="42" y="352" width="237" height="30"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                <state key="normal" title="Восстановить историю запросов">
+                                    <color key="titleColor" red="0.066666666669999999" green="0.54117647059999996" blue="0.87058823529999996" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="restoreHistory:" destination="BVX-oa-pIt" eventType="touchUpInside" id="kON-9C-WZo"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -1194,8 +1204,10 @@
                             <constraint firstItem="TK2-rY-V5f" firstAttribute="top" secondItem="nIt-Ku-cuI" secondAttribute="bottom" id="Oa4-OK-QpQ"/>
                             <constraint firstItem="nIt-Ku-cuI" firstAttribute="top" secondItem="wgR-6D-Zar" secondAttribute="bottom" constant="10" id="PL3-P5-9qM"/>
                             <constraint firstItem="tvm-a2-W37" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="Smb-gc-aOS"/>
+                            <constraint firstItem="2ZF-pm-hvA" firstAttribute="centerX" secondItem="nIt-Ku-cuI" secondAttribute="centerX" id="Wsd-ry-WQi"/>
                             <constraint firstItem="vBe-iM-uev" firstAttribute="top" secondItem="TK2-rY-V5f" secondAttribute="bottom" constant="8" id="Xp5-wa-oNe"/>
                             <constraint firstItem="vBe-iM-uev" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="azk-I3-n9k"/>
+                            <constraint firstItem="db0-Zi-nFA" firstAttribute="top" secondItem="2ZF-pm-hvA" secondAttribute="bottom" id="fJX-kd-N1d"/>
                             <constraint firstItem="GRB-VN-8JI" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="fvN-nP-bGv"/>
                             <constraint firstItem="db0-Zi-nFA" firstAttribute="centerX" secondItem="nIt-Ku-cuI" secondAttribute="centerX" id="ofZ-Qn-s62"/>
                             <constraint firstItem="9EB-7v-hjU" firstAttribute="top" secondItem="db0-Zi-nFA" secondAttribute="bottom" constant="46" id="sFK-4F-c1e"/>
@@ -1209,6 +1221,7 @@
                         <outlet property="build" destination="GRB-VN-8JI" id="q2t-5C-clJ"/>
                         <outlet property="instructionsButton" destination="db0-Zi-nFA" id="5n7-2M-35N"/>
                         <outlet property="inviteButton" destination="9EB-7v-hjU" id="vKa-kZ-T37"/>
+                        <outlet property="restoreHistoryButton" destination="2ZF-pm-hvA" id="MDm-vn-XpK"/>
                         <outlet property="slogan" destination="vBe-iM-uev" id="YdB-Bf-z0K"/>
                         <outlet property="topConstraint" destination="PL3-P5-9qM" id="8ZP-9b-HIh"/>
                     </connections>

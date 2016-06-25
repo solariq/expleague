@@ -79,8 +79,10 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
     if (order != null) {
       switch (order.role(from)) {
         case OWNER:
-          if (msg.has(Feedback.class))
-            order.feedback(msg.get(Feedback.class).stars());
+          if (msg.has(Feedback.class)) {
+            final Feedback feedback = msg.get(Feedback.class);
+            order.feedback(feedback.stars(), feedback.payment());
+          }
           if (msg.has(Cancel.class)) {
             order.broker().tell(new Cancel(), self());
             order = null;
@@ -123,7 +125,7 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
                     .flatMap(Functions.instancesOf(Message.class))
                     .filter(message -> message.type() == MessageType.GROUP_CHAT || message.has(Progress.class))
                     .forEach(message -> XMPP.send(copyFromRoomAlias(message, from), context()));
-            sendToOwner(new Message(jid, owner(), msg.get(Start.class), Roster.instance().profile(from.bare())));
+            sendToOwner(new Message(jid, owner(), msg.get(Start.class), Roster.instance().profile(from.local())));
           }
           else if (msg.body().startsWith("{\"type\":\"pageVisited\"")) {
             sendToOwner(new Message(jid, owner(), msg.body()));
@@ -139,8 +141,8 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
       }
     }
     else if (msg.has(Feedback.class)) {
-      //noinspection ConstantConditions
-      lastOrder().feedback(msg.get(Feedback.class).stars());
+      final Feedback feedback = msg.get(Feedback.class);
+      lastOrder().feedback(feedback.stars(), feedback.payment());
     }
     else if (msg.from().bareEq(owner()) && !msg.has(Done.class)){
       final Offer offer = offer(msg);
@@ -210,7 +212,8 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
               state.close();
             }
             else if (message.has(Feedback.class)) {
-              order.feedback(message.get(Feedback.class).stars());
+              final Feedback feedback = message.get(Feedback.class);
+              order.feedback(feedback.stars(), feedback.payment());
             }
           }
         }

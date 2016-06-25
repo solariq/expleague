@@ -17,13 +17,16 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
     
     @IBAction func fire(sender: AnyObject) {
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
-        if (controller.isLocal.on && location == nil) {
+        guard controller.orderTextDelegate!.validate() else {
+            return
+        }
+        guard !controller.isLocal.on || location != nil else {
             let alertView = UIAlertController(title: "Заказ", message: "На данный момент ваша геопозиция не найдена. Подождите несколько секунд, или отключите настройку \"рядом со мной\".", preferredStyle: .Alert)
             alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
             presentViewController(alertView, animated: true, completion: nil)
             return
         }
-        if (!controller.attachments.complete()) {
+        guard controller.attachments.complete() else {
             let alertView = UIAlertController(title: "Заказ", message: "На данный момент не все прикрепленные объекты сохранены. Подождите несколько секунд.", preferredStyle: .Alert)
             alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
             presentViewController(alertView, animated: true, completion: nil)
@@ -530,6 +533,9 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
     }
     
     func validate() -> Bool {
+        parent.orderText.text = parent.orderText.text.stringByTrimmingCharactersInSet(
+            NSCharacterSet.whitespaceAndNewlineCharacterSet()
+        )
         if (parent.orderText.text.isEmpty || parent.orderText.text == OrderTextDelegate.placeholder || parent.orderText.text == OrderTextDelegate.error_placeholder) {
             parent.orderText.text = OrderTextDelegate.error_placeholder
             parent.orderText.textColor = Palette.ERROR

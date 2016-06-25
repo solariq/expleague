@@ -164,7 +164,7 @@ internal class ExpLeagueCommunicator: NSObject {
         self.profile = profile
         stream.hostName = profile.domain
         stream.hostPort = profile.port.unsignedShortValue
-        stream.myJID = profile.jid
+        stream.myJID = XMPPJID.jidWithString(profile.login + "@" + profile.domain + "/unSearch")
         stream.startTLSPolicy = XMPPStreamStartTLSPolicy.Required
         stream.keepAliveInterval = 30
 //        stream.enableBackgroundingOnSocket = true
@@ -299,6 +299,10 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         patternsIq.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/patterns"))
         sender.sendElement(patternsIq)
         
+        // restore rooms if needed
+        let restore = DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/restore")
+        stream.sendElement(XMPPIQ(type: "get", child: restore))
+
         if (profile.receiveAnswerOfTheWeek?.boolValue ?? true) {
             // answer of the week
             let aowIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
@@ -376,15 +380,39 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
                 }
             }
         }
-        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/best-answer") where !iq.isErrorIQ(){
+        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/best-answer") where !iq.isErrorIQ() {
             let offer = ExpLeagueOffer(xml: query.elementForName("offer", xmlns: "http://expleague.com/scheme"))
             let order = ExpLeagueOrder(offer.room, offer: offer, context: profile.managedObjectContext!)
+            profile.add(aow: order)
             let content = query.elementForName("content", xmlns: "http://expleague.com/scheme/best-answer")
             for item in content.elementsForName("message") {
                 let message = XMPPMessage(fromElement: item as! DDXMLElement)
-                order.message(message: message)
+                order.message(message: message, notify: false)
             }
-            profile.add(aow: order)
+        }
+        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/dump-room") where !iq.isErrorIQ() {
+            let offer = ExpLeagueOffer(xml: query.elementForName("offer", xmlns: "http://expleague.com/scheme"))
+            let order = ExpLeagueOrder(offer.room, offer: offer, context: profile.managedObjectContext!)
+            profile.add(order: order)
+            let content = query.elementForName("content", xmlns: "http://expleague.com/scheme/dump-room")
+            for item in content.elementsForName("message") {
+                let message = XMPPMessage(fromElement: item as! DDXMLElement)
+                order.message(message: message, notify: false)
+            }
+            let restore = DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/restore")
+            stream.sendElement(XMPPIQ(type: "get", child: restore))
+        }
+        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/restore") where !iq.isErrorIQ() {
+            for room in query.elementsForName("room") {
+                let roomId = (room as! DDXMLElement).stringValue()
+                guard self.profile.order(name: roomId) == nil else {
+                    continue
+                }
+                let dumpRequest = DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/dump-room")
+                dumpRequest.addAttributeWithName("room", stringValue: roomId)
+                stream.sendElement(XMPPIQ(type: "get", child: dumpRequest))
+                break // one at a time
+            }
         }
         return false
     }
@@ -408,7 +436,7 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
             receipt!.addAttributeWithName("id", stringValue: msg.elementID())
         }
         if let from = msg.from(), let order = profile.order(name: from.user) {
-            order.message(message: msg)
+            order.message(message: msg, notify: true)
         }
         notify { listener in
             listener.onMessage?(message: msg)

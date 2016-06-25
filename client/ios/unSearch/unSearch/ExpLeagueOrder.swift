@@ -68,8 +68,8 @@ class ExpLeagueOrder: NSManagedObject {
     func messagesChanged() {
         _unreadCount = nil
         _messages = nil
+        _experts = nil
         QObject.notify(#selector(messagesChanged), self)
-        notify()
     }
 
     var before: NSTimeInterval {
@@ -106,22 +106,45 @@ class ExpLeagueOrder: NSManagedObject {
         return result
     }
     
-    internal func message(message msg: XMPPMessage) {
+    internal func message(message msg: XMPPMessage, notify: Bool) {
         let message = ExpLeagueMessage(msg: msg, parent: self, context: self.managedObjectContext!)
         messagesRaw = messagesRaw.append(message)
         if (message.type == .Answer) {
             flags = flags | ExpLeagueOrderFlags.Deciding.rawValue
         }
-        save()
         messagesChanged()
-        if (message.type == .Answer) {
-            Notifications.notifyAnswerReceived(self, answer: message)
+        save()
+        if (notify) {
+            if (message.type == .Answer) {
+                Notifications.notifyAnswerReceived(self, answer: message)
+            }
+            else if (message.type == .ExpertAssignment) {
+                Notifications.notifyExpertFound(self)
+            }
+            else if (message.type == .ExpertMessage) {
+                Notifications.notifyMessageReceived(self, message: message)
+            }
         }
-        else if (message.type == .ExpertAssignment) {
-            Notifications.notifyExpertFound(self)
+        else {
+            dispatch_async(dispatch_get_main_queue()) {
+                message.read = true
+            }
         }
-        else if (message.type == .ExpertMessage) {
-            Notifications.notifyMessageReceived(self, message: message)
+        if (message.type == .ClientDone) {
+            update {
+                self.flags = self.flags | ExpLeagueOrderFlags.Closed.rawValue
+                dispatch_async(dispatch_get_main_queue()) {
+                    AppDelegate.instance.historyView?.populate()
+                }
+            }
+        }
+        else if (message.type == .ClientCancel) {
+            update {
+                self.flags = self.flags | ExpLeagueOrderFlags.Canceled.rawValue
+                dispatch_async(dispatch_get_main_queue()) {
+                    AppDelegate.instance.historyView?.populate()
+                }
+            }
         }
     }
     
@@ -129,7 +152,7 @@ class ExpLeagueOrder: NSManagedObject {
         let msg = XMPPMessage(type: "groupchat", to: jid)
         msg.addBody(text)
         update {
-            self.message(message: msg)
+            self.message(message: msg, notify: false)
         }
         parent.send(msg)
     }
@@ -142,7 +165,7 @@ class ExpLeagueOrder: NSManagedObject {
         let msg = XMPPMessage(type: type, to: jid)
         msg.addChild(xml)
         update {
-            self.message(message: msg)
+            self.message(message: msg, notify: false)
         }
         parent.send(msg)
     }
@@ -170,17 +193,14 @@ class ExpLeagueOrder: NSManagedObject {
         let msg = XMPPMessage(type: "normal", to: jid)
         msg.addChild(DDXMLElement(name: "cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
         self.parent.send(msg)
-        update {
-            self.flags = self.flags | ExpLeagueOrderFlags.Canceled.rawValue
-            dispatch_async(dispatch_get_main_queue()) {
-                AppDelegate.instance.historyView?.populate()
-            }
-        }
     }
     
-    func feedback(stars score: Int) {
+    func feedback(stars score: Int, payment: String?) {
         let feedback = DDXMLElement(name: "feedback", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
         feedback.addAttributeWithName("stars", integerValue: score)
+        if let id = payment {
+            feedback.addAttributeWithName("payment", stringValue: id)
+        }
         send(xml: feedback)
         
         close()
@@ -188,12 +208,6 @@ class ExpLeagueOrder: NSManagedObject {
 
     func close() {
         send(xml: DDXMLElement(name: "done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
-        update {
-            self.flags = self.flags | ExpLeagueOrderFlags.Closed.rawValue
-            dispatch_async(dispatch_get_main_queue()) {
-                AppDelegate.instance.historyView?.populate()
-            }
-        }
     }
     
     func emulate() {
@@ -283,7 +297,7 @@ class ExpLeagueOrder: NSManagedObject {
     
     init(_ roomId: String, offer: ExpLeagueOffer, context: NSManagedObjectContext) {
         super.init(entity: NSEntityDescription.entityForName("Order", inManagedObjectContext: context)!, insertIntoManagedObjectContext: context)
-        self.started = CFAbsoluteTimeGetCurrent()
+        self.started = offer.started.timeIntervalSinceReferenceDate
         self.id = roomId.lowercaseString
         self.topic = offer.xml.XMLString()
         save()

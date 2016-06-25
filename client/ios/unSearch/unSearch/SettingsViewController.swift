@@ -15,6 +15,7 @@ class AboutViewController: UIViewController {
     @IBOutlet weak var topConstraint: NSLayoutConstraint!
     @IBOutlet weak var slogan: UILabel!
     @IBOutlet weak var build: UILabel!
+    @IBOutlet weak var restoreHistoryButton: UIButton!
     @IBOutlet weak var inviteButton: UIButton!
     @IBAction func invite(sender: AnyObject) {
         let alert = UIAlertController(title: "Оставьте заявку", message: "С целью сохранения высокого качества работы экспертов и отсутствия очередей, доступ к приложению в данный момент ограничен. Оставьте e-mail вашего друга, и мы свяжемся с ним как только появится возможность.", preferredStyle: .Alert)
@@ -45,16 +46,30 @@ class AboutViewController: UIViewController {
         UIApplication.sharedApplication().openURL(NSURL(string: "https://www.expleague.com/help/")!)
     }
     
+    @IBAction func restoreHistory(sender: AnyObject) {
+        PurchaseHelper.visitTransactions (visitor: {name, id in print (name, id)}) {error in
+            if error != nil {
+                let alert = UIAlertController(title: "unSearch", message: "Не удалось получить список ваших покупок из магазина Apple: \(error!)", preferredStyle: .Alert)
+                alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                self.presentViewController(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
     var friend: String?
     
-    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+    func updateSize(size: CGSize) {
         guard initialized else {
             return
         }
         let isLandscape = size.height < size.width
         build.hidden = isLandscape
         instructionsButton.hidden = isLandscape
+        restoreHistoryButton.hidden = isLandscape
         topConstraint.constant = size.height * 0.1
+    }
+    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+        updateSize(size)
     }
     
     override func viewDidLoad() {
@@ -71,6 +86,10 @@ class AboutViewController: UIViewController {
         navigationController!.navigationBar.setBackgroundImage(UIImage(named: "history_background"), forBarMetrics: .Default)
         navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
         navigationController!.navigationBar.tintColor = UIColor.whiteColor()
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        updateSize(UIScreen.mainScreen().bounds.size)
     }
 }
 

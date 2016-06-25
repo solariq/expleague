@@ -6,14 +6,12 @@ import akka.persistence.RecoveryCompleted;
 import com.expleague.model.Answer;
 import com.expleague.model.Delivered;
 import com.expleague.model.Operations;
-import com.expleague.server.Roster;
 import com.expleague.server.Subscription;
 import com.expleague.server.XMPPDevice;
-import com.expleague.server.XMPPUser;
+import com.expleague.server.notifications.NotificationsManager;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.PersistentActorAdapter;
 import com.expleague.util.akka.PersistentActorContainer;
-import com.expleague.util.ios.NotificationsManager;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
@@ -24,7 +22,6 @@ import scala.collection.JavaConversions;
 
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 /**
  * User: solar
@@ -35,12 +32,10 @@ public class UserAgent extends PersistentActorAdapter {
   private static final Logger log = Logger.getLogger(UserAgent.class.getName());
   private final JID bareJid;
   private final List<XMPPDevice> connected = new ArrayList<>();
-  private final XMPPUser user;
   private Map<String, Subscription> subscriptions = new HashMap<>();
 
   public UserAgent(JID jid) {
     this.bareJid = jid.bare();
-    user = Roster.instance().user(jid.local());
   }
 
   public JID jid() {
@@ -134,11 +129,8 @@ public class UserAgent extends PersistentActorAdapter {
     for (final ActorRef courier : couriers) {
       courier.tell(stanza, self());
     }
-    if (couriers.isEmpty() && stanza instanceof Message) {
-      Stream.of(user.devices()).forEach(
-        device -> NotificationsManager.instance().sendPush((Message)stanza, device)
-      );
-    }
+    if (couriers.isEmpty() && stanza instanceof Message)
+      NotificationsManager.send((Message)stanza, context());
   }
 
   @Override
@@ -183,6 +175,7 @@ public class UserAgent extends PersistentActorAdapter {
       if (confirmationAwaitingStanzas.remove(id)) {
         nextChunk();
         context().parent().forward(delivered, context());
+        NotificationsManager.delivered(id, connectedDevice, context());
       }
       else log.warning("Unexpected delivery message id " + delivered.id());
     }

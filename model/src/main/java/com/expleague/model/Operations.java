@@ -110,8 +110,15 @@ public class Operations {
     @XmlAttribute
     private Integer stars;
 
+    @XmlAttribute
+    private String payment;
+
     public int stars() {
       return stars != null ? stars : 2;
+    }
+
+    public String payment() {
+      return payment;
     }
   }
 

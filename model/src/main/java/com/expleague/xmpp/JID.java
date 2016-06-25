@@ -70,6 +70,14 @@ public class JID implements Serializable, Cloneable {
     resource = resourceStart >= 0 ? addr.substring(resourceStart + 1) : null;
   }
 
+  public boolean isRoom() {
+    return bare.contains("muc.");
+  }
+
+  public boolean isSystem() {
+    return isRoom() ? (resource == null) : local().isEmpty();
+  }
+
   @Override
   public String toString() {
     return getAddr();

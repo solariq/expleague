@@ -330,6 +330,7 @@ class OrderBadge: UITableViewCell {
     }
     
     func setup(order o: ExpLeagueOrder) {
+        QObject.disconnect(self)
         QObject.connect(o, signal: #selector(ExpLeagueOrder.notify), receiver: self, slot: #selector(OrderBadge.invalidate(_:)))
         update(order: o)
     }
