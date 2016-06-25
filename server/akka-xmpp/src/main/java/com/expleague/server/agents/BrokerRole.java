@@ -54,7 +54,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
 
               final JID expertOnTask = order.of(ACTIVE).findAny().orElse(null);
               if (order.status() == SUSPENDED && expertOnTask != null) {
-                final long activationTimestampMs = order.getActivationTimestampMs();
+                final long activationTimestampMs = order.activationTimestampMs();
                 final long currentTimeMillis = System.currentTimeMillis();
                 final long suspendIntervalMs = activationTimestampMs - currentTimeMillis;
                 if (suspendIntervalMs > 0) {

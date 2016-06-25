@@ -227,10 +227,10 @@ class FeedbackViewController: UIViewController {
         if (rate == 4 || rate == 5) {
             busy = true
             let purchaseId = rate == 4 ? "com.expleague.unSearch.Star30r" : "com.expleague.unSearch.Star150r"
-            PurchaseHelper.instance.request(purchaseId) {rc in
+            PurchaseHelper.instance.request(purchaseId) {rc, payment in
                 switch(rc) {
                 case .Accepted:
-                    self.parent.data.order.feedback(stars: rate!)
+                    self.parent.data.order.feedback(stars: rate!, payment: payment)
                     self.dismissViewControllerAnimated(true, completion: nil)
                 case .Error:
                     let alert = UIAlertController(title: "unSearch", message: "Не удалось провести платеж!", preferredStyle: .Alert)
@@ -243,7 +243,7 @@ class FeedbackViewController: UIViewController {
             }
         }
         else {
-            parent.data.order.feedback(stars: rate!)
+            parent.data.order.feedback(stars: rate!, payment: nil)
             self.dismissViewControllerAnimated(true, completion: nil)
         }
     }

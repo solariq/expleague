@@ -18,13 +18,16 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
     
     @IBAction func fire(sender: AnyObject) {
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
-        if (controller.location.isLocalOrder() && controller.location.getLocation() == nil) {
+        guard controller.orderTextDelegate!.validate() else {
+            return
+        }
+        guard !controller.location.isLocalOrder() || controller.location.getLocation() != nil else {
             let alertView = UIAlertController(title: "Заказ", message: "На данный момент ваша геопозиция не найдена. Подождите несколько секунд, или отключите настройку \"рядом со мной\".", preferredStyle: .Alert)
             alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
             presentViewController(alertView, animated: true, completion: nil)
             return
         }
-        if (!controller.attachments.complete()) {
+        guard controller.attachments.complete() else {
             let alertView = UIAlertController(title: "Заказ", message: "На данный момент не все прикрепленные объекты сохранены. Подождите несколько секунд.", preferredStyle: .Alert)
             alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
             presentViewController(alertView, animated: true, completion: nil)
@@ -257,7 +260,7 @@ class OrderDescriptionViewController: UITableViewController {
             feedback.modalPresentationStyle = .OverCurrentContext
             self.providesPresentationContextTransitionStyle = true;
             self.definesPresentationContext = true;
-            
+
             self.presentViewController(feedback, animated: true, completion: nil)
 
             //showAttachmentChoiceAlert();
@@ -269,24 +272,24 @@ class OrderDescriptionViewController: UITableViewController {
             showLocationChoiceAlert();
         }
     }
-    
+
     func showAttachmentChoiceAlert() {
         let showCameraCapture = { (action: AlertAction!) -> Void in
             let navigation = UINavigationController(rootViewController: CameraCaptureController())
             self.presentViewController(navigation, animated: true, completion: nil)
             self.update()
         }
-        
+
         let showImagePicker = { (action: AlertAction!) -> Void in
             self.update()
             self.presentViewController(self.picker, animated: true, completion: nil)
         }
-        
-        
+
+
         let showAttachments = { (action: AlertAction!) -> Void in
             self.update()
         }
-        
+
         let alertController = AlertController(title: "Добавить вложение", message: nil, preferredStyle: .ActionSheet)
 
         let layout = UICollectionViewFlowLayout()
@@ -321,35 +324,35 @@ class OrderDescriptionViewController: UITableViewController {
         alertController.addAction(AlertAction(title: "Отменить", style: .Preferred, handler: nil))
         alertController.present()
     }
-    
+
     func showExpertChoiceView() {
         let chooseExpert = ChooseExpertViewController(parent: self)
-        
+
         let navigation = UINavigationController(rootViewController: chooseExpert)
         self.presentViewController(navigation, animated: true, completion: nil)
     }
 
     func showLocationChoiceAlert() {
         let alertController = UIAlertController(title: "Связать с гео-позицией", message: nil, preferredStyle: .ActionSheet)
-        
+
         let useCurrentLocationActionHandler = { (action: UIAlertAction!) -> Void in
             self.location.setCurrentLocation(self.locationProvider)
             self.update()
         }
-        
+
         let showMapActionHandler = { (action: UIAlertAction!) -> Void in
             self.update()
-            
+
             let navigation = UINavigationController(rootViewController: SearchLocationController(parent: self, locationProvider: self.locationProvider))
             self.presentViewController(navigation, animated: true, completion: nil)
         }
-        
-        
+
+
         let cancelActionHandler = { (action: UIAlertAction!) -> Void in
             self.location.clearLocation()
             self.update()
         }
-        
+
         alertController.addAction(UIAlertAction(title: "Искать рядом со мной", style: .Default, handler: useCurrentLocationActionHandler))
         alertController.addAction(UIAlertAction(title: "Выбрать на карте", style: .Default, handler: showMapActionHandler))
         alertController.addAction(UIAlertAction(title: "Не использовать гео-позицию", style: .Default, handler: cancelActionHandler))
@@ -625,6 +628,9 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
     }
     
     func validate() -> Bool {
+        parent.orderText.text = parent.orderText.text.stringByTrimmingCharactersInSet(
+            NSCharacterSet.whitespaceAndNewlineCharacterSet()
+        )
         if (parent.orderText.text.isEmpty || parent.orderText.text == OrderTextDelegate.placeholder || parent.orderText.text == OrderTextDelegate.error_placeholder) {
             parent.orderText.text = OrderTextDelegate.error_placeholder
             parent.orderText.textColor = Palette.ERROR

@@ -32,10 +32,11 @@ public interface Roster {
     return ExpLeagueServer.roster();
   }
 
-  default ExpertsProfile profile(JID jid) {
+  default ExpertsProfile profile(String id) {
+    final XMPPUser user = user(id);
+    final JID jid = user.jid();
     final ExpertsProfile.Builder builder = new ExpertsProfile.Builder(jid);
 
-    final XMPPUser user = user(jid.local());
     builder.name(user.name())
         .avatar(user.avatar());
     user.tags().forEach(tag -> builder.tag(tag.name(), tag.score()));
@@ -84,4 +85,5 @@ public interface Roster {
 
   void application(Application application, JID referer);
 
+//  void merge(XMPPUser... users);
 }

@@ -11,6 +11,7 @@ import UIKit
 import StoreKit
 
 class WelcomeViewController: UIViewController {
+    static let ACCESS_PAYMENT = "com.expleague.unSearch.accessPermanent"
     @IBOutlet weak var topConstraint: NSLayoutConstraint!
     @IBOutlet weak var owlImage: UIImageView!
     
@@ -20,12 +21,11 @@ class WelcomeViewController: UIViewController {
         guard !busy else {
             return
         }
-        PurchaseHelper.instance.request("com.expleague.unSearch.accessPermanent") { rc in
+        PurchaseHelper.instance.request(WelcomeViewController.ACCESS_PAYMENT) {rc, payment in
             switch rc {
             case .Accepted:
-                self.navigationController!.popViewControllerAnimated(true)
                 dispatch_async(dispatch_get_main_queue()) {
-                    AppDelegate.instance.setupDefaultProfiles()
+                    AppDelegate.instance.setupDefaultProfiles(payment!.hash)
                 }
             case .Error:
                 let alert = UIAlertController(title: "unSearch", message: "Не удалось провести платеж!", preferredStyle: .Alert)
@@ -42,6 +42,7 @@ class WelcomeViewController: UIViewController {
     @IBOutlet weak var enterCodeButton: UIButton!
     @IBOutlet weak var sendRequestButton: UIButton!
     var active: Bool = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         enterCodeButton.layer.cornerRadius = enterCodeButton.frame.height / 2
@@ -50,7 +51,7 @@ class WelcomeViewController: UIViewController {
         sendRequestButton.clipsToBounds = true
         buyButton.layer.cornerRadius = enterCodeButton.frame.height / 2
         buyButton.clipsToBounds = true
-        PurchaseHelper.instance.register(["com.expleague.unSearch.accessPermanent"])
+        PurchaseHelper.instance.register([WelcomeViewController.ACCESS_PAYMENT])
         
         let descriptionText = NSMutableAttributedString()
         descriptionText.appendAttributedString(NSAttributedString(string: "В настоящий момент доступ к приложению "))
@@ -79,10 +80,6 @@ class WelcomeViewController: UIViewController {
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
-        guard AppDelegate.instance.activeProfile == nil else {
-            performSegueWithIdentifier("Start", sender: self)
-            return
-        }
         QObject.track(AppDelegate.instance, #selector(AppDelegate.activate(_:))) {
             self.performSegueWithIdentifier("Start", sender: self)
             self.active = false
@@ -176,7 +173,7 @@ class EnterCodeViewController: UIViewController {
             if (code % 14340987 == 0 || enteredCode == 1234123123312) {
                 navigationController!.popViewControllerAnimated(true)
                 dispatch_async(dispatch_get_main_queue()) {
-                    AppDelegate.instance.setupDefaultProfiles()
+                    AppDelegate.instance.setupDefaultProfiles(enteredCode.hashValue)
                 }
                 return
             }
@@ -190,6 +187,24 @@ class EnterCodeViewController: UIViewController {
         super.viewDidLoad()
         enterButton.layer.cornerRadius = enterButton.frame.height / 2
         enterButton.clipsToBounds = true
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        var purchase: String?
+        dispatch_async(dispatch_queue_create("Restore payments", DISPATCH_QUEUE_CONCURRENT)) {
+            let visitor: (name: String, id: String) -> () = {name, id in
+                purchase = id
+            }
+            PurchaseHelper.visitTransactions(visitor: visitor) {_ in
+                guard purchase != nil else {
+                    return
+                }
+                dispatch_async(dispatch_get_main_queue()) {
+                    AppDelegate.instance.setupDefaultProfiles(purchase?.hash)
+                }
+            }
+        }
     }
     
     override func viewDidAppear(animated: Bool) {

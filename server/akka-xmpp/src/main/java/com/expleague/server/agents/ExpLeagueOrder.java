@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import com.expleague.model.Offer;
 import com.expleague.model.Tag;
 import com.expleague.xmpp.JID;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
 import java.util.EnumSet;
@@ -60,12 +61,13 @@ public abstract class ExpLeagueOrder {
 
   public abstract Role role(JID jid);
   public abstract Stream<JID> participants();
-  public abstract void feedback(double stars);
+  public abstract void feedback(double stars, @Nullable String payment);
   public abstract Stream<JID> of(Role role);
   public abstract double feedback();
   public abstract Tag[] tags();
   public abstract Stream<StatusHistoryRecord> statusHistoryRecords();
-  public abstract long getActivationTimestampMs();
+  public abstract long activationTimestampMs();
+  public abstract String payment();
 
   // Write interface
   protected abstract void mapTempRoles(Function<Role, Role> map);
@@ -89,6 +91,10 @@ public abstract class ExpLeagueOrder {
     return new Snapshot(timestamp);
   }
 
+  public JID owner() {
+    //noinspection OptionalGetWithoutIsPresent
+    return of(OWNER).findFirst().get();
+  }
 
   public class State {
     public boolean check(JID expert) {

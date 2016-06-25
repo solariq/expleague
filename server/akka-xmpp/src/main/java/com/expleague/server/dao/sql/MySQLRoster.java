@@ -7,6 +7,7 @@ import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
 import com.expleague.server.XMPPUser;
+import com.expleague.server.dao.fake.InMemRoster;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.register.RegisterQuery;
 import com.spbsu.commons.util.cache.CacheStrategy;
@@ -18,9 +19,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -40,6 +44,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
     return RegisterQuery.requiredFields();
   }
 
+  private static Pattern deviceNamePattern = Pattern.compile("([0-9a-fA-F]+)-([0-9a-fA-F]+)");
   @Override
   public XMPPDevice register(RegisterQuery query) throws Exception {
     log.log(Level.FINE, "Registering device " + query.username());
@@ -50,13 +55,20 @@ public class MySQLRoster extends MySQLOps implements Roster {
       throw new AuthenticationException("User known with different password");
     }
     log.log(Level.INFO, "Registering device " + query.username());
+    final String userName;
+    final Matcher matcher = deviceNamePattern.matcher(query.username());
+    if (matcher.matches())
+      userName = matcher.group(1);
+    else
+      userName = query.username();
+
     XMPPUser associated = null;
     final PreparedStatement associateUser = createStatement("associate-user",
         "SELECT * FROM Users WHERE avatar = ? AND avatar IS NOT NULL OR name = ? AND name IS NOT NULL OR id = ?"
     );
     associateUser.setString(1, query.avatar());
     associateUser.setString(2, query.name());
-    associateUser.setString(3, query.username());
+    associateUser.setString(3, userName);
 
     try (final ResultSet resultSet = associateUser.executeQuery()) {
       if (resultSet.next()) {
@@ -68,7 +80,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
       final PreparedStatement createUser = createStatement("create-user",
           "INSERT INTO Users SET id = ?, country = ?, city = ?, name = ?, avatar = ?, age = ?, sex = ?;"
       );
-      createUser.setString(1, query.username());
+      createUser.setString(1, userName);
       createUser.setString(2, query.country());
       createUser.setString(3, query.city());
       createUser.setString(4, query.name());
@@ -76,7 +88,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
       createUser.setInt(6, query.age());
       createUser.setInt(7, query.sex());
       createUser.execute();
-      associated = user(query.username());
+      associated = user(userName);
       log.log(Level.INFO, "Created new user " + associated.name());
     }
     final PreparedStatement register = createStatement("create-device",
@@ -181,6 +193,20 @@ public class MySQLRoster extends MySQLOps implements Roster {
                   throw new RuntimeException(e);
                 }
               }
+
+              @Override
+              public void updateUser(XMPPUser user) {
+                super.updateUser(user);
+                final PreparedStatement updateToken = createStatement("update-token", "UPDATE Devices SET `user` = ? WHERE id = ?");
+                try {
+                  updateToken.setString(1, user.id());
+                  updateToken.setString(2, id);
+                  updateToken.execute();
+                }
+                catch (SQLException e) {
+                  throw new RuntimeException(e);
+                }
+              }
             };
           }
           else return null;
@@ -194,8 +220,8 @@ public class MySQLRoster extends MySQLOps implements Roster {
 
   private final FixedSizeCache<String, ExpertsProfile> profilesCache = new FixedSizeCache<>(100, CacheStrategy.Type.LRU);
   @Override
-  public ExpertsProfile profile(JID jid) {
-    return profilesCache.get(jid.local(), a -> Roster.super.profile(jid));
+  public ExpertsProfile profile(String id) {
+    return profilesCache.get(id, a -> Roster.super.profile(id));
   }
 
   @Override
@@ -230,6 +256,41 @@ public class MySQLRoster extends MySQLOps implements Roster {
       throw new RuntimeException(e);
     }
   }
+
+//  @Override
+//  public void merge(XMPPUser... users) {
+//    if (users.length < 2)
+//      return;
+//    final XMPPUser main = users[0];
+//    Arrays.stream(users).skip(1)
+//        .flatMap(user -> {
+//          MySQLRoster.this.usersCache.put(user.id(), main);
+//          return Arrays.stream(user.devices());
+//        })
+//        .forEach(device -> device.updateUser(main));
+//    final PreparedStatement delete = createStatement("delete-user", "DELETE FROM Users WHERE id = ?");
+//    final PreparedStatement updateApplications = createStatement("replace-user-applications", "UPDATE Applications SET referer = ? WHERE referer = ?");
+//    final PreparedStatement updateParticipants = createStatement("replace-user-participants", "UPDATE Participants SET partisipant = ? WHERE partisipant = ?");
+//    final PreparedStatement updateSpecializations = createStatement("replace-user-specializations", "UPDATE Specializations SET owner = ? WHERE owner = ?");
+//    for (int i = 1; i < users.length; i++) {
+//      try {
+//        updateApplications.setString(1, main.id());
+//        updateApplications.setString(2, users[i].id());
+//        updateApplications.execute();
+//        updateParticipants.setString(1, main.id());
+//        updateParticipants.setString(2, users[i].id());
+//        updateParticipants.execute();
+//        updateSpecializations.setString(1, main.id());
+//        updateSpecializations.setString(2, users[i].id());
+//        updateSpecializations.execute();
+//        delete.setString(1, users[i].id());
+//        delete.execute();
+//      }
+//      catch (SQLException e) {
+//        throw new RuntimeException(e);
+//      }
+//    }
+//  }
 
   @NotNull
   private XMPPUser createUser(ResultSet resultSet, int offset) throws SQLException {
