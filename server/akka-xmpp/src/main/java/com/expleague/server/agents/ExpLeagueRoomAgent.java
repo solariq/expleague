@@ -133,7 +133,7 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
           break;
         case SLACKER:
           if (msg.has(Cancel.class)) {
-            sendToOwner(new Message(msg.from(), owner(), msg.get(Command.class)));
+            sendToOwner(new Message(roomAlias(msg.from()), owner(), msg.get(Command.class)));
           }
           break;
         default:
