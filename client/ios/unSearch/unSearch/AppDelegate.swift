@@ -167,8 +167,6 @@ class AppDelegate: UIResponder {
     
     func prepareBackground(application: UIApplication) {
         if(activeProfile?.busy ?? false) {
-            activeProfile?.log("Setting up local communication error notification because of \(activeProfile!.incoming) incoming and \(activeProfile!.outgoing) outgoing messages")
-            connectionErrorNotification = Notifications.unableToCommunicate(activeProfile!.incoming, outgoing: activeProfile!.outgoing, aow: activeProfile!.expectingAOW)
             application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
         }
         else {
@@ -251,7 +249,7 @@ extension AppDelegate: UIApplicationDelegate {
         if let messageId = userInfo["id"] as? String {
             activeProfile!.expect(messageId)
         }
-        else if let aow = userInfo["aow"] as? String {
+        else if let aow = userInfo["aow"] as? String where aow != activeProfile!.aowTitle {
             activeProfile!.aow(aow)
         }
         self.application(application, performFetchWithCompletionHandler: completionHandler)

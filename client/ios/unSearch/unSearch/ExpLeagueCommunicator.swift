@@ -94,6 +94,14 @@ internal class ExpLeagueCommunicator: NSObject {
             }
         }
     }
+
+    func requestAOW() {
+        let aowIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
+        aowIq.addAttributeWithName("type", stringValue: "get")
+        aowIq.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/best-answer"))
+        stream.sendElement(aowIq)
+    }
+
     
     // MARK: - *** Private stuff ***
     private var listeners: NSMutableArray = []
@@ -305,10 +313,7 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
 
         if (profile.receiveAnswerOfTheWeek?.boolValue ?? true) {
             // answer of the week
-            let aowIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
-            aowIq.addAttributeWithName("type", stringValue: "get")
-            aowIq.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/best-answer"))
-            sender.sendElement(aowIq)
+            requestAOW()
         }
     }
     
