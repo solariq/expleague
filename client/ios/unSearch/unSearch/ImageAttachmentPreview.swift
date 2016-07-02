@@ -10,20 +10,68 @@ import Foundation
 import Photos
 
 class AddAttachmentAlertController: UIViewController {
-    init() {
+    @IBOutlet weak var addPhotoButton: UIButton!
+    @IBOutlet weak var capturePhotoButton: UIButton!
+    @IBOutlet weak var cancelButton: UIButton!
+    @IBOutlet weak var imageCollection: UICollectionView!
+    
+    private let attachments: ImageCollectionPreviewDelegate
+
+    let picker = UIImagePickerController()
+    var pickerDelegate: ImagePickerDelegate?
+    var parent: UIViewController?
+    
+    init(parent: UIViewController?) {
+        attachments = ImageCollectionPreviewDelegate()
+        self.parent = parent
         super.init(nibName: "AddAttachmentAlert", bundle: nil)
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        attachments.fetchPhotoAtIndexFromEnd(0)
+
+        imageCollection.registerClass(ImagePreview.self, forCellWithReuseIdentifier: "ImagePreview")
+        
+        imageCollection.delegate = attachments
+        imageCollection.dataSource = attachments
+        imageCollection.userInteractionEnabled = true
+        attachments.view = imageCollection
+        imageCollection.reloadData()
+
+        let imageSenderQueue = ImageSenderQueueImpl()
+        pickerDelegate = ImagePickerDelegate(queue: imageSenderQueue, picker: picker)
+        picker.delegate = pickerDelegate
+        picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+
+    }
+    
+    @IBAction func onCancel(sender: AnyObject) {
+        self.dismissViewControllerAnimated(true, completion: nil)
+    }
+
+    @IBAction func onAddPhoto(sender: AnyObject) {
+        self.dismissViewControllerAnimated(true, completion: nil)
+        self.parent?.presentViewController(self.picker, animated: true, completion: nil)
+    }
+    
+    @IBAction func onCapturePhoto(sender: AnyObject) {
+        let navigation = UINavigationController(rootViewController: CameraCaptureController())
+        self.dismissViewControllerAnimated(true, completion: nil)
+        self.parent?.presentViewController(navigation, animated: true, completion: nil)
+    }
 }
 
-class ImageCollectionPreviewDelegate: NSObject, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
+class ImageCollectionPreviewDelegate: NSObject, UICollectionViewDelegate, UICollectionViewDataSource {
     var view: UICollectionView?
     var cells: [UIImage] = []
     
-    var totalImageCountNeeded = 3
+    var totalImageCountNeeded = 5
     var count: Int {
         return cells.count
     }
@@ -51,20 +99,12 @@ class ImageCollectionPreviewDelegate: NSObject, UICollectionViewDelegateFlowLayo
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier("ImagePreview", forIndexPath: indexPath) as! ImagePreview
         cell.image.image = cells[indexPath.item]
-        cell.backgroundColor = UIColor.blueColor()
-        cell.addGestureRecognizer(UITapGestureRecognizer(trailingClosure: {
-            return
-        }))
-        return cell
-    }
 
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
-        let max = CGSizeMake(collectionView.frame.width - 32, collectionView.frame.height - 4)
-        if indexPath.item < count {
-            let image = cells[indexPath.item]
-            return CGSizeMake(image.size.width / image.size.height * max.height, max.height)
-        }
-        return max
+        cell.addGestureRecognizer(UITapGestureRecognizer(trailingClosure: {
+            
+        }))
+
+        return cell
     }
 
     func fetchPhotoAtIndexFromEnd(index:Int) {
@@ -88,7 +128,7 @@ class ImageCollectionPreviewDelegate: NSObject, UICollectionViewDelegateFlowLayo
             // proceed with the image request
             if fetchResult.count > 0 {
                 // Perform the image request
-                imgManager.requestImageForAsset(fetchResult.objectAtIndex(fetchResult.count - 1 - index) as! PHAsset, targetSize: view!.frame.size, contentMode: PHImageContentMode.AspectFill, options: requestOptions, resultHandler: { (image, _) in
+                imgManager.requestImageForAsset(fetchResult.objectAtIndex(fetchResult.count - 1 - index) as! PHAsset, targetSize: CGSize(width: 75, height: 75), contentMode: PHImageContentMode.AspectFill, options: requestOptions, resultHandler: { (image, _) in
                     
                     // Add the returned image to your array
                     self.append(image!)
@@ -100,9 +140,6 @@ class ImageCollectionPreviewDelegate: NSObject, UICollectionViewDelegateFlowLayo
                     // incremented index
                     if index + 1 < fetchResult.count && self.count < self.totalImageCountNeeded {
                         self.fetchPhotoAtIndexFromEnd(index + 1)
-                    } else {
-                        // Else you have completed creating your array
-                        print("Completed array of \(self.count) items")
                     }
                 })
             }
@@ -115,23 +152,27 @@ class ImagePreview: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.image = UIImageView(frame: CGRectMake(0, 0, 80, 80))
+        self.image = UIImageView(frame: CGRectMake(0, 0, 75, 75))
         self.image.contentMode = .ScaleAspectFill
         self.image.clipsToBounds = true
         self.contentView.addSubview(self.image)
-        //self.viewForBaselineLayout().addSubview(self.image)
-        print("Image preview is created")
 
         layer.cornerRadius = Palette.CORNER_RADIUS
         layer.masksToBounds = true
-        backgroundColor = UIColor.clearColor()
-        backgroundView = nil
         translatesAutoresizingMaskIntoConstraints = false
         contentView.translatesAutoresizingMaskIntoConstraints = false
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+}
+
+class ImageSenderQueueImpl: ImageSenderQueue {
+    func append(id: String, image: UIImage, progress: (UIProgressView)->Void) {
+    }
+    
+    func report(id: String, status: Bool) {
     }
 }
 

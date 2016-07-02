@@ -256,12 +256,13 @@ class OrderDescriptionViewController: UITableViewController {
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         if (indexPath.item == 4) {
-            let feedback = AddAttachmentAlertController()
-            feedback.modalPresentationStyle = .OverCurrentContext
+            let parentViewController = self.parentViewController
+            let addAttachmentAlert = AddAttachmentAlertController(parent: parentViewController)
+            addAttachmentAlert.modalPresentationStyle = .OverCurrentContext
             self.providesPresentationContextTransitionStyle = true;
             self.definesPresentationContext = true;
 
-            self.presentViewController(feedback, animated: true, completion: nil)
+            parentViewController?.presentViewController(addAttachmentAlert, animated: true, completion: nil)
 
             //showAttachmentChoiceAlert();
         }

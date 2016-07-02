@@ -1,52 +1,131 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="10117" systemVersion="15E65" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <objects>
-        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="AddAttachmentAlertController" customModule="unSearch" customModuleProvider="target"/>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="AddAttachmentAlertController" customModule="unSearch" customModuleProvider="target">
+            <connections>
+                <outlet property="addPhotoButton" destination="NxR-sQ-gmV" id="4pn-0y-HYb"/>
+                <outlet property="cancelButton" destination="TyS-mE-M9J" id="goj-vK-dMa"/>
+                <outlet property="capturePhotoButton" destination="adh-UY-rOr" id="Jui-kt-S09"/>
+                <outlet property="imageCollection" destination="A2e-uf-mXU" id="XHk-Dp-b1y"/>
+                <outlet property="view" destination="iN0-l3-epB" id="Aqd-VY-vb7"/>
+            </connections>
+        </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <view contentMode="scaleToFill" id="iN0-l3-epB">
             <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <view contentMode="scaleToFill" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9RC-3U-7GW">
-                    <rect key="frame" x="0.0" y="394" width="320" height="174"/>
+                    <rect key="frame" x="0.0" y="317" width="320" height="251"/>
                     <subviews>
-                        <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="adh-UY-rOr">
-                            <rect key="frame" x="8" y="99" width="306" height="30"/>
+                        <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="adh-UY-rOr">
+                            <rect key="frame" x="8" y="158" width="304" height="40"/>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="40" id="AJu-wU-tre"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
                             <state key="normal" title="Сделать снимок"/>
+                            <connections>
+                                <action selector="onCapturePhoto:" destination="-1" eventType="primaryActionTriggered" id="6qq-oH-dDs"/>
+                            </connections>
                         </button>
-                        <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TyS-mE-M9J">
-                            <rect key="frame" x="8" y="139" width="306" height="30"/>
+                        <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TyS-mE-M9J">
+                            <rect key="frame" x="8" y="206" width="304" height="40"/>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="40" id="9eq-br-tGC"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
                             <state key="normal" title="Отменить"/>
-                        </button>
-                        <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NxR-sQ-gmV">
-                            <rect key="frame" x="8" y="67" width="306" height="30"/>
-                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                            <state key="normal" title="Добавить фото"/>
+                            <connections>
+                                <action selector="onCancel:" destination="-1" eventType="primaryActionTriggered" id="9Le-k7-PZO"/>
+                            </connections>
                         </button>
                         <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="A2e-uf-mXU">
-                            <rect key="frame" x="8" y="10" width="306" height="49"/>
+                            <rect key="frame" x="8" y="8" width="304" height="97"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             <constraints>
+                                <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="85" id="cOm-92-1Qz"/>
                                 <constraint firstAttribute="height" constant="49" id="eJX-zb-oUx"/>
                             </constraints>
-                            <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="0bl-vg-pmf">
-                                <size key="itemSize" width="50" height="50"/>
+                            <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="0bl-vg-pmf">
+                                <size key="itemSize" width="75" height="75"/>
                                 <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                 <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                <inset key="sectionInset" minX="5" minY="5" maxX="0.0" maxY="0.0"/>
                             </collectionViewFlowLayout>
+                            <variation key="default">
+                                <mask key="constraints">
+                                    <exclude reference="eJX-zb-oUx"/>
+                                </mask>
+                            </variation>
                         </collectionView>
+                        <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NxR-sQ-gmV">
+                            <rect key="frame" x="8" y="113" width="304" height="40"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="40" id="S0k-tg-BKZ"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <state key="normal" title="Добавить фото"/>
+                            <connections>
+                                <action selector="onAddPhoto:" destination="-1" eventType="primaryActionTriggered" id="iwd-ed-jtk"/>
+                            </connections>
+                        </button>
                     </subviews>
                     <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstItem="TyS-mE-M9J" firstAttribute="top" secondItem="adh-UY-rOr" secondAttribute="bottom" constant="10" id="5Vz-6d-2Bg"/>
+                        <constraint firstAttribute="height" constant="174" id="5lQ-Xa-PAr"/>
+                        <constraint firstItem="A2e-uf-mXU" firstAttribute="trailing" secondItem="TyS-mE-M9J" secondAttribute="trailing" id="8uw-uM-6YR"/>
+                        <constraint firstItem="A2e-uf-mXU" firstAttribute="top" secondItem="9RC-3U-7GW" secondAttribute="top" constant="10" id="AfH-uY-HtR"/>
+                        <constraint firstItem="A2e-uf-mXU" firstAttribute="top" secondItem="9RC-3U-7GW" secondAttribute="top" constant="8" id="BXJ-O1-NP8"/>
+                        <constraint firstItem="A2e-uf-mXU" firstAttribute="top" secondItem="9RC-3U-7GW" secondAttribute="top" constant="8" id="CeL-ie-aOd"/>
+                        <constraint firstItem="A2e-uf-mXU" firstAttribute="leading" secondItem="adh-UY-rOr" secondAttribute="leading" id="KBy-2D-7a6"/>
+                        <constraint firstAttribute="trailing" secondItem="TyS-mE-M9J" secondAttribute="trailing" constant="8" id="LQo-oh-gUW"/>
+                        <constraint firstItem="A2e-uf-mXU" firstAttribute="trailing" secondItem="adh-UY-rOr" secondAttribute="trailing" id="MPH-gK-sv2"/>
+                        <constraint firstAttribute="bottom" secondItem="TyS-mE-M9J" secondAttribute="bottom" constant="8" id="O3I-te-E5d"/>
+                        <constraint firstItem="A2e-uf-mXU" firstAttribute="leading" secondItem="9RC-3U-7GW" secondAttribute="leadingMargin" id="OsM-g8-ltm"/>
+                        <constraint firstItem="A2e-uf-mXU" firstAttribute="leading" secondItem="TyS-mE-M9J" secondAttribute="leading" id="RNu-jB-ndM"/>
+                        <constraint firstItem="adh-UY-rOr" firstAttribute="top" secondItem="NxR-sQ-gmV" secondAttribute="bottom" constant="2" id="Si5-zD-SsU"/>
+                        <constraint firstAttribute="bottom" secondItem="TyS-mE-M9J" secondAttribute="bottom" constant="9" id="Sko-OD-prx"/>
+                        <constraint firstAttribute="trailing" secondItem="A2e-uf-mXU" secondAttribute="trailing" constant="6" id="Sov-jD-Fco"/>
+                        <constraint firstItem="A2e-uf-mXU" firstAttribute="trailing" secondItem="NxR-sQ-gmV" secondAttribute="trailing" id="Ssc-9P-PoS"/>
+                        <constraint firstItem="TyS-mE-M9J" firstAttribute="top" secondItem="adh-UY-rOr" secondAttribute="bottom" constant="8" id="TFT-vd-fuc"/>
+                        <constraint firstItem="TyS-mE-M9J" firstAttribute="top" secondItem="adh-UY-rOr" secondAttribute="bottom" constant="8" id="UG1-Wf-1Wq"/>
+                        <constraint firstItem="NxR-sQ-gmV" firstAttribute="top" secondItem="A2e-uf-mXU" secondAttribute="bottom" constant="8" id="bJp-Hr-FLL"/>
+                        <constraint firstItem="NxR-sQ-gmV" firstAttribute="top" secondItem="A2e-uf-mXU" secondAttribute="bottom" constant="8" symbolic="YES" id="cHe-Dd-yqz"/>
+                        <constraint firstItem="adh-UY-rOr" firstAttribute="top" secondItem="NxR-sQ-gmV" secondAttribute="bottom" constant="2" id="cPt-0F-Phy"/>
+                        <constraint firstAttribute="trailing" secondItem="adh-UY-rOr" secondAttribute="trailing" constant="8" id="mVc-OJ-UtE"/>
+                        <constraint firstItem="A2e-uf-mXU" firstAttribute="leading" secondItem="NxR-sQ-gmV" secondAttribute="leading" id="nS5-j3-HVF"/>
+                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="200" id="p3W-2s-nfe"/>
+                        <constraint firstAttribute="trailing" secondItem="NxR-sQ-gmV" secondAttribute="trailing" constant="8" id="raz-3d-k86"/>
+                        <constraint firstItem="NxR-sQ-gmV" firstAttribute="top" secondItem="A2e-uf-mXU" secondAttribute="bottom" constant="2" id="tiE-6I-pAL"/>
+                    </constraints>
+                    <variation key="default">
+                        <mask key="constraints">
+                            <exclude reference="5lQ-Xa-PAr"/>
+                            <exclude reference="AfH-uY-HtR"/>
+                            <exclude reference="MPH-gK-sv2"/>
+                            <exclude reference="Sov-jD-Fco"/>
+                            <exclude reference="bJp-Hr-FLL"/>
+                            <exclude reference="cHe-Dd-yqz"/>
+                            <exclude reference="5Vz-6d-2Bg"/>
+                            <exclude reference="Sko-OD-prx"/>
+                        </mask>
+                    </variation>
                 </view>
             </subviews>
             <constraints>
                 <constraint firstItem="9RC-3U-7GW" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="IJg-Ui-OiC"/>
+                <constraint firstAttribute="trailing" secondItem="9RC-3U-7GW" secondAttribute="trailing" id="n4r-lX-fAZ"/>
+                <constraint firstAttribute="bottom" secondItem="9RC-3U-7GW" secondAttribute="bottom" id="wkE-Mv-PNE"/>
             </constraints>
             <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
         </view>
