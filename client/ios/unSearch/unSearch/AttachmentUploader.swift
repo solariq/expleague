@@ -11,11 +11,14 @@ import UIKit
 
 class AttachmentUploader: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate {
     var callback: AttachmentUploadCallback?
-    var imageId: String
-    var image: UIImage
+    var imageId: String?
+    var image: UIImage?
     
     init(callback: AttachmentUploadCallback?) {
         self.callback = callback
+        self.imageId = nil
+        self.image = nil
+        super.init()
     }
     
     func uploadImageFromPicker(info: [String : AnyObject]) {
@@ -35,12 +38,26 @@ class AttachmentUploader: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelega
         }
     }
     
+    func uploadImage(image: UIImage) {
+        self.imageId = "\(NSUUID().UUIDString).jpeg"
+        self.image = image
+        self.callback?.uploadCreated(imageId!, attachment: image)
+        self.uploadImage()
+    }
+    
     func uploadImage() {
         let uploadScriptUrl = AppDelegate.instance.activeProfile!.imageStorage
         let request = NSMutableURLRequest(URL: uploadScriptUrl)
-
+        let image = self.image!
+        let imageId = self.imageId!
         let imageUrl = AppDelegate.instance.activeProfile!.imageUrl(imageId)
         let imageData = UIImageJPEGRepresentation(image, 1)
+        
+        if imageData == nil {
+            UIAlertView(title: "Ошибка", message: "Невозможно получить данные изображения", delegate: nil, cancelButtonTitle: "Ok").show()
+            return
+        }
+        
         EVURLCache.storeCachedResponse(
             NSCachedURLResponse(
                 response: NSURLResponse(URL: imageUrl, MIMEType: "image/jpeg", expectedContentLength: imageData!.length, textEncodingName: "UTF-8"),
@@ -86,16 +103,16 @@ class AttachmentUploader: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelega
     
     func URLSession(session: NSURLSession, task: NSURLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
         let uploadProgress:Float = Float(totalBytesSent) / Float(totalBytesExpectedToSend)
-        self.callback?.uploadInProgress(self.imageId, progressValue: uploadProgress)
+        self.callback?.uploadInProgress(self.imageId!, progressValue: uploadProgress)
     }
     
     func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveResponse response: NSURLResponse, completionHandler: (NSURLSessionResponseDisposition) -> Void) {
         if let httpResp = response as? NSHTTPURLResponse {
             if httpResp.statusCode != 200 {
-                self.callback?.uploadFailed(self.imageId, httpResponse: httpResp)
+                self.callback?.uploadFailed(self.imageId!, httpResponse: httpResp)
             }
             else {
-                self.callback?.uploadCompleted(self.imageId)
+                self.callback?.uploadCompleted(self.imageId!)
             }
         }
     }

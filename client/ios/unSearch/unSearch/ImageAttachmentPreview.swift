@@ -16,6 +16,7 @@ class AddAttachmentAlertController: UIViewController {
     @IBOutlet weak var imageCollection: UICollectionView!
     
     private let attachments: ImageCollectionPreviewDelegate
+    let orderAttachmentsController = OrderAttachmentsController()
 
     let picker = UIImagePickerController()
     var pickerDelegate: ImagePickerDelegate?
@@ -35,6 +36,7 @@ class AddAttachmentAlertController: UIViewController {
         super.viewDidLoad()
         
         attachments.fetchPhotoAtIndexFromEnd(0)
+        attachments.controller = self
 
         imageCollection.registerClass(ImagePreview.self, forCellWithReuseIdentifier: "ImagePreview")
         
@@ -49,6 +51,14 @@ class AddAttachmentAlertController: UIViewController {
         picker.delegate = pickerDelegate
         picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
 
+        addPhotoButton.layer.cornerRadius = Palette.CORNER_RADIUS
+        addPhotoButton.clipsToBounds = true
+        capturePhotoButton.layer.cornerRadius = Palette.CORNER_RADIUS
+        capturePhotoButton.clipsToBounds = true
+        cancelButton.layer.cornerRadius = Palette.CORNER_RADIUS
+        cancelButton.clipsToBounds = true
+        imageCollection.layer.cornerRadius = Palette.CORNER_RADIUS
+        imageCollection.clipsToBounds = true
     }
     
     @IBAction func onCancel(sender: AnyObject) {
@@ -70,8 +80,9 @@ class AddAttachmentAlertController: UIViewController {
 class ImageCollectionPreviewDelegate: NSObject, UICollectionViewDelegate, UICollectionViewDataSource {
     var view: UICollectionView?
     var cells: [UIImage] = []
+    var controller: AddAttachmentAlertController?
     
-    var totalImageCountNeeded = 5
+    var totalImageCountNeeded = 10
     var count: Int {
         return cells.count
     }
@@ -100,13 +111,23 @@ class ImageCollectionPreviewDelegate: NSObject, UICollectionViewDelegate, UIColl
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier("ImagePreview", forIndexPath: indexPath) as! ImagePreview
         cell.image.image = cells[indexPath.item]
 
-        cell.addGestureRecognizer(UITapGestureRecognizer(trailingClosure: {
-            
-        }))
+        cell.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(imageTapped)))
 
         return cell
     }
 
+    func imageTapped(sender: UITapGestureRecognizer) {
+        let indexPath = (view?.indexPathForItemAtPoint(sender.locationInView(view)))!
+        print(indexPath)
+        if let imagePreview = view?.cellForItemAtIndexPath(indexPath) as! ImagePreview? {
+            print(imagePreview)
+            AttachmentUploader(callback: nil).uploadImage(imagePreview.image.image!)
+            self.controller?.dismissViewControllerAnimated(true, completion: nil)
+            let navigation = UINavigationController(rootViewController: (self.controller?.orderAttachmentsController)!)
+            self.controller?.parent?.presentViewController(navigation, animated: true, completion: nil)
+        }
+    }
+    
     func fetchPhotoAtIndexFromEnd(index:Int) {
         
         let imgManager = PHImageManager.defaultManager()

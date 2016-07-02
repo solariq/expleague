@@ -47,14 +47,14 @@
                                 <action selector="onCancel:" destination="-1" eventType="primaryActionTriggered" id="9Le-k7-PZO"/>
                             </connections>
                         </button>
-                        <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="A2e-uf-mXU">
+                        <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" alwaysBounceHorizontal="YES" showsVerticalScrollIndicator="NO" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="A2e-uf-mXU">
                             <rect key="frame" x="8" y="8" width="304" height="97"/>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             <constraints>
                                 <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="85" id="cOm-92-1Qz"/>
                                 <constraint firstAttribute="height" constant="49" id="eJX-zb-oUx"/>
                             </constraints>
-                            <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="0bl-vg-pmf">
+                            <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="0bl-vg-pmf">
                                 <size key="itemSize" width="75" height="75"/>
                                 <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                 <size key="footerReferenceSize" width="0.0" height="0.0"/>
@@ -79,7 +79,7 @@
                             </connections>
                         </button>
                     </subviews>
-                    <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.25495899822695034" colorSpace="calibratedWhite"/>
                     <constraints>
                         <constraint firstItem="TyS-mE-M9J" firstAttribute="top" secondItem="adh-UY-rOr" secondAttribute="bottom" constant="10" id="5Vz-6d-2Bg"/>
                         <constraint firstAttribute="height" constant="174" id="5lQ-Xa-PAr"/>

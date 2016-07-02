@@ -256,15 +256,7 @@ class OrderDescriptionViewController: UITableViewController {
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         if (indexPath.item == 4) {
-            let parentViewController = self.parentViewController
-            let addAttachmentAlert = AddAttachmentAlertController(parent: parentViewController)
-            addAttachmentAlert.modalPresentationStyle = .OverCurrentContext
-            self.providesPresentationContextTransitionStyle = true;
-            self.definesPresentationContext = true;
-
-            parentViewController?.presentViewController(addAttachmentAlert, animated: true, completion: nil)
-
-            //showAttachmentChoiceAlert();
+            showAttachmentChoiceAlert();
         }
         else if (indexPath.item == 3) {
             showExpertChoiceView();
@@ -272,58 +264,17 @@ class OrderDescriptionViewController: UITableViewController {
         else if (indexPath.item == 2) {
             showLocationChoiceAlert();
         }
+        tableView.deselectRowAtIndexPath(indexPath, animated: false)
     }
 
     func showAttachmentChoiceAlert() {
-        let showCameraCapture = { (action: AlertAction!) -> Void in
-            let navigation = UINavigationController(rootViewController: CameraCaptureController())
-            self.presentViewController(navigation, animated: true, completion: nil)
-            self.update()
-        }
-
-        let showImagePicker = { (action: AlertAction!) -> Void in
-            self.update()
-            self.presentViewController(self.picker, animated: true, completion: nil)
-        }
-
-
-        let showAttachments = { (action: AlertAction!) -> Void in
-            self.update()
-        }
-
-        let alertController = AlertController(title: "Добавить вложение", message: nil, preferredStyle: .ActionSheet)
-
-        let layout = UICollectionViewFlowLayout()
-        layout.sectionInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
-        layout.itemSize = CGSize(width: 200, height: 200)
-
-        let attachmentsView = UICollectionView(frame: alertController.contentView.frame, collectionViewLayout: layout)
-        let attachments = ImageCollectionPreviewDelegate()
-        attachmentsView.delegate = attachments
-        attachmentsView.dataSource = attachments
-        attachmentsView.userInteractionEnabled = true
-        attachmentsView.allowsSelection = true
-        attachmentsView.backgroundColor = UIColor.whiteColor()
-        //attachmentsView.backgroundView = UIView(frame: CGRectZero);
-        attachmentsView.layoutMargins = UIEdgeInsetsZero
-        attachmentsView.translatesAutoresizingMaskIntoConstraints = false
-        attachmentsView.registerClass(ImagePreview.self, forCellWithReuseIdentifier: "ImagePreview")
-        attachments.view = attachmentsView
-
-        alertController.contentView.addSubview(attachmentsView)
-
-        attachments.fetchPhotoAtIndexFromEnd(0)
-
-        attachmentsView.reloadData()
-        attachmentsView.performBatchUpdates(nil, completion: nil)
-        attachmentsView.collectionViewLayout.invalidateLayout()
-        attachmentsView.collectionViewLayout.prepareLayout()
-
-        alertController.addAction(AlertAction(title: "Сделать снимок", style: .Default, handler: showCameraCapture))
-        alertController.addAction(AlertAction(title: "Добавить фото", style: .Default, handler: showImagePicker))
-        //alertController.addAction(UIAlertAction(title: "Просмотреть вложения", style: .Default, handler: showAttachments))
-        alertController.addAction(AlertAction(title: "Отменить", style: .Preferred, handler: nil))
-        alertController.present()
+        let parentViewController = self.parentViewController
+        let addAttachmentAlert = AddAttachmentAlertController(parent: parentViewController)
+        addAttachmentAlert.modalPresentationStyle = .OverCurrentContext
+        self.providesPresentationContextTransitionStyle = true;
+        self.definesPresentationContext = true;
+        
+        parentViewController?.presentViewController(addAttachmentAlert, animated: true, completion: nil)
     }
 
     func showExpertChoiceView() {

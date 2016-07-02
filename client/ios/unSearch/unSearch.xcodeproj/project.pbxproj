@@ -28,6 +28,7 @@
 		6C9936391D0C84AF00FCCC75 /* AddAttachmentAlert.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6C9936381D0C84AF00FCCC75 /* AddAttachmentAlert.xib */; };
 		6CD88B841D1EF1AC00051197 /* AttachmentUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD88B831D1EF1AC00051197 /* AttachmentUploader.swift */; };
 		6CD88B861D1EF1D100051197 /* OrderAttachments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD88B851D1EF1D100051197 /* OrderAttachments.swift */; };
+		6CD88B881D28345E00051197 /* OrderAttachmentsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6CD88B871D28345D00051197 /* OrderAttachmentsView.xib */; };
 		6CFC5AE91D0C60410006336B /* ImageAttachmentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CFC5AE81D0C60410006336B /* ImageAttachmentPreview.swift */; };
 		D59A36A01C92E2D900A64230 /* arrow_cut_close.png in Resources */ = {isa = PBXBuildFile; fileRef = D59A369C1C92E2D900A64230 /* arrow_cut_close.png */; };
 		D59A36A11C92E2D900A64230 /* arrow_hide.png in Resources */ = {isa = PBXBuildFile; fileRef = D59A369D1C92E2D900A64230 /* arrow_hide.png */; };
@@ -103,6 +104,7 @@
 		6C9936381D0C84AF00FCCC75 /* AddAttachmentAlert.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AddAttachmentAlert.xib; sourceTree = "<group>"; };
 		6CD88B831D1EF1AC00051197 /* AttachmentUploader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttachmentUploader.swift; sourceTree = "<group>"; };
 		6CD88B851D1EF1D100051197 /* OrderAttachments.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderAttachments.swift; sourceTree = "<group>"; };
+		6CD88B871D28345D00051197 /* OrderAttachmentsView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OrderAttachmentsView.xib; sourceTree = "<group>"; };
 		6CFC5AE81D0C60410006336B /* ImageAttachmentPreview.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageAttachmentPreview.swift; sourceTree = "<group>"; };
 		AE053AF093E286ACDC53E101 /* Pods-unSearch.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-unSearch.debug.xcconfig"; path = "Pods/Target Support Files/Pods-unSearch/Pods-unSearch.debug.xcconfig"; sourceTree = "<group>"; };
 		D59A369C1C92E2D900A64230 /* arrow_cut_close.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrow_cut_close.png; sourceTree = "<group>"; };
@@ -247,6 +249,7 @@
 				6C9936381D0C84AF00FCCC75 /* AddAttachmentAlert.xib */,
 				6CD88B831D1EF1AC00051197 /* AttachmentUploader.swift */,
 				6CD88B851D1EF1D100051197 /* OrderAttachments.swift */,
+				6CD88B871D28345D00051197 /* OrderAttachmentsView.xib */,
 			);
 			name = Attachments;
 			sourceTree = "<group>";
@@ -439,6 +442,7 @@
 				EE2DB1921C4E5AD800F9601D /* ChatInput.xib in Resources */,
 				6C7617901CE79D2A004E4074 /* SearchLocationDialog.xib in Resources */,
 				EE62CB571C9834D000352699 /* ExpertPresentation.xib in Resources */,
+				6CD88B881D28345E00051197 /* OrderAttachmentsView.xib in Resources */,
 				EE9EE79F1C576587000E9F46 /* LookingForExpert.xib in Resources */,
 				D59A36A21C92E2D900A64230 /* phone.png in Resources */,
 				EEC0FF321C9080D100889E68 /* FeedbackView.xib in Resources */,
