@@ -15,7 +15,6 @@ class AboutViewController: UIViewController {
     @IBOutlet weak var topConstraint: NSLayoutConstraint!
     @IBOutlet weak var slogan: UILabel!
     @IBOutlet weak var build: UILabel!
-    @IBOutlet weak var restoreHistoryButton: UIButton!
     @IBOutlet weak var inviteButton: UIButton!
     @IBAction func invite(sender: AnyObject) {
         let alert = UIAlertController(title: "Оставьте заявку", message: "С целью сохранения высокого качества работы экспертов и отсутствия очередей, доступ к приложению в данный момент ограничен. Оставьте e-mail вашего друга, и мы свяжемся с ним как только появится возможность.", preferredStyle: .Alert)
@@ -43,17 +42,7 @@ class AboutViewController: UIViewController {
     }
     
     @IBAction func instructions(sender: AnyObject) {
-        UIApplication.sharedApplication().openURL(NSURL(string: "https://www.expleague.com/help/")!)
-    }
-    
-    @IBAction func restoreHistory(sender: AnyObject) {
-        PurchaseHelper.visitTransactions (visitor: {name, id in print (name, id)}) {error in
-            if error != nil {
-                let alert = UIAlertController(title: "unSearch", message: "Не удалось получить список ваших покупок из магазина Apple: \(error!)", preferredStyle: .Alert)
-                alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-                self.presentViewController(alert, animated: true, completion: nil)
-            }
-        }
+        UIApplication.sharedApplication().openURL(NSURL(string: "http://unsearch.expleague.com/help/")!)
     }
     
     var friend: String?
@@ -65,7 +54,6 @@ class AboutViewController: UIViewController {
         let isLandscape = size.height < size.width
         build.hidden = isLandscape
         instructionsButton.hidden = isLandscape
-        restoreHistoryButton.hidden = isLandscape
         topConstraint.constant = size.height * 0.1
     }
     override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
@@ -213,8 +201,6 @@ extension SettingsViewController: XMPPStreamDelegate {
     func xmppStream(sender: XMPPStream!, willSecureWithSettings settings: NSMutableDictionary!) {
         log("Configuring");
         settings.setValue(true, forKey: GCDAsyncSocketManuallyEvaluateTrust)
-//        settings.setValue(true, forKey: String(kCFStreamSSLValidatesCertificateChain))
-//        settings.setValue(<#T##value: AnyObject?##AnyObject?#>, forKey: <#T##String#>)
     }
 
     func xmppStream(sender: XMPPStream!, didNotAuthenticate error: DDXMLElement!) {

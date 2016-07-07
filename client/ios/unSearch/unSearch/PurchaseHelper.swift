@@ -104,17 +104,16 @@ extension PurchaseHelper: SKPaymentTransactionObserver {
     func paymentQueue(queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         print("\(transactions.count) payment transactions finished")
         for transaction in transactions {
+            print("\t\(transaction.payment.productIdentifier) -> \(transaction.transactionState)")
             switch transaction.transactionState {
-            case .Purchased:
+            case .Purchased, .Restored:
                 let callback = self.queue[transaction.payment.productIdentifier]?.removeFirstOrNone()
                 callback?(rc: .Accepted, transactionId: transaction.transactionIdentifier)
                 SKPaymentQueue.defaultQueue().finishTransaction(transaction)
-                break;
             case .Failed:
                 let callback = self.queue[transaction.payment.productIdentifier]?.removeFirstOrNone()
                 callback?(rc: .Rejected, transactionId: nil)
                 SKPaymentQueue.defaultQueue().finishTransaction(transaction)
-                break;
             default:
                 break;
             }

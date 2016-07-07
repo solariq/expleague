@@ -70,7 +70,6 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
                 switch(state) {
                 case .Chat:
                     detailsView!.bottomContents = input.view
-                    break
                 case .Ask:
                     let ask = NSBundle.mainBundle().loadNibNamed("ContinueView", owner: self, options: [:])[0] as! ContinueCell
                     ask.ok = {
@@ -87,10 +86,8 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
                         self.data.order.continueTask()
                     }
                     detailsView!.bottomContents = ask
-                    break
                 case .Closed:
                     detailsView?.bottomContents = nil
-                    break
                 case .Save:
                     let ask = NSBundle.mainBundle().loadNibNamed("SaveView", owner: self, options: [:])[0] as! SaveCell
                     ask.ok = {
@@ -102,10 +99,12 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
                         self.state = .Closed
                     }
                     detailsView!.bottomContents = ask
-                    break
                 }
-                self.view.layoutIfNeeded()
-                self.detailsView?.adjustScroll()
+                dispatch_async(dispatch_get_main_queue()) {
+                    self.enforceScroll = true
+                    self.view.layoutIfNeeded()
+                    self.detailsView?.adjustScroll()
+                }
             }
         }
     }
@@ -147,7 +146,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
 
         if (enforceScroll) {
             scrollToLastMessage()
-            if (state == .Chat || (state == .Closed && data.order.fake)) {
+            if (data.state == .Chat || (data.state == .Closed && data.order.fake)) {
                 detailsView!.scrollToChat(false)
             }
             else {
@@ -237,6 +236,9 @@ class FeedbackViewController: UIViewController {
                     alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
                     self.presentViewController(alert, animated: true, completion: nil)
                 case .Rejected:
+                    let alert = UIAlertController(title: "unSearch", message: "Платеж отклонен!", preferredStyle: .Alert)
+                    alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                    self.presentViewController(alert, animated: true, completion: nil)
                     break
                 }
                 self.busy = false
