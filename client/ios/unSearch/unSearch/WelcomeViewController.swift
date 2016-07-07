@@ -56,7 +56,7 @@ class WelcomeViewController: UIViewController {
         let descriptionText = NSMutableAttributedString()
         descriptionText.appendAttributedString(NSAttributedString(string: "В настоящий момент доступ к приложению "))
         descriptionText.appendAttributedString(NSAttributedString(string: "ограничен", attributes: [
-            NSLinkAttributeName: NSURL(string: "https://www.expleague.com/accessrules/")!
+            NSLinkAttributeName: NSURL(string: "http://unsearch.expleague.com/accessrules/")!
         ]))
         self.descriptionText.attributedText = descriptionText
         self.descriptionText.font = UIFont.systemFontOfSize(15)
@@ -114,7 +114,7 @@ class SendRequestViewController: UIViewController {
             return
         }
 
-        let data = NSData(contentsOfURL: NSURL(string: "https://www.expleague.com/act/sendComment.php?email=\(text)&id=\(abs(UIDevice.currentDevice().identifierForVendor!.UUIDString.hashValue))")!)
+        let data = NSData(contentsOfURL: NSURL(string: "http://unsearch.expleague.com/act/sendComment.php?email=\(text)&id=\(abs(UIDevice.currentDevice().identifierForVendor!.UUIDString.hashValue))")!)
         if let d = data, let dataStr = NSString(data: d, encoding: NSUTF8StringEncoding) where dataStr.hasSuffix("1") {
             let alert = UIAlertController(title: "unSearch", message: "Поздравляем! Ваша заявка успешно принята. Вы получите письмо с кодом для активации приложения, как только очередь дойдет до вас.", preferredStyle: .Alert)
             alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: {action in

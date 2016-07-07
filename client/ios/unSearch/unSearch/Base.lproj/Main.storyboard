@@ -1203,16 +1203,6 @@
                                     <action selector="instructions:" destination="BVX-oa-pIt" eventType="touchUpInside" id="LJg-lu-obn"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2ZF-pm-hvA">
-                                <rect key="frame" x="42" y="352" width="237" height="30"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                <state key="normal" title="Восстановить историю запросов">
-                                    <color key="titleColor" red="0.066666666669999999" green="0.54117647059999996" blue="0.87058823529999996" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
-                                <connections>
-                                    <action selector="restoreHistory:" destination="BVX-oa-pIt" eventType="touchUpInside" id="kON-9C-WZo"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -1224,10 +1214,8 @@
                             <constraint firstItem="TK2-rY-V5f" firstAttribute="top" secondItem="nIt-Ku-cuI" secondAttribute="bottom" id="Oa4-OK-QpQ"/>
                             <constraint firstItem="nIt-Ku-cuI" firstAttribute="top" secondItem="wgR-6D-Zar" secondAttribute="bottom" constant="10" id="PL3-P5-9qM"/>
                             <constraint firstItem="tvm-a2-W37" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="Smb-gc-aOS"/>
-                            <constraint firstItem="2ZF-pm-hvA" firstAttribute="centerX" secondItem="nIt-Ku-cuI" secondAttribute="centerX" id="Wsd-ry-WQi"/>
                             <constraint firstItem="vBe-iM-uev" firstAttribute="top" secondItem="TK2-rY-V5f" secondAttribute="bottom" constant="8" id="Xp5-wa-oNe"/>
                             <constraint firstItem="vBe-iM-uev" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="azk-I3-n9k"/>
-                            <constraint firstItem="db0-Zi-nFA" firstAttribute="top" secondItem="2ZF-pm-hvA" secondAttribute="bottom" id="fJX-kd-N1d"/>
                             <constraint firstItem="GRB-VN-8JI" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="fvN-nP-bGv"/>
                             <constraint firstItem="db0-Zi-nFA" firstAttribute="centerX" secondItem="nIt-Ku-cuI" secondAttribute="centerX" id="ofZ-Qn-s62"/>
                             <constraint firstItem="9EB-7v-hjU" firstAttribute="top" secondItem="db0-Zi-nFA" secondAttribute="bottom" constant="46" id="sFK-4F-c1e"/>
@@ -1241,7 +1229,6 @@
                         <outlet property="build" destination="GRB-VN-8JI" id="q2t-5C-clJ"/>
                         <outlet property="instructionsButton" destination="db0-Zi-nFA" id="5n7-2M-35N"/>
                         <outlet property="inviteButton" destination="9EB-7v-hjU" id="vKa-kZ-T37"/>
-                        <outlet property="restoreHistoryButton" destination="2ZF-pm-hvA" id="MDm-vn-XpK"/>
                         <outlet property="slogan" destination="vBe-iM-uev" id="YdB-Bf-z0K"/>
                         <outlet property="topConstraint" destination="PL3-P5-9qM" id="8ZP-9b-HIh"/>
                     </connections>

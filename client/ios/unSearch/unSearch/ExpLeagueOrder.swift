@@ -211,9 +211,8 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     func emulate() {
-        update {
-            self.flags = self.flags | ExpLeagueOrderFlags.Closed.rawValue | ExpLeagueOrderFlags.Fake.rawValue
-        }
+        self.flags = self.flags | ExpLeagueOrderFlags.Closed.rawValue | ExpLeagueOrderFlags.Fake.rawValue
+        save()
     }
     
     func markSaved() {

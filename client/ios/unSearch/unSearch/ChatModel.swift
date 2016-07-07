@@ -161,10 +161,8 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         switch(order.status) {
         case .Deciding:
             state = .Ask
-            break
         case .Closed, .Canceled:
             state = order.fake ? .Save : .Closed
-            break
         default:
             state = .Chat
             if (progressModel != nil) {
