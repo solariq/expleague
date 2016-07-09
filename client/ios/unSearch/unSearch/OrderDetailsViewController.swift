@@ -26,8 +26,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
 
     let input = ChatInputViewController(nibName: "ChatInput", bundle: nil)
     var answerDelegate: AnswerDelegate?
-    let picker = UIImagePickerController()
-    var pickerDelegate: ImagePickerDelegate?
+    let orderAttachmentsModel = OrderAttachmentsModel()
 
     let data: ChatModel
 
@@ -59,9 +58,6 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         answerDelegate = AnswerDelegate(parent: self)
         answer.delegate = answerDelegate
         input.delegate = self;
-        pickerDelegate = ImagePickerDelegate(queue: self, picker: picker)
-        picker.delegate = pickerDelegate
-        picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
     }
         
     var state: ChatState? {
@@ -172,8 +168,13 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     }
     
     
-    func attach(input: ChatInputViewController) {
-        self.presentViewController(picker, animated: true, completion: nil)
+     func attach(input: ChatInputViewController) {
+        let addAttachmentAlert = AddAttachmentAlertController(parent: parentViewController, imageAttachmentCallback: ChatImageAttachmentCallback(orderDetailsViewController: self))
+        addAttachmentAlert.modalPresentationStyle = .OverCurrentContext
+        self.providesPresentationContextTransitionStyle = true;
+        self.definesPresentationContext = true;
+        
+        parentViewController?.presentViewController(addAttachmentAlert, animated: true, completion: nil)
         input.progress.tintColor = UIColor.blueColor()
     }
     
@@ -184,7 +185,8 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     func report(id: String, status: Bool) {
         input.progress.tintColor = status ? UIColor.greenColor() : UIColor.redColor()
         let img = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
-        img.setStringValue(AppDelegate.instance.activeProfile!.imageUrl(id).absoluteString)
+        let url = AppDelegate.instance.activeProfile!.imageUrl(id).absoluteString
+        img.setStringValue(url)
         data.order.send(xml: img, type: "groupchat")
     }
 
@@ -377,5 +379,35 @@ class AnswerDelegate: NSObject, UIWebViewDelegate {
     let parent: OrderDetailsViewController
     init(parent: OrderDetailsViewController) {
         self.parent = parent
+    }
+}
+
+class ChatImageAttachmentCallback: ImageAttachmentCallback, AttachmentUploadCallback {
+    let orderDetailsViewController: OrderDetailsViewController
+    
+    init(orderDetailsViewController: OrderDetailsViewController) {
+        self.orderDetailsViewController = orderDetailsViewController
+    }
+    
+    func onAttach(image: UIImage, imageId: String) {
+        AttachmentUploader(callback: self).uploadImageByLocalId(imageId)
+    }
+    
+    func uploadCompleted(attachmentId: String) {
+        self.orderDetailsViewController.report(attachmentId, status: true)
+    }
+    
+    func uploadInProgress(attachmentId: String, progressValue: Float) {
+        self.orderDetailsViewController.input.progress.setProgress(progressValue, animated: true)
+    }
+    
+    func uploadFailed(attachmentId: String, httpResponse: NSHTTPURLResponse) {
+        self.orderDetailsViewController.report(attachmentId, status: true)
+    }
+
+    func uploadCreated(attachmentId: String, attachment: Any) {
+    }
+    
+    func uploadStarted(attachmentId: String, attachment: Any) {
     }
 }

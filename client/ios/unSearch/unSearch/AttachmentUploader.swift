@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import Photos
 
 class AttachmentUploader: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate {
     var callback: AttachmentUploadCallback?
@@ -44,7 +45,29 @@ class AttachmentUploader: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelega
         self.callback?.uploadCreated(imageId!, attachment: image)
         self.uploadImage()
     }
-    
+
+    func uploadImageByLocalId(imageLocalId: String) {
+        self.imageId = "\(ExpLeagueProfile.active.jid.user)-\(imageLocalId.hash).jpeg"
+
+        let imgManager = PHImageManager.defaultManager()
+        let fetchOptions = PHFetchOptions()
+        
+        if let fetchResult: PHFetchResult = PHAsset.fetchAssetsWithLocalIdentifiers([imageLocalId], options: fetchOptions) {
+            let asset = fetchResult.objectAtIndex(0) as! PHAsset
+            let initialRequestOptions = PHImageRequestOptions()
+            initialRequestOptions.synchronous = true
+            initialRequestOptions.resizeMode = .Fast
+            initialRequestOptions.deliveryMode = .FastFormat
+
+            imgManager.requestImageForAsset(asset, targetSize: CGSizeMake(1600, 1200), contentMode: .AspectFit, options: initialRequestOptions, resultHandler: {(data, _) in
+                self.image = data
+            })
+        }
+
+        self.callback?.uploadCreated(imageId!, attachment: image)
+        self.uploadImage()
+    }
+
     func uploadImage() {
         let uploadScriptUrl = AppDelegate.instance.activeProfile!.imageStorage
         let request = NSMutableURLRequest(URL: uploadScriptUrl)

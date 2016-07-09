@@ -10,20 +10,18 @@ import Foundation
 import Photos
 
 class AddAttachmentAlertController: UIViewController {
-    @IBOutlet weak var addPhotoButton: UIButton!
     @IBOutlet weak var capturePhotoButton: UIButton!
     @IBOutlet weak var cancelButton: UIButton!
     @IBOutlet weak var imageCollection: UICollectionView!
     
     private let attachments: ImageCollectionPreviewDelegate
-    let orderAttachmentsController = OrderAttachmentsController()
+    let imageAttachmentCallback: ImageAttachmentCallback
 
-    let picker = UIImagePickerController()
-    var pickerDelegate: ImagePickerDelegate?
     var parent: UIViewController?
     
-    init(parent: UIViewController?) {
+    init(parent: UIViewController?, imageAttachmentCallback: ImageAttachmentCallback!) {
         attachments = ImageCollectionPreviewDelegate()
+        self.imageAttachmentCallback = imageAttachmentCallback
         self.parent = parent
         super.init(nibName: "AddAttachmentAlert", bundle: nil)
     }
@@ -35,7 +33,6 @@ class AddAttachmentAlertController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        attachments.fetchPhotoAtIndexFromEnd(0)
         attachments.controller = self
 
         imageCollection.registerClass(ImagePreview.self, forCellWithReuseIdentifier: "ImagePreview")
@@ -46,13 +43,6 @@ class AddAttachmentAlertController: UIViewController {
         attachments.view = imageCollection
         imageCollection.reloadData()
 
-        let imageSenderQueue = ImageSenderQueueImpl()
-        pickerDelegate = ImagePickerDelegate(queue: imageSenderQueue, picker: picker)
-        picker.delegate = pickerDelegate
-        picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-
-        addPhotoButton.layer.cornerRadius = Palette.CORNER_RADIUS
-        addPhotoButton.clipsToBounds = true
         capturePhotoButton.layer.cornerRadius = Palette.CORNER_RADIUS
         capturePhotoButton.clipsToBounds = true
         cancelButton.layer.cornerRadius = Palette.CORNER_RADIUS
@@ -65,11 +55,6 @@ class AddAttachmentAlertController: UIViewController {
         self.dismissViewControllerAnimated(true, completion: nil)
     }
 
-    @IBAction func onAddPhoto(sender: AnyObject) {
-        self.dismissViewControllerAnimated(true, completion: nil)
-        self.parent?.presentViewController(self.picker, animated: true, completion: nil)
-    }
-    
     @IBAction func onCapturePhoto(sender: AnyObject) {
         let navigation = UINavigationController(rootViewController: CameraCaptureController())
         self.dismissViewControllerAnimated(true, completion: nil)
@@ -79,37 +64,32 @@ class AddAttachmentAlertController: UIViewController {
 
 class ImageCollectionPreviewDelegate: NSObject, UICollectionViewDelegate, UICollectionViewDataSource {
     var view: UICollectionView?
-    var cells: [UIImage] = []
     var controller: AddAttachmentAlertController?
     
-    var totalImageCountNeeded = 10
-    var count: Int {
-        return cells.count
-    }
-    
-    func append(image: UIImage) {
-        cells.append(image)
-    }
-    
-    func remove(index: Int) {
-        cells.removeAtIndex(index)
-        view?.reloadData()
-    }
-    
-    func clear() {
-        cells.removeAll()
-        view?.reloadData()
-    }
-    
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let num = section > 0 ? 0 : cells.count
-        print("numberOfItemsInSection is \(num)")
-        return num
+        return section > 0 ? 0 : getNumberOfImagesInCollection()
     }
+    
+    //func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
+    //    return 1
+    //}
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier("ImagePreview", forIndexPath: indexPath) as! ImagePreview
-        cell.image.image = cells[indexPath.item]
+        let requestOptions = PHImageRequestOptions()
+        requestOptions.synchronous = true
+        
+        let imgManager = PHImageManager.defaultManager()
+        let fetchOptions = PHFetchOptions()
+        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
+        
+        if let fetchResult: PHFetchResult = PHAsset.fetchAssetsWithMediaType(PHAssetMediaType.Image, options: fetchOptions) {
+            let asset = fetchResult.objectAtIndex(fetchResult.count - 1 - indexPath.item) as! PHAsset
+            imgManager.requestImageForAsset(asset, targetSize: CGSize(width: 75, height: 75), contentMode: PHImageContentMode.AspectFill, options: requestOptions, resultHandler: { (image, _) in
+                cell.image.image = image
+                cell.imageLocalIdentifier = asset.localIdentifier
+            })
+        }
 
         cell.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(imageTapped)))
 
@@ -118,58 +98,32 @@ class ImageCollectionPreviewDelegate: NSObject, UICollectionViewDelegate, UIColl
 
     func imageTapped(sender: UITapGestureRecognizer) {
         let indexPath = (view?.indexPathForItemAtPoint(sender.locationInView(view)))!
-        print(indexPath)
         if let imagePreview = view?.cellForItemAtIndexPath(indexPath) as! ImagePreview? {
-            print(imagePreview)
-            AttachmentUploader(callback: nil).uploadImage(imagePreview.image.image!)
             self.controller?.dismissViewControllerAnimated(true, completion: nil)
-            let navigation = UINavigationController(rootViewController: (self.controller?.orderAttachmentsController)!)
-            self.controller?.parent?.presentViewController(navigation, animated: true, completion: nil)
+            self.controller?.imageAttachmentCallback.onAttach(imagePreview.image.image!, imageId: imagePreview.imageLocalIdentifier!)
         }
     }
     
-    func fetchPhotoAtIndexFromEnd(index:Int) {
-        
-        let imgManager = PHImageManager.defaultManager()
-        
-        // Note that if the request is not set to synchronous
-        // the requestImageForAsset will return both the image
-        // and thumbnail; by setting synchronous to true it
-        // will return just the thumbnail
+    func getNumberOfImagesInCollection() -> Int {
         let requestOptions = PHImageRequestOptions()
         requestOptions.synchronous = true
         
-        // Sort the images by creation date
         let fetchOptions = PHFetchOptions()
-        fetchOptions.sortDescriptors = [NSSortDescriptor(key:"creationDate", ascending: true)]
+        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
         
         if let fetchResult: PHFetchResult = PHAsset.fetchAssetsWithMediaType(PHAssetMediaType.Image, options: fetchOptions) {
-            
-            // If the fetch result isn't empty,
-            // proceed with the image request
-            if fetchResult.count > 0 {
-                // Perform the image request
-                imgManager.requestImageForAsset(fetchResult.objectAtIndex(fetchResult.count - 1 - index) as! PHAsset, targetSize: CGSize(width: 75, height: 75), contentMode: PHImageContentMode.AspectFill, options: requestOptions, resultHandler: { (image, _) in
-                    
-                    // Add the returned image to your array
-                    self.append(image!)
-                    
-                    // If you haven't already reached the first
-                    // index of the fetch result and if you haven't
-                    // already stored all of the images you need,
-                    // perform the fetch request again with an
-                    // incremented index
-                    if index + 1 < fetchResult.count && self.count < self.totalImageCountNeeded {
-                        self.fetchPhotoAtIndexFromEnd(index + 1)
-                    }
-                })
-            }
+            print("fetchResult.count \(fetchResult.count)")
+            return fetchResult.count
+        }
+        else {
+            return 0
         }
     }
 }
 
 class ImagePreview: UICollectionViewCell {
     var image: UIImageView!
+    var imageLocalIdentifier: String?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -189,12 +143,6 @@ class ImagePreview: UICollectionViewCell {
     }
 }
 
-class ImageSenderQueueImpl: ImageSenderQueue {
-    func append(id: String, image: UIImage, progress: (UIProgressView)->Void) {
-    }
-    
-    func report(id: String, status: Bool) {
-    }
+protocol ImageAttachmentCallback {
+    func onAttach(image: UIImage, imageId: String)
 }
-
-
