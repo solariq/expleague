@@ -269,6 +269,9 @@ class ExpLeagueMessage: NSManagedObject {
         else if (!textChildren.isEmpty) {
             self.body = textChildren[0].stringValue
         }
+        else if let image = msg.elementForName("image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+            properties["image"] = image.stringValue()
+        }
         else {
             type = .System
         }
@@ -276,9 +279,7 @@ class ExpLeagueMessage: NSManagedObject {
         let re = try! NSRegularExpression(pattern: ".+-(\\d+)", options: [])
         let msgId = msg.elementID()
 
-        if let image = msg.elementForName("image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
-            properties["image"] = image.stringValue()
-        }
+        
         if let time = attrs["time"] as? String{
             self.time = Double(time)!
         }

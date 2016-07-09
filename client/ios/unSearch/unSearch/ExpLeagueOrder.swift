@@ -157,11 +157,7 @@ class ExpLeagueOrder: NSManagedObject {
         parent.send(msg)
     }
     
-    func send(xml xml: DDXMLElement) {
-        send(xml: xml, type: "normal")
-    }
-    
-    func send(xml xml: DDXMLElement, type: String) {
+    func send(xml xml: DDXMLElement, type: String = "normal") {
         let msg = XMPPMessage(type: type, to: jid)
         msg.addChild(xml)
         update {
@@ -190,9 +186,7 @@ class ExpLeagueOrder: NSManagedObject {
             return
         }
 
-        let msg = XMPPMessage(type: "normal", to: jid)
-        msg.addChild(DDXMLElement(name: "cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
-        self.parent.send(msg)
+        send(xml: DDXMLElement(name: "cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
     }
     
     func feedback(stars score: Int, payment: String?) {
