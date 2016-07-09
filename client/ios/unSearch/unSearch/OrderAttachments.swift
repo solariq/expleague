@@ -181,8 +181,5 @@ public func ==(lhs: OrderAttachment, rhs: OrderAttachment) -> Bool {
 class OrderAttachmentTableCell: UITableViewCell {
     @IBOutlet weak var attachmentUploadProgress: UIProgressView!
     @IBOutlet weak var thumbnailView: UIImageView!
-
-    override func awakeFromNib() {
-    }
 }
 
