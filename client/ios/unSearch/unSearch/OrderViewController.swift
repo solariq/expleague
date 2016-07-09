@@ -27,7 +27,7 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
             presentViewController(alertView, animated: true, completion: nil)
             return
         }
-        guard controller.attachments.complete() else {
+        guard controller.orderAttachmentsModel.completed() else {
             let alertView = UIAlertController(title: "Заказ", message: "На данный момент не все прикрепленные объекты сохранены. Подождите несколько секунд.", preferredStyle: .Alert)
             alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
             presentViewController(alertView, animated: true, completion: nil)
@@ -40,10 +40,10 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
             local: controller.location.isLocalOrder(),
             location: controller.location.getLocation(),
             experts: controller.experts.map{ return $0.id },
-            images: controller.attachments.ids
+            images: controller.orderAttachmentsModel.getImagesIds()
         )
         controller.clear()
-        controller.attachments.clear()
+        controller.orderAttachmentsModel.clear()
 
         AppDelegate.instance.tabs.tabBar.hidden = true
         AppDelegate.instance.tabs.selectedIndex = 1
@@ -97,7 +97,6 @@ class OrderDescriptionViewController: UITableViewController {
     @IBOutlet weak var expertsDescription: UILabel!
     @IBOutlet weak var locationDescription: UILabel!
 
-    let attachments = AttachmentsViewDelegate()
     let orderAttachmentsModel = OrderAttachmentsModel()
     var orderTextBGColor: UIColor?
     var orderTextDelegate: OrderTextDelegate?
@@ -120,15 +119,6 @@ class OrderDescriptionViewController: UITableViewController {
 
         (view as! UITableView).allowsSelection = true
         (view as! UITableView).delegate = self
-        attachmentsView.delegate = attachments
-        attachmentsView.dataSource = attachments
-        attachmentsView.userInteractionEnabled = true
-        attachmentsView.allowsSelection = true
-        attachmentsView.backgroundColor = UIColor.whiteColor()
-        attachmentsView.backgroundView = UIView(frame: CGRectZero);
-        attachmentsView.layoutMargins = UIEdgeInsetsZero
-        attachments.view = attachmentsView
-        attachments.parent = self
         
         orderTextDelegate = OrderTextDelegate(height: orderTextHeight, parent: self)
         orderText.delegate = orderTextDelegate
@@ -179,13 +169,13 @@ class OrderDescriptionViewController: UITableViewController {
     internal func clear() {
         urgency.on = false
         orderTextDelegate!.clear(orderText)
-        attachments.clear()
+        orderAttachmentsModel.clear()
         experts.removeAll()
         update()
     }
     
     internal func update() {
-        let count = attachments.count
+        let count = orderAttachmentsModel.count
         if (count > 4) {
             imagesCaption.text = "\(count) приложений"
         }
@@ -311,95 +301,6 @@ class OrderDescriptionViewController: UITableViewController {
     }
 }
 
-class ImageAttachment: UICollectionViewCell {
-    @IBOutlet weak var image: UIImageView!
-    @IBOutlet weak var progress: UIProgressView!
-    
-    override func awakeFromNib() {
-        progress.progress = 0.0
-    }
-}
-
-class AttachmentsViewDelegate: NSObject, UICollectionViewDelegate, UICollectionViewDataSource {
-    var view: UICollectionView?
-    var cells: [UIImage] = []
-    var progress: [(UIProgressView)->Void] = []
-    var ids: [String] = []
-    var status: [Bool] = []
-    
-    var count: Int {
-        var result = 0
-        for i in 0..<status.count {
-            result += status[i] ? 1 : 0
-        }
-        return result
-    }
-    
-    func append(id: String, image: UIImage, progress: (UIProgressView)->Void) {
-        status.append(false)
-        cells.append(image)
-        ids.append(id)
-        self.progress.append(progress)
-        view?.reloadData()
-    }
-
-    func remove(index: Int) {
-        status.removeAtIndex(index)
-        cells.removeAtIndex(index)
-        ids.removeAtIndex(index)
-        let _ = progress.removeAtIndex(index)
-        view?.reloadData()
-        parent?.update()
-    }
-    
-    func clear() {
-        cells.removeAll()
-        progress.removeAll()
-        ids.removeAll()
-        status.removeAll()
-        view?.reloadData()
-    }
-    
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return section > 0 ? 0 : cells.count
-    }
-    
-    func complete() -> Bool {
-        for s in status {
-            if (!s) {
-                return false
-            }
-        }
-        return true
-    }
-    
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("ImageAttachment", forIndexPath: indexPath) as! ImageAttachment
-        progress[indexPath.item](cell.progress)
-        cell.image.image = cells[indexPath.item]
-        cell.addGestureRecognizer(UITapGestureRecognizer(trailingClosure: {
-            let alertView = UIAlertController(title: "Приложения", message: "Открепить картинку от заказа?", preferredStyle: .Alert)
-            alertView.addAction(UIAlertAction(title: "Да", style: .Default, handler: {(x: UIAlertAction) -> Void in
-                self.remove(indexPath.item)
-            }))
-            alertView.addAction(UIAlertAction(title: "Нет", style: .Cancel, handler: nil))
-            self.parent?.presentViewController(alertView, animated: true, completion: nil)
-            return
-        }))
-        return cell
-    }
-    
-    func report(id: String, status: Bool) {
-        let index = ids.indexOf(id)
-        if (index != nil) {
-            self.status[index!] = status
-        }
-        parent?.update()
-    }
-    
-    var parent: OrderDescriptionViewController?
-}
-
 protocol ImageSenderQueue {
     func append(id: String, image: UIImage, progress: (UIProgressView) -> Void)
     func report(id: String, status: Bool);
@@ -497,5 +398,6 @@ class OrderImageAttachmentCallback: ImageAttachmentCallback {
         model.addAttachment(image, imageId: imageId)
         let navigation = UINavigationController(rootViewController: OrderAttachmentsController(orderAttachmentsModel: model))
         self.orderDescriptionViewController.parentViewController!.presentViewController(navigation, animated: true, completion: nil)
+        self.orderDescriptionViewController.update()
     }
 }

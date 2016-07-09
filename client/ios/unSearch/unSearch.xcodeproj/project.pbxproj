@@ -23,6 +23,7 @@
 		6C0463F31CF9E4740046E602 /* OrderLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0463F21CF9E4740046E602 /* OrderLocation.swift */; };
 		6C0463F71CF9FAE10046E602 /* LocationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0463F51CF9EFA70046E602 /* LocationProvider.swift */; };
 		6C5D34F11D0C41670050CF3E /* CameraCaptureController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5D34F01D0C41670050CF3E /* CameraCaptureController.swift */; };
+		6C65E6A91D2E7D5B008BE4D3 /* OrderAttachmentTableCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6C65E6A81D2E7D5B008BE4D3 /* OrderAttachmentTableCell.xib */; };
 		6C76178E1CE75B26004E4074 /* SearchLocationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C76178D1CE75B26004E4074 /* SearchLocationController.swift */; };
 		6C7617901CE79D2A004E4074 /* SearchLocationDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6C76178F1CE79D2A004E4074 /* SearchLocationDialog.xib */; };
 		6C9936391D0C84AF00FCCC75 /* AddAttachmentAlert.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6C9936381D0C84AF00FCCC75 /* AddAttachmentAlert.xib */; };
@@ -99,6 +100,7 @@
 		6C0463F21CF9E4740046E602 /* OrderLocation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderLocation.swift; sourceTree = "<group>"; };
 		6C0463F51CF9EFA70046E602 /* LocationProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationProvider.swift; sourceTree = "<group>"; };
 		6C5D34F01D0C41670050CF3E /* CameraCaptureController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraCaptureController.swift; sourceTree = "<group>"; };
+		6C65E6A81D2E7D5B008BE4D3 /* OrderAttachmentTableCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OrderAttachmentTableCell.xib; sourceTree = "<group>"; };
 		6C76178D1CE75B26004E4074 /* SearchLocationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchLocationController.swift; sourceTree = "<group>"; };
 		6C76178F1CE79D2A004E4074 /* SearchLocationDialog.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SearchLocationDialog.xib; sourceTree = "<group>"; };
 		6C9936381D0C84AF00FCCC75 /* AddAttachmentAlert.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AddAttachmentAlert.xib; sourceTree = "<group>"; };
@@ -250,6 +252,7 @@
 				6CD88B831D1EF1AC00051197 /* AttachmentUploader.swift */,
 				6CD88B851D1EF1D100051197 /* OrderAttachments.swift */,
 				6CD88B871D28345D00051197 /* OrderAttachmentsView.xib */,
+				6C65E6A81D2E7D5B008BE4D3 /* OrderAttachmentTableCell.xib */,
 			);
 			name = Attachments;
 			sourceTree = "<group>";
@@ -440,6 +443,7 @@
 				D59A36A11C92E2D900A64230 /* arrow_hide.png in Resources */,
 				688A50BC12A73F2E37A3EF75 /* LaunchScreen.storyboard in Resources */,
 				EE2DB1921C4E5AD800F9601D /* ChatInput.xib in Resources */,
+				6C65E6A91D2E7D5B008BE4D3 /* OrderAttachmentTableCell.xib in Resources */,
 				6C7617901CE79D2A004E4074 /* SearchLocationDialog.xib in Resources */,
 				EE62CB571C9834D000352699 /* ExpertPresentation.xib in Resources */,
 				6CD88B881D28345E00051197 /* OrderAttachmentsView.xib in Resources */,

@@ -22,30 +22,6 @@ class AttachmentUploader: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelega
         super.init()
     }
     
-    func uploadImageFromPicker(info: [String : AnyObject]) {
-        var imageId: String
-        if let referenceUrl = info[UIImagePickerControllerReferenceURL] as? NSURL {
-            imageId = "\(ExpLeagueProfile.active.jid.user)-\(referenceUrl.hash).jpeg";
-        }
-        else {
-            imageId = "\(NSUUID().UUIDString).jpeg"
-        }
-        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
-            self.imageId = imageId
-            self.image = image
-            
-            self.callback?.uploadCreated(imageId, attachment: image)
-            self.uploadImage()
-        }
-    }
-    
-    func uploadImage(image: UIImage) {
-        self.imageId = "\(NSUUID().UUIDString).jpeg"
-        self.image = image
-        self.callback?.uploadCreated(imageId!, attachment: image)
-        self.uploadImage()
-    }
-
     func uploadImageByLocalId(imageLocalId: String) {
         self.imageId = "\(ExpLeagueProfile.active.jid.user)-\(imageLocalId.hash).jpeg"
 
@@ -68,7 +44,7 @@ class AttachmentUploader: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelega
         self.uploadImage()
     }
 
-    func uploadImage() {
+    private func uploadImage() {
         let uploadScriptUrl = AppDelegate.instance.activeProfile!.imageStorage
         let request = NSMutableURLRequest(URL: uploadScriptUrl)
         let image = self.image!

@@ -106,6 +106,23 @@ class OrderAttachmentsModel {
     func get(index: Int) -> OrderAttachment {
         return attachmentsArray[index]
     }
+    
+    func getImagesIds() -> [String] {
+        return attachmentsArray.map{ return $0.imageId }
+    }
+    
+    func clear() {
+        attachmentsArray.removeAll()
+    }
+    
+    func completed() -> Bool {
+        for attachment in attachmentsArray {
+            if !attachment.tracker.completed {
+                return false
+            }
+        }
+        return true
+    }
 }
 
 public class OrderAttachment: Equatable {
@@ -123,6 +140,7 @@ public class OrderAttachment: Equatable {
 public class AttachmentUploadTracker: AttachmentUploadCallback {
     var progressValue: Float = 0
     var notifiers: [AttachmentUploadProgressNotifier] = []
+    var completed: Bool = false
     
     func addNotifier(notifier: AttachmentUploadProgressNotifier) {
         notifiers.append(notifier)
@@ -138,6 +156,7 @@ public class AttachmentUploadTracker: AttachmentUploadCallback {
     }
     func uploadCompleted(attachmentId: String) {
         uploadInProgress(attachmentId, progressValue: 1)
+        completed = true
     }
     func uploadFailed(attachmentId: String, httpResponse: NSHTTPURLResponse) {}
 }
