@@ -43,12 +43,10 @@ class AddAttachmentAlertController: UIViewController {
         attachments.view = imageCollection
         imageCollection.reloadData()
 
-        capturePhotoButton.layer.cornerRadius = Palette.CORNER_RADIUS
-        capturePhotoButton.clipsToBounds = true
-        cancelButton.layer.cornerRadius = Palette.CORNER_RADIUS
-        cancelButton.clipsToBounds = true
-        imageCollection.layer.cornerRadius = Palette.CORNER_RADIUS
-        imageCollection.clipsToBounds = true
+        for component in [capturePhotoButton, cancelButton, imageCollection] {
+            component.layer.cornerRadius = Palette.CORNER_RADIUS
+            component.clipsToBounds = true
+        }
     }
     
     @IBAction func onCancel(sender: AnyObject) {

@@ -273,31 +273,17 @@ class OrderDescriptionViewController: UITableViewController {
     }
 
     func showLocationChoiceAlert() {
-        let alertController = UIAlertController(title: "Связать с гео-позицией", message: nil, preferredStyle: .ActionSheet)
-
-        let useCurrentLocationActionHandler = { (action: UIAlertAction!) -> Void in
-            self.location.setCurrentLocation(self.locationProvider)
-            self.update()
-        }
-
-        let showMapActionHandler = { (action: UIAlertAction!) -> Void in
-            self.update()
-
-            let navigation = UINavigationController(rootViewController: SearchLocationController(parent: self, locationProvider: self.locationProvider))
-            self.presentViewController(navigation, animated: true, completion: nil)
-        }
-
-
-        let cancelActionHandler = { (action: UIAlertAction!) -> Void in
-            self.location.clearLocation()
-            self.update()
-        }
-
-        alertController.addAction(UIAlertAction(title: "Искать рядом со мной", style: .Default, handler: useCurrentLocationActionHandler))
-        alertController.addAction(UIAlertAction(title: "Выбрать на карте", style: .Default, handler: showMapActionHandler))
-        alertController.addAction(UIAlertAction(title: "Не использовать гео-позицию", style: .Default, handler: cancelActionHandler))
-        alertController.addAction(UIAlertAction(title: "Отменить", style: .Cancel, handler: nil))
-        self.presentViewController(alertController, animated: true, completion: nil)
+        let parentViewController = self.parentViewController
+        let addLocationAlert = AddLocationAlertController(
+            parent: parentViewController,
+            locationChoiceCallback: OrderLocationChoiceCallback(orderDescriptionViewController: self),
+            locationProvider: locationProvider
+        )
+        addLocationAlert.modalPresentationStyle = .OverCurrentContext
+        self.providesPresentationContextTransitionStyle = true;
+        self.definesPresentationContext = true;
+        
+        parentViewController?.presentViewController(addLocationAlert, animated: true, completion: nil)
     }
 }
 
@@ -398,6 +384,19 @@ class OrderImageAttachmentCallback: ImageAttachmentCallback {
         model.addAttachment(image, imageId: imageId)
         let navigation = UINavigationController(rootViewController: OrderAttachmentsController(orderAttachmentsModel: model))
         self.orderDescriptionViewController.parentViewController!.presentViewController(navigation, animated: true, completion: nil)
+        self.orderDescriptionViewController.update()
+    }
+}
+
+class OrderLocationChoiceCallback: LocationChoiceCallback {
+    let orderDescriptionViewController: OrderDescriptionViewController
+    
+    init(orderDescriptionViewController: OrderDescriptionViewController) {
+        self.orderDescriptionViewController = orderDescriptionViewController
+    }
+
+    func onLocationChoice(location: OrderLocation) {
+        self.orderDescriptionViewController.location = location
         self.orderDescriptionViewController.update()
     }
 }

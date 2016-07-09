@@ -17,6 +17,10 @@ class OrderLocation {
         self.locationType = .NoLocation
     }
     
+    init(location: CLLocationCoordinate2D!) {
+        setLocation(location)
+    }
+
     func setCurrentLocation(locationProvider: LocationProvider) {
         self.locationType = .CurrentLocation
         self.location = locationProvider.deviceLocation
