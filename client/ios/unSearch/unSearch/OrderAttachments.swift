@@ -108,7 +108,7 @@ class OrderAttachmentsModel {
     }
     
     func getImagesIds() -> [String] {
-        return attachmentsArray.map{ return $0.imageId }
+        return attachmentsArray.map{ return "\(ExpLeagueProfile.active.jid.user)-\($0.imageId.hash).jpeg" }
     }
     
     func clear() {
