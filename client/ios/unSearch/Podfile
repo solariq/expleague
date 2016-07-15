@@ -6,6 +6,7 @@ target 'unSearch' do
   pod 'XMPPFramework'
   pod 'MMMarkdown'
   pod 'ReachabilitySwift'
+  pod 'SDCAlertView', '~> 5.1'
 end
 
 post_install do |installer|
