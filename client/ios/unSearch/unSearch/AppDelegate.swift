@@ -76,6 +76,8 @@ class Palette {
 
 @UIApplicationMain
 class AppDelegate: UIResponder {
+    static let deviceId = UInt64(abs(UIDevice.currentDevice().identifierForVendor!.UUIDString.hashValue))
+    static let GOOGLE_API_KEY = "AIzaSyA83KOger1DEkxp3h0ItejyGBlEUuE7Bkc"
     @nonobjc static var instance: AppDelegate {
         return (UIApplication.sharedApplication().delegate as! AppDelegate)
     }
@@ -104,6 +106,7 @@ class AppDelegate: UIResponder {
     var expertsView: ExpertsOverviewController?
     var historyView: HistoryViewController?
     var dataController: DataController!
+    let uploader = AttachmentsUploader()
     var token: String?
     
     var activeProfile: ExpLeagueProfile?
@@ -183,6 +186,8 @@ extension AppDelegate: UIApplicationDelegate {
         EVURLCache.MAX_AGE = "\(3.0 * 365 * 24 * 60 * 60 * 1000)"
         EVURLCache.FORCE_LOWERCASE = true // is already the default. You also have to put all files int he PreCache using lowercase names
         EVURLCache.activate()
+        
+        GMSServices.provideAPIKey(AppDelegate.GOOGLE_API_KEY)
         
         window = UIWindow(frame: UIScreen.mainScreen().bounds)
         let storyboard = UIStoryboard(name: "Main", bundle: nil)

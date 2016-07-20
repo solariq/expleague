@@ -9,6 +9,7 @@
 import Foundation
 import UIKit
 import CoreData
+import Photos
 
 // Global array of targets, as extensions cannot have non-computed properties
 private var target = [Target]()
@@ -229,6 +230,39 @@ class Lang {
             default:
                 return variants[2];
             }
+        }
+    }
+}
+
+extension CGRect {
+    func center() -> CGPoint {
+        return CGPointMake(self.midX, self.midY)
+    }
+}
+
+extension PHAsset {
+    class func fetchSquareThumbnail(size: CGFloat, localId: String, callback: (UIImage?, [NSObject: AnyObject]?) -> ()) {
+        let fetchResult = PHAsset.fetchAssetsWithLocalIdentifiers([localId], options: nil)
+        if let asset = fetchResult.objectAtIndex(0) as? PHAsset {
+            let retinaScale = UIScreen.mainScreen().scale
+            let retinaSquare = CGSizeMake(size * retinaScale, size * retinaScale)
+            
+            let cropToSquare = PHImageRequestOptions()
+            cropToSquare.resizeMode = .Exact;
+            
+            let cropSideLength = CGFloat(min(asset.pixelWidth, asset.pixelHeight))
+            let square = CGRectMake(0, 0, cropSideLength, cropSideLength)
+            let cropRect = CGRectApplyAffineTransform(square, CGAffineTransformMakeScale(1.0 / CGFloat(asset.pixelWidth), 1.0 / CGFloat(asset.pixelHeight)));
+            
+            cropToSquare.normalizedCropRect = cropRect;
+
+            PHImageManager.defaultManager().requestImageForAsset(
+                asset,
+                targetSize: retinaSquare,
+                contentMode: PHImageContentMode.AspectFit,
+                options: cropToSquare,
+                resultHandler: callback
+            )
         }
     }
 }

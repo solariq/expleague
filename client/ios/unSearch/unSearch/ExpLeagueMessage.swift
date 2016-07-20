@@ -216,7 +216,7 @@ class ExpLeagueMessage: NSManagedObject {
             properties["stars"] = feedback.attributeIntegerValueForName("stars")
         }
         else if let _ = msg.elementForName("cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
-            type = type == .ExpertMessage ? .ExpertCancel : .ClientCancel
+            type = type == .ClientMessage ? .ClientCancel : .ExpertCancel
         }
         else if let _ = msg.elementForName("done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
             type = .ClientDone

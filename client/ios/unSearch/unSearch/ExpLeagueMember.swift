@@ -75,8 +75,10 @@ class ExpLeagueMember: NSManagedObject {
         
     dynamic var available: Bool = false {
         didSet {
-            badge?.update(self)
-            view?.update()
+            dispatch_async(dispatch_get_main_queue()) {
+                self.badge?.update(self)
+                self.view?.update()
+            }
         }
     }
     

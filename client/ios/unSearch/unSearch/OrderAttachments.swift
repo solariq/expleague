@@ -7,11 +7,76 @@
 //
 
 import Foundation
+import Photos
 import UIKit
 
-class OrderAttachmentsController: UITableViewController {
-    @IBOutlet weak var attachmentsTable: UITableView!
+class OrderAttachmentsController: UIViewController {
+    @IBOutlet weak var errorDescription: UITextView!
+    @IBOutlet weak var attachmentsCollection: UICollectionView!
+    @IBOutlet weak var preview: UIImageView!
+    
     let orderAttachmentsModel: OrderAttachmentsModel
+    var selected: OrderAttachment?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        navigationController!.navigationBar.setBackgroundImage(UIImage(named: "experts_background"), forBarMetrics: .Default)
+        navigationController!.navigationBarHidden = false
+        navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
+        navigationItem.title = "Приложения к запросу"
+        edgesForExtendedLayout = .None
+        
+        attachmentsCollection.registerClass(AttachedImageCell.self, forCellWithReuseIdentifier: "ImageCell")
+        attachmentsCollection.delegate = self
+        attachmentsCollection.dataSource = self
+        attachmentsCollection.backgroundColor = UIColor.clearColor()
+        attachmentsCollection.backgroundView = UIView(frame: CGRectZero)
+        errorDescription.hidden = true
+        QObject.connect(orderAttachmentsModel, signal: #selector(OrderAttachmentsModel.selectionChanged), receiver: self, slot: #selector(onSelectionChanged))
+        QObject.track(orderAttachmentsModel, #selector(OrderAttachmentsModel.attachmentsChanged)) {
+            self.attachmentsCollection.reloadData()
+            if (self.selected != nil && self.orderAttachmentsModel.get(self.selected!.imageId) == nil) {
+                self.selected = nil
+                self.preview.image = nil
+                self.errorDescription.text = ""
+                self.errorDescription.hidden = true
+            }
+            return true
+        }
+        onSelectionChanged()
+    }
+    
+    func onSelectionChanged() {
+        if (orderAttachmentsModel.selection.isEmpty) {
+            let button = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: #selector(append))
+            button.tintColor = UIColor.whiteColor()
+            navigationItem.setRightBarButtonItem(button, animated: false)
+            automaticallyAdjustsScrollViewInsets = true
+        }
+        else {
+            let button = UIBarButtonItem(barButtonSystemItem: .Trash, target: self, action: #selector(deleteSelection))
+            button.tintColor = UIColor.whiteColor()
+            navigationItem.setRightBarButtonItem(button, animated: false)
+            automaticallyAdjustsScrollViewInsets = true
+        }
+    }
+    
+    func deleteSelection() {
+        orderAttachmentsModel.selection.forEach(){ attachment in
+            orderAttachmentsModel.removeAttachment(attachment)
+        }
+    }
+    
+    func append() {
+        let addAttachmentAlert = AddAttachmentAlertController(parent: self, filter: orderAttachmentsModel.attachmentsArray.map({$0.imageId})) { imageId in
+            self.orderAttachmentsModel.addAttachment(imageId)
+        }
+        
+        addAttachmentAlert.modalPresentationStyle = .OverFullScreen
+        self.providesPresentationContextTransitionStyle = true;
+        self.definesPresentationContext = true;
+        presentViewController(addAttachmentAlert, animated: true, completion: nil)
+    }
     
     init(orderAttachmentsModel: OrderAttachmentsModel) {
         self.orderAttachmentsModel = orderAttachmentsModel
@@ -21,82 +86,212 @@ class OrderAttachmentsController: UITableViewController {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
+}
 
-        navigationController!.navigationBar.setBackgroundImage(UIImage(named: "experts_background"), forBarMetrics: .Default)
-        navigationController!.navigationBarHidden = false
-        navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
-        navigationItem.title = "Приложения к запросу"
-        let button = UIBarButtonItem(title: "Готово", style: .Done, target: self, action: #selector(OrderAttachmentsController.close))
-        button.tintColor = UIColor.whiteColor()
-        navigationItem.setRightBarButtonItem(button, animated: false)
-        
-        attachmentsTable.registerNib(UINib(nibName: "OrderAttachmentTableCell", bundle: NSBundle.mainBundle()), forCellReuseIdentifier: "OrderAttachmentTableCell")
-        attachmentsTable.delegate = self
-        attachmentsTable.dataSource = self
+extension OrderAttachmentsController: UICollectionViewDelegate, UICollectionViewDataSource {
+    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return section > 0 ? 0 : orderAttachmentsModel.attachmentsArray.count
     }
     
-    func close() {
-        self.dismissViewControllerAnimated(true, completion: nil)
-    }
-
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 1
-    }
-
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return orderAttachmentsModel.count
-    }
-    
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("OrderAttachmentTableCell", forIndexPath: indexPath) as! OrderAttachmentTableCell
-        
-        let row = indexPath.row
-        let orderAttachment = orderAttachmentsModel.get(row)
-        cell.thumbnailView?.image = orderAttachment.image
-
-        orderAttachment.tracker.addNotifier(
-            AttachmentUploadProgressNotifier(progressView: cell.attachmentUploadProgress, progressValue: orderAttachment.tracker.progressValue)
-        )
+    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+        let attachment = orderAttachmentsModel.attachmentsArray[indexPath.item]
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("ImageCell", forIndexPath: indexPath) as! AttachedImageCell
+        cell.attachment = attachment
+        cell.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(imageTapped)))
         return cell
     }
-
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        return true
-    }
     
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == UITableViewCellEditingStyle.Delete {
-            tableView.beginUpdates()
-            orderAttachmentsModel.removeAttachmentAtIndex(indexPath.row)
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Automatic)
-            tableView.endUpdates()
+    func imageTapped(sender: UITapGestureRecognizer) {
+        if let indexPath = (attachmentsCollection?.indexPathForItemAtPoint(sender.locationInView(attachmentsCollection))),
+            let imagePreview = attachmentsCollection?.cellForItemAtIndexPath(indexPath) as! AttachedImageCell? {
+            attachmentsCollection.indexPathsForSelectedItems()?.forEach {
+                attachmentsCollection.deselectItemAtIndexPath($0, animated: true)
+            }
+            attachmentsCollection.selectItemAtIndexPath(indexPath, animated: true, scrollPosition: .None)
+
+            if (selected != imagePreview.attachment) {
+                selected = imagePreview.attachment
+                if let error = selected?.error {
+                    errorDescription.hidden = false
+                    errorDescription.text = error
+                }
+                else {
+                    errorDescription.hidden = true
+                    let fetchResult = PHAsset.fetchAssetsWithLocalIdentifiers([imagePreview.attachment!.imageId], options: nil)
+                    if let asset = fetchResult.objectAtIndex(0) as? PHAsset {
+                        PHImageManager.defaultManager().requestImageForAsset(
+                            asset,
+                            targetSize: self.preview.frame.size,
+                            contentMode: PHImageContentMode.AspectFill,
+                            options: nil
+                        ) { (image, _) in
+                            self.preview.image = image
+                        }
+                    }
+                }
+            }
+            else {
+                selected?.selected = !(selected?.selected ?? false)
+            }
+        }
+    }
+}
+
+class CircularProgress: UIView {
+    var progress: Float?
+    override func drawRect(rect: CGRect) {
+        let diameter = min(rect.height, rect.width) * 0.68
+        let center = rect.center()
+        let centralRect = CGRectMake(center.x - diameter / 4.0, center.y - diameter/4.0, diameter / 2.0, diameter / 2.0)
+        
+        if let p = self.progress where p >= 0 {
+            let context = UIGraphicsGetCurrentContext()
+            UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.4).setFill()
+            UIRectFill(rect)
+            CGContextSaveGState(context)
+            CGContextSetBlendMode(context, .DestinationOut)
+            let progress = CGFloat(p)
+            let endAngle: CGFloat = progress * 2 * CGFloat(M_PI)
+            UIColor.whiteColor().set()
+            let border =  UIBezierPath(arcCenter: center,
+                                       radius: diameter / 2 - 1,
+                                       startAngle: 0,
+                                       endAngle: 2.0 * CGFloat(M_PI),
+                                       clockwise: true)
+            border.lineWidth = 2
+            border.stroke()
+            let path =  UIBezierPath(arcCenter: center,
+                                     radius: diameter / 2 - 4,
+                                     startAngle: -CGFloat(M_PI)/2,
+                                     endAngle: endAngle - CGFloat(M_PI)/2,
+                                     clockwise: true)
+            path.lineWidth = 4
+            path.stroke()
+            CGContextRestoreGState(context)
+        }
+        else if let p = self.progress where p < 0 {
+            Palette.ERROR.set()
+            let border =  UIBezierPath(arcCenter: center,
+                                       radius: diameter / 2 - 2,
+                                       startAngle: 0,
+                                       endAngle: 2.0 * CGFloat(M_PI),
+                                       clockwise: true)
+            border.lineWidth = 6
+            border.stroke()
+            let paragraphStyle = NSMutableParagraphStyle()
+            paragraphStyle.alignment = .Center
+            let attrs = [NSFontAttributeName: UIFont.boldSystemFontOfSize(diameter/2.5), NSParagraphStyleAttributeName: paragraphStyle, NSForegroundColorAttributeName: Palette.ERROR]
+            "!".drawWithRect(centralRect, options: .UsesLineFragmentOrigin, attributes: attrs, context: nil)
         }
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        return CGFloat(120)
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = UIColor.clearColor()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+class AttachedImageCell: UICollectionViewCell {
+    var attachment: OrderAttachment? {
+        willSet (newTracker) {
+            QObject.disconnect(self)
+        }
+        didSet {
+            guard attachment != nil else {
+                return
+            }
+            PHAsset.fetchSquareThumbnail(110, localId: attachment!.imageId) { (image, _) in
+                self.image.image = image
+            }
+
+            onProgressChanged()
+            onSelectionChanged()
+
+            QObject.connect(attachment!, signal: #selector(OrderAttachment.progressChanged), receiver: self, slot: #selector(onProgressChanged))
+            QObject.connect(attachment!, signal: #selector(OrderAttachment.selectedChanged), receiver: self, slot: #selector(onSelectionChanged))
+        }
+    }
+    var selectedMark: UIImageView!
+    var image: UIImageView!
+    var progress: CircularProgress!
+    
+    func onProgressChanged() {
+        progress.progress = attachment?.progress ?? (attachment?.error != nil ? -1 : nil)
+        progress.setNeedsDisplay()
+    }
+
+    func onSelectionChanged() {
+        selectedMark.hidden = !(attachment?.selected ?? true)
+        layoutIfNeeded()
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        let visibleRect = CGRect(origin: CGPointZero, size: CGSizeMake(frame.size.width, frame.size.height))
+        image = UIImageView(frame: visibleRect)
+        image.layer.cornerRadius = Palette.CORNER_RADIUS
+        image.clipsToBounds = true
+        progress = CircularProgress(frame: visibleRect)
+        progress.layer.zPosition = 10
+        selectedMark = UIImageView(frame: CGRect(origin: CGPointMake(frame.width - 30, 5) , size: CGSizeMake(25, 25)))
+        selectedMark.image = UIImage(named: "attachment_checked")
+        selectedMark.layer.zPosition = 5
+        selectedMark.hidden = true
+        self.contentView.addSubview(image)
+        self.contentView.addSubview(progress)
+        self.contentView.addSubview(selectedMark)
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    
+    deinit {
+        QObject.disconnect(self)
     }
 }
 
 class OrderAttachmentsModel {
     var attachmentsArray: [OrderAttachment] = []
+    var uploader: AttachmentsUploader {
+        return AppDelegate.instance.uploader
+    }
+    var selection: [OrderAttachment] {
+        return attachmentsArray.filter({$0.selected})
+    }
     
-    func addAttachment(image: UIImage, imageId: String) {
-        let callback = AttachmentUploadTracker()
-        let orderAttachment = OrderAttachment(image: image, imageId: imageId, tracker: callback)
-        AttachmentUploader(callback: callback).uploadImageByLocalId(orderAttachment.imageId)
+    @objc
+    func attachmentsChanged() {
+        QObject.notify(#selector(attachmentsChanged), self)
+        selectionChanged()
+    }
+    
+    @objc
+    func selectionChanged() {
+        QObject.notify(#selector(selectionChanged), self)
+    }
+    
+    func addAttachment(imageId: String) {
+        let orderAttachment = OrderAttachment(imageId: imageId)
+        uploader.upload(orderAttachment)
         attachmentsArray.append(orderAttachment)
+        attachmentsChanged()
+        QObject.connect(orderAttachment, signal: #selector(OrderAttachment.selectedChanged), receiver: self, slot: #selector(selectionChanged))
     }
     
     func removeAttachment(orderAttachment: OrderAttachment) {
         attachmentsArray.removeOne(orderAttachment)
+        attachmentsChanged()
     }
     
     func removeAttachmentAtIndex(index: Int) {
         attachmentsArray.removeAtIndex(index)
+        attachmentsChanged()
     }
     
     var count: Int {
@@ -106,7 +301,11 @@ class OrderAttachmentsModel {
     func get(index: Int) -> OrderAttachment {
         return attachmentsArray[index]
     }
-    
+
+    func get(id: String) -> OrderAttachment? {
+        return attachmentsArray.filter({$0.imageId == id}).first
+    }
+
     func getImagesIds() -> [String] {
         return attachmentsArray.map{ return "\(ExpLeagueProfile.active.jid.user)-\($0.imageId.hash).jpeg" }
     }
@@ -117,7 +316,7 @@ class OrderAttachmentsModel {
     
     func completed() -> Bool {
         for attachment in attachmentsArray {
-            if !attachment.tracker.completed {
+            if !attachment.uploaded {
                 return false
             }
         }
@@ -126,56 +325,58 @@ class OrderAttachmentsModel {
 }
 
 public class OrderAttachment: Equatable {
-    let image: UIImage
     let imageId: String
-    let tracker: AttachmentUploadTracker
+    let globalId: String
     
-    init(image: UIImage, imageId: String, tracker: AttachmentUploadTracker) {
-        self.image = image
-        self.imageId = imageId
-        self.tracker = tracker
-    }
-}
-
-public class AttachmentUploadTracker: AttachmentUploadCallback {
-    var progressValue: Float = 0
-    var notifiers: [AttachmentUploadProgressNotifier] = []
-    var completed: Bool = false
-    
-    func addNotifier(notifier: AttachmentUploadProgressNotifier) {
-        notifiers.append(notifier)
-    }
-    
-    func uploadCreated(attachmentId: String, attachment: Any) {}
-    func uploadStarted(attachmentId: String, attachment: Any) {}
-    func uploadInProgress(attachmentId: String, progressValue: Float) {
-        self.progressValue = progressValue
-        for notifier in notifiers {
-            notifier.uploadInProgress(progressValue)
+    var selected: Bool = false {
+        didSet {
+            selectedChanged()
         }
     }
-    func uploadCompleted(attachmentId: String) {
-        uploadInProgress(attachmentId, progressValue: 1)
-        completed = true
-    }
-    func uploadFailed(attachmentId: String, httpResponse: NSHTTPURLResponse) {}
-}
-
-public class AttachmentUploadProgressNotifier {
-    var progressView: UIProgressView
     
-    init(progressView: UIProgressView, progressValue: Float) {
-        self.progressView = progressView
-        uploadInProgress(progressValue)
+    var uploaded: Bool = false {
+        didSet {
+            guard uploaded else {
+                return
+            }
+            progress = nil
+        }
     }
     
-    func uploadInProgress(progressValue: Float) {
-        progressView.progress = progressValue
+    var progress: Float? {
+        didSet {
+            progressChanged()
+        }
+    }
+    var error: String? {
+        didSet {
+            if (error != nil) {
+                progress = nil
+            }
+        }
+    }
+    var url: NSURL {
+        return AppDelegate.instance.activeProfile!.imageUrl(globalId)
+    }
+    
+    @objc
+    func progressChanged() {
+        QObject.notify(#selector(progressChanged), self)
+    }
+    
+    @objc
+    func selectedChanged() {
+        QObject.notify(#selector(selectedChanged), self)
+    }
+    
+    init(imageId: String) {
+        self.imageId = imageId
+        globalId = "\(ExpLeagueProfile.active.jid.user)-\(imageId.hash).jpeg"
     }
 }
 
 public func ==(lhs: OrderAttachment, rhs: OrderAttachment) -> Bool {
-    return lhs.image == rhs.image
+    return lhs.imageId == rhs.imageId
 }
 
 class OrderAttachmentTableCell: UITableViewCell {

@@ -123,7 +123,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         data.controller = self
-        data.sync()
+        data.sync(true)
         detailsView?.keyboardTracker.start()
         enforceScroll = true
     }
@@ -169,12 +169,45 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     
     
      func attach(input: ChatInputViewController) {
-        let addAttachmentAlert = AddAttachmentAlertController(parent: parentViewController, imageAttachmentCallback: ChatImageAttachmentCallback(orderDetailsViewController: self))
+        let addAttachmentAlert = AddAttachmentAlertController(parent: parentViewController) { imageId in
+            let alert = UIAlertController(title: "unSearch", message: "Отправить выбранную фотографию эксперту?", preferredStyle: .Alert)
+            alert.addAction(UIAlertAction(title: "Да", style: .Default, handler: {action in
+                let attachment = OrderAttachment(imageId: imageId)
+                AppDelegate.instance.uploader.upload(attachment)
+                QObject.track(attachment, #selector(OrderAttachment.progressChanged)) {
+                    if(attachment.progress < 0) { // error
+                        input.progress.tintColor = Palette.ERROR
+                        input.progress.progress = 1.0
+                        let error = attachment.error != nil ? " : \(attachment.error!)" : "."
+                        let warning = UIAlertController(title: "unSearch", message: "Не удалось отослать изображение\(error)", preferredStyle: .Alert)
+                        warning.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                        self.presentViewController(warning, animated: true, completion: nil)
+                        return false
+                    }
+                    else if (attachment.progress < 1) {
+                        input.progress.tintColor = Palette.CONTROL
+                        input.progress.progress = attachment.progress!
+                        return true
+                    }
+                    else {
+                        input.progress.tintColor = Palette.OK
+                        input.progress.progress = attachment.progress!
+                        let img = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+                        img.setStringValue(attachment.url.absoluteString)
+                        self.data.order.send(xml: img, type: "groupchat")
+                        
+                        return false
+                    }
+                }
+            }))
+            alert.addAction(UIAlertAction(title: "Нет", style: .Cancel, handler: nil))
+            self.presentViewController(alert, animated: true, completion: nil)
+        }
         addAttachmentAlert.modalPresentationStyle = .OverCurrentContext
         self.providesPresentationContextTransitionStyle = true;
         self.definesPresentationContext = true;
         
-        parentViewController?.presentViewController(addAttachmentAlert, animated: true, completion: nil)
+        presentViewController(addAttachmentAlert, animated: true, completion: nil)
         input.progress.tintColor = UIColor.blueColor()
     }
     
@@ -184,10 +217,6 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     
     func report(id: String, status: Bool) {
         input.progress.tintColor = status ? UIColor.greenColor() : UIColor.redColor()
-        let img = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
-        let url = AppDelegate.instance.activeProfile!.imageUrl(id).absoluteString
-        img.setStringValue(url)
-        data.order.send(xml: img, type: "groupchat")
     }
 
     func scrollToLastMessage() {
@@ -379,35 +408,5 @@ class AnswerDelegate: NSObject, UIWebViewDelegate {
     let parent: OrderDetailsViewController
     init(parent: OrderDetailsViewController) {
         self.parent = parent
-    }
-}
-
-class ChatImageAttachmentCallback: ImageAttachmentCallback, AttachmentUploadCallback {
-    let orderDetailsViewController: OrderDetailsViewController
-    
-    init(orderDetailsViewController: OrderDetailsViewController) {
-        self.orderDetailsViewController = orderDetailsViewController
-    }
-    
-    func onAttach(image: UIImage, imageId: String) {
-        AttachmentUploader(callback: self).uploadImageByLocalId(imageId)
-    }
-    
-    func uploadCompleted(attachmentId: String) {
-        self.orderDetailsViewController.report(attachmentId, status: true)
-    }
-    
-    func uploadInProgress(attachmentId: String, progressValue: Float) {
-        self.orderDetailsViewController.input.progress.setProgress(progressValue, animated: true)
-    }
-    
-    func uploadFailed(attachmentId: String, httpResponse: NSHTTPURLResponse) {
-        self.orderDetailsViewController.report(attachmentId, status: true)
-    }
-
-    func uploadCreated(attachmentId: String, attachment: Any) {
-    }
-    
-    func uploadStarted(attachmentId: String, attachment: Any) {
     }
 }

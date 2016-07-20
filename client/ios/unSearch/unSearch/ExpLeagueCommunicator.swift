@@ -328,7 +328,7 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         }
         if let query = iq.elementForName("query", xmlns: "jabber:iq:roster") {
             for item in query.elementsForName("item") as! [DDXMLElement] {
-                let groupStr = item.elementForName("group").stringValue()
+                let groupStr = item.elementsForName("group").count > 0 ? item.elementForName("group").stringValue() : ""
                 let group: ExpLeagueMemberGroup
                 switch groupStr {
                 case "Favorites":

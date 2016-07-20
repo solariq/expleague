@@ -44,9 +44,14 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         }
     }
 
-    func sync() {
+    func sync(rebuild: Bool = false) {
         dispatch_async(dispatch_get_main_queue()){
-            self.syncInner()
+            if (rebuild) {
+                self.rebuild()
+            }
+            else {
+                self.syncInner()
+            }
         }
     }
     
@@ -70,6 +75,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         cells.removeAll()
         lastAnswer = nil
         lastKnownMessage = 0
+        answer = ""
         syncInner()
     }
     

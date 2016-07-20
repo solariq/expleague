@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ChooseLocationController" customModule="unSearch" customModuleProvider="target">
+            <connections>
+                <outlet property="mapView" destination="Mh2-pV-4Cq" id="b7d-fk-taD"/>
+                <outlet property="placesTable" destination="xmb-ZT-i0r" id="s1A-7L-63f"/>
+                <outlet property="view" destination="iN0-l3-epB" id="ZEI-cf-qMz"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="64" width="320" height="455"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Mh2-pV-4Cq" customClass="GMSMapView">
+                    <rect key="frame" x="0.0" y="0.0" width="320" height="228"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                </view>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HXu-Rq-vHO">
+                    <rect key="frame" x="8" y="232" width="304" height="30"/>
+                    <state key="normal" title="Выбрать текущее местоположение"/>
+                    <connections>
+                        <action selector="choose:" destination="-1" eventType="touchUpInside" id="Z2Z-Y8-Nfh"/>
+                    </connections>
+                </button>
+                <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="xmb-ZT-i0r">
+                    <rect key="frame" x="8" y="266" width="304" height="181"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                </tableView>
+            </subviews>
+            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="Mh2-pV-4Cq" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="34m-XS-iVf"/>
+                <constraint firstAttribute="trailing" secondItem="HXu-Rq-vHO" secondAttribute="trailing" constant="8" id="AXb-Qx-XiR"/>
+                <constraint firstAttribute="bottom" secondItem="xmb-ZT-i0r" secondAttribute="bottom" constant="8" id="Lpr-FP-eVI"/>
+                <constraint firstItem="xmb-ZT-i0r" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="8" id="R9l-OG-val"/>
+                <constraint firstItem="xmb-ZT-i0r" firstAttribute="top" secondItem="HXu-Rq-vHO" secondAttribute="bottom" constant="4" id="UXx-Tf-rDK"/>
+                <constraint firstAttribute="trailing" secondItem="Mh2-pV-4Cq" secondAttribute="trailing" id="Ugh-eA-xig"/>
+                <constraint firstItem="Mh2-pV-4Cq" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="aoi-Wf-bFJ"/>
+                <constraint firstAttribute="trailing" secondItem="xmb-ZT-i0r" secondAttribute="trailing" constant="8" id="dpy-Gv-se9"/>
+                <constraint firstItem="HXu-Rq-vHO" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="8" id="gi5-CP-GUY"/>
+                <constraint firstItem="Mh2-pV-4Cq" firstAttribute="height" secondItem="iN0-l3-epB" secondAttribute="height" multiplier="50:100" id="iW3-Wf-yGe"/>
+                <constraint firstItem="HXu-Rq-vHO" firstAttribute="top" secondItem="Mh2-pV-4Cq" secondAttribute="bottom" constant="4" id="sXZ-NX-ksz"/>
+            </constraints>
+            <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
+            <simulatedTabBarMetrics key="simulatedBottomBarMetrics" translucent="NO"/>
+            <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
+        </view>
+    </objects>
+</document>

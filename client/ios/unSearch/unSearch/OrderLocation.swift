@@ -9,6 +9,12 @@
 import Foundation
 import MapKit
 
+enum OrderLocationType {
+    case NoLocation
+    case CurrentLocation
+    case CustomLocation
+}
+
 class OrderLocation {
     var locationType: OrderLocationType!
     var location: CLLocationCoordinate2D?
@@ -29,7 +35,6 @@ class OrderLocation {
     func setLocation(location: CLLocationCoordinate2D!) {
         self.locationType = .CustomLocation
         self.location = location
-        print("Location is set")
     }
     
     func clearLocation() {

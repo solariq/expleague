@@ -11,11 +11,13 @@ import CloudKit
 class AboutViewController: UIViewController {
     var initialized = false
     
-    @IBOutlet weak var instructionsButton: UIButton!
     @IBOutlet weak var topConstraint: NSLayoutConstraint!
     @IBOutlet weak var slogan: UILabel!
     @IBOutlet weak var build: UILabel!
+    @IBOutlet weak var instructionsButton: UIButton!
+    @IBOutlet weak var rateUsButton: UIButton!
     @IBOutlet weak var inviteButton: UIButton!
+
     @IBAction func invite(sender: AnyObject) {
         let alert = UIAlertController(title: "Оставьте заявку", message: "С целью сохранения высокого качества работы экспертов и отсутствия очередей, доступ к приложению в данный момент ограничен. Оставьте e-mail вашего друга, и мы свяжемся с ним как только появится возможность.", preferredStyle: .Alert)
         alert.addTextFieldWithConfigurationHandler { (text: UITextField) -> Void in
@@ -45,6 +47,10 @@ class AboutViewController: UIViewController {
         UIApplication.sharedApplication().openURL(NSURL(string: "http://unsearch.expleague.com/help/")!)
     }
     
+    @IBAction func rateUs(sender: AnyObject) {
+        UIApplication.sharedApplication().openURL(NSURL(string: "itms-apps://itunes.apple.com/app/id1080695101")!)
+    }
+    
     var friend: String?
     
     func updateSize(size: CGSize) {
@@ -54,6 +60,7 @@ class AboutViewController: UIViewController {
         let isLandscape = size.height < size.width
         build.hidden = isLandscape
         instructionsButton.hidden = isLandscape
+        rateUsButton.hidden = isLandscape
         topConstraint.constant = size.height * 0.1
     }
     override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {

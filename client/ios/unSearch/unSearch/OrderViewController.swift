@@ -17,9 +17,13 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
     @IBOutlet weak var orderDescription: UIView!
     
     @IBAction func fire(sender: AnyObject) {
+        orderDescription.endEditing(true)
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
         guard controller.orderTextDelegate!.validate() else {
             return
+        }
+        if (!controller.location.isLocalOrder()) {
+            controller.location.location = controller.locationProvider.deviceLocation
         }
         guard !controller.location.isLocalOrder() || controller.location.getLocation() != nil else {
             let alertView = UIAlertController(title: "Заказ", message: "На данный момент ваша геопозиция не найдена. Подождите несколько секунд, или отключите настройку \"рядом со мной\".", preferredStyle: .Alert)
@@ -58,10 +62,16 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
             self.buttonTop.constant = height > 0 ? 2 : initialTop
             self.view.layoutIfNeeded()
         }
+        self.navigationController?.navigationBar.tintColor = UIColor.whiteColor()
+        self.navigationController?.navigationBar.titleTextAttributes = [
+            NSForegroundColorAttributeName: UIColor.whiteColor()
+        ]
         AppDelegate.instance.orderView = self
     }
     
     override func viewWillAppear(animated: Bool) {
+        navigationController!.toolbarHidden = true
+        navigationController!.navigationBarHidden = true
         keyboardTracker.start()
     }
 
@@ -70,7 +80,7 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     override func preferredStatusBarStyle() -> UIStatusBarStyle {
-        return .Default
+        return .LightContent
     }
 
     var descriptionController: OrderDescriptionViewController {
@@ -101,7 +111,7 @@ class OrderDescriptionViewController: UITableViewController {
     var orderTextBGColor: UIColor?
     var orderTextDelegate: OrderTextDelegate?
     var experts: [ExpLeagueMember] = []
-    var location: OrderLocation! = OrderLocation()
+    var location: OrderLocation = OrderLocation()
 
     let locationProvider = LocationProvider()
 
@@ -112,6 +122,7 @@ class OrderDescriptionViewController: UITableViewController {
         }
     }
     
+    var heightDiff: CGFloat = 80 + 49
     override func viewDidLoad() {
         super.viewDidLoad()
         self.locationProvider.setUpLocationProvider()
@@ -125,8 +136,8 @@ class OrderDescriptionViewController: UITableViewController {
         orderText.textContainerInset = UIEdgeInsetsMake(8, 4, 8, 4);
     }
     
-    override func viewDidAppear(animated: Bool) {
-        adjustSizes(view.frame.height)
+    override func viewWillLayoutSubviews() {
+        adjustSizes(UIScreen.mainScreen().bounds.height)
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -137,7 +148,7 @@ class OrderDescriptionViewController: UITableViewController {
     override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
         coordinator.animateAlongsideTransition({ (UIViewControllerTransitionCoordinatorContext) -> Void in
             if (self.view.window != nil) {
-                self.adjustSizes(size.height - self.view.window!.frame.height + self.view.frame.height)
+                self.adjustSizes(size.height)
             }
         }, completion: nil)
     }
@@ -145,12 +156,16 @@ class OrderDescriptionViewController: UITableViewController {
     @IBOutlet weak var unSearchY: NSLayoutConstraint!
     @IBOutlet weak var owlY: NSLayoutConstraint!
     
+    internal func sizeOfInput(height: CGFloat) -> CGFloat {
+        return max(CGFloat(82), height - CGFloat(4 * rowHeight) - heightDiff);
+    }
+
     internal func adjustSizes(height: CGFloat) {
         let inputHeight = sizeOfInput(height)
         if (inputHeight > 130) {
             unSearchLabel.hidden = false
             owlIcon.hidden = false
-            owlHeight.constant = max((inputHeight - 71.0) / 2.0, 50.0)
+            owlHeight.constant = min(max((inputHeight - 71.0) / 2.0, 50.0), 100)
             owlWidth.constant = owlHeight.constant * 160.0/168.0
             owlY.constant = (inputHeight - owlHeight.constant)/2.0 - 8
         }
@@ -171,6 +186,7 @@ class OrderDescriptionViewController: UITableViewController {
         orderTextDelegate!.clear(orderText)
         orderAttachmentsModel.clear()
         experts.removeAll()
+        location.clearLocation()
         update()
     }
     
@@ -216,18 +232,11 @@ class OrderDescriptionViewController: UITableViewController {
         update()
     }
     @IBOutlet weak var imagesCaption: UILabel!
-
-    internal func sizeOfInput(height: CGFloat) -> CGFloat {
-        return max(CGFloat(82), height - CGFloat(5 * rowHeight));
-    }
     
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
         if (indexPath.item == 0) {
-            return sizeOfInput(view.frame.height)
+            return sizeOfInput(UIScreen.mainScreen().bounds.height)
         }
-//        else if (indexPath.item == 4) {
-//            return CGFloat(82)
-//        }
         return CGFloat(rowHeight);
     }
     
@@ -241,49 +250,77 @@ class OrderDescriptionViewController: UITableViewController {
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         if (indexPath.item == 4) {
-            showAttachmentChoiceAlert();
+            if (orderAttachmentsModel.attachmentsArray.isEmpty) {
+                showAlertMenu(AddAttachmentAlertController(parent: parentViewController, filter: orderAttachmentsModel.attachmentsArray.map({$0.imageId})) { imageId in
+                    self.orderAttachmentsModel.addAttachment(imageId)
+                    self.parentViewController!.navigationController!.pushViewController(
+                        OrderAttachmentsController(orderAttachmentsModel: self.orderAttachmentsModel),
+                        animated: true
+                    )
+                })
+            }
+            else {
+                parentViewController!.navigationController!.pushViewController(
+                    OrderAttachmentsController(orderAttachmentsModel: orderAttachmentsModel),
+                    animated: true
+                )
+            }
         }
         else if (indexPath.item == 3) {
-            showExpertChoiceView();
+            parentViewController!.navigationController!.pushViewController(
+                ChooseExpertViewController(parent: self),
+                animated: true
+            )
         }
         else if (indexPath.item == 2) {
-            showLocationChoiceAlert();
+            
+            UINavigationBar.appearance().setBackgroundImage(UIImage(named: "experts_background"), forBarMetrics: .Default)
+            UINavigationBar.appearance().titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
+            UINavigationBar.appearance().tintColor = UIColor.whiteColor()
+//            UINavigationBar.appearance().barTintColor = UIColor.whiteColor()
+            UISearchBar.appearance().barStyle = .Black
+
+//            navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
+//            navigationItem.title = "Укажите местоположение"
+            var vp: GMSCoordinateBounds? = nil
+            if let location = self.location.location {
+                vp = GMSCoordinateBounds(coordinate: CLLocationCoordinate2DMake(location.latitude - 0.005, location.longitude - 0.005),
+                                         coordinate: CLLocationCoordinate2DMake(location.latitude + 0.005, location.longitude + 0.005))
+            }
+            self.location.clearLocation()
+            self.update()
+
+            let config = GMSPlacePickerConfig(viewport: vp)
+            GMSPlacePicker(config: config).pickPlaceWithCallback(){ (placeOrNil, _) in
+                guard let place = placeOrNil else {
+                    self.location.clearLocation()
+                    return
+                }
+                self.location.setLocation(place.coordinate)
+                if let deviceLocation = self.locationProvider.deviceLocation {
+                    let point1 = MKMapPointForCoordinate(place.coordinate)
+                    let point2 = MKMapPointForCoordinate(deviceLocation)
+                    let distance = MKMetersBetweenMapPoints(point1, point2)
+                    if (distance < 100) {
+                        self.location.locationType = .CurrentLocation
+                    }
+                    else {
+                        self.location.locationType = .CustomLocation
+                    }
+                }
+                self.update()
+            }
         }
         tableView.deselectRowAtIndexPath(indexPath, animated: false)
     }
 
-    func showAttachmentChoiceAlert() {
-        let parentViewController = self.parentViewController
-        let addAttachmentAlert = AddAttachmentAlertController(
-            parent: parentViewController,
-            imageAttachmentCallback: OrderImageAttachmentCallback(orderDescriptionViewController: self)
-        )
-        addAttachmentAlert.modalPresentationStyle = .OverCurrentContext
+
+    func showAlertMenu(alert: UIViewController) {
+        alert.modalPresentationStyle = .OverFullScreen
         self.providesPresentationContextTransitionStyle = true;
         self.definesPresentationContext = true;
-        
-        parentViewController?.presentViewController(addAttachmentAlert, animated: true, completion: nil)
-    }
-
-    func showExpertChoiceView() {
-        let chooseExpert = ChooseExpertViewController(parent: self)
-
-        let navigation = UINavigationController(rootViewController: chooseExpert)
-        self.presentViewController(navigation, animated: true, completion: nil)
-    }
-
-    func showLocationChoiceAlert() {
-        let parentViewController = self.parentViewController
-        let addLocationAlert = AddLocationAlertController(
-            parent: parentViewController,
-            locationChoiceCallback: OrderLocationChoiceCallback(orderDescriptionViewController: self),
-            locationProvider: locationProvider
-        )
-        addLocationAlert.modalPresentationStyle = .OverCurrentContext
-        self.providesPresentationContextTransitionStyle = true;
-        self.definesPresentationContext = true;
-        
-        parentViewController?.presentViewController(addLocationAlert, animated: true, completion: nil)
+    
+        parentViewController?.presentViewController(alert, animated: true, completion: nil)
     }
 }
 
@@ -320,6 +357,15 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
         }
         active = true
         return true
+    }
+    
+    func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
+        guard text == "\n" else {
+            return true
+        }
+        textView.endEditing(true)
+        (parent.parentViewController as! OrderViewController).fire(textView)
+        return false
     }
     
     func textViewDidEndEditing(textView: UITextView) {
@@ -369,34 +415,5 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
     init(height: NSLayoutConstraint, parent: OrderDescriptionViewController) {
         self.height = height
         self.parent = parent
-    }
-}
-
-class OrderImageAttachmentCallback: ImageAttachmentCallback {
-    let orderDescriptionViewController: OrderDescriptionViewController
-    
-    init(orderDescriptionViewController: OrderDescriptionViewController) {
-        self.orderDescriptionViewController = orderDescriptionViewController
-    }
-    
-    func onAttach(image: UIImage, imageId: String) {
-        let model = self.orderDescriptionViewController.orderAttachmentsModel
-        model.addAttachment(image, imageId: imageId)
-        let navigation = UINavigationController(rootViewController: OrderAttachmentsController(orderAttachmentsModel: model))
-        self.orderDescriptionViewController.parentViewController!.presentViewController(navigation, animated: true, completion: nil)
-        self.orderDescriptionViewController.update()
-    }
-}
-
-class OrderLocationChoiceCallback: LocationChoiceCallback {
-    let orderDescriptionViewController: OrderDescriptionViewController
-    
-    init(orderDescriptionViewController: OrderDescriptionViewController) {
-        self.orderDescriptionViewController = orderDescriptionViewController
-    }
-
-    func onLocationChoice(location: OrderLocation) {
-        self.orderDescriptionViewController.location = location
-        self.orderDescriptionViewController.update()
     }
 }
