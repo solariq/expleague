@@ -44,7 +44,7 @@ public class MySQLOps {
     PreparedStatement preparedStatement = statements.get().get(name);
     try {
       int attempt = 0;
-      while (preparedStatement == null || preparedStatement.isClosed() || preparedStatement.getConnection() == null || conn.isClosed() || !conn.isValid(0)) {
+      while (preparedStatement == null || preparedStatement.isClosed() || preparedStatement.getConnection() == null || preparedStatement.getConnection() != conn || conn.isClosed() || !conn.isValid(0)) {
         if (attempt++ > MAX_NUMBER_OF_ATTEMPTS) {
           throw new RuntimeException("Unable to prepareStatement in " + MAX_NUMBER_OF_ATTEMPTS + " attempts");
         }
