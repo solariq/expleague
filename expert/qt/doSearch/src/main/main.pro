@@ -132,7 +132,8 @@ DEPENDPATH += \
     $$PWD/../libs/cutemarked
 
 unix:PRE_TARGETDEPS += $$OUT_PWD/../libs/cutemarked/libcutemarked.a
-else:win32: PRE_TARGETDEPS += $$OUT_PWD/../libs/cutemarked/debug/cutemarked.lib
+else:win32:CONFIG(debug, debug|release) PRE_TARGETDEPS += $$OUT_PWD/../libs/cutemarked/debug/cutemarked.lib
+else:win32:CONFIG(release, debug|release) PRE_TARGETDEPS += $$OUT_PWD/../libs/cutemarked/release/cutemarked.lib
 
 INSTALLS = target qml
 

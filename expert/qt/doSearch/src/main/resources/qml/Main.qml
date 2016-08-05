@@ -179,7 +179,7 @@ ApplicationWindow {
         }
     }
 
-    menuBar: Qt.platform.os === "osx" ? menu : undefined
+    menuBar: menu
 
     Rectangle {
         color: Palette.backgroundColor
