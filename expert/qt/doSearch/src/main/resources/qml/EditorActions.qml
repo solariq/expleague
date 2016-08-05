@@ -6,11 +6,12 @@ import QtQuick.Controls 1.4
 import ExpLeague 1.0
 
 Item {
+    id: self
+    property alias instance: self
     property TextEdit editor: {
-        var screen = root.context.folder.screen
-        if (screen && screen.toString().indexOf("MarkdownEditorScreen") >= 0) {
+        var screen = root.navigation.activeScreen
+        if (screen && screen.editor)
             return screen.editor
-        }
         return null
     }
 
@@ -30,7 +31,7 @@ Item {
         id: makeBoldAction
         text: qsTr("Выделить болдом")
         tooltip: qsTr("Сделать фрагмент жирнее")
-        iconSource: "qrc:/icons/25x25/bold.png"
+        iconSource: "qrc:/editor/bold.png"
 
         shortcut: "Ctrl+B"
         enabled: editor
@@ -40,7 +41,7 @@ Item {
             var text = editor.text.substring(editor.selectionStart, editor.selectionEnd)
             editor.remove(editor.selectionStart, editor.selectionEnd)
             if (!(text.indexOf("**") === 0 || text.lastIndexOf("**") === text.length - 2))
-                editor.insert(start, "**" + text + "**")
+                editor.insert(start, "**" + text.trim() + "**")
             else
                 editor.insert(start, text.substring(2, text.length - 2))
 
@@ -52,7 +53,7 @@ Item {
         id: makeItalicAction
         text: qsTr("Выделить курсивом")
         tooltip: qsTr("Выделить курсивом")
-        iconSource: "qrc:/icons/25x25/italic.png"
+        iconSource: "qrc:/editor/italic.png"
 
         enabled: editor
         shortcut: "Ctrl+I"
@@ -62,7 +63,7 @@ Item {
             var text = editor.text.substring(editor.selectionStart, editor.selectionEnd)
             editor.remove(editor.selectionStart, editor.selectionEnd)
             if (!(text.indexOf("*") === 0 || text.lastIndexOf("*") === text.length - 1))
-                editor.insert(start, "*" + text + "*")
+                editor.insert(start, "*" + text.trim() + "*")
             else
                 editor.insert(start, text.substring(1, text.length - 1))
             editor.forceActiveFocus()
@@ -73,7 +74,7 @@ Item {
         id: insertHeader3Action
         text: qsTr("Заголовок 3-го уровня")
         tooltip: qsTr("Вставить заголовок 3-го уровня")
-        iconSource: "qrc:/icons/25x25/header.png"
+        iconSource: "qrc:/editor/header.png"
 
         enabled: editor
         shortcut: "Ctrl+H"
@@ -89,7 +90,7 @@ Item {
         id: insertImageAction
         text: qsTr("Вставить картинку")
         tooltip: qsTr("Вставить картинку")
-        iconSource: "qrc:/icons/25x25/image.png"
+        iconSource: "qrc:/editor/image.png"
 
         enabled: editor
         shortcut: "Ctrl+P"
@@ -106,14 +107,16 @@ Item {
         id: insertLinkAction
         text: qsTr("Вставить ссылку")
         tooltip: qsTr("Вставить ссылку")
-        iconSource: "qrc:/icons/25x25/link.png"
+        iconSource: "qrc:/editor/link.png"
 
         enabled: editor
         shortcut: "Ctrl+L"
         onTriggered: {
             editor.forceActiveFocus()
             var start = editor.selectionStart
-            editor.insert(start, "[]()")
+            var text = editor.text.substring(editor.selectionStart, editor.selectionEnd)
+            editor.remove(editor.selectionStart, editor.selectionEnd)
+            editor.insert(start, "[" + text.trim() + "]()")
             editor.cursorPosition = editor.cursorPosition - 1
             editor.forceActiveFocus()
         }
@@ -123,7 +126,7 @@ Item {
         id: insertSplitterAction
         text: qsTr("Вставить разделитель")
         tooltip: qsTr("Вставить разделитель")
-        iconSource: "qrc:/icons/25x25/splitter.png"
+        iconSource: "qrc:/editor/splitter.png"
 
         enabled: editor
         shortcut: "Ctrl+-"
@@ -140,7 +143,7 @@ Item {
         id: makeCutAction
         text: qsTr("Создать cut")
         tooltip: qsTr("Создать кат")
-        iconSource: "qrc:/icons/25x25/cut.png"
+        iconSource: "qrc:/editor/cut.png"
 
         enabled: editor
         shortcut: "Ctrl+M"
@@ -149,9 +152,9 @@ Item {
             var start = editor.selectionStart
             var text = editor.text.substring(editor.selectionStart, editor.selectionEnd)
             editor.remove(editor.selectionStart, editor.selectionEnd)
-            editor.insert(start, "+[" + text + "]\n\n")
-            editor.insert(start + text.length + 4, "-[" + text + "]")
-            editor.cursorPosition = editor.selectionStart - text.length - 4
+            editor.insert(start, "+[" + text.trim() + "]\n\n")
+            editor.insert(start + text.length + 4, "-[" + text.trim() + "]")
+            editor.cursorPosition = editor.selectionStart - text.trim().length - 4
             editor.forceActiveFocus()
         }
     }
@@ -160,7 +163,7 @@ Item {
         id: insertCitationAction
         text: qsTr("Вставить цитирование")
         tooltip: qsTr("Вставить цитирование")
-        iconSource: "qrc:/icons/25x25/quote.png"
+        iconSource: "qrc:/editor/quote.png"
 
         enabled: editor
         shortcut: "Ctrl+J"
@@ -176,7 +179,7 @@ Item {
         id: makeListAction
         text: qsTr("Создать список")
         tooltip: qsTr("Создать список")
-        iconSource: "qrc:/icons/25x25/bullets.png"
+        iconSource: "qrc:/editor/bullets.png"
 
         enabled: editor
         shortcut: "Ctrl+0"
@@ -200,7 +203,7 @@ Item {
         id: makeEnumerationAction
         text: qsTr("Создать нумерованный список")
         tooltip: qsTr("Создать нумерованный список")
-        iconSource: "qrc:/icons/25x25/enum.png"
+        iconSource: "qrc:/editor/enum.png"
 
         enabled: editor
         shortcut: "Ctrl+1"
@@ -224,7 +227,7 @@ Item {
         id: insertTableAction
         text: qsTr("Вставить таблицу")
         tooltip: qsTr("Вставить таблицу")
-        iconSource: "qrc:/icons/25x25/table.png"
+        iconSource: "qrc:/editor/table.png"
 
         enabled: editor
         shortcut: "Ctrl+T"

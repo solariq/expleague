@@ -1,4 +1,17 @@
+#include "model/editor.h"
+#include "task.h"
+
+#include "markdownhighlighter.h"
+#include "styleparser.h"
+#include "protocol.h"
+#include "dosearch.h"
+#include "spellchecker.h"
+
 #include <QApplication>
+
+#include <QQuickItem>
+#include <QQuickTextDocument>
+
 #include <QClipboard>
 #include <QMimeData>
 #include <QFile>
@@ -8,15 +21,6 @@
 
 #include <QThread>
 #include <QTimer>
-
-#include "model/folder.h"
-#include "model/editor.h"
-#include "task.h"
-
-#include "markdownhighlighter.h"
-#include "styleparser.h"
-#include "protocol.h"
-#include "dosearch.h"
 
 extern "C" {
 #include "markdown.h"
@@ -64,89 +68,133 @@ QString buildHtmlByMD(const QString& text) {
     return resultHtml;
 }
 
-MarkdownEditorScreen::MarkdownEditorScreen(QObject* parent, bool editable): Screen(QUrl("qrc:/EditorView.qml"), parent) {
-    m_editor = itemById<QQuickItem>("editor");
-    m_document = m_editor->property("textDocument").value<QQuickTextDocument*>();
-    League* league = doSearch::instance()->league();
-    m_author = league->findMember(league->id());
-    m_highlighter = new MarkdownHighlighter(m_document->textDocument(), &m_spellchecker);
-    m_highlighter->setParent(this);
-    QObject::connect(m_document->textDocument(), SIGNAL(contentsChanged()), this, SLOT(contentChanged()));
+struct MarkdownEditorPagePrivate {
+    QQuickItem* editor;
+    QQuickTextDocument* document;
+    std::unique_ptr<MarkdownHighlighter> highlighter;
+    QThread* html_thread;
+
+    virtual ~MarkdownEditorPagePrivate() {
+        html_thread->exit();
+        html_thread->deleteLater();
+    }
+};
+
+void MarkdownEditorPage::initUI(QQuickItem* result) const {
+    d_ptr.reset(new MarkdownEditorPagePrivate());
+    connect(result, SIGNAL(destroyed(QObject*)), this, SLOT(onUiDestryed(QObject*)));
+    d_ptr->editor = result->property("editor").value<QQuickItem*>();
+    d_ptr->document = d_ptr->editor->property("textDocument").value<QQuickTextDocument*>();
+    d_ptr->highlighter.reset(new MarkdownHighlighter(d_ptr->document->textDocument(), const_cast<hunspell::SpellChecker*>(m_spellchecker)));
+    d_ptr->highlighter->setParent(const_cast<MarkdownEditorPage*>(this));
+    QObject::connect(d_ptr->document->textDocument(), SIGNAL(contentsChanged()), this, SLOT(contentChanged()));
 
     QFile f(":/themes/solarized-light+.txt");
-    if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
-    }
 
     QTextStream ts(&f);
     QString input = ts.readAll();
 
     // parse the stylesheet
     PegMarkdownHighlight::StyleParser parser(input);
-    QVector<PegMarkdownHighlight::HighlightingStyle> styles = parser.highlightingStyles(m_document->textDocument()->defaultFont());
-    m_highlighter->setStyles(styles);
-    QObject::connect(m_author, SIGNAL(nameChanged(QString)), this, SLOT(authorChanged()));
-    QObject::connect(m_author, SIGNAL(avatarChanged(QUrl)), this, SLOT(authorChanged()));
-    setupOwner();
-    if (editable) {
-        QThread* thread = new QThread(this);
+    QVector<PegMarkdownHighlight::HighlightingStyle> styles = parser.highlightingStyles(d_ptr->document->textDocument()->defaultFont());
+    d_ptr->highlighter->setStyles(styles);
+
+    if (m_editable) {
+        QThread* thread = new QThread(0);
         QTimer* timer = new QTimer();
         timer->moveToThread(thread);
         timer->setInterval(1000);
         connect(timer, &QTimer::timeout, [this](){
-            if (this->m_html.isEmpty()) {
+            if (m_html.isEmpty()) {
                 m_html = buildHtmlByMD(this->m_text);
-                this->htmlChanged(m_html);
+                htmlChanged(m_html);
             }
         });
         connect(thread, SIGNAL(started()), timer, SLOT(start()));
         connect(thread, &QObject::destroyed, timer, &QTimer::deleteLater);
         thread->start();
-        m_html_thread = thread;
+        d_ptr->html_thread = thread;
+    }
+    else d_ptr->editor->setProperty("readOnly", true);
+    d_ptr->document->textDocument()->setPlainText(m_text);
+}
+
+void MarkdownEditorPage::resetText(const QString& text) {
+    MarkdownEditorPagePrivate* privatePart = d_ptr.get();
+    if (privatePart)
+        privatePart->document->textDocument()->setPlainText(text);
+}
+
+void MarkdownEditorPage::contentChanged() {
+    MarkdownEditorPagePrivate* privatePart = d_ptr.get();
+    if (privatePart && privatePart->document) {
+        QString text = privatePart->document->textDocument()->toPlainText();
+        setText(text);
     }
 }
 
-MarkdownEditorScreen::MarkdownEditorScreen(ReceivedAnswer* answer, QObject* parent): MarkdownEditorScreen(parent, false) {
-    QObject::disconnect(m_author, SIGNAL(nameChanged(QString)), this, SLOT(authorChanged()));
-    QObject::disconnect(m_author, SIGNAL(avatarChanged(QUrl)), this, SLOT(authorChanged()));
-    m_text = answer->text();
+MarkdownEditorPage::MarkdownEditorPage(const QString& id, Member* author, const QString& title, doSearch* parent): Page(id, "qrc:/EditorView.qml", "", parent), m_author(author) {
+    d_ptr.reset(0);
+    m_text = value("document.text").toString();
+    store("document.author", author ? author->id() : QVariant());
+    store("document.title", title);
+    save();
+    League* league = doSearch::instance()->league();
+    m_editable = !author || author->id() == league->id();
+    if (m_author) {
+        QObject::connect(m_author, SIGNAL(nameChanged(QString)), this, SLOT(authorChanged()));
+        QObject::connect(m_author, SIGNAL(avatarChanged(QUrl)), this, SLOT(authorChanged()));
+    }
+}
+
+MarkdownEditorPage::MarkdownEditorPage(const QString& id, doSearch* parent): Page(id, "qrc:/EditorView.qml", "", parent) {
+    m_author = parent->league()->findMember(value("document.author").toString());
+    m_text = value("document.text").toString();
     m_html = buildHtmlByMD(m_text);
-    m_author = answer->author();
-    m_editor->setProperty("readOnly", true);
-    m_document->textDocument()->setPlainText(m_text);
-    QObject::connect(answer->author(), SIGNAL(nameChanged(QString)), this, SLOT(authorChanged()));
-    QObject::connect(answer->author(), SIGNAL(avatarChanged(QUrl)), this, SLOT(authorChanged()));
-    QObject::connect(answer, SIGNAL(requestFocus()), SLOT(acquireFocus()));
+    League* league = doSearch::instance()->league();
+    m_editable = !m_author || m_author->id() == league->id();
+    if (m_author) {
+        QObject::connect(m_author, SIGNAL(nameChanged(QString)), this, SLOT(authorChanged()));
+        QObject::connect(m_author, SIGNAL(avatarChanged(QUrl)), this, SLOT(authorChanged()));
+    }
 }
 
-QString MarkdownEditorScreen::name() const {
-    return tr("Ответ ") + m_author->name();
+MarkdownEditorPage::~MarkdownEditorPage() {}
+
+QString MarkdownEditorPage::title() const {
+    return value("document.title").toString();
 }
 
-QUrl MarkdownEditorScreen::icon() const {
-    return m_author->avatar();
+QString MarkdownEditorPage::icon() const {
+    return m_author ? m_author->avatar().toString() : "qrc:/avatar.png";
 }
 
-void MarkdownEditorScreen::setText(const QString& text) {
+void MarkdownEditorPage::setText(const QString& text) {
     m_text = text;
     m_html = "";
+    store("document.text", m_text);
+    save();
     textChanged(text);
 }
 
-QString MarkdownEditorScreen::html() {
+QString MarkdownEditorPage::html() {
     if (m_html.isEmpty() && !m_text.isEmpty()) {
         m_html = buildHtmlByMD(m_text);
     }
     return m_html;
 }
 
-void MarkdownEditorScreen::acquireFocus() {
-    setActive(true);
-    qobject_cast<Folder*>(parent())->setActive(true);
-    m_editor->forceActiveFocus();
+void MarkdownEditorPage::acquireFocus() {
+    parent()->navigation()->open(this);
 }
 
-QStringList MarkdownEditorScreen::codeClipboard() {
+void MarkdownEditorPage::onUiDestryed(QObject*) {
+    d_ptr.reset(0);
+}
+
+QStringList MarkdownEditorPage::codeClipboard() {
     const QClipboard* clipboard = QApplication::clipboard();
     QStringList result;
     const QMimeData* mime = clipboard->mimeData();

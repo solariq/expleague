@@ -30,8 +30,7 @@ Window {
         text: qsTr("Отправить")
         enabled: shortAnswer.text.length > 0
         onTriggered: {
-            task.setAnswer(shortAnswer.text + "\n" + task.answer)
-            task.sendAnswer()
+            task.sendAnswer(shortAnswer.text)
             dialog.hide()
         }
     }

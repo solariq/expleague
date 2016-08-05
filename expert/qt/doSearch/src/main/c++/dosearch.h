@@ -1,7 +1,6 @@
 #ifndef DOSEARCH_H
 #define DOSEARCH_H
 
-#include <QQmlListProperty>
 class QQmlApplicationEngine;
 class QSystemTrayIcon;
 class QQuickWindow;
@@ -12,139 +11,71 @@ extern QSystemTrayIcon* trayIcon;
 #endif
 
 #include "model/context.h"
-#include "model/folder.h"
-#include "model/screen.h"
+#include "model/page.h"
+#include "model/search.h"
+#include "model/web.h"
+#include "model/manager.h"
+#include "model/editor.h"
 
 #include "league.h"
 
 namespace expleague {
-
 class StateSaver;
 class doSearch: public QObject {
     Q_OBJECT
 
-    Q_PROPERTY(QQmlListProperty<expleague::Context> contexts READ contexts NOTIFY contextsChanged)
-    Q_PROPERTY(Context* context READ context NOTIFY contextChanged)
-    Q_PROPERTY(Folder* folder READ folder NOTIFY folderChanged)
-    Q_PROPERTY(Screen* screen READ screen NOTIFY screenChanged)
-    Q_PROPERTY(League* league READ league CONSTANT)
-    Q_PROPERTY(QString location READ location NOTIFY locationChanged)
+    Q_PROPERTY(expleague::NavigationManager* navigation READ navigation CONSTANT)
+    Q_PROPERTY(expleague::League* league READ league CONSTANT)
     Q_PROPERTY(QQuickWindow* main READ main WRITE setMain NOTIFY mainChanged)
 
 public:
     explicit doSearch(QObject* parent = 0);
 
-    League* league() { return &m_league; }
+    League* league() const { return m_league; }
 
-    QQmlListProperty<Context> contexts() { return QQmlListProperty<Context>(this, m_contexts); }
-    Context* context() {
-        foreach(Context* ctxt, m_contexts) {
-            if (ctxt->active()) {
-                return ctxt;
-            }
-        }
-
-        return 0;
-    }
-    Folder* folder() { return m_folder; }
-    Screen* screen() { return m_screen; }
-    QString location() { return m_screen ? m_screen->location() : "";}
-    QQuickWindow* main() { return m_main; }
-
-public:    
-    static doSearch* instance();
-
-    void append(Context* context) {
-        assert(context->parent() == this);
-        m_contexts.append(context);
-        connect(context, SIGNAL(activeChanged()), SLOT(contextStateChanged()));
-        connect(context, SIGNAL(closed()), SLOT(contextClosed()));
-        contextsChanged();
-        if (m_contexts.length() == 1) {
-            context->setActive(true);
-        }
-    }
+    NavigationManager* navigation() const { return m_navigation; }
+    QQuickWindow* main() const { return m_main; }
 
     void restoreState();
 
-    Q_INVOKABLE void setMain(QQuickWindow* main) {
-        m_main = main;
-        mainChanged(main);
-    }
+public:    
+    static doSearch* instance();
+    Q_INVOKABLE void setMain(QQuickWindow* main);
+
+    QList<Context*> contexts() const { return m_contexts; }
+    void append(Context* context);
+    void remove(Context* context);
+
+    Q_INVOKABLE Page* empty() const;
+    Q_INVOKABLE Context* context(const QString& name) const;
+    Q_INVOKABLE WebPage* web(const QUrl& name) const;
+    Q_INVOKABLE SearchRequest* search(const QString& query, int searchIndex = -1) const;
+    Q_INVOKABLE MarkdownEditorPage* document(Context* context, const QString& title, Member* member) const;
+
+    Q_INVOKABLE Context* createContext();
+
+    Page* page(const QString& id) const;
 
 signals:
-    void contextChanged(Context*);
-    void contextsChanged();
-    void folderChanged(Folder*);
-    void screenChanged(Screen*);
-    void locationChanged(const QString&);
     void mainChanged(QQuickWindow*);
+    void contextsChanged();
 
 private slots:
-    void folderChangedSlot(Folder* folder) {
-//        qDebug() << "Folder changed: " << folder;
-        if (m_folder == folder)
-            return;
-        if (m_folder)
-            QObject::disconnect(m_folder, SIGNAL(screenChanged(Screen*)), this, SLOT(screenChangedSlot(Screen*)));
-        if (folder)
-            connect(folder, SIGNAL(screenChanged(Screen*)), SLOT(screenChangedSlot(Screen*)));
-        m_folder = folder;
-        folderChanged(folder);
-        screenChangedSlot(m_folder ? m_folder->screen() : 0);
-    }
+    void onActiveScreenChanged();
 
-    void screenChangedSlot(Screen* screen) {
-//        qDebug() << "Screen changed: " << screen;
-        if (m_screen == screen)
-            return;
-        if (m_screen)
-            QObject::disconnect(m_screen, SIGNAL(locationChanged(QString)), this, SLOT(locationChangedSlot(QString)));
-        if (screen)
-            connect(screen, SIGNAL(locationChanged(QString)), SLOT(locationChangedSlot(QString)));
-        m_screen = screen;
-        screenChanged(screen);
-        locationChangedSlot(screen ? screen->location() : "");
-    }
-
-    void locationChangedSlot(const QString& text) {
-//        qDebug() << "Location changed: "<< text;
-        locationChanged(text);
-    }
-
-    void contextStateChanged() {
-        Context* currentContext = (Context*)sender();
-//        qDebug() << "Context "<< currentContext->name() << " state changed to " << (currentContext->active() ? "active" : "inactive");
-        if (currentContext->active()) {
-            foreach (Context* context, m_contexts) {
-                if (context != currentContext) {
-                    context->setActive(false);
-                }
-            }
-            connect(currentContext, SIGNAL(folderChanged(Folder*)), SLOT(folderChangedSlot(Folder*)));
-            contextChanged(currentContext);
-            folderChangedSlot(currentContext->folder());
-        }
-        else QObject::disconnect(currentContext, SIGNAL(folderChanged(Folder*)), this, SLOT(folderChangedSlot(Folder*)));
-    }
-
-    void contextClosed() {
-        Context* context = qobject_cast<Context*>(QObject::sender());
-        int index = m_contexts.indexOf(context);
-        m_contexts.removeOne(context);
-        contextsChanged();
-        if (!m_contexts.empty() && context->active())
-            m_contexts[index > 0 ? index - 1 : 0]->setActive(true);
-    }
-
-public:
+private:
     friend class StateSaver;
+    friend class Page;
+    QString pageResource(const QString& id) const;
+    Page* page(const QString& id, std::function<Page* (const QString& id, doSearch*)> factory) const;
+
+private:
     QList<Context*> m_contexts;
-    League m_league;
-    Folder* m_folder = 0;
-    Screen* m_screen = 0;
+    mutable QHash<QString, Page*> m_pages;
     StateSaver* m_saver;
+    League* m_league;
     QQuickWindow* m_main = 0;
+    NavigationManager* m_navigation;
 };
 }
 

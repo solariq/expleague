@@ -1,8 +1,7 @@
-import QtQuick 2.5
+import QtQuick 2.7
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.4
-
-import Qt.labs.controls 1.0
+import QtQuick.Controls 2.0
 
 import ExpLeague 1.0
 
@@ -234,7 +233,7 @@ Rectangle {
                 spacing: 5
                 Item {height: 5}
                 Repeater {
-                    model: task ? task.chat : []
+                    model: self.task ? self.task.chat : []
                     delegate: bubble
                 }
                 Item {Layout.fillHeight: true}
@@ -256,7 +255,7 @@ Rectangle {
             }
             Keys.onPressed: {
                 if ((event.key === Qt.Key_Enter || event.key === Qt.Key_Return) && ((event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) !== 0)) {
-                    task.sendMessage(send.text)
+                    self.task.sendMessage(send.text)
                     send.text = ""
                 }
             }

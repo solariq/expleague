@@ -1,37 +1,27 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
-#include <QQuickTextDocument>
-
-#include "spellchecker.h"
-using hunspell::SpellChecker;
-
-#include "screen.h"
+#include "page.h"
+namespace hunspell {
+class SpellChecker;
+}
 
 class MarkdownHighlighter;
 class QThread;
 namespace expleague {
 class ReceivedAnswer;
 class Member;
+struct MarkdownEditorPagePrivate;
 
-class MarkdownEditorScreen: public Screen {
+class MarkdownEditorPage: public Page {
     Q_OBJECT
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QString html READ html NOTIFY htmlChanged)
-    Q_PROPERTY(QQuickItem* editor READ editor NOTIFY htmlChanged)
 
 public:
-    QString name() const;
-    QUrl icon() const;
-
-    QString location() const {
-        return "";
-    }
-
-    bool handleOmniboxInput(const QString&) {
-        return false;
-    }
+    QString title() const;
+    QString icon() const;
 
     QString text() const {
         return m_text;
@@ -39,54 +29,47 @@ public:
 
     QString html();
 
-    QQuickItem* editor() const {
-        return m_editor;
-    }
-
 public:
-    void remove() {}
-
     void setText(const QString& text);
+    void setEditable(bool editable);
     Q_INVOKABLE QStringList codeClipboard();
 
 public slots:
-    void resetText(const QString& text) {
-        m_document->textDocument()->setPlainText(text);
-    }
+    void resetText(const QString& text);
+
+    void onUiDestryed(QObject*);
 
 signals:
     void textChanged(const QString&);
-    void htmlChanged(const QString&);
+    void htmlChanged(const QString&) const;
 
 private slots:
-    void contentChanged() {
-        QString text = m_document->textDocument()->toPlainText();
-        setText(text);
-    }
+    void contentChanged();
 
     void authorChanged() {
-        emit Screen::nameChanged(name());
-        emit Screen::iconChanged(icon());
+        emit Page::titleChanged(title());
+        emit Page::iconChanged(icon());
     }
 
     void acquireFocus();
 
 public:
-    MarkdownEditorScreen(QObject* parent = 0, bool editable = true);
-    MarkdownEditorScreen(ReceivedAnswer* answer, QObject* parent = 0);
+    MarkdownEditorPage(const QString& id, Member* author, const QString& title, doSearch* parent);
+    MarkdownEditorPage(const QString& id = "", doSearch* parent = 0);
+    virtual ~MarkdownEditorPage();
+
+protected:
+    void initUI(QQuickItem *ui) const;
 
 private:
-    QQuickItem* m_editor;
-    QQuickTextDocument* m_document;
-    MarkdownHighlighter* m_highlighter;
     QString m_text;
-    QString m_html;
-    QThread* m_html_thread;
     Member* m_author;
-    hunspell::SpellChecker m_spellchecker;
+    hunspell::SpellChecker* m_spellchecker;
+    bool m_editable;
+
+    mutable QString m_html;
+    mutable std::unique_ptr<MarkdownEditorPagePrivate> d_ptr;
 };
 }
-
-QML_DECLARE_TYPE(expleague::MarkdownEditorScreen)
 
 #endif // EDITOR_H

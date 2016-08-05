@@ -8,13 +8,8 @@
 
 #include "dosearch.h"
 
-#include "profile.h"
-#include "model/context.h"
-#include "model/folder.h"
-#include "model/screen.h"
-#include "model/editor.h"
+extern expleague::doSearch* root;
 
-#include "model/web/webfolder.h"
-#include "model/web/webscreen.h"
+#include "profile.h"
 
 #endif // EXPLEAGUE_H

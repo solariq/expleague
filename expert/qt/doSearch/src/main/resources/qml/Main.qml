@@ -1,39 +1,59 @@
-import QtQuick 2.5
+import QtQuick 2.7
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtGraphicalEffects 1.0
-import QtWebView 1.0
 import QtQuick.Layouts 1.1
 import QtQuick.Controls.Styles 1.4
 import Qt.labs.settings 1.0
+import QtWebEngine 1.3
 
 import ExpLeague 1.0
 
 import "."
 
 ApplicationWindow {
-    id: mainWindow
+    id: self
     property QtObject activeDialog
     property alias omnibox: omnibox
 
-    flags: {
-        if (Qt.platform.os === "osx")
-            return Qt.FramelessWindowHint | Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint
-        return 134279169
-    }
+//    flags: {
+//        if (Qt.platform.os === "osx")
+//            return Qt.FramelessWindowHint | Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint
+//        return 134279169
+//    }
 
     WindowStateSaver {
-        window: mainWindow
+        window: self
         id: mainPageSettings
         defaultHeight: 700
         defaultWidth: 1000
     }
 
     Component.onCompleted: {
-        root.main = mainWindow
+        root.main = self
     }
 
     visible: true
+
+    function delay(delayTime, cb) {
+        var timer = Qt.createQmlObject("import QtQuick 2.0; Timer {}", root);
+        timer.interval = delayTime;
+        timer.repeat = false;
+        timer.triggered.connect(cb);
+        timer.start();
+    }
+
+    function openLink(request, owner, focusOpened) {
+        if (linkReceiver.busy) {
+            delay(500, function () {
+                openLink(request, owner, focusOpened)
+            })
+            return
+        }
+        linkReceiver.context = owner
+        linkReceiver.focusOpened = focusOpened
+        request.openIn(linkReceiver)
+    }
 
     function invite(offer) {
         inviteDialog.offer = offer
@@ -52,7 +72,7 @@ ApplicationWindow {
         id: inviteDialog
         objectName: "invite"
         visible: false
-        x: (mainWindow.width / 2) - (width / 2)
+        x: (self.width / 2) - (width / 2)
         y: 20
 
         onAccepted: root.league.acceptInvitation(inviteDialog.offer)
@@ -62,7 +82,7 @@ ApplicationWindow {
     TagsDialog {
         id: tagsDialog
         visible: false
-        x: (mainWindow.width / 2) - (width / 2)
+        x: (self.width / 2) - (width / 2)
         y: 20
 
         league: root.league
@@ -72,7 +92,7 @@ ApplicationWindow {
         id: selectProfile
         visible: false
         objectName: "selectProfile"
-        x: mainWindow.width / 2 - width / 2
+        x: self.width / 2 - width / 2
         y: 20
     }
 
@@ -81,7 +101,7 @@ ApplicationWindow {
         text: qsTr("Новый...")
         onTriggered: {
             var wizardComponent = Qt.createComponent("ProfileWizard.qml");
-            var wizard = wizardComponent.createObject(mainWindow)
+            var wizard = wizardComponent.createObject(self)
             showDialog(wizard)
         }
     }
@@ -94,8 +114,7 @@ ApplicationWindow {
         }
     }
 
-    MenuBar {
-        id: menu
+    menuBar: MenuBar {
         Menu {
             title: qsTr("Профиль")
             MenuItem {
@@ -129,44 +148,9 @@ ApplicationWindow {
                 action: CommonActions.selectAll
             }
             MenuSeparator{}
-            Menu {
-                title: qsTr("Редактор")
-                enabled: EditorActions.editor
-                MenuItem {
-                    action: EditorActions.makeBold
-                }
-                MenuItem {
-                    action: EditorActions.makeItalic
-                }
-                MenuItem {
-                    action: EditorActions.insertHeader3
-                }
-                MenuItem {
-                    action: EditorActions.insertImage
-                }
-                MenuItem {
-                    action: EditorActions.insertLink
-                }
-                MenuItem {
-                    action: EditorActions.insertSplitter
-                }
-                MenuItem {
-                    action: EditorActions.makeCut
-                }
-                MenuItem {
-                    action: EditorActions.insertCitation
-                }
-                MenuItem {
-                    action: EditorActions.makeEnumeration
-                }
-                MenuItem {
-                    action: EditorActions.makeList
-                }
-                MenuItem {
-                    action: EditorActions.insertTable
-                }
+            MenuItem {
+                action: CommonActions.reload
             }
-            MenuSeparator {}
             MenuItem {
                 action: CommonActions.searchInternet
             }
@@ -180,179 +164,123 @@ ApplicationWindow {
                 action: CommonActions.closeTab
             }
         }
+        Menu {
+            title: qsTr("Редактор")
+            enabled: EditorActions.editor
+            MenuItem {
+                action: EditorActions.makeBold
+            }
+            MenuItem {
+                action: EditorActions.makeItalic
+            }
+            MenuItem {
+                action: EditorActions.insertHeader3
+            }
+            MenuItem {
+                action: EditorActions.insertImage
+            }
+            MenuItem {
+                action: EditorActions.insertLink
+            }
+            MenuItem {
+                action: EditorActions.insertSplitter
+            }
+            MenuItem {
+                action: EditorActions.makeCut
+            }
+            MenuItem {
+                action: EditorActions.insertCitation
+            }
+            MenuItem {
+                action: EditorActions.makeEnumeration
+            }
+            MenuItem {
+                action: EditorActions.makeList
+            }
+            MenuItem {
+                action: EditorActions.insertTable
+            }
+        }
     }
-
-    menuBar: Qt.platform.os === "osx" ? menu : undefined
 
     Rectangle {
         color: Palette.backgroundColor
-        z: parent.z + 10
-        anchors.margins: 2
         anchors.fill: parent
         ColumnLayout {
             anchors.fill:parent
             spacing: 0
-
-            Item {
+            RowLayout {
+                Layout.preferredHeight: 40
                 Layout.fillWidth: true
-                Layout.minimumHeight: 65
-                id: navigation
+                spacing: 0
+                Item {Layout.preferredWidth: 6}
+                NavigationTabs {
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredHeight: 24
+                    Layout.maximumHeight: 24
 
-                RowLayout {
-                    anchors.fill: parent
-                    spacing: 0
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        spacing: 0
-
-                        RowLayout {
-                            id: upperNavigation
-                            Layout.fillWidth: true
-                            Layout.minimumHeight: 25
-                            Layout.maximumHeight: 25
-                            spacing: 0
-
-                            Item {Layout.minimumWidth: 8}
-
-                            WButtonsGroupMac {
-                                Layout.preferredWidth: implicitWidth
-                                Layout.fillHeight: true
-                                win: mainWindow
-
-                                visible: Qt.platform.os === "osx"
-                            }
-
-                            Item {Layout.minimumWidth: 14; visible: Qt.platform.os === "osx"}
-
-                            TabButtons {
-                                Layout.topMargin: 5
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
-
-                                model: root.contexts
-                            }
-                            Item {Layout.minimumWidth: 14; visible: Qt.platform.os !== "osx"}
-//                            WButtonsGroupWin {
-//                                Layout.preferredWidth: implicitWidth
-//                                Layout.fillHeight: true
-//                                win: mainWindow
-
-//                                visible: Qt.platform.os !== "osx"
-//                            }
-
-                        }
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.minimumHeight: 40
-                            Layout.maximumHeight: 40
-
-                            id: bottomNavigation
-                            color: Palette.navigationColor
-                            RowLayout {
-                                id: foldersRow
-                                anchors.fill: parent
-                                z: parent.z + 10
-                                spacing: 0
-
-                                Component {
-                                    id: folderDelegate
-                                    Item {
-                                        Layout.preferredWidth: 38
-                                        Layout.fillHeight: true
-                                        Image {
-                                            source: icon
-                                            height: 25
-                                            mipmap: true
-                                            fillMode: Image.PreserveAspectFit
-
-                                            anchors.centerIn: parent
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                onClicked: {
-                                                    active = true
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                Item { Layout.preferredWidth: 5; }
-                                Repeater {
-                                    model: root.context.folders
-                                    delegate: folderDelegate
-                                }
-
-                                Item { Layout.preferredWidth: 5; }
-                                Item {
-                                    Layout.fillWidth: true
-                                    Layout.fillHeight: true
-                                    Omnibox {
-                                        id: omnibox
-                                        window: mainWindow
-                                        anchors.centerIn: parent
-                                        height: 20
-                                        width: parent.width > 600 ? 600 : parent.width
-                                        text: root.location
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Item {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: 65
-
-//                        color: mainWindow.navigationColor
-                        StatusAvatar {
-                            anchors.centerIn: parent
-                            height: 49
-                            width: 49
-                            id: status
-                            icon: root.league.profile ? root.league.profile.avatar : "qrc:/avatar.png"
-
-                            size: 49
-                        }
-                    }
+                    navigation: root.navigation
                 }
-                MouseArea{
-                    anchors.fill: parent;
-                    z: parent.z - 10
-                    property point startPos: "0,0";
-                    acceptedButtons: Qt.LeftButton
-
-                    onPressed: {
-                        console.log("accepted:" + mouse.accepted)
-                        startPos = Qt.point(mouse.x, mouse.y);
-                    }
-
-                    onPositionChanged: {
-                        var d = Qt.point(mouse.x - startPos.x, mouse.y - startPos.y);
-                        mainWindow.x = mainWindow.x + d.x
-                        mainWindow.y = mainWindow.y + d.y
-                    }
+                Item {Layout.preferredWidth: 3}
+                StatusAvatar {
+                    Layout.preferredHeight: 34
+                    Layout.preferredWidth: 34
+                    Layout.alignment: Qt.AlignVCenter
+                    id: avatar
+                    icon: root.league.profile ? root.league.profile.avatar : "qrc:/avatar.png"
+                    size: 33
                 }
+                Item {Layout.preferredWidth: 2}
             }
-            ContextView {
-                id: contextView
+            SplitView {
+                Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.fillWidth: true
-                statusBar: statusBar
-                context: root.context
-                window: mainWindow
-                tagsDialog: tagsDialog
-            }
-            Rectangle {
-                id: statusBar
+                id: centralSplit
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    id: central
+                    property int active: root.navigation.activeScreenIndex
+                    children: root.navigation.screens
+                    onChildrenChanged: {
+                        for(var i in children) {
+                            var child = children[i]
+                            child.visible = (i == central.active)
+                        }
+                    }
+                    onActiveChanged: {
+                        for(var i in children) {
+                            var child = children[i]
+                            child.visible = (i == central.active)
+                        }
+                    }
+                }
+                TaskView {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: implicitWidth
+                    Layout.minimumWidth: minWidth
+                    Layout.maximumWidth: maxWidth
 
-                Layout.fillWidth: true
-                Layout.minimumHeight: 20
-
-                visible: false
-                color: Palette.navigationColor
-                RowLayout {
-
+                    context: dosearch.navigation.context
+                    visible: dosearch.navigation.context.task != null
+                    window: self
                 }
             }
+        }
+
+        Omnibox {
+            id: omnibox
+            x: (self.width - width)/2
+            y: 200
+
+            width: 500
+            height: 30
+            visible: false
+
+            window: self
+            completion: suggest
+            navigation: root.navigation
         }
 
         GoogleSuggest {
@@ -367,110 +295,31 @@ ApplicationWindow {
             textField: omnibox
             textToSugget: omnibox.text
         }
-    }
+        WebEngineView {
+            id: linkReceiver
+            visible: false
+            property bool focusOpened: false
+            property var context
+            property bool busy: false
+            property bool jsredir: false
 
-    TransparentMouseArea {
-        property var window: mainWindow
-        property point startWPos: "0,0";
-        property point startPos: "0,0";
-        property size startSize: "0x0";
-        property bool topStart: false
-        property bool bottomStart: false
-        property bool leftStart: false
-        property bool rightStart: false
-        property bool resizing: false
+            url: "about:blank"
 
-        acceptedButtons: Qt.LeftButton
+            onUrlChanged: {
+                var surl = url.toString()
+                if (surl.length == 0 || surl == "about:blank")
+                    return
+                else if (surl.search(/google\.\w+\/url/) != -1 || surl.search(/yandex\.\w+\/clck\/jsredir/) != -1) {
+                    jsredir = true
+                    return
+                }
 
-        function shape() {
-            if (leftStart) {
-                if (topStart) {
-                    cursorShape = Qt.SizeFDiagCursor
-                }
-                else if (bottomStart) {
-                    cursorShape = Qt.SizeBDiagCursor
-                }
-                else {
-                    cursorShape = Qt.SizeHorCursor
-                }
+                dosearch.navigation.open(url, context, focusOpened)
+                goBack()
+                if (jsredir)
+                    goBack()
+                busy = false
             }
-            else if (rightStart) {
-                if (topStart) {
-                    cursorShape = Qt.SizeBDiagCursor
-                }
-                else if (bottomStart) {
-                    cursorShape = Qt.SizeFDiagCursor
-                }
-                else {
-                    cursorShape = Qt.SizeHorCursor
-                }
-            }
-            else if (topStart || bottomStart) {
-                cursorShape = Qt.SizeVerCursor
-            }
-            else {
-                cursorShape = Qt.ArrowCursor
-                return false
-            }
-            return true
-        }
-
-        onMouseXChanged: {
-            if (resizing) {
-                var dX = window.x + mouse.x - startPos.x
-                if (leftStart) {
-                    window.x = startWPos.x + dX
-                    window.width = startSize.width - dX
-                }
-                if (rightStart) {
-                    window.width = startSize.width + dX
-                }
-                mouse.accepted = true
-            }
-            else {
-                leftStart = Math.abs(mouseX) < 5
-                rightStart = Math.abs(window.width - mouseX) < 5
-                mouse.accepted = shape()
-            }
-        }
-
-        onMouseYChanged: {
-            if (resizing) {
-                var dY = window.y + mouse.y - startPos.y;
-                if (topStart) {
-                    window.y = startWPos.y + dY
-                    window.height = startSize.height - dY
-                }
-                if (bottomStart) {
-                    window.height = startSize.height + dY
-                }
-                mouse.accepted = true
-            }
-            else {
-                topStart = Math.abs(mouseY) < 5
-                bottomStart = Math.abs(window.height - mouseY) < 5
-                mouse.accepted = shape()
-            }
-        }
-
-        onPressed: {
-            leftStart = Math.abs(mouse.x) < 5
-            rightStart = Math.abs(window.width - mouse.x) < 5
-            topStart = Math.abs(mouse.y) < 5
-            bottomStart = Math.abs(window.height - mouse.y) < 5
-
-            startWPos = Qt.point(window.x, window.y);
-            startSize = Qt.size(window.width, window.height)
-            startPos = Qt.point(mouse.x + window.x, mouse.y + window.y);
-            resizing = mouse.accepted = topStart || bottomStart || leftStart || rightStart
-        }
-
-        onReleased: {
-            if (resizing) {
-                resizing = false
-                mouse.accepted = true
-            }
-            else mouse.accepted = false
         }
     }
 }
