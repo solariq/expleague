@@ -1,0 +1,13 @@
+prefix=/usr/local/Cellar/qt5/5.6.0
+exec_prefix=${prefix}
+libdir=/usr/local/lib
+includedir=/usr/local/include/qxmpp
+
+
+Name: Qxmpp
+Description: Qxmpp Library
+Version: 0.9.3
+Libs: -L${libdir} -lqxmpp 
+Libs.private: -F/usr/local/Cellar/qt5/5.6.0/lib -framework QtNetwork -framework QtXml -framework QtCore   
+Cflags: -DQXMPP_SHARED -I${includedir}
+

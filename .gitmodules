@@ -4,7 +4,3 @@
 [submodule "server/fastxml"]
 	path = server/fastxml
 	url = git@github.com:solariq/fastxml.git
-[submodule "expert/qt/qxmpp"]
-	path = expert/qt/doSearch/src/libs/qxmpp
-	url = git@github.com:qxmpp-project/qxmpp.git
-
