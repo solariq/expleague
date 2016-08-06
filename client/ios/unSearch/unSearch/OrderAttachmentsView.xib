@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="OrderAttachmentsController" customModule="unSearch" customModuleProvider="target">
+            <connections>
+                <outlet property="attachmentsCollection" destination="Fjh-lO-RoI" id="jKM-0b-DCd"/>
+                <outlet property="errorDescription" destination="jFI-Ry-wKm" id="B7j-d2-HcH"/>
+                <outlet property="preview" destination="sPR-BZ-NjI" id="azd-wz-W6W"/>
+                <outlet property="view" destination="abl-Jx-yvA" id="TgL-O9-bma"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="abl-Jx-yvA">
+            <rect key="frame" x="0.0" y="64" width="320" height="504"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsVerticalScrollIndicator="NO" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="Fjh-lO-RoI">
+                    <rect key="frame" x="0.0" y="384" width="320" height="120"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="120" id="DN7-In-li1"/>
+                    </constraints>
+                    <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="10" minimumInteritemSpacing="10" id="bNQ-MJ-dIj">
+                        <size key="itemSize" width="110" height="110"/>
+                        <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                        <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                        <inset key="sectionInset" minX="10" minY="0.0" maxX="0.0" maxY="0.0"/>
+                    </collectionViewFlowLayout>
+                </collectionView>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="sPR-BZ-NjI">
+                    <rect key="frame" x="8" y="8" width="304" height="376"/>
+                </imageView>
+                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="jFI-Ry-wKm">
+                    <rect key="frame" x="8" y="8" width="304" height="376"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <color key="textColor" red="0.68235294120000001" green="0.20784313730000001" blue="0.20784313730000001" alpha="1" colorSpace="calibratedRGB"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                </textView>
+            </subviews>
+            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="Fjh-lO-RoI" firstAttribute="top" secondItem="jFI-Ry-wKm" secondAttribute="bottom" id="C2w-4T-skd"/>
+                <constraint firstItem="Fjh-lO-RoI" firstAttribute="leading" secondItem="abl-Jx-yvA" secondAttribute="leading" id="F6g-6g-S2W"/>
+                <constraint firstItem="jFI-Ry-wKm" firstAttribute="top" secondItem="abl-Jx-yvA" secondAttribute="top" constant="8" id="SIm-Sg-ACW"/>
+                <constraint firstAttribute="trailing" secondItem="jFI-Ry-wKm" secondAttribute="trailing" constant="8" id="XNU-Xm-3a0"/>
+                <constraint firstAttribute="bottom" secondItem="Fjh-lO-RoI" secondAttribute="bottom" id="XvQ-gv-uB0"/>
+                <constraint firstItem="Fjh-lO-RoI" firstAttribute="top" secondItem="sPR-BZ-NjI" secondAttribute="bottom" id="aCX-Aa-gcg"/>
+                <constraint firstAttribute="trailing" secondItem="Fjh-lO-RoI" secondAttribute="trailing" id="aeH-hf-lW4"/>
+                <constraint firstAttribute="trailing" secondItem="sPR-BZ-NjI" secondAttribute="trailing" constant="8" id="gVb-re-ZDK"/>
+                <constraint firstItem="sPR-BZ-NjI" firstAttribute="leading" secondItem="abl-Jx-yvA" secondAttribute="leading" constant="8" id="xIz-qq-NKq"/>
+                <constraint firstItem="jFI-Ry-wKm" firstAttribute="leading" secondItem="abl-Jx-yvA" secondAttribute="leading" constant="8" id="xJh-dT-MkB"/>
+                <constraint firstItem="sPR-BZ-NjI" firstAttribute="top" secondItem="abl-Jx-yvA" secondAttribute="top" constant="8" id="zcD-Ab-0Ya"/>
+            </constraints>
+            <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
+            <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
+            <point key="canvasLocation" x="367" y="310"/>
+        </view>
+    </objects>
+</document>

@@ -45,10 +45,9 @@ class ExpLeagueMessage: NSManagedObject {
             guard v != read else {
                 return
             }
-            update {
-                self.setProperty("read", value: v ? "true" : "false")
-                self.parent._unreadCount = nil
-            }
+            self.setProperty("read", value: v ? "true" : "false")
+            self.parent.messagesChanged()
+            self.parent.notify()
         }
     }
 
@@ -116,7 +115,7 @@ class ExpLeagueMessage: NSManagedObject {
         let archiver = NSKeyedArchiver(forWritingWithMutableData: data)
         archiver.encodeObject(properties.copy() as! NSDictionary)
         archiver.finishEncoding()
-        update {
+        updateSync {
             self.propertiesRaw = data.xmpp_base64Encoded()
         }
     }
@@ -161,7 +160,33 @@ class ExpLeagueMessage: NSManagedObject {
     init(msg: XMPPMessage, parent: ExpLeagueOrder, context: NSManagedObjectContext) {
         super.init(entity: NSEntityDescription.entityForName("Message", inManagedObjectContext: context)!, insertIntoManagedObjectContext: context)
         let attrs = msg.attributesAsDictionary()
-        self.from = attrs["from"] != nil ? (msg.from().resource != nil ? msg.from().resource : "system") : "me";
+        let deviceId = parent.parent.login.lowercaseString
+        if let from = attrs["from"] as? String {
+            let fromJid = msg.from()
+            if (fromJid.domain.hasPrefix("muc.")) {
+                if (fromJid.resource == nil) {
+                    self.from = "system"
+                }
+                else if (deviceId.hasPrefix(fromJid.resource)) {
+                    self.from = "me"
+                }
+                else {
+                    self.from = fromJid.resource
+                }
+            }
+            else if (from.rangeOfString("@") == nil) {
+                self.from = "system"
+            }
+            else if (deviceId.hasPrefix(fromJid.user)) {
+                self.from = "me"
+            }
+            else {
+                self.from = fromJid.user
+            }
+        }
+        else {
+            self.from = "me"
+        }
         self.parentRaw = parent
         let properties = NSMutableDictionary()
         properties.setValue(msg.elementID(), forKeyPath: "id")
@@ -171,7 +196,7 @@ class ExpLeagueMessage: NSManagedObject {
             if (self.from == "me") {
                 self.type = .ClientMessage
             }
-            else if (self.from.isEmpty || (attrs["from"] != nil && msg.from().resource == nil)) {
+            else if (self.from == "system") {
                 self.type = .System
             }
             else {
@@ -181,30 +206,24 @@ class ExpLeagueMessage: NSManagedObject {
         else {
             self.type = .Topic
         }
-        if (type == .System) {
-            if let element = msg.elementForName("expert", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
-                type = .ExpertAssignment
-                body = element.XMLString()
-            }
-            else if let _ = msg.elementForName("cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
-                properties["command"] = "cancel"
-                type = .ExpertCancel
-            }
-            else if let progress = msg.elementForName("progress", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
-                body = progress.XMLString()
-                type = .ExpertProgress
-            }
-            
-            if (!textChildren.isEmpty && textChildren[0].stringValue.hasPrefix("{\"type\":\"pageVisited\"")) {
-                type = .ExpertProgress
-                do {
-                    let json = try NSJSONSerialization.JSONObjectWithData(textChildren[0].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!, options: NSJSONReadingOptions.AllowFragments)
-                    properties.addEntriesFromDictionary(json as! [String : AnyObject])
-                }
-                catch {
-                    AppDelegate.instance.activeProfile?.log("\(error)")
-                }
-            }
+        
+        if let element = msg.elementForName("expert", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+            type = .ExpertAssignment
+            body = element.XMLString()
+        }
+        else if let feedback = msg.elementForName("feedback", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+            type = .Feedback
+            properties["stars"] = feedback.attributeIntegerValueForName("stars")
+        }
+        else if let _ = msg.elementForName("cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+            type = type == .ClientMessage ? .ClientCancel : .ExpertCancel
+        }
+        else if let _ = msg.elementForName("done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+            type = .ClientDone
+        }
+        else if let progress = msg.elementForName("progress", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+            body = progress.XMLString()
+            type = .ExpertProgress
         }
         else if let answer = msg.elementForName("answer", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
             do {
@@ -227,19 +246,19 @@ class ExpLeagueMessage: NSManagedObject {
                     let id_1 = "cuts-\(msg.attributeStringValueForName("id"))-1-\(index)"
                     finalMD += answerText.substringWithRange(lastMatchIndex..<answerText.startIndex.advancedBy(whole.location))
                     finalMD += "<a class=\"cut\" id=\"" + id_1 + "\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">" + (answerText as NSString).substringWithRange(match.rangeAtIndex(1)) + "</a>" +
-                        "<div class=\"cut\" id=\"" + id + "\">" + (answerText as NSString).substringWithRange(match.rangeAtIndex(2)) +
-                        "\n<a class=\"hide\" href=\"#\(id_1)\" onclick=\"javascript:showHide('" + id + "','" + id_1 + "')\">скрыть</a></div>";
+                               "<div class=\"cut\" id=\"" + id + "\">" + (answerText as NSString).substringWithRange(match.rangeAtIndex(2)) +
+                               "\n<a class=\"hide\" href=\"#\(id_1)\" onclick=\"javascript:showHide('" + id + "','" + id_1 + "')\">скрыть</a></div>";
                     lastMatchIndex = answerText.startIndex.advancedBy(whole.location).advancedBy(whole.length)
                     index += 1
                 }
                 finalMD += answerText.substringWithRange(lastMatchIndex..<answerText.endIndex)
                 self.body = try MMMarkdown.HTMLStringWithMarkdown(finalMD, extensions: [
-                    .AutolinkedURLs,
-                    .FencedCodeBlocks,
-                    .Tables,
-                    .UnderscoresInWords,
-                    .Strikethroughs,
-                    .GitHubFlavored
+                        .AutolinkedURLs,
+                        .FencedCodeBlocks,
+                        .Tables,
+                        .UnderscoresInWords,
+                        .Strikethroughs,
+                        .GitHubFlavored
                     ])
             }
             catch {
@@ -247,21 +266,30 @@ class ExpLeagueMessage: NSManagedObject {
             }
             type = .Answer
         }
-        else if let feedback = msg.elementForName("feedback", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
-            type = .Feedback
-            properties["stars"] = feedback.attributeIntegerValueForName("stars")
+        else if (!textChildren.isEmpty) {
+            self.body = textChildren[0].stringValue
         }
-        else if let _ = msg.elementForName("done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
-            type = .System
-        }
-        else {
-            self.body = textChildren.count > 0 ? textChildren[0].stringValue : nil
-        }
-        
-        if let image = msg.elementForName("image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+        else if let image = msg.elementForName("image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
             properties["image"] = image.stringValue()
         }
-        self.time = attrs["time"] != nil ? Double(attrs["time"] as! String)!: NSDate().timeIntervalSince1970
+        else {
+            type = .System
+        }
+        
+        let re = try! NSRegularExpression(pattern: ".+-(\\d+)", options: [])
+        let msgId = msg.elementID()
+
+        
+        if let time = attrs["time"] as? String{
+            self.time = Double(time)!
+        }
+        else if let match = re.firstMatchInString(msgId, options: [], range: NSRange(location: 0, length: msgId.characters.count)) {
+            let time = (msgId as NSString).substringWithRange(match.rangeAtIndex(1))
+            self.time = Double(time)!
+        }
+        else {
+            self.time = attrs["time"] != nil ? Double(attrs["time"] as! String)!: NSDate().timeIntervalSince1970
+        }
         let data = NSMutableData()
         let archiver = NSKeyedArchiver(forWritingWithMutableData: data)
         archiver.encodeObject(properties)
@@ -292,4 +320,6 @@ enum ExpLeagueMessageType: Int16 {
     case ExpertAssignment = 6
     case ExpertCancel = 7
     case Feedback = 8
+    case ClientCancel = 9
+    case ClientDone = 10
 }

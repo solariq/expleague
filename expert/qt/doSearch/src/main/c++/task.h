@@ -27,37 +27,12 @@ class Bubble;
 class ChatMessage;
 class Member;
 class AnswerPattern;
+class MarkdownEditorPage;
 class TaskTag;
 class Context;
 namespace xmpp {
 class Progress;
 }
-
-class ReceivedAnswer: public QObject {
-    Q_OBJECT
-
-    Q_PROPERTY(QString text READ text CONSTANT)
-    Q_PROPERTY(Member* author READ author CONSTANT)
-public:
-    QString text() {
-        return m_text;
-    }
-
-    Member* author() {
-        return m_author;
-    }
-
-signals:
-    void requestFocus();
-
-public:
-    ReceivedAnswer(QObject* parent = 0): QObject(parent) {}
-    ReceivedAnswer(Member* author, const QString& text, QObject* parent = 0): QObject(parent), m_text(text), m_author(author) {}
-
-private:
-    QString m_text;
-    Member* m_author;
-};
 
 class Task: public QObject {
     Q_OBJECT
@@ -65,7 +40,6 @@ class Task: public QObject {
     Q_PROPERTY(expleague::Offer* offer READ offer CONSTANT)
     Q_PROPERTY(expleague::Context* context READ context CONSTANT)
     Q_PROPERTY(QQmlListProperty<expleague::Bubble> chat READ chat NOTIFY bubblesChanged)
-    Q_PROPERTY(QString answer READ answer WRITE setAnswer NOTIFY answerChanged)
     Q_PROPERTY(QQmlListProperty<expleague::TaskTag> tags READ tags NOTIFY tagsChanged)
     Q_PROPERTY(QQmlListProperty<expleague::AnswerPattern> patterns READ patterns NOTIFY patternsChanged)
     Q_PROPERTY(QStringList phones READ phones NOTIFY phonesChanged)
@@ -75,9 +49,7 @@ public:
 
     QQmlListProperty<Bubble> chat() { return QQmlListProperty<Bubble>(this, m_chat); }
 
-    QString answer() const { return m_answer; }
-
-    QQmlListProperty<ReceivedAnswer> answers() { return QQmlListProperty<ReceivedAnswer>(this, m_answers); }
+    MarkdownEditorPage* answer() const { return m_answer; }
 
     QQmlListProperty<TaskTag> tags() { return QQmlListProperty<TaskTag>(this, m_tags); }
     QQmlListProperty<AnswerPattern> patterns() { return QQmlListProperty<AnswerPattern>(this, m_patterns); }
@@ -88,17 +60,18 @@ public:
 
 public:
     Q_INVOKABLE void sendMessage(const QString& str) const;
-    Q_INVOKABLE void sendAnswer();
+    Q_INVOKABLE void sendAnswer(const QString& shortAnswer);
     Q_INVOKABLE void tag(TaskTag*);
     Q_INVOKABLE void pattern(AnswerPattern*);
     Q_INVOKABLE void phone(const QString&);
     Q_INVOKABLE void cancel();
+    Q_INVOKABLE void stop();
     Q_INVOKABLE void suspend(int seconds);
 
     void setContext(Context* context);
 
 public:
-    const QList<ReceivedAnswer*>& receivedAnswers() const { return m_answers; }
+    const QList<MarkdownEditorPage*>& receivedAnswers() const { return m_answers; }
     League* parent() const;
 
 public:
@@ -108,22 +81,17 @@ signals:
     void bubblesChanged();
     void chatChanged();
 
-    void answerChanged(const QString&);
-    void answerReset(const QString&);
-
     void tagsChanged();
     void patternsChanged();
     void phonesChanged();
 
-    void receivedAnswer(ReceivedAnswer*);
     void receivedProgress(const xmpp::Progress&);
     void finished();
     void cancelled();
 
 public slots:
-    void setAnswer(const QString& answer) {
+    void setAnswer(MarkdownEditorPage* answer) {
         m_answer = answer;
-        answerChanged(answer);
     }
 
     void messageReceived(const QString& from, const QString& text);
@@ -140,11 +108,11 @@ private:
 private:
     Offer* m_offer;
     QList<Bubble*> m_chat;
-    QString m_answer;
+    MarkdownEditorPage* m_answer;
 
     QList<TaskTag*> m_tags;
     QList<AnswerPattern*> m_patterns;
-    QList<ReceivedAnswer*> m_answers;
+    QList<MarkdownEditorPage*> m_answers;
     QStringList m_phones;
     Context* m_context;
 };
@@ -339,6 +307,5 @@ QML_DECLARE_TYPE(expleague::Task)
 QML_DECLARE_TYPE(expleague::Offer)
 QML_DECLARE_TYPE(expleague::Bubble)
 QML_DECLARE_TYPE(expleague::ChatMessage)
-QML_DECLARE_TYPE(expleague::ReceivedAnswer)
 
 #endif // TASK_H

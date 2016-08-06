@@ -4,16 +4,18 @@ import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 
 import QtLocation 5.3
+import QtWebEngine 1.3
 
 import ExpLeague 1.0
 
 import "."
 
 Window {
-    id: dialog
+    id: self
 
     property Offer offer
-    property color backgroundColor: Palette.backgroundColor
+    property color backgroundColor: Palette.activeColor
+    property color textColor: Palette.activeTextColor
     property int invitationTimeout: 0
 
     width: 500
@@ -33,7 +35,7 @@ Window {
     Connections {
         target: offer
         onCancelled: {
-            dialog.visible = false
+            self.visible = false
         }
     }
 
@@ -53,8 +55,8 @@ Window {
         id: accept
         text: qsTr("Принять")
         onTriggered: {
-            dialog.accepted(offer)
-            dialog.hide()
+            self.accepted(offer)
+            self.hide()
         }
     }
 
@@ -62,19 +64,11 @@ Window {
         id: reject
         text: qsTr("Отказаться")
         onTriggered: {
-            dialog.rejected(offer)
-            dialog.hide()
+            self.rejected(offer)
+            self.hide()
         }
     }
 
-    Plugin {
-        id: mapPlugin
-        name: "osm"
-          //specify plugin parameters if necessary
-          //PluginParameter {...}
-          //PluginParameter {...}
-          //...
-    }
     ColumnLayout {
         anchors.fill: parent
         Item {Layout.preferredHeight: 20}
@@ -85,6 +79,7 @@ Window {
             renderType: Text.NativeRendering
             wrapMode: Text.WordWrap
             text: qsTr("Открыто задание")
+            color: textColor
             font.bold: true
             font.pointSize: 16
         }
@@ -100,19 +95,25 @@ Window {
                 columns: 2
                 Label {
                     text: qsTr("На тему: ")
+                    color: textColor
                 }
 
-                Text {
+                TextEdit {
                     Layout.alignment: Qt.AlignLeft
-                    Layout.maximumWidth: parent.width/1.5 - 10
+                    Layout.preferredWidth: self.width/1.5 - 10
+                    Layout.maximumWidth: self.width/1.5 - 10
                     renderType: Text.NativeRendering
+                    readOnly: true
                     wrapMode: Text.WordWrap
                     text: offer ? offer.topic : ""
+                    color: textColor
                     font.bold: true
+                    clip: true
                 }
 
                 Label {
                     text: qsTr("Крайний срок через: ")
+                    color: textColor
                 }
 
                 Text {
@@ -128,14 +129,24 @@ Window {
                     }
                     color: {
                         if (!offer)
-                            return "black"
+                            return textColor
 
                         var urgency = Math.sqrt(Math.max(offer.timeLeft/offer.duration, 0))
-                        return Qt.rgba(1-urgency, 0, 0, 1.0)
+                        return Qt.rgba(textColor.r + (1 - textColor.r) * urgency, textColor.g * urgency, textColor.b * urgency, textColor.a + (1 - textColor.a) * urgency)
                     }
                 }
 
-                Map {
+                Label {
+                    text: qsTr("Гео-специфичный: ")
+                    color: textColor
+                }
+
+                Label {
+                    text: offer ? (offer.local ? qsTr("Да") : qsTr("Нет")) : ""
+                    color: textColor
+                }
+
+                WebEngineView {
                     id: map
                     visible: offer && offer.hasLocation
 
@@ -144,13 +155,7 @@ Window {
                     Layout.preferredWidth: 300
                     Layout.alignment: Qt.AlignHCenter
 
-                    plugin: mapPlugin
-                    center {
-                        longitude: offer ? offer.longitude : 0
-                        latitude: offer ? offer.latitude : 0
-                    }
-
-                    gesture.enabled: true
+                    url: offer ? "qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude : ""
                 }
 
                 Component {
@@ -228,7 +233,7 @@ Window {
             }
         }
         Keys.onEscapePressed: {
-            dialog.hide()
+            self.hide()
         }
     }
 }

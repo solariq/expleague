@@ -119,7 +119,7 @@ class ExpLeagueProfile: NSManagedObject {
     
     dynamic var _jid: XMPPJID?
     var jid: XMPPJID! {
-        return _jid ?? XMPPJID.jidWithString(login + "@" + domain + "/unSearch");
+        return _jid ?? XMPPJID.jidWithString(login + "@" + domain + "/unSearch")
     }
     
     func order(name name: String) -> ExpLeagueOrder? {
@@ -156,6 +156,10 @@ class ExpLeagueProfile: NSManagedObject {
         updateSync {
             self.aowTitle = title
             self.receiveAnswerOfTheWeek = true
+            self.busyChanged()
+            if (self.communicator!.state.status == .Connected) {
+                self.communicator!.requestAOW()
+            }
         }
     }
     
@@ -284,13 +288,16 @@ class ExpLeagueProfile: NSManagedObject {
     }
     
     func add(order order: ExpLeagueOrder) {
+        guard orders.filter({$0.id == order.id}).isEmpty else {
+            return
+        }
         let mutableItems = orders.mutableCopy() as! NSMutableOrderedSet
         mutableItems.addObject(order)
         self.orders = mutableItems.copy() as! NSOrderedSet
+        save()
         dispatch_async(dispatch_get_main_queue()) {
             AppDelegate.instance.historyView?.populate()
         }
-        save()
     }
 
     func add(aow order: ExpLeagueOrder) {

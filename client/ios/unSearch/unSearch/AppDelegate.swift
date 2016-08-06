@@ -28,43 +28,37 @@ class DataController: NSObject {
         }
         let psc = NSPersistentStoreCoordinator(managedObjectModel: mom)
         self.managedObjectContext.persistentStoreCoordinator = psc
-        dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
-            let urls = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)
-            let docURL = urls[urls.endIndex-1]
-            /* The directory the application uses to store the Core Data store file.
-            This code uses a file named "DataModel.sqlite" in the application's documents directory.
-            */
-            let storeURL = docURL.URLByAppendingPathComponent("ExpLeagueProfiles.sqlite")
-            do {
-                try psc.addPersistentStoreWithType(
-                    NSSQLiteStoreType,
-                    configuration: nil,
-                    URL: storeURL,
-                    options: [
-                        NSMigratePersistentStoresAutomaticallyOption: true,
-                        NSInferMappingModelAutomaticallyOption: true
-                ])
-            } catch {
-                fatalError("Error migrating store: \(error)")
-            }
-            let profilesFetch = NSFetchRequest(entityName: "Profile")
+        let urls = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)
+        let docURL = urls[urls.endIndex-1]
+        /* The directory the application uses to store the Core Data store file.
+         This code uses a file named "DataModel.sqlite" in the application's documents directory.
+        */
+        let storeURL = docURL.URLByAppendingPathComponent("ExpLeagueProfiles.sqlite")
+        do {
+            try psc.addPersistentStoreWithType(
+                NSSQLiteStoreType,
+                configuration: nil,
+                URL: storeURL,
+                options: [
+                    NSMigratePersistentStoresAutomaticallyOption: true,
+                    NSInferMappingModelAutomaticallyOption: true
+            ])
+        } catch {
+            fatalError("Error migrating store: \(error)")
+        }
+        let profilesFetch = NSFetchRequest(entityName: "Profile")
             
-            do {
-                let profiles = try self.managedObjectContext.executeFetchRequest(profilesFetch) as! [ExpLeagueProfile]
-                app.profiles = profiles
-                if (profiles.count > 3) {
-                    app.profiles = Array(profiles[0..<3])
-                }
-//                let localOrders = app.profiles![2].orders.mutableCopy() as! NSMutableOrderedSet
-//                localOrders.removeAllObjects()
-//                app.profiles![2].orders = localOrders.copy() as! NSOrderedSet
-//                try self.managedObjectContext.save()
-                if (profiles.count > 0) {
-                    AppDelegate.instance.activate(profiles.filter({$0.active.boolValue}).first ?? profiles[0])
-                }
-            } catch {
-                fatalError("Failed to fetch employees: \(error)")
+        do {
+            let profiles = try self.managedObjectContext.executeFetchRequest(profilesFetch) as! [ExpLeagueProfile]
+            app.profiles = profiles
+            if (profiles.count > 3) {
+                app.profiles = Array(profiles[0..<3])
             }
+            if (profiles.count > 0) {
+                AppDelegate.instance.activate(profiles.filter({$0.active.boolValue}).first ?? profiles[0])
+            }
+        } catch {
+            fatalError("Failed to fetch employees: \(error)")
         }
     }
 }
@@ -82,6 +76,8 @@ class Palette {
 
 @UIApplicationMain
 class AppDelegate: UIResponder {
+    static let deviceId = UInt64(abs(UIDevice.currentDevice().identifierForVendor!.UUIDString.hashValue))
+    static let GOOGLE_API_KEY = "AIzaSyA83KOger1DEkxp3h0ItejyGBlEUuE7Bkc"
     @nonobjc static var instance: AppDelegate {
         return (UIApplication.sharedApplication().delegate as! AppDelegate)
     }
@@ -110,17 +106,28 @@ class AppDelegate: UIResponder {
     var expertsView: ExpertsOverviewController?
     var historyView: HistoryViewController?
     var dataController: DataController!
+    let uploader = AttachmentsUploader()
     var token: String?
     
     var activeProfile: ExpLeagueProfile?
     
     var profiles : [ExpLeagueProfile]?;
     
+    func randString(len: Int, seed: Int? = nil) -> String {
+        var seedX = seed != nil ? UInt32(truncatingBitPattern: seed!) : UInt32(rand())
+        let chars = "0123456789ABCDEF".characters
+        var result = ""
+        for _ in 0..<len {
+            result.append(chars[chars.startIndex.advancedBy(Int(rand_r(&seedX) % Int32(chars.count)))])
+        }
+        return result
+    }
     
-    func setupDefaultProfiles() {
+    func setupDefaultProfiles(code: Int?) {
         profiles = [];
         let randString = NSUUID().UUIDString
-        let login = randString.substringToIndex(randString.startIndex.advancedBy(8))
+        let userName = self.randString(8, seed: code)
+        let login = userName + "-" + randString.substringToIndex(randString.startIndex.advancedBy(8))
         let passwd = NSUUID().UUIDString
 
         let production = ExpLeagueProfile("Production", domain: "expleague.com", login: login, passwd: passwd, port: 5222, context: dataController.managedObjectContext)
@@ -131,10 +138,10 @@ class AppDelegate: UIResponder {
             profiles!.append(ExpLeagueProfile("Test", domain: "test.expleague.com", login: login, passwd: passwd, port: 5222, context: dataController.managedObjectContext))
         }
         if (profiles!.count == 2) {
-            profiles!.append(ExpLeagueProfile("Local", domain: "localhost", login: login, passwd: passwd, port: 5222, context: dataController.managedObjectContext))
+            profiles!.append(ExpLeagueProfile("Local", domain: "172.21.211.153", login: login, passwd: passwd, port: 5222, context: dataController.managedObjectContext))
         }
         if (activeProfile == nil) {
-            activate(production);
+            activate(profiles![0]);
         }
 
         do {
@@ -163,7 +170,6 @@ class AppDelegate: UIResponder {
     
     func prepareBackground(application: UIApplication) {
         if(activeProfile?.busy ?? false) {
-            connectionErrorNotification = Notifications.unableToCommunicate(activeProfile!.incoming, outgoing: activeProfile!.outgoing)
             application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
         }
         else {
@@ -181,8 +187,14 @@ extension AppDelegate: UIApplicationDelegate {
         EVURLCache.FORCE_LOWERCASE = true // is already the default. You also have to put all files int he PreCache using lowercase names
         EVURLCache.activate()
         
-        dataController = DataController(app: self)
+        GMSServices.provideAPIKey(AppDelegate.GOOGLE_API_KEY)
         
+        window = UIWindow(frame: UIScreen.mainScreen().bounds)
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        dataController = DataController(app: self)
+        window?.rootViewController = activeProfile != nil ? storyboard.instantiateViewControllerWithIdentifier("tabs") : storyboard.instantiateInitialViewController()
+        window?.makeKeyAndVisible()
+                
 //        application.statusBarStyle = .LightContent
         application.registerForRemoteNotifications()
         let settings = UIUserNotificationSettings(forTypes: [.Alert, .Sound], categories: [])
@@ -212,7 +224,6 @@ extension AppDelegate: UIApplicationDelegate {
             completionHandler(.NewData)
             return
         }
-        
         if (!activeProfile!.busy) {
             completionHandler(.NoData)
         }
@@ -220,9 +231,6 @@ extension AppDelegate: UIApplicationDelegate {
             QObject.track(activeProfile!, #selector(ExpLeagueProfile.busyChanged)) {
                 guard !self.activeProfile!.busy else {
                     return true
-                }
-                if (self.connectionErrorNotification != nil) {
-                    application.cancelLocalNotification(self.connectionErrorNotification!)
                 }
                 self.prepareBackground(application)
                 self.activeProfile!.suspend()
@@ -234,8 +242,10 @@ extension AppDelegate: UIApplicationDelegate {
             activeProfile?.resume()
         }
         else {
-            completionHandler(.Failed)
             self.prepareBackground(application)
+            dispatch_async(dispatch_get_main_queue()) {
+                completionHandler(.Failed)
+            }
         }
     }
     
@@ -244,7 +254,7 @@ extension AppDelegate: UIApplicationDelegate {
         if let messageId = userInfo["id"] as? String {
             activeProfile!.expect(messageId)
         }
-        else if let aow = userInfo["aow"] as? String {
+        else if let aow = userInfo["aow"] as? String where aow != activeProfile!.aowTitle {
             activeProfile!.aow(aow)
         }
         self.application(application, performFetchWithCompletionHandler: completionHandler)

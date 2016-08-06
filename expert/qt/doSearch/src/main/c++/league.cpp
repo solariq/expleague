@@ -98,9 +98,15 @@ void League::startTask(Offer* offer) {
     QObject::connect(task, SIGNAL(cancelled()), SLOT(taskFinished()));
     m_status = LS_ON_TASK;
     statusChanged(m_status);
-    Context* context = new Context(task, parent());
+    Context* context = parent()->context(task->id());
+    context->setTask(task);
+    Member* self = findMember(id());
+    MarkdownEditorPage* answerPage = parent()->document(context, "Ваш ответ", self);
+    context->transition(answerPage, Page::TYPEIN);
+    QObject::connect(answerPage, SIGNAL(textChanged(QString)), task, SLOT(setAnswer(QString)));
+    task->setAnswer(answerPage);
     parent()->append(context);
-    context->setActive(true);
+    parent()->navigation()->activate(context);
 }
 
 void League::inviteReceived(const Offer& offer) {
@@ -134,7 +140,7 @@ Offer* League::registerOffer(const Offer& offer) {
 
 void League::disconnected() {
     foreach(Task* task, m_tasks)
-        task->finished();
+        task->stop();
 
     m_status = LS_OFFLINE;
     statusChanged(m_status);
@@ -147,9 +153,8 @@ void League::messageReceived(const QString& room, const QString& from, const QSt
     foreach(Task* task, m_tasks) {
         if (task->id() == room) {
             task->messageReceived(from, text);
-            if (task->context()) {
-                task->context()->setActive(true);
-            }
+            if (task->context())
+                doSearch::instance()->navigation()->activate(task->context());
             break;
         }
     }
@@ -219,14 +224,15 @@ League* Task::parent() const {
 }
 
 void Task::answerReceived(const QString &from, const QString& text) {
-    ReceivedAnswer* answer = new ReceivedAnswer(parent()->findMember(from), text, this);
-    m_answers.append(answer);
-    receivedAnswer(answer);
-
+    doSearch* dosearch = doSearch::instance();
+    Member* author = parent()->findMember(from);
+    MarkdownEditorPage* answerPage = dosearch->document(context(), "Ответ " + QString::number(m_answers.size() + 1), author);
+    answerPage->setText(text);
+    context()->transition(answerPage, Page::TYPEIN);
+    m_answers += answerPage;
     Bubble* bubble = this->bubble(from);
-
-    bubble->append(new ChatMessage([answer]() -> void {
-        answer->requestFocus();
+    bubble->append(new ChatMessage([answerPage, dosearch]() -> void {
+        doSearch::instance()->navigation()->open(answerPage);
     }, "Ответ", this));
     emit chatChanged();
 }
@@ -299,11 +305,11 @@ void Task::sendMessage(const QString &str) const {
     parent()->connection()->sendMessage(offer()->roomJid(), str);
 }
 
-void Task::sendAnswer() {
+void Task::sendAnswer(const QString& shortAnswer) {
 //    qDebug() << "Sending answer: " << answer();
-    parent()->connection()->sendAnswer(offer()->roomJid(), answer());
-    answerReset("");
-    emit finished();
+    parent()->connection()->sendAnswer(offer()->roomJid(), shortAnswer + "\n" + answer()->text());
+    answer()->setText("");
+    stop();
 }
 
 void Task::tag(TaskTag* tag) {
@@ -327,12 +333,17 @@ void Task::phone(const QString& phone) {
 
 void Task::cancel() {
     parent()->connection()->sendCancel(offer());
-    finished();
+    stop();
 }
 
 void Task::suspend(int seconds) {
     parent()->connection()->sendSuspend(offer(), seconds);
-    finished();
+    stop();
+}
+
+void Task::stop() {
+    m_answers.clear();
+    emit finished();
 }
 
 QString Task::id() const  {

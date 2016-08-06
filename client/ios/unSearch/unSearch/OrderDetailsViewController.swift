@@ -26,8 +26,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
 
     let input = ChatInputViewController(nibName: "ChatInput", bundle: nil)
     var answerDelegate: AnswerDelegate?
-    let picker = UIImagePickerController()
-    var pickerDelegate: ImagePickerDelegate?
+    let orderAttachmentsModel = OrderAttachmentsModel()
 
     let data: ChatModel
 
@@ -59,9 +58,6 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         answerDelegate = AnswerDelegate(parent: self)
         answer.delegate = answerDelegate
         input.delegate = self;
-        pickerDelegate = ImagePickerDelegate(queue: self, picker: picker)
-        picker.delegate = pickerDelegate
-        picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
     }
         
     var state: ChatState? {
@@ -70,7 +66,6 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
                 switch(state) {
                 case .Chat:
                     detailsView!.bottomContents = input.view
-                    break
                 case .Ask:
                     let ask = NSBundle.mainBundle().loadNibNamed("ContinueView", owner: self, options: [:])[0] as! ContinueCell
                     ask.ok = {
@@ -87,10 +82,8 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
                         self.data.order.continueTask()
                     }
                     detailsView!.bottomContents = ask
-                    break
                 case .Closed:
                     detailsView?.bottomContents = nil
-                    break
                 case .Save:
                     let ask = NSBundle.mainBundle().loadNibNamed("SaveView", owner: self, options: [:])[0] as! SaveCell
                     ask.ok = {
@@ -102,10 +95,12 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
                         self.state = .Closed
                     }
                     detailsView!.bottomContents = ask
-                    break
                 }
-                self.view.layoutIfNeeded()
-                self.detailsView?.adjustScroll()
+                dispatch_async(dispatch_get_main_queue()) {
+                    self.enforceScroll = true
+                    self.view.layoutIfNeeded()
+                    self.detailsView?.adjustScroll()
+                }
             }
         }
     }
@@ -128,7 +123,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         data.controller = self
-        data.sync()
+        data.sync(true)
         detailsView?.keyboardTracker.start()
         enforceScroll = true
     }
@@ -147,7 +142,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
 
         if (enforceScroll) {
             scrollToLastMessage()
-            if (state == .Chat || (state == .Closed && data.order.fake)) {
+            if (data.state == .Chat || (data.state == .Closed && data.order.fake)) {
                 detailsView!.scrollToChat(false)
             }
             else {
@@ -173,8 +168,46 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     }
     
     
-    func attach(input: ChatInputViewController) {
-        self.presentViewController(picker, animated: true, completion: nil)
+     func attach(input: ChatInputViewController) {
+        let addAttachmentAlert = AddAttachmentAlertController(parent: parentViewController) { imageId in
+            let alert = UIAlertController(title: "unSearch", message: "Отправить выбранную фотографию эксперту?", preferredStyle: .Alert)
+            alert.addAction(UIAlertAction(title: "Да", style: .Default, handler: {action in
+                let attachment = OrderAttachment(imageId: imageId)
+                AppDelegate.instance.uploader.upload(attachment)
+                QObject.track(attachment, #selector(OrderAttachment.progressChanged)) {
+                    if(attachment.progress < 0) { // error
+                        input.progress.tintColor = Palette.ERROR
+                        input.progress.progress = 1.0
+                        let error = attachment.error != nil ? " : \(attachment.error!)" : "."
+                        let warning = UIAlertController(title: "unSearch", message: "Не удалось отослать изображение\(error)", preferredStyle: .Alert)
+                        warning.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                        self.presentViewController(warning, animated: true, completion: nil)
+                        return false
+                    }
+                    else if (attachment.progress < 1) {
+                        input.progress.tintColor = Palette.CONTROL
+                        input.progress.progress = attachment.progress!
+                        return true
+                    }
+                    else {
+                        input.progress.tintColor = Palette.OK
+                        input.progress.progress = attachment.progress!
+                        let img = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+                        img.setStringValue(attachment.url.absoluteString)
+                        self.data.order.send(xml: img, type: "groupchat")
+                        
+                        return false
+                    }
+                }
+            }))
+            alert.addAction(UIAlertAction(title: "Нет", style: .Cancel, handler: nil))
+            self.presentViewController(alert, animated: true, completion: nil)
+        }
+        addAttachmentAlert.modalPresentationStyle = .OverCurrentContext
+        self.providesPresentationContextTransitionStyle = true;
+        self.definesPresentationContext = true;
+        
+        presentViewController(addAttachmentAlert, animated: true, completion: nil)
         input.progress.tintColor = UIColor.blueColor()
     }
     
@@ -184,9 +217,6 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     
     func report(id: String, status: Bool) {
         input.progress.tintColor = status ? UIColor.greenColor() : UIColor.redColor()
-        let img = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
-        img.setStringValue(AppDelegate.instance.activeProfile!.imageUrl(id).absoluteString)
-        data.order.send(xml: img, type: "groupchat")
     }
 
     func scrollToLastMessage() {
@@ -227,23 +257,26 @@ class FeedbackViewController: UIViewController {
         if (rate == 4 || rate == 5) {
             busy = true
             let purchaseId = rate == 4 ? "com.expleague.unSearch.Star30r" : "com.expleague.unSearch.Star150r"
-            PurchaseHelper.instance.request(purchaseId) {rc in
+            PurchaseHelper.instance.request(purchaseId) {rc, payment in
                 switch(rc) {
                 case .Accepted:
-                    self.parent.data.order.feedback(stars: rate!)
+                    self.parent.data.order.feedback(stars: rate!, payment: payment)
                     self.dismissViewControllerAnimated(true, completion: nil)
                 case .Error:
                     let alert = UIAlertController(title: "unSearch", message: "Не удалось провести платеж!", preferredStyle: .Alert)
                     alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
                     self.presentViewController(alert, animated: true, completion: nil)
                 case .Rejected:
+                    let alert = UIAlertController(title: "unSearch", message: "Платеж отклонен!", preferredStyle: .Alert)
+                    alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                    self.presentViewController(alert, animated: true, completion: nil)
                     break
                 }
                 self.busy = false
             }
         }
         else {
-            parent.data.order.feedback(stars: rate!)
+            parent.data.order.feedback(stars: rate!, payment: nil)
             self.dismissViewControllerAnimated(true, completion: nil)
         }
     }
@@ -295,7 +328,7 @@ class FeedbackViewController: UIViewController {
         if (rate == nil || rate! == 0) {
             let pages = parent.data.lastAnswer?.progress.pagesCount ?? 0
             let calls = parent.data.lastAnswer?.progress.callsCount ?? 0
-            text.text = "Чтобы найти ответ на Ваш вопрос эксперт просмотрел \(pages) страниц\(Lang.rusNumEnding(pages, variants: ["", "ы", ""])), сделал \(calls) звон\(Lang.rusNumEnding(calls, variants: ["ок", "ка", "ков"]))."
+            text.text = "Чтобы найти ответ на ваш вопрос, эксперт просмотрел \(pages) страниц\(Lang.rusNumEnding(pages, variants: ["", "ы", ""])), сделал \(calls) звон\(Lang.rusNumEnding(calls, variants: ["ок", "ка", "ков"]))."
             scoreButton.enabled = false
             return
         }

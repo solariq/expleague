@@ -92,9 +92,23 @@ public class InMemRoster implements Roster {
   public void invalidateProfile(JID jid) {
   }
 
+  @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   private final List<Application> applications = new ArrayList<>();
   @Override
   public void application(Application application, JID referer) {
     applications.add(application);
   }
+
+//  @Override
+//  public void merge(XMPPUser... users) {
+//    if (users.length < 2)
+//      return;
+//    final XMPPUser main = users[0];
+//    Arrays.stream(users).skip(1)
+//        .flatMap(user -> {
+//          InMemRoster.this.users.put(user.id(), main);
+//          return Arrays.stream(user.devices());
+//        })
+//        .forEach(device -> device.updateUser(main));
+//  }
 }

@@ -17,13 +17,14 @@
 # mkdir -p ./doSearch.app/Contents/PlugIns/geoservices
 # cp ~/Qt/5.6/clang_64/plugins/geoservices/libqtgeoservices_osm.dylib ./doSearch.app/Contents/PlugIns/geoservices/
 # ~/Qt/5.6/clang_64/bin/macdeployqt ./doSearch.app -verbose=1 -qmldir=/Users/solar/tree/tbts/expert/qt/doSearch/src/main/resources/qml/
+# install_name_tool -rpath /Users/solar/Qt/5.6/clang_64/lib/ @executable_path/../Frameworks ./doSearch.app/Contents/MacOS/doSearch
 # mkdir temp
 # mv ./doSearch.app/ ./temp/
 # hdiutil create -volname doSearch -srcfolder ./temp/ -ov -format UDZO doSearch.dmg
 VERSION = 0.1.2
 
-QT += widgets core network location concurrent positioning gui quick webview xml webenginewidgets multimedia
-
+QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine webenginewidgets xml multimedia webenginecore
+QT_PRIVATE += webengine-private
 qml.path += resources/qml
 target.path += ../../bin
 
@@ -45,12 +46,17 @@ SOURCES += \
     c++/main.cpp \
     c++/protocol.cpp \
     c++/profile.cpp \
-    c++/model/model.cpp \
     c++/model/web.cpp \
     c++/league.cpp \
-    c++/answer.cpp \
     c++/model/history.cpp \
-    c++/util/util.cpp
+    c++/util/util.cpp \
+    c++/model/page.cpp \
+    c++/model/manager.cpp \
+    c++/model/search.cpp \
+    c++/model/group.cpp \
+    c++/model/context.cpp \
+    c++/editor.cpp \
+    c++/dosearch.cpp
 
 HEADERS += \
     c++/protocol.h \
@@ -59,19 +65,19 @@ HEADERS += \
     c++/expleague.h \
     c++/dosearch.h \
     c++/model/context.h \
-    c++/model/folder.h \
-    c++/model/screen.h \
-    c++/model/web/webfolder.h \
-    c++/model/web/webscreen.h \
     c++/model/settings.h \
-    c++/model/web/websearch.h \
-    c++/model/expleague/answersfolder.h \
     c++/league.h \
     c++/model/editor.h \
     c++/model/history.h \
     c++/util/filethrottle.h \
     c++/util/call_once.h \
-    c++/util/simplelistmodel.h
+    c++/util/simplelistmodel.h \
+    c++/model/page.h \
+    c++/model/manager.h \
+    c++/model/search.h \
+    c++/model/group.h \
+    c++/model/web.h \
+    c++/util/math.h
 
 macx: OBJECTIVE_SOURCES += \
     objc/ExpLeagueNotification.mm
@@ -122,7 +128,8 @@ INCLUDEPATH += \
     $$PWD/../libs/discount \
     $$PWD/../libs/peg-markdown-highlight \
     $$PWD/../libs/hunspell \
-    $$PWD/../libs/cutemarked
+    $$PWD/../libs/cutemarked \
+    /Users/solar/Qt/5.7/Src/qtwebengine/src
 
 DEPENDPATH += \
     $$PWD/../libs/qxmpp/src \

@@ -35,9 +35,7 @@ var Admin = {
         Admin.scheduledUpdates = [id];
         var fn = function() {
             if (Admin.scheduledUpdates.indexOf(id) != -1) {
-                console.log("Scheduled update for " + id + " is in progress, updates: " + JSON.stringify(Admin.scheduledUpdates));
                 callback();
-                console.log("Scheduled update for " + id + " completed");
                 setTimeout(fn, intervalMs);
             }
         };

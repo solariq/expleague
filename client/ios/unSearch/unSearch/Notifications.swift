@@ -10,17 +10,6 @@ import Foundation
 import NotificationCenter
 
 class Notifications {
-    static func unableToCommunicate(incoming: Int, outgoing: Int) -> UILocalNotification {
-        let notification = UILocalNotification()
-//        notification.fireDate = NSDate(timeIntervalSinceNow: 10)
-        notification.fireDate = NSDate(timeIntervalSinceNow: 5 * 60)
-        notification.alertBody = "Не удалось доставить \(incoming > 0 ? "\(incoming) входящих" : "")\(incoming > 0 && outgoing > 0 ? " и " : "")\(outgoing > 0 ? "\(outgoing) исходящих" : ""). Войдите в приложение, и мы попробуем еще раз"
-        notification.alertAction = "Cейчас"
-        notification.soundName = "owl.wav"
-        UIApplication.sharedApplication().scheduleLocalNotification(notification)
-        return notification
-    }
-    
     static func notifyBestAnswer(aow: ExpLeagueOrder, title: String) {
         guard UIApplication.sharedApplication().applicationState != .Active else {
             return

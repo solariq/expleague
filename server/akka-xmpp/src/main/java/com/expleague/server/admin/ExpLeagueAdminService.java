@@ -135,9 +135,10 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           }
           else if ("/top/experts".equals(path)) {
             final List<ExpertsProfileDto> experts = board.topExperts()
-              .map(Roster.instance()::profile)
-              .map(ExpertsProfileDto::new)
-              .collect(Collectors.toList());
+                .map(JID::local)
+                .map(Roster.instance()::profile)
+                .map(ExpertsProfileDto::new)
+                .collect(Collectors.toList());
             response = getJsonResponse("experts", experts);
           }
           else if (path.startsWith("/history/")) {
@@ -337,9 +338,10 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
       final Map<String, Object> map = new HashMap<>();
       map.put(name, value);
       final List<ExpertsProfileDto> experts = LaborExchange.board().topExperts()
-        .map(Roster.instance()::profile)
-        .map(ExpertsProfileDto::new)
-        .collect(Collectors.toList());
+          .map(JID::local)
+          .map(Roster.instance()::profile)
+          .map(ExpertsProfileDto::new)
+          .collect(Collectors.toList());
       map.put("experts", experts);
       return HttpResponse.create().withStatus(200).withEntity(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(map));
     }

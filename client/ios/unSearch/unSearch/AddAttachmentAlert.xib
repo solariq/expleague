@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="AddAttachmentAlertController" customModule="unSearch" customModuleProvider="target">
+            <connections>
+                <outlet property="cancelButton" destination="TyS-mE-M9J" id="goj-vK-dMa"/>
+                <outlet property="capturePhotoButton" destination="adh-UY-rOr" id="Jui-kt-S09"/>
+                <outlet property="chooseFromGalleryButton" destination="QGo-1C-KP3" id="IFr-Cq-Muf"/>
+                <outlet property="imageCollection" destination="A2e-uf-mXU" id="XHk-Dp-b1y"/>
+                <outlet property="view" destination="iN0-l3-epB" id="Aqd-VY-vb7"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9RC-3U-7GW">
+                    <rect key="frame" x="0.0" y="300" width="320" height="268"/>
+                    <subviews>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="adh-UY-rOr">
+                            <rect key="frame" x="8" y="172" width="304" height="40"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="40" id="AJu-wU-tre"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <state key="normal" title="Сделать снимок"/>
+                            <connections>
+                                <action selector="onCapturePhoto:" destination="-1" eventType="primaryActionTriggered" id="6qq-oH-dDs"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QGo-1C-KP3">
+                            <rect key="frame" x="8" y="130" width="304" height="40"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="40" id="RFL-Ti-lTo"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <state key="normal" title="Выбрать из галереи"/>
+                            <connections>
+                                <action selector="onSelectFromGallery:" destination="-1" eventType="touchUpInside" id="9U9-f9-0Y3"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TyS-mE-M9J">
+                            <rect key="frame" x="8" y="220" width="304" height="40"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="40" id="9eq-br-tGC"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                            <state key="normal" title="Отменить"/>
+                            <connections>
+                                <action selector="onCancel:" destination="-1" eventType="primaryActionTriggered" id="9Le-k7-PZO"/>
+                            </connections>
+                        </button>
+                        <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceHorizontal="YES" showsVerticalScrollIndicator="NO" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="A2e-uf-mXU">
+                            <rect key="frame" x="8" y="8" width="304" height="120"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <color key="tintColor" red="0.066666666669999999" green="0.54117647059999996" blue="0.87058823529999996" alpha="1" colorSpace="calibratedRGB"/>
+                            <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="0.0" minimumInteritemSpacing="5" id="0bl-vg-pmf">
+                                <size key="itemSize" width="115" height="110"/>
+                                <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                <inset key="sectionInset" minX="5" minY="5" maxX="5" maxY="5"/>
+                            </collectionViewFlowLayout>
+                        </collectionView>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.25495899822695034" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstItem="QGo-1C-KP3" firstAttribute="top" secondItem="A2e-uf-mXU" secondAttribute="bottom" constant="2" id="5Rb-hm-bik"/>
+                        <constraint firstItem="QGo-1C-KP3" firstAttribute="leading" secondItem="9RC-3U-7GW" secondAttribute="leading" constant="8" id="8v9-cC-NYo"/>
+                        <constraint firstAttribute="trailing" secondItem="TyS-mE-M9J" secondAttribute="trailing" constant="8" id="9WF-Dh-osV"/>
+                        <constraint firstItem="TyS-mE-M9J" firstAttribute="top" secondItem="adh-UY-rOr" secondAttribute="bottom" constant="8" id="Adb-Rj-MiY"/>
+                        <constraint firstItem="adh-UY-rOr" firstAttribute="leading" secondItem="9RC-3U-7GW" secondAttribute="leading" constant="8" id="KBW-K1-6wm"/>
+                        <constraint firstAttribute="height" constant="268" id="OSl-B4-fS4"/>
+                        <constraint firstItem="A2e-uf-mXU" firstAttribute="top" secondItem="9RC-3U-7GW" secondAttribute="top" constant="8" id="aTn-JQ-ROo"/>
+                        <constraint firstItem="A2e-uf-mXU" firstAttribute="leading" secondItem="9RC-3U-7GW" secondAttribute="leading" constant="8" id="bYi-u2-zMV"/>
+                        <constraint firstAttribute="bottom" secondItem="TyS-mE-M9J" secondAttribute="bottom" constant="8" id="djv-Eb-NJW"/>
+                        <constraint firstItem="adh-UY-rOr" firstAttribute="top" secondItem="QGo-1C-KP3" secondAttribute="bottom" constant="2" id="gLb-bR-VTk"/>
+                        <constraint firstAttribute="trailing" secondItem="A2e-uf-mXU" secondAttribute="trailing" constant="8" id="hMM-U1-bsN"/>
+                        <constraint firstItem="TyS-mE-M9J" firstAttribute="top" secondItem="adh-UY-rOr" secondAttribute="bottom" constant="8" id="iCO-A9-7kZ"/>
+                        <constraint firstAttribute="trailing" secondItem="adh-UY-rOr" secondAttribute="trailing" constant="8" id="q8a-1x-x2D"/>
+                        <constraint firstItem="TyS-mE-M9J" firstAttribute="leading" secondItem="9RC-3U-7GW" secondAttribute="leading" constant="8" id="sd5-gT-XvR"/>
+                        <constraint firstAttribute="trailing" secondItem="QGo-1C-KP3" secondAttribute="trailing" constant="8" id="z0q-eE-O8S"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <constraints>
+                <constraint firstItem="9RC-3U-7GW" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="IJg-Ui-OiC"/>
+                <constraint firstAttribute="trailing" secondItem="9RC-3U-7GW" secondAttribute="trailing" id="n4r-lX-fAZ"/>
+                <constraint firstAttribute="bottom" secondItem="9RC-3U-7GW" secondAttribute="bottom" id="wkE-Mv-PNE"/>
+            </constraints>
+            <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
+        </view>
+    </objects>
+</document>

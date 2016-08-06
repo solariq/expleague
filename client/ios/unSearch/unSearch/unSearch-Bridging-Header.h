@@ -8,3 +8,4 @@
 //#import "JSCustomBadge.h"
 //#import "JSCustomBadge"
 #import <CommonCrypto/CommonCrypto.h>
+#import <GoogleMaps/GoogleMaps.h>

@@ -31,7 +31,6 @@ public class BestAnswerQuery extends Item {
   @XmlAnyElement
   private List<Stanza> content;
 
-
   public BestAnswerQuery() {
   }
 

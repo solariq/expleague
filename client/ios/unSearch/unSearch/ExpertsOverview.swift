@@ -205,13 +205,10 @@ class ChooseExpertViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController!.navigationBar.setBackgroundImage(UIImage(named: "experts_background"), forBarMetrics: .Default)
         navigationController!.navigationBarHidden = false
+        navigationController!.navigationBar.setBackgroundImage(UIImage(named: "experts_background"), forBarMetrics: .Default)
         navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
         navigationItem.title = "Выберите эксперта"
-        let button = UIBarButtonItem(title: "Готово", style: .Done, target: self, action: #selector(ChooseExpertViewController.close))
-        button.tintColor = UIColor.whiteColor()
-        navigationItem.setRightBarButtonItem(button, animated: false)
     }
     
     override func viewWillAppear(animated: Bool) {

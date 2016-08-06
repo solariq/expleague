@@ -178,15 +178,15 @@ class HistoryViewController: UITableViewController {
             cell.textLabel!.textColor = UIColor.lightGrayColor()
         case .Ongoing:
             let ocell = tableView.dequeueReusableCellWithIdentifier("OngoingOrder", forIndexPath: indexPath) as! OngoingOrderStateCell
-            ocell.update(order: ongoing[indexPath.row])
+            ocell.setup(order: ongoing[indexPath.row])
             cell = ocell
         case .AnswerOfTheWeek:
             let ocell = tableView.dequeueReusableCellWithIdentifier("FinishedOrder", forIndexPath: indexPath) as! FinishedOrderStateCell
-            ocell.update(order: answerOfTheWeek!)
+            ocell.setup(order: answerOfTheWeek!)
             cell = ocell
         case .Finished:
             let ocell = tableView.dequeueReusableCellWithIdentifier("FinishedOrder", forIndexPath: indexPath) as! FinishedOrderStateCell
-            ocell.update(order: finished[indexPath.row])
+            ocell.setup(order: finished[indexPath.row])
             cell = ocell
         }
         return cell
@@ -329,8 +329,22 @@ class OrderBadge: UITableViewCell {
         unreadBadge.clipsToBounds = true
     }
     
+    func setup(order o: ExpLeagueOrder) {
+        QObject.disconnect(self)
+        QObject.connect(o, signal: #selector(ExpLeagueOrder.notify), receiver: self, slot: #selector(OrderBadge.invalidate(_:)))
+        update(order: o)
+    }
+
+    func invalidate(notification: NSNotification) {
+        if let order = notification.object as? ExpLeagueOrder {
+            dispatch_async(dispatch_get_main_queue()) {
+                self.update(order: order)
+            }
+        }
+    }
+    
     func update(order o: ExpLeagueOrder) {
-        o.badge = self
+        
         contentTypeIcon.image = o.typeIcon
         title.text = o.text
         let unread = o.unreadCount

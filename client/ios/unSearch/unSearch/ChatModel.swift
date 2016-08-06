@@ -10,7 +10,6 @@ import UIKit
 class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     private var lastKnownMessage: Int = 0
     let order: ExpLeagueOrder
-    let lock: dispatch_queue_t
     var lastAnswer: AnswerReceivedModel?
 
     weak var controller: OrderDetailsViewController? {
@@ -43,15 +42,18 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         order.messages.forEach{msg in
             msg.read = true
         }
-        order.badge?.update(order: order)
     }
 
-    func sync() {
-        dispatch_sync(lock){
-            self.syncInner()
+    func sync(rebuild: Bool = false) {
+        dispatch_async(dispatch_get_main_queue()){
+            if (rebuild) {
+                self.rebuild()
+            }
+            else {
+                self.syncInner()
+            }
         }
     }
-    
     
     func translateToIndex(plain: Int) -> NSIndexPath? {
         var x = plain - 1
@@ -73,6 +75,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         cells.removeAll()
         lastAnswer = nil
         lastKnownMessage = 0
+        answer = ""
         syncInner()
     }
     
@@ -107,8 +110,8 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 }
             }
             let msg = messages[lastKnownMessage]
-            print("\(order.jid) -> \(msg.type)")
-            if (msg.type != .System && !model.accept(msg)) { // switch model
+            print("\(order.jid) -> \(msg.type)")//: \(msg.body ?? "")")
+            if (!model.accept(msg)) { // switch model
                 modelChangeCount += 1
                 var newModel : ChatCellModel? = nil
                 if (msg.type == .ExpertAssignment) {
@@ -145,7 +148,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 else if (msg.type == .ExpertMessage) {
                     newModel = ChatMessageModel(incoming: true, author: msg.from)
                 }
-                else if (msg.type != .Feedback) {
+                else if (msg.type == .ClientMessage) {
                     newModel = ChatMessageModel(incoming: false, author: "me")
                     if (progressModel == nil) {
                         progressModel = LookingForExpertModel(order: order)
@@ -164,10 +167,8 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         switch(order.status) {
         case .Deciding:
             state = .Ask
-            break
         case .Closed, .Canceled:
             state = order.fake ? .Save : .Closed
-            break
         default:
             state = .Chat
             if (progressModel != nil) {
@@ -179,9 +180,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         controller?.messages.reloadData()
         controller?.answerText = answer
         finished = true
-        dispatch_async(dispatch_get_main_queue()){
-            self.controller?.scrollToLastMessage()
-        }
+        self.controller?.scrollToLastMessage()
     }
 
     private var cells: [ChatCellModel] = [];
@@ -276,10 +275,12 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
 
     init(order: ExpLeagueOrder) {
         self.order = order
-        self.lock = dispatch_queue_create("com.expleague.LockQueue\(order.jid.user)", nil)
         super.init()
-        order.model = self
-        sync()
+        QObject.connect(order, signal: #selector(ExpLeagueOrder.notify), receiver: self, slot: #selector(self.sync))
+    }
+    
+    deinit {
+        QObject.disconnect(self)
     }
 }
 

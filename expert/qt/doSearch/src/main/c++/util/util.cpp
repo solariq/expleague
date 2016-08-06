@@ -5,7 +5,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QDir>
-#include <QTextStream>
+#include <QDataStream>
 #include <QDebug>
 
 #include "call_once.h"
@@ -16,9 +16,13 @@ void createGlobalQueue() {
     globalQueue = new FileWriteThrottle;
 }
 
-void FileWriteThrottle::enqueue(const FileWriteRequest& req) {
+void FileWriteThrottle::enqueue(const QString& file, const QByteArray& content) {
     qCallOnce(createGlobalQueue, flag);
-    globalQueue->append(req);
+    globalQueue->append({file, content});
+}
+
+void FileWriteThrottle::enqueue(const QString& file, const QString& content) {
+    enqueue(file, content.toUtf8());
 }
 
 void FileWriteThrottle::append(const FileWriteRequest& req) {
@@ -64,10 +68,10 @@ void FileWriteThrottle::tick() {
                 info.dir().mkpath(".");
         }
 
-        if (file.open(QFile::WriteOnly | QFile::Truncate)) {
-            QTextStream answerStream(&file);
-            answerStream << request.content;
-        }
+        if (file.open(QFile::WriteOnly | QFile::Truncate))
+            file.write(request.content);
+        else
+            qWarning() << "Unable to write contents of file: " << request.file;
     }
     m_progress = false;
 }

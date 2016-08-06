@@ -1,20 +1,13 @@
 package com.expleague.server.dao.sql;
 
-import com.spbsu.commons.io.StreamTools;
-import com.spbsu.commons.system.RuntimeUtils;
+import com.spbsu.commons.util.ThreadTools;
 import org.intellij.lang.annotations.Language;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Spliterators;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -26,6 +19,10 @@ import java.util.stream.StreamSupport;
  */
 public class MySQLOps {
   private static final Logger log = Logger.getLogger(MySQLOps.class.getName());
+
+  public static final int ATTEMPT_TIMEOUT_MS = 1000;
+  public static final int MAX_NUMBER_OF_ATTEMPTS = 20;
+
   private final String connectionUrl;
   private Connection conn;
   private final ThreadLocal<Map<String, PreparedStatement>> statements = new ThreadLocal<Map<String, PreparedStatement>>(){
@@ -46,7 +43,12 @@ public class MySQLOps {
   public PreparedStatement createStatement(String name, @Language("MySQL") String stmt, boolean returnGenKeys) {
     PreparedStatement preparedStatement = statements.get().get(name);
     try {
-      if (preparedStatement == null || preparedStatement.isClosed() || preparedStatement.getConnection() == null || conn.isClosed() || !conn.isValid(0)) {
+      int attempt = 0;
+      while (preparedStatement == null || preparedStatement.isClosed() || preparedStatement.getConnection() == null || preparedStatement.getConnection() != conn || conn.isClosed() || !conn.isValid(0)) {
+        if (attempt++ > MAX_NUMBER_OF_ATTEMPTS) {
+          throw new RuntimeException("Unable to prepareStatement in " + MAX_NUMBER_OF_ATTEMPTS + " attempts");
+        }
+        ThreadTools.sleep(attempt * ATTEMPT_TIMEOUT_MS);
         preparedStatement = conn().prepareStatement(stmt, returnGenKeys ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS);
       }
       preparedStatement.clearParameters();
@@ -60,7 +62,12 @@ public class MySQLOps {
 
   public Connection conn() {
     try {
-      if (conn == null || conn.isClosed() || !conn.isValid(0)) {
+      int attempt = 0;
+      while (conn == null || conn.isClosed() || !conn.isValid(0)) {
+        if (attempt++ > MAX_NUMBER_OF_ATTEMPTS) {
+          throw new RuntimeException("Unable to get connection in " + MAX_NUMBER_OF_ATTEMPTS + " attempts");
+        }
+        ThreadTools.sleep(attempt * ATTEMPT_TIMEOUT_MS);
         conn = DriverManager.getConnection(connectionUrl);
       }
       return conn;

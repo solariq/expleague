@@ -3,10 +3,11 @@
 
 #include <atomic>
 #include <QObject>
+#include <QFile>
 
 struct FileWriteRequest {
     QString file;
-    QString content;
+    QByteArray content;
 };
 
 class QTimer;
@@ -15,7 +16,8 @@ class FileWriteThrottle: public QObject {
     Q_OBJECT
 
 public:
-    static void enqueue(const FileWriteRequest& req);
+    static void enqueue(const QString& file, const QByteArray& content);
+    static void enqueue(const QString& file, const QString& content);
 
 private slots:
     void tick();

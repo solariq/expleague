@@ -1,5 +1,8 @@
 package com.expleague.server;
 
+import com.expleague.xmpp.JID;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,7 +12,7 @@ import java.util.regex.Pattern;
  * Time: 18:39
  */
 public abstract class XMPPDevice {
-  private final XMPPUser user;
+  private XMPPUser user;
   private final String passwd;
   private final String name;
   private final boolean expert;
@@ -66,5 +69,17 @@ public abstract class XMPPDevice {
       return matcher.group(4);
     }
     return "unknown";
+  }
+
+  public void updateUser(XMPPUser user) {
+    this.user = user;
+  }
+
+  @Nullable
+  public static XMPPDevice fromJid(JID from) {
+    if (from.resource() == null || from.resource().isEmpty())
+      return null;
+    final String[] split = from.resource().split("/");
+    return Roster.instance().device(split[0]);
   }
 }

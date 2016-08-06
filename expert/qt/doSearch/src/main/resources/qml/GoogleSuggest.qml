@@ -84,8 +84,8 @@ Rectangle {
         Keys.onPressed: {
             var selected = listView.currentIndex >= 0 ? listView.model.get(listView.currentIndex) : ""
             if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
-                textField.text = selected.suggestion
                 googleSuggest.visible = false
+                itemChoosen(selected.suggestion)
                 textField.commit((event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) != 0)
                 event.accepted = true
             }
@@ -127,7 +127,8 @@ Rectangle {
                 listView.currentIndex = Math.floor((mouseY+rowHeight) / rowHeight)- 1;
             }
             onReleased: {
-                googleSuggest.itemChoosen(xmlModel.get(listView.currentIndex).suggestion);
+                var selected = listView.model.get(listView.currentIndex)
+                itemChoosen(selected.suggestion);
             }
         }
         onFocusChanged: {

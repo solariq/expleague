@@ -8,8 +8,7 @@ import com.expleague.server.dao.Archive;
 import com.expleague.server.dao.PatternsRepository;
 import com.expleague.server.services.XMPPServices;
 import com.expleague.util.akka.ActorContainer;
-import com.expleague.util.ios.NotificationsManager;
-import com.expleague.xmpp.Item;
+import com.expleague.server.notifications.NotificationsManager;
 import com.google.common.annotations.VisibleForTesting;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -39,12 +38,12 @@ public class ExpLeagueServer {
 
     final ActorSystem system = ActorSystem.create("ExpLeague", load);
 
-    NotificationsManager.instance();
     // singletons
     system.actorOf(ActorContainer.props(XMPP.class), "xmpp");
     system.actorOf(ActorContainer.props(LaborExchange.class), "labor-exchange");
 
     // per node
+    system.actorOf(ActorContainer.props(NotificationsManager.class, config.iosPushCert(), config.iosPushPasswd()), "notifications");
     system.actorOf(ActorContainer.props(XMPPServices.class), "services");
     system.actorOf(ActorContainer.props(XMPPServer.class), "comm");
     system.actorOf(ActorContainer.props(BOSHServer.class), "bosh");
@@ -114,6 +113,9 @@ public class ExpLeagueServer {
       return TimeUnit.valueOf(config().getString(name + ".unit"));
     }
 
+    String iosPushCert();
+    String iosPushPasswd();
+
     enum Type {
       PRODUCTION,
       TEST
@@ -149,6 +151,16 @@ public class ExpLeagueServer {
     @Override
     public Config config() {
       return config;
+    }
+
+    @Override
+    public String iosPushCert() {
+      return config.getString("notifications.ios.cert");
+    }
+
+    @Override
+    public String iosPushPasswd() {
+      return config.getString("notifications.ios.passwd");
     }
 
     @Override

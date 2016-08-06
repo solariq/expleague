@@ -1,11 +1,10 @@
-import QtQuick 2.5
-import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
+import QtQuick 2.7
+import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.1
 
 import QtGraphicalEffects 1.0
 
-import QtLocation 5.3
+import QtWebEngine 1.3
 
 import ExpLeague 1.0
 
@@ -16,14 +15,16 @@ Item {
 //    property TagsDialog tagsDialog
     property Offer offer
     property Task task
-    implicitHeight: topic.implicitHeight + 4 +
-                    (task ? buttons.height : 0) + 4 +
-                    (offer ? time.height + 4 : 0) +
+    property color textColor: Palette.selectedTextColor
+
+    implicitHeight: topic.implicitHeight + geoLocal.implicitHeight + 4 +
+                    (task ? 33 : 0) + 4 +
+                    (offer ? time.implicitHeight + 4 : 0) +
                     (offer && offer.hasLocation ? 200 + 4 : 0) +
                     ((offer ? offer.images.length * (200 + 4) : 0)) +
-                    (tagsView.visible ? tagsView.height + 4 : 0) +
-                    (patternsView.visible ? patternsView.height + 4 : 0) +
-                    (callsView.visible ? callsView.height + 4 : 0) +
+                    (tagsView.visible ? tagsView.implicitHeight + 4 : 0) +
+                    (patternsView.visible ? patternsView.implicitHeight + 4 : 0) +
+                    (callsView.visible ? callsView.implicitHeight + 4 : 0) +
                     4
 
 
@@ -52,8 +53,15 @@ Item {
 
         league: root.league
         onAppendPattern: {
+            var screen = root.navigation.activeScreen
+            if (!screen || !screen.editor)
+                return
+
+            var editor = screen.editor
+            var start = editor.selectionStart
+            editor.insert(start, pattern.text)
+            editor.cursorPosition = editor.cursorPosition - pattern.length
             task.pattern(pattern)
-            task.answerReset(task.answer + "\n" + pattern.text)
         }
     }
 
@@ -75,7 +83,6 @@ Item {
         }
     }
 
-
     ColumnLayout {
         anchors.fill: parent
         Rectangle {
@@ -92,36 +99,31 @@ Item {
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/send.png"
-                    onClicked: sendDialog.visible = true
+                    onTriggered: sendDialog.visible = true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/tags.png"
-                    onClicked: tagsDialog.visible = true
+                    onTriggered: tagsDialog.visible = true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/patterns.png"
-                    onClicked: patternsDialog.visible = true
+                    onTriggered: patternsDialog.visible = true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/phone.png"
-                    onClicked: callDialog.visible = true
+                    onTriggered: callDialog.visible = true
                 }
 
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/suspend.png"
-                    onClicked: suspendDialog.visible = true
+                    onTriggered: suspendDialog.visible = true
                 }
                 Item { Layout.fillWidth: true }
             }
-        }
-
-        Plugin {
-            id: mapPlugin
-            name: "osm"
         }
 
         Text {
@@ -138,9 +140,8 @@ Item {
                     return "black"
 
                 var urgency = Math.sqrt(Math.max(offer.timeLeft/offer.duration, 0))
-                return Qt.rgba(1-urgency, 0, 0, 1.0)
+                return Qt.rgba(textColor.r + (1 - textColor.r) * (1 - urgency), textColor.g * urgency, textColor.b * urgency, textColor.a + (1 - textColor.a) * urgency)
             }
-
         }
 
         TextEdit {
@@ -151,6 +152,7 @@ Item {
             horizontalAlignment: Qt.AlignHCenter
             renderType: Text.NativeRendering
             wrapMode: Text.WordWrap
+            color: Palette.selectedTextColor
             text: offer ? offer.topic : ""
             selectByMouse: true
         }
@@ -215,45 +217,28 @@ Item {
             }
         }
 
+        Text {
+            id: geoLocal
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: parent.width - 20
+            text: qsTr("Гео-специфичный: ") + (offer && offer.local ? qsTr("Да") : qsTr("Нет"))
+        }
 
-        Map {
+        Item {
             id: map
-            visible: offer && offer.hasLocation
-
-            property MapCircle circle
-            Layout.columnSpan: 2
             Layout.preferredHeight: 200
             Layout.preferredWidth: 300
             Layout.alignment: Qt.AlignHCenter
-            zoomLevel: 12
-            plugin: mapPlugin
-            center {
-                longitude: offer ? offer.longitude : 0
-                latitude: offer ? offer.latitude : 0
-            }
 
-            gesture.enabled: true
-            MouseArea {
+            WebEngineView {
                 anchors.fill: parent
-                onClicked: {
-                    task.context.handleOmniboxInput("qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude, true)
-                }
+                visible: offer && offer.hasLocation
+                url: offer ? "qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude : ""
             }
-
-            Connections {
-                target: self
-                onOfferChanged: {
-                    if (map.circle)
-                        map.removeMapItem(map.circle)
-                    if (offer) {
-                        map.circle = Qt.createQmlObject('import QtLocation 5.3; MapCircle {}', map)
-                        map.circle.center.longitude = offer.longitude
-                        map.circle.center.latitude = offer.latitude
-                        map.circle.radius = 50.0
-                        map.circle.color = 'green'
-                        map.circle.border.width = 3
-                        map.addMapItem(map.circle)
-                    }
+            TransparentMouseArea {
+                anchors.fill: parent
+                onPressed: {
+                    dosearch.navigation.handleOmnibox("qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude, 0)
                 }
             }
         }

@@ -1,116 +1,58 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
-#include <QObject>
-#include <QQmlListProperty>
+#include "page.h"
 
-#include "folder.h"
+#include <QList>
+#include <QQmlListProperty>
 
 namespace expleague {
 class Offer;
 class Task;
-class Context: public QObject {
+class SearchRequest;
+class Context: public Page {
+    static const QString NAME_KEY;
+
     Q_OBJECT
 
-    Q_PROPERTY(QQmlListProperty<expleague::Folder> folders READ folders NOTIFY foldersChanged)
-    Q_PROPERTY(Folder* folder READ folder NOTIFY folderChanged)
     Q_PROPERTY(Task* task READ task CONSTANT)
-    Q_PROPERTY(QUrl icon READ icon CONSTANT)
-    Q_PROPERTY(QString name READ name NOTIFY nameChanged)
-    Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
+    Q_PROPERTY(QQmlListProperty<SearchRequest> requests READ requests NOTIFY requestsChanged)
+    Q_PROPERTY(expleague::SearchRequest* lastRequest READ lastRequest NOTIFY requestsChanged)
 
 public:
-    Folder* folder() {
-        foreach(Folder* folder, m_folders) {
-            if (folder->active())
-                return folder;
-        }
-        return 0;
+    Task* task() const { return m_task; }
+
+    QString icon() const;
+    QString title() const;
+
+    QQmlListProperty<SearchRequest> requests() const {
+        return QQmlListProperty<SearchRequest>(const_cast<Context*>(this), const_cast<QList<SearchRequest*>&>(m_requests));
     }
 
-    QQmlListProperty<Folder> folders() {
-        return QQmlListProperty<Folder>(this, m_folders);
-    }
+    SearchRequest* lastRequest() const;
 
-    QString name() const {
-        return m_name;
-    }
-
-    QUrl icon() const {
-        return m_icon;
-    }
-
-    Task* task() const {
-        return m_task;
-    }
-
-    bool active() {
-        return m_active;
-    }
-
-    QString id() const { return m_id; }
+    bool hasTask() const;
 
 public:
-    Q_INVOKABLE void handleOmniboxInput(const QString& url, bool newTab);
-    Q_INVOKABLE bool remove() {
-        return false;
-    }
-
-    void setActive(bool state) {
-        if (state == m_active)
-            return;
-        m_active = state;
-        activeChanged();
-    }
+    void setTask(Task* task);
 
 signals:
-    void nameChanged(const QString&);
-    void activeChanged();
-    void foldersChanged();
-    void folderChanged(Folder* folder);
-    void closed();
     void visitedUrl(const QUrl& url);
+    void requestsChanged();
 
 private slots:
-    void folderStateChanged() {
-        Folder* current = (Folder*)sender();
-        if (current->active()) {
-            foreach (Folder* folder, m_folders) {
-                if (folder != current)
-                    folder->setActive(false);
-            }
-            emit folderChanged(current);
-        }
-    }
-
-    void taskFinished();
+    void onTaskFinished();
+    void onActiveScreenChanged();
 
 public:
-    explicit Context(const QString& name = "", QObject* parent = 0);
-    explicit Context(Task* offer, QObject* parent = 0);
+    explicit Context(const QString& id = "unknown", doSearch* parent = 0);
     virtual ~Context();
 
-protected:
-    void append(Folder* folder) {
-        assert(folder->parent() == this);
-        m_folders.append(folder);
-        connect(folder, SIGNAL(activeChanged()), SLOT(folderStateChanged()));
-        foldersChanged();
-        if (m_folders.length() == 1) {
-            folder->setActive(true);
-        }
-    }
-
 private:
-    friend class StateSaver;
     Task* m_task = 0;
-    QString m_name;
-    QUrl m_icon;
-    QList<Folder*> m_folders;
-    bool m_active = false;
-    QString m_id;
+    QList<SearchRequest*> m_requests;
+    mutable QString m_icon_cache;
 };
 }
 
-QML_DECLARE_TYPE(expleague::Context)
 #endif // CONTEXT_H

@@ -52,5 +52,23 @@
         <file>icons/25x25/splitter.png</file>
         <file>icons/25x25/table.png</file>
         <file>tools/suspend.png</file>
+        <file>tools/google.png</file>
+        <file>tools/search.png</file>
+        <file>tools/yandex.png</file>
+        <file>tools/back.png</file>
+        <file>tools/forward.png</file>
+        <file>icons/chrome.png</file>
+        <file>icons/owl.png</file>
+        <file>editor/bold.png</file>
+        <file>editor/cut.png</file>
+        <file>editor/enum.png</file>
+        <file>editor/header.png</file>
+        <file>editor/image.png</file>
+        <file>editor/italic.png</file>
+        <file>editor/link.png</file>
+        <file>editor/quote.png</file>
+        <file>editor/splitter.png</file>
+        <file>editor/table.png</file>
+        <file>editor/bullets.png</file>
     </qresource>
 </RCC>

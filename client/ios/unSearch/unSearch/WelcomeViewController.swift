@@ -11,6 +11,7 @@ import UIKit
 import StoreKit
 
 class WelcomeViewController: UIViewController {
+    static let ACCESS_PAYMENT = "com.expleague.unSearch.accessPermanent"
     @IBOutlet weak var topConstraint: NSLayoutConstraint!
     @IBOutlet weak var owlImage: UIImageView!
     
@@ -20,12 +21,11 @@ class WelcomeViewController: UIViewController {
         guard !busy else {
             return
         }
-        PurchaseHelper.instance.request("com.expleague.unSearch.accessPermanent") { rc in
+        PurchaseHelper.instance.request(WelcomeViewController.ACCESS_PAYMENT) {rc, payment in
             switch rc {
             case .Accepted:
-                self.navigationController!.popViewControllerAnimated(true)
                 dispatch_async(dispatch_get_main_queue()) {
-                    AppDelegate.instance.setupDefaultProfiles()
+                    AppDelegate.instance.setupDefaultProfiles(payment!.hash)
                 }
             case .Error:
                 let alert = UIAlertController(title: "unSearch", message: "Не удалось провести платеж!", preferredStyle: .Alert)
@@ -38,31 +38,44 @@ class WelcomeViewController: UIViewController {
         }
     }
 
+    @IBOutlet weak var startWorkingButton: UIButton!
+    @IBAction func startWorking(sender: AnyObject) {
+        let data = NSData(contentsOfURL: NSURL(string: "http://unsearch.expleague.com/act/getCode.php?di=\(AppDelegate.deviceId)")!)
+        if let d = data, let dataStr = NSString(data: d, encoding: NSUTF8StringEncoding) {
+            if let enteredCode = UInt64((dataStr as String).stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())) {
+                AppDelegate.instance.setupDefaultProfiles(enteredCode.hashValue)
+            }
+        }
+    }
+    
     @IBOutlet weak var descriptionText: UITextView!
     @IBOutlet weak var enterCodeButton: UIButton!
     @IBOutlet weak var sendRequestButton: UIButton!
     var active: Bool = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         enterCodeButton.layer.cornerRadius = enterCodeButton.frame.height / 2
         enterCodeButton.clipsToBounds = true
-        sendRequestButton.layer.cornerRadius = enterCodeButton.frame.height / 2
+        sendRequestButton.layer.cornerRadius = sendRequestButton.frame.height / 2
         sendRequestButton.clipsToBounds = true
-        buyButton.layer.cornerRadius = enterCodeButton.frame.height / 2
+        buyButton.layer.cornerRadius = buyButton.frame.height / 2
         buyButton.clipsToBounds = true
-        PurchaseHelper.instance.register(["com.expleague.unSearch.accessPermanent"])
+        startWorkingButton.layer.cornerRadius = startWorkingButton.frame.height / 2
+        startWorkingButton.clipsToBounds = true
+        PurchaseHelper.instance.register([WelcomeViewController.ACCESS_PAYMENT])
         
         let descriptionText = NSMutableAttributedString()
         descriptionText.appendAttributedString(NSAttributedString(string: "В настоящий момент доступ к приложению "))
         descriptionText.appendAttributedString(NSAttributedString(string: "ограничен", attributes: [
-            NSLinkAttributeName: NSURL(string: "https://www.expleague.com/accessrules/")!
+            NSLinkAttributeName: NSURL(string: "http://unsearch.expleague.com/accessrules/")!
         ]))
         self.descriptionText.attributedText = descriptionText
         self.descriptionText.font = UIFont.systemFontOfSize(15)
         self.descriptionText.textAlignment = .Center
         self.descriptionText.textColor = UIColor.whiteColor()
-        let bar:UINavigationBar! =  self.navigationController?.navigationBar
-        
+        self.startWorkingButton.hidden = true
+        let bar: UINavigationBar! =  self.navigationController?.navigationBar
         bar.setBackgroundImage(UIImage(), forBarMetrics: UIBarMetrics.Default)
         bar.shadowImage = UIImage()
         bar.backgroundColor = UIColor(red: 0.0, green: 0.3, blue: 0.5, alpha: 0.0)
@@ -71,6 +84,18 @@ class WelcomeViewController: UIViewController {
         self.navigationController?.navigationBar.titleTextAttributes = [
             NSForegroundColorAttributeName: UIColor.whiteColor()
         ]
+        dispatch_async(dispatch_get_main_queue()) {
+            let data = NSData(contentsOfURL: NSURL(string: "http://unsearch.expleague.com/act/getCodeActive.php?di=\(AppDelegate.deviceId)")!)
+            if let d = data, let dataStr = NSString(data: d, encoding: NSUTF8StringEncoding) where dataStr.hasSuffix("1") {
+                self.descriptionText.attributedText = NSAttributedString(string: "")
+                self.descriptionText.text = "В данный момент у вас есть возможность начать пользоваться приложением!"
+                self.descriptionText.textColor = UIColor.whiteColor()
+                
+                self.startWorkingButton.hidden = false
+                self.buyButton.hidden = true
+                self.sendRequestButton.hidden = true
+            }
+        }
     }
     
     override func preferredStatusBarStyle() -> UIStatusBarStyle {
@@ -79,10 +104,6 @@ class WelcomeViewController: UIViewController {
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
-        guard AppDelegate.instance.activeProfile == nil else {
-            performSegueWithIdentifier("Start", sender: self)
-            return
-        }
         QObject.track(AppDelegate.instance, #selector(AppDelegate.activate(_:))) {
             self.performSegueWithIdentifier("Start", sender: self)
             self.active = false
@@ -117,7 +138,7 @@ class SendRequestViewController: UIViewController {
             return
         }
 
-        let data = NSData(contentsOfURL: NSURL(string: "https://www.expleague.com/act/sendComment.php?email=\(text)&id=\(abs(UIDevice.currentDevice().identifierForVendor!.UUIDString.hashValue))")!)
+        let data = NSData(contentsOfURL: NSURL(string: "http://unsearch.expleague.com/act/sendComment.php?email=\(text)&id=\(AppDelegate.deviceId)")!)
         if let d = data, let dataStr = NSString(data: d, encoding: NSUTF8StringEncoding) where dataStr.hasSuffix("1") {
             let alert = UIAlertController(title: "unSearch", message: "Поздравляем! Ваша заявка успешно принята. Вы получите письмо с кодом для активации приложения, как только очередь дойдет до вас.", preferredStyle: .Alert)
             alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: {action in
@@ -171,12 +192,11 @@ class EnterCodeViewController: UIViewController {
             return
         }
         if let enteredCode = UInt64(accessCode.text!) {
-            let deviceId = UInt64(abs(UIDevice.currentDevice().identifierForVendor!.UUIDString.hashValue))
-            let code = enteredCode + deviceId
+            let code = enteredCode + AppDelegate.deviceId
             if (code % 14340987 == 0 || enteredCode == 1234123123312) {
                 navigationController!.popViewControllerAnimated(true)
                 dispatch_async(dispatch_get_main_queue()) {
-                    AppDelegate.instance.setupDefaultProfiles()
+                    AppDelegate.instance.setupDefaultProfiles(enteredCode.hashValue)
                 }
                 return
             }
@@ -190,6 +210,24 @@ class EnterCodeViewController: UIViewController {
         super.viewDidLoad()
         enterButton.layer.cornerRadius = enterButton.frame.height / 2
         enterButton.clipsToBounds = true
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        var purchase: String?
+        dispatch_async(dispatch_queue_create("Restore payments", DISPATCH_QUEUE_CONCURRENT)) {
+            let visitor: (name: String, id: String) -> () = {name, id in
+                purchase = id
+            }
+            PurchaseHelper.visitTransactions(visitor: visitor) {_ in
+                guard purchase != nil else {
+                    return
+                }
+                dispatch_async(dispatch_get_main_queue()) {
+                    AppDelegate.instance.setupDefaultProfiles(purchase?.hash)
+                }
+            }
+        }
     }
     
     override func viewDidAppear(animated: Bool) {

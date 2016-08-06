@@ -18,7 +18,7 @@
         <file>SidebarButton.qml</file>
         <file>EditorView.qml</file>
         <file>OfferView.qml</file>
-        <file>Chat.qml</file>
+        <file>LeagueChat.qml</file>
         <file>InviteDialog.qml</file>
         <file>SelectProfileDialog.qml</file>
         <file>TagsDialog.qml</file>
@@ -35,5 +35,11 @@
         <file>BrowserActions.qml</file>
         <file>CommonActions.qml</file>
         <file>SuspendDialog.qml</file>
+        <file>ResourcePath.qml</file>
+        <file>NavigationTabs.qml</file>
+        <file>NavigationGroup.qml</file>
+        <file>NavigationTab.qml</file>
+        <file>TaskView.qml</file>
+        <file>EmptyView.qml</file>
     </qresource>
 </RCC>

@@ -109,7 +109,8 @@ public class XMPPLevelDBJournal extends AsyncWriteJournal {
     return Futures.future(() -> {
       visitKeyRange(persistenceId, 0, toSequenceNr, (id, seq, key, data) -> {
         final Item item = Item.create(StreamTools.UTF.decode(ByteBuffer.wrap(data)));
-        replayCallback.accept(new PersistentImpl(item, seq, id, "", false, self(), ""));
+        if (item != null)
+          replayCallback.accept(new PersistentImpl(item, seq, id, "", false, self(), ""));
       });
       return null;
     }, context().dispatcher());

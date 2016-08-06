@@ -1,3 +1,4 @@
+alter table Orders ADD COLUMN payment VARCHAR(128) default null;
 ALTER TABLE Orders ADD COLUMN activation_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 
 ALTER TABLE Participants ADD COLUMN timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP;

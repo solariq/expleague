@@ -8,6 +8,8 @@ import QtWebEngine 1.2
 import ExpLeague 1.0
 
 Item {
+    id: self
+    property alias instance: self
     property Action closeTab: closeTabAction
     property Action copy: copyAction
     property Action paste: pasteAction
@@ -15,45 +17,62 @@ Item {
     property Action selectAll: selectAllAction
     property Action undo: undoAction
     property Action redo: redoAction
+    property Action reload: reloadAction
     property Action searchOnPage: searchOnPageAction
     property Action searchInternet: searchInternetAction
     property Action searchSite: searchSiteAction
 
     property QtObject screen: {
-        return root.context.folder.screen
+        return root.navigation.activeScreen
+    }
+
+    property QtObject page: {
+        return root.navigation.activePage
     }
 
     property WebEngineView webView: {
-        if (!screen)
+        if (!screen || !screen.webView)
             return null
-        var name = screen.toString()
-        if (name.indexOf("WebScreen") >= 0 || name.indexOf("WebSearch") >= 0) {
-            return screen.webView
-        }
-        return null
+        return screen.webView
     }
 
     property TextEdit editor: {
-        if (screen && screen.toString().indexOf("MarkdownEditorScreen") >= 0) {
+        if (screen && screen.editor) {
             return screen.editor
         }
         return null
     }
 
     property var omnibox: {
-        if (root.main) {
+        if (root.main)
             return root.main.omnibox
-        }
         return null
+    }
+
+    function focusWebView() {
+        var focus = root.main.activeFocusItem
+        while (focus && focus.toString().indexOf("QQuickWebEngineView") < 0) {
+            focus = focus.parent
+        }
+        return focus
+    }
+
+    function focusEditor() {
+        var focus = root.main.activeFocusItem
+        if (focus.toString().indexOf("QQuickTextEdit") < 0)
+            return null
+        return focus
     }
 
     Action {
         id: closeTabAction
         text: qsTr("Закрыть таб")
         shortcut: StandardKey.Close
-        enabled: screen
+        enabled: page
         onTriggered: {
-            screen.remove()
+            if (page && dosearch.navigation.activeGroup) {
+                dosearch.navigation.close(dosearch.navigation.activeGroup, page)
+            }
         }
     }
 
@@ -61,9 +80,17 @@ Item {
         id: copyAction
         text: qsTr("Скопировать")
         shortcut: StandardKey.Copy
-        enabled: (editor && editor.selectionStart != editor.selectionEnd) || webView
+        enabled: true//(editor && editor.selectionStart != editor.selectionEnd) || webView
         onTriggered: {
-            if (webView) {
+            var focusedWeb = focusWebView()
+            var focusedEditor = focusEditor()
+            if (focusedWeb) {
+                focusedWeb.triggerWebAction(WebEngineView.Copy)
+            }
+            else if (focusedEditor) {
+                focusedEditor.copy()
+            }
+            else if (webView) {
                 webView.triggerWebAction(WebEngineView.Copy)
             }
             else if (editor) {
@@ -147,10 +174,23 @@ Item {
     }
 
     Action {
+        id: reloadAction
+        text: qsTr("Перегрузить страницу")
+        shortcut: StandardKey.Refresh
+        enabled: webView
+        onTriggered: {
+            if (webView) {
+                webView.reloadAndBypassCache()
+            }
+        }
+    }
+
+    Action {
         id: searchOnPageAction
         shortcut: "Ctrl+F"
         text: qsTr("Поиск на странице")
         onTriggered: {
+            omnibox.visible = true
             omnibox.select("page")
             omnibox.forceActiveFocus()
         }
@@ -161,6 +201,7 @@ Item {
         shortcut: "Ctrl+S"
         text: qsTr("Поиск в интернете")
         onTriggered: {
+            omnibox.visible = true
             omnibox.select("internet")
             omnibox.forceActiveFocus()
         }
@@ -171,6 +212,7 @@ Item {
         shortcut: "Ctrl+Shift+S"
         text: qsTr("Поиск на текущем сайте")
         onTriggered: {
+            omnibox.visible = true
             omnibox.select("site")
             omnibox.forceActiveFocus()
         }

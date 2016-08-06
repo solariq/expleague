@@ -15,7 +15,7 @@ Item {
         visible: false
         standardButtons: StandardButton.Yes | StandardButton.No
         onYes: {
-            root.context.task.cancel()
+            dosearch.navigation.context.task.cancel()
             visible = false
         }
         onNo: {

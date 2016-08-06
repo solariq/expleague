@@ -11,13 +11,15 @@ import CloudKit
 class AboutViewController: UIViewController {
     var initialized = false
     
-    @IBOutlet weak var instructionsButton: UIButton!
     @IBOutlet weak var topConstraint: NSLayoutConstraint!
     @IBOutlet weak var slogan: UILabel!
     @IBOutlet weak var build: UILabel!
+    @IBOutlet weak var instructionsButton: UIButton!
+    @IBOutlet weak var rateUsButton: UIButton!
     @IBOutlet weak var inviteButton: UIButton!
+
     @IBAction func invite(sender: AnyObject) {
-        let alert = UIAlertController(title: "Оставьте заявку", message: "С целью сохранения высокого качества работы экспертов и отсутствия очередей, доступ к приложению в данный момент ограничен. Оставьте e-mail Вашего друга и мы свяжемся с ним как только появится возможность.", preferredStyle: .Alert)
+        let alert = UIAlertController(title: "Оставьте заявку", message: "С целью сохранения высокого качества работы экспертов и отсутствия очередей, доступ к приложению в данный момент ограничен. Оставьте e-mail вашего друга, и мы свяжемся с ним как только появится возможность.", preferredStyle: .Alert)
         alert.addTextFieldWithConfigurationHandler { (text: UITextField) -> Void in
             text.placeholder = "Введите адрес"
             text.keyboardType = .EmailAddress
@@ -42,19 +44,27 @@ class AboutViewController: UIViewController {
     }
     
     @IBAction func instructions(sender: AnyObject) {
-        UIApplication.sharedApplication().openURL(NSURL(string: "https://www.expleague.com/help/")!)
+        UIApplication.sharedApplication().openURL(NSURL(string: "http://unsearch.expleague.com/help/")!)
+    }
+    
+    @IBAction func rateUs(sender: AnyObject) {
+        UIApplication.sharedApplication().openURL(NSURL(string: "itms-apps://itunes.apple.com/app/id1080695101")!)
     }
     
     var friend: String?
     
-    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+    func updateSize(size: CGSize) {
         guard initialized else {
             return
         }
         let isLandscape = size.height < size.width
         build.hidden = isLandscape
         instructionsButton.hidden = isLandscape
+        rateUsButton.hidden = isLandscape
         topConstraint.constant = size.height * 0.1
+    }
+    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+        updateSize(size)
     }
     
     override func viewDidLoad() {
@@ -71,6 +81,10 @@ class AboutViewController: UIViewController {
         navigationController!.navigationBar.setBackgroundImage(UIImage(named: "history_background"), forBarMetrics: .Default)
         navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
         navigationController!.navigationBar.tintColor = UIColor.whiteColor()
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        updateSize(UIScreen.mainScreen().bounds.size)
     }
 }
 
@@ -194,8 +208,6 @@ extension SettingsViewController: XMPPStreamDelegate {
     func xmppStream(sender: XMPPStream!, willSecureWithSettings settings: NSMutableDictionary!) {
         log("Configuring");
         settings.setValue(true, forKey: GCDAsyncSocketManuallyEvaluateTrust)
-//        settings.setValue(true, forKey: String(kCFStreamSSLValidatesCertificateChain))
-//        settings.setValue(<#T##value: AnyObject?##AnyObject?#>, forKey: <#T##String#>)
     }
 
     func xmppStream(sender: XMPPStream!, didNotAuthenticate error: DDXMLElement!) {
