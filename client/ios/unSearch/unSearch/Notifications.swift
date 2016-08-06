@@ -15,7 +15,7 @@ class Notifications {
             return
         }
         let notification = UILocalNotification()
-        notification.alertBody = "Новый ответ недели на тему '\(title)'\", "
+        notification.alertBody = "Пятница — время для ответа недели: '\(title)'"
         notification.soundName = "owl.wav"
         notification.userInfo = ["order" : aow.id]
         UIApplication.sharedApplication().scheduleLocalNotification(notification)

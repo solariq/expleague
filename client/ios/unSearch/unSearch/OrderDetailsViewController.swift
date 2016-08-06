@@ -142,7 +142,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
 
         if (enforceScroll) {
             scrollToLastMessage()
-            if (data.state == .Chat || (data.state == .Closed && data.order.fake)) {
+            if (data.state == .Chat || data.state == .Save) {
                 detailsView!.scrollToChat(false)
             }
             else {
