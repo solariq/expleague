@@ -347,7 +347,8 @@ void Page::setState(Page::State state) {
 }
 
 double Page::titleWidth() const {
-    return titleFontMetrics.width(title(), std::min(title().length(), 30));
+    QString title = this->title();
+    return title.isEmpty() ? 200 : titleFontMetrics.boundingRect(title).width();
 }
 
 doSearch* Page::parent() const {

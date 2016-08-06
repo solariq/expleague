@@ -8,6 +8,8 @@ namespace expleague {
 SearchRequest SearchRequest::EMPTY("");
 
 QString SearchRequest::parseGoogleQuery(const QUrl& request) const {
+    if (request.path() != "/search")
+        return "";
     QUrlQuery query(request.hasFragment() ? request.fragment() : request.query());
     QString queryText = query.queryItemValue("q", QUrl::FullyDecoded);
     queryText.replace("+", " ");
@@ -15,10 +17,13 @@ QString SearchRequest::parseGoogleQuery(const QUrl& request) const {
     int index;
     if ((index = site.indexIn(queryText)) >= 0)
         queryText = queryText.mid(0, index) + "#site(" + site.cap(1) + ")" + queryText.mid(index + site.matchedLength());
-    return queryText;
+    return queryText.trimmed();
 }
 
 QString SearchRequest::parseYandexQuery(const QUrl& request) const {
+    QString path = request.path();
+    if (path != "/search/" && path != "/yandsearch")
+        return "";
     QUrlQuery query(request.hasFragment() ? request.fragment() : request.query());
     QString queryText = query.queryItemValue("text", QUrl::FullyDecoded);
     queryText.replace("+", " ");
@@ -26,7 +31,7 @@ QString SearchRequest::parseYandexQuery(const QUrl& request) const {
     int index;
     if ((index = site.indexIn(queryText)) >= 0)
         queryText = queryText.mid(0, index) + "#site(" + site.cap(1) + ")" + queryText.mid(index + site.matchedLength());
-    return queryText;
+    return queryText.trimmed();
 }
 
 QUrl SearchRequest::googleUrl() const {

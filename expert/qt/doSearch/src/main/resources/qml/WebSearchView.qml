@@ -56,7 +56,8 @@ Item {
                 onNewViewRequested: dosearch.main.openLink(request, owner, request.destination === WebEngineView.NewViewInBackgroundTab)
                 onUrlChanged: {
                     var query = owner.parseGoogleQuery(url)
-                    if (query != owner.query) {
+                    if (query.length > 0 && query != owner.query) {
+                        console.log("Open new search: " + query)
                         url = owner.googleUrl
                         dosearch.navigation.open(dosearch.search(query, 0))
                     }
@@ -71,7 +72,8 @@ Item {
                 onNewViewRequested: dosearch.main.openLink(request, owner, request.destination === WebEngineView.NewViewInBackgroundTab)
                 onUrlChanged: {
                     var query = owner.parseYandexQuery(url)
-                    if (query != owner.query) {
+                    if (query.length > 0 && query != owner.query) {
+                        console.log("Open new search: " + query)
                         url = owner.yandexUrl
                         dosearch.navigation.open(dosearch.search(query, 1))
                     }

@@ -32,7 +32,7 @@ void NavigationManager::onDnsRequestFinished() {
         WebPage* web = qobject_cast<WebPage*>(m_selected);
         if (web)
             text = text.replace("#site", "#site(" + web->url().host() + ")");
-        page = parent()->search(text);
+        page = parent()->search(text.trimmed());
     }
     typeIn(page);
 }
@@ -40,7 +40,7 @@ void NavigationManager::onDnsRequestFinished() {
 void NavigationManager::typeIn(Page* page) {
     context()->transition(page, Page::TransitionType::TYPEIN);
     PagesGroup* group = m_groups.first();
-    group->ensureVisible(page);
+    group->ensureVisible(page, 0);
     select(group, page);
 }
 
@@ -176,20 +176,22 @@ void NavigationManager::rebalanceWidth() {
     int index = 0;
     while (index < visible.size()) {
         Page* const current = visible[index];
-        qDebug() << "Pro bab:" << m_selected->pOut(current);
         double width = std::min(240.0, current->titleWidth() + 40);
+        qDebug() << "id: "<< current->id() << " probability: " << m_selected->pOut(current) << " width: " << width;
         if (available_width < width) // title + icon
             break;
         result.insert(current);
         available_width -= width;
         index++;
     }
+    qDebug() << "Left width: " << available_width;
+
     m_contexts_group->setVisibleCount(std::min(3, m_contexts_group->activePages().size()));
     foreach (PagesGroup* group, m_groups) {
         QList<Page*> pages = group->activePages();
         const int visibleCount = pages.toSet().intersect(result).size();
         group->setVisibleCount(visibleCount);
-        group->ensureVisible(group->selectedPage());
+        group->ensureVisible(group->selectedPage(), visibleCount - 1);
     }
 }
 

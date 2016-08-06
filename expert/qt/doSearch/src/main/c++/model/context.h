@@ -35,6 +35,7 @@ public:
 
 public:
     void setTask(Task* task);
+    virtual void transition(Page *from, TransitionType type);
 
 signals:
     void visitedUrl(const QUrl& url);
@@ -44,6 +45,8 @@ private slots:
     void onTaskFinished();
     void onActiveScreenChanged();
 
+protected:
+    void interconnect();
 public:
     explicit Context(const QString& id = "unknown", doSearch* parent = 0);
     virtual ~Context();

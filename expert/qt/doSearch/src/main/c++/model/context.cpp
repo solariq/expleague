@@ -60,13 +60,29 @@ void Context::setTask(Task *task) {
     iconChanged(icon());
 }
 
+void Context::transition(Page *from, TransitionType type) {
+    Page::transition(from, type);
+    if (type == Page::CHILD_GROUP_OPEN) {
+        SearchRequest* request = qobject_cast<SearchRequest*>(from);
+        if (request) {
+            m_requests.append(request);
+            requestsChanged();
+        }
+    }
+}
+
 Context::Context(const QString& id, doSearch* parent): Page(id, "qrc:/ContextView.qml", "", parent) {
-    foreach(Page* page, outgoing()) {
-        SearchRequest* request = qobject_cast<SearchRequest*>(page);
+    connect(parent->navigation(), SIGNAL(activeScreenChanged()), this, SLOT(onActiveScreenChanged()));
+}
+
+void Context::interconnect() {
+    Page::interconnect();
+    QList<Page*> pages;
+    for (int i = pages.size() - 1; i >= 0; i--) {
+        SearchRequest* request = qobject_cast<SearchRequest*>(pages[i]);
         if (request)
             m_requests.append(request);
     }
-    connect(parent->navigation(), SIGNAL(activeScreenChanged()), this, SLOT(onActiveScreenChanged()));
 }
 
 Context::~Context() {
