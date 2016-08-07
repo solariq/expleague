@@ -21,7 +21,7 @@
 # mkdir temp
 # mv ./doSearch.app/ ./temp/
 # hdiutil create -volname doSearch -srcfolder ./temp/ -ov -format UDZO doSearch.dmg
-VERSION = 0.1.2
+VERSION = 0.4.4
 
 QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine webenginewidgets xml multimedia webenginecore
 QT_PRIVATE += webengine-private

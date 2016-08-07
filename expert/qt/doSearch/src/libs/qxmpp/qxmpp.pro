@@ -4,6 +4,9 @@ CONFIG += ordered
 TEMPLATE = subdirs
 
 SUBDIRS = src
+
+QXMPP_NO_TESTS = 1
+QXMPP_NO_EXAMPLES = 1
 isEmpty(QXMPP_NO_TESTS) {
     SUBDIRS += tests
 }

@@ -7,6 +7,7 @@ import ExpLeague 1.0
 import "."
 Column {
     id: self
+    property alias editorActions: dosearch.main.editorActions
     anchors.fill: parent
     property alias editor: edit
     Item {
@@ -20,47 +21,47 @@ Column {
             Item {Layout.preferredWidth: 1}
             ToolbarButton {
                 Layout.alignment: Qt.AlignVCenter
-                action: EditorActions.makeBold
+                action: editorActions.makeBold
             }
             ToolbarButton {
                 Layout.alignment: Qt.AlignVCenter
-                action: EditorActions.makeItalic
+                action: editorActions.makeItalic
             }
             ToolbarButton {
                 Layout.alignment: Qt.AlignVCenter
-                action: EditorActions.insertHeader3
+                action: editorActions.insertHeader3
             }
             ToolbarButton {
                 Layout.alignment: Qt.AlignVCenter
-                action: EditorActions.insertImage
+                action: editorActions.insertImage
             }
             ToolbarButton {
                 Layout.alignment: Qt.AlignVCenter
-                action: EditorActions.insertLink
+                action: editorActions.insertLink
             }
             ToolbarButton {
                 Layout.alignment: Qt.AlignVCenter
-                action: EditorActions.insertSplitter
+                action: editorActions.insertSplitter
             }
             ToolbarButton {
                 Layout.alignment: Qt.AlignVCenter
-                action: EditorActions.makeCut
+                action: editorActions.makeCut
             }
             ToolbarButton {
                 Layout.alignment: Qt.AlignVCenter
-                action: EditorActions.insertCitation
+                action: editorActions.insertCitation
             }
             ToolbarButton {
                 Layout.alignment: Qt.AlignVCenter
-                action: EditorActions.makeList
+                action: editorActions.makeList
             }
             ToolbarButton {
                 Layout.alignment: Qt.AlignVCenter
-                action: EditorActions.makeEnumeration
+                action: editorActions.makeEnumeration
             }
             ToolbarButton {
                 Layout.alignment: Qt.AlignVCenter
-                action: EditorActions.insertTable
+                action: editorActions.insertTable
             }
 
             Item {Layout.fillWidth: true}

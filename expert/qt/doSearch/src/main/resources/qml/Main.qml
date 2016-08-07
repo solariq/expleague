@@ -114,6 +114,14 @@ ApplicationWindow {
         }
     }
 
+    CommonActions {
+        id: commonActions
+    }
+
+    EditorActions {
+        id: editorActions
+    }
+
     menuBar: MenuBar {
         Menu {
             title: qsTr("Профиль")
@@ -127,80 +135,83 @@ ApplicationWindow {
         Menu {
             title: qsTr("Серфинг")
             MenuItem {
-                action: CommonActions.reload
+                action: commonActions.reload
             }
             MenuItem {
-                action: CommonActions.searchInternet
+                action: commonActions.searchInternet
             }
             MenuItem {
-                action: CommonActions.searchSite
+                action: commonActions.searchSite
             }
             MenuItem {
-                action: CommonActions.searchOnPage
+                action: commonActions.searchOnPage
             }
             MenuItem {
-                action: CommonActions.closeTab
+                action: commonActions.closeTab
             }
         }
+
         Menu {
             title: qsTr("Правка")
             MenuItem {
-                action: CommonActions.undo
+                action: commonActions.undo
             }
             MenuItem {
-                action: CommonActions.redo
+                action: commonActions.redo
             }
             MenuSeparator{}
             MenuItem {
-                action: CommonActions.cut
+                action: commonActions.cut
             }
             MenuItem {
-                action: CommonActions.copy
+                action: commonActions.copy
             }
             MenuItem {
-                action: CommonActions.paste
+                action: commonActions.paste
             }
             MenuSeparator{}
             MenuItem {
-                action: CommonActions.selectAll
+                action: commonActions.selectAll
             }
+            MenuSeparator{}
         }
         Menu {
             title: qsTr("Редактор")
-            enabled: EditorActions.editor
+            enabled: editorActions.editor
             MenuItem {
-                action: EditorActions.makeBold
+                action: editorActions.makeBold
             }
             MenuItem {
-                action: EditorActions.makeItalic
+                action: editorActions.makeItalic
             }
             MenuItem {
-                action: EditorActions.insertHeader3
+                action: editorActions.insertHeader3
             }
             MenuItem {
-                action: EditorActions.insertImage
+                action: editorActions.insertImage
             }
             MenuItem {
-                action: EditorActions.insertLink
+                action: editorActions.insertLink
             }
             MenuItem {
-                action: EditorActions.insertSplitter
+                action: editorActions.insertSplitter
             }
             MenuItem {
-                action: EditorActions.makeCut
+                action: editorActions.makeCut
             }
             MenuItem {
-                action: EditorActions.insertCitation
+                action: editorActions.insertCitation
             }
             MenuItem {
-                action: EditorActions.makeEnumeration
+                action: editorActions.makeEnumeration
             }
             MenuItem {
-                action: EditorActions.makeList
+                action: editorActions.makeList
             }
             MenuItem {
-                action: EditorActions.insertTable
+                action: editorActions.insertTable
             }
+            property var s: EditorActions.childAt(assd)
         }
     }
 

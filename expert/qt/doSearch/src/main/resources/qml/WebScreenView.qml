@@ -10,7 +10,7 @@ import "."
 
 Item {
     id: self
-    property alias editor: urlText
+//    property alias editor: urlText
     property Item myParent
     property alias webView: webEngineView
     property real actionTs: 0
@@ -236,8 +236,10 @@ Item {
                     actionTs = new Date().getTime()
                 }
             }
+            Keys.forwardTo: dosearch.main
             Keys.onPressed: { // chromium sends us back the keyboard events so to prevent endless loop need to skip this one
                 event.accepted = true
+                console.log("From chrome: " + event.key + " mod: " + event.modifiers)
             }
         }
     }
@@ -245,6 +247,7 @@ Item {
     focus: true
     property bool complete: false
     onFocusChanged: {
+        console.log("Web screen focus changed to: " + focus)
         if (!complete || self.focus || !dosearch.main)
             return
         if (webEngineView.focus || urlText.focus || searchText.focus) {
@@ -265,6 +268,7 @@ Item {
 
     Keys.onPressed: {
         actionTs = new Date().getTime()
+        console.log("To chrome: " + event.key + " mod: " + event.modifier)
         if (pageSearch.length > 0) {
             if (event.key === Qt.Key_Left) {
                 webEngineView.findText(pageSearch, WebEngineView.FindBackward)
