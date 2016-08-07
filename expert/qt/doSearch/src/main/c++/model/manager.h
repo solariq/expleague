@@ -33,7 +33,6 @@ class NavigationManager: public QObject {
     Q_PROPERTY(QQmlListProperty<expleague::Page> history READ history NOTIFY historyChanged)
     Q_PROPERTY(expleague::Context* context READ context WRITE activate NOTIFY contextChanged)
 
-    Q_PROPERTY(int activeScreenIndex READ activeScreenIndex NOTIFY activeScreenChanged)
     Q_PROPERTY(QQuickItem* activeScreen READ activeScreen NOTIFY activeScreenChanged)
     Q_PROPERTY(expleague::Page* activePage READ activePage NOTIFY activeScreenChanged)
 
@@ -58,12 +57,9 @@ public:
         return QQmlListProperty<expleague::Page>(const_cast<NavigationManager*>(this), const_cast<QList<Page*>&>(m_history));
     }
 
-    int activeScreenIndex() const {
-        return m_active_screen_index;
-    }
 
     QQuickItem* activeScreen() const {
-        return m_active_screen_index >= 0 ? m_screens[m_active_screen_index] : 0;
+        return m_active_screen;
     }
 
     Page* activePage() const {
@@ -111,7 +107,7 @@ private:
 
 private:
     double m_screen_width;
-    Context* m_active_context = 0;
+    Context* m_active_context;
 
     Page* m_selected;
 
@@ -120,7 +116,7 @@ private:
     QList<Page*> m_history;
 
     QList<QQuickItem*> m_screens;
-    int m_active_screen_index = -1;
+    QQuickItem* m_active_screen;
     QDnsLookup* m_lookup;
 };
 

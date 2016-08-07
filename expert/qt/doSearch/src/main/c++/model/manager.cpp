@@ -5,7 +5,7 @@
 
 #include <QDnsLookup>
 #include <QQuickWindow>
-
+#include <QQmlApplicationEngine>
 
 namespace expleague {
 
@@ -40,7 +40,7 @@ void NavigationManager::onDnsRequestFinished() {
 void NavigationManager::typeIn(Page* page) {
     context()->transition(page, Page::TransitionType::TYPEIN);
     PagesGroup* group = m_groups.first();
-    group->ensureVisible(page, 0);
+    group->insert(page, 0);
     select(group, page);
 }
 
@@ -62,8 +62,9 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
     WebPage* prevGroupOwnerWeb = prevGroup ? qobject_cast<WebPage*>(prevGroup->root()) : 0;
     if (prevGroupOwnerWeb && prevGroupOwnerWeb->site() == next->site()) // skip one more group to get all pages of the same site in the same group
         group = prevGroup;
-    const int position = group->root() == context ? 0 : group->position(context) + 1;
-    group->ensureVisible(next, position);
+//    const int position = group->root() == context ? 0 : group->pages().indexOf(context) + 1;
+    const int position = group->pages().indexOf(context) + 1; // equals previous line
+    group->insert(next, position);
     if (!newGroup)
         select(group, next);
     return next->ui();
@@ -72,7 +73,15 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
 
 void NavigationManager::close(PagesGroup* context, Page* page) {
     bool selected = page == context->selectedPage();
-    Page* const next = context->next(page);
+    QList<Page*> pages = context->activePages();
+    const int index = pages.indexOf(page);
+    Page* next;
+    if (index > 0)
+        next = pages[index - 1];
+    else if (!index && pages.size() > 1)
+        next = pages[1];
+    else
+        next = 0;
     page->setState(Page::CLOSED);
     if (selected) {
         if (next)
@@ -143,7 +152,7 @@ void NavigationManager::activate(Context *ctxt) {
     m_selected->transition(ctxt, Page::TransitionType::SELECT_TAB);
     m_contexts_group->remove(ctxt);
     if (m_active_context)
-        m_contexts_group->ensureVisible(m_active_context, 0);
+        m_contexts_group->insert(m_active_context, 0);
     m_active_context = ctxt;
     popTo(0);
     m_selected = ctxt;
@@ -158,17 +167,40 @@ void NavigationManager::activate(Context *ctxt) {
 void NavigationManager::rebalanceWidth() {
     QList<Page*> visible;
     QSet<Page*> result;
+    QHash<Page*, double> probabilities;
     foreach (PagesGroup* group, m_groups) {
         visible += group->activePages();
 
         result.insert(group->selectedPage());
         visible.removeOne(group->selectedPage());
     }
-    qSort(visible.begin(), visible.end(), [this](Page* lhs, Page* rhs) {
-        return m_selected->pOut(lhs) > m_selected->pOut(rhs);
+    foreach (Page* item, visible) {
+        double discount = 1;
+        double denom = 0;
+        double p = 0;
+        for (int i = m_groups.size() - 1; i >=0; i--) {
+            Page* const selected = m_groups[i]->selectedPage();
+            p += selected ? selected->pOut(item) : 0;
+            denom *= discount;
+            discount *= 0.9;
+        }
+        if (m_active_context) {
+            p += m_active_context->pOut(item);
+            denom += discount;
+        }
+        p /= discount;
+        probabilities[item] = p;
+    }
+    std::sort(visible.begin(), visible.end(), [&probabilities](Page* lhs, Page* rhs) {
+        return probabilities[lhs] > probabilities[rhs];
     });
-    double available_width = m_screen_width - m_groups.size() * 30 - 30 - 45 - 60; // group decorations + context icon + context view
+    double available_width = m_screen_width - m_groups.size() * 30 - 30 - 30 - 60; // group decorations + context icon + context view
     result.remove(0);
+    if (!visible.empty()) {
+        double a = m_selected->pOut(visible.first());
+        double b = m_selected->pOut(visible.last());
+        qDebug() << "PRange from: " << a << " to: " << b;
+    }
     foreach(Page* selected, result) {
         available_width -= std::min(240.0, selected->titleWidth() + 40);
     }
@@ -186,12 +218,22 @@ void NavigationManager::rebalanceWidth() {
     }
     qDebug() << "Left width: " << available_width;
 
-    m_contexts_group->setVisibleCount(std::min(3, m_contexts_group->activePages().size()));
+    QList<Page*> contexts = m_contexts_group->pages();
+    if (contexts.size() < 3)
+        m_contexts_group->split(contexts, QList<Page*>());
+    else
+        m_contexts_group->split(contexts.mid(0, 3), contexts.mid(3));
     foreach (PagesGroup* group, m_groups) {
-        QList<Page*> pages = group->activePages();
-        const int visibleCount = pages.toSet().intersect(result).size();
-        group->setVisibleCount(visibleCount);
-        group->ensureVisible(group->selectedPage(), visibleCount - 1);
+        QList<Page*> visible;
+        QList<Page*> folded;
+        QList<Page*> pages = group->pages();
+        foreach(Page* page, pages) {
+            if (result.contains(page))
+                visible.append(page);
+            else
+                folded.append(page);
+        }
+        group->split(visible, folded);
     }
 }
 
@@ -229,53 +271,65 @@ void NavigationManager::onContextsChanged() {
     m_contexts_group->clear();
     foreach (Context* ctxt, contexts) {
         if (m_active_context != ctxt)
-            m_contexts_group->ensureVisible(ctxt);
+            m_contexts_group->insert(ctxt);
     }
     activate(active);
 }
 
 void NavigationManager::onPagesChanged() {
-    onGroupsChanged();
+    rebalanceWidth();
 }
 
 void NavigationManager::onGroupsChanged() {
-    static volatile bool rebalance = false;
-    if (rebalance)
-        return;
-    QList<QQuickItem*> screens;
-    int selectedIndex = -1;
-    QQuickItem* oldSelectedUI = m_active_screen_index >= 0 && m_active_screen_index < m_screens.size() ? m_screens[m_active_screen_index] : 0;
-    QQuickItem* newSelectedUI = m_selected->ui();
-    if (m_active_context) {
-        screens.append(m_active_context->ui());
-        selectedIndex = 0;
-    }
-
-    rebalance = true;
     rebalanceWidth();
-    rebalance = false;
+    QSet<Page*> known;
+    QSet<Page*> active;
+    QList<QQuickItem*> screens;
+    screens.append(m_selected->ui());
+    known.insert(m_selected);
     foreach (PagesGroup* group, m_groups) {
-        foreach(Page* page, group->activePages()) {
-            if (page == m_selected)
-                selectedIndex = screens.size();
-            screens += page->ui();
+        active.unite(group->activePages().toSet());
+    }
+    foreach (PagesGroup* group, m_groups) {
+        foreach(Page* page, group->visiblePagesList()) {
+            if (known.contains(page))
+                continue;
+            if (group->selectedPage() == page) {
+                screens += page->ui();
+                known.insert(page);
+            }
+            else {
+                Page* current = page;
+                QSet<Page*> context = active;
+                while (current->lastVisited() && !context.contains(current->lastVisited())) {
+                    current = current->lastVisited();
+                    context.unite(current->outgoing().toSet());
+                }
+                if (!known.contains(current)) {
+                    screens += current->ui();
+                    known.insert(current);
+                }
+            }
+        }
+    }
+    if (m_active_screen != m_selected->ui()) {
+        if (m_active_screen)
+            m_active_screen->setVisible(false);
+        m_active_screen = m_selected->ui();
+        m_active_screen->setVisible(true);
+        activeScreenChanged();
+    }
+    QVariant returnedValue;
+    foreach (QQuickItem* screen, m_screens) { // cleanup
+        if (!screens.contains(screen)) {
+            screen->setParent(0);
+            screen->setParentItem(0);
+            screen->deleteLater();
         }
     }
     if (screens != m_screens) {
-        foreach (QQuickItem* screen, m_screens) {
-            if (!screens.contains(screen)) {
-                screen->deleteLater();
-            }
-        }
         m_screens = screens;
-        m_active_screen_index = selectedIndex;
         screensChanged();
-        if (oldSelectedUI != newSelectedUI)
-            activeScreenChanged();
-    }
-    else if (m_active_screen_index != selectedIndex) {
-        m_active_screen_index = selectedIndex;
-        activeScreenChanged();
     }
 }
 
@@ -285,9 +339,12 @@ void NavigationManager::setWindow(QQuickWindow* window) {
 }
 
 NavigationManager::NavigationManager(doSearch* parent): QObject(parent),
+    m_screen_width(0),
+    m_active_context(0),
     m_selected(parent->empty()),
     m_contexts_group(new PagesGroup(0, 0, this)),
-    m_lookup(new QDnsLookup(this))
+    m_lookup(new QDnsLookup(this)),
+    m_active_screen(0)
 {
     connect(this, SIGNAL(groupsChanged()), this, SLOT(onGroupsChanged()));
     connect(m_lookup, SIGNAL(finished()), this, SLOT(onDnsRequestFinished()));

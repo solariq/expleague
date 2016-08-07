@@ -75,8 +75,10 @@ struct MarkdownEditorPagePrivate {
     QThread* html_thread;
 
     virtual ~MarkdownEditorPagePrivate() {
-        html_thread->exit();
-        html_thread->deleteLater();
+        if (html_thread) {
+            html_thread->exit();
+            html_thread->deleteLater();
+        }
     }
 };
 
@@ -117,7 +119,10 @@ void MarkdownEditorPage::initUI(QQuickItem* result) const {
         thread->start();
         d_ptr->html_thread = thread;
     }
-    else d_ptr->editor->setProperty("readOnly", true);
+    else {
+        d_ptr->html_thread = 0;
+        d_ptr->editor->setProperty("readOnly", true);
+    }
     d_ptr->document->textDocument()->setPlainText(m_text);
 }
 

@@ -127,6 +127,7 @@ Item {
                     Flickable {
                         anchors.fill: parent
                         flickableDirection: Flickable.VerticalFlick
+                        contentHeight: offerView.implicitHeight
                         OfferView {
                             id: offerView
 

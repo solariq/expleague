@@ -269,7 +269,7 @@ Item {
                 }
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: task.context.handleOmniboxInput(root.league.imageUrl(modelData), true)
+                    onClicked: dosearch.navigation.handleOmnibox(root.league.imageUrl(modelData), 0)
                 }
             }
         }

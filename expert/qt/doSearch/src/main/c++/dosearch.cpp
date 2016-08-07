@@ -60,9 +60,16 @@ QString doSearch::pageResource(const QString &id) const {
     return QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/pages/" + id;
 }
 
+class EmptyPage: public Page {
+public:
+    EmptyPage(const QString& id, doSearch* parent): Page(id, "qrc:/EmptyView.qml", "", parent){}
+protected:
+    void interconnect() {}
+};
+
 Page* doSearch::empty() const {
     return page("empty", [](const QString& id, doSearch* parent){
-        return new Page(id, "qrc:/EmptyView.qml", "", parent);
+        return new EmptyPage(id, parent);
     });
 }
 
@@ -164,9 +171,8 @@ void doSearch::append(Context* context) {
 void doSearch::remove(Context* context) {
     assert(context->parent() == this);
     if (m_navigation->context() == context) {
-        Context* next = static_cast<Context*>(m_navigation->contextsGroup()->next(context));
-        if (next)
-            m_navigation->activate(next);
+        Context* const next = static_cast<Context*>(m_navigation->contextsGroup()->activePages().first());
+        m_navigation->activate(next);
     }
     m_contexts.removeOne(context);
     contextsChanged();

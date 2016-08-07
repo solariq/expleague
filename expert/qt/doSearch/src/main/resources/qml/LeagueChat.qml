@@ -97,7 +97,7 @@ Rectangle {
                     anchors.fill: parent
                     onClicked: {
                         var split = msg.reference.split('/')
-                        task.context.handleOmniboxInput(root.league.imageUrl(split[split.length - 1]), true)
+                        dosearch.navigation.handleOmnibox(root.league.imageUrl(split[split.length - 1]), 0)
                     }
                 }
             }

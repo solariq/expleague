@@ -343,6 +343,8 @@ void Task::suspend(int seconds) {
 
 void Task::stop() {
     m_answers.clear();
+    m_tags.clear();
+    m_patterns.clear();
     emit finished();
 }
 

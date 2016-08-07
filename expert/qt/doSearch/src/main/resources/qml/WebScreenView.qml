@@ -18,7 +18,7 @@ Item {
     property string pageSearch: ""
 
     onPageSearchChanged: {
-        console.log("Looking for " + pageSearch)
+//        console.log("Looking for " + pageSearch)
         webEngineView.findText(pageSearch)
     }
 
@@ -157,6 +157,10 @@ Item {
                 }
 
                 url: owner.url
+                settings.hyperlinkAuditingEnabled: true
+                settings.linksIncludedInFocusChain: true
+                settings.spatialNavigationEnabled: true
+                settings.touchIconsEnabled: true
 
                 onLoadingChanged: {
                     if (!loading) {
@@ -181,19 +185,19 @@ Item {
                 }
 
                 onUrlChanged: {
-//                    console.log(new Date().getTime() + " url changed: [" + url + "] owner url: [" + owner.url + "]" + " history length: " + navigationHistory.items.rowCount())
+                    console.log(new Date().getTime() + " url changed: [" + url + "] owner url: [" + owner.url + "]" + " history length: " + navigationHistory.items.rowCount())
 
                     if (url != owner.url && url.toString().length > 0 && navigationHistory.items.rowCount() > 1) {
                         var now = new Date().getTime()
                         var delta = now - actionTs
                         if (delta < 5000) { //user action
-//                            console.log("  User action: " + delta + "")
+                            console.log("  User action: " + delta + "")
                             dosearch.navigation.open(url, owner, newTab)
                             goBack()
                             newTab = false
                         }
                         else {
-//                            console.log("  Redirect: " + delta)
+                            console.log("  Redirect: " + delta)
                             owner.redirect = dosearch.web(url)
                         }
                         newTab = false
@@ -278,9 +282,9 @@ Item {
         else event.accepted = owner.forwardToWebView(event.key, event.modifiers, event.text, event.autoRepeat, event.count, webEngineView)
     }
 
-    Component.onDestruction: {
-        webView.triggerWebAction(WebEngineView.RequestClose)
-    }
+//    Component.onDestruction: {
+//        webView.triggerWebAction(WebEngineView.RequestClose)
+//    }
 
     onVisibleChanged: {
         if (visible)

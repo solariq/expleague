@@ -16,7 +16,6 @@ private:
     Q_PROPERTY(QUrl googleUrl READ googleUrl CONSTANT)
     Q_PROPERTY(QUrl yandexUrl READ yandexUrl CONSTANT)
 
-    Q_PROPERTY(int clicks READ clicks NOTIFY clicksChanged)
     Q_PROPERTY(int searchIndex READ searchIndex WRITE setSearchIndex NOTIFY searchIndexChanged)
 
 public:
@@ -42,10 +41,6 @@ public:
     QUrl googleUrl() const;
     QUrl yandexUrl() const;
 
-    int clicks() const {
-        return m_clicks;
-    }
-
     int searchIndex() const {
         return m_search_index;
     }
@@ -65,10 +60,6 @@ public:
         searchIndexChanged(index);
     }
 
-    void setClicks(int clicks) {
-        m_clicks = clicks;
-    }
-
     Q_INVOKABLE QString parseGoogleQuery(const QUrl& request) const;
     Q_INVOKABLE QString parseYandexQuery(const QUrl& request) const;
 
@@ -78,12 +69,10 @@ public:
 
 signals:
     void queryChanged(const QString&);
-    void clicksChanged();
     void searchIndexChanged(int index);
 
 private:
     QString m_query;
-    int m_clicks;
     int m_search_index;
 };
 }

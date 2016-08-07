@@ -112,4 +112,8 @@ Column {
             }
         }
     }
+    onVisibleChanged: {
+        if (visible)
+            editor.forceActiveFocus()
+    }
 }

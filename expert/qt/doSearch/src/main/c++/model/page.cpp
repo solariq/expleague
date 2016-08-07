@@ -21,6 +21,8 @@
 #include <math.h>
 #include <time.h>
 
+#include <algorithm>
+
 static QFontMetrics titleFontMetrics(QFont("Helvetica [Cronyx]", 12));
 
 QVariantHash buildVariantByXml(QXmlStreamReader& reader);
@@ -190,18 +192,16 @@ int Page::count(const QString& fullKey) const {
 }
 
 QList<Page*> Page::incoming() const {
-    QList<const Page*> constKeys = m_incoming.keys();
-    QList<Page*> keys = reinterpret_cast<QList<Page*>&>(constKeys);
-    qSort(keys.begin(), keys.end(), [this](const Page* left, const Page* right) {
+    QList<Page*> keys = m_incoming.keys();
+    std::sort(keys.begin(), keys.end(), [this](Page* left, Page* right) {
         return pIn(left) > pIn(right);
     });
     return keys;
 }
 
 QList<Page*> Page::outgoing() const {
-    QList<const Page*> constKeys = m_outgoing.keys();
-    QList<Page*> keys = reinterpret_cast<QList<Page*>&>(constKeys);
-    qSort(keys.begin(), keys.end(), [this](const Page* left, const Page* right) {
+    QList<Page*> keys = m_outgoing.keys();
+    std::sort(keys.begin(), keys.end(), [this](Page* left, Page* right) {
         return pOut(left) > pOut(right);
     });
     return keys;
@@ -229,8 +229,8 @@ QQuickItem* Page::ui() const {
     connect(m_ui, &QQuickItem::destroyed, [this](){
         m_ui = 0;
     });
-
     initUI(m_ui);
+    m_ui->setVisible(false);
     return m_ui;
 }
 
@@ -250,20 +250,21 @@ QQuickItem* Page::thumbnail() const {
     return m_thumbnail;
 }
 
-double Page::pOut(const Page* page) const {
+double Page::pOut(Page* page) const {
     const PageModel model = m_outgoing[page];
-    if (model.freq == 0)
-        return 0;
     const int c = m_outgoing.size();
     const double dpLambda = optimalExpansionDP(m_out_total, c);
     const time_t now = time(0);
-    double result = erlang(2, 1.0/60, now - model.when) * 0.5;
+    const double deltaFromCurrent = now - model.when;
+    double result = erlang(2, 1.0/60, deltaFromCurrent) * 0.19; // two visits of the same page is set to 10 minutes
+    const double deltaReturn = now - page->lastVisitTs();
+    result += erlang(2, 1.0/10/60, deltaReturn) * 0.01;
     if (dpLambda < 1000)
-        result += m_out_total/(m_out_total + dpLambda) * (model.freq + 1)/(double)(m_out_total + c) * 0.5;
+        result += m_out_total/(m_out_total + dpLambda) * (model.freq + 1)/(double)(m_out_total + c) * 0.8;
     return result;
 }
 
-double Page::pIn(const Page*) const {
+double Page::pIn(Page*) const {
     return 0;
 }
 
@@ -271,6 +272,7 @@ void Page::transition(Page* page, TransitionType type) {
     if (page == this)
         return;
     switch(type) {
+    case TransitionType::SELECT_TAB:
     case TransitionType::FOLLOW_LINK:
     case TransitionType::REDIRECT:
     case TransitionType::TYPEIN:
@@ -278,6 +280,7 @@ void Page::transition(Page* page, TransitionType type) {
         PageModel& data = m_outgoing[page];
         data.freq++;
         data.when = time(0);
+        m_out_total++;
         replaceOrAppend("outgoing", data.toVariant(page->id()), [](const QVariant& lhs, const QVariant& rhs){
             return lhs.toHash().value("id") == rhs.toHash().value("id");
         });
@@ -289,9 +292,6 @@ void Page::transition(Page* page, TransitionType type) {
     case TransitionType::CHANGED_SCREEN:
         if (m_state == State::ACTIVE)
             setState(State::INACTIVE);
-        break;
-    case TransitionType::SELECT_TAB:
-        break;
     }
 
     page->incomingTransition(this, type);
@@ -299,6 +299,8 @@ void Page::transition(Page* page, TransitionType type) {
 }
 
 void Page::incomingTransition(Page* page, TransitionType type) {
+    if (state() == Page::CLOSED)
+        setState(Page::INACTIVE);
     switch(type) {
     case TransitionType::TYPEIN:
         time(&m_last_visit_ts);
@@ -310,18 +312,20 @@ void Page::incomingTransition(Page* page, TransitionType type) {
         PageModel& data = m_incoming[page];
         data.freq++;
         data.when = time(0);
+        m_in_total++;
         replaceOrAppend("incoming", data.toVariant(page ? page->id() : ""), [](const QVariant& lhs, const QVariant& rhs){
             return lhs.toHash().value("id") == rhs.toHash().value("id");
         });
         break;
     }
+    case TransitionType::SELECT_TAB:
+        time(&m_last_visit_ts);
+        store("ts", qlonglong(m_last_visit_ts));
+        break;
     case TransitionType::CHANGED_SCREEN:
         setState(State::ACTIVE);
         m_last_visited = 0;
         store("lastVisited", QVariant());
-    case TransitionType::SELECT_TAB:
-        time(&m_last_visit_ts);
-        store("ts", qlonglong(m_last_visit_ts));
         break;
     }
     save();
@@ -370,7 +374,7 @@ void Page::save() const {
 }
 
 Page::Page(const QString& id, const QString& ui, const QString& thumbnail, doSearch* parent): QObject(parent),
-    m_id(id), m_ui_url(ui), m_thumbnail_url(thumbnail), m_context(new QQmlContext(rootEngine, this)), m_ui(0), m_thumbnail(0)
+    m_id(id), m_ui_url(ui), m_thumbnail_url(thumbnail), m_context(new QQmlContext(rootEngine, this)), m_ui(0), m_thumbnail(0), m_in_total(0), m_out_total(0)
 {
     QDir dir(parent->pageResource(id));
     QFile file(dir.filePath("page.xml"));
@@ -415,6 +419,8 @@ void Page::interconnect() {
     });
     QVariant lastVisitedVar = value("lastVisited");
     m_last_visited = lastVisitedVar.isNull() ? 0 : parent()->page(lastVisitedVar.toString());
+    if (m_last_visited == this)
+        m_last_visited = 0;
     m_saved_changes = m_changes;
 }
 }

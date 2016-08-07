@@ -62,14 +62,14 @@ public:
 
     QList<Page*> outgoing() const;
     QList<Page*> incoming() const;
-    const Page* lastVisited() const { return m_last_visited; }
+    Page* lastVisited() const { return m_last_visited; }
     time_t lastVisitTs() const { return m_last_visit_ts; }
 
     QQuickItem* ui() const;
     QQuickItem* thumbnail() const;
 
-    Q_INVOKABLE virtual double pOut(const Page*) const;
-    Q_INVOKABLE virtual double pIn(const Page*) const;
+    Q_INVOKABLE virtual double pOut(Page*) const;
+    Q_INVOKABLE virtual double pIn(Page*) const;
 
     Q_INVOKABLE virtual void transition(Page*, TransitionType type);
 
@@ -115,11 +115,11 @@ private:
     mutable QQuickItem* m_ui;
     mutable QQuickItem* m_thumbnail;
 
-    const Page* m_last_visited = 0;
+    Page* m_last_visited = 0;
     int m_in_total;
-    QHash<const Page*, PageModel> m_incoming;
+    QHash<Page*, PageModel> m_incoming;
     int m_out_total;
-    QHash<const Page*, PageModel> m_outgoing;
+    QHash<Page*, PageModel> m_outgoing;
     time_t m_last_visit_ts = 0;
 
     State m_state;
