@@ -291,6 +291,10 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
           return lookForExpert(task);
         }
       )
+      .event(Cancel.class, // cancel from the room
+        (cancel, task) -> task.jid().bareEq(XMPP.jid(sender())),
+        (cancel, task) -> cancelTask(task)
+      )
     );
 
     whenUnhandled(matchEvent(

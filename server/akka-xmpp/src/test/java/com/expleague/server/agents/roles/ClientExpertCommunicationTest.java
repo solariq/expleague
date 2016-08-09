@@ -880,6 +880,32 @@ public class ClientExpertCommunicationTest extends CommunicationAcceptanceTestCa
   }
 
   @Test
+  public void testExpertSuspendsTask_ClientCancels() throws Exception {
+    new ScenarioTestKit() {{
+      final Client client = registerClient("client");
+      final Expert expert = registerExpert("expert1");
+
+      client.goOnline();
+      expert.goOnline();
+
+      final Room room = client.query("Task");
+      final Offer task = expert.receiveOffer("Task");
+      expert.acceptOffer(task);
+      client.receiveStart(expert);
+
+      final int delayMs = 100;
+      expert.suspendOffer(task, delayMs);
+      expert.goOffline();
+
+      client.cancel(room);
+      Thread.sleep(delayMs);
+
+      expert.goOnline();
+      // todo: add check that cancel arrives
+    }};
+  }
+
+  @Test
   public void testExpert_ExpertReceivesOfferResumeAndCancel() throws Exception {
     new ScenarioTestKit() {{
       final Client client = registerClient("client");
