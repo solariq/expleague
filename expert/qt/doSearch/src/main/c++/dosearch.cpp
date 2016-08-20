@@ -78,18 +78,21 @@ WebPage* doSearch::web(const QUrl& url) const {
     QString domain = url.host();
     if (domain.startsWith("www."))
         domain = domain.mid(4);
+    WebPage* result;
     if (url.query().isEmpty() && url.path().isEmpty()) { // site
         QString id = "web/" + domain + "/site";
-        return static_cast<WebPage*>(page(id, [&url](const QString& id, doSearch* parent){
+        result = static_cast<WebPage*>(page(id, [&url](const QString& id, doSearch* parent){
             return new WebSite(id, url, parent);
         }));
     }
     else {
         QString id = "web/" + domain + "/" + url.scheme() + (url.path().isEmpty() || url.path() == "/" ? "/index.html" : url.path()) + query;
-        return static_cast<WebPage*>(page(id, [&url](const QString& id, doSearch* parent){
+        result = static_cast<WebPage*>(page(id, [&url](const QString& id, doSearch* parent){
             return new WebPage(id, url, parent);
         }));
     }
+    result->setUrl(url);
+    return result;
 }
 
 Context* doSearch::context(const QString& name) const {

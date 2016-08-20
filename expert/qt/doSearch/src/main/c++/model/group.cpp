@@ -15,10 +15,20 @@ PagesGroup::PagesGroup(Page* root, PagesGroup* parent, NavigationManager* manage
         m_selected_page_index = -1;
         return;
     }
+    QSet<Page*> known;
     QList<Page*> pages = root->outgoing();
+    known += pages.toSet();
+
     WebPage* webRoot = qobject_cast<WebPage*>(root);
     while (webRoot) {
         pages.removeOne(webRoot->redirect());
+        foreach(Page* page, webRoot->outgoing()) {
+            if (!known.contains(page)) {
+                pages += page;
+                known += page;
+            }
+        }
+
         webRoot = webRoot->redirect();
     }
     while (parent) {

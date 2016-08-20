@@ -60,7 +60,8 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
     assert(group);
     PagesGroup* prevGroup = group->parentGroup();
     WebPage* prevGroupOwnerWeb = prevGroup ? qobject_cast<WebPage*>(prevGroup->root()) : 0;
-    if (prevGroupOwnerWeb && prevGroupOwnerWeb->site() == next->site()) // skip one more group to get all pages of the same site in the same group
+    WebSite* groupOwnerSite = prevGroupOwnerWeb ? prevGroupOwnerWeb->site() : 0;
+    if (groupOwnerSite && groupOwnerSite->mirrorTo(next->site())) // skip one more group to get all pages of the same site in the same group
         group = prevGroup;
 //    const int position = group->root() == context ? 0 : group->pages().indexOf(context) + 1;
     const int position = group->pages().indexOf(context) + 1; // equals previous line
@@ -317,13 +318,14 @@ void NavigationManager::onGroupsChanged() {
             m_active_screen->setVisible(false);
         m_active_screen = m_selected->ui();
         m_active_screen->setVisible(true);
+        m_active_screen->forceActiveFocus();
         activeScreenChanged();
     }
     QVariant returnedValue;
     foreach (QQuickItem* screen, m_screens) { // cleanup
-        if (!screens.contains(screen)) {
-            screen->setParent(0);
+        if (screen->parentItem() && !screens.contains(screen)) {
             screen->setParentItem(0);
+            screen->setParent(0);
             screen->deleteLater();
         }
     }
@@ -343,8 +345,8 @@ NavigationManager::NavigationManager(doSearch* parent): QObject(parent),
     m_active_context(0),
     m_selected(parent->empty()),
     m_contexts_group(new PagesGroup(0, 0, this)),
-    m_lookup(new QDnsLookup(this)),
-    m_active_screen(0)
+    m_active_screen(0),
+    m_lookup(new QDnsLookup(this))
 {
     connect(this, SIGNAL(groupsChanged()), this, SLOT(onGroupsChanged()));
     connect(m_lookup, SIGNAL(finished()), this, SLOT(onDnsRequestFinished()));

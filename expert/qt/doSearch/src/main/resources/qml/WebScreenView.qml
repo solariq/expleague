@@ -24,14 +24,6 @@ Item {
 
     anchors.fill: parent
 
-//    onVisibleChanged: {
-//        if (!visited && visible)
-//            webEngineView.audioMuted = false
-//        else
-//            webEngineView.audioMuted = true
-//        visited = visited || visible
-//    }
-
     ColumnLayout {
         anchors.fill: parent
         RowLayout {
@@ -42,7 +34,25 @@ Item {
             Rectangle {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-                color: Palette.selectedColor
+                color: Palette.activeColor
+                radius: Palette.radius
+                clip: true
+
+                TextEdit {
+                    id: pageId
+                    anchors.margins: 3
+                    anchors.fill: parent
+                    readOnly: true
+                    selectByMouse: true
+                    text: owner.id
+                    color: Palette.activeTextColor
+                }
+            }
+            Item {Layout.preferredWidth: 3}
+            Rectangle {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                color: Palette.activeColor
                 radius: Palette.radius
                 clip: true
 
@@ -53,7 +63,7 @@ Item {
                     readOnly: true
                     selectByMouse: true
                     text: webEngineView.url
-                    color: Palette.selectedTextColor
+                    color: Palette.activeTextColor
                 }
             }
             RowLayout {
@@ -68,7 +78,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignVCenter
                     Layout.preferredHeight: searchText.implicitHeight + 6
-                    color: Palette.activeColor
+                    color: Palette.selectedColor
                     radius: height/2
                     clip: true
 
@@ -82,7 +92,7 @@ Item {
                         Text {
                             id: searchText
                             enabled: false
-                            color: Palette.activeTextColor
+                            color: Palette.selectedTextColor
                             text: pageSearch
                         }
                     }
@@ -187,7 +197,7 @@ Item {
                 onUrlChanged: {
                     console.log(new Date().getTime() + " url changed: [" + url + "] owner url: [" + owner.url + "]" + " history length: " + navigationHistory.items.rowCount())
 
-                    if (url != owner.url && url.toString().length > 0 && navigationHistory.items.rowCount() > 1) {
+                    if (!owner.accept(url) && navigationHistory.items.rowCount() > 1) {
                         var now = new Date().getTime()
                         var delta = now - actionTs
                         if (delta < 5000) { //user action
@@ -250,23 +260,24 @@ Item {
         console.log("Web screen focus changed to: " + focus)
         if (!complete || self.focus || !dosearch.main)
             return
-        if (webEngineView.focus || urlText.focus || searchText.focus) {
-            forceActiveFocus()
-            return
-        }
         var parent = dosearch.main ? dosearch.main.activeFocusItem : null
         while (parent) {
-            if (parent === webEngineView) {
+            if (parent === self) {
+                console.log("Enforce focus to self")
                 self.forceActiveFocus()
                 return
             }
             parent = parent.parent
         }
-        if (dosearch.main)
-            console.log("Focus given to: " + dosearch.main.activeFocusItem)
+        if (dosearch.main.activeFocusItem.toString().search("QtWebEngineCore::") !== -1) {
+            console.log("Enforce focus to self")
+            self.forceActiveFocus()
+        }
+        else console.log("Focus given to: " + dosearch.main.activeFocusItem)
     }
 
     Keys.onPressed: {
+        console.log("Key pressed: " + event.key)
         actionTs = new Date().getTime()
         console.log("To chrome: " + event.key + " mod: " + event.modifier)
         if (pageSearch.length > 0) {
@@ -286,12 +297,18 @@ Item {
         else event.accepted = owner.forwardToWebView(event.key, event.modifiers, event.text, event.autoRepeat, event.count, webEngineView)
     }
 
-//    Component.onDestruction: {
-//        webView.triggerWebAction(WebEngineView.RequestClose)
-//    }
-
     onVisibleChanged: {
         if (visible)
-            self.forceActiveFocus()
+            forceActiveFocus()
+    }
+
+    Component.onDestruction: {
+        if (complete)
+            webView.triggerWebAction(WebEngineView.RequestClose)
+    }
+
+    Component.onCompleted: {
+        complete = true
+//        forceActiveFocus()
     }
 }

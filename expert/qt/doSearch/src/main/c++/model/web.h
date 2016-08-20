@@ -3,6 +3,8 @@
 
 #include "page.h"
 
+#include <QSet>
+
 class QQuickItem;
 namespace expleague {
 class WebSite;
@@ -10,18 +12,11 @@ class WebSite;
 class WebPage: public Page {
     Q_OBJECT
 
-    Q_PROPERTY(QUrl url READ url NOTIFY redirectChanged)
+    Q_PROPERTY(QUrl url READ url NOTIFY urlChanged)
     Q_PROPERTY(expleague::WebPage* redirect READ redirect WRITE setRedirect NOTIFY redirectChanged)
 
 public:
-    WebPage(const QString& id, const QUrl& url, doSearch* parent);
-
-    WebPage(const QString &id, doSearch *parent);
-
     QUrl url() const;
-//    QUrl url() const {
-//        return m_redirect ? m_redirect->url() : m_url;
-//    }
 
     QUrl originalUrl() const { return m_url; }
     WebPage* redirect() const { return m_redirect; }
@@ -35,6 +30,8 @@ public:
 
     WebSite* site() const;
 
+    Q_INVOKABLE bool accept(const QUrl& url) const;
+
     Q_INVOKABLE void setTitle(const QString& title) {
         store("web.title", title);
         save();
@@ -43,6 +40,7 @@ public:
 
     Q_INVOKABLE void setIcon(const QString& icon);
     void setRedirect(WebPage* target);
+    void setUrl(const QUrl& url);
 
     Q_INVOKABLE bool forwardToWebView(int key,
                                       Qt::KeyboardModifiers modifiers,
@@ -52,9 +50,17 @@ public:
                                       QQuickItem* view);
 signals:
     void redirectChanged();
+    void urlChanged(const QUrl& url);
 
 protected:
     void interconnect();
+
+public:
+    WebPage(const QString& id, const QUrl& url, doSearch* parent);
+    WebPage(const QString &id, doSearch *parent);
+
+private slots:
+    void onRedirectUrlChanged(const QUrl& url);
 
 private:
     QUrl m_url;
@@ -62,11 +68,21 @@ private:
 };
 
 class WebSite: public WebPage {
-public:
-    WebSite(const QString& id, const QUrl& url, doSearch* parent): WebPage(id, url, parent) {}
-    WebSite(const QString &id, doSearch *parent): WebPage(id, parent) {}
+    Q_OBJECT
 
+public:
     WebSite* site() const { return const_cast<WebSite*>(this); }
+
+    bool mirrorTo(WebSite* site) const { return site == this || m_mirrors.contains(site); }
+    void addMirror(WebSite* site) {
+        if (m_mirrors.contains(site))
+            return;
+        m_mirrors += site;
+        append("web.site.mirrors", site->id());
+        QObject::connect(site, SIGNAL(mirrorsChanged()), this, SLOT(onMirrorsChanged()));
+        emit mirrorsChanged();
+    }
+    QSet<WebSite*> mirrors() const { return m_mirrors; }
 
     QString title() const {
         QString domain = originalUrl().host();
@@ -85,6 +101,20 @@ public:
         save();
         iconChanged(icon);
     }
+
+signals:
+    void mirrorsChanged();
+
+private slots:
+    void onMirrorsChanged();
+
+public:
+    WebSite(const QString& id, const QUrl& url, doSearch* parent): WebPage(id, url, parent) {}
+    WebSite(const QString &id, doSearch *parent): WebPage(id, parent) {}
+
+    void interconnect();
+private:
+    QSet<WebSite*> m_mirrors;
 };
 }
 #endif // WEB_H
