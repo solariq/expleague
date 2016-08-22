@@ -323,7 +323,7 @@ void NavigationManager::onGroupsChanged() {
     }
     QVariant returnedValue;
     foreach (QQuickItem* screen, m_screens) { // cleanup
-        if (screen->parentItem() && !screens.contains(screen)) {
+        if (screen->parent() && screen->parentItem() && !screens.contains(screen)) {
             screen->setParentItem(0);
             screen->setParent(0);
             screen->deleteLater();

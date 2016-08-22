@@ -226,6 +226,7 @@ QQuickItem* Page::ui() const {
         componentsCache[m_ui_url] = component;
     }
     m_ui = (QQuickItem*)component->create(m_context);
+    m_ui->setParent(const_cast<Page*>(this));
     connect(m_ui, &QQuickItem::destroyed, [this](){
         m_ui = 0;
     });

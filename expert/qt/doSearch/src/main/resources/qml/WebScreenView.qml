@@ -10,7 +10,7 @@ import "."
 
 Item {
     id: self
-//    property alias editor: urlText
+    property alias editor: urlText
     property Item myParent
     property alias webView: webEngineView
     property real actionTs: 0
@@ -31,24 +31,24 @@ Item {
             Layout.fillWidth: true
             spacing: 0
             Item {Layout.preferredWidth: 3}
-            Rectangle {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                color: Palette.activeColor
-                radius: Palette.radius
-                clip: true
+//            Rectangle {
+//                Layout.fillHeight: true
+//                Layout.fillWidth: true
+//                color: Palette.activeColor
+//                radius: Palette.radius
+//                clip: true
 
-                TextEdit {
-                    id: pageId
-                    anchors.margins: 3
-                    anchors.fill: parent
-                    readOnly: true
-                    selectByMouse: true
-                    text: owner.id
-                    color: Palette.activeTextColor
-                }
-            }
-            Item {Layout.preferredWidth: 3}
+//                TextEdit {
+//                    id: pageId
+//                    anchors.margins: 3
+//                    anchors.fill: parent
+//                    readOnly: true
+//                    selectByMouse: true
+//                    text: owner.id
+//                    color: Palette.activeTextColor
+//                }
+//            }
+//            Item {Layout.preferredWidth: 3}
             Rectangle {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
@@ -246,10 +246,8 @@ Item {
                     actionTs = new Date().getTime()
                 }
             }
-            Keys.forwardTo: dosearch.main
             Keys.onPressed: { // chromium sends us back the keyboard events so to prevent endless loop need to skip this one
                 event.accepted = true
-                console.log("From chrome: " + event.key + " mod: " + event.modifiers)
             }
         }
     }
@@ -257,7 +255,6 @@ Item {
     focus: true
     property bool complete: false
     onFocusChanged: {
-        console.log("Web screen focus changed to: " + focus)
         if (!complete || self.focus || !dosearch.main)
             return
         var parent = dosearch.main ? dosearch.main.activeFocusItem : null
@@ -279,7 +276,6 @@ Item {
     Keys.onPressed: {
         console.log("Key pressed: " + event.key)
         actionTs = new Date().getTime()
-        console.log("To chrome: " + event.key + " mod: " + event.modifier)
         if (pageSearch.length > 0) {
             if (event.key === Qt.Key_Left) {
                 webEngineView.findText(pageSearch, WebEngineView.FindBackward)

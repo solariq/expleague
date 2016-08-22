@@ -88,11 +88,11 @@ Item {
             else if (focusedEditor) {
                 focusedEditor.copy()
             }
+            else if (editor && editor.selectionStart != editor.selectionEnd) {
+                editor.copy()
+            }
             else if (webView) {
                 webView.triggerWebAction(WebEngineView.Copy)
-            }
-            else if (editor) {
-                editor.copy()
             }
         }
     }
