@@ -91,6 +91,7 @@ protected:
     explicit Page(const QString& id, const QString& uiQml, const QString& thumbnailQml, doSearch* parent);
     virtual void interconnect();
     virtual void initUI(QQuickItem*) const {}
+    void transferUI(Page* other) const;
 
     QVariant value(const QString& key) const;
     void store(const QString& key, const QVariant& value);
@@ -111,9 +112,9 @@ private:
     QUrl m_ui_url;
     QUrl m_thumbnail_url;
 
-    mutable QQmlContext* m_context;
-    mutable QQuickItem* m_ui;
-    mutable QQuickItem* m_thumbnail;
+    mutable QQmlContext* m_context = 0;
+    mutable QQuickItem* m_ui = 0;
+    mutable QQuickItem* m_thumbnail = 0;
 
     Page* m_last_visited = 0;
     int m_in_total;

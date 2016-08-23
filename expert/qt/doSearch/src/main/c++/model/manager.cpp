@@ -46,10 +46,14 @@ void NavigationManager::typeIn(Page* page) {
 
 QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGroup) {
     WebPage* const next = parent()->web(url);
+    WebPage* const contextWeb = qobject_cast<WebPage*>(context);
+
     if (next->state() == Page::State::CLOSED)
         next->setState(Page::State::INACTIVE);
     if (next == context) // redirect
         return context->ui();
+    if (contextWeb && !newGroup) // speedup of the link open: it will be opened inplace and the context page will be built from the scratch
+        contextWeb->transferUI(next);
     context->transition(next, Page::TransitionType::FOLLOW_LINK);
     if (context != m_selected)
         return next->ui();
@@ -61,8 +65,12 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
     PagesGroup* prevGroup = group->parentGroup();
     WebPage* prevGroupOwnerWeb = prevGroup ? qobject_cast<WebPage*>(prevGroup->root()) : 0;
     WebSite* groupOwnerSite = prevGroupOwnerWeb ? prevGroupOwnerWeb->site() : 0;
-    if (groupOwnerSite && groupOwnerSite->mirrorTo(next->site())) // skip one more group to get all pages of the same site in the same group
+    while (groupOwnerSite && groupOwnerSite->mirrorTo(next->site())) { // skip one or more groups to get all pages of the same site in the same, topmost group
         group = prevGroup;
+        prevGroup = group->parentGroup();
+        prevGroupOwnerWeb = prevGroup ? qobject_cast<WebPage*>(prevGroup->root()) : 0;
+        groupOwnerSite = prevGroupOwnerWeb ? prevGroupOwnerWeb->site() : 0;
+    }
 //    const int position = group->root() == context ? 0 : group->pages().indexOf(context) + 1;
     const int position = group->pages().indexOf(context) + 1; // equals previous line
     group->insert(next, position);

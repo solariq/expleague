@@ -172,6 +172,8 @@ Item {
                 settings.spatialNavigationEnabled: true
                 settings.touchIconsEnabled: true
 
+                profile: dosearch.main.webProfileRef
+
                 onLoadingChanged: {
                     if (!loading) {
                         owner.setTitle(title)
@@ -203,7 +205,6 @@ Item {
                         if (delta < 5000) { //user action
                             console.log("  User action: " + delta + "")
                             dosearch.navigation.open(url, owner, newTab)
-                            goBack()
                             newTab = false
                         }
                         else {
@@ -226,18 +227,56 @@ Item {
                     javascriptEnabled: true
                     errorPageEnabled: false
 
-                    fullScreenSupportEnabled: false
+                    fullScreenSupportEnabled: true
                     javascriptCanAccessClipboard: true
                     pluginsEnabled: true
                 }
-
-                profile.httpUserAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36"
 
                 onNewViewRequested: {
                     if (!request.userInitiated)
                         print("Warning: Blocked a popup window.")
                     else
                         dosearch.main.openLink(request, owner, request.destination === WebEngineView.NewViewInBackgroundTab)
+                }
+
+                property var previousVisibility
+                onFullScreenRequested: {
+                    if (request.toggleOn) {
+                        previousVisibility = dosearch.main.visibility
+                        dosearch.main.showFullScreen()
+                    }
+                    else
+                        dosearch.main.visibility = previousVisibility
+                    request.accept()
+                }
+
+                onRenderProcessTerminated: {
+                    var status = ""
+                    switch (terminationStatus) {
+                    case WebEngineView.NormalTerminationStatus:
+                        status = "(normal exit)"
+                        break;
+                    case WebEngineView.AbnormalTerminationStatus:
+                        status = "(abnormal exit)"
+                        break;
+                    case WebEngineView.CrashedTerminationStatus:
+                        status = "(crashed)"
+                        break;
+                    case WebEngineView.KilledTerminationStatus:
+                        status = "(killed)"
+                        break;
+                    }
+
+                    console.log("Render process exited with code " + exitCode + " " + status)
+                    reloadTimer.running = true
+                }
+
+                Timer {
+                    id: reloadTimer
+                    interval: 0
+                    running: false
+                    repeat: false
+                    onTriggered: webEngineView.reload()
                 }
             }
             TransparentMouseArea {
@@ -266,7 +305,7 @@ Item {
             }
             parent = parent.parent
         }
-        if (dosearch.main.activeFocusItem.toString().search("QtWebEngineCore::") !== -1) {
+        if (dosearch.main.activeFocusItem && dosearch.main.activeFocusItem.toString().search("QtWebEngineCore::") !== -1) {
             console.log("Enforce focus to self")
             self.forceActiveFocus()
         }

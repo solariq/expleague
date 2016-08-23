@@ -115,13 +115,16 @@ Item {
         id: pasteAction
         text: qsTr("Вставить")
         shortcut: StandardKey.Paste
-        enabled: (editor && editor.canPaste) || webView
+        enabled: editor || webView
         onTriggered: {
             if (webView) {
                 webView.triggerWebAction(WebEngineView.Paste)
             }
             else if (editor) {
-                editor.paste()
+                if (editor['pasteMD'])
+                    editor.pasteMD()
+                else
+                    editor.paste()
             }
         }
     }

@@ -15,6 +15,7 @@ ApplicationWindow {
     id: self
     property QtObject activeDialog
     property alias omnibox: omnibox
+    property alias webProfileRef: webProfile
     property alias commonActionsRef: commonActions
     property alias editorActionsRef: editorActions
 
@@ -96,6 +97,17 @@ ApplicationWindow {
         objectName: "selectProfile"
         x: self.width / 2 - width / 2
         y: 20
+    }
+
+    WebEngineProfile {
+        id: webProfile
+        storageName: dosearch.league.profile ? dosearch.league.profile.deviceJid : "default"
+        httpUserAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36"
+        persistentCookiesPolicy: WebEngineProfile.ForcePersistentCookies
+
+        onDownloadRequested: {
+            console.log("Download requested: " + download.path)
+        }
     }
 
     Action {
@@ -296,6 +308,7 @@ ApplicationWindow {
             textField: omnibox
             textToSugget: omnibox.text
         }
+
         WebEngineView {
             id: linkReceiver
             visible: false
@@ -303,6 +316,7 @@ ApplicationWindow {
             property var context
             property bool busy: false
             property bool jsredir: false
+            profile: webProfile
 
             url: "about:blank"
 

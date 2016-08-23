@@ -104,7 +104,7 @@ Column {
                 renderType: Text.NativeRendering
                 font.pointSize: 14
 
-                function paste() {
+                function pasteMD() {
                     var coded = owner.codeClipboard()
                     edit.remove(edit.selectionStart, edit.selectionEnd)
 

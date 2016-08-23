@@ -212,7 +212,11 @@ QHash<QUrl, QQmlComponent*> componentsCache;
 QQuickItem* Page::ui() const {
     if (m_ui)
         return m_ui;
-    m_context->setContextProperty("owner", const_cast<Page*>(this));
+    if (!m_context) {
+        m_context = new QQmlContext(rootEngine, (QObject*)this);
+        m_context->setContextProperty("owner", const_cast<Page*>(this));
+    }
+
     QQmlComponent* component = componentsCache[m_ui_url];
     if (!component) {
         component = new QQmlComponent(rootEngine, QUrl(m_ui_url));
@@ -232,6 +236,22 @@ QQuickItem* Page::ui() const {
     initUI(m_ui);
     m_ui->setVisible(false);
     return m_ui;
+}
+
+void Page::transferUI(Page* other) const {
+    if (!m_ui || !m_context)
+        return;
+    other->m_context = m_context;
+    other->m_ui = m_ui;
+    m_ui->disconnect();
+    m_ui->setParent(other);
+    m_ui->setParent(const_cast<Page*>(this));
+    m_context->setContextProperty("owner", other);
+    connect(m_ui, &QQuickItem::destroyed, [other](){
+        other->m_ui = 0;
+    });
+    m_ui = 0;
+    m_context = 0;
 }
 
 QQuickItem* Page::thumbnail() const {
@@ -374,7 +394,7 @@ void Page::save() const {
 }
 
 Page::Page(const QString& id, const QString& ui, const QString& thumbnail, doSearch* parent): QObject(parent),
-    m_id(id), m_ui_url(ui), m_thumbnail_url(thumbnail), m_context(new QQmlContext(rootEngine, this)), m_ui(0), m_thumbnail(0), m_in_total(0), m_out_total(0)
+    m_id(id), m_ui_url(ui), m_thumbnail_url(thumbnail), m_in_total(0), m_out_total(0)
 {
     QDir dir(parent->pageResource(id));
     QFile file(dir.filePath("page.xml"));

@@ -22,11 +22,7 @@ public:
     WebPage* redirect() const { return m_redirect; }
 
     QString icon() const;
-
-    QString title() const {
-        QVariant var = value("web.title");
-        return var.isNull() ? "" : var.toString();
-    }
+    QString title() const;
 
     WebSite* site() const;
 
@@ -48,6 +44,11 @@ public:
                                       bool autoRepeat,
                                       ushort count,
                                       QQuickItem* view);
+
+    void transferUI(WebPage* target) const {
+        Page::transferUI(target);
+    }
+
 signals:
     void redirectChanged();
     void urlChanged(const QUrl& url);

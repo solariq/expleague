@@ -17,6 +17,13 @@ QString WebPage::icon() const {
     return var.isNull() ? site()->icon() : var.toString();
 }
 
+QString WebPage::title() const {
+    if (m_redirect)
+        return m_redirect->title();
+    QVariant var = value("web.title");
+    return var.isNull() ? "" : var.toString();
+}
+
 void WebPage::setIcon(const QString& icon) {
     store("web.favicon", icon);
     save();
@@ -49,6 +56,7 @@ void WebPage::setRedirect(WebPage* target) {
     save();
     emit redirectChanged();
     emit urlChanged(target->url());
+    emit titleChanged(title());
     site()->addMirror(target->site());
 }
 
