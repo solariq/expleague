@@ -19,7 +19,9 @@ Window {
     property int invitationTimeout: 0
 
     width: 500
-    height: contents.implicitHeight + caption.implicitHeight + 40
+    height: {
+        return Math.max(400, contents.contentHeight + caption.implicitHeight + 40)
+    }
     minimumHeight: height
     maximumHeight: height
     minimumWidth: width
@@ -77,17 +79,20 @@ Window {
             Layout.maximumWidth: parent.width - 20
             Layout.alignment: Qt.AlignHCenter
             renderType: Text.NativeRendering
-            wrapMode: Text.WordWrap
             text: qsTr("Открыто задание")
             color: textColor
             font.bold: true
-            font.pointSize: 16
+            font.pointSize: 14
         }
-        Item {
+        Flickable {
+            id: contents
             Layout.fillHeight: true
             Layout.fillWidth: true
+
+            contentHeight: topic.implicitHeight + 4 + eta.implicitHeight + 4 + local.implicitHeight + 4 + (map.visible ? 204 : 0) + (images.visible ? 204 : 0)
+            contentWidth: width
             GridLayout {
-                id: contents
+                id: contentsGrid
                 anchors.margins: 15
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
@@ -99,6 +104,7 @@ Window {
                 }
 
                 TextEdit {
+                    id: topic
                     Layout.alignment: Qt.AlignLeft
                     Layout.preferredWidth: self.width/1.5 - 10
                     Layout.maximumWidth: self.width/1.5 - 10
@@ -117,6 +123,7 @@ Window {
                 }
 
                 Text {
+                    id: eta
                     Layout.alignment: Qt.AlignLeft
                     Layout.maximumHeight: 150
                     renderType: Text.NativeRendering
@@ -142,6 +149,7 @@ Window {
                 }
 
                 Label {
+                    id: local
                     text: offer ? (offer.local ? qsTr("Да") : qsTr("Нет")) : ""
                     color: textColor
                 }
@@ -188,6 +196,7 @@ Window {
                 }
 
                 ScrollView {
+                    id: images
                     visible: offer && offer.images.length > 0
                     Layout.columnSpan: 2
                     Layout.preferredHeight: 200

@@ -103,7 +103,6 @@ void League::startTask(Offer* offer) {
     Member* self = findMember(id());
     MarkdownEditorPage* answerPage = parent()->document(context, "Ваш ответ", self);
     context->transition(answerPage, Page::TYPEIN);
-    QObject::connect(answerPage, SIGNAL(textChanged(QString)), task, SLOT(setAnswer(QString)));
     task->setAnswer(answerPage);
     parent()->append(context);
     parent()->navigation()->activate(context);

@@ -7,7 +7,9 @@ import ExpLeague 1.0
 import "."
 Column {
     id: self
-    property alias editorActions: dosearch.main.editorActions
+    property var editorActions: {
+        return dosearch.main.editorActionsRef
+    }
     anchors.fill: parent
     property alias editor: edit
     Item {

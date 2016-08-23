@@ -15,6 +15,8 @@ ApplicationWindow {
     id: self
     property QtObject activeDialog
     property alias omnibox: omnibox
+    property alias commonActionsRef: commonActions
+    property alias editorActionsRef: editorActions
 
 //    flags: {
 //        if (Qt.platform.os === "osx")

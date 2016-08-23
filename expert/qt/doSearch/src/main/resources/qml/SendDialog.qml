@@ -50,7 +50,7 @@ Window {
             Layout.alignment: Qt.AlignHCenter
             text: qsTr("Подготовка к отправке задания")
             font.bold: true
-            font.pointSize: 16
+            font.pointSize: 14
         }
         Item {
             Layout.alignment: Qt.AlignHCenter

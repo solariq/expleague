@@ -213,12 +213,11 @@ QQuickItem* Page::ui() const {
     if (m_ui)
         return m_ui;
     m_context->setContextProperty("owner", const_cast<Page*>(this));
-
     QQmlComponent* component = componentsCache[m_ui_url];
     if (!component) {
         component = new QQmlComponent(rootEngine, QUrl(m_ui_url));
         if (component->isError()) {
-            qWarning() << "Error on component load";
+            qWarning() << "Error on component load. Context: " << rootEngine->rootContext() << ". doSearch: " << rootEngine->rootContext()->contextProperty("dosearch");
             foreach(QQmlError error, component->errors()) {
                 qWarning() << error;
             }
