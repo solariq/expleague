@@ -15,7 +15,13 @@ Item {
     property alias webView: webEngineView
     property real actionTs: 0
     property bool visited: false
+    property var url: owner.url
     property string pageSearch: ""
+
+    onUrlChanged: {
+        if (webEngineView.url != url)
+            webEngineView.url = url
+    }
 
     onPageSearchChanged: {
 //        console.log("Looking for " + pageSearch)
@@ -166,7 +172,7 @@ Item {
                     findText(text)
                 }
 
-                url: owner.url
+                url: "about:blank"
                 settings.hyperlinkAuditingEnabled: true
                 settings.linksIncludedInFocusChain: true
                 settings.spatialNavigationEnabled: true
@@ -196,16 +202,17 @@ Item {
                     }
                 }
 
+                property int historyLength: 1
                 onUrlChanged: {
                     console.log(new Date().getTime() + " url changed: [" + url + "] owner url: [" + owner.url + "]" + " history length: " + navigationHistory.items.rowCount())
 
-                    if (!owner.accept(url) && navigationHistory.items.rowCount() > 1) {
+                    if (!owner.accept(url) && navigationHistory.items.rowCount() > historyLength) {
                         var now = new Date().getTime()
                         var delta = now - actionTs
-                        if (delta < 5000) { //user action
+                        if (delta < 1000) { //user action
                             console.log("  User action: " + delta + "")
                             dosearch.navigation.open(url, owner, newTab)
-                            newTab = false
+                            historyLength = navigationHistory.items.rowCount()
                         }
                         else {
                             console.log("  Redirect: " + delta)
@@ -215,19 +222,12 @@ Item {
                     }
                 }
 
-                Connections {
-                    target: webEngineView.navigationHistory.items
-                    onDataChanged: {
-                        console.log(new Date().getTime() + " History changed. Length: " + navigationHistory.items.rowCount())
-                    }
-                }
-
                 settings {
                     autoLoadImages: true
                     javascriptEnabled: true
                     errorPageEnabled: false
 
-                    fullScreenSupportEnabled: true
+                    fullScreenSupportEnabled: false
                     javascriptCanAccessClipboard: true
                     pluginsEnabled: true
                 }

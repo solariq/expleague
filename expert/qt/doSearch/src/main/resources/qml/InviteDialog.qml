@@ -89,7 +89,7 @@ Window {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            contentHeight: topic.implicitHeight + 4 + eta.implicitHeight + 4 + local.implicitHeight + 4 + (map.visible ? 204 : 0) + (images.visible ? 204 : 0)
+            contentHeight: topic.implicitHeight + 4 + eta.implicitHeight + 4 + local.implicitHeight + 4 + (map.visible ? 204 : 0) + (images.visible ? 204 : 0) + 60
             contentWidth: width
             GridLayout {
                 id: contentsGrid
