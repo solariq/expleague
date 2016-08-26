@@ -165,7 +165,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
             response = getOrders(board.related(jid));
           }
           else if (path.startsWith("/dump/")) {
-            final Timeout timeout = new Timeout(Duration.create(2, TimeUnit.SECONDS));
+            final Timeout timeout = new Timeout(Duration.create(request.getUri().query().get("timeout").getOrElse(2).longValue(), TimeUnit.SECONDS));
             final JID jid = JID.parse(path.substring("/dump/".length()));
             final Future<Object> ask = Patterns.ask(XMPP.register(jid, context()), new ExpLeagueRoomAgent.DumpRequest(), timeout);
             //noinspection unchecked
