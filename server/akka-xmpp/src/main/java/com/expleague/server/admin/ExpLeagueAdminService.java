@@ -6,6 +6,7 @@ import akka.http.javadsl.Http;
 import akka.http.javadsl.IncomingConnection;
 import akka.http.javadsl.ServerBinding;
 import akka.http.javadsl.model.*;
+import akka.japi.Option;
 import akka.japi.function.Function;
 import akka.japi.function.Procedure;
 import akka.pattern.Patterns;
@@ -122,6 +123,16 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           }
           else if ("/open".equals(path)) {
             response = getOrders(board.open());
+          }
+          else if ("/replay".equals(path)) {
+            final Option<String> room = request.getUri().query().get("room");
+            if (!room.isEmpty()) {
+              int orders = board.replay(room.get());
+              response = HttpResponse.create().withStatus(200).withEntity("Replayed room " + room.get() + " " + orders + " orders restored");
+            }
+            else
+              response = HttpResponse.create().withStatus(404).withEntity("File not found");
+
           }
           else if ("/closed/without/feedback".equals(path)) {
             response = getOrders(board.orders(

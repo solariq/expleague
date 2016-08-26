@@ -104,6 +104,13 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   }
 
   @Override
+  public synchronized int replay(String roomId) {
+    clearRoomBeforeReplay(roomId);
+    final ExpLeagueOrder[] replay = ExpLeagueRoomAgent.replay(this, roomId);
+    return replay.length;
+  }
+
+  @Override
   public Stream<JID> topExperts() {
     return stream("top-experts", "SELECT U.id, count(*) FROM Users AS U " +
         "JOIN Participants AS P ON U.id = P.partisipant " +

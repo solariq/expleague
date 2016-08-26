@@ -63,6 +63,11 @@ public class InMemBoard implements LaborExchange.Board {
   }
 
   @Override
+  public int replay(String roomId) {
+    return 0;
+  }
+
+  @Override
   public Stream<JID> topExperts() {
     return history.stream().map(o -> o.of(ACTIVE)).flatMap(s -> s);
   }
