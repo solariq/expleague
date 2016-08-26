@@ -1,5 +1,6 @@
 package com.expleague.server.dao.fake;
 
+import akka.actor.ActorContext;
 import com.expleague.model.Offer;
 import com.expleague.model.Tag;
 import com.expleague.server.Roster;
@@ -63,7 +64,7 @@ public class InMemBoard implements LaborExchange.Board {
   }
 
   @Override
-  public int replay(String roomId) {
+  public int replay(String roomId, ActorContext context) {
     return 0;
   }
 

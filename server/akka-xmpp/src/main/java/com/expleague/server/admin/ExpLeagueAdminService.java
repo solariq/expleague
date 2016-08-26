@@ -8,7 +8,6 @@ import akka.http.javadsl.ServerBinding;
 import akka.http.javadsl.model.*;
 import akka.japi.Option;
 import akka.japi.function.Function;
-import akka.japi.function.Procedure;
 import akka.pattern.Patterns;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
@@ -23,7 +22,6 @@ import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.ExpLeagueRoomAgent;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
-import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorContainer;
 import com.expleague.util.akka.ActorMethod;
@@ -36,7 +34,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Charsets;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import com.typesafe.config.Config;
 import gnu.trove.map.hash.TLongDoubleHashMap;
@@ -50,7 +47,6 @@ import org.joda.time.format.DateTimeFormatter;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
-import scala.concurrent.duration.FiniteDuration;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -127,7 +123,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           else if ("/replay".equals(path)) {
             final Option<String> room = request.getUri().query().get("room");
             if (!room.isEmpty()) {
-              int orders = board.replay(room.get());
+              int orders = board.replay(room.get(), );
               response = HttpResponse.create().withStatus(200).withEntity("Replayed room " + room.get() + " " + orders + " orders restored");
             }
             else

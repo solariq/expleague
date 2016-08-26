@@ -1,5 +1,8 @@
 package com.expleague.server.dao.sql;
 
+import akka.actor.ActorContext;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
 import com.expleague.model.Offer;
 import com.expleague.model.Tag;
 import com.expleague.server.ExpLeagueServer;
@@ -7,14 +10,19 @@ import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.ExpLeagueRoomAgent;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
+import com.expleague.server.dao.Archive;
 import com.expleague.server.dao.fake.InMemBoard;
 import com.expleague.xmpp.JID;
+import com.expleague.xmpp.stanza.Stanza;
 import com.google.common.base.Joiner;
 import com.spbsu.commons.io.StreamTools;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
+import scala.concurrent.duration.Duration;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -24,8 +32,11 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,6 +46,7 @@ import java.util.stream.Stream;
  */
 @SuppressWarnings("unused")
 public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
+  private static final Logger log = Logger.getLogger(MySQLBoard.class.getName());
   public MySQLBoard() {
     super(ExpLeagueServer.config().db());
   }
@@ -104,10 +116,21 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   }
 
   @Override
-  public synchronized int replay(String roomId) {
+  public synchronized int replay(String roomId, ActorContext context) {
     clearRoomBeforeReplay(roomId);
-    final ExpLeagueOrder[] replay = ExpLeagueRoomAgent.replay(this, roomId);
-    return replay.length;
+    log.fine("Replaying " + roomId);
+    final Stack<ExpLeagueOrder> result = new Stack<>();
+    final Timeout timeout = new Timeout(Duration.create(20, TimeUnit.SECONDS));
+    final JID jid = new JID(roomId, "muc." + ExpLeagueServer.config().domain(), null);
+    final Future<Object> ask = Patterns.ask(XMPP.register(jid, context), new ExpLeagueRoomAgent.DumpRequest(), timeout);
+    //noinspection unchecked
+    try {
+      final ExpLeagueOrder[] replay = ExpLeagueRoomAgent.replay(this, ((List<Stanza>) Await.result(ask, timeout.duration())).stream());
+      return replay.length;
+    } catch (Exception e) {
+      log.log(Level.WARNING, "", e);
+    }
+    return 0;
   }
 
   @Override
@@ -203,7 +226,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
         synchronized (this) {
           if (isRoomReplayRequired(room)) {
             clearRoomBeforeReplay(room);
-            ExpLeagueRoomAgent.replay(this, room);
+            ExpLeagueRoomAgent.replay(this, Archive.instance().dump(room).stream());
             replayWasExecuted = true;
           }
         }

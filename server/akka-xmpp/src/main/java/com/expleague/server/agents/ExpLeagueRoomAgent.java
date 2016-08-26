@@ -1,10 +1,13 @@
 package com.expleague.server.agents;
 
+import akka.pattern.Patterns;
 import akka.persistence.RecoveryCompleted;
+import akka.util.Timeout;
 import com.expleague.model.Answer;
 import com.expleague.model.Image;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations.*;
+import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
 import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.ActorMethod;
@@ -17,11 +20,15 @@ import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.func.Functions;
 import org.jetbrains.annotations.NotNull;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
+import scala.concurrent.duration.Duration;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -166,13 +173,9 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
   }
 
   @SuppressWarnings("ConstantConditions")
-  public static ExpLeagueOrder[] replay(LaborExchange.Board board, String roomId) {
-    log.fine("Replaying " + roomId);
+  public static ExpLeagueOrder[] replay(LaborExchange.Board board, Stream<Stanza> stream) {
     final Stack<ExpLeagueOrder> result = new Stack<>();
-    final Archive.Dump dump = Archive.instance().dump(roomId);
-    if (dump == null)
-      return new ExpLeagueOrder[0];
-    dump.stream()
+    stream
       .flatMap(Functions.instancesOf(Message.class))
       .forEach(message -> {
         log.fine("Replay: " + message.toString());
