@@ -123,7 +123,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           else if ("/replay".equals(path)) {
             final Option<String> room = request.getUri().query().get("room");
             if (!room.isEmpty()) {
-              int orders = board.replay(room.get(), );
+              int orders = board.replay(room.get(), context());
               response = HttpResponse.create().withStatus(200).withEntity("Replayed room " + room.get() + " " + orders + " orders restored");
             }
             else
