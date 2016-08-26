@@ -167,6 +167,7 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
 
   @SuppressWarnings("ConstantConditions")
   public static ExpLeagueOrder[] replay(LaborExchange.Board board, String roomId) {
+    log.fine("Replaying " + roomId);
     final Stack<ExpLeagueOrder> result = new Stack<>();
     final Archive.Dump dump = Archive.instance().dump(roomId);
     if (dump == null)
@@ -174,6 +175,7 @@ public class ExpLeagueRoomAgent extends PersistentActorAdapter {
     dump.stream()
       .flatMap(Functions.instancesOf(Message.class))
       .forEach(message -> {
+        log.fine("Replay: " + message.toString());
         final JID from = message.from();
         if (message.has(Create.class) && message.has(Offer.class)) {
           final Offer offer = message.get(Offer.class);
