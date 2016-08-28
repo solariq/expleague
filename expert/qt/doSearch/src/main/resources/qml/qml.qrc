@@ -41,5 +41,7 @@
         <file>NavigationTab.qml</file>
         <file>TaskView.qml</file>
         <file>EmptyView.qml</file>
+        <file>DownloadsPage.qml</file>
+        <file>HistoryPage.qml</file>
     </qresource>
 </RCC>

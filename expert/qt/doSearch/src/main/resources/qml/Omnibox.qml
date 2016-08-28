@@ -8,9 +8,9 @@ import ExpLeague 1.0
 
 import "."
 
-Rectangle {
+Item {
     id: self
-    color: Palette.backgroundColor
+//    color: Palette.backgroundColor
 
     property alias text: input.text
     property Window window
@@ -38,7 +38,6 @@ Rectangle {
     }
     RowLayout {
         anchors.fill: self
-        anchors.margins: 1
         spacing: 0
         ComboBox {
             id: selector

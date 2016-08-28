@@ -19,6 +19,10 @@ Item {
     property Action searchOnPage: searchOnPageAction
     property Action searchInternet: searchInternetAction
     property Action searchSite: searchSiteAction
+    property Action resetZoom: resetZoomAction
+    property Action zoomIn: zoomInAction
+    property Action zoomOut: zoomOutAction
+    property Action showHistory: showHistoryAction
 
     property QtObject screen: {
         return root.navigation.activeScreen
@@ -103,7 +107,10 @@ Item {
         shortcut: StandardKey.Cut
         enabled: editor || webView
         onTriggered: {
-            if (webView) {
+            if (!!webView && !!webView["transfer"] && webView.transfer(shortcut)) {
+                return
+            }
+            else if (webView) {
                 webView.triggerWebAction(WebEngineView.Cut)
             }
             else if (editor) {
@@ -115,13 +122,17 @@ Item {
         id: pasteAction
         text: qsTr("Вставить")
         shortcut: StandardKey.Paste
-        enabled: editor || webView
+
+        enabled: true //editor || webView
         onTriggered: {
-            if (webView) {
+            if (!!webView && !!webView["transfer"] && webView.transfer(shortcut)) {
+                return
+            }
+            else if (!!webView) {
                 webView.triggerWebAction(WebEngineView.Paste)
             }
-            else if (editor) {
-                if (editor['pasteMD'])
+            else if (!!editor) {
+                if (!!editor['pasteMD'])
                     editor.pasteMD()
                 else
                     editor.paste()
@@ -135,11 +146,14 @@ Item {
         shortcut: StandardKey.SelectAll
         enabled: webView || editor
         onTriggered: {
-            if (editor) {
-                editor.selectAll()
+            if (!!webView && !!webView["transfer"] && webView.transfer(shortcut)) {
+                return
             }
-            else if (webView) {
+            else if (!!webView) {
                 webView.triggerWebAction(WebEngineView.SelectAll)
+            }
+            else if (editor) {
+                editor.selectAll()
             }
         }
     }
@@ -150,11 +164,14 @@ Item {
         shortcut: StandardKey.Undo
         enabled: webView || (editor && editor.canUndo)
         onTriggered: {
-            if (editor) {
-                editor.undo()
+            if (!!webView && !!webView["transfer"] && webView.transfer(shortcut)) {
+                return
             }
-            else if (webView) {
+            else if (!!webView) {
                 webView.triggerWebAction(WebEngineView.Undo)
+            }
+            else if (editor && editor.canUndo) {
+                editor.undo()
             }
         }
     }
@@ -165,13 +182,38 @@ Item {
         shortcut: StandardKey.Redo
         enabled: webView || (editor && editor.canRedo)
         onTriggered: {
-            if (editor) {
-                editor.redo()
+            if (!!webView && !!webView["transfer"] && webView.transfer(shortcut)) {
+                return
             }
-            else if (webView) {
+            else if (!!webView) {
                 webView.triggerWebAction(WebEngineView.Redo)
             }
+            else if (editor && editor.canRedo) {
+                editor.redo()
+            }
         }
+    }
+
+    Action {
+        id: resetZoomAction
+        text: qsTr("Вернуть исходный масштаб")
+        shortcut: "Ctrl+0"
+        enabled: webView
+        onTriggered: webView.zoomFactor = 1.0;
+    }
+
+    Action {
+        id: zoomInAction
+        text: qsTr("Увеличить масштаб")
+        shortcut: StandardKey.ZoomOut
+        onTriggered: webView.zoomFactor -= 0.1;
+    }
+
+    Action {
+        id: zoomOutAction
+        text: qsTr("Уменьшить масштаб")
+        shortcut: StandardKey.ZoomIn
+        onTriggered: webView.zoomFactor += 0.1;
     }
 
     Action {
@@ -191,31 +233,37 @@ Item {
         shortcut: "Ctrl+F"
         text: qsTr("Поиск на странице")
         onTriggered: {
-            omnibox.visible = true
             omnibox.select("page")
-            omnibox.forceActiveFocus()
+            dosearch.main.showDialog(omnibox)
         }
     }
 
     Action {
         id: searchInternetAction
-        shortcut: "Ctrl+S"
+        shortcut: "Ctrl+N"
         text: qsTr("Поиск в интернете")
         onTriggered: {
-            omnibox.visible = true
             omnibox.select("internet")
-            omnibox.forceActiveFocus()
+            dosearch.main.showDialog(omnibox)
         }
     }
 
     Action {
         id: searchSiteAction
-        shortcut: "Ctrl+Shift+S"
+        shortcut: "Ctrl+Shift+N"
         text: qsTr("Поиск на текущем сайте")
         onTriggered: {
-            omnibox.visible = true
             omnibox.select("site")
-            omnibox.forceActiveFocus()
+            dosearch.main.showDialog(omnibox)
+        }
+    }
+
+    Action {
+        id: showHistoryAction
+        shortcut: "Ctrl+E"
+        text: qsTr("Показать последние страницы")
+        onTriggered: {
+            dosearch.main.showHistory()
         }
     }
 }

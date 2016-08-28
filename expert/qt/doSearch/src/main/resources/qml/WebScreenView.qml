@@ -172,13 +172,17 @@ Item {
                     findText(text)
                 }
 
+                function transfer(shortcut) {
+                    return owner.forwardShortcutToWebView(shortcut, webEngineView)
+                }
+
                 url: "about:blank"
                 settings.hyperlinkAuditingEnabled: true
                 settings.linksIncludedInFocusChain: true
                 settings.spatialNavigationEnabled: true
                 settings.touchIconsEnabled: true
 
-                profile: dosearch.main.webProfileRef
+                profile: !!dosearch.main ? dosearch.main.webProfileRef : profile
 
                 onLoadingChanged: {
                     if (!loading) {

@@ -13,6 +13,41 @@
 
 namespace expleague {
 
+void History::onVisited(Page *to) {
+    m_story.append(to);
+    append("history", to->id());
+    save();
+    m_last30 = last(30);
+    emit historyChanged();
+}
+
+int History::visits(const QString& pageId) const {
+    Page* const page = parent()->page(pageId);
+    int count = 0;
+    foreach(Page* current, m_story) {
+        count += current == page ? 1 : 0;
+    }
+    return count;
+}
+
+
+QList<Page*> History::last(int depth) const {
+    QList<Page*> result;
+    for (int i = m_story.size() - 1; i >= 0 && result.size() < depth; i--) {
+        if (!result.contains(m_story[i]))
+            result.append(m_story[i]);
+    }
+    return result;
+}
+
+void History::interconnect() {
+    Page::interconnect();
+    // TODO: make global history available
+//    visitAll("history", [this](const QVariant& val) {
+//        m_story.append(parent()->page(val.toString()));
+//    });
+}
+
 const QDir CONTEXT_DIR = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/doSearch/");
 
 StateSaver::StateSaver(QObject *parent): QObject(parent) {

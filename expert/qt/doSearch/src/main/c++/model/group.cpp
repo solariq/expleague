@@ -4,12 +4,11 @@
 
 #include <QDebug>
 
-#include<assert.h>
+#include <assert.h>
 
 namespace expleague {
 
-PagesGroup::PagesGroup(Page* root, PagesGroup* parent, NavigationManager* manager): QObject(manager), m_root(root), m_parent(parent) {
-    connect(this, SIGNAL(pagesChanged()), manager, SLOT(onPagesChanged()));
+PagesGroup::PagesGroup(Page* root, NavigationManager* manager): QObject(manager), m_root(root), m_parent(0) {
     if (!root) {
         m_closed_start = 0;
         m_selected_page_index = -1;
@@ -31,12 +30,6 @@ PagesGroup::PagesGroup(Page* root, PagesGroup* parent, NavigationManager* manage
 
         webRoot = webRoot->redirect();
     }
-    while (parent) {
-        foreach (Page* page, parent->m_pages) {
-            pages.removeOne(page);
-        }
-        parent = parent->m_parent;
-    }
     for (int i = 0; i < pages.size(); i++) {
         Page* const page = pages[i];
         if (page->state() == Page::CLOSED || qobject_cast<Context*>(page))
@@ -54,6 +47,38 @@ PagesGroup::PagesGroup(Page* root, PagesGroup* parent, NavigationManager* manage
         connect(page, SIGNAL(stateChanged(Page::State)), this, SLOT(onPageStateChanged(Page::State)));
         m_pages.append(page);
     }
+}
+
+void PagesGroup::split(const QList<Page *>& visible, const QList<Page *>& folded, const QList<Page*>& closed)  {
+    if (m_visible_pages != visible || m_folded_pages != folded) {
+        m_visible_pages = visible;
+        m_folded_pages = folded;
+        m_closed_pages = closed;
+        emit visiblePagesChanged();
+    }
+}
+
+
+void PagesGroup::setParentGroup(PagesGroup* group) {
+    m_parent = group;
+    Page* const selected = m_selected_page_index >= 0 ? m_pages[m_selected_page_index] : 0;
+    if (selected && !activePages().contains(selected)) {
+        m_selected_page_index = -1;
+        selectedPageChanged(0);
+    }
+    emit parentGroupChanged(group);
+}
+
+QList<Page*> PagesGroup::activePages() const {
+    QList<Page*> result = m_pages.mid(0, m_closed_start);
+    PagesGroup* parent = m_parent;
+    while (parent) {
+        foreach (Page* page, parent->activePages()) {
+            result.removeOne(page);
+        }
+        parent = parent->m_parent;
+    }
+    return result;
 }
 
 void PagesGroup::insert(Page* page, int position) {

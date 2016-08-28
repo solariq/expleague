@@ -103,6 +103,7 @@ void declareTypes() {
     qRegisterMetaType<WebPage*>("WebPage*");
     qRegisterMetaType<Member*>("Member*");
     qRegisterMetaType<TaskTag*>("TaskTag*");
+    qRegisterMetaType<History*>("History*");
     qRegisterMetaType<AnswerPattern*>("AnswerPattern*");
     qRegisterMetaType<expleague::NavigationManager*>("NavigationManager*");
     qRegisterMetaType<expleague::Page*>("Page*");

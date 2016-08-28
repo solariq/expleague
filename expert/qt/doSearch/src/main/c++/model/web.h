@@ -45,6 +45,8 @@ public:
                                       ushort count,
                                       QQuickItem* view);
 
+    Q_INVOKABLE bool forwardShortcutToWebView(const QString& shortcut, QQuickItem* view);
+
     void transferUI(WebPage* target) const {
         Page::transferUI(target);
     }

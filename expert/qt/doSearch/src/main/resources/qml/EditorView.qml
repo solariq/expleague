@@ -104,6 +104,13 @@ Column {
                 renderType: Text.NativeRendering
                 font.pointSize: 14
 
+                Keys.onPressed: {
+                    if (event.key === Qt.Key_V && (event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) != 0) {
+                        event.accepted = true
+                        pasteMD()
+                    }
+                }
+
                 function pasteMD() {
                     var coded = owner.codeClipboard()
                     edit.remove(edit.selectionStart, edit.selectionEnd)

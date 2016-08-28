@@ -26,7 +26,7 @@
 static QFontMetrics titleFontMetrics(QFont("Helvetica [Cronyx]", 12));
 
 QVariantHash buildVariantByXml(QXmlStreamReader& reader);
-void writeXml(const QString& local, const QString& ns, const QVariant& variant, QXmlStreamWriter* writer, bool attribute = false);
+void writeXml(const QString& local, const QString& ns, const QVariant& variant, QXmlStreamWriter* writer, bool attribute = false, bool enforceTag = false);
 double bisection(double left, double right, std::function<double (double)> func);
 double optimalExpansionDP(double statPower, int classes);
 double erlang(int k, double lambda, double x);
@@ -229,7 +229,7 @@ QQuickItem* Page::ui() const {
         componentsCache[m_ui_url] = component;
     }
     m_ui = (QQuickItem*)component->create(m_context);
-    m_ui->setParent(const_cast<Page*>(this));
+//    m_ui->setParent(const_cast<Page*>(this));
     connect(m_ui, &QQuickItem::destroyed, [this](){
         m_ui = 0;
     });
@@ -244,8 +244,7 @@ void Page::transferUI(Page* other) const {
     other->m_context = m_context;
     other->m_ui = m_ui;
     m_ui->disconnect();
-    m_ui->setParent(other);
-    m_ui->setParent(const_cast<Page*>(this));
+//    m_ui->setParent(other);
     m_context->setContextProperty("owner", other);
     connect(m_ui, &QQuickItem::destroyed, [other](){
         other->m_ui = 0;
@@ -387,7 +386,7 @@ void Page::save() const {
     writer.writeStartDocument();
     QVariant copy = m_properties;
     m_saved_changes = m_changes;
-    writeXml("page", "http://expleague.com/expert/page", copy, &writer, false);
+    writeXml("page", "http://expleague.com/expert/page", copy, &writer);
     writer.writeEndDocument();
 //    qDebug() << buffer;
     FileWriteThrottle::enqueue(parent()->pageResource(id() +"/page.xml"), buffer);
@@ -449,7 +448,7 @@ bool attributeString(const QString& str) {
     return str.length() < 50 && !str.contains('\n');
 }
 
-void writeXml(const QString& local, const QString& ns, const QVariant& variant, QXmlStreamWriter* writer, bool attribute) {
+void writeXml(const QString& local, const QString& ns, const QVariant& variant, QXmlStreamWriter* writer, bool attribute, bool enforceTag) {
     if (attribute) {
         switch(variant.type()) {
         case QVariant::Type::Double:
@@ -480,14 +479,14 @@ void writeXml(const QString& local, const QString& ns, const QVariant& variant, 
         {
             QHash<QString, QVariant>::iterator iter = hash.begin();
             while (iter != hash.end()) {
-                writeXml(iter.key(), "", iter.value(), writer, true);
+                writeXml(iter.key(), "", iter.value(), writer, true, false);
                 iter++;
             }
         }
         {
             QHash<QString, QVariant>::iterator iter = hash.begin();
             while (iter != hash.end()) {
-                writeXml(iter.key(), "", iter.value(), writer, false);
+                writeXml(iter.key(), "", iter.value(), writer, false, false);
                 iter++;
             }
         }
@@ -496,15 +495,30 @@ void writeXml(const QString& local, const QString& ns, const QVariant& variant, 
     else if (variant.canConvert(QVariant::List)) {
         QVariantList lst = variant.toList();
         foreach (const QVariant& var, lst) {
-            writeXml(local, ns, var, writer, false);
+            writeXml(local, ns, var, writer, false, true);
         }
     }
-    else if (variant.canConvert(QVariant::String) && !attributeString(variant.toString())){
+    else if (variant.canConvert(QVariant::String) && (enforceTag || !attributeString(variant.toString()))) {
         writer->writeStartElement(local);
         writer->writeAttribute("type", "text");
         writer->writeCharacters(variant.toString());
         writer->writeEndElement();
     }
+}
+
+template <typename T>
+void appendVariant(QVariant& to, const T& value) {
+    if (to.canConvert(QVariant::Type::List)) {
+        QVariantList& lst = *reinterpret_cast<QVariantList*>(to.data());
+        lst.append(value);
+    }
+    else if (!to.isNull()) {
+        QVariantList lst;
+        lst += to;
+        lst += value;
+        to.setValue(lst);
+    }
+    else to.setValue(value);
 }
 
 QVariantHash buildVariantByXml(QXmlStreamReader& reader) {
@@ -541,23 +555,12 @@ QVariantHash buildVariantByXml(QXmlStreamReader& reader) {
                 fold.unite(buildVariantByXml(reader));
                 if (!reader.isEndElement())
                     qWarning() << "Invalid xml";
-                QVariant& val = result[key];
-                if (val.canConvert(QVariant::Type::List)) {
-                    QVariantList& lst = *reinterpret_cast<QVariantList*>(val.data());
-                    lst.append(fold);
-                }
-                else if (!val.isNull()) {
-                    QVariantList lst;
-                    lst += val;
-                    lst += fold;
-                    val.setValue(lst);
-                }
-                else val.setValue(fold);
+                appendVariant<QVariantHash>(result[key], fold);
             }
             else type = attrs.value("type").toString();
         }
         else if (reader.isCharacters() && type == "text") {
-            result[key] = reader.text().toString();
+            appendVariant<QString>(result[key], reader.text().toString());
             reader.readNext();
         }
         else if (reader.isEndElement()) {
@@ -569,6 +572,8 @@ QVariantHash buildVariantByXml(QXmlStreamReader& reader) {
 
     return result;
 }
+
+
 
 const double EPSILON = 1e-6;
 

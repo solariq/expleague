@@ -10,9 +10,7 @@
 #include <QQmlListProperty>
 
 #include <QList>
-#include <QStack>
-
-#include <QDebug>
+#include <QHash>
 
 class QQuickItem;
 class QQuickWindow;
@@ -42,7 +40,10 @@ public:
     Q_INVOKABLE void select(PagesGroup* context, Page* selected);
     Q_INVOKABLE void close(PagesGroup* context, Page* page);
 
+    Q_INVOKABLE void activate(Context* ctxt);
     Q_INVOKABLE QQuickItem* open(const QUrl& url, Page* context, bool newGroup = false);
+    Q_INVOKABLE void open(Page* page);
+    Q_INVOKABLE void select(PagesGroup* group);
 
 public:
     QQmlListProperty<expleague::PagesGroup> groups() const {
@@ -73,9 +74,6 @@ public:
 
 public:
     void setWindow(QQuickWindow* window);
-    Q_INVOKABLE void activate(Context* ctxt);
-    Q_INVOKABLE void open(Page* page);
-    Q_INVOKABLE void select(PagesGroup* group);
     doSearch* parent() const;
 
 signals:
@@ -91,7 +89,6 @@ private slots:
     void onGroupsChanged();
     void onDnsRequestFinished();
     void onScreenWidthChanged(int width) {
-        qDebug() << "Screen width set to: " << width;
         m_screen_width = width;
         onGroupsChanged();
     }
@@ -104,6 +101,7 @@ private:
     void unfold();
     void popTo(const PagesGroup*);
     void typeIn(Page*);
+    PagesGroup* group(Page* page) const;
 
 private:
     double m_screen_width;
@@ -116,6 +114,7 @@ private:
     QList<Page*> m_history;
 
     QList<QQuickItem*> m_screens;
+    mutable QHash<QString, PagesGroup*> m_groups_cache;
     QQuickItem* m_active_screen;
     QDnsLookup* m_lookup;
 };

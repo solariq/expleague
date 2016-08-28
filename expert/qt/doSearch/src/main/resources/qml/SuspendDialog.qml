@@ -59,6 +59,7 @@ Window {
             Layout.preferredWidth: 300
             Layout.alignment: Qt.AlignHCenter
             text: qsTr("Вы действительно хотите преостановить выполнение задания?")
+            color: Palette.activeTextColor
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
             renderType: Text.NativeRendering
@@ -79,6 +80,7 @@ Window {
                 Text {
                     renderType: Text.NativeRendering
                     Layout.alignment: Qt.AlignLeft
+                    color: Palette.activeTextColor
                     text: "Отложить на сколько"
                 }
 
@@ -90,6 +92,7 @@ Window {
                         id: days
                     }
                     Text {
+                        color: Palette.activeTextColor
                         text: "дней"
                     }
                     TextField {
@@ -97,6 +100,7 @@ Window {
                         id: hours
                     }
                     Text {
+                        color: Palette.activeTextColor
                         width: 30
                         text: "ч."
                     }
@@ -105,6 +109,7 @@ Window {
                         id: minutes
                     }
                     Text {
+                        color: Palette.activeTextColor
                         width: 30
                         text: "м."
                     }

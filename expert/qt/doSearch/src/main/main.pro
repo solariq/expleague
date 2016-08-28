@@ -56,7 +56,8 @@ SOURCES += \
     c++/model/group.cpp \
     c++/model/context.cpp \
     c++/editor.cpp \
-    c++/dosearch.cpp
+    c++/dosearch.cpp \
+    c++/model/downloads.cpp
 
 HEADERS += \
     c++/protocol.h \
@@ -77,7 +78,8 @@ HEADERS += \
     c++/model/search.h \
     c++/model/group.h \
     c++/model/web.h \
-    c++/util/math.h
+    c++/util/math.h \
+    c++/model/downloads.h
 
 macx: OBJECTIVE_SOURCES += \
     objc/ExpLeagueNotification.mm

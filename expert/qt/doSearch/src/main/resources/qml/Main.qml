@@ -64,11 +64,26 @@ ApplicationWindow {
         showDialog(inviteDialog)
     }
 
+    function showHistory() {
+        showDialog(history)
+    }
+
     function showDialog(dialog) {
         if (activeDialog && activeDialog.visible)
             activeDialog.visible = false
         activeDialog = dialog
-        activeDialog.visible = true
+        if (dialog) {
+            activeDialog.visible = true
+            activeDialog.forceActiveFocus()
+        }
+    }
+
+    Connections {
+        target: activeDialog
+        onVisibleChanged: {
+            if (activeDialog && !activeDialog.visible)
+                activeDialog = null
+        }
     }
 
     InviteDialog {
@@ -107,6 +122,10 @@ ApplicationWindow {
 
         onDownloadRequested: {
             console.log("Download requested: " + download.path)
+            var contextUI = dosearch.navigation.context.ui()
+            contextUI.downloads.append(download)
+            download.accept()
+            dosearch.navigation.select(0, dosearch.navigation.context)
         }
     }
 
@@ -152,6 +171,14 @@ ApplicationWindow {
                 action: commonActions.reload
             }
             MenuItem {
+                action: commonActions.closeTab
+            }
+            MenuItem {
+                action: commonActions.showHistory
+            }
+
+            MenuSeparator{}
+            MenuItem {
                 action: commonActions.searchInternet
             }
             MenuItem {
@@ -160,11 +187,17 @@ ApplicationWindow {
             MenuItem {
                 action: commonActions.searchOnPage
             }
+            MenuSeparator{}
             MenuItem {
-                action: commonActions.closeTab
+                action: commonActions.zoomIn
+            }
+            MenuItem {
+                action: commonActions.zoomOut
+            }
+            MenuItem {
+                action: commonActions.resetZoom
             }
         }
-
         Menu {
             title: qsTr("Правка")
             MenuItem {
@@ -187,7 +220,6 @@ ApplicationWindow {
             MenuItem {
                 action: commonActions.selectAll
             }
-            MenuSeparator{}
         }
         Menu {
             title: qsTr("Редактор")
@@ -225,7 +257,6 @@ ApplicationWindow {
             MenuItem {
                 action: editorActions.insertTable
             }
-            property var s: EditorActions.childAt(assd)
         }
     }
 
@@ -276,7 +307,7 @@ ApplicationWindow {
                     Layout.maximumWidth: maxWidth
 
                     context: dosearch.navigation.context
-                    visible: dosearch.navigation.context.task != null
+                    visible: !!dosearch.navigation.context.task
                     window: self
                 }
             }
@@ -309,6 +340,42 @@ ApplicationWindow {
             textToSugget: omnibox.text
         }
 
+        Rectangle {
+            id: history
+            visible: false
+
+            x: (self.width - width)/2
+            y: 200
+            z: parent.z + 10
+            width: 500
+            height: 24 * dosearch.history.last30.length + 4
+
+            color: Palette.backgroundColor
+
+            children: [dosearch.history.ui()]
+            onFocusChanged: {
+                if (focus)
+                    children[0].forceActiveFocus()
+            }
+            onChildrenChanged: {
+                for(var i in children) {
+                    children[i].visible = true
+                    children[i].parent = history
+                }
+            }
+        }
+
+        DropShadow {
+            visible: !!activeDialog
+            anchors.fill: activeDialog
+            cached: true
+            radius: 8.0
+            samples: 16
+            spread: 0.4
+            color: "#80000000"
+            source: activeDialog
+        }
+
         WebEngineView {
             id: linkReceiver
             visible: false
@@ -322,9 +389,9 @@ ApplicationWindow {
 
             onUrlChanged: {
                 var surl = url.toString()
-                if (surl.length == 0 || surl == "about:blank")
+                if (surl.length === 0 || surl == "about:blank")
                     return
-                else if (surl.search(/google\.\w+\/url/) != -1 || surl.search(/yandex\.\w+\/clck\/jsredir/) != -1) {
+                else if (surl.search(/google\.\w+\/url/) !== -1 || surl.search(/yandex\.\w+\/clck\/jsredir/) !== -1) {
                     jsredir = true
                     return
                 }

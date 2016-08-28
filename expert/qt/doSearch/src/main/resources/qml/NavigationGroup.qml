@@ -13,6 +13,7 @@ Item {
     property var append: null
     property var visiblePages: group.visiblePages
     property var foldedPages: group.foldedPages
+    property var closedPages: group.closedPages
     property bool closeEnabled: true
 
     implicitWidth: visibleList.implicitWidth + (group.parentGroup ? separator.width : 0)
@@ -155,7 +156,7 @@ Item {
                 x: Math.max(parent.width - width, 0)
                 y: parent.mapFromItem(others.parent, 0, others.y).y + others.height + 1
                 width: flickableContainer.contentWidth+ 4
-                height: (20 + 1) * foldedPages.length + 4
+                height: (20 + 1) * foldedPages.length + 4 + (closedPages.length > 0 ? (20 + 1) * closedPages.length + closedLabel.height : 0)
 
                 id: popup
                 clip: true
@@ -208,6 +209,22 @@ Item {
                                     closeEnabled: false
                                 }
                                 model: foldedPages
+                            }
+                            Text {
+                                id: closedLabel
+                                text: qsTr("Закрытые:")
+                                color: Palette.idleTextColor
+                                visible: closedPages.length > 0
+                            }
+                            Repeater {
+                                delegate: NavigationTab {
+                                    width: flickableContainer.contentWidth
+                                    height: 20
+                                    color: hover ? Palette.selectedColor : Palette.idleColor
+                                    textColor: hover ? Palette.selectedTextColor : Palette.idleTextColor
+                                    closeEnabled: false
+                                }
+                                model: closedPages
                             }
                         }
                     }

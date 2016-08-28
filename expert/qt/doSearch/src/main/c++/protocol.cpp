@@ -262,9 +262,9 @@ void ExpLeagueConnection::sendCommand(const QString& command, Offer* task, std::
 
 void ExpLeagueConnection::sendSuspend(Offer *offer, long seconds) {
     sendCommand("suspend", offer, [this, seconds](QDomElement* command) {
-        QDateTime now = QDateTime::currentDateTimeUtc();
-        command->setAttribute("start", QString::number(now.toMSecsSinceEpoch() / (double)1000));
-        command->setAttribute("end", QString::number(now.addSecs(seconds).toMSecsSinceEpoch() / (double)1000));
+        double now = QDateTime::currentMSecsSinceEpoch() / (double)1000;
+        command->setAttribute("start", QString::number(now, 'f', 12));
+        command->setAttribute("end", QString::number(now + seconds, 'f', 12));
     });
 }
 

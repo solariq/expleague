@@ -65,7 +65,7 @@ public:
     Page* lastVisited() const { return m_last_visited; }
     time_t lastVisitTs() const { return m_last_visit_ts; }
 
-    QQuickItem* ui() const;
+    Q_INVOKABLE QQuickItem* ui() const;
     QQuickItem* thumbnail() const;
 
     Q_INVOKABLE virtual double pOut(Page*) const;

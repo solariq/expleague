@@ -8,6 +8,7 @@
 //#include <QtQuick/private/qquickevents_p_p.h>
 //#include <QtWebEngine/private/qquickwebengineview_p.h>
 #include <QKeyEvent>
+#include <QShortcut>
 #include <QApplication>
 
 namespace expleague {
@@ -60,6 +61,23 @@ void WebPage::setRedirect(WebPage* target) {
     site()->addMirror(target->site());
 }
 
+bool WebPage::forwardShortcutToWebView(const QString& shortcut, QQuickItem* view) {
+    QKeySequence seq(shortcut);
+    QQuickItem* target = view;
+    while (target->isFocusScope()
+           && target->scopedFocusItem()
+           && target->scopedFocusItem()->isEnabled()) {
+        target = target->scopedFocusItem();
+    }
+    bool accepted = false;
+    for (int i = 0; i < seq.count(); i++) {
+        QKeyEvent event(QKeyEvent::KeyPress, seq[i] & 0x00FFFFFF, (Qt::KeyboardModifiers)(seq[i] & 0xFF000000), "", false, 1);
+        QCoreApplication::sendEvent(target, &event);
+        accepted |= event.isAccepted();
+    }
+    return accepted;
+}
+
 bool WebPage::forwardToWebView(int key,
                                Qt::KeyboardModifiers modifiers,
                                const QString& text,
@@ -74,8 +92,8 @@ bool WebPage::forwardToWebView(int key,
         target = target->scopedFocusItem();
     }
 
-    bool rc = QCoreApplication::sendEvent(target, &event);
-    return rc;
+    QCoreApplication::sendEvent(target, &event);
+    return event.isAccepted();
 }
 
 void WebPage::setUrl(const QUrl& url) {
@@ -83,6 +101,7 @@ void WebPage::setUrl(const QUrl& url) {
         return;
     m_url = url;
     store("web.url", m_url.toString());
+    save();
     emit urlChanged(url);
 }
 
@@ -112,6 +131,7 @@ void WebPage::interconnect() {
 
 WebPage::WebPage(const QString& id, const QUrl& url, doSearch* parent): Page(id, "qrc:/WebScreenView.qml", "", parent), m_url(url) {
     store("web.url", m_url.toString());
+    save();
 }
 
 WebPage::WebPage(const QString& id, doSearch* parent): Page(id, "qrc:/WebScreenView.qml", "", parent), m_url(value("web.url").toString()) {

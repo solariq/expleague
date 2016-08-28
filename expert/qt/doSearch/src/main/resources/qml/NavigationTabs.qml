@@ -11,20 +11,27 @@ RowLayout {
     property NavigationManager navigation: null
     id: tabs
     spacing: 0
-    Item {
+    Rectangle {
         id: activeContext
 
         Layout.fillHeight: true
-        Layout.preferredWidth: 20
+        Layout.preferredWidth: parent.height
         Layout.alignment: Qt.AlignVCenter
+        color: navigation.activePage === navigation.context ? Palette.selectedColor : Palette.activeColor
+        radius: Palette.radius
 
         Image {
             source: navigation.context ? navigation.context.icon : ""
             mipmap: true
             anchors.centerIn: parent
-            width: parent.width
-            height: width
+            width: 20
+            height: 20
             fillMode: Image.PreserveAspectFit
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: navigation.select(0, navigation.context)
         }
     }
     Item {Layout.preferredWidth: 6}

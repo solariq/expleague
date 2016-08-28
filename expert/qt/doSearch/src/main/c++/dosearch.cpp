@@ -1,6 +1,5 @@
 #include "expleague.h"
 
-#include "model/history.h"
 #include "util/math.h"
 
 #include <assert.h>
@@ -24,6 +23,8 @@ doSearch::doSearch(QObject* parent) : QObject(parent) {
     m_league = new League(this);
     m_navigation = new NavigationManager(this);
     connect(m_navigation, SIGNAL(activeScreenChanged()), this, SLOT(onActiveScreenChanged()));
+    m_history = new History(this);
+    m_history->interconnect();
 }
 
 void doSearch::setMain(QQuickWindow* main) {
@@ -57,6 +58,7 @@ void doSearch::restoreState() {
 }
 
 QString doSearch::pageResource(const QString &id) const {
+//    qDebug() << "page " << id << " location " << QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/pages/" + id;
     return QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/pages/" + id;
 }
 
@@ -102,6 +104,12 @@ Context* doSearch::context(const QString& name) const {
     }));
 }
 
+DownloadsPage* doSearch::downloads(Context *context) const {
+    return static_cast<DownloadsPage*>(page(context->id() + "/downloads", [context](const QString&, doSearch* parent){
+        return new DownloadsPage(context, parent);
+    }));
+}
+
 SearchRequest* doSearch::search(const QString& query, int searchIndex) const {
     QString id = "search/" + query;
     SearchRequest* request = static_cast<SearchRequest*>(page(id, [query, searchIndex, this](const QString& id, doSearch* parent){
@@ -116,7 +124,7 @@ SearchRequest* doSearch::search(const QString& query, int searchIndex) const {
 
 MarkdownEditorPage* doSearch::document(Context* context, const QString& title, Member* author) const {
     QString id = "document/" + context->id() + "/" + (author ? author->id() : "local") + "/" + md5(title);
-    return static_cast<MarkdownEditorPage*>(page(id, [&title, &author](const QString& id, doSearch* parent){
+    return static_cast<MarkdownEditorPage*>(page(id, [title, author](const QString& id, doSearch* parent){
         return new MarkdownEditorPage(id, author, title, parent);
     }));
 }
@@ -140,6 +148,8 @@ Page* doSearch::page(const QString &id) const {
             return new SearchRequest(id, parent);
         else if (id.startsWith("document/"))
             return new MarkdownEditorPage(id, parent);
+        else if (id.endsWith("/downloads"))
+            return new DownloadsPage(id, parent);
         else if (id == "empty")
             return empty();
         else {
@@ -159,10 +169,10 @@ Page* doSearch::page(const QString& id, std::function<Page* (const QString& id, 
 }
 
 void doSearch::onActiveScreenChanged() {
-    if (m_main) {
-        Page* active = m_navigation->activePage();
+    Page* active = m_navigation->activePage();
+    if (m_main)
         m_main->setTitle(active->title());
-    }
+    m_history->onVisited(active);
 }
 
 void doSearch::append(Context* context) {

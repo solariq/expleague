@@ -7,15 +7,17 @@
 
 namespace expleague {
 class NavigationManager;
+
 class PagesGroup: public QObject {
     Q_OBJECT
 
     Q_PROPERTY(expleague::Page* root READ root CONSTANT)
     Q_PROPERTY(bool selected READ selected WRITE setSelected NOTIFY selectedChanged)
-    Q_PROPERTY(expleague::PagesGroup* parentGroup READ parentGroup CONSTANT)
+    Q_PROPERTY(expleague::PagesGroup* parentGroup READ parentGroup NOTIFY parentGroupChanged)
 
     Q_PROPERTY(QQmlListProperty<expleague::Page> visiblePages READ visiblePages NOTIFY visiblePagesChanged)
     Q_PROPERTY(QQmlListProperty<expleague::Page> foldedPages READ foldedPages NOTIFY visiblePagesChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::Page> closedPages READ closedPages NOTIFY visiblePagesChanged)
 
     Q_PROPERTY(expleague::Page* selectedPage READ selectedPage WRITE selectPage NOTIFY selectedPageChanged)
 
@@ -50,10 +52,14 @@ public:
         return QQmlListProperty<Page>(const_cast<PagesGroup*>(this), const_cast<QList<Page*>&>(m_folded_pages));
     }
 
+    QQmlListProperty<Page> closedPages() const {
+        return QQmlListProperty<Page>(const_cast<PagesGroup*>(this), const_cast<QList<Page*>&>(m_closed_pages));
+    }
+
 public:
     QList<Page*> pages() const { return m_pages; }
     QList<Page*> visiblePagesList() const { return m_visible_pages; }
-    QList<Page*> activePages() const { return m_pages.mid(0, m_closed_start); }
+    QList<Page*> activePages() const;
 
     void insert(Page* page, int position = -1);
     bool remove(Page* page);
@@ -61,28 +67,24 @@ public:
         if (m_pages.empty())
             return;
         m_pages.clear();
-        pagesChanged();
+        emit pagesChanged();
     }
 
-    void split(const QList<Page*>& visible, const QList<Page*>& folded) {
-        if (m_visible_pages != visible || m_folded_pages != folded) {
-            m_visible_pages = visible;
-            m_folded_pages = folded;
-            visiblePagesChanged();
-        }
-    }
+    void split(const QList<Page*>& visible, const QList<Page*>& folded, const QList<Page*>& closed);
+    void setParentGroup(PagesGroup* group);
 
 signals:
     void selectedChanged(bool selected);
     void pagesChanged();
     void visiblePagesChanged();
     void selectedPageChanged(Page*);
+    void parentGroupChanged(PagesGroup*);
 
 private slots:
     void onPageStateChanged(Page::State state);
 
 public:
-    explicit PagesGroup(Page* root = 0, PagesGroup* parent = 0, NavigationManager* manager = 0);
+    explicit PagesGroup(Page* root = 0, NavigationManager* manager = 0);
 
 private:
     NavigationManager* parent() const;
@@ -90,8 +92,11 @@ private:
 private:
     Page* m_root;
     PagesGroup* m_parent;
+
     QList<Page*> m_visible_pages;
     QList<Page*> m_folded_pages;
+    QList<Page*> m_closed_pages;
+
     QList<Page*> m_pages;
     bool m_selected = false;
     int m_selected_page_index = -1;
