@@ -12,13 +12,13 @@ import "."
 
 Item {
     id: self
-//    property TagsDialog tagsDialog
     property Offer offer
     property Task task
     property color textColor: Palette.selectedTextColor
 
+    onTaskChanged: offer = !!self.task ? self.task.offer : null
     implicitHeight: topic.implicitHeight + geoLocal.implicitHeight + 4 +
-                    (task ? 33 : 0) + 4 +
+                    33 + 4 +
                     (offer ? time.implicitHeight + 4 : 0) +
                     (offer && offer.hasLocation ? 200 + 4 : 0) +
                     ((offer ? offer.images.length * (200 + 4) : 0)) +

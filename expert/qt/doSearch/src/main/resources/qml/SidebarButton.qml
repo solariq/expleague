@@ -7,6 +7,11 @@ import "."
 Button {
     id: self
     property bool active: false
+    property real storedWidth: 320
+    property Item associated: null
+    property real minAssociatedWidth: 100
+    property real maxAssociatedWidth: -1
+
     antialiasing: true
     implicitHeight: label.implicitWidth + 50
     clip: true
@@ -20,6 +25,7 @@ Button {
             return hovered ? Palette.activeColor : Palette.idleColor
         }
     }
+
     contentItem: Item {
         Text {
             id: label
@@ -32,6 +38,7 @@ Button {
             renderType: Text.NativeRendering
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
+            anchors.verticalCenterOffset: 2
             text: self.text
             color: {
                 if (self.active)

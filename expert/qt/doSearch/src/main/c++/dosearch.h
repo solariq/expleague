@@ -12,12 +12,12 @@ extern QSystemTrayIcon* trayIcon;
 
 #include "model/context.h"
 #include "model/page.h"
-#include "model/search.h"
-#include "model/web.h"
-#include "model/manager.h"
-#include "model/editor.h"
-#include "model/downloads.h"
 #include "model/history.h"
+#include "model/manager.h"
+#include "model/vault.h"
+#include "model/pages/search.h"
+#include "model/pages/web.h"
+#include "model/pages/editor.h"
 
 #include "league.h"
 
@@ -51,7 +51,6 @@ public:
 
     Q_INVOKABLE Page* empty() const;
     Q_INVOKABLE Context* context(const QString& name) const;
-    Q_INVOKABLE DownloadsPage* downloads(Context* context) const;
     Q_INVOKABLE WebPage* web(const QUrl& name) const;
     Q_INVOKABLE SearchRequest* search(const QString& query, int searchIndex = -1) const;
     Q_INVOKABLE MarkdownEditorPage* document(Context* context, const QString& title, Member* member) const;

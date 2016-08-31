@@ -1,7 +1,7 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
-#include "page.h"
+#include "../page.h"
 
 #include <memory>
 

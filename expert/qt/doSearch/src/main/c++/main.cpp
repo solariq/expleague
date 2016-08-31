@@ -1,7 +1,7 @@
 #include <QtCore/QUrl>
 #include <QtCore/QCommandLineOption>
 #include <QtCore/QCommandLineParser>
-#include <QApplication>
+#include <QGuiApplication>
 #include <QStyleHints>
 #include <QScreen>
 #include <QSystemTrayIcon>
@@ -30,7 +30,7 @@ QSystemTrayIcon* trayIcon;
 
 int main(int argc, char *argv[]) {
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
 #ifndef Q_OS_MAC
     trayIcon = new QSystemTrayIcon();
     trayIcon->setIcon(QIcon(":/avatar.png"));
@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     QQmlApplicationEngine engine;
+    QtWebEngine::initialize();
     rootEngine = &engine;
 
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
@@ -56,7 +57,6 @@ int main(int argc, char *argv[]) {
     engine.load(QUrl(QStringLiteral("qrc:/Main.qml")));
     if (engine.rootObjects().isEmpty())
         return -1;
-    QtWebEngine::initialize();
     return app.exec();
 }
 
@@ -109,6 +109,7 @@ void declareTypes() {
     qRegisterMetaType<expleague::Page*>("Page*");
     qRegisterMetaType<expleague::PagesGroup*>("PagesGroup*");
     qRegisterMetaType<expleague::SearchRequest*>("SearchRequest*");
+    qRegisterMetaType<expleague::Vault*>("Vault*");
 
     qmlRegisterType<ProfileBuilder>("ExpLeague", 1, 0, "ProfilePreview");
     qmlRegisterType<expleague::SearchRequest>("ExpLeague", 1, 0, "SearchRequest");

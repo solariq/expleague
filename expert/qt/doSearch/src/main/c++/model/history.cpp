@@ -9,7 +9,7 @@
 #include "../dosearch.h"
 #include "../profile.h"
 
-#include "editor.h"
+#include "pages/editor.h"
 
 namespace expleague {
 

@@ -18,6 +18,15 @@ ApplicationWindow {
     property alias webProfileRef: webProfile
     property alias commonActionsRef: commonActions
     property alias editorActionsRef: editorActions
+    property alias screenRef: screen
+    property var drag
+
+    onDragChanged: {
+        if (!!drag)
+            right.screenDnD = true
+        else
+            delay(100, function() {right.screenDnD = false})
+    }
 
 //    flags: {
 //        if (Qt.platform.os === "osx")
@@ -176,6 +185,9 @@ ApplicationWindow {
             MenuItem {
                 action: commonActions.showHistory
             }
+            MenuItem {
+                action: commonActions.exitFullScreen
+            }
 
             MenuSeparator{}
             MenuItem {
@@ -261,12 +273,14 @@ ApplicationWindow {
     }
 
     Rectangle {
+        id: screen
         color: Palette.backgroundColor
         anchors.fill: parent
         ColumnLayout {
             anchors.fill:parent
             spacing: 0
             RowLayout {
+                id: tabs
                 Layout.preferredHeight: 40
                 Layout.fillWidth: true
                 spacing: 0
@@ -295,19 +309,23 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 id: centralSplit
                 Item {
+                    id: central
+
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    id: central
                     children: root.navigation.screens
                 }
                 TaskView {
+                    id: right
+
                     Layout.fillHeight: true
                     Layout.preferredWidth: implicitWidth
                     Layout.minimumWidth: minWidth
                     Layout.maximumWidth: maxWidth
 
                     context: dosearch.navigation.context
-                    visible: !!dosearch.navigation.context.task
+//                    screenDnD: !!drag
+//                    visible: !!dosearch.navigation.context.task
                     window: self
                 }
             }
@@ -375,6 +393,20 @@ ApplicationWindow {
             color: "#80000000"
             source: activeDialog
         }
+
+        states: [
+            State {
+                name: "FullScreen"
+                PropertyChanges {
+                    target: right
+                    visible: false
+                }
+                PropertyChanges {
+                    target: tabs
+                    visible: false
+                }
+            }
+        ]
 
         WebEngineView {
             id: linkReceiver

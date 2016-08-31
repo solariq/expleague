@@ -1,5 +1,5 @@
 #include "search.h"
-#include "../dosearch.h"
+#include "../../dosearch.h"
 
 #include <QRegExp>
 #include <QUrlQuery>
@@ -73,7 +73,7 @@ QUrl SearchRequest::yandexUrl() const {
     return result;
 }
 
-SearchRequest::SearchRequest(const QString& id, const QString& query, doSearch* parent): Page(id, "qrc:/WebSearchView.qml", "", parent), m_query(query)
+SearchRequest::SearchRequest(const QString& id, const QString& query, doSearch* parent): Page(id, "qrc:/WebSearchView.qml", parent), m_query(query)
 {
     store("search.query", query);
     SearchRequest* last = parent->navigation()->context()->lastRequest();
@@ -82,7 +82,7 @@ SearchRequest::SearchRequest(const QString& id, const QString& query, doSearch* 
     save();
 }
 
-SearchRequest::SearchRequest(const QString& id, doSearch* parent): Page(id, "qrc:/WebSearchView.qml", "", parent),
+SearchRequest::SearchRequest(const QString& id, doSearch* parent): Page(id, "qrc:/WebSearchView.qml", parent),
     m_query(value("search.query").toString()),
     m_search_index(value("search.engine").toInt())
 {}

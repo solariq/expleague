@@ -23,6 +23,7 @@ Item {
     property Action zoomIn: zoomInAction
     property Action zoomOut: zoomOutAction
     property Action showHistory: showHistoryAction
+    property Action exitFullScreen: exitFullScreenAction
 
     property QtObject screen: {
         return root.navigation.activeScreen
@@ -264,6 +265,16 @@ Item {
         text: qsTr("Показать последние страницы")
         onTriggered: {
             dosearch.main.showHistory()
+        }
+    }
+
+    Action {
+        id: exitFullScreenAction
+        shortcut: "Escape"
+        enabled: dosearch.main.screenRef.state === "FullScreen"
+        text: qsTr("Выйти из полноэкранного режима")
+        onTriggered: {
+            webView.triggerWebAction(WebEngineView.ExitFullScreen)
         }
     }
 }

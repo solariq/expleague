@@ -21,7 +21,7 @@
 # mkdir temp
 # mv ./doSearch.app/ ./temp/
 # hdiutil create -volname doSearch -srcfolder ./temp/ -ov -format UDZO doSearch.dmg
-VERSION = 0.4.6
+VERSION = 0.4.7
 
 QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine webenginewidgets xml multimedia webenginecore
 QT_PRIVATE += webengine-private
@@ -46,18 +46,19 @@ SOURCES += \
     c++/main.cpp \
     c++/protocol.cpp \
     c++/profile.cpp \
-    c++/model/web.cpp \
     c++/league.cpp \
-    c++/model/history.cpp \
     c++/util/util.cpp \
+    c++/model/history.cpp \
     c++/model/page.cpp \
     c++/model/manager.cpp \
-    c++/model/search.cpp \
     c++/model/group.cpp \
     c++/model/context.cpp \
-    c++/editor.cpp \
     c++/dosearch.cpp \
-    c++/model/downloads.cpp
+    c++/model/vault.cpp \
+    c++/model/pages/search.cpp \
+    c++/model/pages/web.cpp \
+    c++/model/pages/editor.cpp \
+
 
 HEADERS += \
     c++/protocol.h \
@@ -65,21 +66,21 @@ HEADERS += \
     c++/task.h \
     c++/expleague.h \
     c++/dosearch.h \
-    c++/model/context.h \
-    c++/model/settings.h \
     c++/league.h \
-    c++/model/editor.h \
-    c++/model/history.h \
+    c++/util/math.h \
     c++/util/filethrottle.h \
     c++/util/call_once.h \
     c++/util/simplelistmodel.h \
     c++/model/page.h \
     c++/model/manager.h \
-    c++/model/search.h \
+    c++/model/context.h \
+    c++/model/settings.h \
+    c++/model/history.h \
     c++/model/group.h \
-    c++/model/web.h \
-    c++/util/math.h \
-    c++/model/downloads.h
+    c++/model/vault.h \
+    c++/model/pages/editor.h \
+    c++/model/pages/search.h \
+    c++/model/pages/web.h
 
 macx: OBJECTIVE_SOURCES += \
     objc/ExpLeagueNotification.mm

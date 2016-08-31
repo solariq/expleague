@@ -253,22 +253,6 @@ void Page::transferUI(Page* other) const {
     m_context = 0;
 }
 
-QQuickItem* Page::thumbnail() const {
-    if (m_thumbnail)
-        return m_thumbnail;
-    m_context->setContextProperty("owner", const_cast<Page*>(this));
-    QQmlComponent* component = componentsCache[m_thumbnail_url];
-    if (!component) {
-        component = new QQmlComponent(rootEngine, QUrl(m_thumbnail_url));
-        componentsCache[m_thumbnail_url] = component;
-    }
-    m_thumbnail = (QQuickItem*)component->create(m_context);
-    connect(m_thumbnail, &QQuickItem::destroyed, [this](){
-        m_thumbnail = 0;
-    });
-    return m_thumbnail;
-}
-
 double Page::pOut(Page* page) const {
     const PageModel model = m_outgoing[page];
     const int c = m_outgoing.size();
@@ -392,8 +376,8 @@ void Page::save() const {
     FileWriteThrottle::enqueue(parent()->pageResource(id() +"/page.xml"), buffer);
 }
 
-Page::Page(const QString& id, const QString& ui, const QString& thumbnail, doSearch* parent): QObject(parent),
-    m_id(id), m_ui_url(ui), m_thumbnail_url(thumbnail), m_in_total(0), m_out_total(0)
+Page::Page(const QString& id, const QString& ui, doSearch* parent): QObject(parent),
+    m_id(id), m_ui_url(ui), m_in_total(0), m_out_total(0)
 {
     QDir dir(parent->pageResource(id));
     QFile file(dir.filePath("page.xml"));

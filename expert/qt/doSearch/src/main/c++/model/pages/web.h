@@ -1,7 +1,7 @@
 #ifndef WEB_H
 #define WEB_H
 
-#include "page.h"
+#include "../page.h"
 
 #include <QSet>
 

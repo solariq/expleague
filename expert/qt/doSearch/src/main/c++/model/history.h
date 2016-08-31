@@ -36,7 +36,7 @@ signals:
     void historyChanged();
 
 private:
-    History(doSearch* parent): Page("history", "qrc:/HistoryPage.qml", "", parent) {}
+    History(doSearch* parent): Page("history", "qrc:/HistoryPage.qml", parent) {}
 
     friend class doSearch;
 

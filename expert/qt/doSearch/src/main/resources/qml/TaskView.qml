@@ -18,8 +18,65 @@ Item {
     property Item statusBar
     property Context context
     property var task: context ? context.task : null
-    property real maxWidth: rightSide.visible ? -1 : rightSidebar.width
-    property real minWidth: (rightSide.visible ? 320 : 0) + rightSidebar.width
+    property real maxWidth: rightSidebar.activeButton ? (rightSidebar.activeButton.maxAssociatedWidth >= 0 ? rightSidebar.activeButton.maxAssociatedWidth + rightSidebar.width : -1) : rightSidebar.width
+    property real minWidth: rightSidebar.activeButton ? rightSidebar.activeButton.minAssociatedWidth + rightSidebar.width: rightSidebar.width
+    implicitWidth: rightSidebar.width
+    property bool screenDnD: false
+    property bool containsDnD: false
+    property bool inDnD: containsDnD || screenDnD
+
+    property SidebarButton selectedBeforeDnD
+    DropArea {
+        anchors.fill: parent
+        onEntered: {
+            containsDnD = true
+        }
+
+        onExited: {
+            dosearch.main.delay(100, function () {containsDnD = false})
+        }
+
+        onDropped: {
+            containsDnD = false
+            drop.getDataAsString(drop.formats[1])
+            var source = "empty"
+            if (drop.source.toString().search("Main_QMLTYPE") >= 0) {
+                source = dosearch.navigation.activePage.id
+            }
+
+            if (context.vault.drop(drop.text, drop.html, drop.urls, source)) {
+                drop.accept()
+            }
+        }
+    }
+
+    onInDnDChanged: {
+//        console.log("DnD changed to " + inDnD + ", active: " + (!!rightSidebar.activeButton ? rightSidebar.activeButton.text : "none"))
+        if (inDnD) {
+            selectedBeforeDnD = rightSidebar.activeButton
+            if (rightSidebar.activeButton != vaultButton)
+                rightSidebar.choose(vaultButton)
+        }
+        else {
+            if (selectedBeforeDnD != vaultButton)
+                rightSidebar.choose(selectedBeforeDnD)
+        }
+    }
+
+    PropertyAnimation {
+        id: widthAnimation
+        target: self
+        property: "width"
+        easing.type: Easing.OutSine
+        duration: 200
+    }
+
+    function animateWidthChange(to) {
+        self.implicitWidth = to
+        widthAnimation.from = self.width
+        widthAnimation.to = to
+        widthAnimation.start()
+    }
 
     MessageDialog {
         id: taskCancelledDialog
@@ -41,28 +98,42 @@ Item {
     }
 
     RowLayout {
-        anchors.fill:parent
+        anchors.fill: parent
         spacing: 0
         Legacy.SplitView {
             id: rightSide
-
-            Layout.minimumWidth: 320
             Layout.fillWidth: true
             Layout.fillHeight: true
-            visible: rightSidebar.active != null
 
             orientation: Qt.Vertical
 
             ColumnLayout {
+                id: taskView
+
+                visible: !!self.task
                 Layout.fillWidth: true
                 Layout.minimumHeight: 23
-                Layout.maximumHeight: offerViewHolder.visible ? offerView.implicitHeight + 23 : 23
-                Layout.preferredHeight: offerViewHolder.visible ? offerView.implicitHeight + 23 : 23
-//                height: Math.max(400, offerView.implicitHeight + 23)
+                Layout.maximumHeight: offerHeight + 23
+                Layout.preferredHeight: Math.min(450, offerHeight)
                 spacing: 0
 
-                onHeightChanged: {
-                    console.log("Offer height: " + height)
+                property real offerHeight: 0
+                property real storedHeight: 450
+                onVisibleChanged: {
+                    if (visible) {
+                        offerView.task = self.task
+                        storedHeight = Math.min(450, offerView.implicitHeight + 23)
+                        offerViewHolder.visible = true
+                        offerHeight = storedHeight
+                        height = offerHeight + 23
+                    }
+                    else {
+                        offerView.task = null
+                        storedHeight = 0
+                        offerHeight = 0
+                        offerViewHolder.visible = true
+                        height = 0
+                    }
                 }
 
                 Rectangle {
@@ -89,23 +160,17 @@ Item {
                                 rotation: offerViewHolder.visible ? 0 : -90
                             }
                             background: Item{}
-                            property real storedHeight: 450
-                            enabled: self.task !== null
-                            onEnabledChanged: {
-                                if (enabled)
-                                    offerViewHolder.parent.height = 450
-                                else
-                                    offerViewHolder.parent.height = 0
-                            }
 
                             onClicked: {
                                 if (offerViewHolder.visible) {
-                                    storedHeight = offerView.parent.height
+                                    taskView.storedHeight = taskView.height
                                     offerViewHolder.visible = false
+                                    taskView.height = 23
                                 }
                                 else {
+                                    taskView.height = taskView.storedHeight
+                                    taskView.offerHeight = taskView.storedHeight
                                     offerViewHolder.visible = true
-                                    offerViewHolder.parent.height = storedHeight
                                 }
                             }
                         }
@@ -123,7 +188,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: offerView.implicitHeight
                     color: Palette.selectedColor
-                    visible: self.task !== null
+                    visible: false
                     Flickable {
                         anchors.fill: parent
                         flickableDirection: Flickable.VerticalFlick
@@ -132,20 +197,22 @@ Item {
                             id: offerView
 
                             anchors.fill: parent
-                            offer: self.task ? self.task.offer : null
-                            task: self.task
+                            task: null
                             textColor: Palette.selectedTextColor
                         }
                     }
                 }
             }
             Item {
+                id: screenHolder
+//                z: 100500
+
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 WebEngineView {
                     id: preview
 
-                    visible: rightSidebar.active == previewButton
+                    visible: false
                     focus: false
                     url: "about:blank"
 
@@ -158,7 +225,7 @@ Item {
                     }
                     onUrlChanged: {
                         var url = "" + preview.url
-                        //                                    console.log("New url: " + url)
+                        // console.log("New url: " + url)
                         if (url.length > 0 && url != "about:blank" && url.indexOf("data:") !== 0) {
                             preview.goBack()
                             dosearch.navigation.handleOmnibox(url, 0)
@@ -169,32 +236,97 @@ Item {
                 }
                 LeagueChat {
                     id: dialog
-                    visible: rightSidebar.active == dialogButton
+                    visible: false
                     anchors.fill: parent
 
                     task: self.task
+                }
+                Flow {
+                    id: vault
+                    visible: false
+                    anchors.fill: parent
+                    anchors.margins: 3
+                    Repeater {
+                        model: context.vault.items
+                        delegate: Component {
+                            Rectangle {
+                                id: thumbnail
+                                radius: Palette.radius
+                                width: 80
+                                height: 80
+                                anchors.margins: 3
+                                color: thumbnailArea.containsMouse ? Palette.selectedColor : Palette.activeColor
+                                property color textColor: thumbnailArea.containsMouse ? Palette.selectedTextColor : Palette.activeTextColor
+                                children: [modelData.ui()]
+                                onChildrenChanged: {
+                                    for (var i in children) {
+                                        var child = children[i]
+                                        child.visible = true
+                                        child.parent = thumbnail
+                                        child.color = Qt.binding(function () {return thumbnail.color})
+                                        child.textColor = Qt.binding(function () {return thumbnail.textColor})
+                                        child.width = width - 6
+                                        child.height = height - 6
+                                        child.enabled = false
+                                    }
+                                }
+                                MouseArea {
+                                    id: thumbnailArea
+                                    x: 0
+                                    y: 0
+                                    height: 80
+                                    width: 80
+                                    z: thumbnail.z + 10
+                                    hoverEnabled: true
+                                    onPressed: {
+                                        console.log("Pressed mouse")
+                                    }
+
+                                    onContainsMouseChanged: {
+                                        console.log("Contains mouse")
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
         ColumnLayout {
             id: rightSidebar
             Layout.fillHeight: true
-            Layout.preferredWidth: 20
-            Layout.minimumWidth: 20
-            Layout.maximumWidth: 20
+            Layout.preferredWidth: 22
+            Layout.minimumWidth: 22
+            Layout.maximumWidth: 22
 
-            property var active: dialogButton
+            property SidebarButton activeButton
             property real sideWidth: 320 + rightSidebar.width
             property real dialogWidth: 320 + rightSidebar.width
 
             spacing: 0
-            property real storedWidth
+            function choose(button) {
+                if (!!activeButton) {
+                    activeButton.storedWidth = rightSide.width
+                    activeButton.active = false
+                }
 
-            function foldSide() {
-                if (active == dialogButton)
-                    dialogWidth = self.width - rightSidebar.width
-                active = null
-                self.width = rightSidebar.width
+                if (activeButton !== button && !!button) {
+//                    console.log("Choose " + button.text)
+                    activeButton = button
+                    activeButton.active = true
+                    activeButton.associated.visible = true
+                    for(var i in screenHolder.children) {
+                        var child = screenHolder.children[i]
+                        if (child !== activeButton.associated)
+                            child.visible = false
+                    }
+                    self.animateWidthChange(rightSidebar.width + activeButton.storedWidth)
+                }
+                else {
+//                    console.log("Choose none")
+                    activeButton = null
+                    self.animateWidthChange(rightSidebar.width)
+                }
             }
 
             Item {Layout.preferredHeight: 20}
@@ -202,32 +334,30 @@ Item {
                 id: dialogButton
                 Layout.fillWidth: true
                 Layout.preferredHeight: implicitHeight
-                active: rightSidebar.active === dialogButton
+                visible: !!task
+                associated: dialog
                 text: qsTr("Диалог")
-
-                onClicked: {
-                    if (rightSidebar.active !== dialogButton) {
-                        rightSidebar.active = dialogButton
-                        self.width = rightSidebar.dialogWidth + rightSidebar.width
-                    }
-                    else rightSidebar.foldSide()
-                }
+                onClicked: rightSidebar.choose(dialogButton)
             }
             SidebarButton {
                 id: previewButton
                 Layout.fillWidth: true
                 Layout.preferredHeight: implicitHeight
-                active: rightSidebar.active === previewButton
+                visible: !!task
+                associated: preview
+                storedWidth: 320
+                minAssociatedWidth: 320
+                maxAssociatedWidth: 320
                 text: qsTr("Ответ")
-                onClicked: {
-                    if (rightSidebar.active !== previewButton) {
-                        rightSidebar.active = previewButton
-                        if (self.width > rightSidebar.width)
-                            rightSidebar.dialogWidth = self.width - rightSidebar.width
-                        self.width = 320 + rightSidebar.width
-                    }
-                    else rightSidebar.foldSide()
-                }
+                onClicked: rightSidebar.choose(previewButton)
+            }
+            SidebarButton {
+                id: vaultButton
+                Layout.fillWidth: true
+                Layout.preferredHeight: implicitHeight
+                associated: vault
+                text: qsTr("Хранилище")
+                onClicked: rightSidebar.choose(vaultButton)
             }
             Item {Layout.fillHeight: true}
         }
@@ -245,5 +375,9 @@ Item {
 
     onContextChanged: {
         preview.html = ""
+        if (!!context.task)
+            rightSidebar.choose(dialogButton)
+        else
+            rightSidebar.choose(null)
     }
 }

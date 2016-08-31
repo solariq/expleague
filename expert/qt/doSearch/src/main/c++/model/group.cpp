@@ -1,6 +1,6 @@
 #include "group.h"
 #include "manager.h"
-#include "web.h"
+#include "pages/web.h"
 
 #include <QDebug>
 

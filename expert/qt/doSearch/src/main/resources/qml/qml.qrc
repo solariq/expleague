@@ -43,5 +43,7 @@
         <file>EmptyView.qml</file>
         <file>DownloadsPage.qml</file>
         <file>HistoryPage.qml</file>
+        <file>SideBar.qml</file>
+        <file>TextKnuggetView.qml</file>
     </qresource>
 </RCC>

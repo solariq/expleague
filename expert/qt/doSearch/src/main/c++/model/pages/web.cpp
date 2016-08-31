@@ -1,7 +1,7 @@
 #include "web.h"
 
-#include "context.h"
-#include "../dosearch.h"
+#include "../context.h"
+#include "../../dosearch.h"
 
 #include <QFile>
 #include <QQuickWindow>
@@ -129,12 +129,12 @@ void WebPage::interconnect() {
     m_redirect = redirect.isNull() ? 0 : dynamic_cast<WebPage*>(parent()->page(redirect.toString()));
 }
 
-WebPage::WebPage(const QString& id, const QUrl& url, doSearch* parent): Page(id, "qrc:/WebScreenView.qml", "", parent), m_url(url) {
+WebPage::WebPage(const QString& id, const QUrl& url, doSearch* parent): Page(id, "qrc:/WebScreenView.qml", parent), m_url(url) {
     store("web.url", m_url.toString());
     save();
 }
 
-WebPage::WebPage(const QString& id, doSearch* parent): Page(id, "qrc:/WebScreenView.qml", "", parent), m_url(value("web.url").toString()) {
+WebPage::WebPage(const QString& id, doSearch* parent): Page(id, "qrc:/WebScreenView.qml", parent), m_url(value("web.url").toString()) {
     QVariant redirect = value("web.redirect");
 }
 

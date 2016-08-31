@@ -18,6 +18,12 @@ Item {
     property var url: owner.url
     property string pageSearch: ""
 
+    anchors.fill: parent
+
+    WebEngineProfile {
+        id: defaultProfile
+    }
+
     onUrlChanged: {
         if (webEngineView.url != url)
             webEngineView.url = url
@@ -28,11 +34,11 @@ Item {
         webEngineView.findText(pageSearch)
     }
 
-    anchors.fill: parent
-
     ColumnLayout {
         anchors.fill: parent
+        spacing: 0
         RowLayout {
+            id: urlTools
             Layout.maximumHeight: urlText.implicitHeight + 6
             Layout.fillWidth: true
             spacing: 0
@@ -158,10 +164,11 @@ Item {
             }
             Item {Layout.preferredWidth: 3}
         }
-        Item { Layout.preferredHeight: 2 }
+        Item { Layout.preferredHeight: 2; visible: urlTools.visible }
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
+
             WebEngineView {
                 anchors.fill: parent
                 id: webEngineView
@@ -177,12 +184,8 @@ Item {
                 }
 
                 url: "about:blank"
-                settings.hyperlinkAuditingEnabled: true
-                settings.linksIncludedInFocusChain: true
-                settings.spatialNavigationEnabled: true
-                settings.touchIconsEnabled: true
 
-                profile: !!dosearch.main ? dosearch.main.webProfileRef : profile
+                profile: !!dosearch.main ? dosearch.main.webProfileRef : defaultProfile
 
                 onLoadingChanged: {
                     if (!loading) {
@@ -231,9 +234,15 @@ Item {
                     javascriptEnabled: true
                     errorPageEnabled: false
 
-                    fullScreenSupportEnabled: false
+                    fullScreenSupportEnabled: true
                     javascriptCanAccessClipboard: true
+                    javascriptCanOpenWindows: false
                     pluginsEnabled: true
+
+                    hyperlinkAuditingEnabled: true
+                    linksIncludedInFocusChain: true
+                    spatialNavigationEnabled: true
+                    touchIconsEnabled: true
                 }
 
                 onNewViewRequested: {
@@ -247,10 +256,15 @@ Item {
                 onFullScreenRequested: {
                     if (request.toggleOn) {
                         previousVisibility = dosearch.main.visibility
+                        dosearch.main.screenRef.state = "FullScreen"
                         dosearch.main.showFullScreen()
+                        urlTools.visible = false
                     }
-                    else
+                    else {
                         dosearch.main.visibility = previousVisibility
+                        dosearch.main.screenRef.state = ""
+                        urlTools.visible = true
+                    }
                     request.accept()
                 }
 
@@ -283,12 +297,42 @@ Item {
                     onTriggered: webEngineView.reload()
                 }
             }
-            TransparentMouseArea {
+
+            MouseArea {
+                id: browserArea
+                drag.target: webEngineView
                 anchors.fill: parent
+                propagateComposedEvents: true
+                cursorShape: webEngineView.cursor
                 onPressed: {
                     actionTs = new Date().getTime()
+                    mouse.accepted = false
+                }
+                onReleased: mouse.accepted = false
+                onClicked: mouse.accepted = false
+                onMouseXChanged: mouse.accepted = false
+                onMouseYChanged: mouse.accepted = false
+                onDoubleClicked: mouse.accepted = false
+                onPressAndHold: mouse.accepted = false
+                onPositionChanged: mouse.accepted = false
+            }
+            DropArea {
+                anchors.fill: parent
+                onEntered: {
+//                    console.log("Entered: " + drag.source.toString())
+                    if (drag.source.toString().search("Main_QMLTYPE") >= 0)
+                        dosearch.main.drag = drag.source
+                }
+                onExited: {
+//                    console.log("Exited")
+                    dosearch.main.drag = null
+                }
+                onDropped: {
+//                    console.log("Dropped: " + drag)
+                    dosearch.main.drag = null
                 }
             }
+
             Keys.onPressed: { // chromium sends us back the keyboard events so to prevent endless loop need to skip this one
                 event.accepted = true
             }
@@ -303,21 +347,21 @@ Item {
         var parent = dosearch.main ? dosearch.main.activeFocusItem : null
         while (parent) {
             if (parent === self) {
-                console.log("Enforce focus to self")
+//                console.log("Enforce focus to self")
                 self.forceActiveFocus()
                 return
             }
             parent = parent.parent
         }
         if (dosearch.main.activeFocusItem && dosearch.main.activeFocusItem.toString().search("QtWebEngineCore::") !== -1) {
-            console.log("Enforce focus to self")
+//            console.log("Enforce focus to self")
             self.forceActiveFocus()
         }
-        else console.log("Focus given to: " + dosearch.main.activeFocusItem)
+//        else console.log("Focus given to: " + dosearch.main.activeFocusItem)
     }
 
     Keys.onPressed: {
-        console.log("Key pressed: " + event.key)
+//        console.log("Key pressed: " + event.key)
         actionTs = new Date().getTime()
         if (pageSearch.length > 0) {
             if (event.key === Qt.Key_Left) {
@@ -348,6 +392,5 @@ Item {
 
     Component.onCompleted: {
         complete = true
-//        forceActiveFocus()
     }
 }

@@ -1,7 +1,7 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
-#include "page.h"
+#include "../page.h"
 
 namespace expleague {
 

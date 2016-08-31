@@ -66,7 +66,6 @@ public:
     time_t lastVisitTs() const { return m_last_visit_ts; }
 
     Q_INVOKABLE QQuickItem* ui() const;
-    QQuickItem* thumbnail() const;
 
     Q_INVOKABLE virtual double pOut(Page*) const;
     Q_INVOKABLE virtual double pIn(Page*) const;
@@ -83,12 +82,12 @@ signals:
     void stateChanged(Page::State closed);
 
 public:
-    Page(): Page("undefined", "", "", 0) {} // never ever use this constructor, it exists for compartibility purposes only!
+    Page(): Page("undefined", "", 0) {} // never ever use this constructor, it exists for compartibility purposes only!
 
     doSearch* parent() const;
 
 protected:
-    explicit Page(const QString& id, const QString& uiQml, const QString& thumbnailQml, doSearch* parent);
+    explicit Page(const QString& id, const QString& uiQml, doSearch* parent);
     virtual void interconnect();
     virtual void initUI(QQuickItem*) const {}
     void transferUI(Page* other) const;
@@ -110,11 +109,9 @@ private:
 private:
     QString m_id;
     QUrl m_ui_url;
-    QUrl m_thumbnail_url;
 
     mutable QQmlContext* m_context = 0;
     mutable QQuickItem* m_ui = 0;
-    mutable QQuickItem* m_thumbnail = 0;
 
     Page* m_last_visited = 0;
     int m_in_total;

@@ -2,6 +2,7 @@
 #include "../task.h"
 
 #include "search.h"
+#include "vault.h"
 #include "../dosearch.h"
 
 #include <QImage>
@@ -21,8 +22,6 @@ bool isSearch(const QUrl& url) {
     QString host = url.host();
     return host == "www.google.com" || host == "yandex.ru";
 }
-
-const QString Context::NAME_KEY = "context.task";
 
 SearchRequest* Context::lastRequest() const {
     return m_requests.isEmpty() ? &SearchRequest::EMPTY : m_requests.last();
@@ -71,12 +70,13 @@ void Context::transition(Page *from, TransitionType type) {
     }
 }
 
-Context::Context(const QString& id, doSearch* parent): Page(id, "qrc:/ContextView.qml", "", parent) {
+Context::Context(const QString& id, doSearch* parent): Page(id, "qrc:/ContextView.qml", parent) {
     connect(parent->navigation(), SIGNAL(activeScreenChanged()), this, SLOT(onActiveScreenChanged()));
 }
 
 void Context::interconnect() {
     Page::interconnect();
+    m_vault = new Vault(this);
     QList<Page*> pages;
     for (int i = pages.size() - 1; i >= 0; i--) {
         SearchRequest* request = qobject_cast<SearchRequest*>(pages[i]);

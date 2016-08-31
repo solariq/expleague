@@ -158,8 +158,6 @@ int depth(PagesGroup* group) {
 void NavigationManager::open(Page* page) {
     if (m_selected == page)
         return;
-    m_selected->transition(page, Page::TransitionType::CHANGED_SCREEN);
-    m_selected = page;
     PagesGroup* group = this->group(page);
     if (!group->parentGroup()) { // new group, trying to match existing
         group = 0;
@@ -192,6 +190,8 @@ void NavigationManager::open(Page* page) {
             if (group->pages().contains(page))
                 group->setSelected(true);
             if (parent->selectedPage() != group->root()) {
+                if (group->root()->state() == Page::CLOSED)
+                    group->root()->setState(Page::INACTIVE);
                 parent->insert(group->root());
                 parent->selectPage(group->root());
                 parent->root()->transition(group->root(), Page::TransitionType::CHILD_GROUP_OPEN);
@@ -200,6 +200,8 @@ void NavigationManager::open(Page* page) {
             parent = group->parentGroup();
         }
         if (group->root() == m_active_context) {
+            m_selected->transition(page, Page::TransitionType::CHANGED_SCREEN);
+            m_selected = page;
             m_groups.clear();
             m_groups.append(group);
             unfold();

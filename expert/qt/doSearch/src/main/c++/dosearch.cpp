@@ -64,7 +64,7 @@ QString doSearch::pageResource(const QString &id) const {
 
 class EmptyPage: public Page {
 public:
-    EmptyPage(const QString& id, doSearch* parent): Page(id, "qrc:/EmptyView.qml", "", parent){}
+    EmptyPage(const QString& id, doSearch* parent): Page(id, "qrc:/EmptyView.qml", parent){}
 protected:
     void interconnect() {}
 };
@@ -101,12 +101,6 @@ Context* doSearch::context(const QString& name) const {
     QString id = "context/" + name;
     return static_cast<Context*>(page(id, [](const QString& id, doSearch* parent){
         return new Context(id, parent);
-    }));
-}
-
-DownloadsPage* doSearch::downloads(Context *context) const {
-    return static_cast<DownloadsPage*>(page(context->id() + "/downloads", [context](const QString&, doSearch* parent){
-        return new DownloadsPage(context, parent);
     }));
 }
 
@@ -148,8 +142,6 @@ Page* doSearch::page(const QString &id) const {
             return new SearchRequest(id, parent);
         else if (id.startsWith("document/"))
             return new MarkdownEditorPage(id, parent);
-        else if (id.endsWith("/downloads"))
-            return new DownloadsPage(id, parent);
         else if (id == "empty")
             return empty();
         else {
