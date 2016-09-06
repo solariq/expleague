@@ -99,14 +99,12 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
     return !EXPERTS_ACTOR_NAME.equals(ref.path().name());
   }
 
-  public static ActorRef reference(ActorContext context) {
-    return AkkaTools.getOrCreate("/user/labor-exchange", context.system(),
-        (name, factory) -> factory.actorOf(ActorContainer.props(LaborExchange.class), "labor-exchange")
-    );
-  }
-
   public static <T> void tell(ActorContext context, T msg, ActorRef from) {
     reference(context).tell(msg, from);
+  }
+
+  public static ActorSelection reference(ActorContext context) {
+    return context.actorSelection("/user/labor-exchange");
   }
 
   public static ActorSelection experts(ActorContext context) {
