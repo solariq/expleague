@@ -29,6 +29,7 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
   @Override
   public void preStart() throws Exception {
     super.preStart();
+    AkkaTools.scheduleTimeout(context(), ExpLeagueServer.config().timeout("labor-exchange.state-timeout"), self());
     status = new ServiceStatus();
     context().actorOf(ActorContainer.props(Experts.class), EXPERTS_ACTOR_NAME);
     board().open().forEach(o -> self().tell(o, self()));
