@@ -66,7 +66,7 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
 
   @ActorMethod
   public void invoke(Operations.StatusChange notification) {
-    if (LaborExchange.isBrokerActorRef(sender())) {
+    if (!"experts".equals(sender().path().parent().name())) { // broker
       final BrokerRole.State from = BrokerRole.State.valueOf(notification.from());
       final BrokerRole.State to = BrokerRole.State.valueOf(notification.to());
       if (from == BrokerRole.State.STARVING)
