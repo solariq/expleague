@@ -89,7 +89,6 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
         status.expertBusy();
       }
     }
-    this.status.brokerStarving();
   }
 
   private static boolean isBrokerActorRef(final ActorRef ref) {
