@@ -254,7 +254,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
 
     onTransition((from, to) -> {
       if (from != to) {
-        context().parent().tell(to, self());
+        LaborExchange.reference(context()).tell(new StatusChange(from.name(), to.name()), self());
         if (timer != null) {
           timer.cancel();
           timer = null;

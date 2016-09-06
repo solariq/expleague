@@ -313,12 +313,12 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
 
     onTransition((from, to) -> {
       if (from != to) {
+        LaborExchange.reference(context()).tell(new StatusChange(from.name(), to.name()), self());
         if (this.timeout != null)
           this.timeout.cancel();
         if (to == State.STARVING)
           this.timeout = AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT, self());
-        else
-          this.timeout = null;
+        else this.timeout = null;
       }
     });
     onTermination(
@@ -379,7 +379,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
     log.warning(reason.toString());
   }
 
-  enum State {
+  public enum State {
     UNEMPLOYED,
     STARVING,
     INVITE,

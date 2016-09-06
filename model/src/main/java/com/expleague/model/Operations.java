@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.*;
  * Date: 21.12.15
  * Time: 13:01
  */
+@SuppressWarnings("unused")
 public class Operations {
   public static final String NS = "http://expleague.com/scheme";
 
@@ -136,6 +137,29 @@ public class Operations {
     }
     public String client() {
       return client;
+    }
+  }
+
+  @XmlRootElement
+  public static class StatusChange extends Item {
+    @XmlAttribute
+    private String from;
+
+    @XmlAttribute
+    private String to;
+
+    public StatusChange() {}
+    public StatusChange(String from, String to) {
+      this.from = from;
+      this.to = to;
+    }
+
+    public String from() {
+      return from;
+    }
+
+    public String to() {
+      return to;
     }
   }
 

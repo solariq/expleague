@@ -207,6 +207,21 @@ public class Offer extends Item {
     attachments.add(image);
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    final Offer offer = (Offer) o;
+    return room.equals(offer.room) && started.equals(offer.started);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = room.hashCode();
+    result = 31 * result + started.hashCode();
+    return result;
+  }
+
   @XmlEnum
   public enum Urgency {
     @XmlEnumValue("asap") ASAP(TimeUnit.HOURS.toMillis(1)),

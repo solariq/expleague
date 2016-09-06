@@ -26,8 +26,6 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
 
   public static final String EXPERTS_ACTOR_NAME = "experts";
 
-  private final Map<String, ActorRef> openPositions = new HashMap<>();
-
   @Override
   protected void init() {
     XMPP.send(new Presence(XMPP.jid(), false, new ServiceStatus(0)), context());
@@ -69,6 +67,34 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
       .forEach(ref -> ref.forward(expertAgent, context()));
   }
 
+  @ActorMethod
+  public void invoke(Operations.StatusChange notification) {
+    if (LaborExchange.isBrokerActorRef(sender())) {
+      final BrokerRole.State from = BrokerRole.State.valueOf(notification.from());
+      final BrokerRole.State to = BrokerRole.State.valueOf(notification.to());
+      if (from == BrokerRole.State.STARVING)
+        status.brokerFed();
+      else if (to == BrokerRole.State.STARVING)
+        status.brokerStarving();
+    }
+    else { // expert
+      final ExpertRole.State from = ExpertRole.State.valueOf(notification.from());
+      final ExpertRole.State to = ExpertRole.State.valueOf(notification.to());
+      if (to == ExpertRole.State.READY) {
+        if (from == ExpertRole.State.OFFLINE)
+          status.expertOnline();
+        status.expertAvailable();
+      }
+      else if (to == ExpertRole.State.OFFLINE) {
+        status.expertOffline();
+      }
+      else if (to == ExpertRole.State.BUSY) {
+        status.expertBusy();
+      }
+    }
+    this.status.brokerStarving();
+  }
+
   private static boolean isBrokerActorRef(final ActorRef ref) {
     return !EXPERTS_ACTOR_NAME.equals(ref.path().name());
   }
@@ -91,6 +117,23 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
     return ExpLeagueServer.board();
   }
 
+  private ServiceStatus knownStatus;
+  private ServiceStatus status;
+
+  @ActorMethod
+  public void sendState(Timeout to) {
+    try {
+      if (knownStatus.equals(status))
+        return;
+      knownStatus = status;
+      XMPP.send(new Presence(XMPP.jid(), true, status), context());
+      status = new ServiceStatus(knownStatus);
+    }
+    finally {
+      AkkaTools.scheduleTimeout(context(), ExpLeagueServer.config().timeout("labor-exchange.state-timeout"), self());
+    }
+  }
+
   /**
    * User: solar
    * Date: 19.12.15
@@ -105,25 +148,12 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
     @ActorMethod
     public void invoke(Offer offer) {
       log.fine("Experts department received offer " + offer.room().local());
-      JavaConversions.asJavaCollection(context().children()).stream().forEach(
+      JavaConversions.asJavaCollection(context().children()).forEach(
           expert -> {
             log.finest("Forwarding offer to " + Experts.jid(expert));
             expert.forward(offer, context());
           }
       );
-    }
-
-    public int readyCount = 0;
-    private Map<String, ExpertRole.State> states = new HashMap<>();
-    private Cancellable stateTimeout = null;
-
-    @ActorMethod
-    public void invoke(ExpertRole.State next) {
-      final String key = sender().path().name();
-      final ExpertRole.State current = states.get(key);
-      readyCount += increment(next) - increment(current);
-      states.put(key, next);
-      sendState();
     }
 
     @ActorMethod
@@ -142,40 +172,6 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
 //      else {
         // todo: do we need to spawn child anyway?
 //      }
-    }
-
-    @SuppressWarnings("UnusedParameters")
-    @ActorMethod
-    public void invoke(Timeout to) {
-      stateTimeout = null;
-      sendState();
-    }
-
-    int sentCount = 0;
-    public void sendState() {
-      if (stateTimeout != null)
-        return;
-      if (sentCount != readyCount) {
-        // todo: don't we need to check actual experts?
-        sentCount = readyCount;
-        XMPP.send(new Presence(XMPP.jid(), readyCount != 0, new ServiceStatus(readyCount)), context());
-        stateTimeout = AkkaTools.scheduleTimeout(context(), ExpLeagueServer.config().timeout("labor-exchange.state-timeout"), self());
-      }
-    }
-
-    private int increment(ExpertRole.State next) {
-      if (next == null)
-        return 0;
-      switch (next) {
-        case READY:
-          return 1;
-        case OFFLINE:
-        case CHECK:
-        case INVITE:
-        case BUSY:
-          return 0;
-      }
-      return 0;
     }
 
     public static JID jid(ActorRef ref) {
