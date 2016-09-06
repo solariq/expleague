@@ -27,13 +27,9 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
   public static final String EXPERTS_ACTOR_NAME = "experts";
 
   @Override
-  protected void init() {
-    XMPP.send(new Presence(XMPP.jid(), false, new ServiceStatus(0)), context());
-  }
-
-  @Override
   public void preStart() throws Exception {
     super.preStart();
+    status = new ServiceStatus();
     context().actorOf(ActorContainer.props(Experts.class), EXPERTS_ACTOR_NAME);
     board().open().forEach(o -> self().tell(o, self()));
   }
@@ -116,7 +112,7 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
   }
 
   private ServiceStatus knownStatus;
-  private ServiceStatus status;
+  private ServiceStatus status = new ServiceStatus();
 
   @ActorMethod
   public void sendState(Timeout to) {

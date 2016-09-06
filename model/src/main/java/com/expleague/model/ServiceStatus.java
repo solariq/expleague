@@ -26,10 +26,6 @@ public class ServiceStatus extends Item {
     starvingTasks = copy.starvingTasks;
   }
 
-  public ServiceStatus(int expertsOnline) {
-    this.expertsOnline = expertsOnline;
-  }
-
   public void brokerStarving() {
     starvingTasks++;
   }
