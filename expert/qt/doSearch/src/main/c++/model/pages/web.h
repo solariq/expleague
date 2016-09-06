@@ -28,12 +28,7 @@ public:
 
     Q_INVOKABLE bool accept(const QUrl& url) const;
 
-    Q_INVOKABLE void setTitle(const QString& title) {
-        store("web.title", title);
-        save();
-        titleChanged(title);
-    }
-
+    Q_INVOKABLE void setTitle(const QString& title);
     Q_INVOKABLE void setIcon(const QString& icon);
     void setRedirect(WebPage* target);
     void setUrl(const QUrl& url);

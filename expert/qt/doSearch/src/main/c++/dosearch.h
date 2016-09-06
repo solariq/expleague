@@ -58,7 +58,7 @@ public:
 
     Q_INVOKABLE Context* createContext();
 
-    Page* page(const QString& id) const;
+    Q_INVOKABLE Page* page(const QString& id) const;
 
 signals:
     void mainChanged(QQuickWindow*);

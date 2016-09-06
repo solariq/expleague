@@ -121,7 +121,25 @@ Column {
                 }
             }
         }
+        DropArea {
+            anchors.fill: parent
+            z: parent.z + 10
+//            keys: ["text/plain"]
+
+            onDropped: {
+                if (drop.hasText) {
+                    edit.remove(edit.selectionStart, edit.selectionEnd)
+                    edit.insert(editor.cursorPosition, drop.text)
+                    drop.accept()
+                }
+            }
+
+            onPositionChanged: {
+                editor.cursorPosition = editor.positionAt(scroll.contentX + drag.x, scroll.contentY + drag.y)
+            }
+        }
     }
+
     onVisibleChanged: {
         if (visible)
             editor.forceActiveFocus()

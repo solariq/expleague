@@ -5,6 +5,7 @@
 
 #include <QSharedPointer>
 #include <QObject>
+#include <QDir>
 #include <QUrl>
 #include <QList>
 #include <QHash>
@@ -97,8 +98,10 @@ protected:
     void visitAll(const QString& key, std::function<void (const QVariant&)> visitor) const;
     int count(const QString& key) const;
     void append(const QString& key, const QVariant& value);
+    void remove(const QString& key);
     void replaceOrAppend(const QString& key, const QVariant& value, std::function<bool (const QVariant& lhs, const QVariant& rhs)> equals);
 
+    QDir storage() const;
     void save() const;
     virtual void incomingTransition(Page* from, TransitionType type);
 

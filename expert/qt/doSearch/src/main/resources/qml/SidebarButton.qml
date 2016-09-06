@@ -29,7 +29,7 @@ Button {
     contentItem: Item {
         Text {
             id: label
-            x: height
+            x: height + 3
             y: (parent.height - width) / 2
 
             width: implicitWidth

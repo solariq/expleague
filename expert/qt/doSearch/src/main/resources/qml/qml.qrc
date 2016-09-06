@@ -45,5 +45,7 @@
         <file>HistoryPage.qml</file>
         <file>SideBar.qml</file>
         <file>TextKnuggetView.qml</file>
+        <file>ImageKnuggetView.qml</file>
+        <file>LinkKnuggetView.qml</file>
     </qresource>
 </RCC>

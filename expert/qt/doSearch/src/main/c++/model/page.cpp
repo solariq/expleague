@@ -146,6 +146,13 @@ void Page::append(const QString& fullKey, const QVariant& value) {
     m_changes++;
 }
 
+void Page::remove(const QString& key) {
+    QStringList path = key.split(".");
+    QVariant* context = resolve(path, true);
+    QVariantHash& hash = *reinterpret_cast<QVariantHash*>(context->data());
+    hash.remove(path.last());
+}
+
 void Page::replaceOrAppend(const QString& fullKey, const QVariant& value, std::function<bool (const QVariant& lhs, const QVariant& rhs)> equals) {
     QStringList path = fullKey.split(".");
     QVariant* context = resolve(path, true);
@@ -254,7 +261,10 @@ void Page::transferUI(Page* other) const {
 }
 
 double Page::pOut(Page* page) const {
-    const PageModel model = m_outgoing[page];
+    QHash<Page*, PageModel>::const_iterator ptr = m_outgoing.find(page);
+    PageModel model;
+    if (ptr != m_outgoing.end())
+        model = ptr.value();
     const int c = m_outgoing.size();
     const double dpLambda = optimalExpansionDP(m_out_total, c);
     const time_t now = time(0);
@@ -373,7 +383,11 @@ void Page::save() const {
     writeXml("page", "http://expleague.com/expert/page", copy, &writer);
     writer.writeEndDocument();
 //    qDebug() << buffer;
-    FileWriteThrottle::enqueue(parent()->pageResource(id() +"/page.xml"), buffer);
+    FileWriteThrottle::enqueue(storage().absoluteFilePath("page.xml"), buffer);
+}
+
+QDir Page::storage() const {
+    return QDir(parent()->pageResource(id()));
 }
 
 Page::Page(const QString& id, const QString& ui, doSearch* parent): QObject(parent),
@@ -443,8 +457,9 @@ void writeXml(const QString& local, const QString& ns, const QVariant& variant, 
         case QVariant::Type::Int:
             writer->writeAttribute(local, QString::number(variant.toLongLong()));
             break;
+        case QVariant::Type::Url:
         case QVariant::Type::String:
-            if (attributeString(variant.toString()))
+            if (local != "type" && local != "name" && attributeString(variant.toString()))
                 writer->writeAttribute(local, variant.toString());
             break;
         }
@@ -482,7 +497,7 @@ void writeXml(const QString& local, const QString& ns, const QVariant& variant, 
             writeXml(local, ns, var, writer, false, true);
         }
     }
-    else if (variant.canConvert(QVariant::String) && (enforceTag || !attributeString(variant.toString()))) {
+    else if (local == "type" || local == "name" || (variant.canConvert(QVariant::String) && (enforceTag || !attributeString(variant.toString())))) {
         writer->writeStartElement(local);
         writer->writeAttribute("type", "text");
         writer->writeCharacters(variant.toString());
@@ -536,7 +551,8 @@ QVariantHash buildVariantByXml(QXmlStreamReader& reader) {
                         value = attr.value().toString();
                     fold[local] = value;
                 }
-                fold.unite(buildVariantByXml(reader));
+                if (!reader.isEndElement())
+                    fold.unite(buildVariantByXml(reader));
                 if (!reader.isEndElement())
                     qWarning() << "Invalid xml";
                 appendVariant<QVariantHash>(result[key], fold);

@@ -110,6 +110,7 @@ void declareTypes() {
     qRegisterMetaType<expleague::PagesGroup*>("PagesGroup*");
     qRegisterMetaType<expleague::SearchRequest*>("SearchRequest*");
     qRegisterMetaType<expleague::Vault*>("Vault*");
+    qRegisterMetaType<expleague::Knugget*>("Knugget*");
 
     qmlRegisterType<ProfileBuilder>("ExpLeague", 1, 0, "ProfilePreview");
     qmlRegisterType<expleague::SearchRequest>("ExpLeague", 1, 0, "SearchRequest");
@@ -129,4 +130,5 @@ void declareTypes() {
 
     qmlRegisterUncreatableType<Profile>("ExpLeague", 1, 0, "Profile", "Profile requires registration and can be created only by appropriate builder class");
     qmlRegisterUncreatableType<doSearch>("ExpLeague", 1, 0, "doSearch", "This type is for root property only");
+    qmlRegisterUncreatableType<Knugget>("ExpLeague", 1, 0, "Knugget", "Knuggets are created by vault only");
 }

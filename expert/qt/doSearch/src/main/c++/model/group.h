@@ -59,7 +59,6 @@ public:
 public:
     QList<Page*> pages() const { return m_pages; }
     QList<Page*> visiblePagesList() const { return m_visible_pages; }
-    QList<Page*> activePages() const;
 
     void insert(Page* page, int position = -1);
     bool remove(Page* page);

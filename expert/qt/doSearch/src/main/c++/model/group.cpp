@@ -1,6 +1,7 @@
 #include "group.h"
 #include "manager.h"
 #include "pages/web.h"
+#include "pages/editor.h"
 
 #include <QDebug>
 
@@ -14,25 +15,38 @@ PagesGroup::PagesGroup(Page* root, NavigationManager* manager): QObject(manager)
         m_selected_page_index = -1;
         return;
     }
-    QSet<Page*> known;
     QList<Page*> pages = root->outgoing();
-    known += pages.toSet();
 
-    WebPage* webRoot = qobject_cast<WebPage*>(root);
-    while (webRoot) {
-        pages.removeOne(webRoot->redirect());
-        foreach(Page* page, webRoot->outgoing()) {
-            if (!known.contains(page)) {
-                pages += page;
-                known += page;
+    { // build redirects closure
+        QSet<Page*> known;
+        known += pages.toSet();
+
+        WebPage* webRoot = qobject_cast<WebPage*>(root);
+        while (webRoot) {
+            pages.removeOne(webRoot->redirect());
+            foreach(Page* page, webRoot->outgoing()) {
+                if (!known.contains(page)) {
+                    pages += page;
+                    known += page;
+                }
             }
-        }
 
-        webRoot = webRoot->redirect();
+            webRoot = webRoot->redirect();
+        }
+    }
+    { // cleanup invisible links
+        QList<Page*>::iterator iter = pages.begin();
+        while (iter != pages.end()) {
+            Page* const page = *iter;
+            if (qobject_cast<Context*>(page)
+                    || (qobject_cast<MarkdownEditorPage*>(page) && !qobject_cast<Context*>(root)))
+                iter = pages.erase(iter);
+            else iter++;
+        }
     }
     for (int i = 0; i < pages.size(); i++) {
         Page* const page = pages[i];
-        if (page->state() == Page::CLOSED || qobject_cast<Context*>(page))
+        if (page->state() == Page::CLOSED)
             continue;
         connect(page, SIGNAL(stateChanged(Page::State)), this, SLOT(onPageStateChanged(Page::State)));
         if (page == root->lastVisited())
@@ -61,24 +75,19 @@ void PagesGroup::split(const QList<Page *>& visible, const QList<Page *>& folded
 
 void PagesGroup::setParentGroup(PagesGroup* group) {
     m_parent = group;
-    Page* const selected = m_selected_page_index >= 0 ? m_pages[m_selected_page_index] : 0;
-    if (selected && !activePages().contains(selected)) {
-        m_selected_page_index = -1;
-        selectedPageChanged(0);
-    }
-    emit parentGroupChanged(group);
-}
-
-QList<Page*> PagesGroup::activePages() const {
-    QList<Page*> result = m_pages.mid(0, m_closed_start);
-    PagesGroup* parent = m_parent;
-    while (parent) {
-        foreach (Page* page, parent->activePages()) {
-            result.removeOne(page);
+    if (m_selected_page_index >= 0) {
+        Page* selected = m_pages[m_selected_page_index];
+        while (group) {
+            if (group->pages().contains(selected)) {
+                m_selected_page_index = -1;
+                selectedPageChanged(0);
+                break;
+            }
+            group = group->m_parent;
         }
-        parent = parent->m_parent;
     }
-    return result;
+
+    emit parentGroupChanged(group);
 }
 
 void PagesGroup::insert(Page* page, int position) {

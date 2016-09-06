@@ -56,15 +56,43 @@ ApplicationWindow {
     }
 
     function openLink(request, owner, focusOpened) {
-        if (linkReceiver.busy) {
-            delay(500, function () {
+        if (linkReceiver.operation != "") {
+            linkReceiver.queue.push(function () {
                 openLink(request, owner, focusOpened)
             })
             return
         }
+        console.log("Requesting resolve for request " + request)
+        linkReceiver.operation = "resolve"
         linkReceiver.context = owner
         linkReceiver.focusOpened = focusOpened
         request.openIn(linkReceiver)
+    }
+
+    function screenshot(url, size, callback) {
+        if (linkReceiver.operation != "") {
+            linkReceiver.queue.push(function () {
+                screenshot(url, size, callback)
+            })
+            return
+        }
+        console.log("Requesting screenshot for url " + url)
+        linkReceiver.operation = "screenshot"
+        linkReceiver.context = callback
+        linkReceiver.size = size
+        linkReceiver.url = url
+    }
+
+    function saveScreenshot(url, size, owner) {
+        var qurl = url.toString()
+        qurl.trim()
+        if (qurl === "")
+            return
+        screenshot(url, size, function (result) {
+            console.log("Saving screenshot " + owner.screenshotTarget())
+            result.saveToFile(owner.screenshotTarget())
+            owner.screenshotChanged()
+        })
     }
 
     function invite(offer) {
@@ -275,6 +303,7 @@ ApplicationWindow {
     Rectangle {
         id: screen
         color: Palette.backgroundColor
+        z: parent.z + 10
         anchors.fill: parent
         ColumnLayout {
             anchors.fill:parent
@@ -407,32 +436,71 @@ ApplicationWindow {
                 }
             }
         ]
+    }
 
-        WebEngineView {
-            id: linkReceiver
-            visible: false
-            property bool focusOpened: false
-            property var context
-            property bool busy: false
-            property bool jsredir: false
-            profile: webProfile
+    WebEngineView {
+        id: linkReceiver
+        //            visible: false
+        property string operation: ""
+        property bool focusOpened: false
+        property var context
+        property bool jsredir: false
+        property size size
+        property var queue: []
+        width: 370
+        height: 370
+        profile: webProfile
 
-            url: "about:blank"
-
-            onUrlChanged: {
-                var surl = url.toString()
-                if (surl.length === 0 || surl == "about:blank")
-                    return
-                else if (surl.search(/google\.\w+\/url/) !== -1 || surl.search(/yandex\.\w+\/clck\/jsredir/) !== -1) {
-                    jsredir = true
+        url: "about:blank"
+        function finish() {
+            operation = "finish"
+            if (url.toString() != "about:blank") {
+                console.log("Back from: " + url + " history length: " + navigationHistory.items.rowCount())
+                if (navigationHistory.items.rowCount() > 1) {
+                    goBack()
                     return
                 }
+                url = "about:blank"
+            }
+            console.log("Link operation finished. Url: " + url)
+            operation = ""
+            if (queue.length > 0) {
+                var callback = queue.shift()
+                console.log("Next from queue " + callback)
+                callback()
+            }
+        }
 
-                dosearch.navigation.open(url, context, focusOpened)
-                goBack()
-                if (jsredir)
-                    goBack()
-                busy = false
+        onUrlChanged: {
+            console.log("url changed to " + url.toString())
+            if (operation == "finish") {
+                finish()
+                return
+            }
+            if (operation != "resolve")
+                return
+
+            var surl = url.toString()
+            surl.trim()
+            if (surl == "" || surl == "about:blank" || surl.search(/google\.\w+\/url/) !== -1 || surl.search(/yandex\.\w+\/clck\/jsredir/) !== -1) {
+                return
+            }
+
+            dosearch.navigation.open(url, context, focusOpened)
+            finish()
+        }
+
+        onLoadingChanged: {
+            if (operation != "screenshot")
+                return
+            var surl = url.toString()
+            if (surl == "" || surl == "about:blank" || surl.search(/google\.\w+\/url/) !== -1 || surl.search(/yandex\.\w+\/clck\/jsredir/) !== -1) {
+                return
+            }
+            console.log("Screenshot progress: " + surl + " " + loading + " progress: " + loadProgress)
+            if (!loading && surl != "about:blank") {
+                linkReceiver.grabToImage(context, size)
+                finish()
             }
         }
     }

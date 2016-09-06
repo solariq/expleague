@@ -16,6 +16,7 @@ Item {
     property Action undo: undoAction
     property Action redo: redoAction
     property Action reload: reloadAction
+    property Action saveToVault: saveToVaultAction
     property Action searchOnPage: searchOnPageAction
     property Action searchInternet: searchInternetAction
     property Action searchSite: searchSiteAction
@@ -256,6 +257,22 @@ Item {
         onTriggered: {
             omnibox.select("site")
             dosearch.main.showDialog(omnibox)
+        }
+    }
+
+    Action {
+        id: saveToVaultAction
+        shortcut: StandardKey.Save
+        enabled: !!webView
+        text: qsTr("Сохранить в хранилище")
+        onTriggered: {
+            webView.triggerWebAction(WebEngineView.Copy)
+            dosearch.navigation.context.vault.clearClipboard();
+            dosearch.main.delay(500, function() {
+                if (!dosearch.navigation.context.vault.paste(dosearch.navigation.activePage)) {
+                    dosearch.navigation.context.vault.appendLink(dosearch.navigation.activePage.url)
+                }
+            })
         }
     }
 

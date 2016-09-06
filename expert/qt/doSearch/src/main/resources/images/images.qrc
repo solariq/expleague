@@ -70,5 +70,10 @@
         <file>editor/splitter.png</file>
         <file>editor/table.png</file>
         <file>editor/bullets.png</file>
+        <file>tools/edit.png</file>
+        <file>tools/noedit.png</file>
+        <file>tools/paste.png</file>
+        <file>tools/zoom-in.png</file>
+        <file>tools/zoom-out.png</file>
     </qresource>
 </RCC>

@@ -132,8 +132,16 @@ Context* doSearch::createContext() {
 
 Page* doSearch::page(const QString &id) const {
     return page(id, [this](const QString& id, doSearch* parent) -> Page*{
-        if (id.startsWith("context/"))
-            return new Context(id, parent);
+        if (id.startsWith("context/")) {
+            if (id.contains("/knugget/text"))
+                return new TextKnugget(id, parent);
+            else if (id.contains("/knugget/image"))
+                return new ImageKnugget(id, parent);
+            else if (id.contains("/knugget/link"))
+                return new LinkKnugget(id, parent);
+            else
+                return new Context(id, parent);
+        }
         else if (id.startsWith("web/") && id.endsWith("site"))
             return new WebSite(id, parent);
         else if (id.startsWith("web/"))
@@ -176,7 +184,7 @@ void doSearch::append(Context* context) {
 void doSearch::remove(Context* context) {
     assert(context->parent() == this);
     if (m_navigation->context() == context) {
-        Context* const next = static_cast<Context*>(m_navigation->contextsGroup()->activePages().first());
+        Context* const next = static_cast<Context*>(m_navigation->contextsGroup()->pages().first());
         m_navigation->activate(next);
     }
     m_contexts.removeOne(context);

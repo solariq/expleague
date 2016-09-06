@@ -53,7 +53,7 @@ Item {
                 url: owner.googleUrl
                 focus: true
                 visible: owner.searchIndex === 0
-                profile: !!dosearch.main ? dosearch.main.webProfileRef : profile
+                profile: dosearch.main.webProfileRef
                 onNewViewRequested: dosearch.main.openLink(request, owner, request.destination === WebEngineView.NewViewInBackgroundTab)
                 onUrlChanged: {
                     var query = owner.parseGoogleQuery(url)
@@ -70,7 +70,7 @@ Item {
                 url: owner.yandexUrl
                 focus: true
                 visible: owner.searchIndex === 1
-                profile: !!dosearch.main ? dosearch.main.webProfileRef : profile
+                profile: dosearch.main.webProfileRef
                 onNewViewRequested: dosearch.main.openLink(request, owner, request.destination === WebEngineView.NewViewInBackgroundTab)
                 onUrlChanged: {
                     var query = owner.parseYandexQuery(url)

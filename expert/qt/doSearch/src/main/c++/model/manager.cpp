@@ -84,7 +84,7 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
 
 void NavigationManager::close(PagesGroup* context, Page* page) {
     bool selected = page == context->selectedPage();
-    QList<Page*> pages = context->activePages();
+    QList<Page*> pages = context->pages();
     const int index = pages.indexOf(page);
     Page* next;
     if (index > 0)
@@ -228,7 +228,7 @@ PagesGroup* NavigationManager::selectedGroup() const {
 void NavigationManager::activate(Context *ctxt) {
     if (ctxt == m_active_context)
         return;
-    m_selected->transition(ctxt, Page::TransitionType::SELECT_TAB);
+//    m_selected->transition(ctxt, Page::TransitionType::SELECT_TAB);
     m_contexts_group->remove(ctxt);
     if (m_active_context)
         m_contexts_group->insert(m_active_context, 0);
@@ -338,6 +338,8 @@ void NavigationManager::unfold() {
     Page* next;
     while ((next = current->selectedPage())) {
         PagesGroup* nextGroup = group(next);
+        if (m_groups.contains(nextGroup))
+            break;
         connect(nextGroup, SIGNAL(pagesChanged()), this, SLOT(onPagesChanged()));
         nextGroup->setParentGroup(current);
         select(current);
@@ -361,8 +363,11 @@ void NavigationManager::onContextsChanged() {
         active = contexts[0];
     m_contexts_group->clear();
     foreach (Context* ctxt, contexts) {
-        if (m_active_context != ctxt)
+        if (m_active_context != ctxt) {
+            if (ctxt->state() == Page::CLOSED)
+                ctxt->setState(Page::INACTIVE);
             m_contexts_group->insert(ctxt);
+        }
     }
     activate(active);
 }

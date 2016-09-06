@@ -1,8 +1,6 @@
 import QtQuick 2.5
 
 MouseArea {
-    anchors.fill: parent
-
     hoverEnabled: true
     propagateComposedEvents: true
 

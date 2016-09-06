@@ -22,7 +22,20 @@ QString WebPage::title() const {
     if (m_redirect)
         return m_redirect->title();
     QVariant var = value("web.title");
-    return var.isNull() ? "" : var.toString();
+    return var.isNull() ? tr("Без имени") : var.toString();
+}
+
+void WebPage::setTitle(const QString& title) {
+    if (title.isEmpty())
+        return;
+    QUrl url(title, QUrl::StrictMode);
+    QString currentTitle = this->title();
+    QUrl currentTitleUrl(title);
+    if (url.isValid() && !(currentTitle.isEmpty() || currentTitleUrl.isValid()))
+        return;
+    store("web.title", title);
+    save();
+    titleChanged(title);
 }
 
 void WebPage::setIcon(const QString& icon) {

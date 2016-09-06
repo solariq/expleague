@@ -27,6 +27,7 @@ Item {
 
     property SidebarButton selectedBeforeDnD
     DropArea {
+        id: dropArea
         anchors.fill: parent
         onEntered: {
             containsDnD = true
@@ -40,7 +41,15 @@ Item {
             containsDnD = false
             drop.getDataAsString(drop.formats[1])
             var source = "empty"
-            if (drop.source.toString().search("Main_QMLTYPE") >= 0) {
+            var src = drop.source
+            if (!!src) {
+                for (var i in src.keys) {
+                    if (src.keys[i] == "vault")
+                        return
+                }
+            }
+
+            if (drop.source && drop.source.toString().search("Main_QMLTYPE") >= 0) {
                 source = dosearch.navigation.activePage.id
             }
 
@@ -241,49 +250,130 @@ Item {
 
                     task: self.task
                 }
-                Flow {
+                ColumnLayout {
                     id: vault
                     visible: false
+                    property bool editMode: false
+                    property real size: 8
                     anchors.fill: parent
-                    anchors.margins: 3
-                    Repeater {
-                        model: context.vault.items
-                        delegate: Component {
-                            Rectangle {
-                                id: thumbnail
-                                radius: Palette.radius
-                                width: 80
-                                height: 80
-                                anchors.margins: 3
-                                color: thumbnailArea.containsMouse ? Palette.selectedColor : Palette.activeColor
-                                property color textColor: thumbnailArea.containsMouse ? Palette.selectedTextColor : Palette.activeTextColor
-                                children: [modelData.ui()]
-                                onChildrenChanged: {
-                                    for (var i in children) {
-                                        var child = children[i]
-                                        child.visible = true
-                                        child.parent = thumbnail
-                                        child.color = Qt.binding(function () {return thumbnail.color})
-                                        child.textColor = Qt.binding(function () {return thumbnail.textColor})
-                                        child.width = width - 6
-                                        child.height = height - 6
-                                        child.enabled = false
-                                    }
+                    anchors.margins: 5
+                    spacing: 0
+                    Rectangle {
+                        Layout.preferredHeight: 33
+                        Layout.fillWidth: true
+                        color: Palette.navigationColor
+                        RowLayout {
+                            spacing: 5
+                            ToolbarButton {
+                                id: editVaultButton
+                                icon: vault.editMode ? "qrc:/tools/noedit.png" : "qrc:/tools/edit.png"
+                                onTriggered: vault.editMode = !vault.editMode
+                            }
+                            ToolbarButton {
+                                id: paste
+                                icon: "qrc:/tools/paste.png"
+                                onTriggered: {
+                                    context.vault.paste()
                                 }
-                                MouseArea {
-                                    id: thumbnailArea
-                                    x: 0
-                                    y: 0
-                                    height: 80
-                                    width: 80
-                                    z: thumbnail.z + 10
-                                    hoverEnabled: true
-                                    onPressed: {
-                                        console.log("Pressed mouse")
-                                    }
+                            }
+                            ToolbarButton {
+                                id: zoomIn
+                                icon: "qrc:/tools/zoom-in.png"
+                                onTriggered: {
+                                    vault.size += 1
+                                }
+                            }
+                            ToolbarButton {
+                                id: zoomOut
+                                icon: "qrc:/tools/zoom-out.png"
+                                onTriggered: {
+                                    vault.size -= 1
+                                }
+                            }
+                        }
+                    }
+                    Flickable {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        contentWidth: width
+                        contentHeight: itemsFlow.implicitHeight
+                        clip: true
+                        Flow {
+                            id: itemsFlow
+                            width: parent.width
+                            spacing: 5
+                            Repeater {
+                                model: context.vault.items
+                                delegate: Component {
+                                    MouseArea {
+                                        id: thumbnailArea
+                                        width: vault.size * 10 + 6
+                                        height: vault.size * 10 + 6
+                                        hoverEnabled: true
+                                        propagateComposedEvents: true
+                                        onClicked: open()
+                                        onDoubleClicked: mouse.accepted = false
+                                        onPressAndHold: mouse.accepted = false
 
-                                    onContainsMouseChanged: {
-                                        console.log("Contains mouse")
+                                        drag.target: thumbnail
+
+                                        onReleased: {
+                                            if (drag.active && !!drag.target && drag.target !== dropArea) {
+                                                mouse.accepted = true
+                                                thumbnail.Drag.drop()
+                                            }
+                                            else mouse.accepted = false
+                                        }
+
+                                        Rectangle {
+                                            id: thumbnail
+                                            radius: Palette.radius
+                                            width: thumbnailArea.width
+                                            height: thumbnailArea.height
+                                            anchors.margins: 3
+
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            anchors.horizontalCenter: parent.horizontalCenter
+
+                                            color: thumbnailArea.containsMouse || vault.editMode ? Palette.selectedColor : Palette.activeColor
+                                            property color textColor: thumbnailArea.containsMouse || vault.editMode ? Palette.selectedTextColor : Palette.activeTextColor
+                                            children: [ui()]
+                                            onChildrenChanged: {
+                                                for (var i in children) {
+                                                    var child = children[i]
+                                                    child.visible = true
+                                                    child.parent = thumbnail
+                                                    child.color = Qt.binding(function () {return thumbnail.color})
+                                                    child.textColor = Qt.binding(function () {return thumbnail.textColor})
+                                                    child.width = Qt.binding(function () {return thumbnail.width - 6})
+                                                    child.height = Qt.binding(function () {return thumbnail.height - 6})
+                                                    child.enabled = false
+                                                    child.size = Qt.binding(function () {return vault.size})
+                                                    child.hover = Qt.binding(function () {return thumbnailArea.containsMouse})
+                                                }
+                                            }
+                                            Drag.dragType: Drag.Automatic
+                                            Drag.active: thumbnailArea.drag.active
+
+                                            Drag.mimeData: { "text/plain": md, "vault": thumbnail }
+                                            Drag.keys: ["text/plain", "vault"]
+                                        }
+                                        RowLayout {
+                                            id: tools
+                                            visible: vault.editMode
+                                            anchors.centerIn: parent
+                                            width: 20
+                                            height: 20
+                                            ToolbarButton {
+                                                id: close
+                                                anchors.centerIn: parent
+                                                icon: "qrc:/cross.png"
+                                                size: 16
+                                                onTriggered: {
+                                                    context.vault.remove(modelData)
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }

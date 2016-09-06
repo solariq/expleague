@@ -187,16 +187,8 @@ Item {
 
                 profile: !!dosearch.main ? dosearch.main.webProfileRef : defaultProfile
 
-                onLoadingChanged: {
-                    if (!loading) {
-                        owner.setTitle(title)
-                    }
-                }
-
                 onTitleChanged: {
-//                    console.log("Page title changed to: " + title + " owner title: " + owner.title)
-                    if (title.search(/^https?:\/\//) == -1)
-                        owner.setTitle(title)
+                    owner.setTitle(title)
                 }
 
                 onIconChanged: {
@@ -211,7 +203,7 @@ Item {
 
                 property int historyLength: 1
                 onUrlChanged: {
-                    console.log(new Date().getTime() + " url changed: [" + url + "] owner url: [" + owner.url + "]" + " history length: " + navigationHistory.items.rowCount())
+//                    console.log(new Date().getTime() + " url changed: [" + url + "] owner url: [" + owner.url + "]" + " history length: " + navigationHistory.items.rowCount())
 
                     if (!owner.accept(url) && navigationHistory.items.rowCount() > historyLength) {
                         var now = new Date().getTime()
@@ -320,7 +312,7 @@ Item {
                 anchors.fill: parent
                 onEntered: {
 //                    console.log("Entered: " + drag.source.toString())
-                    if (drag.source.toString().search("Main_QMLTYPE") >= 0)
+                    if (drag.source && drag.source.toString().search("Main_QMLTYPE") >= 0)
                         dosearch.main.drag = drag.source
                 }
                 onExited: {

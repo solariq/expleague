@@ -15,7 +15,7 @@ class Context: public Page {
     Q_OBJECT
 
     Q_PROPERTY(Task* task READ task CONSTANT)
-    Q_PROPERTY(QQmlListProperty<SearchRequest> requests READ requests NOTIFY requestsChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::SearchRequest> requests READ requests NOTIFY requestsChanged)
     Q_PROPERTY(expleague::SearchRequest* lastRequest READ lastRequest NOTIFY requestsChanged)
     Q_PROPERTY(expleague::Vault* vault READ vault CONSTANT)
 

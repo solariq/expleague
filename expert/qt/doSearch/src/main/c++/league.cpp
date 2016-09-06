@@ -20,6 +20,8 @@
 #include <QBuffer>
 #include <QByteArray>
 
+#include <QTimer>
+
 #include "league.h"
 #include "dosearch.h"
 #include "profile.h"
@@ -209,10 +211,9 @@ QUrl League::uploadImage(const QImage &img) const {
     return m_store->upload(img);
 }
 
-QUrl League::imageUrl(QString imageId) const {
+QUrl League::imageUrl(const QString& imageId) const {
     return m_store->url(imageId);
 }
-
 
 Task::Task(Offer* offer, QObject* parent): QObject(parent), m_offer(offer) {
     QObject::connect(offer, SIGNAL(cancelled()), this, SLOT(cancelReceived()));
@@ -356,9 +357,9 @@ bool Bubble::incoming() const {
 }
 
 class ImagesStorePrivate: public QThread {
+public:
     static const QString IMAGE_STORE_MAGIC;
     static const QDir CACHE_ROOT;
-public:
     void enqueue(ImagesStoreResponse* task) {
         QMutexLocker lock(&m_lock);
         m_queue.append(task);
@@ -481,6 +482,12 @@ public:
                 m_pending.remove(id);
             }
         }
+        else if (firstPending->needRetry()){ // retry
+            QTimer::singleShot(5000, this, [this, firstPending]() {
+                qDebug() << "Retry";
+                sendRequest(firstPending->id());
+            });
+        }
         {
             QMutexLocker locker(&m_lock);
             m_replies.removeOne(reply);
@@ -508,7 +515,6 @@ private:
 };
 const QString ImagesStorePrivate::IMAGE_STORE_MAGIC = "OSYpRdXPNGZgRvsY";
 const QDir ImagesStorePrivate::CACHE_ROOT = QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/doSearch/images/");
-
 
 void ImagesStore::requestFinished(QNetworkReply* reply) {
     m_instance->requestFinished(reply);
@@ -545,6 +551,14 @@ QQuickImageResponse* ImagesStore::requestImageResponse(const QString& id, const 
     ImagesStoreResponse* response = new ImagesStoreResponse(id);
     m_instance->enqueue(response);
     return response;
+}
+
+QUrl League::normalizeImageUrlForUI(const QUrl& imageUrl) const {
+    if (imageUrl.path().startsWith("/" + ImagesStorePrivate::IMAGE_STORE_MAGIC + "/")) {
+        QString imageId = imageUrl.path().section('/', -1);
+        return "image://store/" + imageId;
+    }
+    return imageUrl;
 }
 
 }

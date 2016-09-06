@@ -169,7 +169,8 @@ public:
         return m_connection->jid().section('@', 0, 0);
     }
 
-    Q_INVOKABLE QUrl imageUrl(QString imageId) const;
+    Q_INVOKABLE QUrl imageUrl(const QString& normalizeImageUrlForUI) const;
+    Q_INVOKABLE QUrl normalizeImageUrlForUI(const QUrl& imageUrl) const;
 
     Q_INVOKABLE Member* findMember(const QString& id) const;
     Q_INVOKABLE TaskTag* findTag(const QString& id) const;
@@ -315,6 +316,10 @@ public:
         return m_id;
     }
 
+    bool needRetry() {
+        return ++m_attempts < 10;
+    }
+
 public:
     void setResult(const QImage& image) {
         m_result = QQuickTextureFactory::textureFactoryForImage(image);
@@ -327,7 +332,8 @@ public:
 
 private:
     QString m_id;
-    QQuickTextureFactory* m_result;
+    int m_attempts = 0;
+    QQuickTextureFactory* m_result = 0;
 };
 
 class ImagesStorePrivate;
