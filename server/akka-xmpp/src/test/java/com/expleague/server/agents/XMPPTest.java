@@ -80,7 +80,7 @@ public class XMPPTest extends ActorSystemTestCase {
 //    final JID room2 = JID.parse("room2");
 //    assertFalse(subscriptions.isSubscribed(subscriber, room1));
 //    assertFalse(subscriptions.isSubscribed(subscriber, room2));
-//    subscriptions.subscribe(new ClientSubscription(subscriber, room1));
+//    subscriptions.subscribe(new DefaultSubscription(subscriber, room1));
 //    assertTrue(subscriptions.isSubscribed(subscriber, room1));
 //    assertFalse(subscriptions.isSubscribed(subscriber, room2));
 //  }

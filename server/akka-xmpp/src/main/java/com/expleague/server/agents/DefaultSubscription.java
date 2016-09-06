@@ -7,10 +7,10 @@ import com.expleague.xmpp.JID;
  * Experts League
  * Created by solar on 13/04/16.
  */
-public class ClientSubscription implements Subscription {
+public class DefaultSubscription implements Subscription {
   private JID jid;
 
-  public ClientSubscription(JID jid) {
+  public DefaultSubscription(JID jid) {
     this.jid = jid;
   }
 
@@ -21,6 +21,6 @@ public class ClientSubscription implements Subscription {
 
   @Override
   public boolean relevant(JID jid) {
-    return jid.local().isEmpty() || jid.resource().endsWith("/expert");
+    return jid.local().isEmpty();
   }
 }
