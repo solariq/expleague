@@ -118,7 +118,7 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
   @ActorMethod
   public void sendState(Timeout to) {
     try {
-      if (knownStatus.equals(status))
+      if (knownStatus != null && knownStatus.equals(status))
         return;
       knownStatus = status;
       XMPP.send(new Presence(XMPP.jid(), true, status), context());
