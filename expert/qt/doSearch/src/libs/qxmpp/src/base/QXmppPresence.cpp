@@ -184,7 +184,7 @@ void QXmppPresence::setType(QXmppPresence::Type type)
     d->type = type;
 }
 
-/// \cond
+/// \cond
 void QXmppPresence::parse(const QDomElement &element)
 {
     QXmppStanza::parse(element);
@@ -262,7 +262,7 @@ void QXmppPresence::parse(const QDomElement &element)
         else if (xElement.tagName() == "show")
         {
         }
-        else if (xElement.tagName() == "status")
+        else if (xElement.tagName() == "status" && xElement.namespaceURI() == "urn:ietf:params:xml:ns:pidf")
         {
         }
         else if (xElement.tagName() == "priority")

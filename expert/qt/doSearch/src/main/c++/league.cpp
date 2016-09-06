@@ -69,6 +69,7 @@ void League::setActive(Profile *profile) {
         QObject::connect(m_connection, SIGNAL(receiveImage(QString,QString,QUrl)), SLOT(imageReceived(QString,QString,QUrl)));
         QObject::connect(m_connection, SIGNAL(receiveAnswer(QString,QString,QString)), SLOT(answerReceived(QString,QString,QString)));
         QObject::connect(m_connection, SIGNAL(receiveProgress(QString,QString,Progress)), SLOT(progressReceived(QString,QString,Progress)));
+        QObject::connect(m_connection, SIGNAL(tasksAvailableChanged()), SLOT(onTasksAvailableChanged()));
     }
     profileChanged(profile);
 }

@@ -26,6 +26,7 @@ ExpLeagueConnection::ExpLeagueConnection(Profile* p, QObject* parent): QObject(p
     QObject::connect(&client, SIGNAL(connected()), this, SLOT(connectedSlot()));
     QObject::connect(&client, SIGNAL(disconnected()), this, SLOT(disconnectedSlot()));
     QObject::connect(&client, SIGNAL(iqReceived(QXmppIq)), this, SLOT(iqReceived(QXmppIq)));
+    QObject::connect(&client, SIGNAL(presenceReceived(QXmppPresence)), this, SLOT(presenceReceived(QXmppPresence)));
     QObject::connect(&client, SIGNAL(messageReceived(QXmppMessage)), this, SLOT(messageReceived(QXmppMessage)));
 
 //    client.logger()->setLoggingType(QXmppLogger::StdoutLogging);
@@ -65,6 +66,16 @@ void ExpLeagueConnection::error(QXmppClient::Error error) {
     }
     else {
         qWarning() << "XMPP error: " << error;
+    }
+}
+
+void ExpLeagueConnection::presenceReceived(const QXmppPresence& presence) {
+    foreach(const QXmppElement& ext, presence.extensions()) {
+        QDomElement item = ext.sourceDomElement();
+        if (item.namespaceURI() == "http://expleague.com/scheme" && item.nodeName() == "status") {
+            m_tasks_available = item.attribute("starving-tasks").toInt();
+            emit tasksAvailableChanged();
+        }
     }
 }
 

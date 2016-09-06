@@ -124,6 +124,8 @@ class League: public QObject {
     Q_PROPERTY(QQmlListProperty<expleague::TaskTag> tags READ tags NOTIFY tagsChanged)
     Q_PROPERTY(QQmlListProperty<expleague::AnswerPattern> patterns READ patterns NOTIFY patternsChanged)
 
+    Q_PROPERTY(int tasksAvailable READ tasksAvailable NOTIFY tasksAvailableChanged)
+
     Q_ENUMS(Status)
 
 public:
@@ -153,6 +155,10 @@ public:
 
     QQmlListProperty<AnswerPattern> patterns() {
         return QQmlListProperty<AnswerPattern>(this, m_patterns);
+    }
+
+    int tasksAvailable() const {
+        return m_connection ? m_connection->tasksAvailable() : 0;
     }
 
     Q_INVOKABLE void connect() {
@@ -200,6 +206,7 @@ signals:
     void statusChanged(Status status);
     void profileChanged(Profile* profile);
     void receivedInvite(Offer* offer);
+    void tasksAvailableChanged();
 
     Q_INVOKABLE void profilesChanged();
     void patternsChanged();
@@ -281,6 +288,10 @@ private slots:
     void imageReceived(const QString& room, const QString& from, const QUrl&);
     void answerReceived(const QString& room, const QString& from, const QString&);
     void progressReceived(const QString& room, const QString& from, const Progress&);
+
+    void onTasksAvailableChanged() {
+        emit tasksAvailableChanged();
+    }
 
 public:
     explicit League(QObject* parent = 0);

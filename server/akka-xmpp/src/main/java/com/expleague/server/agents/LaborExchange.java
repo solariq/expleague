@@ -82,11 +82,11 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
           status.expertOnline();
         status.expertAvailable();
       }
-      else if (to == ExpertRole.State.OFFLINE) {
-        status.expertOffline();
-      }
-      else if (to == ExpertRole.State.BUSY) {
+      if (from == ExpertRole.State.READY) {
         status.expertBusy();
+      }
+      if (to == ExpertRole.State.OFFLINE) {
+        status.expertOffline();
       }
     }
   }

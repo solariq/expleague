@@ -55,6 +55,8 @@ class ExpLeagueConnection: public QObject {
     Q_OBJECT
 
     Q_PROPERTY(QString jid READ jid NOTIFY jidChanged)
+    Q_PROPERTY(int tasksAvailable READ tasksAvailable NOTIFY tasksAvailableChanged)
+
 public:
     Profile* profile() {
         return m_profile;
@@ -66,6 +68,10 @@ public:
 
     bool valid() {
         return client.isAuthenticated();
+    }
+
+    int tasksAvailable() const {
+        return m_tasks_available;
     }
 
 public:
@@ -104,6 +110,8 @@ signals:
     void connected();
     void disconnected();
 
+    void tasksAvailableChanged();
+
     void receiveCheck(const Offer& task);
     void receiveInvite(const Offer& task);
     void receiveResume(const Offer& task);
@@ -124,8 +132,9 @@ signals:
 
 public slots:
     void error(QXmppClient::Error err);
-    void iqReceived(const QXmppIq &iq);
-    void messageReceived(const QXmppMessage &msg);
+    void presenceReceived(const QXmppPresence& presence);
+    void iqReceived(const QXmppIq& iq);
+    void messageReceived(const QXmppMessage& msg);
     void disconnectedSlot() {
         disconnected();
     }
@@ -150,6 +159,7 @@ private:
     Profile* m_profile;
     QString m_jid;
     QMap<QString, Member*> m_members_cache;
+    int m_tasks_available = 0;
 };
 
 class Registrator: public QXmppClientExtension {

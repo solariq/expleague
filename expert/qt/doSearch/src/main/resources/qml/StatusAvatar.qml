@@ -56,10 +56,32 @@ Item {
         size: parent.size
         showStatus: false
 
+        Rectangle {
+            id: tasks
+            visible: dosearch.league.tasksAvailable > 0
+            x: 1
+            y: 1
+            z: parent.z + 1
+            height: 12
+            width: 12
+            radius: 6
+            color: "red"
+            clip: true
+            Text {
+                anchors.centerIn: parent
+                font.pointSize: 8
+                text: "" + dosearch.league.tasksAvailable
+                color: "white"
+            }
+        }
         Item {
             id: status
             property string statusImg: "qrc:/status/offline.png"
             property string _statusImg: statusImg
+
+            x: parent.width - status.width - 1
+            y: parent.height - status.height - 1
+            z: parent.z + 1
             height: 14
             width: 14
 
@@ -87,9 +109,6 @@ Item {
                         }
                     }]
             }
-            x: parent.width - status.width - 1
-            y: parent.height - status.height - 1
-            z: parent.z + 1
             MouseArea {
                 anchors.fill: parent
                 id: statusArea
