@@ -90,14 +90,15 @@ void declareTypes() {
     rootEngine->addImageProvider("store", doSearch::instance()->league()->store());
 
     qRegisterMetaType<Profile::Sex>("expleague::Profile::Sex");
+    qRegisterMetaType<Profile::Sex>("expleague::PagesGroup::Type");
     qRegisterMetaType<Page::State>("expleague::Page::State");
 
     qRegisterMetaType<Profile*>("Profile*");
     qRegisterMetaType<Context*>("Context*");
     qRegisterMetaType<MarkdownEditorPage*>("MarkdownEditorPage*");
-    qRegisterMetaType<expleague::Task*>("Task*");
-    qRegisterMetaType<expleague::Bubble*>("Bubble*");
-    qRegisterMetaType<expleague::ChatMessage*>("ChatMessage*");
+    qRegisterMetaType<Task*>("Task*");
+    qRegisterMetaType<Bubble*>("Bubble*");
+    qRegisterMetaType<ChatMessage*>("ChatMessage*");
     qRegisterMetaType<Offer*>("Offer*");
     qRegisterMetaType<doSearch*>("doSearch*");
     qRegisterMetaType<WebPage*>("WebPage*");
@@ -105,30 +106,32 @@ void declareTypes() {
     qRegisterMetaType<TaskTag*>("TaskTag*");
     qRegisterMetaType<History*>("History*");
     qRegisterMetaType<AnswerPattern*>("AnswerPattern*");
-    qRegisterMetaType<expleague::NavigationManager*>("NavigationManager*");
-    qRegisterMetaType<expleague::Page*>("Page*");
-    qRegisterMetaType<expleague::PagesGroup*>("PagesGroup*");
-    qRegisterMetaType<expleague::SearchRequest*>("SearchRequest*");
-    qRegisterMetaType<expleague::Vault*>("Vault*");
-    qRegisterMetaType<expleague::Knugget*>("Knugget*");
+    qRegisterMetaType<NavigationManager*>("NavigationManager*");
+    qRegisterMetaType<Page*>("Page*");
+    qRegisterMetaType<PageVisit*>("PageVisit*");
+    qRegisterMetaType<PagesGroup*>("PagesGroup*");
+    qRegisterMetaType<SearchRequest*>("SearchRequest*");
+    qRegisterMetaType<Vault*>("Vault*");
+    qRegisterMetaType<Knugget*>("Knugget*");
 
     qmlRegisterType<ProfileBuilder>("ExpLeague", 1, 0, "ProfilePreview");
-    qmlRegisterType<expleague::SearchRequest>("ExpLeague", 1, 0, "SearchRequest");
+    qmlRegisterType<SearchRequest>("ExpLeague", 1, 0, "SearchRequest");
     qmlRegisterType<MarkdownEditorPage>("ExpLeague", 1, 0, "MarkdownEditorScreen");
     qmlRegisterType<Context>("ExpLeague", 1, 0, "Context");
     qmlRegisterType<Offer>("ExpLeague", 1, 0, "Offer");
-    qmlRegisterType<expleague::NavigationManager>("ExpLeague", 1, 0, "NavigationManager");
-    qmlRegisterType<expleague::Task>("ExpLeague", 1, 0, "Task");
-    qmlRegisterType<expleague::Bubble>("ExpLeague", 1, 0, "Bubble");
-    qmlRegisterType<expleague::ChatMessage>("ExpLeague", 1, 0, "ChatMessage");
-    qmlRegisterType<expleague::Member>("ExpLeague", 1, 0, "Member");
-    qmlRegisterType<expleague::TaskTag>("ExpLeague", 1, 0, "TaskTag");
-    qmlRegisterType<expleague::AnswerPattern>("ExpLeague", 1, 0, "AnswerPattern");
-    qmlRegisterType<expleague::PagesGroup>("ExpLeague", 1, 0, "PagesGroup");
+    qmlRegisterType<NavigationManager>("ExpLeague", 1, 0, "NavigationManager");
+    qmlRegisterType<Task>("ExpLeague", 1, 0, "Task");
+    qmlRegisterType<Bubble>("ExpLeague", 1, 0, "Bubble");
+    qmlRegisterType<ChatMessage>("ExpLeague", 1, 0, "ChatMessage");
+    qmlRegisterType<Member>("ExpLeague", 1, 0, "Member");
+    qmlRegisterType<TaskTag>("ExpLeague", 1, 0, "TaskTag");
+    qmlRegisterType<AnswerPattern>("ExpLeague", 1, 0, "AnswerPattern");
+    qmlRegisterType<PagesGroup>("ExpLeague", 1, 0, "PagesGroup");
     qmlRegisterType<Page>("ExpLeague", 1, 0, "Page");
     qmlRegisterType<League>("ExpLeague", 1, 0, "League");
 
     qmlRegisterUncreatableType<Profile>("ExpLeague", 1, 0, "Profile", "Profile requires registration and can be created only by appropriate builder class");
     qmlRegisterUncreatableType<doSearch>("ExpLeague", 1, 0, "doSearch", "This type is for root property only");
     qmlRegisterUncreatableType<Knugget>("ExpLeague", 1, 0, "Knugget", "Knuggets are created by vault only");
+    qmlRegisterUncreatableType<PageVisit>("ExpLeague", 1, 0, "PageVisit", "Visits are created automatically");
 }

@@ -140,11 +140,12 @@ void MarkdownEditorPage::contentChanged() {
     }
 }
 
-MarkdownEditorPage::MarkdownEditorPage(const QString& id, Member* author, const QString& title, doSearch* parent): Page(id, "qrc:/EditorView.qml", parent), m_author(author) {
+MarkdownEditorPage::MarkdownEditorPage(const QString& id, Context* context, Member* author, const QString& title, doSearch* parent): Page(id, "qrc:/EditorView.qml", parent), m_author(author), m_owner(context) {
     d_ptr.reset(0);
     m_text = value("document.text").toString();
     store("document.author", author ? author->id() : QVariant());
     store("document.title", title);
+    store("document.owner", context->id());
     save();
     League* league = doSearch::instance()->league();
     m_editable = !author || author->id() == league->id();
@@ -164,6 +165,15 @@ MarkdownEditorPage::MarkdownEditorPage(const QString& id, doSearch* parent): Pag
         QObject::connect(m_author, SIGNAL(nameChanged(QString)), this, SLOT(authorChanged()));
         QObject::connect(m_author, SIGNAL(avatarChanged(QUrl)), this, SLOT(authorChanged()));
     }
+}
+
+void MarkdownEditorPage::interconnect() {
+    QVariant ownerVar = value("document.owner");
+    if (ownerVar.isNull()) {
+        QString contextId = id().section('/', 1, -2);
+        m_owner = static_cast<Context*>(parent()->page(contextId));
+    }
+    else m_owner = static_cast<Context*>(parent()->page(ownerVar.toString()));
 }
 
 MarkdownEditorPage::~MarkdownEditorPage() {}

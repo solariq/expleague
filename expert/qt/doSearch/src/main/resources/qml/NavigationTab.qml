@@ -75,7 +75,7 @@ Rectangle {
             when: tabItemText.visible && tabItemText.isLong
             PropertyChanges {
                 target: tabItemText
-                elide: Text.ElideMiddle
+                elide: Text.ElideRight
                 width: 200
             }
             PropertyChanges {

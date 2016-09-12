@@ -216,7 +216,7 @@ QUrl League::imageUrl(const QString& imageId) const {
     return m_store->url(imageId);
 }
 
-Task::Task(Offer* offer, QObject* parent): QObject(parent), m_offer(offer) {
+Task::Task(Offer* offer, QObject* parent): QObject(parent), m_offer(offer), m_active(true) {
     QObject::connect(offer, SIGNAL(cancelled()), this, SLOT(cancelReceived()));
 }
 
@@ -346,6 +346,7 @@ void Task::stop() {
     m_answers.clear();
     m_tags.clear();
     m_patterns.clear();
+    m_active = false;
     emit finished();
 }
 
@@ -485,7 +486,7 @@ public:
         }
         else if (firstPending->needRetry()){ // retry
             QTimer::singleShot(5000, this, [this, firstPending]() {
-                qDebug() << "Retry";
+//                qDebug() << "Retry";
                 sendRequest(firstPending->id());
             });
         }

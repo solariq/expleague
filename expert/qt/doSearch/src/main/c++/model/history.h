@@ -7,30 +7,31 @@
 #include <QQmlListProperty>
 
 #include "page.h"
+#include "context.h"
 
 class QSettings;
 namespace expleague {
 class doSearch;
-
-class Context;
+//class Context;
 class Profile;
+class PageVisit;
 
 class History: public Page {
     Q_OBJECT
 
-    Q_PROPERTY(QQmlListProperty<expleague::Page> last30 READ last30 NOTIFY historyChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::PageVisit> last30 READ last30 NOTIFY historyChanged)
 
 public:
-    QQmlListProperty<Page> last30() const { return QQmlListProperty<Page>(const_cast<History*>(this), const_cast<QList<Page*>&>(m_last30)); }
+    QQmlListProperty<PageVisit> last30() const { return QQmlListProperty<PageVisit>(const_cast<History*>(this), const_cast<QList<PageVisit*>&>(m_last30)); }
 
 public:
-    QList<Page*> story() const { return m_story; }
-    QList<Page*> last(int depth) const;
+    QList<PageVisit*> story() const { return m_story; }
+    QList<PageVisit*> last(int depth) const;
 
     Q_INVOKABLE int visits(const QString& id) const;
 
 public slots:
-    void onVisited(Page* to);
+    void onVisited(Page* to, Context* context);
 
 signals:
     void historyChanged();
@@ -44,8 +45,36 @@ protected:
     void interconnect();
 
 private:
-    QList<Page*> m_story;
-    QList<Page*> m_last30;
+    QList<PageVisit*> m_story;
+    QList<PageVisit*> m_last30;
+};
+
+class PageVisit: public QObject {
+    Q_OBJECT
+
+    Q_PROPERTY(expleague::Page* page READ page CONSTANT)
+    Q_PROPERTY(expleague::Context* context READ context CONSTANT)
+    Q_PROPERTY(QString contextName READ contextName CONSTANT)
+    Q_PROPERTY(time_t time READ time CONSTANT)
+
+public:
+    Page* page() const { return m_page; }
+    Context* context() const { return m_context; }
+    QString contextName() const { return m_context->id(); }
+    time_t time() const { return m_time; }
+
+    QVariant toVariant() const;
+    static PageVisit* fromVariant(QVariant var, History* owner);
+
+public:
+    PageVisit(Page* page, Context* context, time_t time, History* parent):
+        QObject(parent), m_page(page), m_context(context), m_time(time)
+    {}
+
+private:
+    Page* m_page;
+    Context* m_context;
+    time_t m_time;
 };
 
 class StateSaver: public QObject {

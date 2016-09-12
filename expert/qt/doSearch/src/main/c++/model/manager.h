@@ -59,14 +59,8 @@ public:
     }
 
 
-    QQuickItem* activeScreen() const {
-        return m_active_screen;
-    }
-
-    Page* activePage() const {
-        return m_selected;
-    }
-
+    QQuickItem* activeScreen() const { return m_active_screen; }
+    Page* activePage() const { return m_selected; }
     Context* context() const { return m_active_context; }
 
     PagesGroup* contextsGroup() const;
@@ -99,9 +93,9 @@ public:
 private:
     void rebalanceWidth();
     void unfold();
-    void popTo(const PagesGroup*);
+    void popTo(const PagesGroup* to, bool clearSelection);
     void typeIn(Page*);
-    PagesGroup* group(Page* page) const;
+    PagesGroup* group(Page* page, Context* context = 0, bool create = false);
 
 private:
     double m_screen_width;
@@ -114,7 +108,7 @@ private:
     QList<Page*> m_history;
 
     QList<QQuickItem*> m_screens;
-    mutable QHash<QString, PagesGroup*> m_groups_cache;
+    QHash<QString, QHash<QString, PagesGroup*>> m_known_groups;
     QQuickItem* m_active_screen;
     QDnsLookup* m_lookup;
 };

@@ -9,8 +9,8 @@
 
 namespace expleague {
 
-PagesGroup::PagesGroup(Page* root, NavigationManager* manager): QObject(manager), m_root(root), m_parent(0) {
-    if (!root) {
+PagesGroup::PagesGroup(Page* root, Type type, NavigationManager* manager): QObject(manager), m_root(root), m_parent(0), m_type(type) {
+    if (!root || type == NORMAL) {
         m_closed_start = 0;
         m_selected_page_index = -1;
         return;
@@ -49,7 +49,7 @@ PagesGroup::PagesGroup(Page* root, NavigationManager* manager): QObject(manager)
         if (page->state() == Page::CLOSED)
             continue;
         connect(page, SIGNAL(stateChanged(Page::State)), this, SLOT(onPageStateChanged(Page::State)));
-        if (page == root->lastVisited())
+        if (page == root->lastVisited() && type == CONTEXT)
             m_selected_page_index = m_pages.size();
         m_pages.append(page);
     }
@@ -72,7 +72,6 @@ void PagesGroup::split(const QList<Page *>& visible, const QList<Page *>& folded
     }
 }
 
-
 void PagesGroup::setParentGroup(PagesGroup* group) {
     m_parent = group;
     if (m_selected_page_index >= 0) {
@@ -91,16 +90,17 @@ void PagesGroup::setParentGroup(PagesGroup* group) {
 }
 
 void PagesGroup::insert(Page* page, int position) {
-    assert(page->state() != Page::CLOSED);
     assert(position <= m_closed_start);
+    if (page->state() == Page::CLOSED)
+        page->setState(Page::INACTIVE);
     int index = m_pages.indexOf(page);
-    if (index >= 0 && index < m_closed_start)
+    position = position < 0 ? m_closed_start : position;
+    if (index >= 0 && index < position)
         return;
-    if (index >= m_closed_start)
+    if (index >= position)
         m_pages.removeOne(page);
     else
         connect(page, SIGNAL(stateChanged(Page::State)), this, SLOT(onPageStateChanged(Page::State)));
-    position = position < 0 ? m_closed_start : position;
     m_pages.insert(position, page);
     m_closed_start++;
     if (position <= m_selected_page_index)

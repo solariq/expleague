@@ -211,6 +211,9 @@ ApplicationWindow {
                 action: commonActions.closeTab
             }
             MenuItem {
+                action: commonActions.saveToVault
+            }
+            MenuItem {
                 action: commonActions.showHistory
             }
             MenuItem {
@@ -395,7 +398,7 @@ ApplicationWindow {
             y: 200
             z: parent.z + 10
             width: 500
-            height: 24 * dosearch.history.last30.length + 4
+            height: Math.min(24 * (dosearch.history.last30.length + 1) + 4, self.height - y)
 
             color: Palette.backgroundColor
 
@@ -472,7 +475,7 @@ ApplicationWindow {
         }
 
         onUrlChanged: {
-            console.log("url changed to " + url.toString())
+//            console.log("url changed to " + url.toString())
             if (operation == "finish") {
                 finish()
                 return

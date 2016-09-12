@@ -10,6 +10,7 @@
 #include <QQmlApplicationEngine>
 
 namespace expleague {
+typedef QHash<QString, PagesGroup*> GroupsHash;
 
 void NavigationManager::handleOmnibox(const QString& text, int /*modifier*/) {
     QUrl url(text, QUrl::StrictMode);
@@ -57,29 +58,32 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
     if (contextWeb && !newGroup) // speedup of the link open: it will be opened inplace and the context page will be built from the scratch
         contextWeb->transferUI(next);
     context->transition(next, Page::TransitionType::FOLLOW_LINK);
-    if (context != m_selected)
-        return next->ui();
-    PagesGroup* group = m_groups.last();
-    while (group && group->root() != context) {
-        group = group->parentGroup();
+    PagesGroup* group = 0;
+    for (int i = 0; i < m_groups.size() - 1; i++) {
+        WebPage* groupOwner = qobject_cast<WebPage*>(m_groups[i]->root());
+        if (groupOwner && groupOwner->site()->mirrorTo(next->site())) {
+            group = m_groups[i];
+            break;
+        }
     }
-    assert(group);
-    PagesGroup* prevGroup = group->parentGroup();
-    WebPage* prevGroupOwnerWeb = prevGroup ? qobject_cast<WebPage*>(prevGroup->root()) : 0;
-    WebSite* groupOwnerSite = prevGroupOwnerWeb ? prevGroupOwnerWeb->site() : 0;
-    while (groupOwnerSite && groupOwnerSite->mirrorTo(next->site())) { // skip one or more groups to get all pages of the same site in the same, topmost group
-        group = prevGroup;
-        prevGroup = group->parentGroup();
-        prevGroupOwnerWeb = prevGroup ? qobject_cast<WebPage*>(prevGroup->root()) : 0;
-        groupOwnerSite = prevGroupOwnerWeb ? prevGroupOwnerWeb->site() : 0;
+    if (!group) { // creating new group if the site group has not found
+        PagesGroup* const contextGroup = this->group(context, m_active_context, true);
+        if (!newGroup) {
+            group = contextGroup;
+            group->setParentGroup(m_groups.last());
+            m_groups.removeLast();
+            m_groups.append(group);
+        }
+        else {
+            contextGroup->insert(next, 0);
+            m_groups.last()->insert(next, 0);
+            return m_selected->ui();
+        }
     }
-//    const int position = group->root() == context ? 0 : group->pages().indexOf(context) + 1;
-    const int position = group->pages().indexOf(context) + 1; // equals previous line
-    group->insert(next, position);
+    group->insert(next, group->pages().indexOf(m_selected) + 1);
     if (!newGroup)
         select(group, next);
-    return next->ui();
-
+    return m_selected->ui();
 }
 
 void NavigationManager::close(PagesGroup* context, Page* page) {
@@ -95,7 +99,7 @@ void NavigationManager::close(PagesGroup* context, Page* page) {
         next = 0;
     page->setState(Page::CLOSED);
     if (selected) {
-        if (next)
+        if (next && next->state() != Page::CLOSED)
             select(context, next);
         else
             select(context->parentGroup(), context->root());
@@ -121,14 +125,19 @@ void NavigationManager::select(PagesGroup* context, Page* selected) {
     current->transition(selected, Page::TransitionType::SELECT_TAB);
     context->root()->transition(selected, Page::TransitionType::CHILD_GROUP_OPEN);
     m_selected = selected;
-    select(context);
-    if (context->selectedPage() != selected || current == m_active_context) {
-        popTo(context);
-        context->selectPage(selected);
-        unfold();
-        current->transition(m_selected, Page::TransitionType::CHANGED_SCREEN);
+    if (context->type() == PagesGroup::SUGGEST) {
+        m_groups.removeLast();
+        PagesGroup* group = this->group(context->root(), m_active_context, true);
+        group->insert(selected);
+        group->setParentGroup(m_groups.last());
+        m_groups.append(group);
+        context->deleteLater();
+        context = group;
     }
-    else current->transition(m_selected, Page::TransitionType::CHANGED_SCREEN);
+    popTo(context, context->selectedPage() == selected);
+    context->selectPage(selected);
+    unfold();
+    current->transition(m_selected, Page::TransitionType::CHANGED_SCREEN);
     emit groupsChanged();
 }
 
@@ -158,40 +167,47 @@ int depth(PagesGroup* group) {
 void NavigationManager::open(Page* page) {
     if (m_selected == page)
         return;
+    if (page->state() == Page::CLOSED)
+        page->setState(Page::INACTIVE);
+
     PagesGroup* group = this->group(page);
-    if (!group->parentGroup()) { // new group, trying to match existing
-        group = 0;
+    if (!group) { // new group, trying to match existing
         GroupMatchType matchType = NONE;
         int minDepth = std::numeric_limits<int>::max();
         WebPage* const web = qobject_cast<WebPage*>(page);
 
-        foreach(PagesGroup* currentGroup, m_groups_cache.values()) {
-            WebPage* const webRoot = page ? qobject_cast<WebPage*>(currentGroup->root()) : 0;
-            GroupMatchType currentMatchType = NONE;
-            if (currentGroup->pages().contains(page))
-                currentMatchType = EXACT;
-            else if (webRoot && web && webRoot->site()->mirrorTo(web->site()) && matchType > EXACT)
-                currentMatchType = SITE;
-            else continue;
-            const int currentDepth = depth(currentGroup);
-            if (currentDepth > 0 && (currentMatchType < matchType || currentDepth < minDepth)) {
-                group = currentGroup;
-                matchType = currentMatchType;
-                minDepth = currentDepth;
+        foreach (const GroupsHash& val, m_known_groups.values()) {
+            foreach(PagesGroup* currentGroup, val.values()) {
+                WebPage* const webRoot = page ? qobject_cast<WebPage*>(currentGroup->root()) : 0;
+                GroupMatchType currentMatchType = NONE;
+                if (currentGroup->pages().contains(page))
+                    currentMatchType = EXACT;
+                else if (webRoot && web && webRoot->site()->mirrorTo(web->site()) && matchType > EXACT)
+                    currentMatchType = SITE;
+                else continue;
+                const int currentDepth = depth(currentGroup);
+                if (currentDepth >= 0 && (currentMatchType < matchType || currentDepth < minDepth)) {
+                    group = currentGroup;
+                    matchType = currentMatchType;
+                    minDepth = currentDepth;
+                }
             }
         }
-        if (group)
+        if (group) {
+            group->insert(page);
+            if (group->selectedPage() != page) {
+                group->selectPage(page);
+                group->root()->transition(page, Page::TransitionType::CHILD_GROUP_OPEN);
+            }
             qDebug() << "Found matching pages group for page: " << page->id() << " depth: " << minDepth << " match type: " << matchType;
+        }
     }
+    else group->selectPage(0);
 
     if (group) {
         PagesGroup* parent = group->parentGroup();
         while (parent) {
-            if (group->pages().contains(page))
-                group->setSelected(true);
             if (parent->selectedPage() != group->root()) {
-                if (group->root()->state() == Page::CLOSED)
-                    group->root()->setState(Page::INACTIVE);
                 parent->insert(group->root());
                 parent->selectPage(group->root());
                 parent->root()->transition(group->root(), Page::TransitionType::CHILD_GROUP_OPEN);
@@ -200,12 +216,9 @@ void NavigationManager::open(Page* page) {
             parent = group->parentGroup();
         }
         if (group->root() == m_active_context) {
-            m_selected->transition(page, Page::TransitionType::CHANGED_SCREEN);
-            m_selected = page;
-            m_groups.clear();
-            m_groups.append(group);
-            unfold();
-            emit groupsChanged();
+            Page* const selected = group->selectedPage();
+            group->selectPage(0);
+            select(group, selected);
         }
         else activate(static_cast<Context*>(group->root()));
     }
@@ -230,14 +243,13 @@ void NavigationManager::activate(Context *ctxt) {
         return;
 //    m_selected->transition(ctxt, Page::TransitionType::SELECT_TAB);
     m_contexts_group->remove(ctxt);
-    if (m_active_context)
+    if (m_active_context && (!m_active_context->task() || m_active_context->task()->active()))
         m_contexts_group->insert(m_active_context, 0);
     m_active_context = ctxt;
-    popTo(0);
+    popTo(0, false);
     m_selected = ctxt;
-    PagesGroup* group = this->group(ctxt);
+    PagesGroup* group = this->group(ctxt, ctxt, true);
     m_groups.append(group);
-    select(group);
     unfold();
     emit contextChanged();
     emit groupsChanged();
@@ -273,7 +285,7 @@ void NavigationManager::rebalanceWidth() {
     std::sort(visible.begin(), visible.end(), [&probabilities](Page* lhs, Page* rhs) {
         return probabilities[lhs] > probabilities[rhs];
     });
-    double available_width = m_screen_width - m_groups.size() * 30 - 30 - 30 - 60; // group decorations + context icon + context view
+    double available_width = m_screen_width - m_groups.size() * 30 - 30 - 30 - 100; // group decorations + context icon + context view
     result.remove(0);
     if (!visible.empty()) {
         double a = m_selected->pOut(visible.first());
@@ -325,9 +337,11 @@ void NavigationManager::rebalanceWidth() {
     }
 }
 
-void NavigationManager::popTo(const PagesGroup* target) {
+void NavigationManager::popTo(const PagesGroup* target, bool clearSelection) {
     while (!m_groups.empty() && m_groups.last() != target) {
         PagesGroup* const group = m_groups.last();
+        if (clearSelection)
+            group->selectPage(0);
         disconnect(group, SIGNAL(pagesChanged()), this, SLOT(onPagesChanged()));
         m_groups.removeLast();
     }
@@ -337,16 +351,23 @@ void NavigationManager::unfold() {
     PagesGroup* current = m_groups.last();
     Page* next;
     while ((next = current->selectedPage())) {
-        PagesGroup* nextGroup = group(next);
-        if (m_groups.contains(nextGroup))
+        m_selected = next;
+        PagesGroup* nextGroup = group(next, m_active_context);
+        if (!nextGroup || m_groups.contains(nextGroup) || !nextGroup->selectedPage())
             break;
         connect(nextGroup, SIGNAL(pagesChanged()), this, SLOT(onPagesChanged()));
         nextGroup->setParentGroup(current);
-        select(current);
-        m_selected = next;
         m_groups.append(nextGroup);
         current = nextGroup;
     }
+    PagesGroup* suggest = new PagesGroup(m_selected, PagesGroup::SUGGEST, this);
+    suggest->setParentGroup(m_groups.last());
+    connect(suggest, SIGNAL(pagesChanged()), this, SLOT(onPagesChanged()));
+    m_groups.append(suggest);
+    for (int i = 0; i < m_groups.size(); i++) {
+        m_groups[i]->setSelected(false);
+    }
+    m_groups[m_groups.size() - 2]->setSelected(true);
 }
 
 doSearch* NavigationManager::parent() const {
@@ -364,8 +385,6 @@ void NavigationManager::onContextsChanged() {
     m_contexts_group->clear();
     foreach (Context* ctxt, contexts) {
         if (m_active_context != ctxt) {
-            if (ctxt->state() == Page::CLOSED)
-                ctxt->setState(Page::INACTIVE);
             m_contexts_group->insert(ctxt);
         }
     }
@@ -425,15 +444,37 @@ void NavigationManager::onGroupsChanged() {
                 screen->deleteLater();
             }
         }
+        foreach (QQuickItem* screen, screens) { // cleanup
+            screen->setVisible(true);
+            if (screen != m_active_screen)
+                screen->setVisible(false);
+        }
         emit screensChanged();
     }
 }
 
-PagesGroup* NavigationManager::group(Page* page) const {
-    QHash<QString, PagesGroup*>::iterator groupIt = m_groups_cache.find(page->id());
-    if (groupIt != m_groups_cache.end())
-        return groupIt.value();
-    return m_groups_cache[page->id()] = new PagesGroup(page, const_cast<NavigationManager*>(this));
+PagesGroup* NavigationManager::group(Page* page, Context* context, bool create) {
+    if (context) {
+        QHash<QString, QHash<QString, PagesGroup*>>::const_iterator contextIt = m_known_groups.find(context->id());
+        if (contextIt != m_known_groups.end()) {
+            QHash<QString, PagesGroup*>::const_iterator groupIt = contextIt.value().find(page->id());
+            if (groupIt != contextIt.value().end())
+                return groupIt.value();
+        }
+    }
+    else {
+        foreach (const GroupsHash& hash, m_known_groups.values()) {
+            QHash<QString, PagesGroup*>::const_iterator groupIt = hash.find(page->id());
+            if (groupIt != hash.end())
+                return groupIt.value();
+        }
+    }
+    PagesGroup* group = 0;
+    if (create) {
+        group = new PagesGroup(page, page == context ? PagesGroup::CONTEXT : PagesGroup::NORMAL, this);
+        m_known_groups[context->id()][page->id()] = group;
+    }
+    return group;
 }
 
 void NavigationManager::setWindow(QQuickWindow* window) {
@@ -445,7 +486,7 @@ NavigationManager::NavigationManager(doSearch* parent): QObject(parent),
     m_screen_width(0),
     m_active_context(0),
     m_selected(parent->empty()),
-    m_contexts_group(new PagesGroup(0, this)),
+    m_contexts_group(new PagesGroup(0, PagesGroup::CONTEXTS, this)),
     m_active_screen(0),
     m_lookup(new QDnsLookup(this))
 {

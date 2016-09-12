@@ -269,11 +269,13 @@ double Page::pOut(Page* page) const {
     const double dpLambda = optimalExpansionDP(m_out_total, c);
     const time_t now = time(0);
     const double deltaFromCurrent = now - model.when;
-    double result = erlang(2, 1.0/60, deltaFromCurrent) * 0.19; // two visits of the same page is set to 10 minutes
+    double a = erlang(2, 1.0/60, deltaFromCurrent);
+    double b = erlang(2, 1.0/60, deltaFromCurrent + 30);
+    double result = ((a * 30) + (b -a) * 30 /2) * 0.5; // two visits of the same page is set to 1 minute, here is probability of visit in next 30 seconds
     const double deltaReturn = now - page->lastVisitTs();
     result += erlang(2, 1.0/10/60, deltaReturn) * 0.01;
     if (dpLambda < 1000)
-        result += m_out_total/(m_out_total + dpLambda) * (model.freq + 1)/(double)(m_out_total + c) * 0.8;
+        result += m_out_total/(m_out_total + dpLambda) * (model.freq + 1)/(double)(m_out_total + c) * 0.5;
     return result;
 }
 

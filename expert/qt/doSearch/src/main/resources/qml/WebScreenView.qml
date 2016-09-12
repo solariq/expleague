@@ -208,7 +208,7 @@ Item {
                     if (!owner.accept(url) && navigationHistory.items.rowCount() > historyLength) {
                         var now = new Date().getTime()
                         var delta = now - actionTs
-                        if (delta < 1000) { //user action
+                        if (delta < 30000) { //user action
                             console.log("  User action: " + delta + "")
                             dosearch.navigation.open(url, owner, newTab)
                             historyLength = navigationHistory.items.rowCount()
@@ -231,9 +231,9 @@ Item {
                     javascriptCanOpenWindows: false
                     pluginsEnabled: true
 
-                    hyperlinkAuditingEnabled: true
-                    linksIncludedInFocusChain: true
-                    spatialNavigationEnabled: true
+                    hyperlinkAuditingEnabled: false
+                    linksIncludedInFocusChain: false
+                    spatialNavigationEnabled: false
                     touchIconsEnabled: true
                 }
 

@@ -20,15 +20,21 @@ class PagesGroup: public QObject {
     Q_PROPERTY(QQmlListProperty<expleague::Page> closedPages READ closedPages NOTIFY visiblePagesChanged)
 
     Q_PROPERTY(expleague::Page* selectedPage READ selectedPage WRITE selectPage NOTIFY selectedPageChanged)
+    Q_PROPERTY(expleague::PagesGroup::Type type READ type CONSTANT)
+
+    Q_ENUMS(Type)
 
 public:
-    Page* root() const {
-        return m_root;
-    }
+    enum Type: int {
+        NORMAL,
+        SUGGEST,
+        CONTEXT,
+        CONTEXTS
+    };
 
-    bool selected() const {
-        return m_selected;
-    }
+    Page* root() const { return m_root; }
+    Type type() const { return m_type; }
+    bool selected() const { return m_selected; }
 
     void setSelected(bool selected) {
         if (m_selected == selected) return;
@@ -83,7 +89,7 @@ private slots:
     void onPageStateChanged(Page::State state);
 
 public:
-    explicit PagesGroup(Page* root = 0, NavigationManager* manager = 0);
+    explicit PagesGroup(Page* root = 0, Type type = Type::NORMAL, NavigationManager* manager = 0);
 
 private:
     NavigationManager* parent() const;
@@ -91,6 +97,7 @@ private:
 private:
     Page* m_root;
     PagesGroup* m_parent;
+    Type m_type;
 
     QList<Page*> m_visible_pages;
     QList<Page*> m_folded_pages;
@@ -102,4 +109,7 @@ private:
     int m_closed_start;
 };
 }
+
+Q_DECLARE_METATYPE(expleague::PagesGroup::Type)
+
 #endif // GROUP_H

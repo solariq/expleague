@@ -71,7 +71,7 @@ public:
     Q_INVOKABLE virtual double pOut(Page*) const;
     Q_INVOKABLE virtual double pIn(Page*) const;
 
-    Q_INVOKABLE virtual void transition(Page*, TransitionType type);
+    Q_INVOKABLE virtual void transition(Page* from, TransitionType type);
 
     virtual double titleWidth() const;
 

@@ -45,6 +45,7 @@ class Task: public QObject {
     Q_PROPERTY(QStringList phones READ phones NOTIFY phonesChanged)
 
 public:
+    bool active() const { return m_active; }
     Offer* offer() const { return m_offer; }
 
     QQmlListProperty<Bubble> chat() { return QQmlListProperty<Bubble>(this, m_chat); }
@@ -115,6 +116,7 @@ private:
     QList<MarkdownEditorPage*> m_answers;
     QStringList m_phones;
     Context* m_context;
+    bool m_active;
 };
 
 class Offer: public QObject {

@@ -31,11 +31,8 @@ Item {
                 id: separatorText
                 anchors.centerIn: parent
                 text: {
-//                    group.selectedPageIndex >= 0 ? ">" : ">>"
-                    if (group.selectedPage)
-                        return ">"
-                    else
-                        return ">>"
+                    console.log("group type:" + self.group.type + " suggest: " + PagesGroup.SUGGEST)
+                    return self.group.type === PagesGroup.SUGGEST ? ">>" : ">"
                 }
                 color: Palette.idleTextColor
             }

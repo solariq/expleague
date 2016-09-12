@@ -16,6 +16,22 @@ Item {
     }
 
     Component {
+        id: sectionDelegate
+        Rectangle {
+            height: 24
+            anchors.left: parent.left
+            anchors.right: parent.right
+            color: Palette.backgroundColor
+            Image {
+                height: parent.height - 4
+                width: parent.height - 4
+                anchors.centerIn: parent
+                source: history.model[history.currentIndex].context.icon
+            }
+        }
+    }
+
+    Component {
         id: pageDelegate
         Rectangle {
             height: 24
@@ -31,14 +47,14 @@ Item {
                     Layout.preferredHeight: 20
                     Layout.alignment: Qt.AlignVCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    source: icon
+                    source: page.icon
                 }
                 Item { Layout.preferredWidth: 2 }
                 Text {
                     Layout.maximumWidth: parent.width - 20 - 20 - 2 * 4
                     Layout.alignment: Qt.AlignVCenter
 //                    Layout.preferredWidth: implicitWidth
-                    text: title
+                    text: page.title
                     color: ListView.isCurrentItem ? Palette.selectedTextColor : Palette.activeTextColor
                     elide: Text.ElideMiddle
                 }
@@ -49,15 +65,13 @@ Item {
 
                     anchors.verticalCenter: parent.verticalCenter
                     color: ListView.isCurrentItem ? Palette.selectedTextColor : Palette.activeTextColor
-                    text: owner.visits(id)
+                    text: owner.visits(page.id)
                 }
                 Item { Layout.preferredWidth: 2 }
             }
             MouseArea {
                 anchors.fill: parent
-                onClicked: {
-                    self.select(modelData)
-                }
+                onClicked: self.select(page)
             }
         }
     }
@@ -66,6 +80,10 @@ Item {
         id: history
         anchors.fill: parent
         model: owner.last30
+        section.property: "contextName"
+        section.delegate: sectionDelegate
+        section.labelPositioning: ViewSection.CurrentLabelAtStart
+        section.criteria: ViewSection.FullString
         delegate: pageDelegate
         focus: true
     }
@@ -78,15 +96,17 @@ Item {
     }
 
     Keys.onReturnPressed: {
-        self.select(history.model[history.currentIndex])
+        self.select(history.model[history.currentIndex].page)
     }
     Keys.onEscapePressed: {
         parent.visible = false
     }
     Keys.onDownPressed: {
-        history.currentIndex++
+        if (history.currentIndex < history.model.length - 1)
+            history.currentIndex++
     }
     Keys.onUpPressed: {
-        history.currentIndex--
+        if (history.currentIndex > 0)
+            history.currentIndex--
     }
 }

@@ -14,6 +14,7 @@ class QThread;
 namespace expleague {
 class ReceivedAnswer;
 class Member;
+class Context;
 struct MarkdownEditorPagePrivate;
 
 class MarkdownEditorPage: public Page {
@@ -21,14 +22,14 @@ class MarkdownEditorPage: public Page {
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QString html READ html NOTIFY htmlChanged)
+    Q_PROPERTY(expleague::Context* owner READ owner CONSTANT)
 
 public:
     QString title() const;
     QString icon() const;
 
-    QString text() const {
-        return m_text;
-    }
+    QString text() const { return m_text; }
+    Context* owner() const { return m_owner; }
 
     QString html();
 
@@ -57,16 +58,18 @@ private slots:
     void acquireFocus();
 
 public:
-    MarkdownEditorPage(const QString& id, Member* author, const QString& title, doSearch* parent);
+    MarkdownEditorPage(const QString& id, Context* context, Member* author, const QString& title, doSearch* parent);
     MarkdownEditorPage(const QString& id = "", doSearch* parent = 0);
     virtual ~MarkdownEditorPage();
 
 protected:
     void initUI(QQuickItem *ui) const;
+    void interconnect();
 
 private:
     QString m_text;
     Member* m_author;
+    Context* m_owner;
     hunspell::SpellChecker* m_spellchecker;
     bool m_editable;
 

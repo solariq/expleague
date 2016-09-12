@@ -13,9 +13,18 @@
 
 namespace expleague {
 
-void History::onVisited(Page *to) {
-    m_story.append(to);
-    append("history", to->id());
+QVariant PageVisit::toVariant() const {
+    QVariantHash result;
+    result["page"] = page()->id();
+    result["context"] = context()->id();
+    result["time"] = (qlonglong)time();
+    return result;
+}
+
+void History::onVisited(Page *to, Context* context) {
+    PageVisit* const visit = new PageVisit(to, context, time(0), this);
+    m_story.append(visit);
+    append("history", visit->toVariant());
     save();
     m_last30 = last(30);
     emit historyChanged();
@@ -24,19 +33,39 @@ void History::onVisited(Page *to) {
 int History::visits(const QString& pageId) const {
     Page* const page = parent()->page(pageId);
     int count = 0;
-    foreach(Page* current, m_story) {
-        count += current == page ? 1 : 0;
+    foreach(PageVisit* current, m_story) {
+        count += current->page() == page ? 1 : 0;
     }
     return count;
 }
 
-
-QList<Page*> History::last(int depth) const {
-    QList<Page*> result;
-    for (int i = m_story.size() - 1; i >= 0 && result.size() < depth; i--) {
-        if (!result.contains(m_story[i]))
-            result.append(m_story[i]);
+QList<PageVisit*> History::last(int depth) const {
+    QSet<Page*> known;
+    Context* currentContext = parent()->navigation()->context();
+    Page* answer = currentContext->task() ? currentContext->task()->answer() : 0;
+    QList<PageVisit*> result;
+    PageVisit* answerVisit = 0;
+    for (int i = m_story.size() - 1; i >= 0; i--) {
+        if (known.contains(m_story[i]->page()))
+            continue;
+        if (qobject_cast<Context*>(m_story[i]->page()))
+            continue;
+        Context* context = m_story[i]->context();
+        if (context->hasTask() && !context->task()->active())
+            continue;
+        if (m_story[i]->page() == answer) {
+            answerVisit = m_story[i];
+            continue;
+        }
+        if(result.size() >= depth)
+            continue;
+        result.append(m_story[i]);
+        known.insert(m_story[i]->page());
     }
+
+    if (answerVisit)
+        result.insert(std::min(result.size(), 2), answerVisit);
+
     return result;
 }
 

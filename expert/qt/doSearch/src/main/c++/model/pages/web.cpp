@@ -22,7 +22,7 @@ QString WebPage::title() const {
     if (m_redirect)
         return m_redirect->title();
     QVariant var = value("web.title");
-    return var.isNull() ? tr("Без имени") : var.toString();
+    return var.isNull() ? url().toString() : var.toString();
 }
 
 void WebPage::setTitle(const QString& title) {

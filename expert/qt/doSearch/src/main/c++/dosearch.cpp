@@ -118,8 +118,8 @@ SearchRequest* doSearch::search(const QString& query, int searchIndex) const {
 
 MarkdownEditorPage* doSearch::document(Context* context, const QString& title, Member* author) const {
     QString id = "document/" + context->id() + "/" + (author ? author->id() : "local") + "/" + md5(title);
-    return static_cast<MarkdownEditorPage*>(page(id, [title, author](const QString& id, doSearch* parent){
-        return new MarkdownEditorPage(id, author, title, parent);
+    return static_cast<MarkdownEditorPage*>(page(id, [title, author, context](const QString& id, doSearch* parent){
+        return new MarkdownEditorPage(id, context, author, title, parent);
     }));
 }
 
@@ -172,7 +172,7 @@ void doSearch::onActiveScreenChanged() {
     Page* active = m_navigation->activePage();
     if (m_main)
         m_main->setTitle(active->title());
-    m_history->onVisited(active);
+    m_history->onVisited(active, m_navigation->context());
 }
 
 void doSearch::append(Context* context) {
