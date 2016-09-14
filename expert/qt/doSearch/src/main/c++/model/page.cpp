@@ -241,7 +241,6 @@ QQuickItem* Page::ui() const {
         m_ui = 0;
     });
     initUI(m_ui);
-    m_ui->setVisible(false);
     return m_ui;
 }
 

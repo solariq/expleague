@@ -47,7 +47,7 @@ void NavigationManager::typeIn(Page* page) {
     select(group, page);
 }
 
-QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGroup) {
+QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGroup, bool transferUI) {
     WebPage* const next = parent()->web(url);
     WebPage* const contextWeb = qobject_cast<WebPage*>(context);
 
@@ -55,7 +55,7 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
         next->setState(Page::State::INACTIVE);
     if (next == context) // redirect
         return context->ui();
-    if (contextWeb && !newGroup) // speedup of the link open: it will be opened inplace and the context page will be built from the scratch
+    if (contextWeb && !newGroup && transferUI) // speedup of the link open: it will be opened inplace and the context page will be built from the scratch
         contextWeb->transferUI(next);
     context->transition(next, Page::TransitionType::FOLLOW_LINK);
     PagesGroup* group = 0;
@@ -66,12 +66,12 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
             break;
         }
     }
-    if (!group) { // creating new group if the site group has not found
+    if (!group) { // creating new group if the site group was not found
         PagesGroup* const contextGroup = this->group(context, m_active_context, true);
         if (!newGroup) {
             group = contextGroup;
-            group->setParentGroup(m_groups.last());
             m_groups.removeLast();
+            group->setParentGroup(m_groups.last());
             m_groups.append(group);
         }
         else {
@@ -80,7 +80,8 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
             return m_selected->ui();
         }
     }
-    group->insert(next, group->pages().indexOf(m_selected) + 1);
+    const int selectedIndex = group->pages().indexOf(m_selected);
+    group->insert(next, selectedIndex >= 0 ? selectedIndex : 0);
     if (!newGroup)
         select(group, next);
     return m_selected->ui();
@@ -429,9 +430,9 @@ void NavigationManager::onGroupsChanged() {
     }
     if (m_active_screen != m_selected->ui()) {
         if (m_active_screen)
-            m_active_screen->setVisible(false);
+            m_active_screen->setZ(0);
         m_active_screen = m_selected->ui();
-        m_active_screen->setVisible(true);
+        m_active_screen->setZ(10);
         m_active_screen->forceActiveFocus();
         emit activeScreenChanged();
     }
@@ -444,11 +445,11 @@ void NavigationManager::onGroupsChanged() {
                 screen->deleteLater();
             }
         }
-        foreach (QQuickItem* screen, screens) { // cleanup
-            screen->setVisible(true);
-            if (screen != m_active_screen)
-                screen->setVisible(false);
-        }
+//        foreach (QQuickItem* screen, screens) { // cleanup
+//            screen->setVisible(true);
+//            if (screen != m_active_screen)
+//                screen->setVisible(false);
+//        }
         emit screensChanged();
     }
 }

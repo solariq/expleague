@@ -41,6 +41,7 @@ QString SearchRequest::parseYandexQuery(const QUrl& request) const {
 
 QUrl SearchRequest::googleUrl() const {
     QString queryText = m_query;
+    queryText.replace("+", "%2B");
     static QRegExp site("#site\\((\\S+)\\)");
     int index;
     if ((index = site.indexIn(queryText)) >= 0)
@@ -58,6 +59,7 @@ QUrl SearchRequest::googleUrl() const {
 
 QUrl SearchRequest::yandexUrl() const {
     QString queryText = m_query;
+    queryText.replace("+", "%2B");
     static QRegExp site("#site\\((\\S+)\\)");
     int index;
     if ((index = site.indexIn(queryText)) >= 0)

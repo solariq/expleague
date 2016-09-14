@@ -41,7 +41,7 @@ public:
     Q_INVOKABLE void close(PagesGroup* context, Page* page);
 
     Q_INVOKABLE void activate(Context* ctxt);
-    Q_INVOKABLE QQuickItem* open(const QUrl& url, Page* context, bool newGroup = false);
+    Q_INVOKABLE QQuickItem* open(const QUrl& url, Page* context, bool newGroup = false, bool transferUI = true);
     Q_INVOKABLE void open(Page* page);
     Q_INVOKABLE void select(PagesGroup* group);
 

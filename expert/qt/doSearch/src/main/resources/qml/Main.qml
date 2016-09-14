@@ -1,6 +1,7 @@
 import QtQuick 2.7
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
+import QtQuick.Controls 2.0 as ControlsNG
 import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.1
 import QtQuick.Controls.Styles 1.4
@@ -19,6 +20,7 @@ ApplicationWindow {
     property alias commonActionsRef: commonActions
     property alias editorActionsRef: editorActions
     property alias screenRef: screen
+    property bool options: false
     property var drag
 
     onDragChanged: {
@@ -109,8 +111,8 @@ ApplicationWindow {
         if (activeDialog && activeDialog.visible)
             activeDialog.visible = false
         activeDialog = dialog
-        if (dialog) {
-            activeDialog.visible = true
+        activeDialog.visible = true
+        if (!!dialog && !!activeDialog["forceActiveFocus"]) {
             activeDialog.forceActiveFocus()
         }
     }
@@ -120,6 +122,15 @@ ApplicationWindow {
         onVisibleChanged: {
             if (activeDialog && !activeDialog.visible)
                 activeDialog = null
+        }
+    }
+
+    Connections {
+        target: dosearch.navigation
+        onActiveScreenChanged: {
+            if (!!dosearch.navigation.activeScreen && "" + dosearch.navigation.activeScreen["options"] != "undefined") {
+                dosearch.navigation.activeScreen.options = self.options
+            }
         }
     }
 
@@ -311,38 +322,44 @@ ApplicationWindow {
         ColumnLayout {
             anchors.fill:parent
             spacing: 0
-            RowLayout {
-                id: tabs
+            Rectangle {
                 Layout.preferredHeight: 40
                 Layout.fillWidth: true
-                spacing: 0
-                Item {Layout.preferredWidth: 6}
-                NavigationTabs {
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter
-                    Layout.preferredHeight: 24
-                    Layout.maximumHeight: 24
+                z: parent.z + 10
+                color: Palette.navigationColor
+                RowLayout {
+                    id: tabs
+                    anchors.fill: parent
+                    spacing: 0
+                    Item {Layout.preferredWidth: 6}
+                    NavigationTabs {
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignVCenter
+                        Layout.preferredHeight: 24
+                        Layout.maximumHeight: 24
 
-                    navigation: root.navigation
+                        navigation: root.navigation
+                    }
+                    Item {Layout.preferredWidth: 3}
+                    StatusAvatar {
+                        Layout.preferredHeight: 34
+                        Layout.preferredWidth: 34
+                        Layout.alignment: Qt.AlignVCenter
+                        id: avatar
+                        icon: root.league.profile ? root.league.profile.avatar : "qrc:/avatar.png"
+                        size: 33
+                    }
+                    Item {Layout.preferredWidth: 2}
                 }
-                Item {Layout.preferredWidth: 3}
-                StatusAvatar {
-                    Layout.preferredHeight: 34
-                    Layout.preferredWidth: 34
-                    Layout.alignment: Qt.AlignVCenter
-                    id: avatar
-                    icon: root.league.profile ? root.league.profile.avatar : "qrc:/avatar.png"
-                    size: 33
-                }
-                Item {Layout.preferredWidth: 2}
             }
             SplitView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 id: centralSplit
+                clip: false
                 Item {
                     id: central
-
+                    clip: false
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     children: root.navigation.screens
@@ -360,6 +377,38 @@ ApplicationWindow {
 //                    visible: !!dosearch.navigation.context.task
                     window: self
                 }
+            }
+        }
+
+        ControlsNG.Button {
+            id: optionsButton
+            x: tabs.x + 5
+            y: tabs.y + tabs.height -5
+            z: tabs.z + 1
+            width: 12
+            height: 12
+            padding: 3
+            visible: !!dosearch.navigation.activeScreen && "" + dosearch.navigation.activeScreen["options"] != "undefined"
+            focusPolicy: Qt.NoFocus
+            indicator: Image {
+                anchors.centerIn: parent
+                fillMode: Image.PreserveAspectFit
+                mipmap: true
+                source: "qrc:/expand.png"
+                width: 8
+                height: 8
+                rotation: self.options ? 0 : -90
+            }
+            background: Rectangle {
+                color: Palette.activeColor
+                radius: height/2
+                border.color: Palette.navigationColor
+                border.width: 2
+            }
+
+            onClicked: {
+                self.options = !self.options
+                dosearch.navigation.activeScreen.options = self.options
             }
         }
 
@@ -416,7 +465,7 @@ ApplicationWindow {
         }
 
         DropShadow {
-            visible: !!activeDialog
+            visible: !!activeDialog && !!activeDialog["forceActiveFocus"]
             anchors.fill: activeDialog
             cached: true
             radius: 8.0
@@ -489,7 +538,7 @@ ApplicationWindow {
                 return
             }
 
-            dosearch.navigation.open(url, context, focusOpened)
+            dosearch.navigation.open(url, context, focusOpened, false)
             finish()
         }
 

@@ -90,7 +90,7 @@ void declareTypes() {
     rootEngine->addImageProvider("store", doSearch::instance()->league()->store());
 
     qRegisterMetaType<Profile::Sex>("expleague::Profile::Sex");
-    qRegisterMetaType<Profile::Sex>("expleague::PagesGroup::Type");
+    qRegisterMetaType<PagesGroup::Type>("expleague::PagesGroup::Type");
     qRegisterMetaType<Page::State>("expleague::Page::State");
 
     qRegisterMetaType<Profile*>("Profile*");
@@ -134,4 +134,5 @@ void declareTypes() {
     qmlRegisterUncreatableType<doSearch>("ExpLeague", 1, 0, "doSearch", "This type is for root property only");
     qmlRegisterUncreatableType<Knugget>("ExpLeague", 1, 0, "Knugget", "Knuggets are created by vault only");
     qmlRegisterUncreatableType<PageVisit>("ExpLeague", 1, 0, "PageVisit", "Visits are created automatically");
+    qmlRegisterUncreatableType<WebPage>("ExpLeague", 1, 0, "WebPage", "pages suppored to be created inside c++");
 }

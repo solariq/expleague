@@ -4,6 +4,7 @@
 #include "../page.h"
 
 #include <QSet>
+#include <QQmlListProperty>
 
 class QQuickItem;
 namespace expleague {
@@ -13,13 +14,16 @@ class WebPage: public Page {
     Q_OBJECT
 
     Q_PROPERTY(QUrl url READ url NOTIFY urlChanged)
-    Q_PROPERTY(expleague::WebPage* redirect READ redirect WRITE setRedirect NOTIFY redirectChanged)
+    Q_PROPERTY(QUrl originalUrl READ originalUrl CONSTANT)
+    Q_PROPERTY(WebPage* redirect READ redirect WRITE setRedirect NOTIFY redirectChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::WebPage> redirects READ redirects NOTIFY urlChanged)
 
 public:
     QUrl url() const;
 
     QUrl originalUrl() const { return m_url; }
     WebPage* redirect() const { return m_redirect; }
+    QQmlListProperty<WebPage> redirects() const { return QQmlListProperty<WebPage>(const_cast<WebPage*>(this), const_cast<QList<WebPage*>&>(m_redirects)); }
 
     QString icon() const;
     QString title() const;
@@ -27,7 +31,6 @@ public:
     WebSite* site() const;
 
     Q_INVOKABLE bool accept(const QUrl& url) const;
-
     Q_INVOKABLE void setTitle(const QString& title);
     Q_INVOKABLE void setIcon(const QString& icon);
     void setRedirect(WebPage* target);
@@ -41,7 +44,9 @@ public:
                                       QQuickItem* view);
 
     Q_INVOKABLE bool forwardShortcutToWebView(const QString& shortcut, QQuickItem* view);
+    Q_INVOKABLE bool dropToWebView(QObject* drop, QQuickItem* view);
 
+    Q_INVOKABLE void reset() { setRedirect(0); }
     void transferUI(WebPage* target) const {
         Page::transferUI(target);
     }
@@ -52,6 +57,7 @@ signals:
 
 protected:
     void interconnect();
+    void rebuildRedirects();
 
 public:
     WebPage(const QString& id, const QUrl& url, doSearch* parent);
@@ -62,6 +68,7 @@ private slots:
 
 private:
     QUrl m_url;
+    QList<WebPage*> m_redirects;
     WebPage* m_redirect = 0;
 };
 

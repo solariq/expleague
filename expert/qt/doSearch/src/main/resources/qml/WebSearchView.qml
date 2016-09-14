@@ -8,20 +8,22 @@ import ExpLeague 1.0
 
 import "."
 
-Item {
+Rectangle {
     property var context: dosearch.navigation.context
     id: self
     property WebEngineView webView: google.visible ? google : yandex
     anchors.fill: parent
+    color: Palette.backgroundColor
 
     RowLayout {
         anchors.fill: parent
         Item {Layout.preferredWidth: 1}
 
-        Item {
+        Rectangle {
             Layout.minimumWidth: 33
             Layout.maximumWidth: 33
             Layout.fillHeight: true
+            color: Palette.navigationColor
 
             ColumnLayout {
                 anchors.fill: parent

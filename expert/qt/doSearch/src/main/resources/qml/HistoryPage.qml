@@ -26,7 +26,7 @@ Item {
                 height: parent.height - 4
                 width: parent.height - 4
                 anchors.centerIn: parent
-                source: history.model[history.currentIndex].context.icon
+                source: !!history.model[history.currentIndex] ? history.model[history.currentIndex].context.icon : "qrc:/chromium.png"
             }
         }
     }

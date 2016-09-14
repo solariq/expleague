@@ -5,10 +5,11 @@
 
 #include <QFile>
 #include <QQuickWindow>
-//#include <QtQuick/private/qquickevents_p_p.h>
+#include <QtQuick/private/qquickdroparea_p.h>
 //#include <QtWebEngine/private/qquickwebengineview_p.h>
 #include <QKeyEvent>
 #include <QShortcut>
+#include <QDropEvent>
 #include <QApplication>
 
 namespace expleague {
@@ -64,14 +65,19 @@ void WebPage::setRedirect(WebPage* target) {
     else if (m_redirect)
         QObject::disconnect(this, SLOT(onRedirectUrlChanged(QUrl)));
     store("web.redirect", target ? target->id() : QVariant());
-    transition(target, FOLLOW_LINK);
+
+    if (target) {
+        transition(target, FOLLOW_LINK);
+        QObject::connect(target, SIGNAL(urlChanged(QUrl)), this, SLOT(onRedirectUrlChanged(QUrl)));
+    }
     m_redirect = target;
-    QObject::connect(target, SIGNAL(urlChanged(QUrl)), this, SLOT(onRedirectUrlChanged(QUrl)));
     save();
+    rebuildRedirects();
     emit redirectChanged();
-    emit urlChanged(target->url());
+    emit urlChanged(url());
     emit titleChanged(title());
-    site()->addMirror(target->site());
+    if (target)
+        site()->addMirror(target->site());
 }
 
 bool WebPage::forwardShortcutToWebView(const QString& shortcut, QQuickItem* view) {
@@ -109,6 +115,26 @@ bool WebPage::forwardToWebView(int key,
     return event.isAccepted();
 }
 
+class QQuickDropEventOpen: public QObject {
+    Q_OBJECT
+public:
+    QQuickDropAreaPrivate *d;
+    QDropEvent *event;
+};
+
+bool WebPage::dropToWebView(QObject* drop, QQuickItem* view) {
+//    QDropEvent event;
+    QQuickDropEventOpen* quickDrop = static_cast<QQuickDropEventOpen*>(drop);
+    QQuickItem* target = view;
+    while (target->isFocusScope()
+           && target->scopedFocusItem()
+           && target->scopedFocusItem()->isEnabled()) {
+        target = target->scopedFocusItem();
+    }
+    QCoreApplication::sendEvent(view, quickDrop->event);
+    return true;
+}
+
 void WebPage::setUrl(const QUrl& url) {
     if (url == m_url)
         return;
@@ -133,22 +159,35 @@ bool WebPage::accept(const QUrl& url) const {
 }
 
 void WebPage::onRedirectUrlChanged(const QUrl& url) {
+    rebuildRedirects();
     emit urlChanged(url);
 }
 
 void WebPage::interconnect() {
     Page::interconnect();
     QVariant redirect = value("web.redirect");
-    m_redirect = redirect.isNull() ? 0 : dynamic_cast<WebPage*>(parent()->page(redirect.toString()));
+    if (!redirect.isNull())
+        m_redirect = qobject_cast<WebPage*>(parent()->page(redirect.toString()));
+    rebuildRedirects();
 }
 
-WebPage::WebPage(const QString& id, const QUrl& url, doSearch* parent): Page(id, "qrc:/WebScreenView.qml", parent), m_url(url) {
+void WebPage::rebuildRedirects() {
+    m_redirects.clear();
+    WebPage* current = this;
+    while (current) {
+        m_redirects.insert(0, current);
+        current = current->redirect();
+    }
+}
+
+WebPage::WebPage(const QString& id, const QUrl& url, doSearch* parent):
+    Page(id, "qrc:/WebScreenView.qml", parent), m_url(url), m_redirect(0)
+{
     store("web.url", m_url.toString());
     save();
 }
 
 WebPage::WebPage(const QString& id, doSearch* parent): Page(id, "qrc:/WebScreenView.qml", parent), m_url(value("web.url").toString()) {
-    QVariant redirect = value("web.redirect");
 }
 
 void WebSite::onMirrorsChanged() {

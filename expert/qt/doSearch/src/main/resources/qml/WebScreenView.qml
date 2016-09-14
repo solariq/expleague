@@ -8,7 +8,7 @@ import QtQuick.Window 2.0
 import ExpLeague 1.0
 import "."
 
-Item {
+Rectangle {
     id: self
     property alias editor: urlText
     property Item myParent
@@ -17,7 +17,10 @@ Item {
     property bool visited: false
     property var url: owner.url
     property string pageSearch: ""
+    property bool options: false
 
+    clip: false
+    color: Palette.backgroundColor
     anchors.fill: parent
 
     WebEngineProfile {
@@ -30,37 +33,101 @@ Item {
     }
 
     onPageSearchChanged: {
-//        console.log("Looking for " + pageSearch)
+        options = (pageSearch.length > 0)
         webEngineView.findText(pageSearch)
     }
 
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
+
         RowLayout {
             id: urlTools
+            visible: options
             Layout.maximumHeight: urlText.implicitHeight + 6
+            Layout.minimumHeight: urlText.implicitHeight + 6
             Layout.fillWidth: true
-            spacing: 0
-            Item {Layout.preferredWidth: 3}
-//            Rectangle {
-//                Layout.fillHeight: true
-//                Layout.fillWidth: true
-//                color: Palette.activeColor
-//                radius: Palette.radius
-//                clip: true
+            spacing: 3
 
-//                TextEdit {
-//                    id: pageId
-//                    anchors.margins: 3
-//                    anchors.fill: parent
-//                    readOnly: true
-//                    selectByMouse: true
-//                    text: owner.id
-//                    color: Palette.activeTextColor
-//                }
-//            }
-//            Item {Layout.preferredWidth: 3}
+            property int redirectIndex: 0
+
+            Connections {
+                target: owner
+                onRedirectsChanged: {
+                    urlTools.redirectIndex = 0
+                }
+            }
+
+            Item {Layout.preferredWidth: 3}
+            Label {
+                text: (owner.redirects.length - urlTools.redirectIndex) + "/" + owner.redirects.length
+                color: Palette.activeTextColor
+            }
+            Item {Layout.preferredWidth: 3}
+            Button {
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: 15
+                Layout.preferredHeight: 15
+                padding: 3
+                focusPolicy: Qt.NoFocus
+                indicator: Image {
+                    height: 10
+                    width: 10
+                    anchors.centerIn: parent
+                    source: "qrc:/cross.png"
+                }
+                background: Rectangle {
+                    color: Palette.activeColor
+                    radius: Palette.radius
+                }
+
+                onClicked: owner.reset()
+            }
+            ColumnLayout {
+                Layout.fillHeight: true
+                Layout.preferredWidth: 15
+                spacing: 0
+                Button {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredHeight: 10
+                    Layout.preferredWidth: 15
+                    padding: 3
+                    focusPolicy: Qt.NoFocus
+                    indicator: Image {
+                        height: 10
+                        width: 10
+                        anchors.centerIn: parent
+                        source: "qrc:/expand.png"
+                        rotation: 180
+                    }
+                    background: Rectangle {
+                        color: Palette.activeColor
+                        radius: Palette.radius
+                    }
+                    enabled: urlTools.redirectIndex < owner.redirects.length - 1
+                    onClicked: urlTools.redirectIndex++
+                }
+                Button {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredHeight: 10
+                    Layout.preferredWidth: 15
+                    padding: 3
+                    focusPolicy: Qt.NoFocus
+                    indicator: Image {
+                        height: 10
+                        width: 10
+                        anchors.centerIn: parent
+                        source: "qrc:/expand.png"
+                    }
+                    background: Rectangle {
+                        color: Palette.activeColor
+                        radius: Palette.radius
+                    }
+                    enabled: urlTools.redirectIndex > 0
+                    onClicked: urlTools.redirectIndex--
+                }
+            }
+            Item {Layout.preferredWidth: 3}
             Rectangle {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
@@ -74,7 +141,7 @@ Item {
                     anchors.fill: parent
                     readOnly: true
                     selectByMouse: true
-                    text: webEngineView.url
+                    text: owner.redirects[urlTools.redirectIndex].originalUrl
                     color: Palette.activeTextColor
                 }
             }
@@ -114,10 +181,30 @@ Item {
                     Layout.preferredWidth: 30
                     padding: 3
                     focusPolicy: Qt.NoFocus
-                    indicator: Label {
+
+                    indicator: Image {
+                        height: 20
+                        width: 20
                         anchors.centerIn: parent
-                        text: "x"
-                        color: Palette.activeTextColor
+                        source: "qrc:/expand.png"
+                        rotation: 90
+                    }
+                    background: Rectangle {
+                        color: Palette.activeColor
+                        radius: Palette.radius
+                    }
+                    onClicked: webEngineView.findText(pageSearch, WebEngineView.FindBackward)
+                }
+                Button {
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredWidth: 30
+                    padding: 3
+                    focusPolicy: Qt.NoFocus
+                    indicator: Image {
+                        height: 20
+                        width: 20
+                        anchors.centerIn: parent
+                        source: "qrc:/cross.png"
                     }
                     background: Rectangle {
                         color: Palette.activeColor
@@ -132,27 +219,12 @@ Item {
                     padding: 3
                     focusPolicy: Qt.NoFocus
 
-                    indicator: Label {
+                    indicator: Image {
+                        height: 20
+                        width: 20
                         anchors.centerIn: parent
-                        text: "<"
-                        color: Palette.activeTextColor
-                    }
-                    background: Rectangle {
-                        color: Palette.activeColor
-                        radius: Palette.radius
-                    }
-                    onClicked: webEngineView.findText(pageSearch, WebEngineView.FindBackward)
-                }
-                Button {
-                    Layout.alignment: Qt.AlignVCenter
-                    Layout.preferredWidth: 30
-                    padding: 3
-                    focusPolicy: Qt.NoFocus
-
-                    indicator: Label {
-                        anchors.centerIn: parent
-                        text: ">"
-                        color: Palette.activeTextColor
+                        source: "qrc:/expand.png"
+                        rotation: -90
                     }
                     background: Rectangle {
                         color: Palette.activeColor
@@ -205,16 +277,17 @@ Item {
                 onUrlChanged: {
 //                    console.log(new Date().getTime() + " url changed: [" + url + "] owner url: [" + owner.url + "]" + " history length: " + navigationHistory.items.rowCount())
 
-                    if (!owner.accept(url) && navigationHistory.items.rowCount() > historyLength) {
+                    if (!owner.accept(url)) {
                         var now = new Date().getTime()
                         var delta = now - actionTs
-                        if (delta < 30000) { //user action
+                        if (delta < 30000 && navigationHistory.items.rowCount() > historyLength) { //user action
+                            actionTs = 0
                             console.log("  User action: " + delta + "")
                             dosearch.navigation.open(url, owner, newTab)
                             historyLength = navigationHistory.items.rowCount()
                         }
                         else {
-                            console.log("  Redirect: " + delta)
+                            console.log("  Redirect: " + delta + " from " + owner.originalUrl + " " + url)
                             owner.redirect = dosearch.web(url)
                         }
                         newTab = false
@@ -240,8 +313,10 @@ Item {
                 onNewViewRequested: {
                     if (!request.userInitiated)
                         print("Warning: Blocked a popup window.")
-                    else
+                    else {
+                        actionTs = 0
                         dosearch.main.openLink(request, owner, request.destination === WebEngineView.NewViewInBackgroundTab)
+                    }
                 }
 
                 property var previousVisibility
@@ -322,6 +397,8 @@ Item {
                 onDropped: {
 //                    console.log("Dropped: " + drag)
                     dosearch.main.drag = null
+                    if (owner.dropToWebView(drop, webEngineView))
+                        drop.accept()
                 }
             }
 
@@ -333,23 +410,31 @@ Item {
 
     focus: true
     property bool complete: false
+    property bool hasFocus: false
     onFocusChanged: {
-        if (!complete || self.focus || !dosearch.main)
+        if (!complete || self.focus || !dosearch.main || !hasFocus) {
+            hasFocus = focus
             return
+        }
         var parent = dosearch.main ? dosearch.main.activeFocusItem : null
         while (parent) {
             if (parent === self) {
-//                console.log("Enforce focus to self")
+                console.log("Enforce focus to self " + self + " from child view")
+                hasFocus = true
                 self.forceActiveFocus()
                 return
             }
             parent = parent.parent
         }
         if (dosearch.main.activeFocusItem && dosearch.main.activeFocusItem.toString().search("QtWebEngineCore::") !== -1) {
-//            console.log("Enforce focus to self")
+            console.log("Enforce focus to self " + self + " from web view " + dosearch.main.activeFocusItem)
+            hasFocus = true
             self.forceActiveFocus()
         }
-//        else console.log("Focus given to: " + dosearch.main.activeFocusItem)
+        else {
+            console.log("Focus given from " + self + " (" + owner + ") to " + dosearch.main.activeFocusItem)
+            hasFocus = false
+        }
     }
 
     Keys.onPressed: {
