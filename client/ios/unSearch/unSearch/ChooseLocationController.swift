@@ -15,61 +15,61 @@ class ChooseLocationController: UIViewController {
     let locationManager = CLLocationManager()
     var currentLocation: CLLocationCoordinate2D?
     var deviceLocation: CLLocationCoordinate2D?
-    let session = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration())
-    var placesTask: NSURLSessionTask?
+    let session = URLSession(configuration: URLSessionConfiguration.default)
+    var placesTask: URLSessionTask?
     var placesLocation: CLLocationCoordinate2D?
     
     @IBOutlet weak var mapView: GMSMapView!
     @IBOutlet weak var placesTable: UITableView!
-    @IBAction func choose(sender: AnyObject) {
+    @IBAction func choose(_ sender: AnyObject) {
     }
     override func viewDidLoad() {
         automaticallyAdjustsScrollViewInsets = true
-        navigationController!.navigationBar.setBackgroundImage(UIImage(named: "experts_background"), forBarMetrics: .Default)
-        navigationController!.navigationBarHidden = false
-        navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
+        navigationController!.navigationBar.setBackgroundImage(UIImage(named: "experts_background"), for: .default)
+        navigationController!.isNavigationBarHidden = false
+        navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.white]
         navigationItem.title = "Укажите местоположение"
         
-        let button = UIBarButtonItem(barButtonSystemItem: .Search, target: self, action: #selector(search))
-        button.tintColor = UIColor.whiteColor()
-        navigationItem.setRightBarButtonItem(button, animated: false)
+        let button = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(search))
+        button.tintColor = UIColor.white
+        navigationItem.setRightBarButton(button, animated: false)
         automaticallyAdjustsScrollViewInsets = true
         locationManager.requestWhenInUseAuthorization()
         mapView.delegate = self
-        edgesForExtendedLayout = .None
+        edgesForExtendedLayout = UIRectEdge()
     }
     
     func search() {
         
     }
     
-    func visitPlaces(location position: CLLocationCoordinate2D, text: String?, callback: (AnyObject) -> ()) {
+    func visitPlaces(location position: CLLocationCoordinate2D, text: String?, callback: @escaping (Any) -> ()) {
         var urlString = "key=\(AppDelegate.GOOGLE_API_KEY)&location=\(position.latitude),\(position.longitude)&radius=\(1000)&rankby=prominence&sensor=true"
         if (text != nil) {
             urlString += "&name=\(text)"
         }
         
         urlString = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?"
-            + urlString.stringByAddingPercentEncodingWithAllowedCharacters(.URLHostAllowedCharacterSet())!
+            + urlString.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         print(urlString)
-        if let task = placesTask where task.state == .Running {
+        if let task = placesTask , task.state == .running {
             task.cancel()
         }
-        UIApplication.sharedApplication().networkActivityIndicatorVisible = true
-        placesTask = session.dataTaskWithURL(NSURL(string: urlString)!) {data, response, error in
+        UIApplication.shared.isNetworkActivityIndicatorVisible = true
+        placesTask = session.dataTask(with: URL(string: urlString)!, completionHandler: {data, response, error in
             guard data != nil else {
                 return
             }
             print("inside.")
-            UIApplication.sharedApplication().networkActivityIndicatorVisible = false
-            if let json = try! NSJSONSerialization.JSONObjectWithData(data!, options: []) as? NSDictionary {
+            UIApplication.shared.isNetworkActivityIndicatorVisible = false
+            if let json = try! JSONSerialization.jsonObject(with: data!, options: []) as? NSDictionary {
                 if let results = json["results"] as? NSArray {
-                    for rawPlace: AnyObject in results {
+                    for rawPlace: Any in results {
                         callback(rawPlace)
                     }
                 }
             }
-        }
+        }) 
         placesTask?.resume()
     }
     
@@ -84,15 +84,15 @@ class ChooseLocationController: UIViewController {
 }
 
 extension ChooseLocationController: CLLocationManagerDelegate {
-    func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
-        if status == .AuthorizedWhenInUse {
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if status == .authorizedWhenInUse {
             locationManager.startUpdatingLocation()
 //            mapView.myLocationEnabled = true
             mapView.settings.myLocationButton = true
         }
     }
     
-    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.first {
             deviceLocation = location.coordinate
             if currentLocation == nil {
@@ -105,15 +105,15 @@ extension ChooseLocationController: CLLocationManagerDelegate {
 }
 
 extension ChooseLocationController: GMSMapViewDelegate {
-    func didTapMyLocationButtonForMapView(mapView: GMSMapView) -> Bool {
+    func didTapMyLocationButton(for mapView: GMSMapView) -> Bool {
         if deviceLocation != nil {
-            mapView.animateToLocation(deviceLocation!)
+            mapView.animate(toLocation: deviceLocation!)
             return true
         }
         return false
     }
     
-    func mapView(mapView: GMSMapView, didChangeCameraPosition position: GMSCameraPosition) {
+    func mapView(_ mapView: GMSMapView, didChange position: GMSCameraPosition) {
         let point1 = MKMapPointForCoordinate(placesLocation ?? CLLocationCoordinate2DMake(0, 0))
         let point2 = MKMapPointForCoordinate(position.target)
         let distance = MKMetersBetweenMapPoints(point1, point2)

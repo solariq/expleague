@@ -14,36 +14,36 @@ class QObject {
         
         func fire() {
             if (!todo()) {
-                NSNotificationCenter.defaultCenter().removeObserver(self)
-                QObject.trackers.removeOne(self)
+                NotificationCenter.default.removeObserver(self)
+                _ = QObject.trackers.removeOne(self)
             }
         }
         
-        init(todo: () -> Bool) {
+        init(todo: @escaping () -> Bool) {
             self.todo = todo
             super.init()
         }
     }
     
     static var trackers: [Tracker] = []
-    static func notify(signal: Selector, _ sender: AnyObject) {
+    static func notify(_ signal: Selector, _ sender: AnyObject) {
 //        print("Notifying \(signal.description) from \(sender)")
-        NSNotificationCenter.defaultCenter().postNotification(NSNotification(name: signal.description, object: sender))
+        NotificationCenter.default.post(Notification(name: Notification.Name(rawValue: signal.description), object: sender))
     }
     
-    static func connect(sender: AnyObject, signal: Selector, receiver: AnyObject, slot: Selector) {
+    static func connect(_ sender: AnyObject, signal: Selector, receiver: AnyObject, slot: Selector) {
 //        print("Connecting \(receiver):\(slot) to \(sender):\(signal)")
-        NSNotificationCenter.defaultCenter().addObserver(receiver, selector: slot, name: signal.description, object: sender)
+        NotificationCenter.default.addObserver(receiver, selector: slot, name: NSNotification.Name(rawValue: signal.description), object: sender)
     }
     
-    static func track(sender: AnyObject?, _ signal: Selector, tracker: () -> Bool) {
+    static func track(_ sender: AnyObject?, _ signal: Selector, tracker: @escaping () -> Bool) {
         let trackerObj = Tracker(todo: tracker)
         trackers.append(trackerObj)
-        NSNotificationCenter.defaultCenter().addObserver(trackerObj, selector: #selector(Tracker.fire), name: signal.description, object: sender)
+        NotificationCenter.default.addObserver(trackerObj, selector: #selector(Tracker.fire), name: NSNotification.Name(rawValue: signal.description), object: sender)
     }
     
-    static func disconnect(object: AnyObject) {
+    static func disconnect(_ object: AnyObject) {
 //        print("Disconnecting \(object)")
-        NSNotificationCenter.defaultCenter().removeObserver(object)
+        NotificationCenter.default.removeObserver(object)
     }
 }

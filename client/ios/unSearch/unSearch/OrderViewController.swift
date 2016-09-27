@@ -7,7 +7,6 @@ import Foundation
 import UIKit
 import MapKit
 import XMPPFramework
-import SDCAlertView
 
 class OrderViewController: UIViewController, CLLocationManagerDelegate {
     var keyboardTracker: KeyboardStateTracker!
@@ -16,7 +15,7 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
     @IBOutlet weak var buttonBottom: NSLayoutConstraint!
     @IBOutlet weak var orderDescription: UIView!
     
-    @IBAction func fire(sender: AnyObject) {
+    @IBAction func fire(_ sender: AnyObject) {
         orderDescription.endEditing(true)
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
         guard controller.orderTextDelegate!.validate() else {
@@ -26,21 +25,21 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
             controller.location.location = controller.locationProvider.deviceLocation
         }
         guard !controller.location.isLocalOrder() || controller.location.getLocation() != nil else {
-            let alertView = UIAlertController(title: "Заказ", message: "На данный момент ваша геопозиция не найдена. Подождите несколько секунд, или отключите настройку \"рядом со мной\".", preferredStyle: .Alert)
-            alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-            presentViewController(alertView, animated: true, completion: nil)
+            let alertView = UIAlertController(title: "Заказ", message: "На данный момент ваша геопозиция не найдена. Подождите несколько секунд, или отключите настройку \"рядом со мной\".", preferredStyle: .alert)
+            alertView.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+            present(alertView, animated: true, completion: nil)
             return
         }
         guard controller.orderAttachmentsModel.completed() else {
-            let alertView = UIAlertController(title: "Заказ", message: "На данный момент не все прикрепленные объекты сохранены. Подождите несколько секунд.", preferredStyle: .Alert)
-            alertView.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-            presentViewController(alertView, animated: true, completion: nil)
+            let alertView = UIAlertController(title: "Заказ", message: "На данный момент не все прикрепленные объекты сохранены. Подождите несколько секунд.", preferredStyle: .alert)
+            alertView.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+            present(alertView, animated: true, completion: nil)
             return
         }
         
         AppDelegate.instance.activeProfile!.placeOrder(
             topic: controller.orderText.text,
-            urgency: controller.urgency.on ? "asap" : "day",
+            urgency: controller.urgency.isOn ? "asap" : "day",
             local: controller.location.isLocalOrder(),
             location: controller.location.getLocation(),
             experts: controller.experts.map{ return $0.id },
@@ -49,7 +48,7 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
         controller.clear()
         controller.orderAttachmentsModel.clear()
 
-        AppDelegate.instance.tabs.tabBar.hidden = true
+        AppDelegate.instance.tabs.tabBar.isHidden = true
         AppDelegate.instance.tabs.selectedIndex = 1
     }
 
@@ -62,25 +61,25 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
             self.buttonTop.constant = height > 0 ? 2 : initialTop
             self.view.layoutIfNeeded()
         }
-        self.navigationController?.navigationBar.tintColor = UIColor.whiteColor()
+        self.navigationController?.navigationBar.tintColor = UIColor.white
         self.navigationController?.navigationBar.titleTextAttributes = [
-            NSForegroundColorAttributeName: UIColor.whiteColor()
+            NSForegroundColorAttributeName: UIColor.white
         ]
         AppDelegate.instance.orderView = self
     }
     
-    override func viewWillAppear(animated: Bool) {
-        navigationController!.toolbarHidden = true
-        navigationController!.navigationBarHidden = true
+    override func viewWillAppear(_ animated: Bool) {
+        navigationController!.isToolbarHidden = true
+        navigationController!.isNavigationBarHidden = true
         keyboardTracker.start()
     }
 
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         keyboardTracker.stop()
     }
     
-    override func preferredStatusBarStyle() -> UIStatusBarStyle {
-        return .LightContent
+    override var preferredStatusBarStyle : UIStatusBarStyle {
+        return .lightContent
     }
 
     var descriptionController: OrderDescriptionViewController {
@@ -137,16 +136,16 @@ class OrderDescriptionViewController: UITableViewController {
     }
     
     override func viewWillLayoutSubviews() {
-        adjustSizes(UIScreen.mainScreen().bounds.height)
+        adjustSizes(UIScreen.main.bounds.height)
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         update()
     }
     
-    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
-        coordinator.animateAlongsideTransition({ (UIViewControllerTransitionCoordinatorContext) -> Void in
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        coordinator.animate(alongsideTransition: { (UIViewControllerTransitionCoordinatorContext) -> Void in
             if (self.view.window != nil) {
                 self.adjustSizes(size.height)
             }
@@ -156,33 +155,33 @@ class OrderDescriptionViewController: UITableViewController {
     @IBOutlet weak var unSearchY: NSLayoutConstraint!
     @IBOutlet weak var owlY: NSLayoutConstraint!
     
-    internal func sizeOfInput(height: CGFloat) -> CGFloat {
+    internal func sizeOfInput(_ height: CGFloat) -> CGFloat {
         return max(CGFloat(82), height - CGFloat(4 * rowHeight) - heightDiff);
     }
 
-    internal func adjustSizes(height: CGFloat) {
+    internal func adjustSizes(_ height: CGFloat) {
         let inputHeight = sizeOfInput(height)
         if (inputHeight > 130) {
-            unSearchLabel.hidden = false
-            owlIcon.hidden = false
+            unSearchLabel.isHidden = false
+            owlIcon.isHidden = false
             owlHeight.constant = min(max((inputHeight - 71.0) / 2.0, 50.0), 100)
             owlWidth.constant = owlHeight.constant * 160.0/168.0
             owlY.constant = (inputHeight - owlHeight.constant)/2.0 - 8
         }
         else if (inputHeight > 100) {
-            unSearchLabel.hidden = false
-            owlIcon.hidden = true
+            unSearchLabel.isHidden = false
+            owlIcon.isHidden = true
             unSearchY.constant = (inputHeight)/2.0 - 8 - unSearchLabel.frame.height
         }
         else {
-            owlIcon.hidden = true
-            unSearchLabel.hidden = true
+            owlIcon.isHidden = true
+            unSearchLabel.isHidden = true
         }
         orderTextDelegate!.total = inputHeight
     }
     
     internal func clear() {
-        urgency.on = false
+        urgency.isOn = false
         orderTextDelegate!.clear(orderText)
         orderAttachmentsModel.clear()
         experts.removeAll()
@@ -204,7 +203,7 @@ class OrderDescriptionViewController: UITableViewController {
         else {
             imagesCaption.text = "Не выбрано"
         }
-        urgencyType.text = urgency.on ? "Срочно" : "В течение дня"
+        urgencyType.text = urgency.isOn ? "Срочно" : "В течение дня"
         if experts.count > 0 {
             expertsDescription.text = ""
             for i in 0..<experts.count {
@@ -218,67 +217,67 @@ class OrderDescriptionViewController: UITableViewController {
             expertsDescription.text = "Автоматически"
         }
         switch self.location.locationType! {
-        case .NoLocation:
+        case .noLocation:
             locationDescription.text = "Не выбрано"
-        case .CurrentLocation:
+        case .currentLocation:
             locationDescription.text = "Рядом со мной"
-        case .CustomLocation:
+        case .customLocation:
             locationDescription.text = "Выбрано на карте"
         }
     }
 
     @IBOutlet weak var urgencyType: UILabel!
-    @IBAction func onUnrgency(sender: AnyObject) {
+    @IBAction func onUnrgency(_ sender: AnyObject) {
         update()
     }
     @IBOutlet weak var imagesCaption: UILabel!
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        if (indexPath.item == 0) {
-            return sizeOfInput(UIScreen.mainScreen().bounds.height)
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if ((indexPath as NSIndexPath).item == 0) {
+            return sizeOfInput(UIScreen.main.bounds.height)
         }
         return CGFloat(rowHeight);
     }
     
-    override func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        return 2...5 ~= indexPath.item
+    override func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
+        return 2...5 ~= (indexPath as NSIndexPath).item
     }
     
-    override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
-        return 2...5 ~= indexPath.item ? indexPath : nil
+    override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
+        return 2...5 ~= (indexPath as NSIndexPath).item ? indexPath : nil
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        if (indexPath.item == 4) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if ((indexPath as NSIndexPath).item == 4) {
             if (orderAttachmentsModel.attachmentsArray.isEmpty) {
-                showAlertMenu(AddAttachmentAlertController(parent: parentViewController, filter: orderAttachmentsModel.attachmentsArray.map({$0.imageId})) { imageId in
+                showAlertMenu(AddAttachmentAlertController(filter: orderAttachmentsModel.attachmentsArray.map({$0.imageId})) { imageId in
                     self.orderAttachmentsModel.addAttachment(imageId)
-                    self.parentViewController!.navigationController!.pushViewController(
+                    self.parent!.navigationController!.pushViewController(
                         OrderAttachmentsController(orderAttachmentsModel: self.orderAttachmentsModel),
                         animated: true
                     )
                 })
             }
             else {
-                parentViewController!.navigationController!.pushViewController(
+                parent!.navigationController!.pushViewController(
                     OrderAttachmentsController(orderAttachmentsModel: orderAttachmentsModel),
                     animated: true
                 )
             }
         }
-        else if (indexPath.item == 3) {
-            parentViewController!.navigationController!.pushViewController(
-                ChooseExpertViewController(parent: self),
+        else if ((indexPath as NSIndexPath).item == 3) {
+            parent!.navigationController!.pushViewController(
+                ChooseExpertViewController(owner: self),
                 animated: true
             )
         }
-        else if (indexPath.item == 2) {
+        else if ((indexPath as NSIndexPath).item == 2) {
             
-            UINavigationBar.appearance().setBackgroundImage(UIImage(named: "experts_background"), forBarMetrics: .Default)
-            UINavigationBar.appearance().titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
-            UINavigationBar.appearance().tintColor = UIColor.whiteColor()
+            UINavigationBar.appearance().setBackgroundImage(UIImage(named: "experts_background"), for: .default)
+            UINavigationBar.appearance().titleTextAttributes = [NSForegroundColorAttributeName : UIColor.white]
+            UINavigationBar.appearance().tintColor = UIColor.white
 //            UINavigationBar.appearance().barTintColor = UIColor.whiteColor()
-            UISearchBar.appearance().barStyle = .Black
+            UISearchBar.appearance().barStyle = .black
 
 //            navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
 //            navigationItem.title = "Укажите местоположение"
@@ -291,7 +290,7 @@ class OrderDescriptionViewController: UITableViewController {
             self.update()
 
             let config = GMSPlacePickerConfig(viewport: vp)
-            GMSPlacePicker(config: config).pickPlaceWithCallback(){ (placeOrNil, _) in
+            GMSPlacePicker(config: config).pickPlace(){ (placeOrNil, _) in
                 guard let place = placeOrNil else {
                     self.location.clearLocation()
                     return
@@ -302,31 +301,31 @@ class OrderDescriptionViewController: UITableViewController {
                     let point2 = MKMapPointForCoordinate(deviceLocation)
                     let distance = MKMetersBetweenMapPoints(point1, point2)
                     if (distance < 100) {
-                        self.location.locationType = .CurrentLocation
+                        self.location.locationType = .currentLocation
                     }
                     else {
-                        self.location.locationType = .CustomLocation
+                        self.location.locationType = .customLocation
                     }
                 }
                 self.update()
             }
         }
-        tableView.deselectRowAtIndexPath(indexPath, animated: false)
+        tableView.deselectRow(at: indexPath, animated: false)
     }
 
 
-    func showAlertMenu(alert: UIViewController) {
-        alert.modalPresentationStyle = .OverFullScreen
+    func showAlertMenu(_ alert: UIViewController) {
+        alert.modalPresentationStyle = .overFullScreen
         self.providesPresentationContextTransitionStyle = true;
         self.definesPresentationContext = true;
     
-        parentViewController?.presentViewController(alert, animated: true, completion: nil)
+        parent?.present(alert, animated: true, completion: nil)
     }
 }
 
 protocol ImageSenderQueue {
-    func append(id: String, image: UIImage, progress: (UIProgressView) -> Void)
-    func report(id: String, status: Bool);
+    func append(_ id: String, image: UIImage, progress: (UIProgressView) -> Void)
+    func report(_ id: String, status: Bool);
 }
 
 class OrderTextDelegate: NSObject, UITextViewDelegate {
@@ -335,17 +334,17 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
     static let error_placeholder = "Введите текст запроса"
     var active: Bool = false
     var tapDetector: UIGestureRecognizer?
-    func textViewShouldBeginEditing(textView: UITextView) -> Bool {
-        UIView.animateWithDuration(0.3) { () -> Void in
+    func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
+        UIView.animate(withDuration: 0.3, animations: { () -> Void in
             if (textView.text == OrderTextDelegate.placeholder || textView.text == OrderTextDelegate.error_placeholder) {
                 textView.text = ""
-                textView.textAlignment = .Left
-                self.parent.lupa.hidden = true
+                textView.textAlignment = .left
+                self.parent.lupa.isHidden = true
             }
-            textView.textColor = UIColor.blackColor()
+            textView.textColor = UIColor.black
             self.height.constant = max(OrderTextDelegate.textHeight, self.total - 44)
             self.parent.view!.layoutIfNeeded()
-        }
+        }) 
         if (tapDetector == nil) {
             tapDetector = UITapGestureRecognizer(trailingClosure: {
                 textView.endEditing(true)
@@ -353,44 +352,44 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
             parent.view.addGestureRecognizer(tapDetector!)
         }
         else {
-            tapDetector!.enabled = true
+            tapDetector!.isEnabled = true
         }
         active = true
         return true
     }
     
-    func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         guard text == "\n" else {
             return true
         }
         textView.endEditing(true)
-        (parent.parentViewController as! OrderViewController).fire(textView)
+        (parent.parent as! OrderViewController).fire(textView)
         return false
     }
     
-    func textViewDidEndEditing(textView: UITextView) {
+    func textViewDidEndEditing(_ textView: UITextView) {
         textView.resignFirstResponder()
         if (textView.text == "") {
-            UIView.animateWithDuration(0.3) { () -> Void in
+            UIView.animate(withDuration: 0.3, animations: { () -> Void in
                 self.clear(textView)
                 self.parent.view!.layoutIfNeeded()
-            }
+            }) 
         }
-        tapDetector!.enabled = false
+        tapDetector!.isEnabled = false
     }
     
-    func clear(textView: UITextView) {
+    func clear(_ textView: UITextView) {
         textView.text = OrderTextDelegate.placeholder
-        textView.textColor = UIColor.lightGrayColor()
-        textView.textAlignment = .Center
-        parent.lupa.hidden = false
+        textView.textColor = UIColor.lightGray
+        textView.textAlignment = .center
+        parent.lupa.isHidden = false
         height.constant = OrderTextDelegate.textHeight
         active = false
     }
     
     func validate() -> Bool {
-        parent.orderText.text = parent.orderText.text.stringByTrimmingCharactersInSet(
-            NSCharacterSet.whitespaceAndNewlineCharacterSet()
+        parent.orderText.text = parent.orderText.text.trimmingCharacters(
+            in: CharacterSet.whitespacesAndNewlines
         )
         if (parent.orderText.text.isEmpty || parent.orderText.text == OrderTextDelegate.placeholder || parent.orderText.text == OrderTextDelegate.error_placeholder) {
             parent.orderText.text = OrderTextDelegate.error_placeholder

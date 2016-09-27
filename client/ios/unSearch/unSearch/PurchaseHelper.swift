@@ -11,32 +11,32 @@ import StoreKit
 import ReachabilitySwift
 
 enum PurchaseResult: Int {
-    case Accepted
-    case Rejected
-    case Error
+    case accepted
+    case rejected
+    case error
 }
 
 class PurchaseHelper: NSObject {
     static let instance = PurchaseHelper()
     
     var products: [String: SKProduct?] = [:]
-    var queue: [String: [(rc: PurchaseResult, transactionId: String?) -> ()]] = [:]
+    var queue: [String: [(_ rc: PurchaseResult, _ transactionId: String?) -> ()]] = [:]
     
     func productsChanged() {
         QObject.notify(#selector(self.productsChanged), self)
     }
     
-    func request(id: String, callback: (rc: PurchaseResult, transactionId: String?) -> ()) {
+    func request(_ id: String, callback: @escaping (_ rc: PurchaseResult, _ transactionId: String?) -> ()) {
         if let val = products[id] {
             if let product = val {
                 if queue[id] == nil {
                     queue[id] = []
                 }
                 queue[id]?.append(callback)
-                SKPaymentQueue.defaultQueue().addPayment(SKPayment(product: product))
+                SKPaymentQueue.default().add(SKPayment(product: product))
             }
             else {
-                callback(rc: .Error, transactionId: nil)
+                callback(.error, nil)
             }
         }
         else {
@@ -51,11 +51,11 @@ class PurchaseHelper: NSObject {
         }
     }
     
-    func register(ids: [String]) {
+    func register(_ ids: [String]) {
         var remaining = ids
         for id in ids {
             if (products[id] != nil) {
-                remaining.removeOne(id)
+                _ = remaining.removeOne(id)
             }
         }
         guard !remaining.isEmpty else {
@@ -66,15 +66,15 @@ class PurchaseHelper: NSObject {
         request.start()
     }
     
-    static func visitTransactions(visitor visitor: (name: String, id: String)->(), completion: (NSError?) -> ()) {
-        let group = dispatch_group_create()
+    static func visitTransactions(visitor: @escaping (_ name: String, _ id: String)->(), completion: @escaping (NSError?) -> ()) {
+        let group = DispatchGroup()
         let observer = RestoreTransactionsObserver(visitor: visitor, group: group)
-        dispatch_group_enter(group)
-        SKPaymentQueue.defaultQueue().addTransactionObserver(observer)
-        SKPaymentQueue.defaultQueue().restoreCompletedTransactions()
+        group.enter()
+        SKPaymentQueue.default().add(observer)
+        SKPaymentQueue.default().restoreCompletedTransactions()
         
-        dispatch_group_notify(group, dispatch_get_main_queue()) {
-            SKPaymentQueue.defaultQueue().removeTransactionObserver(observer)
+        group.notify(queue: DispatchQueue.main) {
+            SKPaymentQueue.default().remove(observer)
             completion(observer.error)
         }
     }
@@ -82,12 +82,12 @@ class PurchaseHelper: NSObject {
     var reachability: Reachability!
     override init() {
         super.init()
-        SKPaymentQueue.defaultQueue().addTransactionObserver(self)
-        reachability = try! Reachability.reachabilityForInternetConnection()
+        SKPaymentQueue.default().add(self)
+        reachability = Reachability()
         reachability.whenReachable = {r in
             self.products.forEach { (id: String, product: SKProduct?) -> () in
                 if (product == nil) {
-                    self.products.removeValueForKey(id)
+                    self.products.removeValue(forKey: id)
                 }
             }
         }
@@ -101,19 +101,19 @@ class PurchaseHelper: NSObject {
 }
 
 extension PurchaseHelper: SKPaymentTransactionObserver {
-    func paymentQueue(queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
+    func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         print("\(transactions.count) payment transactions finished")
         for transaction in transactions {
             print("\t\(transaction.payment.productIdentifier) -> \(transaction.transactionState)")
             switch transaction.transactionState {
-            case .Purchased, .Restored:
+            case .purchased, .restored:
                 let callback = self.queue[transaction.payment.productIdentifier]?.removeFirstOrNone()
-                callback?(rc: .Accepted, transactionId: transaction.transactionIdentifier)
-                SKPaymentQueue.defaultQueue().finishTransaction(transaction)
-            case .Failed:
+                callback?(.accepted, transaction.transactionIdentifier)
+                SKPaymentQueue.default().finishTransaction(transaction)
+            case .failed:
                 let callback = self.queue[transaction.payment.productIdentifier]?.removeFirstOrNone()
-                callback?(rc: .Rejected, transactionId: nil)
-                SKPaymentQueue.defaultQueue().finishTransaction(transaction)
+                callback?(.rejected, nil)
+                SKPaymentQueue.default().finishTransaction(transaction)
             default:
                 break;
             }
@@ -122,7 +122,7 @@ extension PurchaseHelper: SKPaymentTransactionObserver {
 }
 
 extension PurchaseHelper: SKProductsRequestDelegate {
-    func productsRequest(request: SKProductsRequest, didReceiveResponse response: SKProductsResponse) {
+    func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         print("Products request concluded: \(response.products.count) products resolved \(response.invalidProductIdentifiers.count) --- failed")
         response.products.forEach {product in
             self.products[product.productIdentifier] = product
@@ -136,13 +136,13 @@ extension PurchaseHelper: SKProductsRequestDelegate {
 }
 
 class RestoreTransactionsObserver: NSObject, SKPaymentTransactionObserver {
-    let visitor: (name: String, id: String) -> ()
-    @objc func paymentQueue(queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
+    let visitor: (_ name: String, _ id: String) -> ()
+    @objc func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
             switch transaction.transactionState {
-            case .Restored:
-                visitor(name: transaction.payment.productIdentifier, id: transaction.originalTransaction!.transactionIdentifier!)
-                SKPaymentQueue.defaultQueue().finishTransaction(transaction)
+            case .restored:
+                visitor(transaction.payment.productIdentifier, transaction.original!.transactionIdentifier!)
+                SKPaymentQueue.default().finishTransaction(transaction)
                 break;
             default:
                 break;
@@ -150,18 +150,18 @@ class RestoreTransactionsObserver: NSObject, SKPaymentTransactionObserver {
         }
     }
         
-    func paymentQueueRestoreCompletedTransactionsFinished(queue: SKPaymentQueue) {
-        dispatch_group_leave(group)
+    func paymentQueueRestoreCompletedTransactionsFinished(_ queue: SKPaymentQueue) {
+        group.leave()
     }
         
-    func paymentQueue(queue: SKPaymentQueue, restoreCompletedTransactionsFailedWithError error: NSError) {
-        self.error = error
-        dispatch_group_leave(group)
+    func paymentQueue(_ queue: SKPaymentQueue, restoreCompletedTransactionsFailedWithError error: Error) {
+        self.error = error as NSError?
+        group.leave()
     }
     
     var error: NSError?
-    var group: dispatch_group_t
-    init(visitor: (name: String, id: String) -> (), group: dispatch_group_t) {
+    var group: DispatchGroup
+    init(visitor: @escaping (_ name: String, _ id: String) -> (), group: DispatchGroup) {
         self.group = group
         self.visitor = visitor
         super.init()

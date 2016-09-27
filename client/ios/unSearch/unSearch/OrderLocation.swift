@@ -10,9 +10,9 @@ import Foundation
 import MapKit
 
 enum OrderLocationType {
-    case NoLocation
-    case CurrentLocation
-    case CustomLocation
+    case noLocation
+    case currentLocation
+    case customLocation
 }
 
 class OrderLocation {
@@ -20,25 +20,25 @@ class OrderLocation {
     var location: CLLocationCoordinate2D?
     
     init() {
-        self.locationType = .NoLocation
+        self.locationType = .noLocation
     }
     
     init(location: CLLocationCoordinate2D!) {
         setLocation(location)
     }
 
-    func setCurrentLocation(locationProvider: LocationProvider) {
-        self.locationType = .CurrentLocation
+    func setCurrentLocation(_ locationProvider: LocationProvider) {
+        self.locationType = .currentLocation
         self.location = locationProvider.deviceLocation
     }
     
-    func setLocation(location: CLLocationCoordinate2D!) {
-        self.locationType = .CustomLocation
+    func setLocation(_ location: CLLocationCoordinate2D!) {
+        self.locationType = .customLocation
         self.location = location
     }
     
     func clearLocation() {
-        locationType = .NoLocation
+        locationType = .noLocation
         location = nil
     }
     
@@ -47,6 +47,6 @@ class OrderLocation {
     }
     
     func isLocalOrder() -> Bool {
-        return self.locationType != .NoLocation
+        return self.locationType != .noLocation
     }
 }

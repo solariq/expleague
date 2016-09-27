@@ -16,22 +16,22 @@ class WelcomeViewController: UIViewController {
     @IBOutlet weak var owlImage: UIImageView!
     
     @IBOutlet weak var buyButton: UIButton!
-    private var busy = false
-    @IBAction func buy(sender: AnyObject) {
+    fileprivate var busy = false
+    @IBAction func buy(_ sender: AnyObject) {
         guard !busy else {
             return
         }
         PurchaseHelper.instance.request(WelcomeViewController.ACCESS_PAYMENT) {rc, payment in
             switch rc {
-            case .Accepted:
-                dispatch_async(dispatch_get_main_queue()) {
+            case .accepted:
+                DispatchQueue.main.async {
                     AppDelegate.instance.setupDefaultProfiles(payment!.hash)
                 }
-            case .Error:
-                let alert = UIAlertController(title: "unSearch", message: "Не удалось провести платеж!", preferredStyle: .Alert)
-                alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-                self.presentViewController(alert, animated: true, completion: nil)
-            case .Rejected:
+            case .error:
+                let alert = UIAlertController(title: "unSearch", message: "Не удалось провести платеж!", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
+            case .rejected:
                 break
             }
             self.busy = false
@@ -39,10 +39,10 @@ class WelcomeViewController: UIViewController {
     }
 
     @IBOutlet weak var startWorkingButton: UIButton!
-    @IBAction func startWorking(sender: AnyObject) {
-        let data = NSData(contentsOfURL: NSURL(string: "http://unsearch.expleague.com/act/getCode.php?di=\(AppDelegate.deviceId)")!)
-        if let d = data, let dataStr = NSString(data: d, encoding: NSUTF8StringEncoding) {
-            if let enteredCode = UInt64((dataStr as String).stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())) {
+    @IBAction func startWorking(_ sender: AnyObject) {
+        let data = try? Data(contentsOf: URL(string: "http://unsearch.expleague.com/act/getCode.php?di=\(AppDelegate.deviceId)")!)
+        if let d = data, let dataStr = NSString(data: d, encoding: String.Encoding.utf8.rawValue) {
+            if let enteredCode = UInt64((dataStr as String).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)) {
                 AppDelegate.instance.setupDefaultProfiles(enteredCode.hashValue)
             }
         }
@@ -66,62 +66,62 @@ class WelcomeViewController: UIViewController {
         PurchaseHelper.instance.register([WelcomeViewController.ACCESS_PAYMENT])
         
         let descriptionText = NSMutableAttributedString()
-        descriptionText.appendAttributedString(NSAttributedString(string: "В настоящий момент доступ к приложению "))
-        descriptionText.appendAttributedString(NSAttributedString(string: "ограничен", attributes: [
-            NSLinkAttributeName: NSURL(string: "http://unsearch.expleague.com/accessrules/")!
+        descriptionText.append(NSAttributedString(string: "В настоящий момент доступ к приложению "))
+        descriptionText.append(NSAttributedString(string: "ограничен", attributes: [
+            NSLinkAttributeName: URL(string: "http://unsearch.expleague.com/accessrules/")!
         ]))
         self.descriptionText.attributedText = descriptionText
-        self.descriptionText.font = UIFont.systemFontOfSize(15)
-        self.descriptionText.textAlignment = .Center
-        self.descriptionText.textColor = UIColor.whiteColor()
-        self.startWorkingButton.hidden = true
+        self.descriptionText.font = UIFont.systemFont(ofSize: 15)
+        self.descriptionText.textAlignment = .center
+        self.descriptionText.textColor = UIColor.white
+        self.startWorkingButton.isHidden = true
         let bar: UINavigationBar! =  self.navigationController?.navigationBar
-        bar.setBackgroundImage(UIImage(), forBarMetrics: UIBarMetrics.Default)
+        bar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
         bar.shadowImage = UIImage()
         bar.backgroundColor = UIColor(red: 0.0, green: 0.3, blue: 0.5, alpha: 0.0)
-        bar.translucent = true
-        self.navigationController?.navigationBar.tintColor = UIColor.whiteColor()
+        bar.isTranslucent = true
+        self.navigationController?.navigationBar.tintColor = UIColor.white
         self.navigationController?.navigationBar.titleTextAttributes = [
-            NSForegroundColorAttributeName: UIColor.whiteColor()
+            NSForegroundColorAttributeName: UIColor.white
         ]
-        dispatch_async(dispatch_get_main_queue()) {
-            let data = NSData(contentsOfURL: NSURL(string: "http://unsearch.expleague.com/act/getCodeActive.php?di=\(AppDelegate.deviceId)")!)
-            if let d = data, let dataStr = NSString(data: d, encoding: NSUTF8StringEncoding) where dataStr.hasSuffix("1") {
+        DispatchQueue.main.async {
+            let data = try? Data(contentsOf: URL(string: "http://unsearch.expleague.com/act/getCodeActive.php?di=\(AppDelegate.deviceId)")!)
+            if let d = data, let dataStr = NSString(data: d, encoding: String.Encoding.utf8.rawValue), dataStr.hasSuffix("1") {
                 self.descriptionText.attributedText = NSAttributedString(string: "")
                 self.descriptionText.text = "В данный момент у вас есть возможность начать пользоваться приложением!"
-                self.descriptionText.textColor = UIColor.whiteColor()
+                self.descriptionText.textColor = UIColor.white
                 
-                self.startWorkingButton.hidden = false
-                self.buyButton.hidden = true
-                self.sendRequestButton.hidden = true
+                self.startWorkingButton.isHidden = false
+                self.buyButton.isHidden = true
+                self.sendRequestButton.isHidden = true
             }
         }
     }
     
-    override func preferredStatusBarStyle() -> UIStatusBarStyle {
-        return .LightContent
+    override var preferredStatusBarStyle : UIStatusBarStyle {
+        return .lightContent
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         QObject.track(AppDelegate.instance, #selector(AppDelegate.activate(_:))) {
-            self.performSegueWithIdentifier("Start", sender: self)
+            self.performSegue(withIdentifier: "Start", sender: self)
             self.active = false
             return false
         }
         active = true
     }
     
-    override func shouldAutorotate() -> Bool {
+    override var shouldAutorotate : Bool {
         return false
     }
     
-    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
-        return [.Portrait]
+    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+        return [.portrait]
     }
     
-    override func preferredInterfaceOrientationForPresentation() -> UIInterfaceOrientation {
-        return .Portrait
+    override var preferredInterfaceOrientationForPresentation : UIInterfaceOrientation {
+        return .portrait
     }
 }
 
@@ -129,29 +129,29 @@ class SendRequestViewController: UIViewController {
     static let emailPattern = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}"
     @IBOutlet weak var emailText: UITextField!
     @IBOutlet weak var sendRequestButton: UIButton!
-    @IBAction func sendRequest(sender: AnyObject) {
+    @IBAction func sendRequest(_ sender: AnyObject) {
         let text = emailText.text ?? ""
         guard text.matches(regexp: SendRequestViewController.emailPattern) else {
-            let alert = UIAlertController(title: "unSearch", message: "Введенная строка не похожа на E-mail", preferredStyle: .Alert)
-            alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-            self.presentViewController(alert, animated: true, completion: nil)
+            let alert = UIAlertController(title: "unSearch", message: "Введенная строка не похожа на E-mail", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
             return
         }
 
-        let data = NSData(contentsOfURL: NSURL(string: "http://unsearch.expleague.com/act/sendComment.php?email=\(text)&id=\(AppDelegate.deviceId)")!)
-        if let d = data, let dataStr = NSString(data: d, encoding: NSUTF8StringEncoding) where dataStr.hasSuffix("1") {
-            let alert = UIAlertController(title: "unSearch", message: "Поздравляем! Ваша заявка успешно принята. Вы получите письмо с кодом для активации приложения, как только очередь дойдет до вас.", preferredStyle: .Alert)
-            alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: {action in
-                self.navigationController!.popViewControllerAnimated(true)
+        let data = try? Data(contentsOf: URL(string: "http://unsearch.expleague.com/act/sendComment.php?email=\(text)&id=\(AppDelegate.deviceId)")!)
+        if let d = data, let dataStr = NSString(data: d, encoding: String.Encoding.utf8.rawValue), dataStr.hasSuffix("1") {
+            let alert = UIAlertController(title: "unSearch", message: "Поздравляем! Ваша заявка успешно принята. Вы получите письмо с кодом для активации приложения, как только очередь дойдет до вас.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: {action in
+                self.navigationController!.popViewController(animated: true)
             }))
-            self.presentViewController(alert, animated: true, completion: nil)
+            self.present(alert, animated: true, completion: nil)
             emailText.text = ""
         }
         else {
-            let alert = UIAlertController(title: "unSearch", message: "Не удалось зарегистрировать заявку, попробуйте позже", preferredStyle: .Alert)
-            alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+            let alert = UIAlertController(title: "unSearch", message: "Не удалось зарегистрировать заявку, попробуйте позже", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
             
-            self.presentViewController(alert, animated: true, completion: nil)
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
@@ -161,49 +161,49 @@ class SendRequestViewController: UIViewController {
         sendRequestButton.clipsToBounds = true
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         emailText.becomeFirstResponder()
     }
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?){
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?){
         view.endEditing(true)
-        super.touchesBegan(touches, withEvent: event)
+        super.touchesBegan(touches, with: event)
     }
     
-    override func shouldAutorotate() -> Bool {
+    override var shouldAutorotate : Bool {
         return false
     }
     
-    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
-        return [.Portrait]
+    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+        return [.portrait]
     }
     
-    override func preferredInterfaceOrientationForPresentation() -> UIInterfaceOrientation {
-        return .Portrait
+    override var preferredInterfaceOrientationForPresentation : UIInterfaceOrientation {
+        return .portrait
     }
 }
 
 class EnterCodeViewController: UIViewController {
     @IBOutlet weak var accessCode: UITextField!
     @IBOutlet weak var enterButton: UIButton!
-    @IBAction func enter(sender: AnyObject) {
+    @IBAction func enter(_ sender: AnyObject) {
         guard accessCode.text == nil || !accessCode.text!.isEmpty else {
             return
         }
         if let enteredCode = UInt64(accessCode.text!) {
             let code = enteredCode + AppDelegate.deviceId
             if (code % 14340987 == 0 || enteredCode == 1234123123312) {
-                navigationController!.popViewControllerAnimated(true)
-                dispatch_async(dispatch_get_main_queue()) {
+                navigationController!.popViewController(animated: true)
+                DispatchQueue.main.async {
                     AppDelegate.instance.setupDefaultProfiles(enteredCode.hashValue)
                 }
                 return
             }
         }
-        let alert = UIAlertController(title: "unSearch", message: "Введенный код некорректен или не соответствует устройству заявки", preferredStyle: .Alert)
-        alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-        self.presentViewController(alert, animated: true, completion: nil)
+        let alert = UIAlertController(title: "unSearch", message: "Введенный код некорректен или не соответствует устройству заявки", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+        self.present(alert, animated: true, completion: nil)
     }
 
     override func viewDidLoad() {
@@ -212,43 +212,43 @@ class EnterCodeViewController: UIViewController {
         enterButton.clipsToBounds = true
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         var purchase: String?
-        dispatch_async(dispatch_queue_create("Restore payments", DISPATCH_QUEUE_CONCURRENT)) {
-            let visitor: (name: String, id: String) -> () = {name, id in
+        DispatchQueue(label: "Restore payments", attributes: DispatchQueue.Attributes.concurrent).async {
+            let visitor: (_ name: String, _ id: String) -> () = {name, id in
                 purchase = id
             }
             PurchaseHelper.visitTransactions(visitor: visitor) {_ in
                 guard purchase != nil else {
                     return
                 }
-                dispatch_async(dispatch_get_main_queue()) {
+                DispatchQueue.main.async {
                     AppDelegate.instance.setupDefaultProfiles(purchase?.hash)
                 }
             }
         }
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         accessCode.becomeFirstResponder()
     }
 
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?){
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?){
         view.endEditing(true)
-        super.touchesBegan(touches, withEvent: event)
+        super.touchesBegan(touches, with: event)
     }
     
-    override func shouldAutorotate() -> Bool {
+    override var shouldAutorotate : Bool {
         return false
     }
     
-    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
-        return [.Portrait]
+    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+        return [.portrait]
     }
     
-    override func preferredInterfaceOrientationForPresentation() -> UIInterfaceOrientation {
-        return .Portrait
+    override var preferredInterfaceOrientationForPresentation : UIInterfaceOrientation {
+        return .portrait
     }
 }

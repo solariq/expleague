@@ -8,7 +8,7 @@ import UIKit
 import XMPPFramework
 
 enum HistorySection {
-    case Ongoing, AnswerOfTheWeek, Finished, None
+    case ongoing, answerOfTheWeek, finished, none
 }
 
 class HistoryViewController: UITableViewController {
@@ -24,11 +24,11 @@ class HistoryViewController: UITableViewController {
             }
             let table = (self.view as! UITableView)
             if (table.indexPathForSelectedRow != nil) {
-                table.deselectRowAtIndexPath(table.indexPathForSelectedRow!, animated: false)
+                table.deselectRow(at: table.indexPathForSelectedRow!, animated: false)
             }
             if let sel = selected, let path = indexOf(sel) {
-                table.selectRowAtIndexPath(path, animated: false, scrollPosition: .Top)
-                tableView(table, didSelectRowAtIndexPath: path)
+                table.selectRow(at: path, animated: false, scrollPosition: .top)
+                tableView(table, didSelectRowAt: path)
             }
         }
     }
@@ -36,14 +36,14 @@ class HistoryViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         let table = view as! UITableView
-        let cell = table.dequeueReusableCellWithIdentifier("OngoingOrder") as! OngoingOrderStateCell
-        table.registerClass(UITableViewCell.self, forCellReuseIdentifier: "Empty")
+        let cell = table.dequeueReusableCell(withIdentifier: "OngoingOrder") as! OngoingOrderStateCell
+        table.register(UITableViewCell.self, forCellReuseIdentifier: "Empty")
         cellHeight = cell.frame.height
         AppDelegate.instance.historyView = self
-        self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        self.navigationController?.navigationBar.tintColor = UIColor.whiteColor()
+        self.navigationItem.rightBarButtonItem = self.editButtonItem
+        self.navigationController?.navigationBar.tintColor = UIColor.white
         self.navigationController?.navigationBar.titleTextAttributes = [
-            NSForegroundColorAttributeName: UIColor.whiteColor()
+            NSForegroundColorAttributeName: UIColor.white
         ]
 
         QObject.connect(AppDelegate.instance, signal: #selector(AppDelegate.activate(_:)), receiver: self, slot: #selector(self.populate))
@@ -65,7 +65,7 @@ class HistoryViewController: UITableViewController {
             if (order.isActive) {
                 ongoing.append(order)
             }
-            else if (order.status == .Archived){
+            else if (order.status == .archived){
                 archived.append(order)
             }
             else if (order.fake) {
@@ -76,16 +76,16 @@ class HistoryViewController: UITableViewController {
             }
         }
 //        print("Populate results: \(ongoing.count)/\(finished.count)/\(archived.count)")
-        ongoing.sortInPlace(comparator)
-        finished.sortInPlace(comparator)
-        archived.sortInPlace(comparator)
+        ongoing.sort(by: comparator)
+        finished.sort(by: comparator)
+        archived.sort(by: comparator)
         (view as! UITableView).reloadData()
     }
     
-    func indexOf(order: ExpLeagueOrder) -> NSIndexPath? {
+    func indexOf(_ order: ExpLeagueOrder) -> IndexPath? {
         var section: Int?
         var row: Int?
-        if let index = ongoing.indexOf(order) where index >= 0 {
+        if let index = ongoing.index(of: order) , index >= 0 {
             row = index
             section = 0
         }
@@ -93,53 +93,53 @@ class HistoryViewController: UITableViewController {
             row = 0
             section = ongoing.isEmpty ? 0 : 1
         }
-        else if let index = finished.indexOf(order) where index >= 0 {
+        else if let index = finished.index(of: order) , index >= 0 {
             row = index
             section = (ongoing.isEmpty ? 0 : 1) + (answerOfTheWeek == nil ? 0 : 1)
         }
-        return row != nil ? NSIndexPath(forRow: row!, inSection: section!) : nil
+        return row != nil ? IndexPath(row: row!, section: section!) : nil
     }
     
     let comparator = {(lhs: ExpLeagueOrder, rhs: ExpLeagueOrder) -> Bool in
         return lhs.started > rhs.started ? true : false;
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         let table = (self.view as! UITableView)
-        table.editing = false
+        table.isEditing = false
         if (navigationController != nil) {
-            navigationController!.navigationBar.setBackgroundImage(UIImage(named: "history_background"), forBarMetrics: .Default)
+            navigationController!.navigationBar.setBackgroundImage(UIImage(named: "history_background"), for: .default)
         }
     }
     
-    override func viewDidAppear(animated: Bool) {
-        AppDelegate.instance.tabs.tabBar.hidden = false
+    override func viewDidAppear(_ animated: Bool) {
+        AppDelegate.instance.tabs.tabBar.isHidden = false
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         self.setEditing(false, animated: false)
     }
     
-    private func section(index i: Int) -> HistorySection {
+    fileprivate func section(index i: Int) -> HistorySection {
         var index = i
-        var result: HistorySection = .None
+        var result: HistorySection = .none
         if (index >= 0 && !ongoing.isEmpty) {
             index -= 1
-            result = .Ongoing
+            result = .ongoing
         }
         if (index >= 0 && answerOfTheWeek != nil) {
             index -= 1
-            result = .AnswerOfTheWeek
+            result = .answerOfTheWeek
         }
         if (index >= 0 && !finished.isEmpty) {
             index -= 1
-            result = .Finished
+            result = .finished
         }
         return result
     }
     
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         var result = 0
         result += ongoing.isEmpty ? 0 : 1
         result += finished.isEmpty ? 0 : 1
@@ -147,73 +147,73 @@ class HistoryViewController: UITableViewController {
         return max(result, 1)
     }
     
-    override func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let label = UILabel()
-        label.textColor = UIColor.lightGrayColor()
+        label.textColor = UIColor.lightGray
         label.font = UIFont(name: "Helvetica", size: 14)
-        label.backgroundColor = UIColor.whiteColor()
-        label.frame = CGRectMake(15, 0, tableView.frame.width - 15, 38)
+        label.backgroundColor = UIColor.white
+        label.frame = CGRect(x: 15, y: 0, width: tableView.frame.width - 15, height: 38)
         let view = UIView()
         view.addSubview(label)
         switch(self.section(index: section)) {
-        case .None, .Ongoing:
+        case .none, .ongoing:
             label.text = "ТЕКУЩИЕ"
-        case .Finished:
+        case .finished:
             label.text = "ВЫПОЛНЕНО"
-        case .AnswerOfTheWeek:
+        case .answerOfTheWeek:
             label.text = "ОТВЕТ НЕДЕЛИ"
         }
-        view.frame = CGRectMake(0, 0, tableView.frame.width, 38)
-        view.backgroundColor = UIColor.whiteColor()
+        view.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 38)
+        view.backgroundColor = UIColor.white
         return view
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: UITableViewCell
-        switch(section(index: indexPath.section)) {
-        case .None:
-            cell = tableView.dequeueReusableCellWithIdentifier("Empty", forIndexPath: indexPath)
+        switch(section(index: (indexPath as NSIndexPath).section)) {
+        case .none:
+            cell = tableView.dequeueReusableCell(withIdentifier: "Empty", for: indexPath)
             cell.textLabel!.text = "Нет заказов"
-            cell.textLabel!.textAlignment = .Center
-            cell.textLabel!.textColor = UIColor.lightGrayColor()
-        case .Ongoing:
-            let ocell = tableView.dequeueReusableCellWithIdentifier("OngoingOrder", forIndexPath: indexPath) as! OngoingOrderStateCell
-            ocell.setup(order: ongoing[indexPath.row])
+            cell.textLabel!.textAlignment = .center
+            cell.textLabel!.textColor = UIColor.lightGray
+        case .ongoing:
+            let ocell = tableView.dequeueReusableCell(withIdentifier: "OngoingOrder", for: indexPath) as! OngoingOrderStateCell
+            ocell.setup(order: ongoing[(indexPath as NSIndexPath).row])
             cell = ocell
-        case .AnswerOfTheWeek:
-            let ocell = tableView.dequeueReusableCellWithIdentifier("FinishedOrder", forIndexPath: indexPath) as! FinishedOrderStateCell
+        case .answerOfTheWeek:
+            let ocell = tableView.dequeueReusableCell(withIdentifier: "FinishedOrder", for: indexPath) as! FinishedOrderStateCell
             ocell.setup(order: answerOfTheWeek!)
             cell = ocell
-        case .Finished:
-            let ocell = tableView.dequeueReusableCellWithIdentifier("FinishedOrder", forIndexPath: indexPath) as! FinishedOrderStateCell
-            ocell.setup(order: finished[indexPath.row])
+        case .finished:
+            let ocell = tableView.dequeueReusableCell(withIdentifier: "FinishedOrder", for: indexPath) as! FinishedOrderStateCell
+            ocell.setup(order: finished[(indexPath as NSIndexPath).row])
             cell = ocell
         }
         return cell
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return cellHeight;
     }
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch(self.section(index: section)) {
-        case .None, .AnswerOfTheWeek:
+        case .none, .answerOfTheWeek:
             return 1
-        case .Ongoing:
+        case .ongoing:
             return ongoing.count
-        case .Finished:
+        case .finished:
             return finished.count
         }
     }
     
-    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 38
     }
     
-    private var models: [String:ChatModel] = [:]
+    fileprivate var models: [String:ChatModel] = [:]
     
-    func model(order: ExpLeagueOrder) -> ChatModel {
+    func model(_ order: ExpLeagueOrder) -> ChatModel {
         var model = models[order.jid.user]
         if (model == nil) {
             model = ChatModel(order: order)
@@ -222,23 +222,23 @@ class HistoryViewController: UITableViewController {
         return model!
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let o: ExpLeagueOrder
-        switch(section(index: indexPath.section)) {
-        case .None:
+        switch(section(index: (indexPath as NSIndexPath).section)) {
+        case .none:
             return;
             
-        case .AnswerOfTheWeek:
+        case .answerOfTheWeek:
             o = answerOfTheWeek!
-        case .Ongoing:
-            o = ongoing[indexPath.row]
-        case .Finished:
-            o = finished[indexPath.row]
+        case .ongoing:
+            o = ongoing[(indexPath as NSIndexPath).row]
+        case .finished:
+            o = finished[(indexPath as NSIndexPath).row]
         }
-        AppDelegate.instance.tabs.tabBar.hidden = true;
+        AppDelegate.instance.tabs.tabBar.isHidden = true;
         let messagesView = OrderDetailsViewController(data: model(o))
-        if (splitViewController!.collapsed) {
-            navigationController!.popToRootViewControllerAnimated(true);
+        if (splitViewController!.isCollapsed) {
+            navigationController!.popToRootViewController(animated: true);
             navigationController!.pushViewController(messagesView, animated: true)
         }
         else {
@@ -246,50 +246,51 @@ class HistoryViewController: UITableViewController {
         }
     }
     
-    override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
         return false
     }
 
-    override func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        return section(index: indexPath.section) != .None
+    override func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
+        return section(index: (indexPath as NSIndexPath).section) != .none
     }
     
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        return section(index: indexPath.section) != .None
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return section(index: (indexPath as NSIndexPath).section) != .none
     }
 
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if (editingStyle == .Delete) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if (editingStyle == .delete) {
             let order: ExpLeagueOrder
-            let sections = numberOfSectionsInTableView(tableView)
+            let sections = numberOfSections(in: tableView)
             let empty: Bool
-            switch section(index: indexPath.section) {
-            case .None:
+            switch section(index: (indexPath as NSIndexPath).section) {
+            case .none:
                 return
-            case .AnswerOfTheWeek:
+            case .answerOfTheWeek:
                 order = answerOfTheWeek!
                 empty = true
                 answerOfTheWeek = nil
-            case .Ongoing:
-                order = ongoing.removeAtIndex(indexPath.row)
+            case .ongoing:
+                order = ongoing[(indexPath as NSIndexPath).row]
                 empty = ongoing.isEmpty
                 let alertView: UIAlertController
-                if (order.messages.last?.type == .Answer) {
-                    alertView = UIAlertController(title: "unSearch", message: "Вы уверены, что хотите отменить задание?", preferredStyle: .Alert)
+                if (order.messages.last?.type == .answer) {
+                    alertView = UIAlertController(title: "unSearch", message: "Вы уверены, что хотите отменить задание?", preferredStyle: .alert)
                 }
                 else {
-                    alertView = UIAlertController(title: "unSearch", message: "Вы не поставили оценку. Действительно оставить эксперта без оценки?", preferredStyle: .Alert)
+                    alertView = UIAlertController(title: "unSearch", message: "Вы не поставили оценку. Действительно оставить эксперта без оценки?", preferredStyle: .alert)
                 }
                 
-                alertView.addAction(UIAlertAction(title: "Да", style: .Default, handler: {(x: UIAlertAction) -> Void in
+                alertView.addAction(UIAlertAction(title: "Да", style: .default, handler: {(x: UIAlertAction) -> Void in
+                    _ = self.ongoing.remove(at: (indexPath as NSIndexPath).row)
                     self.delete(indexPath, sections: sections, empty: empty)
                     order.archive()
                 }))
-                alertView.addAction(UIAlertAction(title: "Нет", style: .Cancel, handler: nil))
-                presentViewController(alertView, animated: true, completion: nil)
+                alertView.addAction(UIAlertAction(title: "Нет", style: .cancel, handler: nil))
+                present(alertView, animated: true, completion: nil)
                 return
-            case .Finished:
-                order = finished.removeAtIndex(indexPath.row)
+            case .finished:
+                order = finished.remove(at: (indexPath as NSIndexPath).row)
                 empty = finished.isEmpty
             }
             delete(indexPath, sections: sections, empty: empty)
@@ -297,21 +298,21 @@ class HistoryViewController: UITableViewController {
         }
     }
     
-    private func delete(indexPath: NSIndexPath, sections: Int, empty: Bool) {
+    fileprivate func delete(_ indexPath: IndexPath, sections: Int, empty: Bool) {
         tableView.beginUpdates()
         if (empty) {
             if (sections == 1) {
-                tableView.reloadSections(NSIndexSet(index: indexPath.section), withRowAnimation: .Fade)
+                tableView.reloadSections(IndexSet(integer: (indexPath as NSIndexPath).section), with: .fade)
             }
             else {
-                tableView.deleteSections(NSIndexSet(index: indexPath.section), withRowAnimation: .Fade)
+                tableView.deleteSections(IndexSet(integer: (indexPath as NSIndexPath).section), with: .fade)
             }
         }
         if (sections == 1 && empty) {
-            tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+            tableView.reloadRows(at: [indexPath], with: .fade)
         }
         else {
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+            tableView.deleteRows(at: [indexPath], with: .fade)
         }
         
         tableView.endUpdates()
@@ -335,9 +336,9 @@ class OrderBadge: UITableViewCell {
         update(order: o)
     }
 
-    func invalidate(notification: NSNotification) {
+    func invalidate(_ notification: Notification) {
         if let order = notification.object as? ExpLeagueOrder {
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async {
                 self.update(order: order)
             }
         }
@@ -349,11 +350,11 @@ class OrderBadge: UITableViewCell {
         title.text = o.text
         let unread = o.unreadCount
         if (unread > 0) {
-            unreadBadge.hidden = false
+            unreadBadge.isHidden = false
             unreadBadge.text = "\(unread)"
         }
         else {
-            unreadBadge.hidden = true
+            unreadBadge.isHidden = true
         }
     }
 }
@@ -364,33 +365,33 @@ class OngoingOrderStateCell: OrderBadge {
     
     override func update(order o: ExpLeagueOrder) {
         super.update(order: o)
-        if (o.messages.last?.type == .Answer) {
+        if (o.messages.last?.type == .answer) {
             status.textColor = Palette.OK
             status.text = "ОТВЕТ ГОТОВ"
         }
-        else if (o.status == .Overtime) {
-            let formatter = NSDateFormatter()
-            formatter.timeStyle = .ShortStyle
-            formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0)
+        else if (o.status == .overtime) {
+            let formatter = DateFormatter()
+            formatter.timeStyle = .short
+            formatter.timeZone = TimeZone(secondsFromGMT: 0)
             formatter.dateFormat = "H'ч 'mm'м'"
             
             status.textColor = Palette.ERROR
-            status.text = "ПРОСРОЧЕН НА \(formatter.stringFromDate(NSDate(timeIntervalSince1970: -o.timeLeft)))"
+            status.text = "ПРОСРОЧЕН НА \(formatter.string(from: Date(timeIntervalSince1970: -o.timeLeft)))"
         }
-        else if (o.status == .ExpertSearch) {
+        else if (o.status == .expertSearch) {
             status.textColor = Palette.COMMENT
             status.text = "ИЩЕМ ЭКСПЕРТА"
         }
-        else if (o.status == .Open) {
+        else if (o.status == .open) {
             status.textColor = Palette.COMMENT
             status.text = "В РАБОТЕ: \(o.activeExpert?.name ?? "")"
         }
-        let formatter = NSDateFormatter()
-        formatter.dateStyle = .ShortStyle;
-        formatter.timeStyle = .ShortStyle;
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short;
+        formatter.timeStyle = .short;
         
         formatter.doesRelativeDateFormatting = true
-        date.text = formatter.stringFromDate(NSDate(timeIntervalSinceReferenceDate: o.started))
+        date.text = formatter.string(from: Date(timeIntervalSinceReferenceDate: o.started))
     }
 }
 
@@ -400,12 +401,12 @@ class FinishedOrderStateCell: OrderBadge {
     
     override func update(order o: ExpLeagueOrder) {
         super.update(order: o)
-        shortAnswer.text = (o.status == .Canceled) ? "ОТМЕНЕН" : o.shortAnswer
-        let formatter = NSDateFormatter()
-        formatter.dateStyle = .ShortStyle;
-        formatter.timeStyle = .ShortStyle;
+        shortAnswer.text = (o.status == .canceled) ? "ОТМЕНЕН" : o.shortAnswer
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short;
+        formatter.timeStyle = .short;
         formatter.doesRelativeDateFormatting = true
         
-        date.text = formatter.stringFromDate(NSDate(timeIntervalSinceReferenceDate: o.started))
+        date.text = formatter.string(from: Date(timeIntervalSinceReferenceDate: o.started))
     }
 }

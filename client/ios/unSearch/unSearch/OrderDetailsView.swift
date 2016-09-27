@@ -31,33 +31,33 @@ class OrderDetailsView: UIView {
                 bottomView.addSubview(bottomContents!)
                 var constraints: [NSLayoutConstraint] = [];
 
-                constraints.append(NSLayoutConstraint(item: bottomContents!, attribute: .Bottom, relatedBy: .Equal, toItem: bottomView, attribute: .Bottom, multiplier: 1, constant: 0))
-                constraints.append(NSLayoutConstraint(item: bottomContents!, attribute: .Trailing, relatedBy: .Equal, toItem: bottomView, attribute: .Trailing, multiplier: 1, constant: 0))
-                constraints.append(NSLayoutConstraint(item: bottomContents!, attribute: .Leading, relatedBy: .Equal, toItem: bottomView, attribute: .Leading, multiplier: 1, constant: 0))
-                constraints.append(NSLayoutConstraint(item: bottomContents!, attribute: .Top, relatedBy: .Equal, toItem: bottomView, attribute: .Top, multiplier: 1, constant: 0))
-                NSLayoutConstraint.activateConstraints(constraints)
+                constraints.append(NSLayoutConstraint(item: bottomContents!, attribute: .bottom, relatedBy: .equal, toItem: bottomView, attribute: .bottom, multiplier: 1, constant: 0))
+                constraints.append(NSLayoutConstraint(item: bottomContents!, attribute: .trailing, relatedBy: .equal, toItem: bottomView, attribute: .trailing, multiplier: 1, constant: 0))
+                constraints.append(NSLayoutConstraint(item: bottomContents!, attribute: .leading, relatedBy: .equal, toItem: bottomView, attribute: .leading, multiplier: 1, constant: 0))
+                constraints.append(NSLayoutConstraint(item: bottomContents!, attribute: .top, relatedBy: .equal, toItem: bottomView, attribute: .top, multiplier: 1, constant: 0))
+                NSLayoutConstraint.activate(constraints)
             }
             else {
-                bottomView.addConstraint(NSLayoutConstraint(item: bottomView, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: 0))
+                bottomView.addConstraint(NSLayoutConstraint(item: bottomView, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: 0))
             }
             layoutIfNeeded()
         }
     }
     
-    private var inAnswer = false
-    func scrollToAnswer(animated: Bool) {
+    fileprivate var inAnswer = false
+    func scrollToAnswer(_ animated: Bool) {
         guard !controller.answerText.isEmpty else {
             scrollToChat(animated)
             return
         }
         scrollView.setContentOffset(separator.frame.origin, animated: animated)
-        separator.backgroundColor = UIColor.whiteColor()
+        separator.backgroundColor = UIColor.white
         separator.tagImage.image = UIImage(named: "chat_header_tag")!
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: #selector(shareAnswer))
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareAnswer))
         inAnswer = true
     }
     
-    func scrollToChat(animated: Bool) {
+    func scrollToChat(_ animated: Bool) {
         scrollView.setContentOffset(messagesView.frame.origin, animated: animated)
         separator.backgroundColor = Palette.CHAT_BACKGROUND
         separator.tagImage.image = UIImage(named: "chat_footer_tag")!
@@ -71,33 +71,33 @@ class OrderDetailsView: UIView {
         // 2. Assign print formatter to UIPrintPageRenderer
         
         let render = UIPrintPageRenderer()
-        render.addPrintFormatter(fmt, startingAtPageAtIndex: 0)
+        render.addPrintFormatter(fmt, startingAtPageAt: 0)
         
         // 3. Assign paperRect and printableRect
         
         let page = CGRect(x: 0, y: 0, width: 595.2, height: 841.8) // A4, 72 dpi
-        let printable = CGRectInset(page, 0, 0)
+        let printable = page.insetBy(dx: 0, dy: 0)
         
-        render.setValue(NSValue(CGRect: page), forKey: "paperRect")
-        render.setValue(NSValue(CGRect: printable), forKey: "printableRect")
+        render.setValue(NSValue(cgRect: page), forKey: "paperRect")
+        render.setValue(NSValue(cgRect: printable), forKey: "printableRect")
         
         // 4. Create PDF context and draw
         
         let pdfData = NSMutableData()
-        UIGraphicsBeginPDFContextToData(pdfData, CGRectZero, nil)
+        UIGraphicsBeginPDFContextToData(pdfData, CGRect.zero, nil)
         
-        for i in 1...render.numberOfPages() {
+        for i in 1...render.numberOfPages {
             
             UIGraphicsBeginPDFPage();
             let bounds = UIGraphicsGetPDFContextBounds()
-            render.drawPageAtIndex(i - 1, inRect: bounds)
+            render.drawPage(at: i - 1, in: bounds)
         }
         
         UIGraphicsEndPDFContext();
         
         let objectsToShare = [pdfData]
         let activityVC = UIActivityViewController(activityItems: objectsToShare, applicationActivities: nil)
-        controller.presentViewController(activityVC, animated: true, completion: nil)
+        controller.present(activityVC, animated: true, completion: nil)
     }
     
     func adjustScroll() {
@@ -116,21 +116,21 @@ class OrderDetailsView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        separator = NSBundle.mainBundle().loadNibNamed("Separator", owner: self, options: [:])[0] as! SeparatorView
+        separator = Bundle.main.loadNibNamed("Separator", owner: self, options: [:])?[0] as! SeparatorView
         addSubview(scrollView)
         addSubview(bottomView)
         scrollView.addSubview(messagesView)
         scrollView.addSubview(separator)
         scrollView.addSubview(answerView)
-        scrollView.scrollEnabled = false
+        scrollView.isScrollEnabled = false
         scrollView.clipsToBounds = false
-        messagesView.registerNib(UINib(nibName: "IncomingMessage", bundle: nil), forCellReuseIdentifier: String(CellType.Incoming))
-        messagesView.registerNib(UINib(nibName: "OutgoingMessage", bundle: nil), forCellReuseIdentifier: String(CellType.Outgoing))
-        messagesView.registerNib(UINib(nibName: "LookingForExpert", bundle: nil), forCellReuseIdentifier: String(CellType.LookingForExpert))
-        messagesView.registerNib(UINib(nibName: "AnswerReceived", bundle: nil), forCellReuseIdentifier: String(CellType.AnswerReceived))
-        messagesView.registerNib(UINib(nibName: "TaskInProgress", bundle: nil), forCellReuseIdentifier: String(CellType.TaskInProgress))
-        messagesView.registerNib(UINib(nibName: "Setup", bundle: nil), forCellReuseIdentifier: String(CellType.Setup))
-        messagesView.separatorStyle = .None
+        messagesView.register(UINib(nibName: "IncomingMessage", bundle: nil), forCellReuseIdentifier: String(describing: CellType.incoming))
+        messagesView.register(UINib(nibName: "OutgoingMessage", bundle: nil), forCellReuseIdentifier: String(describing: CellType.outgoing))
+        messagesView.register(UINib(nibName: "LookingForExpert", bundle: nil), forCellReuseIdentifier: String(describing: CellType.lookingForExpert))
+        messagesView.register(UINib(nibName: "AnswerReceived", bundle: nil), forCellReuseIdentifier: String(describing: CellType.answerReceived))
+        messagesView.register(UINib(nibName: "TaskInProgress", bundle: nil), forCellReuseIdentifier: String(describing: CellType.taskInProgress))
+        messagesView.register(UINib(nibName: "Setup", bundle: nil), forCellReuseIdentifier: String(describing: CellType.setup))
+        messagesView.separatorStyle = .none
         messagesView.backgroundColor = Palette.CHAT_BACKGROUND
         messagesView.bounces = false
         scrollView.backgroundColor = messagesView.backgroundColor
@@ -142,38 +142,38 @@ class OrderDetailsView: UIView {
         let pullGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
         pullGesture.delegate = self
         scrollView.addGestureRecognizer(pullGesture)
-        answerView.scrollView.panGestureRecognizer.requireGestureRecognizerToFail(pullGesture)
-        messagesView.panGestureRecognizer.requireGestureRecognizerToFail(pullGesture)
+        answerView.scrollView.panGestureRecognizer.require(toFail: pullGesture)
+        messagesView.panGestureRecognizer.require(toFail: pullGesture)
         answerView.scrollView.bounces = false
-        messagesViewHConstraint = NSLayoutConstraint(item: messagesView, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: -15)
-        answerViewHConstraint = NSLayoutConstraint(item: answerView, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: -15)
-        bottomViewBottom = NSLayoutConstraint(item: bottomView, attribute: .Bottom, relatedBy: .Equal, toItem: self, attribute: .BottomMargin, multiplier: 1, constant: 0)
+        messagesViewHConstraint = NSLayoutConstraint(item: messagesView, attribute: .height, relatedBy: .equal, toItem: scrollView, attribute: .height, multiplier: 1, constant: -15)
+        answerViewHConstraint = NSLayoutConstraint(item: answerView, attribute: .height, relatedBy: .equal, toItem: scrollView, attribute: .height, multiplier: 1, constant: -15)
+        bottomViewBottom = NSLayoutConstraint(item: bottomView, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottomMargin, multiplier: 1, constant: 0)
         keyboardTracker = KeyboardStateTracker() { (height: CGFloat) -> () in
                 self.bottomViewBottom.constant = -height;
                 self.layoutIfNeeded()
         }
         var constraints: [NSLayoutConstraint] = [];
                 // main view constraints
-        constraints.append(NSLayoutConstraint(item: scrollView, attribute: .Top, relatedBy: .Equal, toItem: self, attribute: .TopMargin, multiplier: 1, constant: 0))
-        constraints.append(NSLayoutConstraint(item: scrollView, attribute: .Width, relatedBy: .Equal, toItem: self, attribute: .Width, multiplier: 1, constant: 0))
-        constraints.append(NSLayoutConstraint(item: scrollView, attribute: .Bottom, relatedBy: .Equal, toItem: bottomView, attribute: .Top, multiplier: 1, constant: 0))
-        constraints.append(NSLayoutConstraint(item: bottomView, attribute: .Leading, relatedBy: .Equal, toItem: self, attribute: .Leading, multiplier: 1, constant: 0))
-        constraints.append(NSLayoutConstraint(item: bottomView, attribute: .Trailing, relatedBy: .Equal, toItem: self, attribute: .Trailing, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: scrollView, attribute: .top, relatedBy: .equal, toItem: self, attribute: .topMargin, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: scrollView, attribute: .width, relatedBy: .equal, toItem: self, attribute: .width, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: scrollView, attribute: .bottom, relatedBy: .equal, toItem: bottomView, attribute: .top, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: bottomView, attribute: .leading, relatedBy: .equal, toItem: self, attribute: .leading, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: bottomView, attribute: .trailing, relatedBy: .equal, toItem: self, attribute: .trailing, multiplier: 1, constant: 0))
         constraints.append(bottomViewBottom)
 
                 // scroll view constraints
-        constraints.append(NSLayoutConstraint(item: messagesView, attribute: .Top, relatedBy: .Equal, toItem: scrollView, attribute: .Top, multiplier: 1, constant: 0))
-        constraints.append(NSLayoutConstraint(item: messagesView, attribute: .Width, relatedBy: .Equal, toItem: self, attribute: .Width, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: messagesView, attribute: .top, relatedBy: .equal, toItem: scrollView, attribute: .top, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: messagesView, attribute: .width, relatedBy: .equal, toItem: self, attribute: .width, multiplier: 1, constant: 0))
         constraints.append(messagesViewHConstraint)
-        constraints.append(NSLayoutConstraint(item: messagesView, attribute: .Bottom, relatedBy: .Equal, toItem: separator, attribute: .Top, multiplier: 1, constant: 0))
-        constraints.append(NSLayoutConstraint(item: separator, attribute: .Width, relatedBy: .Equal, toItem: self, attribute: .Width, multiplier: 1, constant: 0))
-        constraints.append(NSLayoutConstraint(item: separator, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant:15))
-        constraints.append(NSLayoutConstraint(item: separator, attribute: .Bottom, relatedBy: .Equal, toItem: answerView, attribute: .Top, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: messagesView, attribute: .bottom, relatedBy: .equal, toItem: separator, attribute: .top, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: separator, attribute: .width, relatedBy: .equal, toItem: self, attribute: .width, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: separator, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant:15))
+        constraints.append(NSLayoutConstraint(item: separator, attribute: .bottom, relatedBy: .equal, toItem: answerView, attribute: .top, multiplier: 1, constant: 0))
 
         constraints.append(answerViewHConstraint)
-        constraints.append(NSLayoutConstraint(item: answerView, attribute: .Width, relatedBy: .Equal, toItem: self, attribute: .Width, multiplier: 1, constant: 0))
-        constraints.append(NSLayoutConstraint(item: answerView, attribute: .Bottom, relatedBy: .Equal, toItem: scrollView, attribute: .Bottom, multiplier: 1, constant: 0))
-        NSLayoutConstraint.activateConstraints(constraints)
+        constraints.append(NSLayoutConstraint(item: answerView, attribute: .width, relatedBy: .equal, toItem: self, attribute: .width, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: answerView, attribute: .bottom, relatedBy: .equal, toItem: scrollView, attribute: .bottom, multiplier: 1, constant: 0))
+        NSLayoutConstraint.activate(constraints)
         messagesView.backgroundView = nil
 
         addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard)))
@@ -188,30 +188,30 @@ class OrderDetailsView: UIView {
 }
 
 extension OrderDetailsView: UIGestureRecognizerDelegate {
-    func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldReceiveTouch touch: UITouch) -> Bool {
-        let y = touch.locationInView(scrollView).y
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        let y = touch.location(in: scrollView).y
         return (y > separator.frame.maxY ? y - separator.frame.maxY : separator.frame.minY - y) < 80
     }
     
-    func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWithGestureRecognizer otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         return true
     }
 
     @IBAction
-    func handlePan(gestureRecognizer: UIPanGestureRecognizer) {
+    func handlePan(_ gestureRecognizer: UIPanGestureRecognizer) {
         switch (gestureRecognizer.state) {
-        case .Began:
+        case .began:
             gestureBeginOffset = scrollView.contentOffset.y
-            gestureBegin = gestureRecognizer.locationInView(nil).y
+            gestureBegin = gestureRecognizer.location(in: nil).y
             break
-        case .Changed:
-            let translation = gestureRecognizer.translationInView(scrollView)
-            let y = gestureRecognizer.locationInView(nil).y
-            scrollView.setContentOffset(CGPointMake(0, gestureBeginOffset + gestureBegin - y), animated: false)
-            gestureRecognizer.setTranslation(translation, inView: scrollView)
+        case .changed:
+            let translation = gestureRecognizer.translation(in: scrollView)
+            let y = gestureRecognizer.location(in: nil).y
+            scrollView.setContentOffset(CGPoint(x: 0, y: gestureBeginOffset + gestureBegin - y), animated: false)
+            gestureRecognizer.setTranslation(translation, in: scrollView)
             break
-        case .Ended:
-            let diffY = gestureRecognizer.locationInView(nil).y - gestureBegin
+        case .ended:
+            let diffY = gestureRecognizer.location(in: nil).y - gestureBegin
             if (abs(diffY) > messagesView.frame.height / 4) {
                 if (diffY < 0) {
                     scrollToAnswer(true)
@@ -221,7 +221,7 @@ extension OrderDetailsView: UIGestureRecognizerDelegate {
                 }
             }
             else {
-                scrollView.setContentOffset(CGPointMake(0, gestureBeginOffset), animated: true)
+                scrollView.setContentOffset(CGPoint(x: 0, y: gestureBeginOffset), animated: true)
             }
             break
         default:

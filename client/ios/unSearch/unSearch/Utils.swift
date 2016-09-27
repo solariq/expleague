@@ -15,7 +15,7 @@ import Photos
 private var target = [Target]()
 
 extension UIGestureRecognizer {
-    convenience init(trailingClosure closure: (() -> ())) {
+    convenience init(trailingClosure closure: @escaping (() -> ())) {
         // let UIGestureRecognizer do its thing
         self.init()
         
@@ -26,9 +26,9 @@ extension UIGestureRecognizer {
 
 private class Target {
     // store closure
-    private var trailingClosure: (() -> ())
+    fileprivate var trailingClosure: (() -> ())
     
-    init(_ closure:(() -> ())) {
+    init(_ closure:@escaping (() -> ())) {
         trailingClosure = closure
     }
     
@@ -41,7 +41,7 @@ private class Target {
     }
 }
 
-extension NSTimer {
+extension Timer {
     /**
      Creates and schedules a one-time `NSTimer` instance.
      
@@ -51,11 +51,11 @@ extension NSTimer {
      
      - Returns: The newly-created `NSTimer` instance.
      */
-    class func schedule(delay delay: NSTimeInterval, handler: NSTimer! -> Void) -> NSTimer {
+    class func schedule(delay: TimeInterval, handler: @escaping (CFRunLoopTimer?) -> Void) -> Timer {
         let fireDate = delay + CFAbsoluteTimeGetCurrent()
         let timer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault, fireDate, 0, 0, 0, handler)
-        CFRunLoopAddTimer(CFRunLoopGetCurrent(), timer, kCFRunLoopCommonModes)
-        return timer
+        CFRunLoopAddTimer(CFRunLoopGetCurrent(), timer, CFRunLoopMode.commonModes)
+        return timer!
     }
     
     /**
@@ -69,24 +69,24 @@ extension NSTimer {
      
      - Returns: The newly-created `NSTimer` instance.
      */
-    class func schedule(repeatInterval interval: NSTimeInterval, handler: NSTimer! -> Void) -> NSTimer {
+    class func schedule(repeatInterval interval: TimeInterval, handler: @escaping (CFRunLoopTimer?) -> Void) -> Timer {
         let fireDate = interval + CFAbsoluteTimeGetCurrent()
         let timer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault, fireDate, interval, 0, 0, handler)
-        CFRunLoopAddTimer(CFRunLoopGetCurrent(), timer, kCFRunLoopCommonModes)
-        return timer
+        CFRunLoopAddTimer(CFRunLoopGetCurrent(), timer, CFRunLoopMode.commonModes)
+        return timer!
     }
 }
 
 extension NSSet {
-    func append(item: Element) -> NSSet {
+    func append(_ item: Element) -> NSSet {
         let mutable = mutableCopy() as! NSMutableSet
-        mutable.addObject(item)
+        mutable.add(item)
         return mutable.copy() as! NSSet
     }
     
-    func removeOne(item: Element) -> NSSet {
+    func removeOne(_ item: Element) -> NSSet {
         let mutable = mutableCopy() as! NSMutableSet
-        mutable.removeObject(item)
+        mutable.remove(item)
         return mutable.copy() as! NSSet
     }
 
@@ -94,7 +94,7 @@ extension NSSet {
         let mutable = mutableCopy() as! NSMutableSet
         for item in mutable {
             if (p(item as! T)) {
-                mutable.removeObject(item)
+                mutable.remove(item)
             }
         }
         return mutable.copy() as! NSSet
@@ -102,25 +102,32 @@ extension NSSet {
 }
 
 extension NSOrderedSet {
-    func append(item: Element) -> NSOrderedSet {
+    func append(_ item: Element) -> NSOrderedSet {
         let mutable = mutableCopy() as! NSMutableOrderedSet
-        mutable.addObject(item)
+        mutable.add(item)
         return mutable.copy() as! NSOrderedSet
     }
     
-    func remove(item: Element) -> NSOrderedSet {
+    func removeOne(_ item: Element) -> NSOrderedSet {
         let mutable = mutableCopy() as! NSMutableOrderedSet
-        mutable.removeObject(item)
+        mutable.remove(item)
         return mutable.copy() as! NSOrderedSet
     }
     
     func removeAll<T>(predicate p: (T) -> Bool) -> NSOrderedSet {
         let mutable = mutableCopy() as! NSMutableOrderedSet
-        for item in mutable {
-            if (p(item as! T)) {
-                mutable.removeObject(item)
+        var found = false
+        repeat {
+            found = false
+            for item in mutable {
+                if (p(item as! T)) {
+                    mutable.remove(item)
+                    found = true
+                    break
+                }
             }
         }
+        while(found)
         return mutable.copy() as! NSOrderedSet
     }
 }
@@ -129,15 +136,15 @@ extension NSManagedObject {
     func notify() {}
     func invalidate() {}
     
-    func update(todo: () -> ()) {
-        dispatch_async(AppDelegate.instance.xmppQueue) {
+    func update(_ todo: @escaping () -> ()) {
+        AppDelegate.instance.xmppQueue.async {
             todo()
             self.save()
         }
     }
     
-    func updateSync(todo: () -> ()) {
-        dispatch_sync(AppDelegate.instance.xmppQueue) {
+    func updateSync(_ todo: () -> ()) {
+        AppDelegate.instance.xmppQueue.sync {
             todo()
             self.save()
         }
@@ -151,16 +158,16 @@ extension NSManagedObject {
             fatalError("Failure to save context: \(error)")
         }
         invalidate()
-        dispatch_async(dispatch_get_main_queue()) {
+        DispatchQueue.main.async {
             self.notify()
         }
     }
 }
 
 extension Array where Element : Equatable {
-    mutating func removeOne(item: Generator.Element) -> Bool {
-        if let idx = indexOf({$0 == item}) {
-            removeAtIndex(idx)
+    mutating func removeOne(_ item: Iterator.Element) -> Bool {
+        if let idx = index(where: {$0 == item}) {
+            remove(at: idx)
             return true
         }
         return false
@@ -168,7 +175,7 @@ extension Array where Element : Equatable {
 }
 
 extension Array {
-    mutating func removeFirstOrNone() -> Generator.Element? {
+    mutating func removeFirstOrNone() -> Iterator.Element? {
         return isEmpty ? nil : removeFirst()
     }
 }
@@ -176,47 +183,47 @@ extension Array {
 
 extension String {
     func matches(regexp re: String) -> Bool {
-        return rangeOfString(re, options: [.RegularExpressionSearch], range: nil, locale: nil) == startIndex..<endIndex
+        return range(of: re, options: [.regularExpression], range: nil, locale: nil) == startIndex..<endIndex
     }
 }
 
 class KeyboardStateTracker: NSObject {
     func start() {
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(KeyboardStateTracker.keyboardShown(_:)), name: UIKeyboardWillShowNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(KeyboardStateTracker.keyboardHidden(_:)), name: UIKeyboardWillHideNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(KeyboardStateTracker.keyboardShown(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(KeyboardStateTracker.keyboardHidden(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
     }
     
     func stop() {
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
     
-    @objc func keyboardHidden(notification: NSNotification) {
-        let duration = notification.userInfo![UIKeyboardAnimationDurationUserInfoKey] as! NSTimeInterval;
-        let curve = notification.userInfo![UIKeyboardAnimationCurveUserInfoKey] as! UInt
-        let options: UIViewAnimationOptions = [.BeginFromCurrentState, UIViewAnimationOptions(rawValue: (UIViewAnimationOptions.CurveEaseIn.rawValue << curve))]
-        UIView.animateWithDuration(duration, delay: 0, options: options, animations: { () -> Void in
+    @objc func keyboardHidden(_ notification: Notification) {
+        let duration = (notification as NSNotification).userInfo![UIKeyboardAnimationDurationUserInfoKey] as! TimeInterval;
+        let curve = (notification as NSNotification).userInfo![UIKeyboardAnimationCurveUserInfoKey] as! UInt
+        let options: UIViewAnimationOptions = [.beginFromCurrentState, UIViewAnimationOptions(rawValue: (UIViewAnimationOptions.curveEaseIn.rawValue << curve))]
+        UIView.animate(withDuration: duration, delay: 0, options: options, animations: { () -> Void in
             self.closure(CGFloat(0))
         }, completion: nil)
     }
     
-    @objc func keyboardShown(notification: NSNotification) {
-        let kbSize = (notification.userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue).CGRectValue().size
-        let duration = notification.userInfo![UIKeyboardAnimationDurationUserInfoKey] as! NSTimeInterval;
-        let curve = notification.userInfo![UIKeyboardAnimationCurveUserInfoKey] as! UInt
-        let options: UIViewAnimationOptions = [.BeginFromCurrentState, UIViewAnimationOptions(rawValue: (UIViewAnimationOptions.CurveEaseIn.rawValue << curve))]
-        UIView.animateWithDuration(duration, delay: 0, options: options, animations: { () -> Void in
+    @objc func keyboardShown(_ notification: Notification) {
+        let kbSize = ((notification as NSNotification).userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue.size
+        let duration = (notification as NSNotification).userInfo![UIKeyboardAnimationDurationUserInfoKey] as! TimeInterval;
+        let curve = (notification as NSNotification).userInfo![UIKeyboardAnimationCurveUserInfoKey] as! UInt
+        let options: UIViewAnimationOptions = [.beginFromCurrentState, UIViewAnimationOptions(rawValue: (UIViewAnimationOptions.curveEaseIn.rawValue << curve))]
+        UIView.animate(withDuration: duration, delay: 0, options: options, animations: { () -> Void in
             self.closure(kbSize.height)
         }, completion: nil)
     }
     
     let closure: (CGFloat) -> ()
-    init(_ closure: (CGFloat)->()) {
+    init(_ closure: @escaping (CGFloat)->()) {
         self.closure = closure;
     }
 }
 
 class Lang {
-    static func rusNumEnding(count: Int, variants: [String]) -> String {
+    static func rusNumEnding(_ count: Int, variants: [String]) -> String {
         let num = count % 100
         if (num >= 11 && num <= 19) {
             return variants[2];
@@ -236,30 +243,31 @@ class Lang {
 
 extension CGRect {
     func center() -> CGPoint {
-        return CGPointMake(self.midX, self.midY)
+        return CGPoint(x: self.midX, y: self.midY)
     }
 }
 
 extension PHAsset {
-    class func fetchSquareThumbnail(size: CGFloat, localId: String, callback: (UIImage?, [NSObject: AnyObject]?) -> ()) {
-        let fetchResult = PHAsset.fetchAssetsWithLocalIdentifiers([localId], options: nil)
-        if let asset = fetchResult.objectAtIndex(0) as? PHAsset {
-            let retinaScale = UIScreen.mainScreen().scale
-            let retinaSquare = CGSizeMake(size * retinaScale, size * retinaScale)
+    class func fetchSquareThumbnail(_ size: CGFloat, localId: String, callback: @escaping (UIImage?, [AnyHashable: Any]?) -> ()) {
+        let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [localId], options: nil)
+        if fetchResult.count > 0 {
+            let asset = fetchResult.object(at: 0)
+            let retinaScale = UIScreen.main.scale
+            let retinaSquare = CGSize(width: size * retinaScale, height: size * retinaScale)
             
             let cropToSquare = PHImageRequestOptions()
-            cropToSquare.resizeMode = .Exact;
+            cropToSquare.resizeMode = .exact;
             
             let cropSideLength = CGFloat(min(asset.pixelWidth, asset.pixelHeight))
-            let square = CGRectMake(0, 0, cropSideLength, cropSideLength)
-            let cropRect = CGRectApplyAffineTransform(square, CGAffineTransformMakeScale(1.0 / CGFloat(asset.pixelWidth), 1.0 / CGFloat(asset.pixelHeight)));
+            let square = CGRect(x: 0, y: 0, width: cropSideLength, height: cropSideLength)
+            let cropRect = square.applying(CGAffineTransform(scaleX: 1.0 / CGFloat(asset.pixelWidth), y: 1.0 / CGFloat(asset.pixelHeight)));
             
             cropToSquare.normalizedCropRect = cropRect;
 
-            PHImageManager.defaultManager().requestImageForAsset(
-                asset,
+            PHImageManager.default().requestImage(
+                for: asset,
                 targetSize: retinaSquare,
-                contentMode: PHImageContentMode.AspectFit,
+                contentMode: PHImageContentMode.aspectFit,
                 options: cropToSquare,
                 resultHandler: callback
             )
@@ -268,25 +276,25 @@ extension PHAsset {
 }
 
 extension UINavigationController {
-    public override func shouldAutorotate() -> Bool {
+    open override var shouldAutorotate : Bool {
         guard visibleViewController as? UIAlertController == nil else {
-            return super.shouldAutorotate()
+            return super.shouldAutorotate
         }
-        return visibleViewController?.shouldAutorotate() ?? true
+        return visibleViewController?.shouldAutorotate ?? true
     }
     
-    public override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
+    open override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
         guard visibleViewController as? UIAlertController == nil else {
-            return super.supportedInterfaceOrientations()
+            return super.supportedInterfaceOrientations
         }
-        return visibleViewController?.supportedInterfaceOrientations() ?? [.All]
+        return visibleViewController?.supportedInterfaceOrientations ?? [.all]
     }
     
-    public override func preferredInterfaceOrientationForPresentation() -> UIInterfaceOrientation {
+    open override var preferredInterfaceOrientationForPresentation : UIInterfaceOrientation {
         guard visibleViewController as? UIAlertController == nil else {
-            return super.preferredInterfaceOrientationForPresentation()
+            return super.preferredInterfaceOrientationForPresentation
         }
-        return visibleViewController?.preferredInterfaceOrientationForPresentation() ?? .Portrait
+        return visibleViewController?.preferredInterfaceOrientationForPresentation ?? .portrait
     }
 }
 

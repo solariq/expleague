@@ -23,7 +23,7 @@ class LocationProvider: NSManagedObject, CLLocationManagerDelegate {
         }
     }
 
-    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         self.deviceLocation = manager.location?.coordinate
     }
 }

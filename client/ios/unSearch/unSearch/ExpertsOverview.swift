@@ -32,10 +32,10 @@ class ExpertsOverviewController: UITableViewController {
                 top.append(exp)
             }
         }
-        my.sortInPlace() {
+        my.sort() {
             return $0.myTasks > $1.myTasks
         }
-        top.sortInPlace() {
+        top.sort() {
             return $0.tasks > $1.tasks
         }
         table.reloadData()
@@ -43,48 +43,48 @@ class ExpertsOverviewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
+        self.navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.white]
         AppDelegate.instance.expertsView = self
-        (view as! UITableView).registerClass(UITableViewCell.self, forCellReuseIdentifier: "Empty")
+        (view as! UITableView).register(UITableViewCell.self, forCellReuseIdentifier: "Empty")
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        table.editing = false
+        table.isEditing = false
         if (navigationController != nil) {
-            navigationController!.navigationBar.setBackgroundImage(UIImage(named: "experts_background"), forBarMetrics: .Default)
+            navigationController!.navigationBar.setBackgroundImage(UIImage(named: "experts_background"), for: .default)
         }
         update()
     }
     
-    override func viewDidAppear(animated: Bool) {
-        AppDelegate.instance.tabs.tabBar.hidden = false
+    override func viewDidAppear(_ animated: Bool) {
+        AppDelegate.instance.tabs.tabBar.isHidden = false
     }
     
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return false
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: ExpertCell
         let exp: ExpLeagueMember
-        switch(indexPath.section) {
+        switch((indexPath as NSIndexPath).section) {
         case 0 where my.isEmpty && top.isEmpty:
-            let cell = tableView.dequeueReusableCellWithIdentifier("Empty", forIndexPath: indexPath)
+            let cell = tableView.dequeueReusableCell(withIdentifier: "Empty", for: indexPath)
             cell.textLabel!.text = "Нет избранных"
-            cell.textLabel!.textAlignment = .Center
-            cell.textLabel!.textColor = UIColor.lightGrayColor()
+            cell.textLabel!.textAlignment = .center
+            cell.textLabel!.textColor = UIColor.lightGray
             return cell
         case 0 where !my.isEmpty:
-            exp = my[indexPath.row]
-            cell = tableView.dequeueReusableCellWithIdentifier("FavoriteExpert", forIndexPath: indexPath) as! ExpertCell
+            exp = my[(indexPath as NSIndexPath).row]
+            cell = tableView.dequeueReusableCell(withIdentifier: "FavoriteExpert", for: indexPath) as! ExpertCell
         case 0 where my.isEmpty:
-            exp = top[indexPath.row]
-            cell = tableView.dequeueReusableCellWithIdentifier("TopExpert", forIndexPath: indexPath) as! ExpertCell
+            exp = top[(indexPath as NSIndexPath).row]
+            cell = tableView.dequeueReusableCell(withIdentifier: "TopExpert", for: indexPath) as! ExpertCell
         case 1:
-            exp = top[indexPath.row]
-            cell = tableView.dequeueReusableCellWithIdentifier("TopExpert", forIndexPath: indexPath) as! ExpertCell
+            exp = top[(indexPath as NSIndexPath).row]
+            cell = tableView.dequeueReusableCell(withIdentifier: "TopExpert", for: indexPath) as! ExpertCell
         default:
             return UITableViewCell()
         }
@@ -92,11 +92,11 @@ class ExpertsOverviewController: UITableViewController {
         return cell
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 77;
     }
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch(section) {
         case 0 where my.isEmpty && top.isEmpty:
             return 1
@@ -109,16 +109,16 @@ class ExpertsOverviewController: UITableViewController {
         }
     }
     
-    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 38
     }
     
-    override func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let label = UILabel()
-        label.textColor = UIColor.lightGrayColor()
+        label.textColor = UIColor.lightGray
         label.font = UIFont(name: "Helvetica", size: 14)
-        label.backgroundColor = UIColor.whiteColor()
-        label.frame = CGRectMake(15, 0, tableView.frame.width - 15, 38)
+        label.backgroundColor = UIColor.white
+        label.frame = CGRect(x: 15, y: 0, width: tableView.frame.width - 15, height: 38)
         let view = UIView()
         view.addSubview(label)
         switch(section) {
@@ -136,40 +136,40 @@ class ExpertsOverviewController: UITableViewController {
         default:
             label.text = ""
         }
-        view.frame = CGRectMake(0, 0, tableView.frame.width, 38)
-        view.backgroundColor = UIColor.whiteColor()
+        view.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 38)
+        view.backgroundColor = UIColor.white
         return view
     }
     
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return my.isEmpty || top.isEmpty ? 1 : 2
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let exp: ExpLeagueMember
-        switch(indexPath.section) {
+        switch((indexPath as NSIndexPath).section) {
         case 0 where my.isEmpty && top.isEmpty:
             return;
         case 0 where !my.isEmpty:
-            exp = my[indexPath.row]
+            exp = my[(indexPath as NSIndexPath).row]
         case 0 where my.isEmpty:
-            exp = top[indexPath.row]
+            exp = top[(indexPath as NSIndexPath).row]
         case 1:
-            exp = top[indexPath.row]
+            exp = top[(indexPath as NSIndexPath).row]
         default:
             return
         }
-        AppDelegate.instance.tabs.tabBar.hidden = true;
+        AppDelegate.instance.tabs.tabBar.isHidden = true;
         let expertView = ExpertViewController(expert: exp)
         splitViewController!.showDetailViewController(expertView, sender: nil)
     }
     
-    override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
         return false
     }
     
-    override func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        if (indexPath.section == 0 && indexPath.row == 0) {
+    override func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
+        if ((indexPath as NSIndexPath).section == 0 && (indexPath as NSIndexPath).row == 0) {
             return !(my.isEmpty && top.isEmpty)
         }
         return true
@@ -177,18 +177,18 @@ class ExpertsOverviewController: UITableViewController {
 }
 
 extension ExpertsOverviewController: UISplitViewControllerDelegate {
-    func primaryViewControllerForCollapsingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
-        AppDelegate.instance.tabs.tabBar.hidden = false
+    func primaryViewController(forCollapsing splitViewController: UISplitViewController) -> UIViewController? {
+        AppDelegate.instance.tabs.tabBar.isHidden = false
         return navigationController ?? self
     }
     
-    func primaryViewControllerForExpandingSplitViewController(splitViewController: UISplitViewController) -> UIViewController? {
-        return primaryViewControllerForCollapsingSplitViewController(splitViewController)
+    func primaryViewController(forExpanding splitViewController: UISplitViewController) -> UIViewController? {
+        return primaryViewController(forCollapsing: splitViewController)
     }
     
-    func splitViewController(svc: UISplitViewController, willChangeToDisplayMode displayMode: UISplitViewControllerDisplayMode) {
-        if (displayMode != .AllVisible) {
-            AppDelegate.instance.tabs.tabBar.hidden = false
+    func splitViewController(_ svc: UISplitViewController, willChangeTo displayMode: UISplitViewControllerDisplayMode) {
+        if (displayMode != .allVisible) {
+            AppDelegate.instance.tabs.tabBar.isHidden = false
         }
     }
 }
@@ -196,89 +196,90 @@ extension ExpertsOverviewController: UISplitViewControllerDelegate {
 class ChooseExpertViewController: UITableViewController {
     var experts: [ExpLeagueMember] = []
     
-    let parent: OrderDescriptionViewController
+    let owner: OrderDescriptionViewController
     
     func close() {
-        parent.update()
-        self.dismissViewControllerAnimated(true, completion: nil)
+        owner.update()
+        self.dismiss(animated: true, completion: nil)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController!.navigationBarHidden = false
-        navigationController!.navigationBar.setBackgroundImage(UIImage(named: "experts_background"), forBarMetrics: .Default)
-        navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
+        navigationController!.isNavigationBarHidden = false
+        navigationController!.navigationBar.setBackgroundImage(UIImage(named: "experts_background"), for: .default)
+        navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.white]
         navigationItem.title = "Выберите эксперта"
     }
     
-    override func viewWillAppear(animated: Bool) {
-        experts = ExpLeagueProfile.active.experts.sort {
-            return $0.myTasks != $1._myTasks ? $0.myTasks > $1.myTasks : $0.tasks > $1.tasks
+    override func viewWillAppear(_ animated: Bool) {
+        experts = ExpLeagueProfile.active.experts.sorted {
+            return $0.myTasks != $1.myTasks ? $0.myTasks > $1.myTasks : $0.tasks > $1.tasks
         }
         (view as! UITableView).reloadData()
     }
     
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return false
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let exp = experts[indexPath.row]
-        let cell = tableView.dequeueReusableCellWithIdentifier("ExpertCell", forIndexPath: indexPath) as! ExpertCell
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let exp = experts[(indexPath as NSIndexPath).row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: "ExpertCell", for: indexPath) as! ExpertCell
         cell.update(exp)
         return cell
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 77;
     }
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return experts.count
     }
     
-    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 0
     }
     
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        let expert = experts[indexPath.item]
-        if (!parent.experts.contains(expert)) {
-            parent.experts.append(expert)
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let expert = experts[(indexPath as NSIndexPath).item]
+        if (!owner.experts.contains(expert)) {
+            owner.experts.append(expert)
+            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
         }
         else {
-            tableView.deselectRowAtIndexPath(indexPath, animated: true)
-            parent.experts.removeAtIndex(parent.experts.indexOf(expert)!)
+            owner.experts.remove(at: owner.experts.index(of: expert)!)
+            tableView.cellForRow(at: indexPath)?.accessoryType = .none
         }
     }
     
-    override func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
-        cell.highlighted = parent.experts.contains(experts[indexPath.item])
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        cell.isHighlighted = owner.experts.contains(experts[(indexPath as NSIndexPath).item])
     }
     
-    override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
         return false
     }
     
-    override func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
         return true
     }
     
     override func loadView() {
         let table = UITableView()
         view = table
-        table.registerNib(UINib(nibName: "ExpertCell", bundle: NSBundle.mainBundle()), forCellReuseIdentifier: "ExpertCell")
+        table.register(UINib(nibName: "ExpertCell", bundle: Bundle.main), forCellReuseIdentifier: "ExpertCell")
         table.dataSource = self
         table.delegate = self
-        table.separatorStyle = .None
+        table.separatorStyle = .none
     }
     
-    init(parent: OrderDescriptionViewController) {
-        self.parent = parent
+    init(owner: OrderDescriptionViewController) {
+        self.owner = owner
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -293,16 +294,16 @@ class ExpertCell: UITableViewCell {
     @IBOutlet weak var tasks: UILabel!
     @IBOutlet weak var avatar: AvatarView!
     
-    func update(expert: ExpLeagueMember) {
+    func update(_ expert: ExpLeagueMember) {
         name.text = expert.name
-        tags.text = expert.tags.joinWithSeparator(", ")
+        tags.text = expert.tags.joined(separator: ", ")
         avatar.image = expert.avatar
         avatar.online = expert.available
         switch (expert.group) {
-        case .Favorites:
+        case .favorites:
             tasks.text = "заданий: \(expert.tasks), ваших: \(expert.myTasks)"
             break
-        case .Top:
+        case .top:
             tasks.text = "заданий: \(expert.tasks)"
             break
         }

@@ -10,14 +10,14 @@ import Foundation
 import XMPPFramework
 
 enum ExpLeagueCommunicatorMode: Int {
-    case Foreground = 1
-    case Background = 2
+    case foreground = 1
+    case background = 2
 }
 
 enum ExpLeagueCommunicatorStatus: Int {
-    case Idle = 4
-    case Connected = 8
-    case Acquiring = 16
+    case idle = 4
+    case connected = 8
+    case acquiring = 16
 }
 
 class ExpLeagueCommunicatorState {
@@ -40,14 +40,14 @@ class ExpLeagueCommunicatorState {
     }
     
     internal func disconnect() {
-        if (status == .Connected) {
-            status = !owner!.profile.busy && mode == .Background ? .Idle : .Acquiring
+        if (status == .connected) {
+            status = !owner!.profile.busy && mode == .background ? .idle : .acquiring
         }
     }
     
     internal func connect() {
-        if (status == .Idle) {
-            status = .Acquiring
+        if (status == .idle) {
+            status = .acquiring
         }
     }
 }
@@ -60,86 +60,86 @@ internal class ExpLeagueCommunicator: NSObject {
         QObject.notify(#selector(self.stateChanged), self)
     }
     
-    func track(tracker: XMPPTracker) {
-        listeners.addObject(Weak(tracker))
+    func track(_ tracker: XMPPTracker) {
+        listeners.add(Weak(tracker))
     }
     
-    func expect(id: String) {
+    func expect(_ id: String) {
         if (ExpLeagueCommunicator.DEBUG) {
             print("Expecting: \(id)")
         }
         self.pending.insert(id)
-        if (self.state.status == .Idle) {
-            self.state.status = .Acquiring
+        if (self.state.status == .idle) {
+            self.state.status = .acquiring
         }
         else {
             tick()
         }
     }
     
-    func send(msg: XMPPMessage) {
+    func send(_ msg: XMPPMessage) {
         let receiptRequest = DDXMLElement(name: "request", xmlns: "urn:xmpp:receipts")
-        let msgId = stream.generateUUID()
-        msg.addAttributeWithName("id", stringValue: msgId)
-        msg.addChild(receiptRequest)
+        let msgId = stream?.generateUUID()
+        msg.addAttribute(withName: "id", stringValue: msgId!)
+        msg.addChild(receiptRequest!)
         
-        dispatch_async(thread) {
+        thread.async {
             self.profile.enqueue(msg)
             self.queue.append(msg)
-            if (self.stream.isAuthenticated()) {
+            if (self.stream?.isAuthenticated())! {
                 if (ExpLeagueCommunicator.DEBUG) {
-                    print("< \(msg.XMLString())")
+                    print("< \(msg.xmlString)")
                 }
-                self.stream.sendElement(msg)
+                self.stream?.send(msg)
             }
         }
     }
 
     func requestAOW() {
         let aowIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
-        aowIq.addAttributeWithName("type", stringValue: "get")
-        aowIq.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/best-answer"))
-        stream.sendElement(aowIq)
+        aowIq?.addAttribute(withName: "type", stringValue: "get")
+        aowIq?.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/best-answer"))
+        stream?.send(aowIq)
     }
 
     
     // MARK: - *** Private stuff ***
-    private var listeners: NSMutableArray = []
-    private let profile: ExpLeagueProfile
-    private let stream = XMPPStream()
-    private var thread: dispatch_queue_t {
+    fileprivate var listeners: NSMutableArray = []
+    fileprivate let profile: ExpLeagueProfile
+    fileprivate let stream = XMPPStream()
+    fileprivate var thread: DispatchQueue {
         return AppDelegate.instance.xmppQueue
     }
     
-    private var queue: [XMPPMessage] = []
+    fileprivate var queue: [XMPPMessage] = []
     internal var pending = Set<String>()
     
-    private var timer: NSTimer?
-    private var connectionAttempts = 0
+    fileprivate var timer: Timer?
+    fileprivate var connectionAttempts = 0
     @objc
-    private func tick() {
+    fileprivate func tick() {
         timer?.invalidate()
         timer = nil
-        if (state.status == .Connected) {
+        if (state.status == .connected) {
             connectionAttempts = 0
         }
         switch state.status {
-        case .Acquiring where connectionAttempts > 30 && state.mode == .Background,
-             .Connected where !profile.busy && state.mode == .Background:
+        case .acquiring where connectionAttempts > 30 && state.mode == .background,
+             .connected where !profile.busy && state.mode == .background:
             if (ExpLeagueCommunicator.DEBUG) {
                 print("Disconnecting")
             }
-            stream.disconnect()
+            stream?.disconnect()
             
-        case .Idle where state.mode == .Foreground, .Acquiring:
+        case .idle where state.mode == .foreground, .acquiring:
             connectionAttempts += 1
-            guard !stream.isAuthenticated() else {
+            guard !(stream?.isAuthenticated())! else {
                 break
             }
             
-            guard (!stream.isConnecting() && !stream.isAuthenticating()) else {
+            guard (!(stream?.isConnecting())! && !(stream?.isAuthenticating())!) else {
                 if (connectionAttempts + 1) % 10 == 0 {
-                    stream.disconnect()
+                    stream?.disconnect()
                 }
 
                 break
@@ -148,7 +148,7 @@ internal class ExpLeagueCommunicator: NSObject {
                 print("Connecting")
             }
             do {
-                try stream.connectWithTimeout(XMPPStreamTimeoutNone)
+                try stream?.connect(withTimeout: XMPPStreamTimeoutNone)
             }
             catch {
                 profile.log("Unable to start the stream: \(error)")
@@ -157,9 +157,9 @@ internal class ExpLeagueCommunicator: NSObject {
             break
         }
         
-        if (state.status == .Acquiring) {
-            dispatch_async(dispatch_get_main_queue()) {
-                self.timer = NSTimer.scheduledTimerWithTimeInterval(10, target: self, selector: #selector(self.tick), userInfo: nil, repeats: false)
+        if (state.status == .acquiring) {
+            DispatchQueue.main.async {
+                self.timer = Timer.scheduledTimer(timeInterval: 10, target: self, selector: #selector(self.tick), userInfo: nil, repeats: false)
             }
         }
 //        if (ExpLeagueCommunicator.DEBUG) {
@@ -170,32 +170,32 @@ internal class ExpLeagueCommunicator: NSObject {
     // MARK: - *** Life cycle ***
     internal init(profile: ExpLeagueProfile) {
         self.profile = profile
-        stream.hostName = profile.domain
-        stream.hostPort = profile.port.unsignedShortValue
-        stream.myJID = XMPPJID.jidWithString(profile.login + "@" + profile.domain + "/unSearch")
-        stream.startTLSPolicy = XMPPStreamStartTLSPolicy.Required
-        stream.keepAliveInterval = 30
+        stream?.hostName = profile.domain
+        stream?.hostPort = profile.port.uint16Value
+        stream?.myJID = XMPPJID(string: profile.login + "@" + profile.domain + "/unSearch")
+        stream?.startTLSPolicy = XMPPStreamStartTLSPolicy.required
+        stream?.keepAliveInterval = 30
 //        stream.enableBackgroundingOnSocket = true
         super.init()
-        stream.addDelegate(self, delegateQueue: thread)
-        state = ExpLeagueCommunicatorState(self, mode: .Background, status: .Idle)
+        stream?.addDelegate(self, delegateQueue: thread)
+        state = ExpLeagueCommunicatorState(self, mode: .background, status: .idle)
         profile.visitQueue({msg in self.queue.append(msg)})
 //        self.pending.appendContentsOf(profile.pending)
         if (profile.busy) {
-            state.status = .Acquiring
+            state.status = .acquiring
         }
         QObject.connect(self, signal: #selector(self.stateChanged), receiver: self, slot: #selector(self.tick))
     }
 
-    private func notify(proc: (XMPPTracker)->()) {
+    fileprivate func notify(_ proc: @escaping (XMPPTracker)->()) {
         for listenerRef in listeners.copy() as! NSArray {
             if let listener = (listenerRef as! Weak<XMPPTracker>).value {
-                dispatch_async(dispatch_get_main_queue()) {
+                DispatchQueue.main.async {
                     proc(listener)
                 }
             }
             else {
-                listeners.removeObject(listenerRef)
+                listeners.remove(listenerRef)
             }
         }
     }
@@ -207,10 +207,10 @@ internal class ExpLeagueCommunicator: NSObject {
 
 extension ExpLeagueCommunicator: XMPPStreamDelegate {
     @objc
-    func xmppStreamDidConnect(sender: XMPPStream!) {
+    func xmppStreamDidConnect(_ sender: XMPPStream!) {
         profile.log("Connected")
         do {
-            try sender.authenticateWithPassword(profile.passwd);
+            try sender.authenticate(withPassword: profile.passwd);
         }
         catch {
             profile.log("Failed to authenticate \(error)")
@@ -218,44 +218,43 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
     }
     
     @objc
-    func xmppStreamConnectDidTimeout(sender: XMPPStream!) {
+    func xmppStreamConnectDidTimeout(_ sender: XMPPStream!) {
         profile.log("Connection timeout");
         state.disconnect()
     }
     
     @objc
-    func xmppStreamDidDisconnect(sender: XMPPStream!, withError error: NSError!) {
+    func xmppStreamDidDisconnect(_ sender: XMPPStream!, withError error: Error!) {
         profile.log("Disconnected" + (error != nil ? " with error:\n\(error)" : ""))
         state.disconnect()
     }
     
     @objc
-    func xmppStream(sender: XMPPStream!, willSecureWithSettings settings: NSMutableDictionary!) {
+    func xmppStream(_ sender: XMPPStream!, willSecureWithSettings settings: NSMutableDictionary!) {
         settings.setValue(true, forKey: GCDAsyncSocketManuallyEvaluateTrust)
     }
     
     @objc
-    func xmppStream(sender: XMPPStream!, didNotAuthenticate error: DDXMLElement!) {
-        var texts = error.elementsForName("text");
+    func xmppStream(_ sender: XMPPStream!, didNotAuthenticate error: DDXMLElement!) {
+        var texts = error.elements(forName: "text");
         if (texts.count > 0) {
-            if let txt = texts[0] as? DDXMLElement {
-                let text = txt.stringValue()
-                if ("No such user" == String(text)) {
-                    do {
-                        profile.log("No such user, trying to register a new one.")
-                        var props: [DDXMLElement] = []
-                        let system = NSBundle.mainBundle().infoDictionary!
-                        props.append(DDXMLElement(name: "username", stringValue: profile.jid.user))
-                        props.append(DDXMLElement(name: "password", stringValue: profile.passwd))
-                        props.append(DDXMLElement(name: "email", stringValue: "\(NSProcessInfo.processInfo().operatingSystemVersionString)/\(system["CFBundleIdentifier"]!)/\(system["CFBundleVersion"])"))
-                        
-                        try sender.registerWithPassword(profile.passwd)
-                    }
-                    catch {
-                        profile.log("Failed to authenticate \(error)")
-                    }
-                    return
+            let txt = texts[0]
+            let text = txt.stringValue
+            if ("No such user" == String(describing: text)) {
+                do {
+                    profile.log("No such user, trying to register a new one.")
+                    var props: [DDXMLElement] = []
+                    let system = Bundle.main.infoDictionary!
+                    props.append(DDXMLElement(name: "username", stringValue: profile.jid.user))
+                    props.append(DDXMLElement(name: "password", stringValue: profile.passwd))
+                    props.append(DDXMLElement(name: "email", stringValue: "\(ProcessInfo.processInfo.operatingSystemVersionString)/\(system["CFBundleIdentifier"]!)/\(system["CFBundleVersion"])"))
+                    
+                    try sender.register(withPassword: profile.passwd)
                 }
+                catch {
+                    profile.log("Failed to authenticate \(error)")
+                }
+                return
             }
         }
         state.disconnect()
@@ -263,53 +262,53 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
     }
     
     @objc
-    func xmppStreamDidRegister(sender: XMPPStream!) {
+    func xmppStreamDidRegister(_ sender: XMPPStream!) {
         profile.log("The new user has been registered! Restarting the xmpp stream.")
         sender.disconnect()
         tick()
     }
     
     @objc
-    func xmppStreamDidAuthenticate(sender: XMPPStream!) {
+    func xmppStreamDidAuthenticate(_ sender: XMPPStream!) {
         connectionAttempts = 0
-        state.status = .Connected
+        state.status = .connected
         profile._jid = sender.myJID
         
         // updating client version and token
         let msg = XMPPMessage(type: "normal")
         let token = DDXMLElement(name: "token", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
         if (AppDelegate.instance.token != nil) {
-            token.setStringValue(AppDelegate.instance.token)
+            token?.stringValue = AppDelegate.instance.token
         }
-        token.addAttributeWithName("client", stringValue: "unSearch " + AppDelegate.versionName() + " @iOS")
-        msg.addChild(token)
-        sender.sendElement(msg)
+        token?.addAttribute(withName: "client", stringValue: "unSearch " + AppDelegate.versionName() + " @iOS")
+        msg?.addChild(token!)
+        sender.send(msg)
 
         // sending not confirmed messages
         for item in queue  {
-            sender.sendElement(item)
+            sender.send(item)
         }
         
         // getting latest experts
         let rosterIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
-        rosterIq.addAttributeWithName("type", stringValue: "get")
-        rosterIq.addChild(DDXMLElement(name: "query", xmlns: "jabber:iq:roster"))
-        sender.sendElement(rosterIq)
+        rosterIq?.addAttribute(withName: "type", stringValue: "get")
+        rosterIq?.addChild(DDXMLElement(name: "query", xmlns: "jabber:iq:roster"))
+        sender.send(rosterIq)
         
         // updating tags and patterns
         let tagsIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
-        tagsIq.addAttributeWithName("type", stringValue: "get")
-        tagsIq.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/tags"))
-        sender.sendElement(tagsIq)
+        tagsIq?.addAttribute(withName: "type", stringValue: "get")
+        tagsIq?.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/tags"))
+        sender.send(tagsIq)
         
         let patternsIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
-        patternsIq.addAttributeWithName("type", stringValue: "get")
-        patternsIq.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/patterns"))
-        sender.sendElement(patternsIq)
+        patternsIq?.addAttribute(withName: "type", stringValue: "get")
+        patternsIq?.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/patterns"))
+        sender.send(patternsIq)
         
         // restore rooms if needed
         let restore = DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/restore")
-        stream.sendElement(XMPPIQ(type: "get", child: restore))
+        stream?.send(XMPPIQ(type: "get", child: restore))
 
         if (profile.receiveAnswerOfTheWeek?.boolValue ?? true) {
             // answer of the week
@@ -318,147 +317,147 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
     }
     
     @objc
-    func xmppStream(sender: XMPPStream!, didReceiveTrust trust: SecTrustRef, completionHandler: (Bool) -> ()) {
+    public func xmppStream(_ sender: XMPPStream!, didReceive trust: SecTrust!, completionHandler: ((Bool) -> Swift.Void)!) {
         completionHandler(true)
     }
     
-    func xmppStream(sender: XMPPStream!, didReceiveIQ iq: XMPPIQ!) -> Bool {
+    func xmppStream(_ sender: XMPPStream!, didReceive iq: XMPPIQ!) -> Bool {
         if (ExpLeagueCommunicator.DEBUG) {
             print(iq)
         }
-        if let query = iq.elementForName("query", xmlns: "jabber:iq:roster") {
-            for item in query.elementsForName("item") as! [DDXMLElement] {
-                let groupStr = item.elementsForName("group").count > 0 ? item.elementForName("group").stringValue() : ""
+        if let query = iq.forName("query", xmlns: "jabber:iq:roster") {
+            for item in query.elements(forName: "item") {
+                let groupStr: String = item.elements(forName: "group").count > 0 ? (item.forName("group")?.stringValue!)! : ""
                 let group: ExpLeagueMemberGroup
                 switch groupStr {
                 case "Favorites":
-                    group = .Favorites
+                    group = .favorites
                 default:
-                    group = .Top
+                    group = .top
                 }
-                if let profile = item.elementForName("expert", xmlns: "http://expleague.com/scheme") {
+                if let profile = item.forName("expert", xmlns: "http://expleague.com/scheme") {
                     let expert: ExpLeagueMember
-                    if let existing = self.profile.expert(login: profile.attributeStringValueForName("login")) {
+                    if let existing = self.profile.expert(login: profile.attributeStringValue(forName: "login")) {
                         existing.updateXml(profile)
                         expert = existing
                     }
                     else {
                         expert = ExpLeagueMember(xml: profile, group: group, context: self.profile.managedObjectContext!)
-                        self.profile.register(expert: expert)
+                        _ = self.profile.register(expert: expert)
                     }
                     expert.group = group
-                    expert.available = profile.attributeBoolValueForName("available")
+                    expert.available = profile.attributeBoolValue(forName: "available")
                 }
             }
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async {
                 AppDelegate.instance.expertsView?.update()
             }
         }
-        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/tags") {
-            for tag in query.elementsForName("tag") as! [DDXMLElement] {
-                let name = tag.stringValue()
-                let icon = tag.attributeStringValueForName("icon", withDefaultValue: "named://search_icon")
+        else if let query = iq.forName("query", xmlns: "http://expleague.com/scheme/tags") {
+            for tag in query.elements(forName: "tag") {
+                let name = tag.stringValue
+                let icon = tag.attributeStringValue(forName: "icon", withDefaultValue: "named://search_icon")!
                 let tag: ExpLeagueTag
-                if let existing = profile.tag(name: name) {
+                if let existing = profile.tag(name: name!) {
                     existing.updateIcon(icon)
                 }
                 else {
-                    tag = ExpLeagueTag(name: name, icon: icon, type: .Tag, context: profile.managedObjectContext!)
-                    profile.register(tag: tag)
+                    tag = ExpLeagueTag(name: name!, icon: icon, type: .tag, context: profile.managedObjectContext!)
+                    _ = profile.register(tag: tag)
                 }
             }
         }
-        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/patterns") {
-            for tag in query.elementsForName("pattern") as! [DDXMLElement] {
-                let name = tag.attributeStringValueForName("name")
-                let icons = tag.elementsForName("icon") as! [DDXMLElement]
+        else if let query = iq.forName("query", xmlns: "http://expleague.com/scheme/patterns") {
+            for tag in query.elements(forName: "pattern") {
+                let name = tag.attributeStringValue(forName: "name")
+                let icons = tag.elements(forName: "icon") 
                 let tag: ExpLeagueTag
-                if let existing = profile.tag(name: name) {
+                if let existing = profile.tag(name: name!) {
                     if (icons.count > 0) {
-                        existing.updateIcon(icons[0].stringValue())
+                        existing.updateIcon(icons[0].stringValue!)
                     }
                 }
                 else {
-                    let icon = icons.count > 0 ? icons[0].stringValue() : "named://search_icon"
-                    tag = ExpLeagueTag(name: name, icon: icon, type: .Pattern, context: profile.managedObjectContext!)
-                    profile.register(tag: tag)
+                    let icon = icons.count > 0 ? icons[0].stringValue : "named://search_icon"
+                    tag = ExpLeagueTag(name: name!, icon: icon!, type: .pattern, context: profile.managedObjectContext!)
+                    _ = profile.register(tag: tag)
                 }
             }
         }
-        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/best-answer") where !iq.isErrorIQ() {
-            let offer = ExpLeagueOffer(xml: query.elementForName("offer", xmlns: "http://expleague.com/scheme"))
+        else if let query = iq.forName("query", xmlns: "http://expleague.com/scheme/best-answer"), !iq.isErrorIQ() {
+            let offer = ExpLeagueOffer(xml: query.forName("offer", xmlns: "http://expleague.com/scheme")!)
             let order = ExpLeagueOrder(offer.room, offer: offer, context: profile.managedObjectContext!)
             profile.add(aow: order)
-            let content = query.elementForName("content", xmlns: "http://expleague.com/scheme/best-answer")
-            for item in content.elementsForName("message") {
-                let message = XMPPMessage(fromElement: item as! DDXMLElement)
+            let content = query.forName("content", xmlns: "http://expleague.com/scheme/best-answer")
+            for item in (content?.elements(forName: "message"))! {
+                let message = XMPPMessage(from: item)!
                 order.message(message: message, notify: false)
             }
         }
-        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/dump-room") where !iq.isErrorIQ() {
-            let offer = ExpLeagueOffer(xml: query.elementForName("offer", xmlns: "http://expleague.com/scheme"))
+        else if let query = iq.forName("query", xmlns: "http://expleague.com/scheme/dump-room"), !iq.isErrorIQ() {
+            let offer = ExpLeagueOffer(xml: query.forName("offer", xmlns: "http://expleague.com/scheme")!)
             let order = ExpLeagueOrder(offer.room, offer: offer, context: profile.managedObjectContext!)
             profile.add(order: order)
-            let content = query.elementForName("content", xmlns: "http://expleague.com/scheme/dump-room")
-            for item in content.elementsForName("message") {
-                let message = XMPPMessage(fromElement: item as! DDXMLElement)
+            let content = query.forName("content", xmlns: "http://expleague.com/scheme/dump-room")
+            for item in (content?.elements(forName: "message"))! {
+                let message = XMPPMessage(from: item)!
                 order.message(message: message, notify: false)
             }
             let restore = DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/restore")
-            stream.sendElement(XMPPIQ(type: "get", child: restore))
+            stream?.send(XMPPIQ(type: "get", child: restore))
         }
-        else if let query = iq.elementForName("query", xmlns: "http://expleague.com/scheme/restore") where !iq.isErrorIQ() {
-            for room in query.elementsForName("room") {
-                let roomId = (room as! DDXMLElement).stringValue()
-                guard self.profile.order(name: roomId) == nil else {
+        else if let query = iq.forName("query", xmlns: "http://expleague.com/scheme/restore"), !iq.isErrorIQ() {
+            for room in query.elements(forName: "room") {
+                let roomId = (room ).stringValue
+                guard self.profile.order(name: roomId!) == nil else {
                     continue
                 }
                 let dumpRequest = DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/dump-room")
-                dumpRequest.addAttributeWithName("room", stringValue: roomId)
-                stream.sendElement(XMPPIQ(type: "get", child: dumpRequest))
+                dumpRequest?.addAttribute(withName: "room", stringValue: roomId!)
+                stream?.send(XMPPIQ(type: "get", child: dumpRequest))
                 break // one at a time
             }
         }
         return false
     }
     
-    func xmppStream(sender: XMPPStream!, didReceiveMessage msg: XMPPMessage!) {
+    func xmppStream(_ sender: XMPPStream!, didReceive msg: XMPPMessage!) {
         if (ExpLeagueCommunicator.DEBUG) {
             print(msg)
         }
         var delivered: [XMPPMessage] = []
-        while let receipt = msg.elementForName("received", xmlns: "urn:xmpp:receipts") {
-            let id = receipt.attributeStringValueForName("id")
+        while let receipt = msg.forName("received", xmlns: "urn:xmpp:receipts") {
+            let id = receipt.attributeStringValue(forName: "id")
             if let msg = self.queue.filter({$0.elementID() == id}).first {
                 delivered.append(msg)
             }
-            msg.removeChildAtIndex(receipt.index())
+            msg.removeChild(at: receipt.index)
         }
         var receipt: DDXMLElement?
-        if let receiptRequest = msg.elementForName("request", xmlns: "urn:xmpp:receipts") {
-            msg.removeChildAtIndex(receiptRequest.index())
+        if let receiptRequest = msg.forName("request", xmlns: "urn:xmpp:receipts") {
+            msg.removeChild(at: receiptRequest.index)
             receipt = DDXMLElement(name: "received", xmlns: "urn:xmpp:receipts")
-            receipt!.addAttributeWithName("id", stringValue: msg.elementID())
+            receipt!.addAttribute(withName: "id", stringValue: msg.elementID())
         }
         if let from = msg.from(), let order = profile.order(name: from.user) {
             order.message(message: msg, notify: true)
         }
         notify { listener in
-            listener.onMessage?(message: msg)
+            listener.onMessage?(msg)
         }
         if (receipt != nil) {
-            sender.sendElement(XMPPMessage(type: "normal", child: receipt))
+            sender.send(XMPPMessage(type: "normal", child: receipt))
         }
         if ((pending.remove(msg.elementID())) != nil) {
             profile.delivered(incoming: msg)
         }
         delivered.forEach{ msg in
-            queue.removeOne(msg)
+            _ = queue.removeOne(msg)
             profile.delivered(outgoing: msg)
         }
     }
     
-    func xmppStream(sender: XMPPStream!, didReceivePresence presence: XMPPPresence!) {
+    func xmppStream(_ sender: XMPPStream!, didReceive presence: XMPPPresence!) {
         if (ExpLeagueCommunicator.DEBUG) {
             print(presence)
         }
@@ -467,7 +466,7 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         }
         
         notify { listener in
-            listener.onPresence?(presence: presence)
+            listener.onPresence?(presence)
         }
     }
 }

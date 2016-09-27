@@ -23,7 +23,7 @@ class ExpertViewController: UIViewController {
     @IBOutlet weak var orders: UILabel!
     @IBOutlet weak var button: UIButton!
     
-    @IBAction func fire(sender: UIButton) {
+    @IBAction func fire(_ sender: UIButton) {
         AppDelegate.instance.orderView!.descriptionController.append(expert: expert)
         AppDelegate.instance.tabs.selectedIndex = 0
     }
@@ -31,39 +31,39 @@ class ExpertViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         if !UIAccessibilityIsReduceTransparencyEnabled() {
-            avatarBGView.backgroundColor = UIColor.clearColor()
+            avatarBGView.backgroundColor = UIColor.clear
             
-            let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.Dark)
+            let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.dark)
             let blurEffectView = UIVisualEffectView(effect: blurEffect)
             //always fill the view
             blurEffectView.frame = avatarBGView.bounds
-            blurEffectView.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
+            blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
             
             avatarBGView.addSubview(blurEffectView)
         } 
         else {
-            avatarBg.backgroundColor = UIColor.blackColor()
+            avatarBg.backgroundColor = UIColor.black
         }
-        navigationController?.navigationBar.tintColor = UIColor.whiteColor()
+        navigationController?.navigationBar.tintColor = UIColor.white
         button.layer.cornerRadius = button.frame.height / 2
         topAvaDistance.constant = max(avatarBg.frame.height / 4, 64)
-        descriptionText.textContainerInset = UIEdgeInsetsZero
-        descriptionText.contentInset = UIEdgeInsetsZero
+        descriptionText.textContainerInset = UIEdgeInsets.zero
+        descriptionText.contentInset = UIEdgeInsets.zero
         descriptionText.textContainer.lineFragmentPadding = 0
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         let navigationBar = navigationController?.navigationBar
-        navigationBar?.setBackgroundImage(UIImage(), forBarMetrics: UIBarMetrics.Default)
+        navigationBar?.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
         navigationBar?.shadowImage = UIImage()
-        navigationBar?.translucent = true
-        AppDelegate.instance.tabs.tabBar.hidden = true
+        navigationBar?.isTranslucent = true
+        AppDelegate.instance.tabs.tabBar.isHidden = true
         update()
         super.viewWillAppear(animated)
     }
     
-    override func viewWillDisappear(animated: Bool) {
-        AppDelegate.instance.tabs.tabBar.hidden = false
+    override func viewWillDisappear(_ animated: Bool) {
+        AppDelegate.instance.tabs.tabBar.isHidden = false
         super.viewWillDisappear(animated)
     }
     
@@ -82,12 +82,12 @@ class ExpertViewController: UIViewController {
         }
         let text = NSMutableAttributedString()
         let tags = expert.tags.count > 8 ? Array(expert.tags[0..<8]) : expert.tags
-        text.appendAttributedString(NSAttributedString(string: "Эксперт в областях: ", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
-        text.appendAttributedString(NSAttributedString(string: tags.joinWithSeparator(", "), attributes: [NSFontAttributeName: UIFont.systemFontOfSize(15)]))
-        text.appendAttributedString(NSAttributedString(string: "\nОбразование: ", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
-        text.appendAttributedString(NSAttributedString(string: "высшее", attributes: [NSFontAttributeName: UIFont.systemFontOfSize(15)]))
-        text.appendAttributedString(NSAttributedString(string: "\nВыполнено заказов: ", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
-        text.appendAttributedString(NSAttributedString(string: "\(expert.tasks)", attributes: [NSFontAttributeName: UIFont.systemFontOfSize(15)]))
+        text.append(NSAttributedString(string: "Эксперт в областях: ", attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 15)]))
+        text.append(NSAttributedString(string: tags.joined(separator: ", "), attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 15)]))
+        text.append(NSAttributedString(string: "\nОбразование: ", attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 15)]))
+        text.append(NSAttributedString(string: "высшее", attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 15)]))
+        text.append(NSAttributedString(string: "\nВыполнено заказов: ", attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 15)]))
+        text.append(NSAttributedString(string: "\(expert.tasks)", attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 15)]))
         descriptionText.attributedText = text
         descriptionText.textColor = Palette.COMMENT
         score.text = String(format: "%.1f баллов %d оценок", expert.rating, expert.based)
@@ -97,7 +97,7 @@ class ExpertViewController: UIViewController {
     
     init(expert: ExpLeagueMember) {
         self.expert = expert
-        super.init(nibName: "ExpertView", bundle: NSBundle.mainBundle())
+        super.init(nibName: "ExpertView", bundle: Bundle.main)
         expert.view = self
     }
 
@@ -111,22 +111,22 @@ class AvatarView: UIView {
         super.awakeFromNib()
         _imageView.clipsToBounds = true;
         addSubview(_imageView)
-        _imageView.layer.borderColor = Palette.BORDER.CGColor
+        _imageView.layer.borderColor = Palette.BORDER.cgColor
         _imageView.layer.borderWidth = 1
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
         _imageView.layer.cornerRadius = frame.width / 2;
-        _imageView.frame = CGRectMake(0, 0, frame.width, frame.height)
+        _imageView.frame = CGRect(x: 0, y: 0, width: frame.width, height: frame.height)
         let size = frame.width/5
         
         if (_onlineTag != nil) {
-            _onlineTag!.frame = CGRectMake(frame.width - size - 1, frame.height - size, size, size)
+            _onlineTag!.frame = CGRect(x: frame.width - size - 1, y: frame.height - size, width: size, height: size)
         }
     }
     
-    private let _imageView = UIImageView()
+    fileprivate let _imageView = UIImageView()
     var image: UIImage? {
         get {
             return _imageView.image
@@ -136,7 +136,7 @@ class AvatarView: UIView {
         }
     }
     
-    private var _onlineTag: UIImageView?
+    fileprivate var _onlineTag: UIImageView?
     var online: Bool = false {
         didSet {
             let radius = CGFloat(20)
@@ -146,15 +146,15 @@ class AvatarView: UIView {
                 addSubview(_onlineTag!)
             }
             
-            UIGraphicsBeginImageContextWithOptions(CGSizeMake(radius, radius), false, 0)
+            UIGraphicsBeginImageContextWithOptions(CGSize(width: radius, height: radius), false, 0)
             let ctx = UIGraphicsGetCurrentContext()
-            CGContextSaveGState(ctx)
+            ctx?.saveGState()
             
-            let rect = CGRectMake(0, 0, radius, radius)
-            CGContextSetFillColorWithColor(ctx, color.CGColor)
-            CGContextFillEllipseInRect(ctx, rect)
+            let rect = CGRect(x: 0, y: 0, width: radius, height: radius)
+            ctx?.setFillColor(color.cgColor)
+            ctx?.fillEllipse(in: rect)
             
-            CGContextRestoreGState(ctx)
+            ctx?.restoreGState()
             _onlineTag!.image = UIGraphicsGetImageFromCurrentImageContext()
             UIGraphicsEndImageContext()
         }

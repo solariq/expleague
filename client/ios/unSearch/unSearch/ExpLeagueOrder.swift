@@ -20,7 +20,7 @@ class Weak<T: AnyObject> {
 
 class ExpLeagueOrder: NSManagedObject {
     var isActive: Bool {
-        return status != .Closed && status != .Archived && status != .Canceled
+        return status != .closed && status != .archived && status != .canceled
     }
     
     var activeExpert: ExpLeagueMember? {
@@ -28,8 +28,8 @@ class ExpLeagueOrder: NSManagedObject {
         return _expertActive ? result : nil
     }
     
-    private dynamic var _experts: [ExpLeagueMember]?
-    private dynamic var _expertActive = false
+    fileprivate dynamic var _experts: [ExpLeagueMember]?
+    fileprivate dynamic var _expertActive = false
     var experts: [ExpLeagueMember] {
         guard _experts == nil else {
             return _experts!
@@ -37,15 +37,15 @@ class ExpLeagueOrder: NSManagedObject {
         var result: [ExpLeagueMember] = []
         var active = false
         for msg in messages {
-            if (msg.type == .ExpertAssignment){
+            if (msg.type == .expertAssignment){
                 result.append(msg.expert!)
                 active = true
             }
-            else if (msg.type == .ExpertCancel) {
+            else if (msg.type == .expertCancel) {
                 result.removeLast()
                 active = false
             }
-            else if (msg.type == .Answer) {
+            else if (msg.type == .answer) {
                 active = false
             }
         }
@@ -54,7 +54,7 @@ class ExpLeagueOrder: NSManagedObject {
         return result
     }
     
-    private dynamic var _messages: [ExpLeagueMessage]?
+    fileprivate dynamic var _messages: [ExpLeagueMessage]?
     var messages: [ExpLeagueMessage] {
         let _messages = self._messages
         guard _messages == nil else {
@@ -72,29 +72,29 @@ class ExpLeagueOrder: NSManagedObject {
         QObject.notify(#selector(messagesChanged), self)
     }
 
-    var before: NSTimeInterval {
+    var before: TimeInterval {
         return started + offer.duration
     }
     
-    var timeLeft: NSTimeInterval {
-        return before - NSDate().timeIntervalSinceReferenceDate
+    var timeLeft: TimeInterval {
+        return before - Date().timeIntervalSinceReferenceDate
     }
     
-    private dynamic var _icon: UIImage?
+    fileprivate dynamic var _icon: UIImage?
     var typeIcon: UIImage {
         guard _icon == nil else {
             return _icon!
         }
         var tags: [String] = []
         for message in messages {
-            if let change = message.change where change.target == .Tag {
+            if let change = message.change , change.target == .Tag {
                 switch change.type {
                 case .Add:
                     tags.append(change.name)
                     break
                 case .Remove:
-                    if let index = tags.indexOf(change.name) {
-                        tags.removeAtIndex(index)
+                    if let index = tags.index(of: change.name) {
+                        tags.remove(at: index)
                     }
                     break
                 default: break
@@ -109,80 +109,80 @@ class ExpLeagueOrder: NSManagedObject {
     internal func message(message msg: XMPPMessage, notify: Bool) {
         let message = ExpLeagueMessage(msg: msg, parent: self, context: self.managedObjectContext!)
         messagesRaw = messagesRaw.append(message)
-        if (message.type == .Answer) {
-            flags = flags | ExpLeagueOrderFlags.Deciding.rawValue
+        if (message.type == .answer) {
+            flags = flags | ExpLeagueOrderFlags.deciding.rawValue
         }
         messagesChanged()
         save()
         if (notify) {
-            if (message.type == .Answer) {
+            if (message.type == .answer) {
                 Notifications.notifyAnswerReceived(self, answer: message)
             }
-            else if (message.type == .ExpertAssignment) {
+            else if (message.type == .expertAssignment) {
                 Notifications.notifyExpertFound(self)
             }
-            else if (message.type == .ExpertMessage) {
+            else if (message.type == .expertMessage) {
                 Notifications.notifyMessageReceived(self, message: message)
             }
         }
         else {
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async {
                 message.read = true
             }
         }
-        if (message.type == .ClientDone) {
+        if (message.type == .clientDone) {
             update {
-                self.flags = self.flags | ExpLeagueOrderFlags.Closed.rawValue
-                dispatch_async(dispatch_get_main_queue()) {
+                self.flags = self.flags | ExpLeagueOrderFlags.closed.rawValue
+                DispatchQueue.main.async {
                     AppDelegate.instance.historyView?.populate()
                 }
             }
         }
-        else if (message.type == .ClientCancel) {
+        else if (message.type == .clientCancel) {
             update {
-                self.flags = self.flags | ExpLeagueOrderFlags.Canceled.rawValue
-                dispatch_async(dispatch_get_main_queue()) {
+                self.flags = self.flags | ExpLeagueOrderFlags.canceled.rawValue
+                DispatchQueue.main.async {
                     AppDelegate.instance.historyView?.populate()
                 }
             }
         }
     }
     
-    func send(text text: String) {
-        let msg = XMPPMessage(type: "groupchat", to: jid)
+    func send(text: String) {
+        let msg = XMPPMessage(type: "groupchat", to: jid)!
         msg.addBody(text)
         update {
             self.message(message: msg, notify: false)
         }
-        parent.send(msg)
+        _ = parent.send(msg)
     }
     
-    func send(xml xml: DDXMLElement, type: String = "normal") {
-        let msg = XMPPMessage(type: type, to: jid)
+    func send(xml: DDXMLElement, type: String = "normal") {
+        let msg = XMPPMessage(type: type, to: jid)!
         msg.addChild(xml)
         update {
             self.message(message: msg, notify: false)
         }
-        parent.send(msg)
+        _ = parent.send(msg)
     }
     
     var jid : XMPPJID {
-        return XMPPJID.jidWithString(id + "@muc." + AppDelegate.instance.activeProfile!.domain)
+        return XMPPJID(string: id + "@muc." + AppDelegate.instance.activeProfile!.domain)
     }
     
     var text: String {
         return offer.topic
     }
     
-    func cancel(ownerVC: UIViewController? = nil) {
+    func cancel(_ ownerVC: UIViewController? = nil) {
         if let vc = ownerVC {
-            let alertView = UIAlertController(title: "unSearch", message: "Вы уверены, что хотите отменить задание?", preferredStyle: .Alert)
-            alertView.addAction(UIAlertAction(title: "Да", style: .Default, handler: {(x: UIAlertAction) -> Void in
+            let alertView = UIAlertController(title: "unSearch", message: "Вы уверены, что хотите отменить задание?", preferredStyle: .alert)
+            alertView.addAction(UIAlertAction(title: "Да", style: .default, handler: {(x: UIAlertAction) -> Void in
                 self.cancel(nil)
             }))
             
-            alertView.addAction(UIAlertAction(title: "Нет", style: .Cancel, handler: nil))
-            vc.presentViewController(alertView, animated: true, completion: nil)
+            alertView.addAction(UIAlertAction(title: "Нет", style: .cancel, handler: nil))
+            vc.present(alertView, animated: true, completion: nil)
             return
         }
 
@@ -191,11 +191,11 @@ class ExpLeagueOrder: NSManagedObject {
     
     func feedback(stars score: Int, payment: String?) {
         let feedback = DDXMLElement(name: "feedback", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
-        feedback.addAttributeWithName("stars", integerValue: score)
+        feedback?.addAttribute(withName: "stars", integerValue: score)
         if let id = payment {
-            feedback.addAttributeWithName("payment", stringValue: id)
+            feedback?.addAttribute(withName: "payment", stringValue: id)
         }
-        send(xml: feedback)
+        send(xml: feedback!)
         
         close()
     }
@@ -205,17 +205,17 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     func emulate() {
-        self.flags = self.flags | ExpLeagueOrderFlags.Closed.rawValue | ExpLeagueOrderFlags.Fake.rawValue
+        self.flags = self.flags | ExpLeagueOrderFlags.closed.rawValue | ExpLeagueOrderFlags.fake.rawValue
         save()
     }
     
     func markSaved() {
         update {
-            self.flags = self.flags | ExpLeagueOrderFlags.Saved.rawValue
+            self.flags = self.flags | ExpLeagueOrderFlags.saved.rawValue
         }
     }
     var fake: Bool {
-        return (flags & ExpLeagueOrderFlags.Fake.rawValue) != 0 && (flags & ExpLeagueOrderFlags.Saved.rawValue == 0)
+        return (flags & ExpLeagueOrderFlags.fake.rawValue) != 0 && (flags & ExpLeagueOrderFlags.saved.rawValue == 0)
     }
     
     func archive() {
@@ -223,50 +223,50 @@ class ExpLeagueOrder: NSManagedObject {
             cancel()
         }
         update {
-            self.flags |= ExpLeagueOrderFlags.Archived.rawValue
+            self.flags |= ExpLeagueOrderFlags.archived.rawValue
         }
     }
     
     func continueTask() {
-        if (status == .Deciding) {
+        if (status == .deciding) {
             update {
-                self.flags ^= ExpLeagueOrderFlags.Deciding.rawValue
+                self.flags ^= ExpLeagueOrderFlags.deciding.rawValue
             }
         }
     }
     
     var status: ExpLeagueOrderStatus {
-        if (flags & ExpLeagueOrderFlags.Archived.rawValue != 0) {
-            return .Archived
+        if (flags & ExpLeagueOrderFlags.archived.rawValue != 0) {
+            return .archived
         }
-        else if (flags & ExpLeagueOrderFlags.Canceled.rawValue != 0) {
-            return .Canceled
+        else if (flags & ExpLeagueOrderFlags.canceled.rawValue != 0) {
+            return .canceled
         }
-        else if (flags & ExpLeagueOrderFlags.Closed.rawValue != 0) {
-            return .Closed
+        else if (flags & ExpLeagueOrderFlags.closed.rawValue != 0) {
+            return .closed
         }
-        else if (flags & ExpLeagueOrderFlags.Deciding.rawValue != 0) {
-            return .Deciding
+        else if (flags & ExpLeagueOrderFlags.deciding.rawValue != 0) {
+            return .deciding
         }
         else if (activeExpert == nil) {
-            return .ExpertSearch
+            return .expertSearch
         }
         else if (before - CFAbsoluteTimeGetCurrent() > 0) {
-            return .Open
+            return .open
         }
         else {
-            return .Overtime
+            return .overtime
         }
     }
     
-    private dynamic var _shortAnswer: String?
+    fileprivate dynamic var _shortAnswer: String?
     var shortAnswer: String {
         guard _shortAnswer == nil else {
             return _shortAnswer!
         }
         
         var result: String? = nil
-        if let answer = messages.filter({msg in msg.type == .Answer}).last {
+        if let answer = messages.filter({msg in msg.type == .answer}).last {
             result = answer.properties["short"] as? String
         }
         result = result ?? "Нет простого ответа"
@@ -277,34 +277,34 @@ class ExpLeagueOrder: NSManagedObject {
     internal dynamic var _unreadCount: NSNumber?
     var unreadCount: Int {
         guard _unreadCount == nil else {
-            return _unreadCount!.longValue
+            return _unreadCount!.intValue
         }
-        let result = messages.filter({$0.type == .ExpertMessage || $0.type == .Answer}).filter({!$0.read}).count
-        _unreadCount = result
+        let result = messages.filter({$0.type == .expertMessage || $0.type == .answer}).filter({!$0.read}).count
+        _unreadCount = result as NSNumber?
         return result
     }
     
-    override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
-        super.init(entity: entity, insertIntoManagedObjectContext: context)
+    override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?) {
+        super.init(entity: entity, insertInto: context)
     }
     
     init(_ roomId: String, offer: ExpLeagueOffer, context: NSManagedObjectContext) {
-        super.init(entity: NSEntityDescription.entityForName("Order", inManagedObjectContext: context)!, insertIntoManagedObjectContext: context)
+        super.init(entity: NSEntityDescription.entity(forEntityName: "Order", in: context)!, insertInto: context)
         self.started = offer.started.timeIntervalSinceReferenceDate
-        self.id = roomId.lowercaseString
-        self.topic = offer.xml.XMLString()
+        self.id = roomId.lowercased()
+        self.topic = offer.xml.xmlString
         save()
     }
 
-    private dynamic var _offer: ExpLeagueOffer?
+    fileprivate dynamic var _offer: ExpLeagueOffer?
     var offer: ExpLeagueOffer {
         if _offer == nil {
             do {
-                _offer = ExpLeagueOffer(xml: try DDXMLElement(XMLString: topic))
+                _offer = ExpLeagueOffer(xml: try DDXMLElement(xmlString: topic))
             }
             catch { // old format
                 do {
-                    _offer = try ExpLeagueOffer(json: try NSJSONSerialization.JSONObjectWithData(topic.dataUsingEncoding(NSUTF8StringEncoding)!, options: []) as! [String: AnyObject])
+                    _offer = try ExpLeagueOffer(json: try JSONSerialization.jsonObject(with: topic.data(using: String.Encoding.utf8)!, options: []) as! [String: AnyObject])
                 }
                 catch {
                     _offer = ExpLeagueOffer(plain: topic)
@@ -328,8 +328,8 @@ class ExpLeagueOrder: NSManagedObject {
 class ExpLeagueOffer: NSObject {
     let xml: DDXMLElement
     
-    var duration: NSTimeInterval {
-        switch(xml.attributeStringValueForName("urgency")) {
+    var duration: TimeInterval {
+        switch(xml.attributeStringValue(forName: "urgency")) {
         case "day":
             return 24 * 60 * 60
         case "asap":
@@ -340,76 +340,76 @@ class ExpLeagueOffer: NSObject {
     }
     
     var topic: String {
-        return xml.elementForName("topic").stringValue()
+        return xml.forName("topic")!.stringValue!
     }
     
-    var images: [NSURL] {
-        var result: [NSURL] = []
-        for imageElement in xml.elementsForName("image") {
-            result.append(NSURL(string: imageElement.stringValue)!)
+    var images: [URL] {
+        var result: [URL] = []
+        for imageElement in xml.elements(forName: "image") {
+            result.append(URL(string: imageElement.stringValue!)!)
         }
         return result
     }
     
-    var started: NSDate {
-        return NSDate(timeIntervalSince1970: xml.attributeDoubleValueForName("started"))
+    var started: Date {
+        return Date(timeIntervalSince1970: xml.attributeDoubleValue(forName: "started"))
     }
     
     var local: Bool {
-        return xml.attributeBoolValueForName("local")
+        return xml.attributeBoolValue(forName: "local")
     }
     
     var location: CLLocationCoordinate2D? {
-        if let location = xml.elementForName("location", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
-            return CLLocationCoordinate2DMake(location.attributeDoubleValueForName("latitude") , location.attributeDoubleValueForName("longitude"))
+        if let location = xml.forName("location", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
+            return CLLocationCoordinate2DMake(location.attributeDoubleValue(forName: "latitude") , location.attributeDoubleValue(forName: "longitude"))
         }
         return nil
     }
     
     var room: String {
-        let roomAttr = XMPPJID.jidWithString(self.xml.attributeStringValueForName("room"))
-        return roomAttr.user
+        let roomAttr = XMPPJID(string: self.xml.attributeStringValue(forName: "room"))
+        return roomAttr!.user
     }
     
     init(xml: DDXMLElement) {
         self.xml = xml
     }
     
-    init(topic: String, urgency: String, local: Bool, location locationOrNil: CLLocationCoordinate2D?, experts: [XMPPJID], images: [String], started: NSTimeInterval?) {
+    init(topic: String, urgency: String, local: Bool, location locationOrNil: CLLocationCoordinate2D?, experts: [XMPPJID], images: [String], started: TimeInterval?) {
         let offer = DDXMLElement(name: "offer", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
-        offer.addAttributeWithName("local", boolValue: local)
-        offer.addAttributeWithName("urgency", stringValue: urgency)
-        offer.addAttributeWithName("started", doubleValue: started ?? NSDate().timeIntervalSince1970)
-        let topicElement = DDXMLElement(name: "topic", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
-        topicElement.setStringValue(topic)
-        offer.addChild(topicElement)
+        offer?.addAttribute(withName: "local", boolValue: local)
+        offer?.addAttribute(withName: "urgency", stringValue: urgency)
+        offer?.addAttribute(withName: "started", doubleValue: started ?? Date().timeIntervalSince1970)
+        let topicElement = DDXMLElement(name: "topic", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)!
+        topicElement.stringValue = topic
+        offer?.addChild(topicElement)
         var expertsElement: DDXMLElement? = nil
         for expert in experts {
             expertsElement = expertsElement != nil ? expertsElement: DDXMLElement(name: "experts-filter", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
-            let accept = DDXMLElement(name: "accept", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
-            accept.setStringValue("\(expert)")
+            let accept = DDXMLElement(name: "accept", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)!
+            accept.stringValue = "\(expert)"
             expertsElement?.addChild(accept)
         }
         if expertsElement != nil {
-            offer.addChild(expertsElement!)
+            offer?.addChild(expertsElement!)
         }
         
         for img in images {
             if (img.isEmpty) {
                 continue
             }
-            let imageElement = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
-            imageElement.setStringValue("\(AppDelegate.instance.activeProfile!.imageStorage)\(img)")
-            offer.addChild(imageElement)
+            let imageElement = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)!
+            imageElement.stringValue = "\(AppDelegate.instance.activeProfile!.imageStorage)\(img)"
+            offer?.addChild(imageElement)
         }
         
         if let location = locationOrNil {
             let locationElement = DDXMLElement(name: "location", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
-            locationElement.addAttributeWithName("longitude", doubleValue: location.longitude)
-            locationElement.addAttributeWithName("latitude", doubleValue: location.latitude)
-            offer.addChild(locationElement)
+            locationElement?.addAttribute(withName: "longitude", doubleValue: location.longitude)
+            locationElement?.addAttribute(withName: "latitude", doubleValue: location.latitude)
+            offer?.addChild(locationElement!)
         }
-        xml = offer
+        xml = offer!
     }
     
     convenience init(json: [String: AnyObject]) throws {
@@ -420,8 +420,8 @@ class ExpLeagueOffer: NSObject {
             local: json["local"] as! Bool,
             location: location != nil ? CLLocationCoordinate2D(latitude: location!["latitude"] as! Double, longitude: location!["longitude"] as! Double) : nil,
             experts: [],
-            images: (json["attachments"] as! String).componentsSeparatedByString(", "),
-            started: json["started"] as? NSTimeInterval
+            images: (json["attachments"] as! String).components(separatedBy: ", "),
+            started: json["started"] as? TimeInterval
         )
     }
     
@@ -431,22 +431,22 @@ class ExpLeagueOffer: NSObject {
 }
 
 enum ExpLeagueOrderStatus: Int {
-    case Open = 0
-    case Closed = 1
-    case Overtime = 2
-    case Canceled = 3
-    case Archived = 4
-    case ExpertSearch = 5
-    case Deciding = 7
+    case open = 0
+    case closed = 1
+    case overtime = 2
+    case canceled = 3
+    case archived = 4
+    case expertSearch = 5
+    case deciding = 7
 }
 
 enum ExpLeagueOrderFlags: Int16 {
-    case LocalTask = 16384
-    case SpecificTask = 8196
-    case Closed = 4096
-    case Canceled = 2048
-    case Archived = 1024
-    case Deciding = 512
-    case Fake = 4
-    case Saved = 8
+    case localTask = 16384
+    case specificTask = 8196
+    case closed = 4096
+    case canceled = 2048
+    case archived = 1024
+    case deciding = 512
+    case fake = 4
+    case saved = 8
 }

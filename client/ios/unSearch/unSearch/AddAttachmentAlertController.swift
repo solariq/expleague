@@ -16,12 +16,10 @@ class AddAttachmentAlertController: UIViewController {
     
     @IBOutlet weak var chooseFromGalleryButton: UIButton!
 
-    let parent: UIViewController?
     let imageAttachmentCallback: (String) -> ()
     let filter: [String]?
     
-    init(parent: UIViewController?, filter: [String]? = nil, imageAttachmentCallback: (String) -> ()) {
-        self.parent = parent
+    init(filter: [String]? = nil, imageAttachmentCallback: @escaping (String) -> ()) {
         self.filter = filter
         self.imageAttachmentCallback = imageAttachmentCallback
         super.init(nibName: "AddAttachmentAlert", bundle: nil)
@@ -34,11 +32,11 @@ class AddAttachmentAlertController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        imageCollection.registerClass(ImagePreview.self, forCellWithReuseIdentifier: "ImagePreview")
+        imageCollection.register(ImagePreview.self, forCellWithReuseIdentifier: "ImagePreview")
         
         imageCollection.delegate = self
         imageCollection.dataSource = self
-        imageCollection.userInteractionEnabled = true
+        imageCollection.isUserInteractionEnabled = true
         imageCollection.reloadData()
         automaticallyAdjustsScrollViewInsets = false
         var buttons: [UIView] = []
@@ -54,89 +52,88 @@ class AddAttachmentAlertController: UIViewController {
         }
     }
     
-    @IBAction func onCancel(sender: AnyObject) {
-        self.dismissViewControllerAnimated(true, completion: nil)
+    @IBAction func onCancel(_ sender: AnyObject) {
+        self.dismiss(animated: true, completion: nil)
     }
 
-    @IBAction func onCapturePhoto(sender: AnyObject) {
+    @IBAction func onCapturePhoto(_ sender: AnyObject) {
         let picker =  UIImagePickerController()
         picker.delegate = self
-        picker.sourceType = .Camera
+        picker.sourceType = .camera
         
-        presentViewController(picker, animated: true, completion: nil)
+        present(picker, animated: true, completion: nil)
     }
     
-    @IBAction func onSelectFromGallery(sender: AnyObject) {
+    @IBAction func onSelectFromGallery(_ sender: AnyObject) {
         let picker = UIImagePickerController()
         picker.delegate = self
-        picker.sourceType = .PhotoLibrary
-        presentViewController(picker, animated: true, completion: nil)
+        picker.sourceType = .photoLibrary
+        present(picker, animated: true, completion: nil)
     }
 }
 
 extension AddAttachmentAlertController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         let mediaType = info[UIImagePickerControllerMediaType] as? String ?? ""
         switch(mediaType) {
         case "public.movie": break
         case "public.image":
-            if let url = info[UIImagePickerControllerReferenceURL] as? NSURL,
-                let fetch = PHAsset.fetchAssetsWithALAssetURLs([url], options:nil).lastObject as? PHAsset {
-                    picker.dismissViewControllerAnimated(true, completion: {
-                    self.dismissViewControllerAnimated(true, completion: nil)
+            if let url = info[UIImagePickerControllerReferenceURL] as? URL,
+                let fetch = PHAsset.fetchAssets(withALAssetURLs: [url], options:nil).lastObject {
+                    picker.dismiss(animated: true, completion: {
+                    self.dismiss(animated: true, completion: nil)
                     self.imageAttachmentCallback(fetch.localIdentifier)
                 })
                 return
             }
             else if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
                 var holder: PHObjectPlaceholder?
-                PHPhotoLibrary.sharedPhotoLibrary().performChanges({
-                    let request = PHAssetChangeRequest.creationRequestForAssetFromImage(image)
+                PHPhotoLibrary.shared().performChanges({
+                    let request = PHAssetChangeRequest.creationRequestForAsset(from: image)
                     holder = request.placeholderForCreatedAsset
                 }) { (rc, error) in
-                    dispatch_async(dispatch_get_main_queue()) {
+                    DispatchQueue.main.async {
                         guard !rc || holder == nil else {
-                            picker.dismissViewControllerAnimated(true, completion: {
-                                self.dismissViewControllerAnimated(true, completion: nil)
+                            picker.dismiss(animated: true, completion: {
+                                self.dismiss(animated: true, completion: nil)
                             })
                             self.imageAttachmentCallback(holder!.localIdentifier)
                             return
                         }
-                        let unableToSave = UIAlertController(title: "unSearch", message: "Не удалось сохранить снимок \(error != nil ? ": \(error)" : ".")", preferredStyle: .Alert)
-                        unableToSave.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-                        picker.presentViewController(unableToSave, animated: true, completion: nil)
+                        let unableToSave = UIAlertController(title: "unSearch", message: "Не удалось сохранить снимок \(error != nil ? ": \(error)" : ".")", preferredStyle: .alert)
+                        unableToSave.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                        picker.present(unableToSave, animated: true, completion: nil)
                     }
                 }
                 return
             }
         default: break
         }
-        let unableToPick = UIAlertController(title: "unSearch", message: "Невозможно приложить выбранный результат ", preferredStyle: .Alert)
-        unableToPick.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-        picker.presentViewController(unableToPick, animated: true, completion: nil)
+        let unableToPick = UIAlertController(title: "unSearch", message: "Невозможно приложить выбранный результат ", preferredStyle: .alert)
+        unableToPick.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+        picker.present(unableToPick, animated: true, completion: nil)
     }
 }
 
 extension AddAttachmentAlertController:UICollectionViewDelegate, UICollectionViewDataSource {
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return section > 0 ? 0 : getNumberOfImagesInCollection()
     }
     
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("ImagePreview", forIndexPath: indexPath) as! ImagePreview
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ImagePreview", for: indexPath) as! ImagePreview
         let requestOptions = PHImageRequestOptions()
-        requestOptions.synchronous = true
+        requestOptions.isSynchronous = true
         
         let fetchOptions = PHFetchOptions()
         fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
         
-        if let fetchResult: PHFetchResult = PHAsset.fetchAssetsWithMediaType(PHAssetMediaType.Image, options: fetchOptions) {
-            let asset = fetchResult.objectAtIndex(fetchResult.count - 1 - indexPath.item) as! PHAsset
-            cell.imageLocalIdentifier = asset.localIdentifier
-            cell.selectedMark.hidden = !(self.filter?.contains(asset.localIdentifier) ?? false)
-            PHAsset.fetchSquareThumbnail(cell.image.frame.width, localId: asset.localIdentifier) { (image, _) in
-                cell.image.image = image
-            }
+        let fetchResult: PHFetchResult = PHAsset.fetchAssets(with: PHAssetMediaType.image, options: fetchOptions)
+        let asset = fetchResult.object(at: fetchResult.count - 1 - (indexPath as NSIndexPath).item)
+        cell.imageLocalIdentifier = asset.localIdentifier
+        cell.selectedMark.isHidden = !(self.filter?.contains(asset.localIdentifier) ?? false)
+        PHAsset.fetchSquareThumbnail(cell.image.frame.width, localId: asset.localIdentifier) { (image, _) in
+            cell.image.image = image
         }
 
         cell.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(imageTapped)))
@@ -144,27 +141,23 @@ extension AddAttachmentAlertController:UICollectionViewDelegate, UICollectionVie
         return cell
     }
 
-    func imageTapped(sender: UITapGestureRecognizer) {
-        if let indexPath = imageCollection.indexPathForItemAtPoint(sender.locationInView(imageCollection)),
-            let imagePreview = imageCollection.cellForItemAtIndexPath(indexPath) as? ImagePreview {
-            dismissViewControllerAnimated(true, completion: nil)
+    func imageTapped(_ sender: UITapGestureRecognizer) {
+        if let indexPath = imageCollection.indexPathForItem(at: sender.location(in: imageCollection)),
+            let imagePreview = imageCollection.cellForItem(at: indexPath) as? ImagePreview {
+            dismiss(animated: true, completion: nil)
             imageAttachmentCallback(imagePreview.imageLocalIdentifier!)
         }
     }
     
     func getNumberOfImagesInCollection() -> Int {
         let requestOptions = PHImageRequestOptions()
-        requestOptions.synchronous = true
+        requestOptions.isSynchronous = true
         
         let fetchOptions = PHFetchOptions()
         fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
         
-        if let fetchResult: PHFetchResult = PHAsset.fetchAssetsWithMediaType(PHAssetMediaType.Image, options: fetchOptions) {
-            return fetchResult.count - (filter?.count ?? 0)
-        }
-        else {
-            return 0
-        }
+        let fetchResult: PHFetchResult = PHAsset.fetchAssets(with: PHAssetMediaType.image, options: fetchOptions)
+        return fetchResult.count - (filter?.count ?? 0)
     }
 }
 
@@ -174,11 +167,11 @@ class ImagePreview: UICollectionViewCell {
     var imageLocalIdentifier: String?
     
     override init(frame: CGRect) {
-        selectedMark = UIImageView(frame: CGRect(origin: CGPointMake(frame.width - 35, 5) , size: CGSizeMake(25, 25)))
+        selectedMark = UIImageView(frame: CGRect(origin: CGPoint(x: frame.width - 35, y: 5) , size: CGSize(width: 25, height: 25)))
         selectedMark.image = UIImage(named: "attachment_checked")
         selectedMark.layer.zPosition = 5
-        selectedMark.hidden = true
-        image = UIImageView(frame: CGRect(origin: CGPointZero, size: CGSizeMake(frame.size.width - 5, frame.size.height)))
+        selectedMark.isHidden = true
+        image = UIImageView(frame: CGRect(origin: CGPoint.zero, size: CGSize(width: frame.size.width - 5, height: frame.size.height)))
         image.layer.cornerRadius = Palette.CORNER_RADIUS
         image.clipsToBounds = true
         super.init(frame: frame)

@@ -19,13 +19,13 @@ class CameraCaptureController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationController!.navigationBarHidden = false
-        navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.blackColor()]
+        navigationController!.isNavigationBarHidden = false
+        navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.black]
         navigationItem.title = nil
         
-        let cancelButton = UIBarButtonItem(title: "Отменить", style: .Done, target: self, action: #selector(CameraCaptureController.cancel))
-        cancelButton.tintColor = UIColor.blackColor()
-        navigationItem.setLeftBarButtonItem(cancelButton, animated: false)
+        let cancelButton = UIBarButtonItem(title: "Отменить", style: .done, target: self, action: #selector(CameraCaptureController.cancel))
+        cancelButton.tintColor = UIColor.black
+        navigationItem.setLeftBarButton(cancelButton, animated: false)
 
         captureSession.sessionPreset = AVCaptureSessionPreset1280x720
         tryInitCaptureDevice()
@@ -46,17 +46,17 @@ class CameraCaptureController: UIViewController {
         }
         
         let previewLayer = AVCaptureVideoPreviewLayer(session: self.captureSession)
-        self.view.layer.addSublayer(previewLayer)
-        previewLayer.frame = self.view.layer.frame
+        self.view.layer.addSublayer(previewLayer!)
+        previewLayer?.frame = self.view.layer.frame
         captureSession.startRunning()
     }
     
     func tryInitCaptureDevice() {
         let devices = AVCaptureDevice.devices()
         
-        for device in devices {
-            if (device.hasMediaType(AVMediaTypeVideo)) {
-                if (device.position == AVCaptureDevicePosition.Back) {
+        for device in devices! {
+            if ((device as AnyObject).hasMediaType(AVMediaTypeVideo)) {
+                if ((device as AnyObject).position == AVCaptureDevicePosition.back) {
                     self.captureDevice = device as? AVCaptureDevice
                 }
             }
@@ -64,6 +64,6 @@ class CameraCaptureController: UIViewController {
     }
 
     func cancel() {
-        dismissViewControllerAnimated(true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
 }

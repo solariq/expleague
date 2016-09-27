@@ -13,21 +13,21 @@ import UIKit
 
 class ExpLeagueTag: NSManagedObject {
     var type: ExpLeagueTagType {
-        return ExpLeagueTagType(rawValue: self.typeInt.shortValue)!
+        return ExpLeagueTagType(rawValue: self.typeInt.int16Value)!
     }
     
-    private dynamic var _icon: UIImage?
+    fileprivate dynamic var _icon: UIImage?
     var icon: UIImage {
         if (_icon != nil) {
             return _icon!
         }
         if iconStr.hasPrefix("named://") {
-            return UIImage(named: iconStr.substringFromIndex("named://".endIndex))!
+            return UIImage(named: iconStr.substring(from: "named://".endIndex))!
         }
-        let request = NSURLRequest(URL: NSURL(string: iconStr)!)
+        let request = URLRequest(url: URL(string: iconStr)!)
         
         do {
-            let imageData = try NSURLConnection.sendSynchronousRequest(request, returningResponse: nil)
+            let imageData = try NSURLConnection.sendSynchronousRequest(request, returning: nil)
             
             if let image = UIImage(data: imageData) {
                 _icon = image
@@ -40,25 +40,25 @@ class ExpLeagueTag: NSManagedObject {
         return UIImage(named: "search_icon")!
     }
     
-    func updateIcon(icon: String) {
+    func updateIcon(_ icon: String) {
         iconStr = icon
         save()
     }
     
     init(name: String, icon: String, type: ExpLeagueTagType, context: NSManagedObjectContext) {
-        super.init(entity: NSEntityDescription.entityForName("Tag", inManagedObjectContext: context)!, insertIntoManagedObjectContext: context)
+        super.init(entity: NSEntityDescription.entity(forEntityName: "Tag", in: context)!, insertInto: context)
         self.iconStr = icon
         self.name = name
-        self.typeInt = NSNumber(short: type.rawValue)
+        self.typeInt = NSNumber(value: type.rawValue as Int16)
         save()
     }
     
-    override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
-        super.init(entity: entity, insertIntoManagedObjectContext: context)
+    override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?) {
+        super.init(entity: entity, insertInto: context)
     }
 }
 
 enum ExpLeagueTagType: Int16 {
-    case Tag = 0
-    case Pattern = 1
+    case tag = 0
+    case pattern = 1
 }

@@ -14,7 +14,7 @@ import CoreData
 
 extension ExpLeagueOrder {
     @NSManaged var id: String
-    @NSManaged var started: NSTimeInterval
+    @NSManaged var started: TimeInterval
     @NSManaged var topic: String
     @NSManaged var flags: Int16
     @NSManaged var messagesRaw: NSOrderedSet

@@ -8,7 +8,7 @@ import UIKit
 
 @objc
 class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
-    private var lastKnownMessage: Int = 0
+    fileprivate var lastKnownMessage: Int = 0
     let order: ExpLeagueOrder
     var lastAnswer: AnswerReceivedModel?
 
@@ -30,7 +30,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         }
     }
 
-    var state: ChatState = .Chat {
+    var state: ChatState = .chat {
         didSet {
             if let controller = self.controller {
                 controller.state = state
@@ -44,8 +44,8 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         }
     }
 
-    func sync(rebuild: Bool = false) {
-        dispatch_async(dispatch_get_main_queue()){
+    func sync(_ rebuild: Bool = false) {
+        DispatchQueue.main.async{
             if (rebuild) {
                 self.rebuild()
             }
@@ -55,13 +55,13 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         }
     }
     
-    func translateToIndex(plain: Int) -> NSIndexPath? {
+    func translateToIndex(_ plain: Int) -> IndexPath? {
         var x = plain - 1
         for i in 0..<groups.count {
             for j in 0..<groups[i].count {
                 x -= 1
                 if (x <= 0) {
-                    return NSIndexPath(forRow: j, inSection: i)
+                    return IndexPath(row: j, section: i)
                 }
             }
             x -= 1
@@ -69,8 +69,8 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         return nil
     }
 
-    private var finished = true
-    private func rebuild() {
+    fileprivate var finished = true
+    fileprivate func rebuild() {
         finished = true
         cells.removeAll()
         lastAnswer = nil
@@ -79,7 +79,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         syncInner()
     }
     
-    private func syncInner() {
+    fileprivate func syncInner() {
         guard finished else {
             rebuild()
             return
@@ -94,7 +94,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         var modelChangeCount = 0
         
         var expertModel = cells.filter({$0 is ExpertModel}).last as? ExpertModel
-        expertModel = expertModel != nil ? (expertModel!.status != .Canceled ? expertModel : nil) : nil
+        expertModel = expertModel != nil ? (expertModel!.status != .canceled ? expertModel : nil) : nil
 
         if (model is LookingForExpertModel || model is TaskInProgressModel) {
             cells.removeLast();
@@ -114,28 +114,28 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             if (!model.accept(msg)) { // switch model
                 modelChangeCount += 1
                 var newModel : ChatCellModel? = nil
-                if (msg.type == .ExpertAssignment) {
+                if (msg.type == .expertAssignment) {
                     let expert = msg.expert!
                     if (expertModel == nil || expertModel!.expert.login != expert.login) {
                         expertModel = ExpertModel(expert: expert)
                         newModel = expertModel
                     }
                     else {
-                        expertModel?.status = .OnTask
+                        expertModel?.status = .onTask
                     }
                     if progressModel is LookingForExpertModel {
                         progressModel = TaskInProgressModel(order: order)
                     }
                 }
-                else if (msg.type == .ExpertCancel) {
-                    expertModel!.status = .Canceled
+                else if (msg.type == .expertCancel) {
+                    expertModel!.status = .canceled
                     expertModel = nil
                 }
-                else if (msg.type == .ExpertProgress) {
-                    progressModel?.accept(msg)
+                else if (msg.type == .expertProgress) {
+                    _ = progressModel?.accept(msg)
                 }
-                else if (msg.type == .Answer) {
-                    expertModel?.status = .Finished
+                else if (msg.type == .answer) {
+                    expertModel?.status = .finished
                     let id = "message-\(msg.hashValue)"
                     answer += "\n<div id=\"\(id)\"/>\n"
                     answer += (msg.body!);
@@ -145,10 +145,10 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                     
                     progressModel = nil
                 }
-                else if (msg.type == .ExpertMessage) {
+                else if (msg.type == .expertMessage) {
                     newModel = ChatMessageModel(incoming: true, author: msg.from)
                 }
-                else if (msg.type == .ClientMessage) {
+                else if (msg.type == .clientMessage) {
                     newModel = ChatMessageModel(incoming: false, author: "me")
                     if (progressModel == nil) {
                         progressModel = LookingForExpertModel(order: order)
@@ -165,12 +165,12 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         }
         
         switch(order.status) {
-        case .Deciding:
-            state = .Ask
-        case .Closed, .Canceled:
-            state = order.fake ? .Save : .Closed
+        case .deciding:
+            state = .ask
+        case .closed, .canceled:
+            state = order.fake ? .save : .closed
         default:
-            state = .Chat
+            state = .chat
             if (progressModel != nil) {
                 cells.append(progressModel!)
             }
@@ -183,10 +183,10 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         self.controller?.scrollToLastMessage()
     }
 
-    private var cells: [ChatCellModel] = [];
+    fileprivate var cells: [ChatCellModel] = [];
     var groups: [[ChatCellModel]] = []
     var experts: [ExpertModel] = []
-    private func updateGroups() {
+    fileprivate func updateGroups() {
         groups.removeAll()
         experts.removeAll()
         var group = Array<ChatCellModel>()
@@ -203,45 +203,45 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         groups.append(group)
     }
     
-    var lastIndex: NSIndexPath? {
-        for i in (0..<groups.count).reverse() {
+    var lastIndex: IndexPath? {
+        for i in (0..<groups.count).reversed() {
             if (groups[i].count > 0) {
-                return NSIndexPath(forRow: groups[i].count - 1, inSection: i)
+                return IndexPath(row: groups[i].count - 1, section: i)
             }
         }
         return nil
     }
 
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return groups.count
     }
 
-    func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return section > 0 ? CGFloat(ExpertPresentation.height + 8) : 0
     }
     
-    func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         if (section == 0) {
             return UIView()
         }
         let expert = experts[section - 1]
-        let expertPresentation = NSBundle.mainBundle().loadNibNamed("ExpertPresentation", owner: self, options: [:])[0] as! UIView
+        let expertPresentation = Bundle.main.loadNibNamed("ExpertPresentation", owner: self, options: [:])?[0] as! UIView
         try! expert.form(chatCell: expertPresentation)
         let container = UIView()
-        container.backgroundColor = UIColor.clearColor()
-        container.frame = CGRectMake(0, 0, tableView.frame.width, ExpertPresentation.height + 8)
+        container.backgroundColor = UIColor.clear
+        container.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: ExpertPresentation.height + 8)
         container.addSubview(expertPresentation)
-        expertPresentation.frame = CGRectMake(24, 8, tableView.frame.width - 48, ExpertPresentation.height)
+        expertPresentation.frame = CGRect(x: 24, y: 8, width: tableView.frame.width - 48, height: ExpertPresentation.height)
         return container
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return groups[section].count;
     }
 
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let model = groups[indexPath.section][indexPath.row]
-        let cell = tableView.dequeueReusableCellWithIdentifier(String(model.type), forIndexPath: indexPath) as! ChatCell
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let model = groups[(indexPath as NSIndexPath).section][(indexPath as NSIndexPath).row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: model.type), for: indexPath) as! ChatCell
         cell.controller = controller
         cell.frame.size.width = tableView.frame.width
         try! model.form(chatCell: cell)
@@ -251,20 +251,23 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         return cell
     }
 
-    func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
-        cell.backgroundColor = UIColor.clearColor()
-        cell.contentView.backgroundColor = UIColor.clearColor()
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        cell.backgroundColor = UIColor.clear
+        cell.contentView.backgroundColor = UIColor.clear
     }
 
     var modelCells: [CellType: ChatCell] = [:]
-    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        let model = groups[indexPath.section][indexPath.row]
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        let model = groups[(indexPath as NSIndexPath).section][(indexPath as NSIndexPath).row]
         var modelCell = modelCells[model.type]
         if modelCell == nil {
-            modelCell = (tableView.dequeueReusableCellWithIdentifier(String(model.type)) as! ChatCell)
+            modelCell = (tableView.dequeueReusableCell(withIdentifier: String(describing: model.type)) as! ChatCell)
             modelCells[model.type] = modelCell
+            modelCell!.frame.size.width = tableView.frame.width
         }
-        modelCell?.frame.size.width = tableView.frame.width
+        try! model.form(chatCell: modelCell!)
+        modelCell!.updateConstraints()
+        modelCell!.layoutIfNeeded()
         if let compositeCell = modelCell as? MessageChatCell {
             return model.height(maxWidth: compositeCell.maxWidth)
         }
@@ -288,7 +291,7 @@ class ChatAction: NSObject {
     let action: ()->Void
     let caption: String
 
-    init(action: () -> Void, caption: String) {
+    init(action: @escaping () -> Void, caption: String) {
         self.action = action
         self.caption = caption
     }
@@ -299,8 +302,8 @@ class ChatAction: NSObject {
 }
 
 enum ChatState: Int {
-    case Chat = 0
-    case Save = 1
-    case Ask = 2
-    case Closed = 3
+    case chat = 0
+    case save = 1
+    case ask = 2
+    case closed = 3
 }

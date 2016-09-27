@@ -10,26 +10,26 @@ import Foundation
 import UIKit
 
 enum CellAlignment: Int {
-    case Left = 0
-    case Right = 1
-    case Center = 2
+    case left = 0
+    case right = 1
+    case center = 2
 }
 
 class ChatCell: UITableViewCell {
     static let defaultFont = UIFont(name: "Helvetica", size: 15)!
-    static let topicFont = UIFont.systemFontOfSize(17)
+    static let topicFont = UIFont.systemFont(ofSize: 17)
     var controller: OrderDetailsViewController?
     override func awakeFromNib() {
         super.awakeFromNib()
-        backgroundColor = UIColor.clearColor()
-        selectionStyle = .None
+        backgroundColor = UIColor.clear
+        selectionStyle = .none
     }
 }
 
 class SimpleChatCell: ChatCell {
     @IBOutlet weak var separator: UIView!
     var action: (() -> Void)?
-    @IBAction func fire(sender: UIButton) {
+    @IBAction func fire(_ sender: UIButton) {
         action?()
     }
     @IBOutlet weak var button: UIButton!
@@ -43,16 +43,16 @@ class SimpleChatCell: ChatCell {
     var actionHighlighted = false {
         didSet {
             if (actionHighlighted) {
-                separator.hidden = true
+                separator.isHidden = true
                 button.backgroundColor = controlColor
-                button.setTitleColor(UIColor.whiteColor(), forState: .Normal)
-                button.setTitleColor(UIColor.whiteColor(), forState: .Selected)
+                button.setTitleColor(UIColor.white, for: UIControlState())
+                button.setTitleColor(UIColor.white, for: .selected)
             }
             else {
-                separator.hidden = false
-                button.backgroundColor = UIColor.whiteColor()
-                button.setTitleColor(controlColor, forState: .Normal)
-                button.setTitleColor(controlColor, forState: .Selected)
+                separator.isHidden = false
+                button.backgroundColor = UIColor.white
+                button.setTitleColor(controlColor, for: UIControlState())
+                button.setTitleColor(controlColor, for: .selected)
             }
             button.layoutIfNeeded()
         }
@@ -61,19 +61,19 @@ class SimpleChatCell: ChatCell {
     override func awakeFromNib() {
         frame.size.height += 8
         super.awakeFromNib()
-        contentView.layer.borderColor = Palette.BORDER.CGColor
+        contentView.layer.borderColor = Palette.BORDER.cgColor
         contentView.layer.borderWidth = 2
         contentView.layer.cornerRadius = Palette.CORNER_RADIUS
         contentView.clipsToBounds = true
-        contentView.backgroundColor = UIColor.whiteColor()
-        backgroundColor = UIColor.clearColor()
+        contentView.backgroundColor = UIColor.white
+        backgroundColor = UIColor.clear
     }
     
     override func layoutSubviews() {
         autoresizesSubviews = false
         contentView.clipsToBounds = true
-        contentView.backgroundColor = UIColor.whiteColor()
-        contentView.frame = CGRectMake(24, 6, frame.width - 48, frame.height - 8)
+        contentView.backgroundColor = UIColor.white
+        contentView.frame = CGRect(x: 24, y: 6, width: frame.width - 48, height: frame.height - 8)
 //        super.layoutSubviews()
     }
 }
@@ -85,6 +85,7 @@ class SetupChatCell: ChatCell {
     @IBOutlet weak var topic: UITextView!
     @IBOutlet weak var topicHeight: NSLayoutConstraint!
     @IBOutlet weak var attachmentsHeight: NSLayoutConstraint!
+    @IBOutlet weak var labelHeightConstraint: NSLayoutConstraint!
     
     var attachments: Int = 0 {
         didSet {
@@ -103,32 +104,32 @@ class SetupChatCell: ChatCell {
     
     var textHeight: CGFloat {
         get {
-            return topicHeight.constant
+            return topicHeight.constant - topic.textContainerInset.bottom - topic.textContainerInset.top
         }
         set (h) {
-            topicHeight.constant = h
+            topicHeight.constant = h + topic.textContainerInset.bottom + topic.textContainerInset.top
         }
     }
     
-    static var labelHeight = CGFloat(18)
+    static var labelHeight = CGFloat(30)
     class func height(textHeight size: CGFloat, attachments: Int) -> CGFloat {
-        return SetupChatCell.labelHeight + 16 + size + 8 + (attachments > 0 ? SetupChatCell.ATTACHMENTS_HEIGHT : 0);
+        return SetupChatCell.labelHeight + size + 4 + (attachments > 0 ? SetupChatCell.ATTACHMENTS_HEIGHT : 0);
     }
 
     override func awakeFromNib() {
         super.awakeFromNib()
         backgroundColor = Palette.CHAT_BACKGROUND
-        SetupChatCell.labelHeight = status.frame.height
-        attachmentsView.registerClass(AttachmentCell.self, forCellWithReuseIdentifier: "AttachmentCell")
+        SetupChatCell.labelHeight = labelHeightConstraint.constant
+        attachmentsView.register(AttachmentCell.self, forCellWithReuseIdentifier: "AttachmentCell")
         attachmentsView.backgroundView = nil
-        attachmentsView.backgroundColor = UIColor.clearColor()
+        attachmentsView.backgroundColor = UIColor.clear
         attachmentsView.translatesAutoresizingMaskIntoConstraints = false
 
-        topic.editable = false
-        topic.backgroundColor = UIColor.clearColor()
-        topic.textContainerInset = UIEdgeInsetsZero
-        topic.contentInset = UIEdgeInsetsZero
-        topic.scrollEnabled = false
+        topic.isEditable = false
+        topic.backgroundColor = UIColor.clear
+        topic.textContainerInset = UIEdgeInsets.zero
+        topic.contentInset = UIEdgeInsets.zero
+        topic.isScrollEnabled = false
         topic.textContainer.lineFragmentPadding = 0
     }
 }
@@ -154,7 +155,7 @@ class AttachmentCell: UICollectionViewCell {
         super.init(frame: frame)
         layer.cornerRadius = Palette.CORNER_RADIUS
         layer.masksToBounds = true
-        backgroundColor = UIColor.clearColor()
+        backgroundColor = UIColor.clear
         backgroundView = nil
         translatesAutoresizingMaskIntoConstraints = false
         contentView.translatesAutoresizingMaskIntoConstraints = false
@@ -197,29 +198,29 @@ class TaskInProgressCell: SimpleChatCell {
     
     var pages: Int {
         get {
-            let parts = pagesCount.text!.componentsSeparatedByString(" ")
+            let parts = pagesCount.text!.components(separatedBy: " ")
             return Int(parts.last!)!
         }
         set(pages) {
-            var parts = pagesCount.text!.componentsSeparatedByString(" ")
+            var parts = pagesCount.text!.components(separatedBy: " ")
             parts[parts.count - 1] = String(pages)
-            pagesCount.text = parts.joinWithSeparator(" ")
+            pagesCount.text = parts.joined(separator: " ")
         }
     }
 
     var calls: Int {
         get {
-            let parts = callsCount.text!.componentsSeparatedByString(" ")
+            let parts = callsCount.text!.components(separatedBy: " ")
             return Int(parts.last!)!
         }
         set(calls) {
-            var parts = callsCount.text!.componentsSeparatedByString(" ")
+            var parts = callsCount.text!.components(separatedBy: " ")
             parts[parts.count - 1] = String(calls)
-            callsCount.text = parts.joinWithSeparator(" ")
+            callsCount.text = parts.joined(separator: " ")
         }
     }
     
-    private static var heightFromNib: CGFloat = 120;
+    fileprivate static var heightFromNib: CGFloat = 120;
     override class var height: CGFloat {
         return TaskInProgressCell.heightFromNib;
     }
@@ -229,8 +230,8 @@ class TaskInProgressCell: SimpleChatCell {
         controlColor = Palette.ERROR
         TaskInProgressCell.heightFromNib = frame.height
         patternsView.backgroundView = nil
-        patternsView.backgroundColor = UIColor.clearColor()
-        patternsView.registerClass(AttachmentCell.self, forCellWithReuseIdentifier: "PatternCell")
+        patternsView.backgroundColor = UIColor.clear
+        patternsView.register(AttachmentCell.self, forCellWithReuseIdentifier: "PatternCell")
         patternsView.translatesAutoresizingMaskIntoConstraints = false
     }
 }
@@ -253,13 +254,13 @@ class LookingForExpertCell: SimpleChatCell {
     
     var online: Int {
         get {
-            let parts = expertsOnline.text!.componentsSeparatedByString(" ")
+            let parts = expertsOnline.text!.components(separatedBy: " ")
             return Int(parts[0])!
         }
         set(online) {
-            var parts = expertsOnline.text!.componentsSeparatedByString(" ")
+            var parts = expertsOnline.text!.components(separatedBy: " ")
             parts[0] = String(online)
-            expertsOnline.text = parts.joinWithSeparator(" ")
+            expertsOnline.text = parts.joined(separator: " ")
         }
     }
 }
@@ -268,7 +269,7 @@ class AnswerReceivedCell: TaskInProgressCell {
     @IBOutlet var stars: [UIImageView]!
     var id: String?
     
-    private static var heightFromNib1: CGFloat = 120
+    fileprivate static var heightFromNib1: CGFloat = 120
 
     override class var height: CGFloat {
         return AnswerReceivedCell.heightFromNib1
@@ -279,7 +280,7 @@ class AnswerReceivedCell: TaskInProgressCell {
         controlColor = Palette.CONTROL
         self.action = {
             self.controller!.detailsView!.scrollToAnswer(true)
-            self.controller!.answer.stringByEvaluatingJavaScriptFromString("document.getElementById('\(self.id!)').scrollIntoView()")
+            self.controller!.answer.stringByEvaluatingJavaScript(from: "document.getElementById('\(self.id!)').scrollIntoView()")
         }
         AnswerReceivedCell.heightFromNib1 = frame.height
     }
@@ -288,12 +289,12 @@ class AnswerReceivedCell: TaskInProgressCell {
         didSet {
             for i in 0..<stars.count {
                 if(rating == nil) {
-                    stars[i].hidden = true
+                    stars[i].isHidden = true
                     
                 }
                 else {
-                    stars[i].hidden = false
-                    stars[i].highlighted = rating! > i
+                    stars[i].isHidden = false
+                    stars[i].isHighlighted = rating! > i
                 }
             }
         }
@@ -319,21 +320,21 @@ class ExpertPresentation: UIView {
     override func awakeFromNib() {
         ExpertPresentation.height = frame.height
         frame.size.height += 12
-        layer.borderColor = Palette.BORDER.CGColor
+        layer.borderColor = Palette.BORDER.cgColor
         layer.borderWidth = 2
         layer.cornerRadius = Palette.CORNER_RADIUS
         clipsToBounds = true
-        backgroundColor = UIColor.whiteColor()
+        backgroundColor = UIColor.white
     }
 }
 
 class ContinueCell: UIView {
     @IBOutlet weak var no: UIButton!
     @IBOutlet weak var yes: UIButton!
-    @IBAction func cancel(sender: AnyObject) {
+    @IBAction func cancel(_ sender: AnyObject) {
         self.cancel?()
     }
-    @IBAction func fire(sender: UIButton) {
+    @IBAction func fire(_ sender: UIButton) {
         ok?()
     }
     
@@ -343,19 +344,19 @@ class ContinueCell: UIView {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        yes.backgroundColor = UIColor.whiteColor()
+        yes.backgroundColor = UIColor.white
         yes.layer.borderWidth = 2
-        yes.layer.borderColor = Palette.CONTROL.CGColor
+        yes.layer.borderColor = Palette.CONTROL.cgColor
         yes.layer.cornerRadius = 8
 //        yes.layer.masksToBounds = true
-        no.backgroundColor = UIColor.whiteColor()
+        no.backgroundColor = UIColor.white
         no.layer.borderWidth = 2
-        no.layer.borderColor = Palette.CONTROL.CGColor
+        no.layer.borderColor = Palette.CONTROL.cgColor
         no.layer.cornerRadius = 8
 //        no.layer.masksToBounds = true
 
-        NSLayoutConstraint.activateConstraints([
-            NSLayoutConstraint(item: self, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: frame.height)
+        NSLayoutConstraint.activate([
+            NSLayoutConstraint(item: self, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: frame.height)
         ])
     }
 }
@@ -363,10 +364,10 @@ class ContinueCell: UIView {
 class SaveCell: UIView {
     @IBOutlet weak var no: UIButton!
     @IBOutlet weak var yes: UIButton!
-    @IBAction func cancel(sender: AnyObject) {
+    @IBAction func cancel(_ sender: AnyObject) {
         ok?()
     }
-    @IBAction func fire(sender: UIButton) {
+    @IBAction func fire(_ sender: UIButton) {
         cancel?()
     }
     
@@ -376,19 +377,19 @@ class SaveCell: UIView {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        yes.backgroundColor = UIColor.whiteColor()
+        yes.backgroundColor = UIColor.white
         yes.layer.borderWidth = 2
-        yes.layer.borderColor = Palette.CONTROL.CGColor
+        yes.layer.borderColor = Palette.CONTROL.cgColor
         yes.layer.cornerRadius = 8
         //        yes.layer.masksToBounds = true
-        no.backgroundColor = UIColor.whiteColor()
+        no.backgroundColor = UIColor.white
         no.layer.borderWidth = 2
-        no.layer.borderColor = Palette.CONTROL.CGColor
+        no.layer.borderColor = Palette.CONTROL.cgColor
         no.layer.cornerRadius = 8
         //        no.layer.masksToBounds = true
         
-        NSLayoutConstraint.activateConstraints([
-            NSLayoutConstraint(item: self, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: frame.height)
+        NSLayoutConstraint.activate([
+            NSLayoutConstraint(item: self, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: frame.height)
             ])
     }
 }
@@ -404,14 +405,14 @@ class SeparatorView: UIView {
 }
 
 enum CellType: Int {
-    case Incoming = 0
-    case Outgoing = 1
-    case AnswerReceived = 2
-    case LookingForExpert = 3
-    case TaskInProgress = 4
-    case ExpertIdle = 5
-    case Feedback = 6
-    case Setup = 7
-    case Expert = 8
-    case None = -1
+    case incoming = 0
+    case outgoing = 1
+    case answerReceived = 2
+    case lookingForExpert = 3
+    case taskInProgress = 4
+    case expertIdle = 5
+    case feedback = 6
+    case setup = 7
+    case expert = 8
+    case none = -1
 }

@@ -10,6 +10,17 @@ import Foundation
 import UIKit
 import StoreKit
 import XMPPFramework
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
 
 class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSenderQueue {
     var detailsView: OrderDetailsView? {
@@ -31,14 +42,14 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     let data: ChatModel
 
     override func loadView() {
-        view = OrderDetailsView(frame: UIScreen.mainScreen().applicationFrame)
+        view = OrderDetailsView(frame: UIScreen.main.applicationFrame)
     }
     
     var answerText: String = "" {
         willSet (newValue){
             if (answerText != newValue) {
-                let path = NSBundle.mainBundle().bundlePath
-                let baseURL = NSURL.fileURLWithPath(path);
+                let path = Bundle.main.bundlePath
+                let baseURL = URL(fileURLWithPath: path);
                 answer.loadHTMLString("<html><head><script src=\"md-scripts.js\"></script>\n"
                     + "<link rel=\"stylesheet\" href=\"markdownpad-github.css\"></head>"
                     + "<body>\(newValue)</body></html>", baseURL: baseURL)
@@ -51,10 +62,10 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         PurchaseHelper.instance.register(["com.expleague.unSearch.Star30r", "com.expleague.unSearch.Star150r"])
         detailsView!.navigationItem = navigationItem
         detailsView!.controller = self
-        edgesForExtendedLayout = .Bottom
+        edgesForExtendedLayout = .bottom
         automaticallyAdjustsScrollViewInsets = false
         addChildViewController(input)
-        input.didMoveToParentViewController(self)
+        input.didMove(toParentViewController: self)
         answerDelegate = AnswerDelegate(parent: self)
         answer.delegate = answerDelegate
         input.delegate = self;
@@ -62,41 +73,41 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         
     var state: ChatState? {
         willSet (newState) {
-            if let state = newState where state != self.state {
+            if let state = newState, state != self.state {
                 switch(state) {
-                case .Chat:
+                case .chat:
                     detailsView!.bottomContents = input.view
-                case .Ask:
-                    let ask = NSBundle.mainBundle().loadNibNamed("ContinueView", owner: self, options: [:])[0] as! ContinueCell
+                case .ask:
+                    let ask = Bundle.main.loadNibNamed("ContinueView", owner: self, options: [:])?[0] as! ContinueCell
                     ask.ok = {
-                        let feedback = FeedbackViewController(parent: self)
-                        feedback.modalPresentationStyle = .OverCurrentContext
+                        let feedback = FeedbackViewController(owner: self)
+                        feedback.modalPresentationStyle = .overCurrentContext
                         self.providesPresentationContextTransitionStyle = true;
                         self.definesPresentationContext = true;
 
-                        self.presentViewController(feedback, animated: true, completion: nil)
+                        self.present(feedback, animated: true, completion: nil)
                     }
                     
                     ask.cancel = {
-                        self.state = .Chat
+                        self.state = .chat
                         self.data.order.continueTask()
                     }
                     detailsView!.bottomContents = ask
-                case .Closed:
+                case .closed:
                     detailsView?.bottomContents = nil
-                case .Save:
-                    let ask = NSBundle.mainBundle().loadNibNamed("SaveView", owner: self, options: [:])[0] as! SaveCell
+                case .save:
+                    let ask = Bundle.main.loadNibNamed("SaveView", owner: self, options: [:])?[0] as! SaveCell
                     ask.ok = {
                         self.data.order.markSaved()
-                        self.state = .Closed
+                        self.state = .closed
                     }
                     
                     ask.cancel = {
-                        self.state = .Closed
+                        self.state = .closed
                     }
                     detailsView!.bottomContents = ask
                 }
-                dispatch_async(dispatch_get_main_queue()) {
+                DispatchQueue.main.async {
                     self.enforceScroll = true
                     self.view.layoutIfNeeded()
                     self.detailsView?.adjustScroll()
@@ -105,22 +116,22 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         }
     }
     
-    func chatInput(chatInput: ChatInputViewController, didSend text: String) -> Bool {
+    func chatInput(_ chatInput: ChatInputViewController, didSend text: String) -> Bool {
         data.order.send(text: text)
         return true
     }
 
-    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
-        coordinator.animateAlongsideTransition({ (context: UIViewControllerTransitionCoordinatorContext) -> Void in
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        coordinator.animate(alongsideTransition: { (context: UIViewControllerTransitionCoordinatorContext) -> Void in
             self.messages.reloadData()
             self.detailsView!.adjustScroll()
         }, completion: nil)
-        super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
+        super.viewWillTransition(to: size, with: coordinator)
     }
     
-    private var enforceScroll = false
-    private var shown = false
-    override func viewWillAppear(animated: Bool) {
+    fileprivate var enforceScroll = false
+    fileprivate var shown = false
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         data.controller = self
         data.sync(true)
@@ -128,7 +139,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         enforceScroll = true
     }
 
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         AppDelegate.instance.historyView?.selected = nil
         detailsView?.keyboardTracker.stop()
@@ -142,7 +153,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
 
         if (enforceScroll) {
             scrollToLastMessage()
-            if (data.state == .Chat || data.state == .Save) {
+            if (data.state == .chat || data.state == .save) {
                 detailsView!.scrollToChat(false)
             }
             else {
@@ -152,15 +163,15 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         }
     }
 
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        tabBarController?.tabBar.hidden = true
-        if (data.order.unreadCount == 0 && state == .Ask) {
-            dispatch_async(dispatch_get_main_queue()) {
-                let alert = UIAlertController(title: "unSearch", message: "Не забудьте оценить ответ эксперта!", preferredStyle: .Alert)
-                alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-                self.presentViewController(alert, animated: true, completion: nil)
+        tabBarController?.tabBar.isHidden = true
+        if (data.order.unreadCount == 0 && state == .ask) {
+            DispatchQueue.main.async {
+                let alert = UIAlertController(title: "unSearch", message: "Не забудьте оценить ответ эксперта!", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
             }
         }
         data.markAsRead()
@@ -168,10 +179,10 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     }
     
     
-     func attach(input: ChatInputViewController) {
-        let addAttachmentAlert = AddAttachmentAlertController(parent: parentViewController) { imageId in
-            let alert = UIAlertController(title: "unSearch", message: "Отправить выбранную фотографию эксперту?", preferredStyle: .Alert)
-            alert.addAction(UIAlertAction(title: "Да", style: .Default, handler: {action in
+     func attach(_ input: ChatInputViewController) {
+        let addAttachmentAlert = AddAttachmentAlertController(filter: nil) { imageId in
+            let alert = UIAlertController(title: "unSearch", message: "Отправить выбранную фотографию эксперту?", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Да", style: .default, handler: {action in
                 let attachment = OrderAttachment(imageId: imageId)
                 AppDelegate.instance.uploader.upload(attachment)
                 QObject.track(attachment, #selector(OrderAttachment.progressChanged)) {
@@ -179,9 +190,9 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
                         input.progress.tintColor = Palette.ERROR
                         input.progress.progress = 1.0
                         let error = attachment.error != nil ? " : \(attachment.error!)" : "."
-                        let warning = UIAlertController(title: "unSearch", message: "Не удалось отослать изображение\(error)", preferredStyle: .Alert)
-                        warning.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-                        self.presentViewController(warning, animated: true, completion: nil)
+                        let warning = UIAlertController(title: "unSearch", message: "Не удалось отослать изображение\(error)", preferredStyle: .alert)
+                        warning.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                        self.present(warning, animated: true, completion: nil)
                         return false
                     }
                     else if (attachment.progress < 1) {
@@ -192,36 +203,36 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
                     else {
                         input.progress.tintColor = Palette.OK
                         input.progress.progress = attachment.progress!
-                        let img = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
-                        img.setStringValue(attachment.url.absoluteString)
+                        let img = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)!
+                        img.stringValue = attachment.url.absoluteString
                         self.data.order.send(xml: img, type: "groupchat")
                         
                         return false
                     }
                 }
             }))
-            alert.addAction(UIAlertAction(title: "Нет", style: .Cancel, handler: nil))
-            self.presentViewController(alert, animated: true, completion: nil)
+            alert.addAction(UIAlertAction(title: "Нет", style: .cancel, handler: nil))
+            self.present(alert, animated: true, completion: nil)
         }
-        addAttachmentAlert.modalPresentationStyle = .OverCurrentContext
+        addAttachmentAlert.modalPresentationStyle = .overCurrentContext
         self.providesPresentationContextTransitionStyle = true;
         self.definesPresentationContext = true;
         
-        presentViewController(addAttachmentAlert, animated: true, completion: nil)
-        input.progress.tintColor = UIColor.blueColor()
+        present(addAttachmentAlert, animated: true, completion: nil)
+        input.progress.tintColor = UIColor.blue
     }
     
-    func append(id: String, image: UIImage, progress: (UIProgressView) -> Void) {
+    func append(_ id: String, image: UIImage, progress: (UIProgressView) -> Void) {
         progress(input.progress)
     }
     
-    func report(id: String, status: Bool) {
-        input.progress.tintColor = status ? UIColor.greenColor() : UIColor.redColor()
+    func report(_ id: String, status: Bool) {
+        input.progress.tintColor = status ? UIColor.green : UIColor.red
     }
 
     func scrollToLastMessage() {
         if let index = data.lastIndex {
-            messages.scrollToRowAtIndexPath(index, atScrollPosition: .Top, animated: true)
+            messages.scrollToRow(at: index as IndexPath, at: .top, animated: true)
         }
         if (shown) {
             data.markAsRead()
@@ -229,7 +240,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     }
     
     func close() {
-        navigationController?.popViewControllerAnimated(false)
+        _ = navigationController?.popViewController(animated: false)
     }
 
 
@@ -248,8 +259,8 @@ class FeedbackViewController: UIViewController {
     @IBOutlet weak var cancelButton: UIButton!
     @IBOutlet weak var scoreButton: UIButton!
     
-    private var busy = false
-    @IBAction func fire(sender: AnyObject) {
+    fileprivate var busy = false
+    @IBAction func fire(_ sender: AnyObject) {
         guard !busy else {
             return
         }
@@ -259,29 +270,29 @@ class FeedbackViewController: UIViewController {
             let purchaseId = rate == 4 ? "com.expleague.unSearch.Star30r" : "com.expleague.unSearch.Star150r"
             PurchaseHelper.instance.request(purchaseId) {rc, payment in
                 switch(rc) {
-                case .Accepted:
-                    self.parent.data.order.feedback(stars: rate!, payment: payment)
-                    self.dismissViewControllerAnimated(true, completion: nil)
-                case .Error:
-                    let alert = UIAlertController(title: "unSearch", message: "Не удалось провести платеж!", preferredStyle: .Alert)
-                    alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-                    self.presentViewController(alert, animated: true, completion: nil)
-                case .Rejected:
-                    let alert = UIAlertController(title: "unSearch", message: "Платеж отклонен!", preferredStyle: .Alert)
-                    alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
-                    self.presentViewController(alert, animated: true, completion: nil)
+                case .accepted:
+                    self.owner.data.order.feedback(stars: rate!, payment: payment)
+                    self.dismiss(animated: true, completion: nil)
+                case .error:
+                    let alert = UIAlertController(title: "unSearch", message: "Не удалось провести платеж!", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                    self.present(alert, animated: true, completion: nil)
+                case .rejected:
+                    let alert = UIAlertController(title: "unSearch", message: "Платеж отклонен!", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                    self.present(alert, animated: true, completion: nil)
                     break
                 }
                 self.busy = false
             }
         }
         else {
-            parent.data.order.feedback(stars: rate!, payment: nil)
-            self.dismissViewControllerAnimated(true, completion: nil)
+            owner.data.order.feedback(stars: rate!, payment: nil)
+            self.dismiss(animated: true, completion: nil)
         }
     }
-    @IBAction func cancel(sender: AnyObject) {
-        self.dismissViewControllerAnimated(true, completion: nil)
+    @IBAction func cancel(_ sender: AnyObject) {
+        self.dismiss(animated: true, completion: nil)
     }
     
     @IBOutlet var stars: [UIImageView]!
@@ -296,87 +307,87 @@ class FeedbackViewController: UIViewController {
         cancelButton.layer.cornerRadius = Palette.CORNER_RADIUS
         cancelButton.clipsToBounds = true
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:))))
-        updateDescription(nil, order: parent.data.order)
+        updateDescription(nil, order: owner.data.order)
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        parent.detailsView?.keyboardTracker.stop()
+        owner.detailsView?.keyboardTracker.stop()
     }
 
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        parent.detailsView?.keyboardTracker.start()
+        owner.detailsView?.keyboardTracker.start()
     }
     
-    func handleTap(recognizer: UITapGestureRecognizer) {
-        let tap = recognizer.locationInView(feedback)
+    func handleTap(_ recognizer: UITapGestureRecognizer) {
+        let tap = recognizer.location(in: feedback)
         var minDistance = CGFloat.infinity;
         for i in 0..<stars.count {
             let rect = stars[i].frame
-            let starCenter = CGPointMake(rect.origin.x + rect.width / 2, rect.origin.y + rect.height / 2)
+            let starCenter = CGPoint(x: rect.origin.x + rect.width / 2, y: rect.origin.y + rect.height / 2)
             let distance = self.distance(tap, starCenter)
             if (distance < 20 && distance < minDistance) {
                 rate = i + 1
                 minDistance = distance
             }
         }
-        updateDescription(rate, order: parent.data.order);
+        updateDescription(rate, order: owner.data.order);
     }
     
-    func updateDescription(rate: Int?, order: ExpLeagueOrder) {
+    func updateDescription(_ rate: Int?, order: ExpLeagueOrder) {
         if (rate == nil || rate! == 0) {
-            let pages = parent.data.lastAnswer?.progress.pagesCount ?? 0
-            let calls = parent.data.lastAnswer?.progress.callsCount ?? 0
+            let pages = owner.data.lastAnswer?.progress.pagesCount ?? 0
+            let calls = owner.data.lastAnswer?.progress.callsCount ?? 0
             text.text = "Чтобы найти ответ на ваш вопрос, эксперт просмотрел \(pages) страниц\(Lang.rusNumEnding(pages, variants: ["", "ы", ""])), сделал \(calls) звон\(Lang.rusNumEnding(calls, variants: ["ок", "ка", "ков"]))."
-            scoreButton.enabled = false
+            scoreButton.isEnabled = false
             return
         }
         for i in 0..<stars.count {
-            stars[i].highlighted = i < rate
+            stars[i].isHighlighted = i < rate
         }
         switch rate! {
         case 5:
             let text = NSMutableAttributedString()
-            text.appendAttributedString(NSAttributedString(string: "Отличный ответ! Не ожидал такого.\nБольшое спасибо эксперту.\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFontOfSize(13)]))
-            text.appendAttributedString(NSAttributedString(string: "\n150р", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
+            text.append(NSAttributedString(string: "Отличный ответ! Не ожидал такого.\nБольшое спасибо эксперту.\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 13)]))
+            text.append(NSAttributedString(string: "\n150р", attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 15)]))
             self.text.attributedText = text
         case 4:
             let text = NSMutableAttributedString()
-            text.appendAttributedString(NSAttributedString(string: "Хороший ответ. Именно это и ожидалось.\nСпасибо эксперту.\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFontOfSize(13)]))
-            text.appendAttributedString(NSAttributedString(string: "\n30р", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
+            text.append(NSAttributedString(string: "Хороший ответ. Именно это и ожидалось.\nСпасибо эксперту.\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 13)]))
+            text.append(NSAttributedString(string: "\n30р", attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 15)]))
             self.text.attributedText = text
         case 3:
             let text = NSMutableAttributedString()
-            text.appendAttributedString(NSAttributedString(string: "Нормальный ответ, но хотелось большего.\n\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFontOfSize(13)]))
-            text.appendAttributedString(NSAttributedString(string: "\n0р", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
+            text.append(NSAttributedString(string: "Нормальный ответ, но хотелось большего.\n\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 13)]))
+            text.append(NSAttributedString(string: "\n0р", attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 15)]))
             self.text.attributedText = text
         case 2:
             let text = NSMutableAttributedString()
-            text.appendAttributedString(NSAttributedString(string: "Старались, но не смогли мне помочь.\n\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFontOfSize(13)]))
-            text.appendAttributedString(NSAttributedString(string: "\n0р", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
+            text.append(NSAttributedString(string: "Старались, но не смогли мне помочь.\n\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 13)]))
+            text.append(NSAttributedString(string: "\n0р", attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 15)]))
             self.text.attributedText = text
         case 1:
             let text = NSMutableAttributedString()
-            text.appendAttributedString(NSAttributedString(string: "Только зря потратил время.\n\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFontOfSize(13)]))
-            text.appendAttributedString(NSAttributedString(string: "\n0р", attributes: [NSFontAttributeName: UIFont.boldSystemFontOfSize(15)]))
+            text.append(NSAttributedString(string: "Только зря потратил время.\n\nСумма поощрения составит:", attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 13)]))
+            text.append(NSAttributedString(string: "\n0р", attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 15)]))
             self.text.attributedText = text
         default:
             break
         }
-        text.textAlignment = .Center
-        scoreButton.enabled = true
+        text.textAlignment = .center
+        scoreButton.isEnabled = true
     }
     
-    func distance(p1: CGPoint, _ p2: CGPoint) -> CGFloat {
+    func distance(_ p1: CGPoint, _ p2: CGPoint) -> CGFloat {
         let xDist = p2.x - p1.x
         let yDist = p2.y - p1.y
         return sqrt((xDist * xDist) + (yDist * yDist));
     }
 
-    let parent: OrderDetailsViewController
-    init(parent: OrderDetailsViewController) {
-        self.parent = parent
+    let owner: OrderDetailsViewController
+    init(owner: OrderDetailsViewController) {
+        self.owner = owner
         super.init(nibName: "FeedbackView", bundle: nil)
     }
 
@@ -386,19 +397,19 @@ class FeedbackViewController: UIViewController {
 }
 
 class AnswerDelegate: NSObject, UIWebViewDelegate {
-    func webView(webView: UIWebView, shouldStartLoadWithRequest request: NSURLRequest, navigationType: UIWebViewNavigationType) -> Bool {
+    func webView(_ webView: UIWebView, shouldStartLoadWith request: URLRequest, navigationType: UIWebViewNavigationType) -> Bool {
         
-        if let url = request.URL where url.scheme == "unsearch" {
+        if let url = request.url , url.scheme == "unsearch" {
             if (url.path == "/chat-messages") {
-                if let indexStr = url.fragment, index = Int(indexStr) {
-                    parent.messages.scrollToRowAtIndexPath(parent.data.translateToIndex(index)!, atScrollPosition: .Middle, animated: false)
+                if let indexStr = url.fragment, let index = Int(indexStr) {
+                    parent.messages.scrollToRow(at: parent.data.translateToIndex(index)!, at: .middle, animated: false)
                     parent.detailsView!.scrollToChat(true)
                 }
             }
             return false
         }
-        else if let url = request.URL where url.scheme.hasPrefix("http") {
-            UIApplication.sharedApplication().openURL(url)
+        else if let url = request.url , (url.scheme?.hasPrefix("http"))! {
+            UIApplication.shared.openURL(url)
             return false
         }
 

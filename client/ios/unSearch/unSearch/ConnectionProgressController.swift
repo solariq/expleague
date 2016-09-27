@@ -22,26 +22,26 @@ class ConnectionProgressController: UIViewController {
         }
         set (newState) {
             progressBar?.progress = newState.rawValue
-            progressBar?.progressTintColor = UIColor.blueColor()
+            progressBar?.progressTintColor = UIColor.blue
             progressLabel?.text = "\(newState)"
-            if (newState == .Connected) {
-                alert?.dismissViewControllerAnimated(true, completion: self.completion)
+            if (newState == .connected) {
+                alert?.dismiss(animated: true, completion: self.completion)
             }
         }
     }
     
-    func error(msg: String) {
+    func error(_ msg: String) {
         progressBar?.progress = 1.0
-        progressBar?.progressTintColor = UIColor.redColor()
+        progressBar?.progressTintColor = UIColor.red
         progressLabel?.text = msg
     }
     
     enum States: Float {
-        case Disconnected = 0.0
-        case SocketOpened = 0.2
-        case Negotiations = 0.4
-        case Configuring = 0.6
-        case Authenticating = 0.8
-        case Connected = 1.0
+        case disconnected = 0.0
+        case socketOpened = 0.2
+        case negotiations = 0.4
+        case configuring = 0.6
+        case authenticating = 0.8
+        case connected = 1.0
     }
 }

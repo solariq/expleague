@@ -14,11 +14,11 @@ protocol ChatCellModel {
 
     func height(maxWidth width: CGFloat) -> CGFloat
     func form(chatCell cell: UIView) throws
-    func accept(message: ExpLeagueMessage) -> Bool
+    func accept(_ message: ExpLeagueMessage) -> Bool
 }
 
-enum ModelErrors: ErrorType {
-    case WrongCellType
+enum ModelErrors: Error {
+    case wrongCellType
 }
 
 private class MessageVisitor: ExpLeagueMessageVisitor {
@@ -26,74 +26,74 @@ private class MessageVisitor: ExpLeagueMessageVisitor {
     init(model: CompositeCellModel) {
         self.model = model;
     }
-    func message(message: ExpLeagueMessage, text: String) {
-        model.append(text: text, time: message.ts)
+    func message(_ message: ExpLeagueMessage, text: String) {
+        model.append(text: text, time: message.ts as Date)
     }
     
-    func message(message: ExpLeagueMessage, title: String, text: String) {
+    func message(_ message: ExpLeagueMessage, title: String, text: String) {
         let result = NSMutableAttributedString()
-        result.appendAttributedString(NSAttributedString(string: title, attributes: [
-            NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleHeadline)
+        result.append(NSAttributedString(string: title, attributes: [
+            NSFontAttributeName: UIFont.preferredFont(forTextStyle: UIFontTextStyle.headline)
             ]))
-        result.appendAttributedString(NSAttributedString(string: "\n" + text, attributes: [
-            NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
+        result.append(NSAttributedString(string: "\n" + text, attributes: [
+            NSFontAttributeName: UIFont.preferredFont(forTextStyle: UIFontTextStyle.body)
             ]))
-        model.append(richText: result, time: message.ts)
+        model.append(richText: result, time: message.ts as Date)
     }
     
-    func message(message: ExpLeagueMessage, title: String, link: String) {
+    func message(_ message: ExpLeagueMessage, title: String, link: String) {
         model.append(
             richText: NSAttributedString(string: title, attributes: [
-                NSFontAttributeName: UIFont.preferredFontForTextStyle(UIFontTextStyleBody),
+                NSFontAttributeName: UIFont.preferredFont(forTextStyle: UIFontTextStyle.body),
                 NSLinkAttributeName: link,
-                NSForegroundColorAttributeName: UIColor.blueColor()
+                NSForegroundColorAttributeName: UIColor.blue
                 ]),
-            time: message.ts)
+            time: message.ts as Date)
     }
-    func message(message: ExpLeagueMessage, title: String, image: UIImage) {
-        model.append(image: image, time: message.ts)
+    func message(_ message: ExpLeagueMessage, title: String, image: UIImage) {
+        model.append(image: image, time: message.ts as Date)
     }
 }
 
 class CompositeCellModel: ChatCellModel {
     let separatorHeight: CGFloat = 8
 
-    private var parts:[AnyObject] = []
-    private var timeStamps: [NSDate] = []
-    var textAlignment: NSTextAlignment = .Left
+    fileprivate var parts:[AnyObject] = []
+    fileprivate var timeStamps: [Date] = []
+    var textAlignment: NSTextAlignment = .left
 
-    func append(text text: String, time: NSDate) {
+    func append(text: String, time: Date) {
+        parts.append(text as AnyObject)
+        timeStamps.append(time)
+    }
+
+    func append(richText text: NSAttributedString, time: Date) {
         parts.append(text)
         timeStamps.append(time)
     }
 
-    func append(richText text: NSAttributedString, time: NSDate) {
-        parts.append(text)
-        timeStamps.append(time)
-    }
-
-    func append(image img: UIImage, time: NSDate) {
+    func append(image img: UIImage, time: Date) {
         parts.append(img)
         timeStamps.append(time)
     }
 
-    func append(location point: CLLocation, time: NSDate) {
+    func append(location point: CLLocation, time: Date) {
         parts.append(point)
         timeStamps.append(time)
     }
 
-    func append(action run: () -> Void, caption: String, time: NSDate) {
+    func append(action run: @escaping () -> Void, caption: String, time: Date) {
         parts.append(ChatAction(action: run, caption: caption))
         timeStamps.append(time)
     }
     
-    func accept(message: ExpLeagueMessage) -> Bool {
+    func accept(_ message: ExpLeagueMessage) -> Bool {
         message.visitParts(MessageVisitor(model: self))
         return true;
     }
 
     var type: CellType {
-        return .None
+        return .none
     }
 
     func height(maxWidth width: CGFloat) -> CGFloat {
@@ -107,7 +107,7 @@ class CompositeCellModel: ChatCellModel {
 
     func form(chatCell cell: UIView) throws {
         guard let messageViewCell = cell as? MessageChatCell else {
-            throw ModelErrors.WrongCellType
+            throw ModelErrors.wrongCellType
         }
         form(messageViewCell: messageViewCell)
     }
@@ -117,7 +117,7 @@ class CompositeCellModel: ChatCellModel {
             view.removeFromSuperview()
         }
         cell.content.autoresizesSubviews = false
-        cell.content.autoresizingMask = .None
+        cell.content.autoresizingMask = UIViewAutoresizing()
         var height: CGFloat = 0.0
         var width: CGFloat = 0.0
         var prev: UIView?
@@ -128,16 +128,16 @@ class CompositeCellModel: ChatCellModel {
             var block: UIView?
             if let text = parts[i] as? String {
                 let label = UITextView()
-                label.editable = false
-                label.dataDetectorTypes = .All
+                label.isEditable = false
+                label.dataDetectorTypes = .all
                 label.font = ChatCell.defaultFont
                 label.text = text
-                label.textAlignment = .Left
-                label.backgroundColor = UIColor.clearColor()
-                label.textContainerInset = UIEdgeInsetsZero
-                label.contentInset = UIEdgeInsetsZero
+                label.textAlignment = .left
+                label.backgroundColor = UIColor.clear
+                label.textContainerInset = UIEdgeInsets.zero
+                label.contentInset = UIEdgeInsets.zero
                 label.contentSize = blockSize
-                label.scrollEnabled = false
+                label.isScrollEnabled = false
                 label.textContainer.lineFragmentPadding = 0
                 label.textAlignment = self.textAlignment
 
@@ -145,15 +145,15 @@ class CompositeCellModel: ChatCellModel {
             }
             else if let richText = parts[i] as? NSAttributedString {
                 let label = UITextView()
-                label.editable = false
-                label.dataDetectorTypes = .All
+                label.isEditable = false
+                label.dataDetectorTypes = .all
                 label.attributedText = richText
-                label.textAlignment = .Left
-                label.backgroundColor = UIColor.clearColor()
-                label.textContainerInset = UIEdgeInsetsZero
-                label.contentInset = UIEdgeInsetsZero
+                label.textAlignment = .left
+                label.backgroundColor = UIColor.clear
+                label.textContainerInset = UIEdgeInsets.zero
+                label.contentInset = UIEdgeInsets.zero
                 label.contentSize = blockSize
-                label.scrollEnabled = false
+                label.isScrollEnabled = false
                 label.textContainer.lineFragmentPadding = 0
                 label.textAlignment = self.textAlignment
                 block = label
@@ -167,20 +167,20 @@ class CompositeCellModel: ChatCellModel {
                 let mapView = MKMapView()
                 let region = MKCoordinateRegionMake(location.coordinate, MKCoordinateSpanMake(0.005, 0.005))
                 mapView.setRegion(region, animated: false)
-                mapView.setCenterCoordinate(location.coordinate, animated: false)
-                mapView.userInteractionEnabled = false
+                mapView.setCenter(location.coordinate, animated: false)
+                mapView.isUserInteractionEnabled = false
                 let annotation = MKPointAnnotation()
                 annotation.coordinate = location.coordinate
                 mapView.addAnnotation(annotation)
                 block = mapView
             }
             else if let action = parts[i] as? ChatAction {
-                let button = UIButton(type: .Custom)
-                button.setTitle(action.caption, forState: .Normal)
+                let button = UIButton(type: .custom)
+                button.setTitle(action.caption, for: UIControlState())
                 if #available(iOS 9.0, *) {
-                    button.addTarget(action, action: #selector(ChatAction.push), forControlEvents: .PrimaryActionTriggered)
+                    button.addTarget(action, action: #selector(ChatAction.push), for: .primaryActionTriggered)
                 } else {
-                    button.addTarget(action, action: #selector(ChatAction.push), forControlEvents: .TouchUpInside)
+                    button.addTarget(action, action: #selector(ChatAction.push), for: .touchUpInside)
                 }
                 block = button
             }
@@ -188,24 +188,24 @@ class CompositeCellModel: ChatCellModel {
                 cell.content.addSubview(block!)
                 width = max(width, blockSize.width)
                 block!.translatesAutoresizingMaskIntoConstraints = false
-                block!.addConstraint(NSLayoutConstraint(item: block!, attribute: .Width, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: blockSize.width))
-                block!.addConstraint(NSLayoutConstraint(item: block!, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: blockSize.height))
+                block!.addConstraint(NSLayoutConstraint(item: block!, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: blockSize.width))
+                block!.addConstraint(NSLayoutConstraint(item: block!, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: blockSize.height))
 
                 if (prev != nil) {
-                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .Top, relatedBy: .Equal, toItem: prev!, attribute: .Bottom, multiplier: 1, constant: 0))
+                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .top, relatedBy: .equal, toItem: prev!, attribute: .bottom, multiplier: 1, constant: 0))
                 }
                 else {
-                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .Top, relatedBy: .Equal, toItem: cell.content, attribute: .TopMargin, multiplier: 1, constant: 0))
+                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .top, relatedBy: .equal, toItem: cell.content, attribute: .topMargin, multiplier: 1, constant: 0))
                 }
                 switch(self.textAlignment) {
-                case .Left:
-                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .Leading, relatedBy: .Equal, toItem: cell.content, attribute: .LeadingMargin, multiplier: 1, constant: 0))
+                case .left:
+                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .leading, relatedBy: .equal, toItem: cell.content, attribute: .leadingMargin, multiplier: 1, constant: 0))
                     break
-                case .Center:
-                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .CenterX, relatedBy: .Equal, toItem: cell.content, attribute: .CenterX, multiplier: 1, constant: 0))
+                case .center:
+                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .centerX, relatedBy: .equal, toItem: cell.content, attribute: .centerX, multiplier: 1, constant: 0))
                     break
                 default:
-                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .Trailing, relatedBy: .Equal, toItem: cell.content, attribute: .TrailingMargin, multiplier: 1, constant: 0))
+                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .trailing, relatedBy: .equal, toItem: cell.content, attribute: .trailingMargin, multiplier: 1, constant: 0))
                     break
 
                 }
@@ -214,17 +214,17 @@ class CompositeCellModel: ChatCellModel {
             }
         }
 
-        cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .Height, relatedBy: .GreaterThanOrEqual, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: ceil(height + 10)))
-        cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .Width, relatedBy: .GreaterThanOrEqual, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: ceil(width + 12)))
+        cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .height, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: ceil(height + 10)))
+        cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .width, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: ceil(width + 12)))
 //        print("Cell: \(cell.dynamicType), content size: (\(width), \(height)), cell size: \(cell.frame.size)")
     }
 
-    private func blockSize(width width: CGFloat, index: Int) -> CGSize {
+    fileprivate func blockSize(width: CGFloat, index: Int) -> CGSize {
         var blockSize: CGSize
         if let text = parts[index] as? String {
-            blockSize = text.boundingRectWithSize(
-                    CGSizeMake(width, CGFloat(MAXFLOAT)),
-                    options: NSStringDrawingOptions.UsesLineFragmentOrigin,
+            blockSize = text.boundingRect(
+                    with: CGSize(width: width, height: CGFloat(MAXFLOAT)),
+                    options: NSStringDrawingOptions.usesLineFragmentOrigin,
                     attributes: [
                             NSFontAttributeName : ChatCell.defaultFont
                     ],
@@ -232,9 +232,9 @@ class CompositeCellModel: ChatCellModel {
                 ).size
         }
         else if let richText = parts[index] as? NSAttributedString {
-            blockSize = richText.boundingRectWithSize(
-            CGSizeMake(width, CGFloat(MAXFLOAT)),
-                    options: NSStringDrawingOptions.UsesLineFragmentOrigin,
+            blockSize = richText.boundingRect(
+            with: CGSize(width: width, height: CGFloat(MAXFLOAT)),
+                    options: NSStringDrawingOptions.usesLineFragmentOrigin,
                     context: nil).size
         }
         else if let image = parts[index] as? UIImage {
@@ -246,15 +246,15 @@ class CompositeCellModel: ChatCellModel {
             blockSize = bs
         }
         else if let _ = parts[index] as? CLLocation {
-            blockSize = CGSizeMake((width - 32), (width - 32))
+            blockSize = CGSize(width: (width - 32), height: (width - 32))
         }
         else if let _ = parts[index] as? ChatAction {
-            blockSize = CGSizeMake(width - 10, 40)
+            blockSize = CGSize(width: width - 10, height: 40)
         }
         else {
-            blockSize = CGSizeMake(0, 0)
+            blockSize = CGSize(width: 0, height: 0)
         }
-        return CGSizeMake(blockSize.width, blockSize.height)
+        return CGSize(width: blockSize.width, height: blockSize.height)
     }
 }
 
@@ -263,7 +263,7 @@ class ChatMessageModel: CompositeCellModel {
     let incoming: Bool
 
     override var type: CellType {
-        return incoming ? .Incoming : .Outgoing
+        return incoming ? .incoming : .outgoing
     }
 
     init(incoming: Bool, author: String) {
@@ -284,8 +284,8 @@ class ChatMessageModel: CompositeCellModel {
 //        }
     }
     
-    override func accept(message: ExpLeagueMessage) -> Bool {
-        if (message.from != author || message.type == .Answer) {
+    override func accept(_ message: ExpLeagueMessage) -> Bool {
+        if (message.from != author || message.type == .answer) {
             return false
         }
 
@@ -294,15 +294,15 @@ class ChatMessageModel: CompositeCellModel {
 }
 
 class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    var timer: NSTimer?
+    var timer: Timer?
     let order: ExpLeagueOrder
     init(order: ExpLeagueOrder) {
         self.order = order
         super.init()
         for image in order.offer.images {
             do {
-                let request = NSURLRequest(URL: image)
-                let imageData = try NSURLConnection.sendSynchronousRequest(request, returningResponse: nil)
+                let request = URLRequest(url: image as URL)
+                let imageData = try NSURLConnection.sendSynchronousRequest(request, returning: nil)
                 if let image = UIImage(data: imageData) {
                     images.append(image)
                 }
@@ -318,16 +318,16 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
     }
 
     var type: CellType {
-        return .Setup
+        return .setup
     }
     
     var images: [UIImage] = []
     var location: CLLocationCoordinate2D?
     
-    func textHeight(width: CGFloat) -> CGFloat {
-        return ceil(order.text.boundingRectWithSize(
-            CGSizeMake(width, CGFloat(MAXFLOAT)),
-            options: NSStringDrawingOptions.UsesLineFragmentOrigin,
+    func textHeight(_ width: CGFloat) -> CGFloat {
+        return ceil(order.text.boundingRect(
+            with: CGSize(width: width, height: CGFloat(MAXFLOAT)),
+            options: NSStringDrawingOptions.usesLineFragmentOrigin,
             attributes: [
                 NSFontAttributeName : ChatCell.topicFont
             ],
@@ -335,17 +335,17 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
     }
 
     func height(maxWidth width: CGFloat) -> CGFloat {
-        return SetupChatCell.height(textHeight: textHeight(width), attachments: images.count + (order.offer.local ? 1 : 0))
+        return SetupChatCell.height(textHeight: textHeight(width - 32), attachments: images.count + (order.offer.local ? 1 : 0))
     }
     
-    func accept(message: ExpLeagueMessage) -> Bool {
-        return message.type == .Topic
+    func accept(_ message: ExpLeagueMessage) -> Bool {
+        return message.type == .topic
     }
 
-    func formatPeriodRussian(interval: NSTimeInterval) -> String {
-        let formatter = NSDateFormatter()
+    func formatPeriodRussian(_ interval: TimeInterval) -> String {
+        let formatter = DateFormatter()
         formatter.dateFormat = "H'ч 'mm'м'"
-        formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
         let days = Int(floor(interval / (24 * 60 * 60)))
         let ending = days % 10
         var text = "";
@@ -361,28 +361,28 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
         else if (ending >= 5) {
             text += "\(days) дней, "
         }
-        text += formatter.stringFromDate(NSDate(timeIntervalSinceReferenceDate: interval))
+        text += formatter.string(from: Date(timeIntervalSinceReferenceDate: interval))
         return text;
     }
     
     @objc
-    func advanceTimer(timer: NSTimer) {
+    func advanceTimer(_ timer: Timer) {
         let label = timer.userInfo as! UILabel
         let timeLeft = order.before - CFAbsoluteTimeGetCurrent()
         switch(order.status) {
-        case .Open, .ExpertSearch, .Deciding:
+        case .open, .expertSearch, .deciding:
             label.textColor = Palette.COMMENT
             label.text = "ОТКРЫТО. Осталось: " + formatPeriodRussian(timeLeft)
             break
-        case .Overtime:
+        case .overtime:
             label.textColor = Palette.ERROR
             label.text = "ПРОСРОЧЕНО НА: " + formatPeriodRussian(-timeLeft)
             break
-        case .Canceled:
+        case .canceled:
             label.textColor = Palette.COMMENT
             label.text = "ОТМЕНЕНО"
             break
-        case .Closed:
+        case .closed:
             label.textColor = Palette.OK
             label.text = "ВЫПОЛНЕНО"
             break
@@ -393,53 +393,54 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
     
     func form(chatCell cell: UIView) throws {
         guard let setupCell = cell as? SetupChatCell else {
-            throw ModelErrors.WrongCellType
+            throw ModelErrors.wrongCellType
         }
         setupCell.topic.text = order.offer.topic
         setupCell.textHeight = textHeight(setupCell.textWidth)
-        timer = NSTimer.scheduledTimerWithTimeInterval(30, target: self, selector: #selector(SetupModel.advanceTimer(_:)), userInfo: setupCell.status, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(SetupModel.advanceTimer(_:)), userInfo: setupCell.status, repeats: true)
         setupCell.attachments = images.count + (order.offer.local ? 1 : 0)
         setupCell.attachmentsView.dataSource = self
+//        setupCell.isHidden = !(images.count > 0 || order.offer.local)
         setupCell.attachmentsView.delegate = self
         advanceTimer(timer!)
     }
     
-    func collectionView(collectionView: UICollectionView, canMoveItemAtIndexPath indexPath: NSIndexPath) -> Bool {
+    func collectionView(_ collectionView: UICollectionView, canMoveItemAt indexPath: IndexPath) -> Bool {
         return false
     }
     
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return section > 0 ? 0 : images.count + (order.offer.local ? 1 : 0)
     }
     
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("AttachmentCell", forIndexPath: indexPath) as! AttachmentCell
-        if (indexPath.item >= images.count) {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "AttachmentCell", for: indexPath) as! AttachmentCell
+        if ((indexPath as NSIndexPath).item >= images.count) {
             let mapView = MKMapView()
             let location = order.offer.location!
             let region = MKCoordinateRegionMake(location, MKCoordinateSpanMake(0.005, 0.005))
             mapView.setRegion(region, animated: false)
-            mapView.setCenterCoordinate(location, animated: false)
-            mapView.userInteractionEnabled = false
+            mapView.setCenter(location, animated: false)
+            mapView.isUserInteractionEnabled = false
             let annotation = MKPointAnnotation()
             annotation.coordinate = location
             mapView.addAnnotation(annotation)
             cell.content = mapView
         }
         else {
-            let image = UIImageView(image: images[indexPath.item])
-            image.contentMode = UIViewContentMode.ScaleAspectFit
-            image.backgroundColor = UIColor.whiteColor()
+            let image = UIImageView(image: images[(indexPath as NSIndexPath).item])
+            image.contentMode = UIViewContentMode.scaleAspectFit
+            image.backgroundColor = UIColor.white
             cell.content = image
         }
         return cell
     }
     
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
-        let max = CGSizeMake(collectionView.frame.width - 32, collectionView.frame.height - 4)
-        if indexPath.item < images.count {
-            let image = images[indexPath.item]
-            return CGSizeMake(image.size.width / image.size.height * max.height, max.height)
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let max = CGSize(width: collectionView.frame.width - 32, height: collectionView.frame.height - 4)
+        if (indexPath as NSIndexPath).item < images.count {
+            let image = images[(indexPath as NSIndexPath).item]
+            return CGSize(width: image.size.width / image.size.height * max.height, height: max.height)
         }
         return max
     }
@@ -456,7 +457,7 @@ class ExpertModel: ChatCellModel {
     
     func form(chatCell cell: UIView) throws {
         guard let eipCell = cell as? ExpertPresentation else {
-            throw ModelErrors.WrongCellType
+            throw ModelErrors.wrongCellType
         }
         
         eipCell.name.text = expert.name
@@ -464,31 +465,31 @@ class ExpertModel: ChatCellModel {
         eipCell.avatar.online = expert.available
         
         switch (status) {
-        case .OnTask:
+        case .onTask:
             eipCell.status.text = "Работает над вашим заказом"
             eipCell.status.textColor = Palette.COMMENT
             break
-        case .Canceled:
+        case .canceled:
             eipCell.status.text = "Отказался от задания"
             eipCell.status.textColor = Palette.ERROR
             break
-        case .Finished:
+        case .finished:
             eipCell.status.text = "Работал для вас"
             eipCell.status.textColor = Palette.COMMENT
             break
         }
     }
     
-    func accept(message: ExpLeagueMessage) -> Bool {
+    func accept(_ message: ExpLeagueMessage) -> Bool {
         return false
     }
     
     var type: CellType {
-        return .Expert
+        return .expert
     }
     
     let expert: ExpLeagueMember
-    var status: ExpertModelStatus = .OnTask
+    var status: ExpertModelStatus = .onTask
     
     init(expert: ExpLeagueMember) {
         self.expert = expert
@@ -496,7 +497,7 @@ class ExpertModel: ChatCellModel {
 }
 
 enum ExpertModelStatus: Int {
-    case OnTask, Canceled, Finished
+    case onTask, canceled, finished
 }
 
 class TaskInProgressModel: NSObject, ChatCellModel {
@@ -508,7 +509,7 @@ class TaskInProgressModel: NSObject, ChatCellModel {
     var patterns: [ExpLeagueTag] = []
     
     var type: CellType {
-        return .TaskInProgress
+        return .taskInProgress
     }
 
     func height(maxWidth width: CGFloat) -> CGFloat {
@@ -517,7 +518,7 @@ class TaskInProgressModel: NSObject, ChatCellModel {
 
     func form(chatCell cell: UIView) throws {
         guard let eipCell = cell as? TaskInProgressCell else {
-            throw ModelErrors.WrongCellType
+            throw ModelErrors.wrongCellType
         }
         eipCell.pages = pagesCount
         eipCell.calls = callsCount
@@ -532,8 +533,8 @@ class TaskInProgressModel: NSObject, ChatCellModel {
         eipCell.patternsView.delegate = self
     }
 
-    func accept(message: ExpLeagueMessage) -> Bool {
-        expertProperties.addEntriesFromDictionary(message.properties as [NSObject : AnyObject])
+    func accept(_ message: ExpLeagueMessage) -> Bool {
+        expertProperties.addEntries(from: message.properties as [AnyHashable: Any])
         if let change = message.change {
             switch change.target {
             case .Pattern:
@@ -541,8 +542,8 @@ class TaskInProgressModel: NSObject, ChatCellModel {
                     if (change.type != .Remove) {
                         patterns.append(tag)
                     }
-                    else if let index = patterns.indexOf(tag) {
-                        patterns.removeAtIndex(index)
+                    else if let index = patterns.index(of: tag) {
+                        patterns.remove(at: index)
                     }
                 }
                 break
@@ -551,8 +552,8 @@ class TaskInProgressModel: NSObject, ChatCellModel {
                     if (change.type != .Remove) {
                         topics.append(tag)
                     }
-                    else if let index = topics.indexOf(tag) {
-                        topics.removeAtIndex(index)
+                    else if let index = topics.index(of: tag) {
+                        topics.remove(at: index)
                     }
                 }
                 break
@@ -564,7 +565,7 @@ class TaskInProgressModel: NSObject, ChatCellModel {
                 break
             }
         }
-        return message.type == .ExpertProgress || message.type == .ExpertAssignment
+        return message.type == .expertProgress || message.type == .expertAssignment
     }
     
     let order: ExpLeagueOrder
@@ -574,19 +575,19 @@ class TaskInProgressModel: NSObject, ChatCellModel {
 }
 
 extension TaskInProgressModel: UICollectionViewDelegate, UICollectionViewDataSource {
-    func collectionView(collectionView: UICollectionView, canMoveItemAtIndexPath indexPath: NSIndexPath) -> Bool {
+    func collectionView(_ collectionView: UICollectionView, canMoveItemAt indexPath: IndexPath) -> Bool {
         return false
     }
     
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return section > 0 ? 0 : patterns.count
     }
     
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("PatternCell", forIndexPath: indexPath) as! AttachmentCell
-        let image = UIImageView(image: patterns[indexPath.item].icon)
-        image.contentMode = UIViewContentMode.ScaleAspectFit
-        image.backgroundColor = UIColor.whiteColor()
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PatternCell", for: indexPath) as! AttachmentCell
+        let image = UIImageView(image: patterns[(indexPath as NSIndexPath).item].icon)
+        image.contentMode = UIViewContentMode.scaleAspectFit
+        image.backgroundColor = UIColor.white
         cell.content = image
         return cell
     }
@@ -597,7 +598,7 @@ class LookingForExpertModel: ChatCellModel {
     var active = true
     
     var type: CellType {
-        return .LookingForExpert
+        return .lookingForExpert
     }
 
     func height(maxWidth width: CGFloat) -> CGFloat {
@@ -606,14 +607,14 @@ class LookingForExpertModel: ChatCellModel {
 
     func form(chatCell cell: UIView) throws {
         guard let lfeCell = cell as? LookingForExpertCell else {
-            throw ModelErrors.WrongCellType
+            throw ModelErrors.wrongCellType
         }
         self.cell = lfeCell
         lfeCell.action = {
             self.order.cancel(lfeCell.controller!)
         }
         if (lfeCell.progress != nil) {
-            if (ExpLeagueProfile.state.status == .Connected) {
+            if (ExpLeagueProfile.state.status == .connected) {
                 lfeCell.progress.startAnimating()
             } else {
                 lfeCell.progress.stopAnimating()
@@ -621,7 +622,7 @@ class LookingForExpertModel: ChatCellModel {
         }
     }
     
-    func accept(message: ExpLeagueMessage) -> Bool {
+    func accept(_ message: ExpLeagueMessage) -> Bool {
         return false
     }
     
@@ -630,9 +631,9 @@ class LookingForExpertModel: ChatCellModel {
     init (order: ExpLeagueOrder){
         self.order = order
         tracker = XMPPTracker(onPresence: {(presence: XMPPPresence) -> Void in
-            let statuses = try! presence.nodesForXPath("//*[local-name()='status' and namespace-uri()='http://expleague.com/scheme']")
+            let statuses = try! presence.nodes(forXPath: "//*[local-name()='status' and namespace-uri()='http://expleague.com/scheme']")
             if statuses.count > 0, let status = statuses[0] as? DDXMLElement {
-                self.cell?.online = status.attributeIntegerValueForName("experts-online", withDefaultValue: 0)
+                self.cell?.online = status.attributeIntegerValue(forName: "experts-online", withDefaultValue: 0)
             }
         })
         order.parent.track(tracker!)
@@ -644,18 +645,18 @@ class AnswerReceivedModel: ChatCellModel {
     let id: String
     var score: Int?
     var type: CellType {
-        return .AnswerReceived
+        return .answerReceived
     }
 
     func height(maxWidth width: CGFloat) -> CGFloat {
         return AnswerReceivedCell.height + (score == nil ? -20 : 0)
     }
     
-    func accept(message: ExpLeagueMessage) -> Bool {
-        if (message.type == .Feedback) {
+    func accept(_ message: ExpLeagueMessage) -> Bool {
+        if (message.type == .feedback) {
             score = message.properties["stars"] as? Int
         }
-        guard message.type == .Answer || message.type == .Feedback else {
+        guard message.type == .answer || message.type == .feedback else {
             return false
         }
         return true
@@ -663,7 +664,7 @@ class AnswerReceivedModel: ChatCellModel {
 
     func form(chatCell cell: UIView) throws {
         guard let arCell = cell as? AnswerReceivedCell else {
-            throw ModelErrors.WrongCellType
+            throw ModelErrors.wrongCellType
         }
         try progress.form(chatCell: arCell)
         arCell.id = id
