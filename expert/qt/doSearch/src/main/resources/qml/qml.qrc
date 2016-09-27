@@ -47,5 +47,6 @@
         <file>TextKnuggetView.qml</file>
         <file>ImageKnuggetView.qml</file>
         <file>LinkKnuggetView.qml</file>
+        <file>Vault.qml</file>
     </qresource>
 </RCC>

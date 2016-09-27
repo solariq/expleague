@@ -12,22 +12,25 @@ import ExpLeague 1.0
 import "."
 
 Rectangle {
-    anchors.fill: parent
-    color: Palette.backgroundColor
     property alias downloads: downloadsPage
-    anchors.margins: 4
-
-    ColumnLayout {
+    anchors.fill: parent
+    color: Palette.navigationColor
+    Item {
         anchors.fill: parent
-        Label {
-            font.pointSize: 14
-            text: qsTr("Загрузки")
-            color: Palette.activeTextColor
-        }
-        DownloadsPage {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            id: downloadsPage
+        anchors.margins: 4
+
+        ColumnLayout {
+            anchors.fill: parent
+            Label {
+                font.pointSize: 14
+                text: qsTr("Загрузки")
+                color: Palette.activeTextColor
+            }
+            DownloadsPage {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                id: downloadsPage
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 #include "expleague.h"
 
-#include "util/math.h"
+#include "util/mmath.h"
 
 #include <assert.h>
 
@@ -29,9 +29,9 @@ doSearch::doSearch(QObject* parent) : QObject(parent) {
 
 void doSearch::setMain(QQuickWindow* main) {
     m_main = main;
-    mainChanged(main);
     m_navigation->setWindow(main);
     main->setProperty("navigation", QVariant::fromValue(m_navigation));
+    emit mainChanged(main);
 }
 
 doSearch* doSearch::instance() {
@@ -116,10 +116,10 @@ SearchRequest* doSearch::search(const QString& query, int searchIndex) const {
     return request;
 }
 
-MarkdownEditorPage* doSearch::document(Context* context, const QString& title, Member* author) const {
+MarkdownEditorPage* doSearch::document(Context* context, const QString& title, Member* author, bool editable) const {
     QString id = "document/" + context->id() + "/" + (author ? author->id() : "local") + "/" + md5(title);
-    return static_cast<MarkdownEditorPage*>(page(id, [title, author, context](const QString& id, doSearch* parent){
-        return new MarkdownEditorPage(id, context, author, title, parent);
+    return static_cast<MarkdownEditorPage*>(page(id, [title, author, context, editable](const QString& id, doSearch* parent){
+        return new MarkdownEditorPage(id, context, author, title, editable, parent);
     }));
 }
 

@@ -114,6 +114,9 @@ public:
 signals:
     void itemsChanged();
 
+private:
+    QString generateKnuggetId(const QString& suffix, int index = -1);
+
 public:
     Vault(Context* context);
 

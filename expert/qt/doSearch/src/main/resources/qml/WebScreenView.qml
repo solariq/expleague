@@ -18,9 +18,8 @@ Rectangle {
     property var url: owner.url
     property string pageSearch: ""
     property bool options: false
-
     clip: false
-    color: Palette.backgroundColor
+    color: Palette.navigationColor
     anchors.fill: parent
 
     WebEngineProfile {
@@ -58,8 +57,15 @@ Rectangle {
                 }
             }
 
+            Item {Layout.preferredWidth: 40}
+            Label {
+                Layout.alignment: Qt.AlignVCenter
+                text: "redirs:"
+            }
+
             Item {Layout.preferredWidth: 3}
             Label {
+                Layout.alignment: Qt.AlignVCenter
                 text: (owner.redirects.length - urlTools.redirectIndex) + "/" + owner.redirects.length
                 color: Palette.activeTextColor
             }
@@ -84,7 +90,8 @@ Rectangle {
                 onClicked: owner.reset()
             }
             ColumnLayout {
-                Layout.fillHeight: true
+                Layout.preferredHeight: parent.height - 4
+                Layout.alignment: Qt.AlignVCenter
                 Layout.preferredWidth: 15
                 spacing: 0
                 Button {
@@ -98,7 +105,6 @@ Rectangle {
                         width: 10
                         anchors.centerIn: parent
                         source: "qrc:/expand.png"
-                        rotation: 180
                     }
                     background: Rectangle {
                         color: Palette.activeColor
@@ -117,6 +123,7 @@ Rectangle {
                         height: 10
                         width: 10
                         anchors.centerIn: parent
+                        rotation: 180
                         source: "qrc:/expand.png"
                     }
                     background: Rectangle {
@@ -129,7 +136,8 @@ Rectangle {
             }
             Item {Layout.preferredWidth: 3}
             Rectangle {
-                Layout.fillHeight: true
+                Layout.preferredHeight: parent.height - 4
+                Layout.alignment: Qt.AlignVCenter
                 Layout.fillWidth: true
                 color: Palette.activeColor
                 radius: Palette.radius
@@ -148,7 +156,8 @@ Rectangle {
             RowLayout {
                 Layout.maximumWidth: 250
                 Layout.minimumWidth: 250
-                Layout.fillHeight: true
+                Layout.preferredHeight: parent.height - 4
+                Layout.alignment: Qt.AlignVCenter
 
                 spacing: 2
                 visible: pageSearch && pageSearch.length > 0
@@ -187,7 +196,7 @@ Rectangle {
                         width: 20
                         anchors.centerIn: parent
                         source: "qrc:/expand.png"
-                        rotation: 90
+                        rotation: -90
                     }
                     background: Rectangle {
                         color: Palette.activeColor
@@ -224,7 +233,7 @@ Rectangle {
                         width: 20
                         anchors.centerIn: parent
                         source: "qrc:/expand.png"
-                        rotation: -90
+                        rotation: 90
                     }
                     background: Rectangle {
                         color: Palette.activeColor
@@ -275,8 +284,8 @@ Rectangle {
 
                 property int historyLength: 1
                 onUrlChanged: {
-//                    console.log(new Date().getTime() + " url changed: [" + url + "] owner url: [" + owner.url + "]" + " history length: " + navigationHistory.items.rowCount())
-
+                    console.log(new Date().getTime() + " url changed: [" + url + "] owner url: [" + owner.url + "]" + " history length: " + navigationHistory.items.rowCount())
+//                    webEngineView.visible = true
                     if (!owner.accept(url)) {
                         var now = new Date().getTime()
                         var delta = now - actionTs
@@ -301,7 +310,7 @@ Rectangle {
 
                     fullScreenSupportEnabled: true
                     javascriptCanAccessClipboard: true
-                    javascriptCanOpenWindows: false
+                    javascriptCanOpenWindows: true
                     pluginsEnabled: true
 
                     hyperlinkAuditingEnabled: false
@@ -352,8 +361,20 @@ Rectangle {
                         break;
                     }
 
-                    console.log("Render process exited with code " + exitCode + " " + status)
+                    console.log("Render process exited with code " + exitCode + " " + status + " at url " + self.url)
                     reloadTimer.running = true
+                }
+
+                onVisibleChanged: {
+                    console.log("Visibility of " + self.url + " set to " + visible)
+                }
+
+                onLoadingChanged: {
+                    console.log("Loading changed: " + self.url + " to " + loading)
+                    if (!loading)
+                        webEngineView.visible = Qt.binding(function() {return self === dosearch.navigation.activeScreen})
+                    else
+                        webEngineView.visible = true
                 }
 
                 Timer {
@@ -384,7 +405,11 @@ Rectangle {
                 onPositionChanged: mouse.accepted = false
             }
             DropArea {
-                anchors.fill: parent
+                x: 0
+                y: 0
+                width: parent.width - dosearch.main.rightMargin
+                height: parent.height
+
                 onEntered: {
 //                    console.log("Entered: " + drag.source.toString())
                     if (drag.source && drag.source.toString().search("Main_QMLTYPE") >= 0)
@@ -392,7 +417,11 @@ Rectangle {
                 }
                 onExited: {
 //                    console.log("Exited")
-                    dosearch.main.drag = null
+                    dosearch.main.drag = "delay"
+                    dosearch.main.delay(100, function () {
+                        if (dosearch.main.drag == "delay")
+                            dosearch.main.drag = null
+                    })
                 }
                 onDropped: {
 //                    console.log("Dropped: " + drag)

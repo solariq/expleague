@@ -11,11 +11,8 @@ QString SearchRequest::parseGoogleQuery(const QUrl& request) const {
     if (request.path() != "/search")
         return "";
     QUrlQuery query(request.hasFragment() ? request.fragment() : request.query());
-    QString queryText = query.queryItemValue("q", QUrl::FullyDecoded);
-    queryText.replace("++", "@@@@@@");
-    queryText.replace("+", " ");
-    queryText.replace("@@@@@@", "++");
-
+    QString queryText = query.queryItemValue("q", QUrl::PrettyDecoded);
+    queryText.replace("%2B", "+");
     static QRegExp site("site:(\\S+)");
     int index;
     if ((index = site.indexIn(queryText)) >= 0)
@@ -28,10 +25,8 @@ QString SearchRequest::parseYandexQuery(const QUrl& request) const {
     if (path != "/search/" && path != "/yandsearch")
         return "";
     QUrlQuery query(request.hasFragment() ? request.fragment() : request.query());
-    QString queryText = query.queryItemValue("text", QUrl::FullyDecoded);
-    queryText.replace("++", "@@@@@@");
-    queryText.replace("+", " ");
-    queryText.replace("@@@@@@", "++");
+    QString queryText = query.queryItemValue("text", QUrl::PrettyDecoded);
+    queryText.replace("%2B", "+");
     static QRegExp site("host:(\\S+)");
     int index;
     if ((index = site.indexIn(queryText)) >= 0)

@@ -1,6 +1,8 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
+#include <QQmlListProperty>
+
 #include "../page.h"
 
 namespace expleague {
@@ -74,6 +76,26 @@ signals:
 private:
     QString m_query;
     int m_search_index;
+};
+
+class SearchSession: public Page {
+    Q_OBJECT
+
+    Q_PROPERTY(QQmlListProperty<expleague::SearchRequest> queries READ queries NOTIFY queriesChanged)
+
+public:
+    QQmlListProperty<SearchRequest> queries() const { return QQmlListProperty<SearchRequest>(const_cast<SearchSession*>(this), const_cast<QList<SearchRequest*>&>(m_queries)); }
+
+    Q_INVOKABLE bool accept(SearchRequest* request) { return true; }
+
+signals:
+    void queriesChanged();
+
+public:
+    SearchSession(const QString& id, doSearch* parent);
+
+private:
+    QList<SearchRequest*> m_queries;
 };
 }
 #endif // SEARCH_H

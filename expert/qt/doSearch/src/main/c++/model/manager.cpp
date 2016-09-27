@@ -41,7 +41,19 @@ void NavigationManager::onDnsRequestFinished() {
 }
 
 void NavigationManager::typeIn(Page* page) {
-    context()->transition(page, Page::TransitionType::TYPEIN);
+    Context* const context = qobject_cast<Context*>(page);
+    if (context) {
+        activate(context);
+        return;
+    }
+    MarkdownEditorPage* const editor = qobject_cast<MarkdownEditorPage*>(page);
+    if (editor) {
+        m_selected = editor;
+        select(0);
+        onGroupsChanged();
+        return;
+    }
+    this->context()->transition(page, Page::TransitionType::TYPEIN);
     PagesGroup* group = m_groups.first();
     group->insert(page, 0);
     select(group, page);
@@ -75,13 +87,13 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
             m_groups.append(group);
         }
         else {
-            contextGroup->insert(next, 0);
-            m_groups.last()->insert(next, 0);
+            contextGroup->insert(next);
+            m_groups.last()->insert(next);
             return m_selected->ui();
         }
     }
     const int selectedIndex = group->pages().indexOf(m_selected);
-    group->insert(next, selectedIndex >= 0 ? selectedIndex : 0);
+    group->insert(next, selectedIndex >= 0 ? selectedIndex + 1 : -1);
     if (!newGroup)
         select(group, next);
     return m_selected->ui();
@@ -127,13 +139,22 @@ void NavigationManager::select(PagesGroup* context, Page* selected) {
     context->root()->transition(selected, Page::TransitionType::CHILD_GROUP_OPEN);
     m_selected = selected;
     if (context->type() == PagesGroup::SUGGEST) {
-        m_groups.removeLast();
-        PagesGroup* group = this->group(context->root(), m_active_context, true);
-        group->insert(selected);
-        group->setParentGroup(m_groups.last());
-        m_groups.append(group);
-        context->deleteLater();
-        context = group;
+        WebPage* groupOwner = qobject_cast<WebPage*>(context->parentGroup()->root());
+        WebPage* webSelected = qobject_cast<WebPage*>(selected);
+        if (webSelected && groupOwner && groupOwner->site()->mirrorTo(webSelected->site())) {
+            context->remove(selected);
+            context = context->parentGroup();
+            context->insert(selected);
+        }
+        else {
+            m_groups.removeLast();
+            PagesGroup* group = this->group(context->root(), m_active_context, true);
+            group->insert(selected);
+            group->setParentGroup(m_groups.last());
+            m_groups.append(group);
+            context->deleteLater();
+            context = group;
+        }
     }
     popTo(context, context->selectedPage() == selected);
     context->selectPage(selected);
@@ -146,7 +167,8 @@ void NavigationManager::select(PagesGroup* group) {
     PagesGroup* const selected = selectedGroup();
     if (group != selected) {
         selected->setSelected(false);
-        group->setSelected(true);
+        if (group)
+            group->setSelected(true);
     }
 }
 
@@ -256,85 +278,113 @@ void NavigationManager::activate(Context *ctxt) {
     emit groupsChanged();
 }
 
+double effectiveWidth(const QVector<QList<Page*>>& pages, const QVector<QList<Page*>>& closed, const QVector<int>& visibleStart, const QVector<int>& visibleCount) {
+    double result = 0;
+    for (int i = 0; i < pages.size(); i++) {
+        if (i > 0 && (!pages[i].empty() || !closed[i].empty()))
+            result += 24; // separator
+        if (!closed[i].empty() || visibleStart[i] > 0 || visibleCount[i] < pages.size())
+            result += 13; // popup button
+        if (visibleCount[i] > 0)
+            result += 2; // borders
+        for (int j = 0; j < visibleCount[i]; j++) {
+            result += std::min(228.0, pages[i][visibleStart[i] + j]->titleWidth() + 28);
+        }
+    }
+    return result;
+}
+
+double NavigationManager::MAX_TAB_WIDTH = 228;
 void NavigationManager::rebalanceWidth() {
-    QList<Page*> visible;
-    QSet<Page*> result;
-    QHash<Page*, double> probabilities;
-    foreach (PagesGroup* group, m_groups) {
-        visible += group->pages();
-
-        result.insert(group->selectedPage());
-        visible.removeOne(group->selectedPage());
-    }
-    foreach (Page* page, visible) {
-        double p = 0;
-        double discount = 1;
-        double denom = 0;
-        for (int i = m_groups.size() - 1; i >=0; i--) {
-            Page* const selected = m_groups[i]->selectedPage();
-            p += selected ? selected->pOut(page) : 0;
-            denom *= discount;
-            discount *= 0.9;
+    QVector<QList<Page*>> closedPages(m_groups.size());
+    QVector<QList<Page*>> activePages(m_groups.size()); {
+        QSet<Page*> known;
+        for (int i = 0; i < m_groups.size(); i++) {
+            QList<Page*> current = m_groups[i]->pages();
+            QList<Page*>::iterator iter = current.begin();
+            while (iter != current.end()) {
+                if (!known.contains(*iter)) {
+                    known.insert(*iter);
+                    if ((*iter)->state() != Page::CLOSED)
+                        activePages[i].push_back(*iter);
+                    else
+                        closedPages[i].push_back(*iter);
+                }
+                iter++;
+            }
         }
-        if (m_active_context) {
-            p += m_active_context->pOut(page);
-            denom += discount;
-        }
-        p /= discount;
-        probabilities[page] = p;
-    }
-    std::sort(visible.begin(), visible.end(), [&probabilities](Page* lhs, Page* rhs) {
-        return probabilities[lhs] > probabilities[rhs];
-    });
-    double available_width = m_screen_width - m_groups.size() * 30 - 30 - 30 - 100; // group decorations + context icon + context view
-    result.remove(0);
-    if (!visible.empty()) {
-        double a = m_selected->pOut(visible.first());
-        double b = m_selected->pOut(visible.last());
-        qDebug() << "PRange from: " << a << " to: " << b;
-    }
-    foreach(Page* selected, result) {
-        available_width -= std::min(240.0, selected->titleWidth() + 40);
     }
 
-    int index = 0;
-    while (index < visible.size()) {
-        Page* const current = visible[index++];
-        if (current->state() == Page::CLOSED || result.contains(current))
-            continue;
-        double width = std::min(240.0, current->titleWidth() + 40);
-        qDebug() << "id: "<< current->id() << " probability: " << m_selected->pOut(current) << " width: " << width;
-        if (available_width < width) // title + icon
-            break;
-        result.insert(current);
-        available_width -= width;
-    }
-    qDebug() << "Left width: " << available_width;
+    QVector<int> visibleStart(m_groups.size());
+    QVector<int> visibleLength(m_groups.size());
 
-    QList<Page*> contexts = m_contexts_group->pages();
-    if (contexts.size() < 3)
-        m_contexts_group->split(contexts, QList<Page*>(), QList<Page*>());
-    else
-        m_contexts_group->split(contexts.mid(0, 3), contexts.mid(3), QList<Page*>());
-    QSet<Page*> shown;
-    for(int i = 0; i < m_groups.size(); i++) {
+    const double available_width = m_screen_width
+            - 4 // starting separator
+            - 24 // context icon
+            - 6 // ci separator
+            - 8 // spacing before buttons
+            - (27 + 4) * 3 // search button, vault button, editor button
+            - (m_active_context->task() ? (27 + 4) * 2 : 0) // preview and chat buttons
+            - 8 // separate buttons from avatar
+            - 36 // avatar
+            - 4 // trailing space
+    ;
+
+    for(int i = 0; i < m_groups.size() - 1; i++) {
         PagesGroup* const group = m_groups[i];
-        QList<Page*> visible;
-        QList<Page*> folded;
-        QList<Page*> closed;
-        QList<Page*> pages = group->pages();
-        foreach(Page* page, pages) {
-            if (shown.contains(page))
-                continue;
-            if (result.contains(page))
-                visible.append(page);
-            else if (page->state() == Page::CLOSED)
-                closed.append(page);
-            else
-                folded.append(page);
-            shown.insert(page);
+        Page* const selected = group->selectedPage();
+        visibleStart[i] = selected ? activePages[i].indexOf(selected) : 0;
+        visibleLength[i] = selected ? 1 : 0;
+    }
+    visibleStart[m_groups.size() - 1] = 0;
+    visibleLength[m_groups.size() - 1] = 0;
+
+    while(true) { // greedy (by probability of next click) pages selection
+        double maxP = -1;
+        int bestPageIndex;
+        int bestGroupIndex;
+        double prior = 1;
+        for (int i = m_groups.size() - 1; i >= 0; i--, prior *= 0.8) {
+            const QList<Page*> pages = activePages[i];
+
+            int start = visibleStart[i] - 1;
+            int end = visibleStart[i] + visibleLength[i];
+            if (start >= 0) { // left expansion available
+                double pOut = m_selected->pOut(pages[start]) * prior;
+                if (pOut > maxP) {
+                    maxP = pOut;
+                    bestGroupIndex = i;
+                    bestPageIndex = start;
+                }
+            }
+            if (end < pages.size()) { // right expansion available
+                double pOut = m_selected->pOut(pages[end]) * prior;
+                if (pOut > maxP) {
+                    maxP = pOut;
+                    bestGroupIndex = i;
+                    bestPageIndex = end;
+                }
+            }
         }
-        group->split(visible, folded, closed);
+        if (maxP < 0)
+            break;
+        Page* const page = activePages[bestGroupIndex][bestPageIndex];
+        if (bestPageIndex < visibleStart[bestGroupIndex])
+            visibleStart[bestGroupIndex]--;
+        visibleLength[bestGroupIndex]++;
+        double width = effectiveWidth(activePages, closedPages, visibleStart, visibleLength);
+        if (width > available_width) {
+            if (bestPageIndex == visibleStart[bestGroupIndex])
+                visibleStart[bestGroupIndex]++;
+            visibleLength[bestGroupIndex]--;
+            break;
+        }
+        qDebug() << "Making visible: " << page->id() << " p: " << maxP;
+    }
+
+    qDebug() << "Available width: " << available_width << " width used: " << effectiveWidth(activePages, closedPages, visibleStart, visibleLength);
+    for(int i = 0; i < m_groups.size(); i++) {
+        m_groups[i]->split(activePages[i], closedPages[i], visibleStart[i], visibleLength[i]);
     }
 }
 
@@ -401,8 +451,16 @@ void NavigationManager::onGroupsChanged() {
     QSet<Page*> known;
     QSet<Page*> active;
     QList<QQuickItem*> screens;
-    screens.append(m_selected->ui());
-    known.insert(m_selected);
+    if (m_active_context && m_active_context->task()) {
+        screens.append(m_active_context->task()->answer()->ui());
+        known.insert(m_active_context->task()->answer());
+    }
+
+    if (!known.contains(m_selected)) {
+        screens.append(m_selected->ui());
+        known.insert(m_selected);
+    }
+
     foreach (PagesGroup* group, m_groups) {
         active.unite(group->visiblePagesList().toSet());
     }

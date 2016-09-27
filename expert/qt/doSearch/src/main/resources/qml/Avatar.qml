@@ -11,25 +11,21 @@ Item {
     property bool showStatus: true
 
     implicitHeight: size
-    implicitWidth: size
+    implicitWidth: size + 2
 
     Item {
         id: avatar
 
         anchors.centerIn: parent
         height: size
-        width: size
+        width: size + 2
 
-        Image {
-            id: img
-            visible: false
-            mipmap: true
-
+        Rectangle {
             anchors.centerIn: parent
-            height: size - 3
-            width: size - 3
-            fillMode: Image.PreserveAspectFit
-            source: src
+            radius: size/2
+            width: size
+            height: size
+            color: "#B4B4B4"
         }
 
         Rectangle {
@@ -40,9 +36,21 @@ Item {
             radius: status.width/2
 
             color: user && user.status == Member.ONLINE ? "green" : "red"
-            x: avatar.width - status.width - 2
-            y: avatar.height - status.height - 2
+            x: avatar.width - status.width
+            y: avatar.height - status.height - 1
             z: avatar.z + 1
+        }
+
+        Image {
+            id: img
+            visible: false
+            mipmap: true
+
+            anchors.centerIn: parent
+            height: size - 2
+            width: size - 2
+            fillMode: Image.PreserveAspectFit
+            source: src
         }
 
         OpacityMask {
@@ -50,13 +58,13 @@ Item {
             source: img
             maskSource: Item {
                 anchors.centerIn: parent
-                width: size
-                height: size
+                width: size - 2
+                height: size - 2
                 Rectangle {
                     anchors.centerIn: parent
-                    radius: (size - 1)/2
-                    width: size-2
-                    height: size-2
+                    radius: (size - 2)/2
+                    width: size - 2
+                    height: size - 2
                 }
             }
         }

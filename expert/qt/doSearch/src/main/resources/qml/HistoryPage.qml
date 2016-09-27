@@ -21,7 +21,7 @@ Item {
             height: 24
             anchors.left: parent.left
             anchors.right: parent.right
-            color: Palette.backgroundColor
+            color: Palette.backgroundColor("selected")
             Image {
                 height: parent.height - 4
                 width: parent.height - 4

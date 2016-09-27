@@ -66,7 +66,7 @@ public:
     Page* lastVisited() const { return m_last_visited; }
     time_t lastVisitTs() const { return m_last_visit_ts; }
 
-    Q_INVOKABLE QQuickItem* ui() const;
+    Q_INVOKABLE QQuickItem* ui(bool useCache = true) const;
 
     Q_INVOKABLE virtual double pOut(Page*) const;
     Q_INVOKABLE virtual double pIn(Page*) const;
@@ -103,6 +103,7 @@ protected:
 
     QDir storage() const;
     void save() const;
+    QList<Page*> children(const QString& prefix = "") const;
     virtual void incomingTransition(Page* from, TransitionType type);
 
 private:

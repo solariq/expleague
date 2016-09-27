@@ -31,7 +31,6 @@
         <file>plane_send.png</file>
         <file>arrow_cut_close.png</file>
         <file>arrow_cut_open.png</file>
-        <file>arrow_hide.png</file>
         <file>tools/patterns.png</file>
         <file>tools/tags.png</file>
         <file>tools/send.png</file>
@@ -75,5 +74,43 @@
         <file>tools/paste.png</file>
         <file>tools/zoom-in.png</file>
         <file>tools/zoom-out.png</file>
+        <file>tools/graph-arrow_child.png</file>
+        <file>tools/graph-arrow_suggest.png</file>
+        <file>tools/graph-icon-active.png</file>
+        <file>tools/graph-icon-idle.png</file>
+        <file>tools/rollup-menu-arrow.png</file>
+        <file>tools/search_h.png</file>
+        <file>tools/editor_d.png</file>
+        <file>tools/editor_h.png</file>
+        <file>tools/editor.png</file>
+        <file>tools/vault_h.png</file>
+        <file>tools/vault.png</file>
+        <file>tools/google_h.png</file>
+        <file>tools/yandex_h.png</file>
+        <file>tools/edit_h.png</file>
+        <file>tools/noedit_h.png</file>
+        <file>tools/paste_h.png</file>
+        <file>tools/patterns_h.png</file>
+        <file>tools/phone_h.png</file>
+        <file>tools/send_h.png</file>
+        <file>tools/suspend_h.png</file>
+        <file>tools/tags_h.png</file>
+        <file>tools/zoom-in_h.png</file>
+        <file>tools/zoon-out_h.png</file>
+        <file>editor/bullets_h.png</file>
+        <file>editor/cut_h.png</file>
+        <file>editor/enum_h.png</file>
+        <file>editor/header_h.png</file>
+        <file>editor/image_h.png</file>
+        <file>editor/italic_h.png</file>
+        <file>editor/link_h.png</file>
+        <file>editor/quote_h.png</file>
+        <file>editor/splitter_h.png</file>
+        <file>editor/table_h.png</file>
+        <file>editor/bold_h.png</file>
+        <file>tools/chat_h.png</file>
+        <file>tools/chat.png</file>
+        <file>tools/preview_h.png</file>
+        <file>tools/preview.png</file>
     </qresource>
 </RCC>

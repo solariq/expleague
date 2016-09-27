@@ -13,12 +13,11 @@ Rectangle {
     id: self
     property WebEngineView webView: google.visible ? google : yandex
     anchors.fill: parent
-    color: Palette.backgroundColor
+    color: Palette.backgroundColor("selected")
 
     RowLayout {
         anchors.fill: parent
-        Item {Layout.preferredWidth: 1}
-
+        spacing: 0
         Rectangle {
             Layout.minimumWidth: 33
             Layout.maximumWidth: 33
@@ -31,13 +30,17 @@ Rectangle {
                 Item {Layout.preferredWidth: 1}
 
                 ToolbarButton {
-                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredHeight: 27
+                    Layout.preferredWidth: 27
+                    Layout.alignment: Qt.AlignHCenter
                     icon: "qrc:/tools/google.png"
                     onClicked: owner.searchIndex = 0
                     toggle: owner.searchIndex === 0
                 }
                 ToolbarButton {
-                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredHeight: 27
+                    Layout.preferredWidth: 27
+                    Layout.alignment: Qt.AlignHCenter
                     icon: "qrc:/tools/yandex.png"
                     onClicked: owner.searchIndex = 1
                     toggle: owner.searchIndex === 1

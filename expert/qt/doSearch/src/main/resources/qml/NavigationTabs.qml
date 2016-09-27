@@ -17,9 +17,8 @@ RowLayout {
         Layout.fillHeight: true
         Layout.preferredWidth: parent.height
         Layout.alignment: Qt.AlignVCenter
-        color: navigation.activePage === navigation.context ? Palette.selectedColor : Palette.activeColor
+//        color: navigation.activePage === navigation.context ? Palette.selectedColor : Palette.activeColor
         radius: Palette.radius
-
         Image {
             source: navigation.context ? navigation.context.icon : ""
             mipmap: true
@@ -41,7 +40,6 @@ RowLayout {
         delegate: NavigationGroup {
             Layout.fillHeight: true
             Layout.preferredWidth: implicitWidth
-            Layout.alignment: Qt.AlignVCenter
 
             height: parent.height
             group: modelData
@@ -55,8 +53,8 @@ RowLayout {
     NavigationGroup {
         id: contexts
 
-        Layout.fillHeight: true
         Layout.preferredWidth: implicitWidth
+        Layout.preferredHeight: 24
         Layout.alignment: Qt.AlignVCenter
 
         group: navigation.contextsGroup

@@ -25,6 +25,7 @@ Item {
     property bool containsDnD: false
     property bool inDnD: containsDnD || screenDnD
 
+
     property SidebarButton selectedBeforeDnD
     DropArea {
         id: dropArea
@@ -106,10 +107,7 @@ Item {
         }
     }
 
-    RowLayout {
-        anchors.fill: parent
-        spacing: 0
-        Legacy.SplitView {
+    Legacy.SplitView {
             id: rightSide
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -151,7 +149,7 @@ Item {
                     Layout.maximumHeight: 23
                     Layout.preferredHeight: 23
 
-                    color: Palette.navigationColor
+                    gradient: Palette.navigationGradient
                     RowLayout {
                         spacing: 3
                         anchors.fill: parent
@@ -171,16 +169,7 @@ Item {
                             background: Item{}
 
                             onClicked: {
-                                if (offerViewHolder.visible) {
-                                    taskView.storedHeight = taskView.height
-                                    offerViewHolder.visible = false
-                                    taskView.height = 23
-                                }
-                                else {
-                                    taskView.height = taskView.storedHeight
-                                    taskView.offerHeight = taskView.storedHeight
-                                    offerViewHolder.visible = true
-                                }
+
                             }
                         }
                         Label {
@@ -220,12 +209,15 @@ Item {
                 Layout.fillWidth: true
                 WebEngineView {
                     id: preview
-
                     visible: false
                     focus: false
+                    anchors.fill: parent
+
+                    property real width: -1
+                    property string html: ""
+
                     url: "about:blank"
 
-                    property string html: ""
                     onHtmlChanged: {
                         var focused = window.activeFocusItem
                         loadHtml(html)
@@ -240,218 +232,43 @@ Item {
                             dosearch.navigation.handleOmnibox(url, 0)
                         }
                     }
-
-                    anchors.fill: parent
                 }
                 LeagueChat {
                     id: dialog
                     visible: false
                     anchors.fill: parent
 
+                    property real width: -1
+
                     task: self.task
                 }
-                ColumnLayout {
+                Vault {
                     id: vault
                     visible: false
-                    property bool editMode: false
-                    property real size: 8
                     anchors.fill: parent
-                    anchors.margins: 5
-                    spacing: 0
-                    Rectangle {
-                        Layout.preferredHeight: 33
-                        Layout.fillWidth: true
-                        color: Palette.navigationColor
-                        RowLayout {
-                            spacing: 5
-                            ToolbarButton {
-                                id: editVaultButton
-                                icon: vault.editMode ? "qrc:/tools/noedit.png" : "qrc:/tools/edit.png"
-                                onTriggered: vault.editMode = !vault.editMode
-                            }
-                            ToolbarButton {
-                                id: paste
-                                icon: "qrc:/tools/paste.png"
-                                onTriggered: {
-                                    context.vault.paste()
-                                }
-                            }
-                            ToolbarButton {
-                                id: zoomIn
-                                icon: "qrc:/tools/zoom-in.png"
-                                onTriggered: {
-                                    vault.size += 1
-                                }
-                            }
-                            ToolbarButton {
-                                id: zoomOut
-                                icon: "qrc:/tools/zoom-out.png"
-                                onTriggered: {
-                                    vault.size -= 1
-                                }
-                            }
-                        }
-                    }
-                    Flickable {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        contentWidth: width
-                        contentHeight: itemsFlow.implicitHeight
-                        clip: true
-                        Flow {
-                            id: itemsFlow
-                            width: parent.width
-                            spacing: 5
-                            Repeater {
-                                model: context.vault.items
-                                delegate: Component {
-                                    MouseArea {
-                                        id: thumbnailArea
-                                        width: vault.size * 10 + 6
-                                        height: vault.size * 10 + 6
-                                        hoverEnabled: true
-                                        propagateComposedEvents: true
-                                        onClicked: open()
-                                        onDoubleClicked: mouse.accepted = false
-                                        onPressAndHold: mouse.accepted = false
 
-                                        drag.target: thumbnail
+                    property real width: -1
 
-                                        onReleased: {
-                                            if (drag.active && !!drag.target && drag.target !== dropArea) {
-                                                mouse.accepted = true
-                                                thumbnail.Drag.drop()
-                                            }
-                                            else mouse.accepted = false
-                                        }
-
-                                        Rectangle {
-                                            id: thumbnail
-                                            radius: Palette.radius
-                                            width: thumbnailArea.width
-                                            height: thumbnailArea.height
-                                            anchors.margins: 3
-
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            anchors.horizontalCenter: parent.horizontalCenter
-
-                                            color: thumbnailArea.containsMouse || vault.editMode ? Palette.selectedColor : Palette.activeColor
-                                            property color textColor: thumbnailArea.containsMouse || vault.editMode ? Palette.selectedTextColor : Palette.activeTextColor
-                                            children: [ui()]
-                                            onChildrenChanged: {
-                                                for (var i in children) {
-                                                    var child = children[i]
-                                                    child.visible = true
-                                                    child.parent = thumbnail
-                                                    child.color = Qt.binding(function () {return thumbnail.color})
-                                                    child.textColor = Qt.binding(function () {return thumbnail.textColor})
-                                                    child.width = Qt.binding(function () {return thumbnail.width - 6})
-                                                    child.height = Qt.binding(function () {return thumbnail.height - 6})
-                                                    child.enabled = false
-                                                    child.size = Qt.binding(function () {return vault.size})
-                                                    child.hover = Qt.binding(function () {return thumbnailArea.containsMouse})
-                                                }
-                                            }
-                                            Drag.dragType: Drag.Automatic
-                                            Drag.active: thumbnailArea.drag.active
-
-                                            Drag.mimeData: { "text/plain": md, "vault": thumbnail }
-                                            Drag.keys: ["text/plain", "vault"]
-                                        }
-                                        RowLayout {
-                                            id: tools
-                                            visible: vault.editMode
-                                            anchors.centerIn: parent
-                                            width: 20
-                                            height: 20
-                                            ToolbarButton {
-                                                id: close
-                                                anchors.centerIn: parent
-                                                icon: "qrc:/cross.png"
-                                                size: 16
-                                                onTriggered: {
-                                                    context.vault.remove(modelData)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    context: self.context
                 }
             }
         }
-        ColumnLayout {
-            id: rightSidebar
-            Layout.fillHeight: true
-            Layout.preferredWidth: 22
-            Layout.minimumWidth: 22
-            Layout.maximumWidth: 22
 
-            property SidebarButton activeButton
-            property real sideWidth: 320 + rightSidebar.width
-            property real dialogWidth: 320 + rightSidebar.width
+    states: [
+        State {
+            name: "vault"
+            PropertyChanges {
+//                target:
 
-            spacing: 0
-            function choose(button) {
-                if (!!activeButton) {
-                    activeButton.storedWidth = rightSide.width
-                    activeButton.active = false
-                }
-
-                if (activeButton !== button && !!button) {
-//                    console.log("Choose " + button.text)
-                    activeButton = button
-                    activeButton.active = true
-                    activeButton.associated.visible = true
-                    for(var i in screenHolder.children) {
-                        var child = screenHolder.children[i]
-                        if (child !== activeButton.associated)
-                            child.visible = false
-                    }
-                    self.animateWidthChange(rightSidebar.width + activeButton.storedWidth)
-                }
-                else {
-//                    console.log("Choose none")
-                    activeButton = null
-                    self.animateWidthChange(rightSidebar.width)
-                }
             }
-
-            Item {Layout.preferredHeight: 20}
-            SidebarButton {
-                id: dialogButton
-                Layout.fillWidth: true
-                Layout.preferredHeight: implicitHeight
-                visible: !!task
-                associated: dialog
-                text: qsTr("Диалог")
-                onClicked: rightSidebar.choose(dialogButton)
-            }
-            SidebarButton {
-                id: previewButton
-                Layout.fillWidth: true
-                Layout.preferredHeight: implicitHeight
-                visible: !!task
-                associated: preview
-                storedWidth: 320
-                minAssociatedWidth: 320
-                maxAssociatedWidth: 320
-                text: qsTr("Ответ")
-                onClicked: rightSidebar.choose(previewButton)
-            }
-            SidebarButton {
-                id: vaultButton
-                Layout.fillWidth: true
-                Layout.preferredHeight: implicitHeight
-                associated: vault
-                text: qsTr("Хранилище")
-                onClicked: rightSidebar.choose(vaultButton)
-            }
-            Item {Layout.fillHeight: true}
+        },
+        State {
+            name: "preview"
+        },
+        State {
+            name: "dialogue"
         }
-    }
+    ]
 
     Connections {
         target: dosearch.navigation

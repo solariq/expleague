@@ -6,21 +6,30 @@ import ExpLeague 1.0
 
 import "."
 Rectangle {
-    anchors.fill: parent
     id: self
-    Column {
-        property var editorActions: {
-            return dosearch.main.editorActionsRef
+    anchors.fill: parent
+    property var editorActions: {
+        return dosearch.main.editorActionsRef
+    }
+    property alias editor: edit
+
+    onFocusChanged: {
+        if (focus) {
+            edit.forceActiveFocus()
         }
+    }
+
+    Column {
         anchors.fill: parent
-        property alias editor: edit
-        Item {
+        Rectangle {
             id: buttons
             height: 33
             width: parent.width
-
+            gradient: Palette.navigationGradient
             RowLayout {
-                anchors.fill: parent
+                anchors.centerIn: parent
+                height: 27
+                width: parent.width - 10
                 spacing: 5
                 Item {Layout.preferredWidth: 1}
                 ToolbarButton {
@@ -126,7 +135,6 @@ Rectangle {
             DropArea {
                 anchors.fill: parent
                 z: parent.z + 10
-                //            keys: ["text/plain"]
 
                 onDropped: {
                     if (drop.hasText) {
@@ -140,11 +148,6 @@ Rectangle {
                     editor.cursorPosition = editor.positionAt(scroll.contentX + drag.x, scroll.contentY + drag.y)
                 }
             }
-        }
-
-        onVisibleChanged: {
-            if (visible)
-                editor.forceActiveFocus()
         }
     }
 }

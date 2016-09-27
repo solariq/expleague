@@ -5,6 +5,7 @@ import QtQuick.Dialogs 1.2
 import ExpLeague 1.0
 
 Item {
+    id: self
     property alias icon: avatar.src
     property int size
 
@@ -52,8 +53,12 @@ Item {
 
     Avatar {
         id: avatar
-        anchors.fill: parent
-        size: parent.size
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        width: implicitWidth
+        height: implicitHeight
+        size: self.height
         showStatus: false
 
         Rectangle {
@@ -79,11 +84,11 @@ Item {
             property string statusImg: "qrc:/status/offline.png"
             property string _statusImg: statusImg
 
-            x: parent.width - status.width - 1
-            y: parent.height - status.height - 1
+            x: self.width - status.width - 1
+            y: self.height - status.height - 1
             z: parent.z + 1
-            height: 14
-            width: 14
+            height: 12
+            width: 12
 
             Image {
                 id: statusImage

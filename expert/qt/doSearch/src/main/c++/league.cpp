@@ -104,11 +104,12 @@ void League::startTask(Offer* offer) {
     Context* context = parent()->context(task->id());
     context->setTask(task);
     Member* self = findMember(id());
-    MarkdownEditorPage* answerPage = parent()->document(context, "Ваш ответ", self);
+    MarkdownEditorPage* answerPage = parent()->document(context, "Ваш ответ", self, true);
     context->transition(answerPage, Page::TYPEIN);
     task->setAnswer(answerPage);
     parent()->append(context);
     parent()->navigation()->activate(context);
+    parent()->navigation()->open(answerPage);
 }
 
 void League::inviteReceived(const Offer& offer) {
@@ -227,7 +228,7 @@ League* Task::parent() const {
 void Task::answerReceived(const QString &from, const QString& text) {
     doSearch* dosearch = doSearch::instance();
     Member* author = parent()->findMember(from);
-    MarkdownEditorPage* answerPage = dosearch->document(context(), "Ответ " + QString::number(m_answers.size() + 1), author);
+    MarkdownEditorPage* answerPage = dosearch->document(context(), "Ответ " + QString::number(m_answers.size() + 1), author, false);
     answerPage->setText(text);
     context()->transition(answerPage, Page::TYPEIN);
     m_answers += answerPage;

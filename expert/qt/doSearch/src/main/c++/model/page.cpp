@@ -23,7 +23,7 @@
 
 #include <algorithm>
 
-static QFontMetrics titleFontMetrics(QFont("Helvetica [Cronyx]", 12));
+static QFontMetrics titleFontMetrics(QFont("Helvetica", 10));
 
 QVariantHash buildVariantByXml(QXmlStreamReader& reader);
 void writeXml(const QString& local, const QString& ns, const QVariant& variant, QXmlStreamWriter* writer, bool attribute = false, bool enforceTag = false);
@@ -216,8 +216,8 @@ QList<Page*> Page::outgoing() const {
 
 QHash<QUrl, QQmlComponent*> componentsCache;
 
-QQuickItem* Page::ui() const {
-    if (m_ui)
+QQuickItem* Page::ui(bool cache) const {
+    if (cache && m_ui)
         return m_ui;
     if (!m_context) {
         m_context = new QQmlContext(rootEngine, (QObject*)this);
@@ -235,13 +235,16 @@ QQuickItem* Page::ui() const {
         }
         componentsCache[m_ui_url] = component;
     }
-    m_ui = (QQuickItem*)component->create(m_context);
-//    m_ui->setParent(const_cast<Page*>(this));
-    connect(m_ui, &QQuickItem::destroyed, [this](){
-        m_ui = 0;
-    });
-    initUI(m_ui);
-    return m_ui;
+    QQuickItem* result = (QQuickItem*)component->create(m_context);
+    if (cache) {
+        m_ui = result;
+        //    m_ui->setParent(const_cast<Page*>(this));
+        connect(m_ui, &QQuickItem::destroyed, [this](){
+            m_ui = 0;
+        });
+    }
+    initUI(result);
+    return result;
 }
 
 void Page::transferUI(Page* other) const {
@@ -264,18 +267,20 @@ double Page::pOut(Page* page) const {
     PageModel model;
     if (ptr != m_outgoing.end())
         model = ptr.value();
-    const int c = m_outgoing.size();
-    const double dpLambda = optimalExpansionDP(m_out_total, c);
-    const time_t now = time(0);
-    const double deltaFromCurrent = now - model.when;
-    double a = erlang(2, 1.0/60, deltaFromCurrent);
-    double b = erlang(2, 1.0/60, deltaFromCurrent + 30);
-    double result = ((a * 30) + (b -a) * 30 /2) * 0.5; // two visits of the same page is set to 1 minute, here is probability of visit in next 30 seconds
-    const double deltaReturn = now - page->lastVisitTs();
-    result += erlang(2, 1.0/10/60, deltaReturn) * 0.01;
-    if (dpLambda < 1000)
-        result += m_out_total/(m_out_total + dpLambda) * (model.freq + 1)/(double)(m_out_total + c) * 0.5;
-    return result;
+    double pTime = 0; { // transition to the page, based on page open time
+        const time_t now = time(0);
+        const double deltaFromCurrent = now - model.when;
+        for (int t = 1; t < 60; t++) { // kind of integral ;)
+            pTime += erlang(2, 1.0/30, deltaFromCurrent + t);
+        }
+    }
+    double pFreq = 0; { // transition based on how often the page is visited from the current
+        const int c = m_outgoing.size();
+        const double dpLambda = optimalExpansionDP(m_out_total, c);
+        if (dpLambda < 1000)
+            pFreq = m_out_total/(m_out_total + dpLambda) * (model.freq + 1)/(double)(m_out_total + c) ;
+    }
+    return pTime * 0.8 + pFreq * 0.2;
 }
 
 double Page::pIn(Page*) const {
@@ -371,6 +376,17 @@ double Page::titleWidth() const {
 
 doSearch* Page::parent() const {
     return static_cast<doSearch*>(QObject::parent());
+}
+
+QList<Page*> Page::children(const QString& prefix) const {
+    QDir storage(parent()->pageResource(id()) + "/" + prefix);
+    QList<Page*> result;
+    foreach(QFileInfo info, storage.entryInfoList()) {
+        if (info.isDir() && !info.fileName().startsWith(".") && QFile(info.absoluteFilePath() + "/page.xml").exists())
+            result.append(parent()->page(id() + "/" + prefix + "/" + info.fileName()));
+    }
+
+    return result;
 }
 
 void Page::save() const {

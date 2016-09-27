@@ -21,7 +21,7 @@
 # mkdir temp
 # mv ./doSearch.app/ ./temp/
 # hdiutil create -volname doSearch -srcfolder ./temp/ -ov -format UDZO doSearch.dmg
-VERSION = 0.4.7
+VERSION = 0.6.0
 
 QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine webenginewidgets xml multimedia webenginecore
 QT_PRIVATE += quick-private
@@ -67,7 +67,7 @@ HEADERS += \
     c++/expleague.h \
     c++/dosearch.h \
     c++/league.h \
-    c++/util/math.h \
+    c++/util/mmath.h \
     c++/util/filethrottle.h \
     c++/util/call_once.h \
     c++/util/simplelistmodel.h \

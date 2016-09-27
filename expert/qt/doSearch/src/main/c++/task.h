@@ -44,6 +44,8 @@ class Task: public QObject {
     Q_PROPERTY(QQmlListProperty<expleague::AnswerPattern> patterns READ patterns NOTIFY patternsChanged)
     Q_PROPERTY(QStringList phones READ phones NOTIFY phonesChanged)
 
+    Q_PROPERTY(expleague::MarkdownEditorPage* answer READ answer CONSTANT)
+
 public:
     bool active() const { return m_active; }
     Offer* offer() const { return m_offer; }

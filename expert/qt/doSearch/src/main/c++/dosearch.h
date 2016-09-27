@@ -53,7 +53,7 @@ public:
     Q_INVOKABLE Context* context(const QString& name) const;
     Q_INVOKABLE WebPage* web(const QUrl& name) const;
     Q_INVOKABLE SearchRequest* search(const QString& query, int searchIndex = -1) const;
-    Q_INVOKABLE MarkdownEditorPage* document(Context* context, const QString& title, Member* member) const;
+    Q_INVOKABLE MarkdownEditorPage* document(Context* context, const QString& title, Member* member, bool editable) const;
     History* history() const { return m_history; }
 
     Q_INVOKABLE Context* createContext();

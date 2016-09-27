@@ -13,7 +13,7 @@ Window {
 
     property Task task
     property League league
-    property color backgroundColor: Palette.backgroundColor
+    property color backgroundColor: Palette.backgroundColor("selected")
     property int invitationTimeout: 0
 
     width: 350

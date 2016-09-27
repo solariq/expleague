@@ -91,6 +91,7 @@ bool WebPage::forwardShortcutToWebView(const QString& shortcut, QQuickItem* view
     bool accepted = false;
     for (int i = 0; i < seq.count(); i++) {
         QKeyEvent event(QKeyEvent::KeyPress, seq[i] & 0x00FFFFFF, (Qt::KeyboardModifiers)(seq[i] & 0xFF000000), "", false, 1);
+        event.setAccepted(false);
         QCoreApplication::sendEvent(target, &event);
         accepted |= event.isAccepted();
     }
@@ -153,8 +154,8 @@ bool WebPage::accept(const QUrl& url) const {
         return false;
     if (url.path() != m_url.path())
         return false;
-    if (url.query() != m_url.query())
-        return false;
+//    if (url.query() != m_url.query())
+//        return false;
     return true;
 }
 

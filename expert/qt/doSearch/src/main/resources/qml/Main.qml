@@ -20,15 +20,10 @@ ApplicationWindow {
     property alias commonActionsRef: commonActions
     property alias editorActionsRef: editorActions
     property alias screenRef: screen
+    property alias sidebarRef: sidebar
     property bool options: false
+    property real rightMargin: 0
     property var drag
-
-    onDragChanged: {
-        if (!!drag)
-            right.screenDnD = true
-        else
-            delay(100, function() {right.screenDnD = false})
-    }
 
 //    flags: {
 //        if (Qt.platform.os === "osx")
@@ -316,22 +311,23 @@ ApplicationWindow {
 
     Rectangle {
         id: screen
-        color: Palette.backgroundColor
+        color: Palette.backgroundColor("selected")
         z: parent.z + 10
         anchors.fill: parent
         ColumnLayout {
             anchors.fill:parent
             spacing: 0
             Rectangle {
+                id: navigation
                 Layout.preferredHeight: 40
                 Layout.fillWidth: true
                 z: parent.z + 10
-                color: Palette.navigationColor
+                gradient: Palette.navigationGradient
                 RowLayout {
                     id: tabs
                     anchors.fill: parent
                     spacing: 0
-                    Item {Layout.preferredWidth: 6}
+                    Item {Layout.preferredWidth: 4}
                     NavigationTabs {
                         Layout.fillWidth: true
                         Layout.alignment: Qt.AlignVCenter
@@ -340,16 +336,60 @@ ApplicationWindow {
 
                         navigation: root.navigation
                     }
-                    Item {Layout.preferredWidth: 3}
+
+                    Item {Layout.preferredWidth: 4}
+                    ToolbarButton {
+                        Layout.preferredHeight: implicitHeight
+                        Layout.preferredWidth: implicitWidth
+                        imgPadding: 1
+                        toggle: omnibox.visible
+                        action: commonActions.searchInternet
+                    }
+
+                    Item {Layout.preferredWidth: 4}
+                    ToolbarButton {
+                        Layout.preferredHeight: implicitHeight
+                        Layout.preferredWidth: implicitWidth
+                        imgPadding: 1
+                        action: commonActions.showEditor
+                        toggle: ("" + dosearch.navigation.activePage).search(/MarkdownEditorPage/) >=0
+                    }
+                    Item {visible: !!dosearch.navigation.context.task; Layout.preferredWidth: 4}
+                    ToolbarButton {
+                        visible: !!dosearch.navigation.context.task
+                        Layout.preferredHeight: implicitHeight
+                        Layout.preferredWidth: implicitWidth
+                        icon: "qrc:/tools/chat.png"
+                        imgPadding: 3
+                        toggle: sidebar.state == "dialog"
+                        onTriggered: sidebar.state = sidebar.state == "dialog" ? "" : "dialog"
+                    }
+                    Item {visible: !!dosearch.navigation.context.task; Layout.preferredWidth: 4}
+                    ToolbarButton {
+                        visible: !!dosearch.navigation.context.task
+                        Layout.preferredHeight: implicitHeight
+                        Layout.preferredWidth: implicitWidth
+                        icon: "qrc:/tools/preview.png"
+                        toggle: sidebar.state == "preview"
+                        onTriggered: sidebar.state = sidebar.state == "preview" ? "" : "preview"
+                    }
+                    Item {Layout.preferredWidth: 4}
+                    ToolbarButton {
+                        Layout.preferredHeight: implicitHeight
+                        Layout.preferredWidth: implicitWidth
+                        toggle: sidebar.state == "vault"
+                        action: commonActions.showVault
+                    }
+                    Item {Layout.preferredWidth: 8}
                     StatusAvatar {
-                        Layout.preferredHeight: 34
-                        Layout.preferredWidth: 34
+                        Layout.preferredHeight: 33
+                        Layout.preferredWidth: 36
                         Layout.alignment: Qt.AlignVCenter
                         id: avatar
                         icon: root.league.profile ? root.league.profile.avatar : "qrc:/avatar.png"
                         size: 33
                     }
-                    Item {Layout.preferredWidth: 2}
+                    Item {Layout.preferredWidth: 4}
                 }
             }
             SplitView {
@@ -362,10 +402,11 @@ ApplicationWindow {
                     clip: false
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+
                     children: root.navigation.screens
                 }
-                TaskView {
-                    id: right
+                SideBar {
+                    id: sidebar
 
                     Layout.fillHeight: true
                     Layout.preferredWidth: implicitWidth
@@ -373,8 +414,6 @@ ApplicationWindow {
                     Layout.maximumWidth: maxWidth
 
                     context: dosearch.navigation.context
-//                    screenDnD: !!drag
-//                    visible: !!dosearch.navigation.context.task
                     window: self
                 }
             }
@@ -382,11 +421,11 @@ ApplicationWindow {
 
         ControlsNG.Button {
             id: optionsButton
-            x: tabs.x + 5
-            y: tabs.y + tabs.height -5
-            z: tabs.z + 1
-            width: 12
-            height: 12
+            x: tabs.x + 24 + 4 + 2 - width/2
+            y: tabs.y + tabs.height - 8
+            z: navigation.z - 1
+            width: 16
+            height: 16
             padding: 3
             visible: !!dosearch.navigation.activeScreen && "" + dosearch.navigation.activeScreen["options"] != "undefined"
             focusPolicy: Qt.NoFocus
@@ -397,13 +436,14 @@ ApplicationWindow {
                 source: "qrc:/expand.png"
                 width: 8
                 height: 8
-                rotation: self.options ? 0 : -90
+                z: navigation.z + 1
+                rotation: self.options ? 180 : 90
             }
             background: Rectangle {
-                color: Palette.activeColor
+                color: Palette.navigationColor
                 radius: height/2
-                border.color: Palette.navigationColor
-                border.width: 2
+                border.color: Palette.borderColor("active")
+                border.width: 1
             }
 
             onClicked: {
@@ -449,7 +489,7 @@ ApplicationWindow {
             width: 500
             height: Math.min(24 * (dosearch.history.last30.length + 1) + 4, self.height - y)
 
-            color: Palette.backgroundColor
+            color: Palette.backgroundColor("selected")
 
             children: [dosearch.history.ui()]
             onFocusChanged: {
@@ -475,15 +515,77 @@ ApplicationWindow {
             source: activeDialog
         }
 
+        Vault {
+            id: vault
+            visible: false
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            x: parent.width - vault.width
+            z: parent.z + 1000
+            y: parent.mapFromItem(centralSplit.parent, centralSplit.x, centralSplit.y).y
+            width: 320
+            height: centralSplit.height
+
+            context: dosearch.navigation.context
+
+            PropertyAnimation {
+                id: vaultWidthAnimation
+                target: vault
+                property: "width"
+                easing.type: Easing.OutSine
+                duration: 200
+            }
+
+            property string storedState: ""
+            function show() {
+                if (sidebar.state == "") {
+                    vault.visible = true
+                    vaultWidthAnimation.from = 0
+                    vaultWidthAnimation.to = 320
+                    self.rightMargin = 320
+                    vaultWidthAnimation.start()
+                }
+                else sidebar.state = "vault"
+                storedState = sidebar.state
+            }
+
+            function hide() {
+                if (storedState == "") {
+                    vaultWidthAnimation.from = 320
+                    vaultWidthAnimation.to = 0
+                    self.rightMargin = 320
+                    vaultWidthAnimation.start()
+                    delay(200, function (){
+                        visible = false
+                    })
+                }
+                else sidebar.state = storedState
+            }
+
+            Connections {
+                target: self
+
+                onDragChanged: {
+                    console.log("Drag changed to " + self.drag)
+                    if (self.drag && sidebar.state != "vault" && !vault.visible) {
+                        vault.show()
+                    }
+                    else if (!self.drag && vault.visible) {
+                        vault.hide()
+                    }
+                }
+            }
+        }
+
         states: [
             State {
                 name: "FullScreen"
                 PropertyChanges {
-                    target: right
+                    target: sidebar
                     visible: false
                 }
                 PropertyChanges {
-                    target: tabs
+                    target: navigation
                     visible: false
                 }
             }
@@ -492,15 +594,14 @@ ApplicationWindow {
 
     WebEngineView {
         id: linkReceiver
-        //            visible: false
         property string operation: ""
         property bool focusOpened: false
         property var context
         property bool jsredir: false
         property size size
         property var queue: []
-        width: 370
-        height: 370
+        width: 400
+        height: 400
         profile: webProfile
 
         url: "about:blank"

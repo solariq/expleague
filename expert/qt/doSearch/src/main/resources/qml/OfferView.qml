@@ -15,18 +15,26 @@ Item {
     property Offer offer
     property Task task
     property color textColor: Palette.selectedTextColor
+    property real storedWidth: 0
+    property real maxHeight: tools.implicitHeight + content.contentHeight
+    property real minHeight: tools.implicitHeight
 
     onTaskChanged: offer = !!self.task ? self.task.offer : null
-    implicitHeight: topic.implicitHeight + geoLocal.implicitHeight + 4 +
-                    33 + 4 +
-                    (offer ? time.implicitHeight + 4 : 0) +
-                    (offer && offer.hasLocation ? 200 + 4 : 0) +
-                    ((offer ? offer.images.length * (200 + 4) : 0)) +
-                    (tagsView.visible ? tagsView.implicitHeight + 4 : 0) +
-                    (patternsView.visible ? patternsView.implicitHeight + 4 : 0) +
-                    (callsView.visible ? callsView.implicitHeight + 4 : 0) +
-                    4
+    onOfferChanged: {
+        dosearch.main.delay(100, function () {
+            if (offer)
+                storedWidth = Math.min(450, content.contentHeight)
+            else storedWidth = 0
+        })
+    }
 
+    implicitHeight: tools.implicitHeight + storedWidth
+
+    onHeightChanged: {
+        if (self.state.length == 0) {
+            storedWidth = height - tools.height
+        }
+    }
 
     SendDialog {
         id: sendDialog
@@ -83,18 +91,64 @@ Item {
         }
     }
 
+    states: [
+        State{
+            name: "folded"
+            PropertyChanges {
+                target: self
+
+                implicitHeight: tools.height
+            }
+
+            PropertyChanges {
+                target: content
+                visible: false
+            }
+
+            PropertyChanges {
+                target: self
+
+                height: tools.height
+            }
+        }
+    ]
+
     ColumnLayout {
         anchors.fill: parent
         Rectangle {
-            color: Palette.backgroundColor
+            id: tools
+            gradient: Palette.navigationGradient
             visible: task
-            Layout.preferredHeight: 33
+            Layout.preferredHeight: implicitHeight
             Layout.fillWidth: true
+
+            implicitHeight: 33
             RowLayout {
                 anchors.fill: parent
                 id: buttons
                 spacing: 3
                 Item {Layout.preferredWidth: 1}
+                Button {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: height
+                    indicator: Image {
+                        anchors.centerIn: parent
+                        fillMode: Image.PreserveAspectFit
+                        mipmap: true
+                        source: "qrc:/expand.png"
+                        width: 16
+                        height: 16
+                        rotation: content.visible ? 180 : 90
+                    }
+                    background: Item{}
+
+                    onClicked: {
+                        if (self.state == "folded")
+                            self.state = ""
+                        else
+                            self.state = "folded"
+                    }
+                }
 
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
@@ -126,159 +180,180 @@ Item {
             }
         }
 
-        Text {
-            Layout.alignment: Qt.AlignHCenter
-            id: time
-            text: {
-                if (!offer)
-                    return ""
-                var d = new Date(Math.abs(offer.timeLeft))
-                return (offer.timeLeft > 0 ? "" : "-") + (d.getUTCHours() + (d.getUTCDate() - 1) * 24) + qsTr(" ч. ") + d.getUTCMinutes() + qsTr(" мин.")
-            }
-            color: {
-                if (!offer)
-                    return "black"
+        Flickable {
+            id: content
+            Layout.fillHeight: true
+            Layout.fillWidth: true
 
-                var urgency = Math.sqrt(Math.max(offer.timeLeft/offer.duration, 0))
-                return Qt.rgba(textColor.r + (1 - textColor.r) * (1 - urgency), textColor.g * urgency, textColor.b * urgency, textColor.a + (1 - textColor.a) * urgency)
-            }
-        }
+            clip: true
+            flickableDirection: Flickable.VerticalFlick
+            contentHeight: topic.implicitHeight + geoLocal.implicitHeight + 4 +
+                           33 + 4 +
+                           (offer ? time.implicitHeight + 4 : 0) +
+                           (offer && offer.hasLocation ? 200 + 4 : 0) +
+                           ((offer ? offer.images.length * (200 + 4) : 0)) +
+                           (tagsView.visible ? tagsView.implicitHeight + 4 : 0) +
+                           (patternsView.visible ? patternsView.implicitHeight + 4 : 0) +
+                           (callsView.visible ? callsView.implicitHeight + 4 : 0) +
+                           4
+            contentWidth: width
 
-        TextEdit {
-            id: topic
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: parent.width - 20
-            Layout.maximumWidth: parent.width - 20
-            horizontalAlignment: Qt.AlignHCenter
-            renderType: Text.NativeRendering
-            wrapMode: Text.WordWrap
-            color: Palette.selectedTextColor
-            text: offer ? offer.topic : ""
-            selectByMouse: true
-        }
-
-        Flow {
-            id: tagsView
-            visible: task && task.tags.length > 0
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: parent.width - 20
-            spacing: 3
-            Label {
-                text: qsTr("Теги: ")
-            }
-
-            Repeater {
-                model: task ? task.tags : []
-                delegate: Component {
-                    Text {
-                        text: name + (index < task.tags.length - 1 ? "," : "")
-                    }
-                }
-            }
-        }
-        Flow {
-            id: callsView
-            visible: task && task.phones.length > 0
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: parent.width - 20
-
-            spacing: 3
-            Label {
-                text: qsTr("Звонки: ")
-            }
-
-            Repeater {
-                model: task ? task.phones : []
-                delegate: Component {
-                    Text {
-                        text: modelData + (index < task.phones.length - 1 ? "," : "")
-                    }
-                }
-            }
-        }
-        Flow {
-            id: patternsView
-            visible: task && task.patterns.length > 0
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: parent.width - 20
-
-            spacing: 3
-            Label {
-                text: qsTr("Шаблоны: ")
-            }
-
-            Repeater {
-                model: task ? task.patterns : []
-                delegate: Component {
-                    Text {
-                        text: name + (index < task.patterns.length - 1 ? "," : "")
-                    }
-                }
-            }
-        }
-
-        Text {
-            id: geoLocal
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: parent.width - 20
-            text: qsTr("Гео-специфичный: ") + (offer && offer.local ? qsTr("Да") : qsTr("Нет"))
-        }
-
-        Item {
-            id: map
-            Layout.preferredHeight: 200
-            Layout.preferredWidth: 300
-            Layout.alignment: Qt.AlignHCenter
-
-            WebEngineView {
+            ColumnLayout {
                 anchors.fill: parent
-                visible: offer && offer.hasLocation
-                url: offer ? "qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude : ""
-            }
-            TransparentMouseArea {
-                anchors.fill: parent
-                onPressed: {
-                    dosearch.navigation.handleOmnibox("qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude, 0)
+                spacing: 0
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    id: time
+                    text: {
+                        if (!offer)
+                            return ""
+                        var d = new Date(Math.abs(offer.timeLeft))
+                        return (offer.timeLeft > 0 ? "" : "-") + (d.getUTCHours() + (d.getUTCDate() - 1) * 24) + qsTr(" ч. ") + d.getUTCMinutes() + qsTr(" мин.")
+                    }
+                    color: {
+                        if (!offer)
+                            return "black"
+
+                        var urgency = Math.sqrt(Math.max(offer.timeLeft/offer.duration, 0))
+                        return Qt.rgba(textColor.r + (1 - textColor.r) * (1 - urgency), textColor.g * urgency, textColor.b * urgency, textColor.a + (1 - textColor.a) * urgency)
+                    }
                 }
-            }
-        }
 
-        Component {
-            id: imageView
-            Item {
-                Layout.preferredHeight: 200
-                Layout.alignment: Qt.AlignHCenter
-                Layout.fillWidth: true
+                TextEdit {
+                    id: topic
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: parent.width - 20
+                    Layout.maximumWidth: parent.width - 20
+                    horizontalAlignment: Qt.AlignHCenter
+                    renderType: Text.NativeRendering
+                    wrapMode: Text.WordWrap
+                    color: Palette.selectedTextColor
+                    text: offer ? offer.topic : ""
+                    selectByMouse: true
+                }
 
-                Image {
-                    id: img
-                    autoTransform: true
-                    anchors.centerIn: parent
-                    fillMode: Image.PreserveAspectFit
-                    source: "image://store/" + modelData
-                    onStatusChanged: {
-                        if (sourceSize.height/sourceSize.width > 2./3.) {
-                            img.height = 200
-                            img.width = undefined
-                        }
-                        else {
-                            img.height = undefined
-                            img.width = 300
+                Flow {
+                    id: tagsView
+                    visible: task && task.tags.length > 0
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: parent.width - 20
+                    spacing: 3
+                    Label {
+                        text: qsTr("Теги: ")
+                    }
+
+                    Repeater {
+                        model: task ? task.tags : []
+                        delegate: Component {
+                            Text {
+                                text: name + (index < task.tags.length - 1 ? "," : "")
+                            }
                         }
                     }
                 }
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: dosearch.navigation.handleOmnibox(root.league.imageUrl(modelData), 0)
+                Flow {
+                    id: callsView
+                    visible: task && task.phones.length > 0
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: parent.width - 20
+
+                    spacing: 3
+                    Label {
+                        text: qsTr("Звонки: ")
+                    }
+
+                    Repeater {
+                        model: task ? task.phones : []
+                        delegate: Component {
+                            Text {
+                                text: modelData + (index < task.phones.length - 1 ? "," : "")
+                            }
+                        }
+                    }
+                }
+                Flow {
+                    id: patternsView
+                    visible: task && task.patterns.length > 0
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: parent.width - 20
+
+                    spacing: 3
+                    Label {
+                        text: qsTr("Шаблоны: ")
+                    }
+
+                    Repeater {
+                        model: task ? task.patterns : []
+                        delegate: Component {
+                            Text {
+                                text: name + (index < task.patterns.length - 1 ? "," : "")
+                            }
+                        }
+                    }
+                }
+
+                Text {
+                    id: geoLocal
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: parent.width - 20
+                    text: qsTr("Гео-специфичный: ") + (offer && offer.local ? qsTr("Да") : qsTr("Нет"))
+                }
+
+                Item {
+                    id: map
+                    Layout.preferredHeight: 200
+                    Layout.preferredWidth: 300
+                    Layout.alignment: Qt.AlignHCenter
+
+                    WebEngineView {
+                        anchors.fill: parent
+                        visible: offer && offer.hasLocation
+                        url: offer ? "qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude : ""
+                    }
+                    TransparentMouseArea {
+                        anchors.fill: parent
+                        onPressed: {
+                            dosearch.navigation.handleOmnibox("qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude, 0)
+                        }
+                    }
+                }
+
+                Component {
+                    id: imageView
+                    Item {
+                        Layout.preferredHeight: 200
+                        Layout.alignment: Qt.AlignHCenter
+                        Layout.fillWidth: true
+
+                        Image {
+                            id: img
+                            autoTransform: true
+                            anchors.centerIn: parent
+                            fillMode: Image.PreserveAspectFit
+                            source: "image://store/" + modelData
+                            onStatusChanged: {
+                                if (sourceSize.height/sourceSize.width > 2./3.) {
+                                    img.height = 200
+                                    img.width = undefined
+                                }
+                                else {
+                                    img.height = undefined
+                                    img.width = 300
+                                }
+                            }
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: dosearch.navigation.handleOmnibox(root.league.imageUrl(modelData), 0)
+                        }
+                    }
+                }
+
+                Repeater {
+                    model: offer ? offer.images : []
+                    delegate: imageView
                 }
             }
         }
-
-        Repeater {
-            model: offer ? offer.images : []
-            delegate: imageView
-        }
-
-        Item {Layout.fillHeight: true}
     }
 }

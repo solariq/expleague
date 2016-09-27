@@ -38,8 +38,7 @@ PagesGroup::PagesGroup(Page* root, Type type, NavigationManager* manager): QObje
         QList<Page*>::iterator iter = pages.begin();
         while (iter != pages.end()) {
             Page* const page = *iter;
-            if (qobject_cast<Context*>(page)
-                    || (qobject_cast<MarkdownEditorPage*>(page) && !qobject_cast<Context*>(root)))
+            if (qobject_cast<Context*>(page) || qobject_cast<MarkdownEditorPage*>(page))
                 iter = pages.erase(iter);
             else iter++;
         }
@@ -63,10 +62,12 @@ PagesGroup::PagesGroup(Page* root, Type type, NavigationManager* manager): QObje
     }
 }
 
-void PagesGroup::split(const QList<Page *>& visible, const QList<Page *>& folded, const QList<Page*>& closed)  {
-    if (m_visible_pages != visible || m_folded_pages != folded) {
-        m_visible_pages = visible;
-        m_folded_pages = folded;
+void PagesGroup::split(const QList<Page *>& active, const QList<Page *>& closed, int visibleStart, int visibleCount)  {
+    if (m_active_pages != active || m_visible_start != visibleStart || m_visible_count != visibleCount || m_closed_pages != closed) {
+        m_active_pages = active;
+        m_visible_pages = m_active_pages.mid(visibleStart, visibleCount);
+        m_visible_start = visibleStart;
+        m_visible_count = visibleCount;
         m_closed_pages = closed;
         emit visiblePagesChanged();
     }

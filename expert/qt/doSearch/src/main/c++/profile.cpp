@@ -3,6 +3,7 @@
 #include <QMutex>
 #include <QList>
 
+#include <cmath>
 #include <QtNetwork>
 #include <QHostInfo>
 #include <QDomDocument>

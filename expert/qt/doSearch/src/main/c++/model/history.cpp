@@ -42,7 +42,6 @@ int History::visits(const QString& pageId) const {
 QList<PageVisit*> History::last(int depth) const {
     QSet<Page*> known;
     Context* currentContext = parent()->navigation()->context();
-    Page* answer = currentContext->task() ? currentContext->task()->answer() : 0;
     QList<PageVisit*> result;
     PageVisit* answerVisit = 0;
     for (int i = m_story.size() - 1; i >= 0; i--) {
@@ -50,21 +49,17 @@ QList<PageVisit*> History::last(int depth) const {
             continue;
         if (qobject_cast<Context*>(m_story[i]->page()))
             continue;
+        if (qobject_cast<MarkdownEditorPage*>(m_story[i]->page()))
+            continue;
+
         Context* context = m_story[i]->context();
         if (context->hasTask() && !context->task()->active())
             continue;
-        if (m_story[i]->page() == answer) {
-            answerVisit = m_story[i];
-            continue;
-        }
         if(result.size() >= depth)
             continue;
         result.append(m_story[i]);
         known.insert(m_story[i]->page());
     }
-
-    if (answerVisit)
-        result.insert(std::min(result.size(), 2), answerVisit);
 
     return result;
 }

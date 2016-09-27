@@ -125,13 +125,19 @@ Vault::Vault(Context* context): QObject(context) {
     });
 }
 
+QString Vault::generateKnuggetId(const QString& suffix, int index) {
+    if (index < 0)
+        index = parent()->children("knugget").size();
+    return parent()->id() + "/knugget/" + suffix + "-" + QString::number(index);
+}
+
 bool Vault::drop(const QString& text, const QString& html, const QList<QUrl>& urls, const QString& source) {
     qDebug() << "Drop caught. Text: [" << text << "], html: [" << html << "], urls: " << urls;
     QUrl urlFromText(text, QUrl::StrictMode);
     Knugget* knugget = 0;
     if (!text.isEmpty() && !text.startsWith("<img") && !urlFromText.isValid() && urlFromText.scheme() != "file") {
         knugget = new TextKnugget(
-                    parent()->id() + "/knugget/text-" + QString::number(m_items.size()),
+                    generateKnuggetId("text"),
                     text,
                     doSearch::instance()->page(source),
                     parent(),
@@ -167,7 +173,7 @@ bool Vault::drop(const QString& text, const QString& html, const QList<QUrl>& ur
             }
 
             knugget = new ImageKnugget(
-                        parent()->id() + "/knugget/image-" + QString::number(m_items.size()),
+                        generateKnuggetId("image"),
                         altMatch.captured(1),
                         src,
                         doSearch::instance()->page(source),
@@ -180,7 +186,7 @@ bool Vault::drop(const QString& text, const QString& html, const QList<QUrl>& ur
         QImage img(urlFromText.toLocalFile());
         if (!img.isNull()) {
             knugget = new ImageKnugget(
-                                parent()->id() + "/knugget/image-" + QString::number(m_items.size()),
+                                generateKnuggetId("image"),
                                 text.section('/', -1).section('.', 0, -2),
                                 League::instance()->uploadImage(img),
                                 doSearch::instance()->page(source),
@@ -191,7 +197,7 @@ bool Vault::drop(const QString& text, const QString& html, const QList<QUrl>& ur
     }
     else if (urlFromText.isValid()) {
         knugget = new LinkKnugget(
-                    parent()->id() + "/knugget/link-" + QString::number(m_items.size()),
+                    generateKnuggetId("link"),
                     "",
                     urlFromText,
                     doSearch::instance()->page(source),
@@ -211,6 +217,7 @@ bool Vault::drop(const QString& text, const QString& html, const QList<QUrl>& ur
     return true;
 }
 
+
 bool Vault::paste(Page* source) {
     if (source == 0)
         source = doSearch::instance()->empty();
@@ -218,13 +225,13 @@ bool Vault::paste(Page* source) {
     QStringList result;
     QList<Knugget*> knuggets;
     const QMimeData* mime = clipboard->mimeData();
-    int index = m_items.size();
+    int index = parent()->children("knugget").size();
     foreach (const QUrl& url, mime->urls()) {
         if (url.scheme() == "file") {
             QImage img(url.toLocalFile());
             if (!img.isNull()) {
                 knuggets.append(new ImageKnugget(
-                                    parent()->id() + "/knugget/image-" + QString::number(index++),
+                                    generateKnuggetId("image", index++),
                                     mime->hasText() ? mime->text() : "",
                                     League::instance()->uploadImage(img),
                                     source,
@@ -236,7 +243,7 @@ bool Vault::paste(Page* source) {
         else if (url.scheme() == "http" || url.scheme() == "https" || url.scheme() == "ftp") {
             if (QImageReader::imageFormat(url.fileName()).isEmpty()) {
                 knuggets.append(new LinkKnugget(
-                                    parent()->id() + "/knugget/link-" + QString::number(index++),
+                                    generateKnuggetId("link", index++),
                                     mime->hasText() ? mime->text() : "",
                                     url,
                                     source,
@@ -246,7 +253,7 @@ bool Vault::paste(Page* source) {
             }
             else {
                 knuggets.append(new ImageKnugget(
-                                    parent()->id() + "/knugget/image-" + QString::number(index++),
+                                    generateKnuggetId("image", index++),
                                     mime->hasText() ? mime->text() : "",
                                     url,
                                     source,
@@ -257,7 +264,7 @@ bool Vault::paste(Page* source) {
         }
         else {
             knuggets.append(new LinkKnugget(
-                                parent()->id() + "/knugget/link-" + QString::number(index++),
+                                generateKnuggetId("link", index++),
                                 mime->hasText() ? mime->text() : "",
                                 url,
                                 source,
@@ -270,7 +277,7 @@ bool Vault::paste(Page* source) {
         if (mime->hasImage()) {
             QUrl url = League::instance()->uploadImage(qvariant_cast<QImage>(mime->imageData()));
             knuggets.append(new ImageKnugget(
-                                parent()->id() + "/knugget/image-" + QString::number(index++),
+                                generateKnuggetId("image", index++),
                                 mime->hasText() ? mime->text() : "",
                                 url,
                                 source,
@@ -280,7 +287,7 @@ bool Vault::paste(Page* source) {
         }
         else if (mime->hasText()) {
             knuggets.append(new TextKnugget(
-                        parent()->id() + "/knugget/text-" + QString::number(index++),
+                        generateKnuggetId("text", index++),
                         mime->text(),
                         source,
                         parent(),
@@ -304,7 +311,7 @@ bool Vault::paste(Page* source) {
 
 void Vault::appendLink(const QUrl& url, const QString& text, Page* source) {
     Knugget* knugget = new LinkKnugget(
-                parent()->id() + "/knugget/link-" + QString::number(m_items.size()),
+                generateKnuggetId("link"),
                 text,
                 url,
                 source ? source : doSearch::instance()->empty(),

@@ -12,57 +12,71 @@ Item {
     property PagesGroup group: null
     property var append: null
     property var visiblePages: group.visiblePages
-    property var foldedPages: group.foldedPages
+    property var activePages: group.activePages
     property var closedPages: group.closedPages
     property bool closeEnabled: true
 
-    implicitWidth: visibleList.implicitWidth + (group.parentGroup ? separator.width : 0)
+    visible: visiblePages.length > 0 || closedPages.length > 0
+    implicitWidth: visibleList.implicitWidth + (group.parentGroup ? separator.width: 0)
 
     RowLayout {
         anchors.fill: parent
         spacing: 0
-        Item {
-            id: separator
+        RowLayout {
             Layout.fillHeight: true
-            Layout.preferredWidth: separatorText.implicitWidth + 10
-            visible: group.parentGroup && (visiblePages.length > 0 || foldedPages.length > 0)
+            Layout.preferredWidth: 24
+            Layout.minimumWidth: 24
+            id: separator
+            visible: group.parentGroup
+            spacing: 0
+            Item {
+                Layout.preferredWidth: 8
+                visible: self.group.type === PagesGroup.SUGGEST
+            }
+            Image {
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredHeight: 11
+                Layout.preferredWidth: self.group.type === PagesGroup.SUGGEST ? 12 : 20
 
-            Text {
-                id: separatorText
-                anchors.centerIn: parent
-                text: {
-                    console.log("group type:" + self.group.type + " suggest: " + PagesGroup.SUGGEST)
-                    return self.group.type === PagesGroup.SUGGEST ? ">>" : ">"
-                }
-                color: Palette.idleTextColor
+                source: self.group.type === PagesGroup.SUGGEST ? "qrc:/tools/graph-arrow_suggest.png" : "qrc:/tools/graph-arrow_child.png"
+            }
+            Item {
+                Layout.preferredWidth: 4
             }
         }
+
         Item {
-            Layout.fillHeight: true
+            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredHeight: 22
             Layout.preferredWidth: visibleList.implicitWidth
+
+            Rectangle {
+                id: mask
+                x: -1
+                y: -1
+                width: parent.width + 2
+                height: parent.height + 2
+                color: Palette.borderColor("idle")
+                radius: Palette.radius
+                smooth: true
+            }
+
             Row {
                 id: visibleList
-                anchors.fill: parent
                 spacing: 1
+                anchors.fill: parent
+
                 Repeater {
                     delegate: NavigationTab {
-                        height: self.height
+                        height: visibleList.height
                         width: implicitWidth
-                        color: {
+                        state: {
                             if (group.selectedPage !== modelData)
-                                return Palette.idleColor
+                                return "idle"
                             else if (selected)
-                                return Palette.selectedColor
+                                return "selected"
                             else
-                                return Palette.activeColor
-                        }
-                        textColor: {
-                            if (group.selectedPage !== modelData)
-                                return Palette.idleTextColor
-                            else if (selected)
-                                return Palette.selectedTextColor
-                            else
-                                return Palette.activeTextColor
+                                return "active"
                         }
                         closeEnabled: self.closeEnabled
                     }
@@ -100,25 +114,24 @@ Item {
 
                     onClicked: self.append()
                 }
-
                 Button {
                     id: others
                     property bool opened: false
                     height: parent.height
-                    visible: foldedPages.length > 0
+                    visible: self.activePages.length > self.visiblePages.length
                     enabled: !opened
 
                     background: Rectangle {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
-                        color: popup.visible ? Palette.selectedColor: (group.selected? Palette.activeColor : Palette.idleColor)
+                        color: popup.visible ? Palette.selectedColor: Palette.idleColor
                     }
-                    contentItem: Text {
-                        anchors.fill: parent
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        text: ("➥") + foldedPages.length
-                        color: popup.visible ? Palette.selectedTextColor: (group.selected ? Palette.activeTextColor : Palette.idleTextColor)
+
+                    indicator: Image {
+                        anchors.centerIn: parent
+                        width: 7
+                        height: 4
+                        source: "qrc:/tools/rollup-menu-arrow.png"
                     }
                     property real closedTime: 0
                     onClicked: {
@@ -129,37 +142,16 @@ Item {
                 }
             }
 
-            Rectangle {
-                id: mask
-                anchors.fill: visibleList
-                radius: Palette.radius
-                smooth: true
-                visible: false
-            }
-
-            OpacityMask {
-                z: parent.z + 10
-                anchors.fill: visibleList
-                source: visibleList
-                maskSource: mask
-            }
-            Rectangle {
-                z: parent.z + 5
-                anchors.fill: visibleList
-                color: Palette.backgroundColor
-            }
-
             Popup {
                 x: Math.max(parent.width - width, 0)
                 y: parent.mapFromItem(others.parent, 0, others.y).y + others.height + 1
-                width: flickableContainer.contentWidth+ 4
-                height: (20 + 1) * foldedPages.length + 4 + (closedPages.length > 0 ? (20 + 1) * closedPages.length + closedLabel.height : 0)
-
+                width: flickableContainer.contentWidth + 4
+                height: Math.min(flickableContainer.contentHeight + 4, dosearch.main.height - 300)
                 id: popup
                 clip: true
                 modal: false
                 focus: true
-                padding: 0
+                padding: 2
                 closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
                 onVisibleChanged: {
@@ -170,7 +162,6 @@ Item {
 
                 Rectangle {
                     color: Palette.navigationColor
-                    anchors.margins: 2
                     anchors.fill: parent
                     Flickable {
                         id: flickableContainer
@@ -182,6 +173,7 @@ Item {
                         bottomMargin: 0
                         leftMargin: 0
 
+                        contentHeight: 24 * (self.activePages.length + self.closedPages.length) + (closedLabel.visible ? closedLabel.height : 0)
                         contentWidth: {
                             var result = 0
                             for(var i in foldedList.children) {
@@ -196,16 +188,31 @@ Item {
                         Column {
                             id: foldedList
                             anchors.fill: parent
-                            spacing: 1
+                            spacing: 0
                             Repeater {
                                 delegate: NavigationTab {
                                     width: flickableContainer.contentWidth
-                                    height: 20
-                                    color: hover ? Palette.selectedColor : Palette.idleColor
-                                    textColor: hover ? Palette.selectedTextColor : Palette.idleTextColor
+                                    height: 24
+                                    anchors.left: parent.left
+                                    state: {
+                                        var visible = false
+                                        for (var i in self.visiblePages) {
+                                            if (self.visiblePages[i] === modelData) {
+                                                visible = true
+                                                break
+                                            }
+                                        }
+
+                                        if (visible) {
+                                            return hover ? "selected" : "active"
+                                        }
+                                        else {
+                                            return hover ? "active" : "idle"
+                                        }
+                                    }
                                     closeEnabled: false
                                 }
-                                model: foldedPages
+                                model: self.activePages
                             }
                             Text {
                                 id: closedLabel
@@ -216,12 +223,12 @@ Item {
                             Repeater {
                                 delegate: NavigationTab {
                                     width: flickableContainer.contentWidth
-                                    height: 20
-                                    color: hover ? Palette.selectedColor : Palette.idleColor
+                                    height: 24
+                                    state: hover ? "active" : "idle"
                                     textColor: hover ? Palette.selectedTextColor : Palette.idleTextColor
                                     closeEnabled: false
                                 }
-                                model: closedPages
+                                model: self.closedPages
                             }
                         }
                     }

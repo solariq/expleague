@@ -108,7 +108,7 @@ Rectangle {
         id: bubble
 
         Item {
-            width: column.width
+            width: chatContainer.width
             implicitHeight: content.implicitHeight
 
             Avatar {
@@ -222,26 +222,32 @@ Rectangle {
     ColumnLayout {
         id: column
         anchors.fill: parent
-        ScrollView {
-            id: chatContainer
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
-            verticalScrollBarPolicy: Qt.ScrollBarAsNeeded
-            Column {
-                id: chat
-                spacing: 5
-                Item {height: 5}
-                Repeater {
-                    model: self.task ? self.task.chat : []
-                    delegate: bubble
-                }
-                Item {Layout.fillHeight: true}
-                onHeightChanged: {
-                    chatContainer.flickableItem.contentY = Math.max(0, height - chatContainer.height)
-                }
-            }
+            ScrollView {
+                id: chatContainer
+                horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
+                verticalScrollBarPolicy: Qt.ScrollBarAsNeeded
+                anchors.centerIn: parent
+                width: parent.width - 8
+                height: parent.height - 8
 
+                Column {
+                    id: chat
+                    spacing: 5
+                    Item {height: 5}
+                    Repeater {
+                        model: self.task ? self.task.chat : []
+                        delegate: bubble
+                    }
+                    Item {Layout.fillHeight: true}
+                    onHeightChanged: {
+                        chatContainer.flickableItem.contentY = Math.max(0, height - chatContainer.height)
+                    }
+                }
+
+            }
         }
 
         TextArea {

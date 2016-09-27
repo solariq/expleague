@@ -21,6 +21,7 @@ class NavigationManager;
 class Context;
 
 class NavigationManager: public QObject {
+    static double MAX_TAB_WIDTH;
     Q_OBJECT
 
     Q_PROPERTY(QQmlListProperty<expleague::PagesGroup> groups READ groups NOTIFY groupsChanged)

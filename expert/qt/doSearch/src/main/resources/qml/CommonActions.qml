@@ -25,6 +25,8 @@ Item {
     property Action zoomOut: zoomOutAction
     property Action showHistory: showHistoryAction
     property Action exitFullScreen: exitFullScreenAction
+    property Action showEditor: showEditorAction
+    property Action showVault: showVaultAction
 
     property QtObject screen: {
         return root.navigation.activeScreen
@@ -235,8 +237,13 @@ Item {
         shortcut: "Ctrl+F"
         text: qsTr("Поиск на странице")
         onTriggered: {
-            omnibox.select("page")
-            dosearch.main.showDialog(omnibox)
+            if (!omnibox.visible) {
+                omnibox.select("page")
+                dosearch.main.showDialog(omnibox)
+            }
+            else {
+                omnibox.visible = false
+            }
         }
     }
 
@@ -244,9 +251,15 @@ Item {
         id: searchInternetAction
         shortcut: "Ctrl+N"
         text: qsTr("Поиск в интернете")
+        iconSource: "qrc:/tools/search.png"
         onTriggered: {
-            omnibox.select("internet")
-            dosearch.main.showDialog(omnibox)
+            if (!omnibox.visible) {
+                omnibox.select("internet")
+                dosearch.main.showDialog(omnibox)
+            }
+            else {
+                omnibox.visible = false
+            }
         }
     }
 
@@ -255,8 +268,13 @@ Item {
         shortcut: "Ctrl+Shift+N"
         text: qsTr("Поиск на текущем сайте")
         onTriggered: {
-            omnibox.select("site")
-            dosearch.main.showDialog(omnibox)
+            if (!omnibox.visible) {
+                omnibox.select("site")
+                dosearch.main.showDialog(omnibox)
+            }
+            else {
+                omnibox.visible = false
+            }
         }
     }
 
@@ -282,6 +300,30 @@ Item {
         text: qsTr("Показать последние страницы")
         onTriggered: {
             dosearch.main.showHistory()
+        }
+    }
+
+    Action {
+        id: showEditorAction
+        shortcut: "Ctrl+O"
+        text: qsTr("Открыть последний редактор")
+        iconSource: "qrc:/tools/editor.png"
+        enabled: !!dosearch.navigation.context.task
+        onTriggered: {
+            dosearch.navigation.open(dosearch.navigation.context.task.answer)
+        }
+    }
+
+    Action {
+        id: showVaultAction
+        shortcut: "Ctrl+D"
+        text: qsTr("Открыть хранилище")
+        iconSource: "qrc:/tools/vault.png"
+        onTriggered: {
+            if (dosearch.main.sidebarRef.state != "vault")
+                dosearch.main.sidebarRef.state = "vault"
+            else
+                dosearch.main.sidebarRef.state = ""
         }
     }
 
