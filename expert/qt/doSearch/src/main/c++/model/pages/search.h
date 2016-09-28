@@ -17,6 +17,8 @@ private:
     Q_PROPERTY(QString query READ query CONSTANT)
     Q_PROPERTY(QUrl googleUrl READ googleUrl CONSTANT)
     Q_PROPERTY(QUrl yandexUrl READ yandexUrl CONSTANT)
+    Q_PROPERTY(QString googleText READ googleText WRITE setGoogleText NOTIFY googleTextChanged)
+    Q_PROPERTY(QString yandexText READ yandexText WRITE setYandexText NOTIFY yandexTextChanged)
 
     Q_PROPERTY(int searchIndex READ searchIndex WRITE setSearchIndex NOTIFY searchIndexChanged)
 
@@ -43,6 +45,11 @@ public:
     QUrl googleUrl() const;
     QUrl yandexUrl() const;
 
+    QString googleText() const;
+    QString yandexText() const;
+
+    QString textContent() const { return googleText() + yandexText(); }
+
     int searchIndex() const {
         return m_search_index;
     }
@@ -62,6 +69,9 @@ public:
         searchIndexChanged(index);
     }
 
+    void setGoogleText(const QString& text);
+    void setYandexText(const QString& text);
+
     Q_INVOKABLE QString parseGoogleQuery(const QUrl& request) const;
     Q_INVOKABLE QString parseYandexQuery(const QUrl& request) const;
 
@@ -72,12 +82,15 @@ public:
 signals:
     void queryChanged(const QString&);
     void searchIndexChanged(int index);
+    void googleTextChanged(const QString&);
+    void yandexTextChanged(const QString&);
 
 private:
     QString m_query;
     int m_search_index;
 };
 
+class SearchSessionModel;
 class SearchSession: public Page {
     Q_OBJECT
 
@@ -86,16 +99,18 @@ class SearchSession: public Page {
 public:
     QQmlListProperty<SearchRequest> queries() const { return QQmlListProperty<SearchRequest>(const_cast<SearchSession*>(this), const_cast<QList<SearchRequest*>&>(m_queries)); }
 
-    Q_INVOKABLE bool accept(SearchRequest* request) { return true; }
+    Q_INVOKABLE bool accept(SearchRequest* request);
 
 signals:
     void queriesChanged();
 
 public:
     SearchSession(const QString& id, doSearch* parent);
+    virtual ~SearchSession();
 
 private:
     QList<SearchRequest*> m_queries;
+    SearchSessionModel* m_model;
 };
 }
 #endif // SEARCH_H

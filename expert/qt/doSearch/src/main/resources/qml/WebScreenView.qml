@@ -371,11 +371,17 @@ Rectangle {
 
                 onLoadingChanged: {
                     console.log("Loading changed: " + self.url + " to " + loading)
-                    if (!loading)
+                    if (!loading) {
                         webEngineView.visible = Qt.binding(function() {return self === dosearch.navigation.activeScreen})
+                        runJavaScript("document.body.innerText", function(result) {
+                            owner.textContent = result;
+                        });
+                    }
                     else
                         webEngineView.visible = true
                 }
+
+                onJavaScriptConsoleMessage: {}
 
                 Timer {
                     id: reloadTimer

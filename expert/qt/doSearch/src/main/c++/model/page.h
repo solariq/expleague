@@ -33,6 +33,7 @@ class Page: public QObject {
     Q_PROPERTY(QString id READ id CONSTANT)
     Q_PROPERTY(QString icon READ icon NOTIFY iconChanged)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
+    Q_PROPERTY(QString textContent READ textContent WRITE setTextContent NOTIFY textContentChanged)
     Q_PROPERTY(expleague::Page::State state READ state WRITE setState NOTIFY stateChanged)
 
 public:
@@ -58,6 +59,7 @@ public:
 
     virtual QString icon() const { return "qrc:/avatar.png"; }
     virtual QString title() const { return id(); }
+    virtual QString textContent() const;
 
     State state() const { return m_state; }
 
@@ -66,6 +68,10 @@ public:
     Page* lastVisited() const { return m_last_visited; }
     time_t lastVisitTs() const { return m_last_visit_ts; }
 
+    void setTextContent(const QString& content);
+    void setState(State closed);
+
+public:
     Q_INVOKABLE QQuickItem* ui(bool useCache = true) const;
 
     Q_INVOKABLE virtual double pOut(Page*) const;
@@ -75,11 +81,10 @@ public:
 
     virtual double titleWidth() const;
 
-    void setState(State closed);
-
 signals:
     void iconChanged(const QString& icon);
     void titleChanged(const QString& title);
+    void textContentChanged(const QString& content);
     void stateChanged(Page::State closed);
 
 public:

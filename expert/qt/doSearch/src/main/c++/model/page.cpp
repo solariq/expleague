@@ -389,6 +389,24 @@ QList<Page*> Page::children(const QString& prefix) const {
     return result;
 }
 
+void Page::setTextContent(const QString& content) {
+    QString currentContent = textContent();
+    if (currentContent == content)
+        return;
+
+    FileWriteThrottle::enqueue(storage().absoluteFilePath("content.txt"), content, [this, content]() {
+        this->textContentChanged(content);
+    });
+}
+
+QString Page::textContent() const {
+    QFile file(storage().absoluteFilePath("content.txt"));
+    if (!file.exists())
+        return QString(QString::null);
+    file.open(QFile::ReadOnly);
+    return QString(file.readAll());
+}
+
 void Page::save() const {
     if (m_saved_changes == m_changes)
         return;

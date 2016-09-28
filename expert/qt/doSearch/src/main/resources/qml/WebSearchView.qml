@@ -68,6 +68,13 @@ Rectangle {
                         dosearch.navigation.open(dosearch.search(query, 0))
                     }
                 }
+                onLoadingChanged: {
+                    if (!loading) {
+                        runJavaScript("document.body.innerText", function(result) {
+                            owner.googleText = result;
+                        });
+                    }
+                }
             }
             WebEngineView {
                 anchors.fill: parent
@@ -84,6 +91,11 @@ Rectangle {
                         url = owner.yandexUrl
                         dosearch.navigation.open(dosearch.search(query, 1))
                     }
+                }
+                onLoadingChanged: {
+                    runJavaScript("document.body.innerText", function(result) {
+                        owner.yandexText = result;
+                    });
                 }
             }
         }

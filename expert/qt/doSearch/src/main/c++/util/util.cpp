@@ -16,12 +16,12 @@ void createGlobalQueue() {
     globalQueue = new FileWriteThrottle;
 }
 
-void FileWriteThrottle::enqueue(const QString& file, const QByteArray& content) {
+void FileWriteThrottle::enqueue(const QString& file, const QByteArray& content, std::function<void ()> callback) {
     qCallOnce(createGlobalQueue, flag);
-    globalQueue->append({file, content});
+    globalQueue->append({file, content, callback});
 }
 
-void FileWriteThrottle::enqueue(const QString& file, const QString& content) {
+void FileWriteThrottle::enqueue(const QString& file, const QString& content, std::function<void ()> callback) {
     enqueue(file, content.toUtf8());
 }
 
@@ -68,8 +68,12 @@ void FileWriteThrottle::tick() {
                 info.dir().mkpath(".");
         }
 
-        if (file.open(QFile::WriteOnly | QFile::Truncate))
+        if (file.open(QFile::WriteOnly | QFile::Truncate)) {
             file.write(request.content);
+            file.flush();
+            if (request.callback)
+                request.callback();
+        }
         else
             qWarning() << "Unable to write contents of file: " << request.file;
     }

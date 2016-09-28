@@ -1,5 +1,6 @@
 #include "search.h"
 #include "../../dosearch.h"
+#include "../../util/filethrottle.h"
 
 #include <QRegExp>
 #include <QUrlQuery>
@@ -7,11 +8,54 @@
 namespace expleague {
 SearchRequest SearchRequest::EMPTY("");
 
+QString SearchRequest::googleText() const {
+    QFile file(storage().absoluteFilePath("google.txt"));
+    if (!file.exists())
+        return QString(QString::null);
+    file.open(QFile::ReadOnly);
+    return QString(file.readAll());
+}
+
+void SearchRequest::setGoogleText(const QString& text) {
+    QString currentText = googleText();
+    if (currentText == text)
+        return;
+
+    FileWriteThrottle::enqueue(storage().absoluteFilePath("google.txt"), text, [this, text]() {
+        this->googleTextChanged(text);
+        QString yandexText = this->yandexText();
+        if (!yandexText.isNull())
+            this->textContentChanged(text + yandexText);
+    });
+}
+
+QString SearchRequest::yandexText() const {
+    QFile file(storage().absoluteFilePath("yandex.txt"));
+    if (!file.exists())
+        return QString(QString::null);
+    file.open(QFile::ReadOnly);
+    return QString(file.readAll());
+}
+
+void SearchRequest::setYandexText(const QString& text) {
+    QString currentText = yandexText();
+    if (currentText == text)
+        return;
+
+    FileWriteThrottle::enqueue(storage().absoluteFilePath("yandex.txt"), text, [this, text]() {
+        this->googleTextChanged(text);
+        QString googleText = this->googleText();
+        if (!googleText.isNull())
+            this->textContentChanged(googleText + text);
+    });
+}
+
 QString SearchRequest::parseGoogleQuery(const QUrl& request) const {
     if (request.path() != "/search")
         return "";
     QUrlQuery query(request.hasFragment() ? request.fragment() : request.query());
     QString queryText = query.queryItemValue("q", QUrl::PrettyDecoded);
+    queryText.replace("+", " ");
     queryText.replace("%2B", "+");
     static QRegExp site("site:(\\S+)");
     int index;
@@ -26,6 +70,7 @@ QString SearchRequest::parseYandexQuery(const QUrl& request) const {
         return "";
     QUrlQuery query(request.hasFragment() ? request.fragment() : request.query());
     QString queryText = query.queryItemValue("text", QUrl::PrettyDecoded);
+    queryText.replace("+", " ");
     queryText.replace("%2B", "+");
     static QRegExp site("host:(\\S+)");
     int index;
@@ -83,4 +128,20 @@ SearchRequest::SearchRequest(const QString& id, doSearch* parent): Page(id, "qrc
     m_query(value("search.query").toString()),
     m_search_index(value("search.engine").toInt())
 {}
+
+class SearchSessionModel {
+
+};
+
+SearchSession::SearchSession(const QString& id, doSearch* parent): m_model(new SearchSessionModel()) {
+
+}
+
+bool SearchSession::accept(SearchRequest* request) {
+    return true;
+}
+
+SearchSession::~SearchSession() {
+    delete m_model;
+}
 }

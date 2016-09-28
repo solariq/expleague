@@ -41,9 +41,7 @@ int History::visits(const QString& pageId) const {
 
 QList<PageVisit*> History::last(int depth) const {
     QSet<Page*> known;
-    Context* currentContext = parent()->navigation()->context();
     QList<PageVisit*> result;
-    PageVisit* answerVisit = 0;
     for (int i = m_story.size() - 1; i >= 0; i--) {
         if (known.contains(m_story[i]->page()))
             continue;
