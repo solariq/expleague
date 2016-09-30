@@ -213,33 +213,34 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   }
 
   protected Stream<ExpLeagueOrder> replayAwareStream(final Supplier<Stream<ExpLeagueOrder>> streamSupplier) {
-    final List<ExpLeagueOrder> orders = new ArrayList<>();
-    final Set<String> rooms = new HashSet<>();
-    streamSupplier.get().forEach(order -> {
-      rooms.add(order.offer().room().local());
-      orders.add(order);
-    });
-
-    boolean replayWasExecuted = false;
-    for (String room : rooms) {
-      if (!replayCheckedRooms.containsKey(room)) {
-        synchronized (this) {
-          if (isRoomReplayRequired(room)) {
-            clearRoomBeforeReplay(room);
-            ExpLeagueRoomAgent.replay(this, Archive.instance().dump(room).stream());
-            replayWasExecuted = true;
-          }
-        }
-        replayCheckedRooms.put(room, room);
-      }
-    }
-
-    if (replayWasExecuted) {
-      return streamSupplier.get();
-    }
-    else {
-      return orders.stream();
-    }
+    return streamSupplier.get();
+//    final List<ExpLeagueOrder> orders = new ArrayList<>();
+//    final Set<String> rooms = new HashSet<>();
+//    streamSupplier.get().forEach(order -> {
+//      rooms.add(order.offer().room().local());
+//      orders.add(order);
+//    });
+//
+//    boolean replayWasExecuted = false;
+//    for (String room : rooms) {
+//      if (!replayCheckedRooms.containsKey(room)) {
+//        synchronized (this) {
+//          if (isRoomReplayRequired(room)) {
+//            clearRoomBeforeReplay(room);
+//            ExpLeagueRoomAgent.replay(this, Archive.instance().dump(room).stream());
+//            replayWasExecuted = true;
+//          }
+//        }
+//        replayCheckedRooms.put(room, room);
+//      }
+//    }
+//
+//    if (replayWasExecuted) {
+//      return streamSupplier.get();
+//    }
+//    else {
+//      return orders.stream();
+//    }
   }
 
   protected boolean isRoomReplayRequired(final String roomId) {
