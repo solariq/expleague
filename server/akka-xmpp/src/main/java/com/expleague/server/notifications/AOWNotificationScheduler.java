@@ -1,9 +1,12 @@
 package com.expleague.server.notifications;
 
+import com.expleague.server.XMPPDevice;
 import com.expleague.server.agents.LaborExchange;
 import com.relayrides.pushy.apns.util.SimpleApnsPushNotification;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Experts League
@@ -42,5 +45,14 @@ class AOWNotificationScheduler extends NotificationScheduler {
   @Override
   SimpleApnsPushNotification hiddenNotification(String token, Date relevant) {
     return new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{\"content-available\": 1}, \"aow\": \"" + topic + "\"}");
+  }
+
+  @Nullable
+  @Override
+  SimpleApnsPushNotification build(XMPPDevice device, List<ScheduledNotification> laterQueue) {
+    if (device.build() < 50)
+      return visibleNotification(device.token());
+    else
+      return super.build(device, laterQueue);
   }
 }
