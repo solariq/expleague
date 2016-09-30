@@ -7,7 +7,7 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Needed to attach images to the request</string>
 	<key>BuildDate</key>
-	<string>21.09.2016</string>
+	<string>30.09.2016</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>ru</string>
 	<key>CFBundleExecutable</key>
@@ -25,7 +25,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>49</string>
+	<string>50</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>

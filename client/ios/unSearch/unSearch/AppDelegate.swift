@@ -253,7 +253,7 @@ extension AppDelegate: UIApplicationDelegate {
         if let messageId = userInfo["id"] as? String {
             activeProfile!.expect(messageId)
         }
-        else if let aow = userInfo["aow"] as? String , aow != activeProfile!.aowTitle {
+        else if let aow = userInfo["aow"] as? String, aow != activeProfile!.aowTitle {
             activeProfile!.aow(aow)
         }
         self.application(application, performFetchWithCompletionHandler: completionHandler)

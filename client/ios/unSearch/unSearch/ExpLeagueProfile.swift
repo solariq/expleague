@@ -303,9 +303,12 @@ class ExpLeagueProfile: NSManagedObject {
     func add(aow order: ExpLeagueOrder) {
         order.emulate()
         for o in orders {
-            let order = o as! ExpLeagueOrder
-            if (order.fake) {
-                order.archive()
+            let current = o as! ExpLeagueOrder
+            if (current.id == order.id) {
+                current.emulate()
+            }
+            else if (current.fake) {
+                current.archive()
             }
         }
         receiveAnswerOfTheWeek = false

@@ -206,6 +206,7 @@ class ExpLeagueOrder: NSManagedObject {
     
     func emulate() {
         self.flags = self.flags | ExpLeagueOrderFlags.closed.rawValue | ExpLeagueOrderFlags.fake.rawValue
+        self.flags = self.flags & ~ExpLeagueOrderFlags.archived.rawValue
         save()
     }
     
@@ -222,8 +223,10 @@ class ExpLeagueOrder: NSManagedObject {
         if (isActive) {
             cancel()
         }
-        update {
-            self.flags |= ExpLeagueOrderFlags.archived.rawValue
+        if (self.flags & ExpLeagueOrderFlags.archived.rawValue == 0) {
+            update {
+                self.flags |= ExpLeagueOrderFlags.archived.rawValue
+            }
         }
     }
     
