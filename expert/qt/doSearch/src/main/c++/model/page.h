@@ -72,12 +72,13 @@ public:
     void setState(State closed);
 
 public:
+    void processTextContentWhenAvailable(std::function<void (const QString&)> callback) const;
     Q_INVOKABLE QQuickItem* ui(bool useCache = true) const;
 
     Q_INVOKABLE virtual double pOut(Page*) const;
     Q_INVOKABLE virtual double pIn(Page*) const;
 
-    Q_INVOKABLE virtual void transition(Page* from, TransitionType type);
+    Q_INVOKABLE virtual void transition(Page* to, TransitionType type);
 
     virtual double titleWidth() const;
 
@@ -99,8 +100,10 @@ protected:
     void transferUI(Page* other) const;
 
     QVariant value(const QString& key) const;
+    QList<Page*> children(const QString& prefix = "") const;
     void store(const QString& key, const QVariant& value);
     void visitAll(const QString& key, std::function<void (const QVariant&)> visitor) const;
+    void visitAll(const QString& prefix, std::function<void (Page*)> visitor) const;
     int count(const QString& key) const;
     void append(const QString& key, const QVariant& value);
     void remove(const QString& key);
@@ -108,7 +111,6 @@ protected:
 
     QDir storage() const;
     void save() const;
-    QList<Page*> children(const QString& prefix = "") const;
     virtual void incomingTransition(Page* from, TransitionType type);
 
 private:

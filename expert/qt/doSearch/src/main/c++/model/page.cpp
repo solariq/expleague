@@ -124,6 +124,12 @@ void Page::visitAll(const QString& fullKey, std::function<void (const QVariant& 
     }
 }
 
+void Page::visitAll(const QString& fullKey, std::function<void (Page* value)> visitor) const {
+    foreach(Page* page, children(fullKey)) {
+        visitor(page);
+    }
+}
+
 void Page::append(const QString& fullKey, const QVariant& value) {
     QStringList path = fullKey.split(".");
     QVariant* context = resolve(path, true);
@@ -378,13 +384,24 @@ doSearch* Page::parent() const {
     return static_cast<doSearch*>(QObject::parent());
 }
 
-QList<Page*> Page::children(const QString& prefix) const {
+QList<Page*> Page::children(const QString& prefixOrig) const {
+    QString prefix = prefixOrig;
+    prefix.replace(".", "/");
     QDir storage(parent()->pageResource(id()) + "/" + prefix);
     QList<Page*> result;
     foreach(QFileInfo info, storage.entryInfoList()) {
         if (info.isDir() && !info.fileName().startsWith(".") && QFile(info.absoluteFilePath() + "/page.xml").exists())
             result.append(parent()->page(id() + "/" + prefix + "/" + info.fileName()));
     }
+
+    QString start = storage.dirName();
+    prefix = prefix.section("/", 0, -2);
+    storage.cdUp();
+    foreach(QFileInfo info, storage.entryInfoList()) {
+        if (info.isDir() && info.fileName().startsWith(start) && QFile(info.absoluteFilePath() + "/page.xml").exists())
+            result.append(parent()->page(id() + "/" + prefix + "/" + info.fileName()));
+    }
+
 
     return result;
 }
@@ -405,6 +422,17 @@ QString Page::textContent() const {
         return QString(QString::null);
     file.open(QFile::ReadOnly);
     return QString(file.readAll());
+}
+
+void Page::processTextContentWhenAvailable(std::function<void (const QString &)> callback) const {
+    QString text = textContent();
+    if (!text.isNull())
+        callback(text);
+    else
+        connect(this, &Page::textContentChanged, [this, callback](const QString& text){
+           callback(text);
+           disconnect(const_cast<Page*>(this), &Page::textContentChanged, const_cast<Page*>(this), 0);
+        });
 }
 
 void Page::save() const {

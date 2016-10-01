@@ -147,7 +147,6 @@ MarkdownEditorPage::MarkdownEditorPage(const QString& id, Context* context, Memb
     store("document.title", title);
     store("document.owner", context->id());
     save();
-    League* league = doSearch::instance()->league();
     if (m_author) {
         QObject::connect(m_author, SIGNAL(nameChanged(QString)), this, SLOT(authorChanged()));
         QObject::connect(m_author, SIGNAL(avatarChanged(QUrl)), this, SLOT(authorChanged()));

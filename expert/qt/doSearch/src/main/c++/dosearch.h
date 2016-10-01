@@ -53,12 +53,15 @@ public:
     Q_INVOKABLE Context* context(const QString& name) const;
     Q_INVOKABLE WebPage* web(const QUrl& name) const;
     Q_INVOKABLE SearchRequest* search(const QString& query, int searchIndex = -1) const;
+    Q_INVOKABLE SearchSession* session(SearchRequest* seed, Context* owner) const;
     Q_INVOKABLE MarkdownEditorPage* document(Context* context, const QString& title, Member* member, bool editable) const;
     History* history() const { return m_history; }
 
     Q_INVOKABLE Context* createContext();
 
     Q_INVOKABLE Page* page(const QString& id) const;
+
+    QString childId(const Page* parent, const QString& prefix) const;
 
 signals:
     void mainChanged(QQuickWindow*);

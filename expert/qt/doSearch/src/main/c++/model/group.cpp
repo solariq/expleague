@@ -2,6 +2,7 @@
 #include "manager.h"
 #include "pages/web.h"
 #include "pages/editor.h"
+#include "pages/search.h"
 
 #include <QDebug>
 
@@ -96,7 +97,7 @@ void PagesGroup::insert(Page* page, int position) {
         page->setState(Page::INACTIVE);
     int index = m_pages.indexOf(page);
     position = position < 0 ? m_closed_start : position;
-    if (index >= 0 && index < position)
+    if (index >= 0 && index <= position)
         return;
     if (index >= position)
         m_pages.removeOne(page);

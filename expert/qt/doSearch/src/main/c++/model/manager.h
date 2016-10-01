@@ -78,10 +78,12 @@ signals:
     void historyChanged();
     void activeScreenChanged();
 
+public slots:
+    void onGroupsChanged();
+
 private slots:
     void onContextsChanged();
     void onPagesChanged();
-    void onGroupsChanged();
     void onDnsRequestFinished();
     void onScreenWidthChanged(int width) {
         m_screen_width = width;

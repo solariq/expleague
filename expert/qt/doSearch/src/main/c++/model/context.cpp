@@ -23,10 +23,6 @@ bool isSearch(const QUrl& url) {
     return host == "www.google.com" || host == "yandex.ru";
 }
 
-SearchRequest* Context::lastRequest() const {
-    return m_requests.isEmpty() ? &SearchRequest::EMPTY : m_requests.last();
-}
-
 QString Context::icon() const {
     if (!m_icon_cache.isEmpty())
         return m_icon_cache;
@@ -59,14 +55,25 @@ void Context::setTask(Task *task) {
     iconChanged(icon());
 }
 
-void Context::transition(Page *from, TransitionType type) {
-    Page::transition(from, type);
-    if (type == Page::CHILD_GROUP_OPEN) {
-        SearchRequest* request = qobject_cast<SearchRequest*>(from);
-        if (request) {
-            m_requests.append(request);
-            requestsChanged();
+SearchSession* Context::match(SearchRequest* request) {
+    for (int i = m_sessions.size() - 1; i >= 0; i--) {
+        if (m_sessions[i]->check(request)) {
+            m_sessions[i]->append(request);
+            return m_sessions[i];
         }
+    }
+
+    SearchSession* newSession = parent()->session(request, this);
+    m_sessions.append(newSession);
+    connect(newSession, SIGNAL(queriesChanged()), this, SLOT(onQueriesChanged()));
+    return newSession;
+}
+
+void Context::transition(Page* to, TransitionType type) {
+    Page::transition(to, type);
+    SearchSession* session = qobject_cast<SearchSession*>(to);
+    if (type == Page::CHILD_GROUP_OPEN && session) {
+        emit requestsChanged();
     }
 }
 
@@ -74,14 +81,26 @@ Context::Context(const QString& id, doSearch* parent): Page(id, "qrc:/ContextVie
     connect(parent->navigation(), SIGNAL(activeScreenChanged()), this, SLOT(onActiveScreenChanged()));
 }
 
+SearchRequest* Context::lastRequest() const {
+    time_t maxTime = 0;
+    SearchRequest* last = 0;
+    foreach(SearchSession* session, m_sessions) {
+        if (session->lastVisitTs() > maxTime) {
+            last = session->queries().last();
+        }
+    }
+    return last;
+}
+
 void Context::interconnect() {
     Page::interconnect();
     m_vault = new Vault(this);
-    QList<Page*> pages;
-    for (int i = pages.size() - 1; i >= 0; i--) {
-        SearchRequest* request = qobject_cast<SearchRequest*>(pages[i]);
-        if (request)
-            m_requests.append(request);
+    visitAll("search.session", [this](Page* session) {
+        m_sessions.append(static_cast<SearchSession*>(session));
+    });
+
+    foreach(SearchSession* session, m_sessions) {
+        connect(session, SIGNAL(queriesChanged()), this, SLOT(onQueriesChanged()));
     }
 }
 

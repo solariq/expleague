@@ -97,6 +97,18 @@ WebPage* doSearch::web(const QUrl& url) const {
     return result;
 }
 
+QString doSearch::childId(const Page* parent, const QString& prefix) const {
+    QString path = "/" + prefix;
+    path.replace(".", "/");
+    return parent->id() + path + "-" + QString::number(parent->children(prefix).size() + 1);
+}
+
+SearchSession* doSearch::session(SearchRequest* seed, Context* owner) const {
+    return static_cast<SearchSession*>(page(childId(owner, "search.session"), [seed](const QString& id, doSearch* parent){
+        return new SearchSession(id, seed, parent);
+    }));
+}
+
 Context* doSearch::context(const QString& name) const {
     QString id = "context/" + name;
     return static_cast<Context*>(page(id, [](const QString& id, doSearch* parent){
@@ -108,7 +120,6 @@ SearchRequest* doSearch::search(const QString& query, int searchIndex) const {
     QString id = "search/" + query;
     SearchRequest* request = static_cast<SearchRequest*>(page(id, [query, searchIndex, this](const QString& id, doSearch* parent){
         SearchRequest* instance = new SearchRequest(id, query, parent);
-        instance->setSearchIndex(searchIndex >= 0 ? searchIndex : navigation()->context()->lastRequest()->searchIndex());
         return instance;
     }));
     if (searchIndex >= 0)
@@ -139,6 +150,8 @@ Page* doSearch::page(const QString &id) const {
                 return new ImageKnugget(id, parent);
             else if (id.contains("/knugget/link"))
                 return new LinkKnugget(id, parent);
+            else if (id.contains("/search/session"))
+                return new SearchSession(id, parent);
             else
                 return new Context(id, parent);
         }

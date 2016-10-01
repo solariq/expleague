@@ -53,6 +53,10 @@ void NavigationManager::typeIn(Page* page) {
         onGroupsChanged();
         return;
     }
+    SearchRequest* const request = qobject_cast<SearchRequest*>(page);
+    if (request) {
+        page = m_active_context->match(request);
+    }
     this->context()->transition(page, Page::TransitionType::TYPEIN);
     PagesGroup* group = m_groups.first();
     group->insert(page, 0);

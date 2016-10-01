@@ -1,6 +1,7 @@
 #include "search.h"
 #include "../../dosearch.h"
 #include "../../util/filethrottle.h"
+#include "../../util/mmath.h"
 
 #include <QRegExp>
 #include <QUrlQuery>
@@ -64,6 +65,13 @@ QString SearchRequest::parseGoogleQuery(const QUrl& request) const {
     return queryText.trimmed();
 }
 
+void SearchRequest::interconnect() {
+    Page::interconnect();
+    QVariant sessionVar = value("search.session");
+    if (sessionVar.isValid())
+        m_session = static_cast<SearchSession*>(parent()->page(sessionVar.toString()));
+}
+
 QString SearchRequest::parseYandexQuery(const QUrl& request) const {
     QString path = request.path();
     if (path != "/search/" && path != "/yandsearch")
@@ -119,7 +127,7 @@ SearchRequest::SearchRequest(const QString& id, const QString& query, doSearch* 
 {
     store("search.query", query);
     SearchRequest* last = parent->navigation()->context()->lastRequest();
-    m_search_index = last->searchIndex();
+    m_search_index = last ? last->searchIndex() : 0;
     store("search.engine", m_search_index);
     save();
 }
@@ -133,12 +141,54 @@ class SearchSessionModel {
 
 };
 
-SearchSession::SearchSession(const QString& id, doSearch* parent): m_model(new SearchSessionModel()) {
-
+SearchSession::SearchSession(const QString& id, SearchRequest* seed, doSearch* parent): Page(id, "qrc:/WebSearchView.qml", parent), m_model(new SearchSessionModel())
+{
+    append(seed);
 }
 
-bool SearchSession::accept(SearchRequest* request) {
-    return true;
+SearchSession::SearchSession(const QString& id, doSearch* parent): Page(id, "qrc:/WebSearchView.qml", parent), m_model(new SearchSessionModel())
+{}
+
+
+bool SearchSession::check(SearchRequest* request) {
+    QList<QString> parts = request->query().toLower().split(" ");
+    for (int i = 0; i < m_queries.size(); i++) {
+        QStringList currentParts = m_queries[i]->query().toLower().split(" ");
+        for (int u = 0; u < parts.size(); u++) {
+            for (int v = 0; v < currentParts.size(); v++) {
+                if (levenshtein_distance(parts[u], currentParts[v]) <= 1)
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+void SearchSession::append(SearchRequest* request) {
+    m_queries += request;
+    connect(request, SIGNAL(textContentChanged(QString)), this, SLOT(onQueryTextContentChanged()));
+    Page::append("session.query", request->id());
+    save();
+    emit textContentChanged(textContent());
+    emit titleChanged(request->title());
+    emit iconChanged(request->icon());
+    emit queriesChanged();
+}
+
+void SearchSession::interconnect() {
+    visitAll("session.query", [this](const QVariant& var) {
+        SearchRequest* request = static_cast<SearchRequest*>(parent()->page(var.toString()));
+        m_queries += request;
+        connect(request, SIGNAL(textContentChanged(QString)), this, SLOT(onQueryTextContentChanged()));
+    });
+}
+
+QString SearchSession::textContent() const {
+    QString result;
+    for (int i = 0; i < m_queries.size(); i++) {
+        result += m_queries[i]->textContent();
+    }
+    return result;
 }
 
 SearchSession::~SearchSession() {
