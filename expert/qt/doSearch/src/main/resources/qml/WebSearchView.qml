@@ -15,6 +15,17 @@ Rectangle {
     anchors.fill: parent
     color: Palette.backgroundColor("selected")
 
+    Connections {
+        target: owner
+        onLastRequestChanged: {
+            google.queryLoading = true
+            google.url = owner.lastRequest.googleUrl
+
+            yandex.queryLoading = true
+            yandex.url = owner.lastRequest.yandexUrl
+        }
+    }
+
     RowLayout {
         anchors.fill: parent
         spacing: 0
@@ -34,16 +45,16 @@ Rectangle {
                     Layout.preferredWidth: 27
                     Layout.alignment: Qt.AlignHCenter
                     icon: "qrc:/tools/google.png"
-                    onClicked: owner.searchIndex = 0
-                    toggle: owner.searchIndex === 0
+                    onClicked: owner.lastRequest.searchIndex = 0
+                    toggle: owner.lastRequest.searchIndex === 0
                 }
                 ToolbarButton {
                     Layout.preferredHeight: 27
                     Layout.preferredWidth: 27
                     Layout.alignment: Qt.AlignHCenter
                     icon: "qrc:/tools/yandex.png"
-                    onClicked: owner.searchIndex = 1
-                    toggle: owner.searchIndex === 1
+                    onClicked: owner.lastRequest.searchIndex = 1
+                    toggle: owner.lastRequest.searchIndex === 1
                 }
 
                 Item { Layout.fillHeight: true }
@@ -55,23 +66,28 @@ Rectangle {
             WebEngineView {
                 anchors.fill: parent
                 id: google
-                url: owner.googleUrl
+                url: "about:blank"
                 focus: true
-                visible: owner.searchIndex === 0
+                visible: owner.lastRequest.searchIndex === 0
                 profile: dosearch.main.webProfileRef
                 onNewViewRequested: dosearch.main.openLink(request, owner, request.destination === WebEngineView.NewViewInBackgroundTab)
+                property bool queryLoading: true
+
                 onUrlChanged: {
-                    var query = owner.parseGoogleQuery(url)
-                    if (query.length > 0 && query != owner.query) {
+                    if (queryLoading)
+                        return
+                    var query = owner.lastRequest.parseGoogleQuery(url)
+                    if (query.length > 0 && query != owner.lastRequest.query) {
                         console.log("Open new search: " + query)
-                        url = owner.googleUrl
+                        url = owner.lastRequest.googleUrl
                         dosearch.navigation.open(dosearch.search(query, 0))
                     }
                 }
                 onLoadingChanged: {
                     if (!loading) {
+                        queryLoading = false
                         runJavaScript("document.body.innerText", function(result) {
-                            owner.googleText = result;
+                            owner.lastRequest.googleText = result;
                         });
                     }
                 }
@@ -79,23 +95,29 @@ Rectangle {
             WebEngineView {
                 anchors.fill: parent
                 id: yandex
-                url: owner.yandexUrl
+                url: "about:blank"
                 focus: true
-                visible: owner.searchIndex === 1
+                visible: owner.lastRequest.searchIndex === 1
                 profile: dosearch.main.webProfileRef
                 onNewViewRequested: dosearch.main.openLink(request, owner, request.destination === WebEngineView.NewViewInBackgroundTab)
+                property bool queryLoading: true
                 onUrlChanged: {
-                    var query = owner.parseYandexQuery(url)
-                    if (query.length > 0 && query != owner.query) {
+                    if (queryLoading)
+                        return
+                    var query = owner.lastRequest.parseYandexQuery(url)
+                    if (query.length > 0 && query != owner.lastRequest.query) {
                         console.log("Open new search: " + query)
-                        url = owner.yandexUrl
+                        url = owner.lastRequest.yandexUrl
                         dosearch.navigation.open(dosearch.search(query, 1))
                     }
                 }
                 onLoadingChanged: {
-                    runJavaScript("document.body.innerText", function(result) {
-                        owner.yandexText = result;
-                    });
+                    if (!loading) {
+                        queryLoading = false
+                        runJavaScript("document.body.innerText", function(result) {
+                            owner.lastRequest.yandexText = result;
+                        });
+                    }
                 }
             }
         }
