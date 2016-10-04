@@ -144,6 +144,8 @@ public class NotificationsManager extends ActorAdapter<UntypedActor> {
   }
 
   private void schedule(String id, NotificationScheduler scheduler, XMPPDevice device) {
+    if (device.token() == null)
+      return;
     List<ScheduledNotification> latter = new ArrayList<>();
     final SimpleApnsPushNotification notification = scheduler.build(device, latter);
     if (notification != null)
