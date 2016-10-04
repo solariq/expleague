@@ -150,6 +150,8 @@ Page* doSearch::page(const QString &id) const {
                 return new ImageKnugget(id, parent);
             else if (id.contains("/knugget/link"))
                 return new LinkKnugget(id, parent);
+            else if (id.contains("/knugget/group"))
+                return new GroupKnugget(id, parent);
             else if (id.contains("/search/session"))
                 return new SearchSession(id, parent);
             else

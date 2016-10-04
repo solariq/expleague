@@ -112,7 +112,7 @@ void Page::store(const QString& fullKey, const QVariant& value) {
     m_changes++;
 }
 
-void Page::visitAll(const QString& fullKey, std::function<void (const QVariant& value)> visitor) const {
+void Page::visitKeys(const QString& fullKey, std::function<void (const QVariant& value)> visitor) const {
     QVariant value = this->value(fullKey);
     if (value.canConvert(QVariant::List)) {
         foreach(const QVariant& value, value.toList()) {
@@ -124,7 +124,7 @@ void Page::visitAll(const QString& fullKey, std::function<void (const QVariant& 
     }
 }
 
-void Page::visitAll(const QString& fullKey, std::function<void (Page* value)> visitor) const {
+void Page::visitChildren(const QString& fullKey, std::function<void (Page* value)> visitor) const {
     foreach(Page* page, children(fullKey)) {
         visitor(page);
     }
@@ -485,13 +485,13 @@ Page::Page(const QString& id, const QString& ui, doSearch* parent): QObject(pare
 }
 
 void Page::interconnect() {
-    visitAll("incoming", [this](const QVariant& value) {
+    visitKeys("incoming", [this](const QVariant& value) {
         PageModel model(PageModel::fromVariant(value));
         QString pageId = value.toHash().value("id").toString();
         m_incoming[parent()->page(pageId)] = model;
         m_in_total += model.freq;
     });
-    visitAll("outgoing", [this](const QVariant& value) {
+    visitKeys("outgoing", [this](const QVariant& value) {
         PageModel model(PageModel::fromVariant(value));
         QString pageId = value.toHash().value("id").toString();
         m_outgoing[parent()->page(pageId)] = model;

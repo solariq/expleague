@@ -95,7 +95,7 @@ SearchRequest* Context::lastRequest() const {
 void Context::interconnect() {
     Page::interconnect();
     m_vault = new Vault(this);
-    visitAll("search.session", [this](Page* session) {
+    visitChildren("search.session", [this](Page* session) {
         m_sessions.append(static_cast<SearchSession*>(session));
     });
 

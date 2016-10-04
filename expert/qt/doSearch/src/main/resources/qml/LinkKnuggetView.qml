@@ -17,7 +17,7 @@ Item {
         mipmap: true
         anchors.fill: parent
         source: "file:" + owner.screenshot
-        fillMode: Image.PreserveAspectFit
+        fillMode: Image.PreserveAspectCrop
     }
 
     Connections {

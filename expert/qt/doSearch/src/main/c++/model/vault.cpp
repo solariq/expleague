@@ -119,10 +119,115 @@ void LinkKnugget::open() const {
     dosearch->navigation()->open(dosearch->web(m_link));
 }
 
+QString LinkKnugget::title() const {
+    if (!m_text.isEmpty())
+        return m_text;
+    else if (source() != parent()->empty())
+        return source()->title();
+    else
+        return m_link.host();
+}
+
+GroupKnugget::GroupKnugget(const QString &id, Context *context, doSearch *parent):
+    Knugget(id, parent->empty(), context, "qrc:/GroupKnuggetView.qml", parent),
+    m_name(tr("Новая группа")),
+    m_parent_group(0)
+{
+    save();
+}
+
+GroupKnugget::GroupKnugget(const QString &id, doSearch *parent):
+    Knugget(id, "qrc:/GroupKnuggetView.qml", parent)
+{
+    QVariant name = value("knugget.name");
+    m_name = name.isNull() ? m_name : value("knugget.name").toString();
+}
+
+void GroupKnugget::interconnect() {
+    Knugget::interconnect();
+    visitKeys("knugget.element", [this](const QVariant& value) {
+        m_items.append(qobject_cast<Knugget*>(parent()->page(value.toString())));
+    });
+    QVariant parentGroup = value("knugget.parent");
+    m_parent_group = parentGroup.isNull() ? 0 : parent()->page(parentGroup.toString());
+}
+
+void GroupKnugget::insert(Knugget* item, int index) {
+    if (m_items.contains(item))
+        return;
+    GroupKnugget* group = qobject_cast<GroupKnugget*>(item);
+    if (group)
+        group->setParentGroup(this);
+    m_items.insert(index >= 0 ? index : m_items.size(), item);
+    Page::append("knugget.element", item->id());
+    save();
+    emit itemsChanged();
+}
+
+void GroupKnugget::remove(Knugget* item) {
+    m_items.removeOne(item);
+    Page::remove("knugget.element");
+    for (int i = 0; i < m_items.size(); i++) {
+        Page::append("knugget.element", m_items[i]->id());
+    }
+    save();
+    emit itemsChanged();
+}
+
+void GroupKnugget::move(int from, int to) {
+    m_items.move(from, to);
+    Page::remove("knugget.element");
+    for (int i = 0; i < m_items.size(); i++) {
+        if (m_items[i]) // TODO: remove trash & ugar
+            Page::append("knugget.element", m_items[i]->id());
+    }
+    save();
+    emit itemsChanged();
+}
+
+void GroupKnugget::setName(const QString& name) {
+    m_name = name;
+    Page::store("knugget.name", name);
+    save();
+    emit titleChanged(name);
+}
+
+QString GroupKnugget::md() const {
+    QString result;
+    for (int i = 0; i < m_items.size(); i++) {
+        result += m_items[i]->md();
+        result += "\n";
+    }
+
+    return result;
+}
+
+void GroupKnugget::open() const {
+    owner()->vault()->setActiveGroup(const_cast<GroupKnugget*>(this));
+}
+
+void GroupKnugget::setParentGroup(QObject* parent) {
+    GroupKnugget* group = qobject_cast<GroupKnugget*>(parent);
+    m_parent_group = group ? (QObject*)group : (QObject*)owner()->vault();
+    store("knugget.parent", group ? QVariant(group->id()): QVariant());
+    emit parentGroupChanged();
+}
+
 Vault::Vault(Context* context): QObject(context) {
-    context->visitAll("context.vault.item", [this, context](const QVariant& value){
+    context->visitKeys("context.vault.item", [this, context](const QVariant& value){
         m_items.append(qobject_cast<Knugget*>(context->parent()->page(value.toString())));
     });
+}
+
+void Vault::insert(Knugget* item, int position) {
+    if (m_items.contains(item))
+        return;
+    if (position < 0)
+        position = m_items.size();
+    m_items.insert(position, item);
+    parent()->append("context.vault.item", item->id());
+    parent()->save();
+    emit itemsChanged();
 }
 
 QString Vault::generateKnuggetId(const QString& suffix, int index) {
@@ -209,14 +314,59 @@ bool Vault::drop(const QString& text, const QString& html, const QList<QUrl>& ur
     if (!knugget)
         return false;
     knugget->interconnect();
-    m_items.append(knugget);
-    parent()->append("context.vault.item", knugget->id());
-    parent()->save();
-    emit itemsChanged();
+    if (!m_active_group)
+        insert(knugget);
+    else m_active_group->insert(knugget);
 
     return true;
 }
 
+void Vault::group(Knugget* left, Knugget* right) {
+    GroupKnugget* group = qobject_cast<GroupKnugget*>(left);
+    if (m_active_group)
+        m_active_group->remove(right);
+    else
+        remove(right);
+
+    if (!group) {
+        group = new GroupKnugget(generateKnuggetId("group"), parent(), parent()->parent());
+        group->setParentGroup(m_active_group);
+        if (m_active_group) {
+            m_active_group->insert(group, m_active_group->indexOf(left));
+            m_active_group->remove(left);
+        }
+        else {
+            insert(group, m_items.indexOf(left));
+            remove(left);
+        }
+        group->insert(left);
+        setActiveGroup(group);
+    }
+
+    group->insert(right);
+}
+
+void Vault::ungroup(GroupKnugget* group) {
+    GroupKnugget* parent = qobject_cast<GroupKnugget*>(group->parentGroup());
+    if (parent) {
+        int index = parent->indexOf(group);
+        parent->remove(group);
+        foreach(Knugget* item, group->items()) {
+            parent->insert(item, index++);
+        }
+        if (m_active_group == group)
+            setActiveGroup(parent);
+    }
+    else {
+        int index = m_items.indexOf(group);
+        remove(group);
+        foreach(Knugget* item, group->items()) {
+            insert(item, index++);
+        }
+        if (m_active_group == group)
+            setActiveGroup(0);
+    }
+}
 
 bool Vault::paste(Page* source) {
     if (source == 0)
@@ -301,10 +451,11 @@ bool Vault::paste(Page* source) {
         return false;
     foreach (Knugget* item, knuggets) {
         item->interconnect();
-        m_items.append(item);
-        parent()->append("context.vault.item", item->id());
+        if (!m_active_group)
+            insert(item);
+        else
+            m_active_group->insert(item);
     }
-    parent()->save();
     emit itemsChanged();
     return true;
 }
@@ -319,21 +470,44 @@ void Vault::appendLink(const QUrl& url, const QString& text, Page* source) {
                 doSearch::instance()
     );
     knugget->interconnect();
-    m_items.append(knugget);
-    parent()->append("context.vault.item", knugget->id());
-    parent()->save();
-    emit itemsChanged();
+    if (!m_active_group)
+        insert(knugget);
+    else
+        m_active_group->insert(knugget);
 }
 
 void Vault::remove(Knugget* page) {
-    m_items.removeOne(page);
-    parent()->remove("context.vault.item");
-    for (int i = 0; i < m_items.size(); i++) {
-        parent()->append("context.vault.item", m_items[i]->id());
+    if (!m_active_group) {
+        m_items.removeOne(page);
+        parent()->remove("context.vault.item");
+        for (int i = 0; i < m_items.size(); i++) {
+            parent()->append("context.vault.item", m_items[i]->id());
+        }
+        parent()->save();
+        emit itemsChanged();
     }
-    parent()->save();
-    emit itemsChanged();
+    else m_active_group->remove(page);
 }
+
+void Vault::move(int from, int to) {
+    if (!m_active_group) {
+        m_items.move(from, to);
+        parent()->remove("context.vault.item");
+        for (int i = 0; i < m_items.size(); i++) {
+            parent()->append("context.vault.item", m_items[i]->id());
+        }
+        parent()->save();
+        emit itemsChanged();
+    }
+    else m_active_group->move(from, to);
+}
+
+void Vault::commitVisualModel(QObject* model) {
+    qDebug() << model;
+
+    // TODO
+}
+
 
 void Vault::clearClipboard() const {
     QApplication::clipboard()->clear();

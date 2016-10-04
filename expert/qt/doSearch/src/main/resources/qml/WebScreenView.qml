@@ -370,6 +370,7 @@ Rectangle {
                 }
 
                 onLoadingChanged: {
+                    self.complete = true
                     console.log("Loading changed: " + self.url + " to " + loading)
                     if (!loading) {
                         webEngineView.visible = Qt.binding(function() {return self === dosearch.navigation.activeScreen})
@@ -500,9 +501,5 @@ Rectangle {
     Component.onDestruction: {
         if (complete)
             webView.triggerWebAction(WebEngineView.RequestClose)
-    }
-
-    Component.onCompleted: {
-        complete = true
     }
 }

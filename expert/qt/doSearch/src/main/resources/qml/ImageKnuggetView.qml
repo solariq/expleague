@@ -12,6 +12,6 @@ Item {
         mipmap: true
         anchors.fill: parent
         source: dosearch.league.normalizeImageUrlForUI(owner.src)
-        fillMode: Image.PreserveAspectFit
+        fillMode: Image.PreserveAspectCrop
     }
 }

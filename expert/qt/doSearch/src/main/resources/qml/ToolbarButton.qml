@@ -10,6 +10,8 @@ Button {
     property real size: 27
     property real imgPadding: 4
     property var action
+    property bool dark: false
+
     hoverEnabled: true
     padding: 0
     implicitHeight: size
@@ -38,7 +40,7 @@ Button {
 
     background: Rectangle {
         radius: Palette.radius
-        color: self.pressed || self.toggle ? Palette.buttonPressedBackground : (hovered ? Palette.buttonHoverBackground : "transparent")
+        color: self.pressed || self.toggle ? (dark ? "#4E92E0" : Palette.buttonPressedBackground) : (hovered ? (dark ? Palette.buttonPressedBackground : Palette.buttonHoverBackground) : "transparent")
     }
 
     indicator: Image {
@@ -50,7 +52,7 @@ Button {
                 return icon.substring(0, icon.length - 4) + "_d.png"
             else if (self.toggle || self.pressed)
                 return icon.substring(0, icon.length - 4) + "_h.png"
-            return icon
+            return dark ? icon.substring(0, icon.length - 4) + "_h.png" : icon
         }
         mipmap: true
     }

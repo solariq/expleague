@@ -102,8 +102,8 @@ protected:
     QVariant value(const QString& key) const;
     QList<Page*> children(const QString& prefix = "") const;
     void store(const QString& key, const QVariant& value);
-    void visitAll(const QString& key, std::function<void (const QVariant&)> visitor) const;
-    void visitAll(const QString& prefix, std::function<void (Page*)> visitor) const;
+    void visitKeys(const QString& key, std::function<void (const QVariant&)> visitor) const;
+    void visitChildren(const QString& prefix, std::function<void (Page*)> visitor) const;
     int count(const QString& key) const;
     void append(const QString& key, const QVariant& value);
     void remove(const QString& key);

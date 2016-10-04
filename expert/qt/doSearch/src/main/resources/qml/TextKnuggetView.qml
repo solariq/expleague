@@ -1,19 +1,21 @@
 import QtQuick 2.0
 
-Item {
+Rectangle {
     property color textColor: "black"
-    property color color: "white"
     property bool hover
     property real size: 8
 
     anchors.centerIn: parent
+    color: "white"
 
     Text {
-        anchors.fill: parent
+        anchors.centerIn: parent
+        width: parent.width - 8
+        height: parent.height - 8
         text: owner.text
         color: textColor
         font.pointSize: size * 3/4
-        renderType: Text.NativeRendering
+//        renderType: Text.NativeRendering
         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
         elide: Text.ElideRight
     }

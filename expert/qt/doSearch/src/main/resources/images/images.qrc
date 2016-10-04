@@ -96,7 +96,7 @@
         <file>tools/suspend_h.png</file>
         <file>tools/tags_h.png</file>
         <file>tools/zoom-in_h.png</file>
-        <file>tools/zoon-out_h.png</file>
+        <file>tools/zoom-out_h.png</file>
         <file>editor/bullets_h.png</file>
         <file>editor/cut_h.png</file>
         <file>editor/enum_h.png</file>
@@ -112,5 +112,7 @@
         <file>tools/chat.png</file>
         <file>tools/preview_h.png</file>
         <file>tools/preview.png</file>
+        <file>cross_h.png</file>
+        <file>tools/back_h.png</file>
     </qresource>
 </RCC>

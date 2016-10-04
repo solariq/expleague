@@ -204,7 +204,7 @@ void WebSite::onMirrorsChanged() {
 
 void WebSite::interconnect() {
     WebPage::interconnect();
-    visitAll("web.site.mirrors", [this](const QVariant& var) {
+    visitKeys("web.site.mirrors", [this](const QVariant& var) {
         WebSite* mirror = qobject_cast<WebSite*>(parent()->page(var.toString()));
         if (mirror) {
             m_mirrors += mirror;

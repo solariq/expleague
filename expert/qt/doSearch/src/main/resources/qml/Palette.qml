@@ -24,6 +24,8 @@ QtObject {
     property color buttonHoverBackground: "#C1BBC3"
     property color buttonPressedBackground: "#726F73"
 
+    property color toolsBackground: "#262730"
+
     property real radius: 4;
 
     function backgroundColor(state) {

@@ -176,7 +176,7 @@ void SearchSession::append(SearchRequest* request) {
 }
 
 void SearchSession::interconnect() {
-    visitAll("session.query", [this](const QVariant& var) {
+    visitKeys("session.query", [this](const QVariant& var) {
         SearchRequest* request = static_cast<SearchRequest*>(parent()->page(var.toString()));
         m_queries += request;
         connect(request, SIGNAL(textContentChanged(QString)), this, SLOT(onQueryTextContentChanged()));

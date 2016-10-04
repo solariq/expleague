@@ -314,6 +314,7 @@ ApplicationWindow {
         color: Palette.backgroundColor("selected")
         z: parent.z + 10
         anchors.fill: parent
+        clip: false
         ColumnLayout {
             anchors.fill:parent
             spacing: 0
