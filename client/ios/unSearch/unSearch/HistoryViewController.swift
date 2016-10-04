@@ -272,7 +272,7 @@ class HistoryViewController: UITableViewController {
                 answerOfTheWeek = nil
             case .ongoing:
                 order = ongoing[(indexPath as NSIndexPath).row]
-                empty = ongoing.isEmpty
+                empty = ongoing.count == 1
                 let alertView: UIAlertController
                 if (order.messages.last?.type == .answer) {
                     alertView = UIAlertController(title: "unSearch", message: "Вы уверены, что хотите отменить задание?", preferredStyle: .alert)
