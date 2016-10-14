@@ -25,17 +25,17 @@ class AOWNotificationScheduler extends NotificationScheduler {
   @Override
   SimpleApnsPushNotification visibleNotification(String token) {
     return new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
-        "\"alert\": \"Новый ответ недели на тему '" + topic + "'\", " +
+        "\"alert\": \"Пятница — время для ответа недели: '" + topic + "'\", " +
         "\"content-available\": 1," +
         "\"sound\": \"owl.wav\"" +
-        "}, \"aow\": \"" + aow.roomId() + "\"}"
+        "}, \"aow\": \"" + topic + "\", \"visible\": 1}"
     );
   }
 
   @Override
   SimpleApnsPushNotification failedToDeliverNotification(String token) {
     return new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
-        "\"alert\": \"Новый ответ недели на тему '" + topic + "', который мы пока не смогли доставить\", " +
+        "\"alert\": \"Пятница — время для ответа недели:  '" + topic + "', который мы пока не смогли доставить\", " +
         "\"content-available\": 1," +
         "\"sound\": \"owl.wav\"" +
         "}, \"aow\": \"" + topic + "\", \"visible\": 1}"
