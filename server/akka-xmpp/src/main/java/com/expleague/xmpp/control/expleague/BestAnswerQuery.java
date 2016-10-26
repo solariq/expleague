@@ -24,6 +24,11 @@ public class BestAnswerQuery extends Item {
     XMPPServices.register(NS, BestAnswerService.class, "best-answer");
   }
 
+  @XmlAttribute
+  private String lastKnown;
+  @XmlAttribute
+  private boolean received;
+
   @XmlElement(namespace = Operations.NS)
   private Offer offer;
 
@@ -32,6 +37,14 @@ public class BestAnswerQuery extends Item {
   private List<Stanza> content;
 
   public BestAnswerQuery() {
+  }
+
+  public String lastKnown() {
+    return this.lastKnown;
+  }
+
+  public boolean received() {
+    return this.received;
   }
 
   public BestAnswerQuery(Offer offer, List<Stanza> content) {

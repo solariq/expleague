@@ -45,6 +45,10 @@ public class BestAnswerService extends ActorAdapter<UntypedActor> {
       return;
     }
     final String roomId = aow.roomId();
+    if (rosterIq.get().received() && roomId.equals(rosterIq.get().lastKnown())) {
+      sender().tell(Iq.answer(rosterIq, new BestAnswerQuery()), self());
+      return;
+    }
     final Timeout timeout = new Timeout(Duration.create(2, TimeUnit.SECONDS));
     final Future<Object> ask = Patterns.ask(XMPP.register(new JID(roomId, "muc." + ExpLeagueServer.config().domain(), null), context()), new ExpLeagueRoomAgent.DumpRequest(), timeout);
     try {
@@ -82,7 +86,6 @@ public class BestAnswerService extends ActorAdapter<UntypedActor> {
     }
     catch (Exception e) {
       log.log(Level.WARNING, "Unable to receive answer of the week room dump!", e);
-
     }
   }
 }

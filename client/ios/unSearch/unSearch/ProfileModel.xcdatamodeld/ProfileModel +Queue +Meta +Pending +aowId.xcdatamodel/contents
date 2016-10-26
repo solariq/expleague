@@ -24,7 +24,7 @@
     </entity>
     <entity name="Profile" representedClassName="unSearch.ExpLeagueProfile" syncable="YES">
         <attribute name="active" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="aowId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="aowId" optional="YES" syncable="YES"/>
         <attribute name="aowTitle" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="domain" attributeType="String" syncable="YES"/>
         <attribute name="login" attributeType="String" syncable="YES"/>

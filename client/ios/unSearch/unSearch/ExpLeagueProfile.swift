@@ -152,8 +152,9 @@ class ExpLeagueProfile: NSManagedObject {
         }
     }
     
-    func aow(_ title: String) {
+    func aow(_ id: String, title: String?) {
         updateSync {
+            self.aowId = id
             self.aowTitle = title
             self.receiveAnswerOfTheWeek = true
             self.busyChanged()

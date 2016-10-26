@@ -10,3 +10,4 @@
 #import <CommonCrypto/CommonCrypto.h>
 #import <GoogleMaps/GoogleMaps.h>
 #import <GooglePlacePicker/GooglePlacePicker.h>
+#import <FBSDKCoreKit/FBSDKAppEvents.h>

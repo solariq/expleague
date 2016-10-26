@@ -12,6 +12,7 @@ import XMPPFramework
 import CoreData
 import MMMarkdown
 import ReachabilitySwift
+import FBSDKCoreKit
 
 class DataController: NSObject {
     let managedObjectContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
@@ -187,6 +188,7 @@ extension AppDelegate: UIApplicationDelegate {
         
         GMSServices.provideAPIKey(AppDelegate.GOOGLE_API_KEY)
         GMSPlacesClient.provideAPIKey(AppDelegate.GOOGLE_API_KEY)
+        FBSDKAppEvents.activateApp()
         
         window = UIWindow(frame: UIScreen.main.bounds)
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
@@ -253,8 +255,8 @@ extension AppDelegate: UIApplicationDelegate {
         if let messageId = userInfo["id"] as? String {
             activeProfile!.expect(messageId)
         }
-        else if let aow = userInfo["aow"] as? String, aow != activeProfile!.aowTitle {
-            activeProfile!.aow(aow)
+        else if let aowId = userInfo["aow"] as? String, aowId != activeProfile!.aowId {
+            activeProfile!.aow(aowId, title: userInfo["title"])
         }
         self.application(application, performFetchWithCompletionHandler: completionHandler)
     }

@@ -98,7 +98,10 @@ internal class ExpLeagueCommunicator: NSObject {
     func requestAOW() {
         let aowIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
         aowIq?.addAttribute(withName: "type", stringValue: "get")
-        aowIq?.addChild(DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/best-answer"))
+        let query = DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/best-answer")!
+        query.addAttribute(withName: "lastKnown", stringValue: profile.aowTitle ?? "")
+        query.addAttribute(withName: "received", boolValue: !(profile.receiveAnswerOfTheWeek?.boolValue ?? false))
+        aowIq?.addChild(query)
         stream?.send(aowIq)
     }
 
@@ -310,10 +313,8 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         let restore = DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/restore")
         stream?.send(XMPPIQ(type: "get", child: restore))
 
-        if (profile.receiveAnswerOfTheWeek?.boolValue ?? true) {
-            // answer of the week
-            requestAOW()
-        }
+        // answer of the week
+        requestAOW()
     }
     
     @objc

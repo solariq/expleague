@@ -129,6 +129,7 @@
 		EE2DB1911C4E5AD800F9601D /* ChatInput.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ChatInput.xib; sourceTree = "<group>"; };
 		EE2DB1931C4E5E9000F9601D /* ChatInputViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatInputViewController.swift; sourceTree = "<group>"; };
 		EE3731AB1C689414007F55B0 /* unSearch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = unSearch.entitlements; sourceTree = "<group>"; };
+		EE58B61E1DC0D03E003F41CB /* ProfileModel +Queue +Meta +Pending +aowId.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "ProfileModel +Queue +Meta +Pending +aowId.xcdatamodel"; sourceTree = "<group>"; };
 		EE5E599F1C5F70720040246E /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		EE62BEEE1C452CA1004B6A42 /* OrderDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderDetailsViewController.swift; sourceTree = "<group>"; };
 		EE62BEFD1C4802B2004B6A42 /* ExpLeagueMessage+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ExpLeagueMessage+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -588,6 +589,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = unSearch/unSearch.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -710,6 +712,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = unSearch/unSearch.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -718,6 +721,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.expleague.ios.unSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				USER_HEADER_SEARCH_PATHS = "\"${PROJECT_DIR}/Pods\"/**";
@@ -751,6 +755,7 @@
 		EE6EA7CA1C48F79300692406 /* ProfileModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				EE58B61E1DC0D03E003F41CB /* ProfileModel +Queue +Meta +Pending +aowId.xcdatamodel */,
 				EE18F78A1CF9BAED007E9ED8 /* ProfileModel +Queue +Meta +Pending.xcdatamodel */,
 				EE073CEF1CBD2D900056CCDB /* ProfileModel +Queue +Meta.xcdatamodel */,
 				EEBCD4B71CBBE76A00BCB624 /* ProfileModel +Queue.xcdatamodel */,

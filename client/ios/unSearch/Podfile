@@ -8,6 +8,9 @@ target 'unSearch' do
   pod 'ReachabilitySwift'
   pod 'GoogleMaps'
   pod 'GooglePlacePicker'
+  pod 'FBSDKCoreKit'
+  pod 'FBSDKLoginKit'
+  pod 'FBSDKShareKit'
 #  pod 'SDCAlertView', '~> 5.1'
 end
 
