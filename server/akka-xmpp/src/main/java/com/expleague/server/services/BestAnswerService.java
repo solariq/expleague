@@ -45,7 +45,7 @@ public class BestAnswerService extends ActorAdapter<UntypedActor> {
       return;
     }
     final String roomId = aow.roomId();
-    if (rosterIq.get().received() && roomId.equals(rosterIq.get().lastKnown())) {
+    if (rosterIq.get().received() && rosterIq.get().lastKnown() != null && rosterIq.get().lastKnown().startsWith(roomId)) {
       sender().tell(Iq.answer(rosterIq, new BestAnswerQuery()), self());
       return;
     }
