@@ -28,7 +28,7 @@ class AOWNotificationScheduler extends NotificationScheduler {
         "\"alert\": \"Пятница — время для ответа недели: '" + topic + "'\", " +
         "\"content-available\": 1," +
         "\"sound\": \"owl.wav\"" +
-        "}, \"aow\": \"" + aow.roomId() + "\", \"visible\": 1}"
+        "}, \"aow\": \"" + aow.roomId() + "\"}"
     );
   }
 
@@ -38,13 +38,13 @@ class AOWNotificationScheduler extends NotificationScheduler {
         "\"alert\": \"Пятница — время для ответа недели:  '" + topic + "', который мы пока не смогли доставить\", " +
         "\"content-available\": 1," +
         "\"sound\": \"owl.wav\"" +
-        "}, \"aow\": \"" + aow.roomId() + "\", \"visible\": 1}"
+        "}, \"aow\": \"" + aow.roomId() + "\"}"
     );
   }
 
   @Override
   SimpleApnsPushNotification hiddenNotification(String token, Date relevant) {
-    return new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{\"content-available\": 1}, \"aow\": \"" + aow.roomId() + "\"}");
+    return new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{\"content-available\": 1}, \"aow\": \"" + aow.roomId() + "\", \"title\": \"" + topic + "\"}");
   }
 
   @Nullable
