@@ -78,11 +78,13 @@ public class UserAgent extends PersistentActorAdapter {
           PersistentActorContainer.props(Courier.class, status.device, sender()),
           actorResourceAddr
       );
-//      if (!status.device.expert()) {
-      final DefaultSubscription subscription = new DefaultSubscription(bareJid);
+      final Subscription subscription;
+      if (status.device.expert())
+        subscription = new DefaultSubscription(bareJid);
+      else
+        subscription = new ClientSubscription(bareJid);
       subscriptions.put(resource, subscription);
       XMPP.subscribe(subscription, context());
-//      }
       sender().tell(courierRef, self());
     }
     else {

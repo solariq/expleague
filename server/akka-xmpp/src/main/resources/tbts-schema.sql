@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS Devices (
   user VARCHAR(64),
   token VARCHAR(256),
   passwd VARCHAR(128),
-  platform VARCHAR(32),
+  platform VARCHAR(128),
   expert BOOLEAN DEFAULT FALSE,
 
   PRIMARY KEY (id),
