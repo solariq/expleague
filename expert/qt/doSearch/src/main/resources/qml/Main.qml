@@ -23,6 +23,8 @@ ApplicationWindow {
     property alias sidebarRef: sidebar
     property bool options: false
     property real rightMargin: 0
+    property real leftMargin: 0
+    property string dragType: "none"
     property var drag
 
 //    flags: {
@@ -54,6 +56,7 @@ ApplicationWindow {
 
     function openLink(request, owner, focusOpened) {
         if (linkReceiver.operation != "") {
+            console.log("Link receiver is busy, putting open link operation to the queue")
             linkReceiver.queue.push(function () {
                 openLink(request, owner, focusOpened)
             })
@@ -68,6 +71,7 @@ ApplicationWindow {
 
     function screenshot(url, size, callback) {
         if (linkReceiver.operation != "") {
+            console.log("Link receiver is busy, putting screenshot operation to the queue")
             linkReceiver.queue.push(function () {
                 screenshot(url, size, callback)
             })
@@ -155,6 +159,23 @@ ApplicationWindow {
         objectName: "selectProfile"
         x: self.width / 2 - width / 2
         y: 20
+    }
+
+    SuggestDialog {
+        id: suggestDialog
+        visible: false
+        x: self.width / 2 - width / 2
+        y: 20
+        page: dosearch.navigation.activePage
+        suggest: dosearch.navigation.context
+    }
+
+    Connections {
+        target: dosearch.navigation
+        onSuggestAvailable: {
+            suggestDialog.suggest = ctxt
+            suggestDialog.show()
+        }
     }
 
     WebEngineProfile {
@@ -361,6 +382,7 @@ ApplicationWindow {
                         Layout.preferredHeight: implicitHeight
                         Layout.preferredWidth: implicitWidth
                         icon: "qrc:/tools/chat.png"
+                        highlightedIcon: "qrc:/tools/chat_h.png"
                         imgPadding: 3
                         toggle: sidebar.state == "dialog"
                         onTriggered: sidebar.state = sidebar.state == "dialog" ? "" : "dialog"
@@ -371,6 +393,7 @@ ApplicationWindow {
                         Layout.preferredHeight: implicitHeight
                         Layout.preferredWidth: implicitWidth
                         icon: "qrc:/tools/preview.png"
+                        highlightedIcon: "qrc:/tools/preview_h.png"
                         toggle: sidebar.state == "preview"
                         onTriggered: sidebar.state = sidebar.state == "preview" ? "" : "preview"
                     }
@@ -393,29 +416,51 @@ ApplicationWindow {
                     Item {Layout.preferredWidth: 4}
                 }
             }
-            SplitView {
+            RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                id: centralSplit
-                clip: false
-                Item {
-                    id: central
-                    clip: false
+                spacing: 0
+                SplitView {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    id: centralSplit
+                    Item {
+                        id: central
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        Item {
+                            anchors.fill: parent
+                            children: root.navigation.screens
+                        }
+                        Rectangle {
+                            color: "white"
+                            anchors.fill: parent
+                            MouseArea {
+                                anchors.fill: parent
+                            }
+                        }
+                        Item {
+                            anchors.fill: parent
+                            z: 5
+                            children: [root.navigation.activeScreen]
+                        }
+                        Rectangle {
+                            anchors.fill: parent
+                            color: "transparent"
+                        }
+                    }
 
-                    children: root.navigation.screens
-                }
-                SideBar {
-                    id: sidebar
+                    SideBar {
+                        id: sidebar
 
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: implicitWidth
-                    Layout.minimumWidth: minWidth
-                    Layout.maximumWidth: maxWidth
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: implicitWidth
+                        Layout.minimumWidth: minWidth
+                        Layout.maximumWidth: maxWidth
 
-                    context: dosearch.navigation.context
-                    window: self
+                        context: dosearch.navigation.context
+                        window: self
+                    }
                 }
             }
         }
@@ -522,7 +567,7 @@ ApplicationWindow {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             x: parent.width - vault.width
-            z: parent.z + 1000
+            z: parent.z + 80
             y: parent.mapFromItem(centralSplit.parent, centralSplit.x, centralSplit.y).y
             width: 320
             height: centralSplit.height
@@ -540,11 +585,11 @@ ApplicationWindow {
             property string storedState: ""
             function show() {
                 if (sidebar.state == "") {
-                    vault.visible = true
                     vaultWidthAnimation.from = 0
                     vaultWidthAnimation.to = 320
                     self.rightMargin = 320
                     vaultWidthAnimation.start()
+                    vault.visible = true
                 }
                 else sidebar.state = "vault"
                 storedState = sidebar.state
@@ -554,7 +599,7 @@ ApplicationWindow {
                 if (storedState == "") {
                     vaultWidthAnimation.from = 320
                     vaultWidthAnimation.to = 0
-                    self.rightMargin = 320
+                    self.rightMargin = 0
                     vaultWidthAnimation.start()
                     delay(200, function (){
                         visible = false
@@ -567,12 +612,63 @@ ApplicationWindow {
                 target: self
 
                 onDragChanged: {
-                    console.log("Drag changed to " + self.drag)
-                    if (self.drag && sidebar.state != "vault" && !vault.visible) {
+//                    console.log("Drag changed to " + self.drag)
+                    if (self.drag && self.dragType != "page" && sidebar.state != "vault" && !vault.visible) {
                         vault.show()
                     }
                     else if (!self.drag && vault.visible) {
                         vault.hide()
+                    }
+                }
+            }
+        }
+
+        ContextsList {
+            id: contexts
+            visible: false
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+            z: parent.z + 80
+            y: parent.mapFromItem(centralSplit.parent, centralSplit.x, centralSplit.y).y
+            width: 320
+            height: centralSplit.height
+
+            PropertyAnimation {
+                id: contextsWidthAnimation
+                target: vault
+                property: "width"
+                easing.type: Easing.OutSine
+                duration: 200
+            }
+
+            function show() {
+                contextsWidthAnimation.from = 0
+                contextsWidthAnimation.to = 320
+                self.leftMargin = 320
+                contextsWidthAnimation.start()
+                contexts.visible = true
+            }
+
+            function hide() {
+                contextsWidthAnimation.from = 320
+                contextsWidthAnimation.to = 0
+                self.leftMargin = 0
+                contextsWidthAnimation.start()
+                delay(200, function (){
+                    contexts.visible = false
+                })
+            }
+
+            Connections {
+                target: self
+
+                onDragChanged: {
+//                    console.log("Drag changed to " + self.drag)
+                    if (self.dragType == "page" && dosearch.navigation.context !== dosearch.navigation.activePage) {
+                        contexts.show()
+                    }
+                    else if (!self.drag && contexts.visible) {
+                        contexts.hide()
                     }
                 }
             }
@@ -603,7 +699,9 @@ ApplicationWindow {
         property var queue: []
         width: 400
         height: 400
+        z: -1
         profile: webProfile
+        enabled: false
 
         url: "about:blank"
         function finish() {
@@ -645,9 +743,18 @@ ApplicationWindow {
         }
 
         onLoadingChanged: {
-            if (operation != "screenshot")
-                return
             var surl = url.toString()
+
+            if (operation == "resolve" && !loading) {
+                self.delay(200, function() {
+                    if (!loading && linkReceiver.url.toString() == surl)
+                        finish()
+                })
+            }
+
+            if (operation != "screenshot") {
+                return
+            }
             if (surl == "" || surl == "about:blank" || surl.search(/google\.\w+\/url/) !== -1 || surl.search(/yandex\.\w+\/clck\/jsredir/) !== -1) {
                 return
             }
@@ -657,5 +764,8 @@ ApplicationWindow {
                 finish()
             }
         }
+    }
+    MouseArea {
+        anchors.fill: linkReceiver
     }
 }

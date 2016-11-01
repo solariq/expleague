@@ -153,27 +153,32 @@ Item {
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/send.png"
+                    highlightedIcon: "qrc:/tools/send_h.png"
                     onTriggered: sendDialog.visible = true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/tags.png"
+                    highlightedIcon: "qrc:/tools/tags_h.png"
                     onTriggered: tagsDialog.visible = true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/patterns.png"
+                    highlightedIcon: "qrc:/tools/patterns_h.png"
                     onTriggered: patternsDialog.visible = true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/phone.png"
+                    highlightedIcon: "qrc:/tools/phone_h.png"
                     onTriggered: callDialog.visible = true
                 }
 
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/suspend.png"
+                    highlightedIcon: "qrc:/tools/suspend_h.png"
                     onTriggered: suspendDialog.visible = true
                 }
                 Item { Layout.fillWidth: true }

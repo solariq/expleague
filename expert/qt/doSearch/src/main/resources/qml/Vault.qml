@@ -17,7 +17,6 @@ Rectangle {
 
     property int moveTo: -1
 
-    clip: false
     color: Palette.toolsBackground
 
     DropArea {
@@ -25,7 +24,7 @@ Rectangle {
         visible: !editMode
         anchors.fill: parent
         onEntered: {
-            console.log("Entered vault drop area")
+//            console.log("Entered vault drop area")
             dosearch.main.drag = drag.source
         }
 
@@ -77,6 +76,7 @@ Rectangle {
                 ToolbarButton {
                     id: zoomIn
                     icon: "qrc:/tools/zoom-in.png"
+                    highlightedIcon: "qrc:/tools/zoom-in_h.png"
                     dark: true
                     onTriggered: {
                         self.size += 1
@@ -85,6 +85,7 @@ Rectangle {
                 ToolbarButton {
                     id: zoomOut
                     icon: "qrc:/tools/zoom-out.png"
+                    highlightedIcon: "qrc:/tools/zoom-out_h.png"
                     dark: true
                     onTriggered: {
                         if (self.size > 10)
@@ -94,6 +95,8 @@ Rectangle {
                 ToolbarButton {
                     id: paste
                     icon: "qrc:/tools/paste.png"
+                    highlightedIcon: "qrc:/tools/paste_h.png"
+
                     dark: true
                     onTriggered: {
                         context.vault.paste()
@@ -103,6 +106,8 @@ Rectangle {
                 ToolbarButton {
                     id: editVaultButton
                     icon: "qrc:/tools/edit.png"
+                    highlightedIcon: "qrc:/tools/edit_h.png"
+
                     toggle: self.editMode
                     dark: true
                     onTriggered: {
@@ -124,6 +129,7 @@ Rectangle {
                 ToolbarButton {
                     id: back
                     icon: "qrc:/tools/back.png"
+                    highlightedIcon: "qrc:/tools/back_h.png"
                     dark: true
                     onTriggered: {
                         owner.activeGroup = group.parentGroup

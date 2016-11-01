@@ -15,5 +15,6 @@
         <file>md-scripts.js</file>
         <file>html/yandex-map.html</file>
         <file>html/yandex-map.js</file>
+        <file>markdown-tile.css</file>
     </qresource>
 </RCC>

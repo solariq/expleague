@@ -1,18 +1,13 @@
 <RCC>
     <qresource prefix="/">
         <file>Main.qml</file>
-        <file>WebTab.qml</file>
         <file>ProfileWizard.qml</file>
-        <file>WebScreenView.qml</file>
+        <file>WebPageView.qml</file>
         <file>GoogleSuggest.qml</file>
-        <file>WebSearchView.qml</file>
         <file>TransparentMouseArea.qml</file>
-        <file>WindowButton.qml</file>
-        <file>WindowStateSaver.qml</file>
         <file>Avatar.qml</file>
         <file>StatusAvatar.qml</file>
         <file>Omnibox.qml</file>
-        <file>TabButtons.qml</file>
         <file>ContextView.qml</file>
         <file>WizardPage.qml</file>
         <file>SidebarButton.qml</file>
@@ -25,21 +20,16 @@
         <file>PatternsDialog.qml</file>
         <file>SendDialog.qml</file>
         <file>CallDialog.qml</file>
-        <file>ScrollBar.qml</file>
-        <file>WButtonsGroupMac.qml</file>
-        <file>WButtonsGroupWin.qml</file>
         <file>ToolbarButton.qml</file>
         <file>qmldir</file>
         <file>Palette.qml</file>
         <file>EditorActions.qml</file>
-        <file>BrowserActions.qml</file>
         <file>CommonActions.qml</file>
         <file>SuspendDialog.qml</file>
         <file>ResourcePath.qml</file>
         <file>NavigationTabs.qml</file>
         <file>NavigationGroup.qml</file>
         <file>NavigationTab.qml</file>
-        <file>TaskView.qml</file>
         <file>EmptyView.qml</file>
         <file>DownloadsPage.qml</file>
         <file>HistoryPage.qml</file>
@@ -50,5 +40,12 @@
         <file>Vault.qml</file>
         <file>VaultTile.qml</file>
         <file>GroupKnuggetView.qml</file>
+        <file>ContextsList.qml</file>
+        <file>EditorsList.qml</file>
+        <file>WebSiteView.qml</file>
+        <file>SearchQueryView.qml</file>
+        <file>SearchSessionView.qml</file>
+        <file>WindowStateSaver.qml</file>
+        <file>SuggestDialog.qml</file>
     </qresource>
 </RCC>

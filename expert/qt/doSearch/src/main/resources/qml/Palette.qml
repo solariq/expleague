@@ -25,6 +25,8 @@ QtObject {
     property color buttonPressedBackground: "#726F73"
 
     property color toolsBackground: "#262730"
+    property color toolsActiveColor: "#4E92E0"
+    property color documentColor: "#FFFBF0"
 
     property real radius: 4;
 

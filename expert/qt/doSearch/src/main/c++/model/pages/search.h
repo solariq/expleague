@@ -4,129 +4,137 @@
 #include <QQmlListProperty>
 
 #include "../page.h"
+#include "web.h"
 
 namespace expleague {
 
 class SearchSession;
+class SearchRequest;
 
-class SearchRequest: public Page {
+class SERPage: public WebPage {
+    Q_OBJECT
+
+    Q_PROPERTY(QString query READ query CONSTANT)
+
+public:
+    SearchRequest* request() const;
+    QString query() const { return m_query; }
+
+    Page* container() const;
+
+protected:
+    SERPage(const QString&id, const QString& query, const QUrl& url, doSearch* parent): WebPage(id, url, parent), m_query(query) { store("serp.query", query); save(); }
+    SERPage(const QString&id, doSearch* parent): WebPage(id, parent), m_query(value("serp.query").toString()) {}
+
+    void interconnect();
+
+private slots:
+    void onSessionChanged() { emit containerChanged(); }
+
+private:
+    QString m_query;
+};
+
+class YandexSERPage: public SERPage {
+    Q_OBJECT
+
+public:
+    static QString parseQuery(const QUrl& url);
+
+    QString icon() const { return "qrc:/tools/yandex.png"; }
+
+public:
+    YandexSERPage(const QString& id, const QUrl& url, doSearch* parent);
+    YandexSERPage(const QString& id, doSearch* parent);
+};
+
+class GoogleSERPage: public SERPage {
+    Q_OBJECT
+
+public:
+    static QString parseQuery(const QUrl& url);
+
+    QString icon() const { return "qrc:/tools/google.png"; }
+
+public:
+    GoogleSERPage(const QString& id, const QUrl& url, doSearch* parent);
+    GoogleSERPage(const QString& id, doSearch* parent);
+};
+
+class SearchRequest: public CompositeContentPage {
 public:
     static SearchRequest EMPTY;
 
 private:
     Q_OBJECT
 
-    Q_PROPERTY(SearchRequest* lastRequest READ lastRequest CONSTANT)
-
     Q_PROPERTY(QString query READ query CONSTANT)
-    Q_PROPERTY(QUrl googleUrl READ googleUrl CONSTANT)
-    Q_PROPERTY(QUrl yandexUrl READ yandexUrl CONSTANT)
-    Q_PROPERTY(QString googleText READ googleText WRITE setGoogleText NOTIFY googleTextChanged)
-    Q_PROPERTY(QString yandexText READ yandexText WRITE setYandexText NOTIFY yandexTextChanged)
 
-    Q_PROPERTY(int searchIndex READ searchIndex WRITE setSearchIndex NOTIFY searchIndexChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::SERPage> serps READ serpsQml CONSTANT)
+    Q_PROPERTY(int selected READ selected WRITE select NOTIFY selectedChanged)
 
-public:
+public:    
+    QQmlListProperty<SERPage> serpsQml() const { return QQmlListProperty<SERPage>(const_cast<SearchRequest*>(this), reinterpret_cast<QList<SERPage*>&>(const_cast<SearchRequest*>(this)->parts())); }
 
-    SearchRequest* lastRequest() const { return const_cast<SearchRequest*>(this); }
-
-    QString icon() const {
-        switch(searchIndex()) {
-        case 0:
-            return "qrc:/tools/google.png";
-        case 1:
-            return "qrc:/tools/yandex.png";
-        default:
-            return "qrc:/tools/search.png";
-        }
-    }
-
+    QString icon() const { return serp()->icon(); }
     QString title() const { return m_query; }
 
     QString query() const { return m_query; }
-
-    QUrl googleUrl() const;
-    QUrl yandexUrl() const;
-
-    QString googleText() const;
-    QString yandexText() const;
-
-    QString textContent() const { return googleText() + yandexText(); }
+    SERPage* serp() const { return static_cast<SERPage*>(part(m_selected)); }
 
     SearchSession* session() const { return m_session; }
+    void setSession(SearchSession* session);
 
-    int searchIndex() const { return m_search_index; }
+    int selected() const { return m_selected; }
+    void select(int index);
 
-public:
-    void setQuery(const QString& query) {
-        if (query == m_query)
-            return;
-        m_query = query;
-        queryChanged(query);
-    }
-
-    void setSearchIndex(int index) {
-        if (index == m_search_index)
-            return;
-        m_search_index = index;
-        searchIndexChanged(index);
-    }
-
-    void setGoogleText(const QString& text);
-    void setYandexText(const QString& text);
-
-    Q_INVOKABLE QString parseGoogleQuery(const QUrl& request) const;
-    Q_INVOKABLE QString parseYandexQuery(const QUrl& request) const;
-
-public:
-    SearchRequest(const QString& id, const QString& query, doSearch* parent);
-    SearchRequest(const QString& id = "", doSearch* parent = 0);
+signals:
+    void selectedChanged();
+    void sessionChanged();
 
 protected:
     void interconnect();
 
-signals:
-    void queryChanged(const QString&);
-    void searchIndexChanged(int index);
-    void googleTextChanged(const QString&);
-    void yandexTextChanged(const QString&);
+public:
+    explicit SearchRequest(const QString& id, const QString& query, doSearch* parent);
+    explicit SearchRequest(const QString& id = "", doSearch* parent = 0);
 
 private:
     QString m_query;
-    SearchSession* m_session;
-    int m_search_index;
+    SearchSession* m_session = 0;
+    int m_selected = 0;
 };
 
 class SearchSessionModel;
-class SearchSession: public Page {
+class SearchSession: public CompositeContentPage {
     Q_OBJECT
 
-    Q_PROPERTY(QQmlListProperty<expleague::SearchRequest> queries READ queriesProperty NOTIFY queriesChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::SearchRequest> queries READ queriesQml NOTIFY queriesChanged)
     Q_PROPERTY(expleague::SearchRequest* lastRequest READ current NOTIFY queriesChanged)
 
 public:
     QString icon() const { return current()->icon(); }
     QString title() const { return current()->title(); }
-    QString textContent() const;
 
-    QQmlListProperty<SearchRequest> queriesProperty() const { return QQmlListProperty<SearchRequest>(const_cast<SearchSession*>(this), const_cast<QList<SearchRequest*>&>(m_queries)); }
+    QQmlListProperty<SearchRequest> queriesQml() const { return QQmlListProperty<SearchRequest>(const_cast<SearchSession*>(this), reinterpret_cast<QList<SearchRequest*>&>(const_cast<SearchSession*>(this)->parts())); }
 
     Q_INVOKABLE bool check(SearchRequest* request);
-    Q_INVOKABLE void append(SearchRequest* request);
+    Q_INVOKABLE void append(SearchRequest* request) { appendPart(request); }
 
 public:
-    QList<SearchRequest*> queries() const { return m_queries; }
+    QList<SearchRequest*> queries() const { return QList<SearchRequest*>(reinterpret_cast<QList<SearchRequest*>&>(const_cast<SearchSession*>(this)->parts())); }
+    BoW profile() const { return m_profile; }
+    SearchRequest* query(int index) const { return static_cast<SearchRequest*>(part(index)); }
 
 signals:
     void queriesChanged() const;
 
 private slots:
-    void onQueryTextContentChanged() { emit textContentChanged(textContent()); }
+    void onPartAppended(ContentPage* part);
 
 protected:
-    void interconnect();
     void initUI(QQuickItem*) const { emit queriesChanged(); }
-    SearchRequest* current() const { return m_queries.last(); }
+    SearchRequest* current() const { return query(size() - 1); }
 
 public:
     SearchSession(const QString& id, SearchRequest* seed, doSearch* parent);
@@ -134,8 +142,8 @@ public:
     virtual ~SearchSession();
 
 private:
-    QList<SearchRequest*> m_queries;
     SearchSessionModel* m_model;
+    BoW m_profile;
 };
 }
 #endif // SEARCH_H

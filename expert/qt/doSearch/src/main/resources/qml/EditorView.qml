@@ -16,6 +16,7 @@ Rectangle {
     onFocusChanged: {
         if (focus) {
             edit.forceActiveFocus()
+            dosearch.navigation.context.document = owner
         }
     }
 
@@ -132,8 +133,12 @@ Rectangle {
                     }
                 }
             }
+
             DropArea {
-                anchors.fill: parent
+                x: (dosearch.main ? dosearch.main.leftMargin : 0)
+                y: 0
+                width: parent.width - (dosearch.main ? (dosearch.main.rightMargin + dosearch.main.leftMargin): 0)
+                height: parent.height
                 z: parent.z + 10
 
                 onDropped: {

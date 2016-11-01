@@ -78,7 +78,7 @@ public:
     void connect();
     void disconnect();
 
-    QString id() const { return m_jid.section('@', 0, 0); }
+    QString id() const { return m_profile->login().replace('.', '_'); }
 
     Member* find(const QString& id);
 

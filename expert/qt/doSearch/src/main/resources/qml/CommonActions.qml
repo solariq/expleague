@@ -252,6 +252,7 @@ Item {
         shortcut: "Ctrl+N"
         text: qsTr("Поиск в интернете")
         iconSource: "qrc:/tools/search.png"
+        property string highlightedIcon: "qrc:/tools/search_h.png"
         onTriggered: {
             if (!omnibox.visible) {
                 omnibox.select("internet")
@@ -308,9 +309,12 @@ Item {
         shortcut: "Ctrl+O"
         text: qsTr("Открыть последний редактор")
         iconSource: "qrc:/tools/editor.png"
-        enabled: !!dosearch.navigation.context.task
+        property string highlightedIcon: "qrc:/tools/editor_h.png"
+        property string disabledIcon: "qrc:/tools/editor_d.png"
+
+        enabled: !!dosearch.navigation.context.document
         onTriggered: {
-            dosearch.navigation.open(dosearch.navigation.context.task.answer)
+            dosearch.navigation.open(dosearch.navigation.context.document)
         }
     }
 
@@ -319,6 +323,7 @@ Item {
         shortcut: "Ctrl+D"
         text: qsTr("Открыть хранилище")
         iconSource: "qrc:/tools/vault.png"
+        property string highlightedIcon: "qrc:/tools/vault_h.png"
         onTriggered: {
             if (dosearch.main.sidebarRef.state != "vault")
                 dosearch.main.sidebarRef.state = "vault"

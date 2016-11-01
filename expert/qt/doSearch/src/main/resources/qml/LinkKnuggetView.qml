@@ -16,7 +16,7 @@ Item {
     Image {
         mipmap: true
         anchors.fill: parent
-        source: "file:" + owner.screenshot
+        source: owner.screenshot.length > 0 ? "file:" + owner.screenshot : ""
         fillMode: Image.PreserveAspectCrop
     }
 

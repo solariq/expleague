@@ -10,6 +10,7 @@
 #include <QQmlListProperty>
 
 #include <QList>
+#include <QSet>
 #include <QHash>
 
 class QQuickItem;
@@ -25,7 +26,6 @@ class NavigationManager: public QObject {
     Q_OBJECT
 
     Q_PROPERTY(QQmlListProperty<expleague::PagesGroup> groups READ groups NOTIFY groupsChanged)
-    Q_PROPERTY(expleague::PagesGroup* contextsGroup READ contextsGroup CONSTANT)
     Q_PROPERTY(expleague::PagesGroup* activeGroup READ selectedGroup NOTIFY groupsChanged)
 
     Q_PROPERTY(QQmlListProperty<QQuickItem> screens READ screens NOTIFY screensChanged)
@@ -45,6 +45,7 @@ public:
     Q_INVOKABLE QQuickItem* open(const QUrl& url, Page* context, bool newGroup = false, bool transferUI = true);
     Q_INVOKABLE void open(Page* page);
     Q_INVOKABLE void select(PagesGroup* group);
+    Q_INVOKABLE void moveTo(Page* page, Context* dst);
 
 public:
     QQmlListProperty<expleague::PagesGroup> groups() const {
@@ -64,8 +65,8 @@ public:
     Page* activePage() const { return m_selected; }
     Context* context() const { return m_active_context; }
 
-    PagesGroup* contextsGroup() const;
     PagesGroup* selectedGroup() const;
+    Context* suggest(ContentPage* page, const BoW& next = BoW());
 
 public:
     void setWindow(QQuickWindow* window);
@@ -77,6 +78,7 @@ signals:
     void screensChanged();
     void historyChanged();
     void activeScreenChanged();
+    void suggestAvailable(Context* ctxt);
 
 public slots:
     void onGroupsChanged();
@@ -89,6 +91,7 @@ private slots:
         m_screen_width = width;
         onGroupsChanged();
     }
+    void onTypeInProfileChange(const BoW& prev, const BoW& next);
 
 public:
     NavigationManager(doSearch* parent = 0);
@@ -107,10 +110,10 @@ private:
     Page* m_selected;
 
     QList<PagesGroup*> m_groups;
-    PagesGroup* m_contexts_group;
     QList<Page*> m_history;
 
     QList<QQuickItem*> m_screens;
+    QSet<Page*> m_prev_known;
     QHash<QString, QHash<QString, PagesGroup*>> m_known_groups;
     QQuickItem* m_active_screen;
     QDnsLookup* m_lookup;

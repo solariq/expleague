@@ -11,6 +11,8 @@ Button {
     property real imgPadding: 4
     property var action
     property bool dark: false
+    property string disabledIcon: icon
+    property string highlightedIcon: icon
 
     hoverEnabled: true
     padding: 0
@@ -25,7 +27,12 @@ Button {
     onActionChanged: {
         if (!action)
             return
+
         icon = action.iconSource
+        if (action.disabledIcon)
+            disabledIcon = action.disabledIcon
+        if (action.highlightedIcon)
+            highlightedIcon = action.highlightedIcon
         enabled = Qt.binding(function() {return !!action ? action.enabled : false})
 //        self.ToolTip.text = action.shortcut + " " + action.tooltip
 //        self.ToolTip.visible = Qt.binding(function() {return self.hovered})
@@ -40,7 +47,7 @@ Button {
 
     background: Rectangle {
         radius: Palette.radius
-        color: self.pressed || self.toggle ? (dark ? "#4E92E0" : Palette.buttonPressedBackground) : (hovered ? (dark ? Palette.buttonPressedBackground : Palette.buttonHoverBackground) : "transparent")
+        color: self.pressed || self.toggle ? (dark ? Palette.toolsActiveColor : Palette.buttonPressedBackground) : (hovered ? (dark ? Palette.buttonPressedBackground : Palette.buttonHoverBackground) : "transparent")
     }
 
     indicator: Image {
@@ -49,10 +56,10 @@ Button {
         anchors.centerIn: parent
         source: {
             if (!self.enabled)
-                return icon.substring(0, icon.length - 4) + "_d.png"
+                return disabledIcon
             else if (self.toggle || self.pressed)
-                return icon.substring(0, icon.length - 4) + "_h.png"
-            return dark ? icon.substring(0, icon.length - 4) + "_h.png" : icon
+                return highlightedIcon
+            return dark ? highlightedIcon : icon
         }
         mipmap: true
     }

@@ -49,4 +49,8 @@ typename T::size_type levenshtein_distance(const T& src, const T& dst) {
   return matrix[m][n];
 }
 
+double bisection(double left, double right, std::function<double (double)> func);
+double optimalExpansionDP(double statPower, int classes);
+double erlang(int k, double lambda, double x);
+
 #endif // MATH_H

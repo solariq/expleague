@@ -84,10 +84,7 @@ Item {
         id: taskCancelledDialog
         title: qsTr("Задание закрыто")
         text: qsTr("Задание отменено сервером, обычно такое случается, если клиент отменил задание.")
-        onAccepted: {
-            visible = false
-        }
-
+        onAccepted: visible = false
         visible: false
     }
 
@@ -130,6 +127,11 @@ Item {
 
                 onHtmlChanged: {
                     var focused = window.activeFocusItem
+                    var html = "<!DOCTYPE html><html><head>
+                                <script src=\"qrc:/md-scripts.js\"></script>
+                                <link rel=\"stylesheet\" href=\"qrc:/markdownpad-github.css\"></head>
+                                <body>" + preview.html+ "</body></html>"
+
                     loadHtml(html)
                     if (focused)
                         focused.forceActiveFocus()

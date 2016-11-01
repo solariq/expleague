@@ -23,8 +23,8 @@
 # hdiutil create -volname doSearch -srcfolder ./temp/ -ov -format UDZO doSearch.dmg
 VERSION = 0.6.0
 
-QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine webenginewidgets xml multimedia webenginecore
-QT_PRIVATE += quick-private
+QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine xml multimedia webenginecore
+QT_PRIVATE += quick-private webengine-private
 qml.path += resources/qml
 target.path += ../../bin
 
@@ -58,6 +58,9 @@ SOURCES += \
     c++/model/pages/search.cpp \
     c++/model/pages/web.cpp \
     c++/model/pages/editor.cpp \
+    c++/ir/dictionary.cpp \
+    c++/ir/bow.cpp \
+    c++/util/pholder.cpp
 
 
 HEADERS += \
@@ -71,6 +74,7 @@ HEADERS += \
     c++/util/filethrottle.h \
     c++/util/call_once.h \
     c++/util/simplelistmodel.h \
+    c++/ir/dictionary.h \
     c++/model/page.h \
     c++/model/manager.h \
     c++/model/context.h \
@@ -80,7 +84,9 @@ HEADERS += \
     c++/model/vault.h \
     c++/model/pages/editor.h \
     c++/model/pages/search.h \
-    c++/model/pages/web.h
+    c++/model/pages/web.h \
+    c++/ir/bow.h \
+    c++/util/pholder.h
 
 macx: OBJECTIVE_SOURCES += \
     objc/ExpLeagueNotification.mm
@@ -94,7 +100,8 @@ RESOURCES += resources/qml/qml.qrc \
 
 DISTFILES += resources/doSearch.ico \
     config.xml \
-    package.xml
+    package.xml \
+    resources/markdown-tile.css
 DISTFILES += resources/doSearch.icns
 
 win32:CONFIG(release, debug|release): LIBS += \
@@ -102,23 +109,26 @@ win32:CONFIG(release, debug|release): LIBS += \
     $$OUT_PWD/../libs/qxmpp/src/qxmpp.lib \
     -L$$OUT_PWD/../libs/discount/release/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/release/ -lhunspell \
-    -L$$OUT_PWD/../libs/cutemarked/release/ -lcutemarked
+    -L$$OUT_PWD/../libs/cutemarked/release/ -lcutemarked \
+    -L$$OUT_PWD/../libs/leveldb/release/ -lleveldb
 else:win32:CONFIG(debug, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d \
     -L$$OUT_PWD/../libs/discount/debug/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/debug/ -lhunspell \
-    -L$$OUT_PWD/../libs/cutemarked/debug/ -lcutemarked
+    -L$$OUT_PWD/../libs/cutemarked/debug/ -lcutemarked \
+    -L$$OUT_PWD/../libs/leveldb/debug/ -lleveldb
 else:unix:CONFIG(debug, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d \
     -L$$OUT_PWD/../libs/discount/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/ -lhunspell \
-    -L$$OUT_PWD/../libs/cutemarked/ -lcutemarked
+    -L$$OUT_PWD/../libs/cutemarked/ -lcutemarked \
+    -L$$OUT_PWD/../libs/leveldb/ -lleveldb
 else:unix:CONFIG(release, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp \
     -L$$OUT_PWD/../libs/discount/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/ -lhunspell \
-    -L$$OUT_PWD/../libs/cutemarked/ -lcutemarked
-
+    -L$$OUT_PWD/../libs/cutemarked/ -lcutemarked \
+    -L$$OUT_PWD/../libs/leveldb/ -lleveldb
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../libs/peg-markdown-highlight/release/ -lpmh
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../libs/peg-markdown-highlight/debug/ -lpmh
@@ -132,7 +142,7 @@ INCLUDEPATH += \
     $$PWD/../libs/peg-markdown-highlight \
     $$PWD/../libs/hunspell \
     $$PWD/../libs/cutemarked \
-    /Users/solar/Qt/5.7/Src/qtwebengine/src
+    $$PWD/../libs/leveldb/include
 
 DEPENDPATH += \
     $$PWD/../libs/qxmpp/src \
@@ -146,4 +156,3 @@ else:win32:CONFIG(debug, debug|release) PRE_TARGETDEPS += $$OUT_PWD/../libs/cute
 else:win32:CONFIG(release, debug|release) PRE_TARGETDEPS += $$OUT_PWD/../libs/cutemarked/release/cutemarked.lib
 
 INSTALLS = target qml
-

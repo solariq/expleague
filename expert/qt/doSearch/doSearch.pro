@@ -20,4 +20,5 @@ SUBDIRS = src/libs/qxmpp \
           src/libs/fontawesomeicon \
           src/libs/hunspell \
           src/libs/cutemarked \
+          src/libs/leveldb \
           src/main

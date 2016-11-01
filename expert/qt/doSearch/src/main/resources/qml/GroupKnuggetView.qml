@@ -10,8 +10,6 @@ Item {
     property real size: 10
     property real childSize: (self.width - 4)/11/2
 
-    property bool complete: false
-
     anchors.centerIn: parent
 
     ListModel {
@@ -45,10 +43,5 @@ Item {
                 notitles: true
             }
         }
-    }
-
-    Component.onCompleted: {
-        console.log("owner: " + owner + " model power: " + owner.items.length)
-        complete = true
     }
 }

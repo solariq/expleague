@@ -66,6 +66,7 @@ Rectangle {
     function append(download) {
         downloadModel.append(download)
         downloadModel.downloads.push(download)
+        parent.parent.state = "downloads"
     }
 
     Component {

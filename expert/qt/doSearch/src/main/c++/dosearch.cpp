@@ -1,5 +1,6 @@
 #include "expleague.h"
 
+#include "ir/dictionary.h"
 #include "util/mmath.h"
 
 #include <assert.h>
@@ -19,6 +20,11 @@ doSearch::doSearch(QObject* parent) : QObject(parent) {
     QCoreApplication::setOrganizationDomain("expleague.com");
     QCoreApplication::setApplicationName("doSearch");
     QApplication::setApplicationVersion(EL_DOSEARCH_VERSION);
+    m_dictionary = new CollectionDictionary(
+                QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/dictionary",
+                [](const QString& word) { return word; },
+                this
+    );
     m_saver = new StateSaver(this);
     m_league = new League(this);
     m_navigation = new NavigationManager(this);
@@ -43,12 +49,12 @@ void doSearch::restoreState() {
     foreach(QString contextFileName, contextsDir.entryList()) {
         if (contextFileName.startsWith("."))
             continue;
-        Context* ctxt = context(contextFileName);
+        Context* ctxt = qobject_cast<Context*>(page("context/" + contextFileName));
         if (!ctxt->hasTask())
             m_contexts.append(ctxt);
     }
     if (m_contexts.empty())
-        m_contexts.append(context("0"));
+        createContext("Новый контекст");
 
     std::sort(m_contexts.begin(), m_contexts.end(), [](const Context* lhs, const Context* rhs){
        return lhs->lastVisitTs() > rhs->lastVisitTs();
@@ -75,27 +81,51 @@ Page* doSearch::empty() const {
     });
 }
 
-WebPage* doSearch::web(const QUrl& url) const {
+Page* doSearch::web(const QUrl& url) const {
+    QString query = url.query().isEmpty() ? "" : "/" + md5(url.query());
+    if (WebResource::rootUrl(url)) { // site
+        WebSite* result = webSite(url.host());
+        result->page()->setOriginalUrl(url);
+        return result;
+    }
+    else if (url.host().contains("google.") && url.path() == "/search") {
+        return page("search/" + GoogleSERPage::parseQuery(url) + "/google", [&url](const QString& id, doSearch* parent) {
+            return new GoogleSERPage(id, url, parent);
+        });
+    }
+    else if (url.host().contains("yandex.") && (url.path() == "/search/" || url.path() == "/yandsearch")) {
+        return page("search/" + YandexSERPage::parseQuery(url) + "/yandex", [&url](const QString& id, doSearch* parent) {
+            return new YandexSERPage(id, url, parent);
+        });
+    }
+    else return webPage(url);
+}
+
+WebSite* doSearch::webSite(const QString& domain) const {
+    QString edomain = domain;
+    if (edomain.startsWith("www."))
+        edomain = edomain.mid(4);
+    QString id = "web/" + edomain + "/site";
+    return qobject_cast<WebSite*>(page(id, [&edomain, domain](const QString& id, doSearch* parent){
+        return new WebSite(id, edomain, QUrl("http://" + domain), parent);
+    }));
+}
+
+WebPage* doSearch::webPage(const QUrl& url) const {
     QString query = url.query().isEmpty() ? "" : "/" + md5(url.query());
     QString domain = url.host();
     if (domain.startsWith("www."))
         domain = domain.mid(4);
-    WebPage* result;
-    if (url.query().isEmpty() && url.path().isEmpty()) { // site
-        QString id = "web/" + domain + "/site";
-        result = static_cast<WebPage*>(page(id, [&url](const QString& id, doSearch* parent){
-            return new WebSite(id, url, parent);
-        }));
-    }
-    else {
-        QString id = "web/" + domain + "/" + url.scheme() + (url.path().isEmpty() || url.path() == "/" ? "/index.html" : url.path()) + query;
-        result = static_cast<WebPage*>(page(id, [&url](const QString& id, doSearch* parent){
-            return new WebPage(id, url, parent);
-        }));
-    }
-    result->setUrl(url);
+    QString id = "web/" + domain + "/" + url.scheme() + (url.path().isEmpty() || url.path() == "/" ? "/index.html" : url.path()) + query;
+    if (id.endsWith('/'))
+        id = id.mid(0, -2);
+    WebPage* result = qobject_cast<WebPage*>(page(id, [&url](const QString& id, doSearch* parent) {
+        return new WebPage(id, url, parent);
+    }));
+    result->setOriginalUrl(url);
     return result;
 }
+
 
 QString doSearch::childId(const Page* parent, const QString& prefix) const {
     QString path = "/" + prefix;
@@ -109,10 +139,9 @@ SearchSession* doSearch::session(SearchRequest* seed, Context* owner) const {
     }));
 }
 
-Context* doSearch::context(const QString& name) const {
-    QString id = "context/" + name;
-    return static_cast<Context*>(page(id, [](const QString& id, doSearch* parent){
-        return new Context(id, parent);
+Context* doSearch::context(const QString& id, const QString& name) const {
+    return static_cast<Context*>(page("context/" + id, [name](const QString& id, doSearch* parent){
+        return new Context(id, name, parent);
     }));
 }
 
@@ -123,21 +152,22 @@ SearchRequest* doSearch::search(const QString& query, int searchIndex) const {
         return instance;
     }));
     if (searchIndex >= 0)
-        request->setSearchIndex(searchIndex);
+        request->select(searchIndex);
     return request;
 }
 
 MarkdownEditorPage* doSearch::document(Context* context, const QString& title, Member* author, bool editable) const {
-    QString id = "document/" + context->id() + "/" + (author ? author->id() : "local") + "/" + md5(title);
+    QString prefix = "document/" + (author ? author->id() : "local");
+    QString id = context->id() + "/" + prefix + "/" + md5(title);
     return static_cast<MarkdownEditorPage*>(page(id, [title, author, context, editable](const QString& id, doSearch* parent){
         return new MarkdownEditorPage(id, context, author, title, editable, parent);
     }));
 }
 
-Context* doSearch::createContext() {
-    Context* instance = context(QString::number(m_contexts.size()));
+Context* doSearch::createContext(const QString& name) {
+    Context* instance = context(QString::number(m_contexts.size()), name);
     append(instance);
-    contextsChanged();
+    emit contextsChanged();
     return instance;
 }
 
@@ -154,6 +184,8 @@ Page* doSearch::page(const QString &id) const {
                 return new GroupKnugget(id, parent);
             else if (id.contains("/search/session"))
                 return new SearchSession(id, parent);
+            else if (id.contains("/document"))
+                return new MarkdownEditorPage(id, parent);
             else
                 return new Context(id, parent);
         }
@@ -161,6 +193,10 @@ Page* doSearch::page(const QString &id) const {
             return new WebSite(id, parent);
         else if (id.startsWith("web/"))
             return new WebPage(id, parent);
+        else if (id.startsWith("search/") && id.endsWith("/google"))
+            return new GoogleSERPage(id, parent);
+        else if (id.startsWith("search/") && id.endsWith("/yandex"))
+            return new YandexSERPage(id, parent);
         else if (id.startsWith("search/"))
             return new SearchRequest(id, parent);
         else if (id.startsWith("document/"))
@@ -168,7 +204,7 @@ Page* doSearch::page(const QString &id) const {
         else if (id == "empty")
             return empty();
         else {
-            qWarning() << "Unknown page type, or corrupted page id: " << id;
+//            qWarning() << "Unknown page type, or corrupted page id: " << id;
             return 0;
         }
     });
@@ -193,17 +229,22 @@ void doSearch::onActiveScreenChanged() {
 void doSearch::append(Context* context) {
     assert(context->parent() == this);
     m_contexts.append(context);
-    contextsChanged();
+    emit contextsChanged();
 }
 
 void doSearch::remove(Context* context) {
     assert(context->parent() == this);
+    if (m_contexts.size() == 1) // unable to remove the last context
+        return;
     if (m_navigation->context() == context) {
-        Context* const next = static_cast<Context*>(m_navigation->contextsGroup()->pages().first());
+        Context* const next = m_contexts[std::max(0, m_contexts.indexOf(context))];
         m_navigation->activate(next);
     }
+    QDir contextDir(pageResource(context->id()));
+    contextDir.removeRecursively();
     m_contexts.removeOne(context);
-    contextsChanged();
+    m_pages.remove(context->id());
+    emit contextsChanged();
 }
 
 }

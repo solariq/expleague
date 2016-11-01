@@ -8,14 +8,16 @@
 #include <QDir>
 #include <QUrl>
 #include <QList>
-#include <QHash>
-#include <QVariant>
+
+#include "../ir/bow.h"
+#include "../util/pholder.h"
 
 class QQuickItem;
 class QQmlContext;
 namespace expleague {
 struct PageImpl;
 class doSearch;
+class NavigationManager;
 
 struct PageModel {
     int freq;
@@ -27,13 +29,13 @@ struct PageModel {
     static PageModel fromVariant(const QVariant& var);
 };
 
-class Page: public QObject {
+
+class Page: public QObject, protected PersistentPropertyHolder {
     Q_OBJECT
 
     Q_PROPERTY(QString id READ id CONSTANT)
     Q_PROPERTY(QString icon READ icon NOTIFY iconChanged)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
-    Q_PROPERTY(QString textContent READ textContent WRITE setTextContent NOTIFY textContentChanged)
     Q_PROPERTY(expleague::Page::State state READ state WRITE setState NOTIFY stateChanged)
 
 public:
@@ -59,21 +61,22 @@ public:
 
     virtual QString icon() const { return "qrc:/avatar.png"; }
     virtual QString title() const { return id(); }
-    virtual QString textContent() const;
 
     State state() const { return m_state; }
 
     QList<Page*> outgoing() const;
     QList<Page*> incoming() const;
+
+    void forgetIncoming(Page* page);
+    void forgetOutgoing(Page* page);
+
     Page* lastVisited() const { return m_last_visited; }
     time_t lastVisitTs() const { return m_last_visit_ts; }
 
-    void setTextContent(const QString& content);
     void setState(State closed);
 
-public:
-    void processTextContentWhenAvailable(std::function<void (const QString&)> callback) const;
     Q_INVOKABLE QQuickItem* ui(bool useCache = true) const;
+    bool compareUI(QQuickItem* item) const { return m_ui == item; }
 
     Q_INVOKABLE virtual double pOut(Page*) const;
     Q_INVOKABLE virtual double pIn(Page*) const;
@@ -82,40 +85,31 @@ public:
 
     virtual double titleWidth() const;
 
+    virtual Page* parentPage() const { return 0; }
+    QList<Page*> children(const QString& prefix = "") const;
+
 signals:
     void iconChanged(const QString& icon);
     void titleChanged(const QString& title);
-    void textContentChanged(const QString& content);
     void stateChanged(Page::State closed);
 
 public:
     Page(): Page("undefined", "", 0) {} // never ever use this constructor, it exists for compartibility purposes only!
 
     doSearch* parent() const;
+    void transferUI(Page* other) const;
+    friend class doSearch;
 
 protected:
     explicit Page(const QString& id, const QString& uiQml, doSearch* parent);
+
     virtual void interconnect();
     virtual void initUI(QQuickItem*) const {}
-    void transferUI(Page* other) const;
-
-    QVariant value(const QString& key) const;
-    QList<Page*> children(const QString& prefix = "") const;
-    void store(const QString& key, const QVariant& value);
-    void visitKeys(const QString& key, std::function<void (const QVariant&)> visitor) const;
-    void visitChildren(const QString& prefix, std::function<void (Page*)> visitor) const;
-    int count(const QString& key) const;
-    void append(const QString& key, const QVariant& value);
-    void remove(const QString& key);
-    void replaceOrAppend(const QString& key, const QVariant& value, std::function<bool (const QVariant& lhs, const QVariant& rhs)> equals);
 
     QDir storage() const;
-    void save() const;
-    virtual void incomingTransition(Page* from, TransitionType type);
+    void visitChildren(const QString& prefix, std::function<void (Page*)> visitor) const;
 
-private:
-    friend class doSearch;
-    QVariant* resolve(const QStringList& path, bool create = false);
+    virtual void incomingTransition(Page* from, TransitionType type);
 
 private:
     QString m_id;
@@ -132,10 +126,71 @@ private:
     time_t m_last_visit_ts = 0;
 
     State m_state;
+};
 
-    QVariant m_properties = QVariant(QHash<QString, QVariant>());
-    mutable volatile int m_changes = 0;
-    mutable volatile int m_saved_changes = 0;
+class ContentPage: public Page {
+    Q_OBJECT
+
+    Q_PROPERTY(QString text READ textContent WRITE setTextContent NOTIFY textContentChanged)
+
+public:
+    virtual QString textContent() const;
+    virtual void setTextContent(const QString& content);
+
+signals:
+    void textContentChanged() const;
+    void changingProfile(const BoW& oldOne, const BoW& newOne) const;
+
+public:
+    BoW profile() const { return m_profile; }
+
+    void processTextContentWhenAvailable(std::function<void (const QString&)> callback) const;
+    void processProfileWhenAvailable(std::function<void (const BoW&)> callback) const;
+
+protected:
+    virtual void setProfile(const BoW& profile);
+
+public:
+    explicit ContentPage(const QString& id, const QString& uiQml, doSearch* parent);
+
+private:
+    BoW m_profile;
+};
+
+class CompositeContentPage: public ContentPage {
+    Q_OBJECT
+
+public:
+    int size() const { return m_parts.size(); }
+    ContentPage* part(int index) const { return m_parts[index]; }
+    bool contains(ContentPage* page) const { return m_parts.contains(page); }
+
+    QString textContent() const;
+    void setTextContent(const QString& content);
+
+    friend class ContentPage;
+
+public:
+    CompositeContentPage(const QString& id, const QString& uiQml, doSearch* parent);
+
+signals:
+    void partAppended(ContentPage* part);
+    void partRemoved(ContentPage* part);
+
+protected slots:
+    virtual void onPartContentsChanged() { emit textContentChanged(); }
+    virtual void onPartProfileChanged(const BoW& oldOne, const BoW& newOne);
+    virtual void onPartStateChanged(Page::State state);
+protected:
+    QList<ContentPage*>& parts() { return m_parts; } // for QML purposes ONLY!!
+
+    bool appendPart(ContentPage* part);
+    void removePart(ContentPage* part);
+
+    void interconnect();
+
+private:
+    QList<ContentPage*> m_parts;
 };
 }
 

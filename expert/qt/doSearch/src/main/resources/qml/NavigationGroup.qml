@@ -16,7 +16,7 @@ Item {
     property var closedPages: group.closedPages
     property bool closeEnabled: true
 
-    visible: visiblePages.length > 0 || closedPages.length > 0
+    visible: visiblePages.length > 0// || closedPages.length > 0
     implicitWidth: visibleList.implicitWidth + (group.parentGroup ? separator.width: 0)
 
     RowLayout {
@@ -93,26 +93,6 @@ Item {
                     }
                     model: visiblePages
 
-                }
-                Button {
-                    id: appendButton
-                    height: parent.height
-                    visible: append != null
-
-                    background: Rectangle {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        color: appendButton.pressed ? Palette.selectedColor: Palette.activeColor
-                    }
-                    contentItem: Text {
-                        anchors.fill: parent
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        text: "+"
-                        color: appendButton.pressed ? Palette.selectedTextColor: Palette.activeTextColor
-                    }
-
-                    onClicked: self.append()
                 }
                 Button {
                     id: others

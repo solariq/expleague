@@ -54,16 +54,7 @@ QString buildHtmlByMD(const QString& text) {
     mkd_compile(mdDoc, 0);
     char* result;
     int length = mkd_document(mdDoc, &result);
-    QString resultHtml = QString("<!DOCTYPE html>\n")
-            + "<html>\n"
-            + "<head>\n"
-            + "<script src=\"qrc:/md-scripts.js\"></script>\n"
-            + "<link rel=\"stylesheet\" href=\"qrc:/markdownpad-github.css\">\n"
-            + "</head>\n"
-            + "<body>\n"
-            + QString::fromUtf8(result, length)
-            + "</body>\n</html>\n";
-
+    QString resultHtml = QString::fromUtf8(result, length);
     mkd_cleanup(mdDoc);
     return resultHtml;
 }
@@ -111,7 +102,7 @@ void MarkdownEditorPage::initUI(QQuickItem* result) const {
         connect(timer, &QTimer::timeout, [this](){
             if (m_html.isEmpty()) {
                 m_html = buildHtmlByMD(this->m_text);
-                htmlChanged(m_html);
+                emit htmlChanged(m_html);
             }
         });
         connect(thread, SIGNAL(started()), timer, SLOT(start()));
@@ -136,13 +127,13 @@ void MarkdownEditorPage::contentChanged() {
     MarkdownEditorPagePrivate* privatePart = d_ptr.get();
     if (privatePart && privatePart->document) {
         QString text = privatePart->document->textDocument()->toPlainText();
-        setText(text);
+        setTextContent(text);
     }
 }
 
-MarkdownEditorPage::MarkdownEditorPage(const QString& id, Context* context, Member* author, const QString& title, bool editable, doSearch* parent): Page(id, "qrc:/EditorView.qml", parent), m_author(author), m_owner(context), m_editable(editable) {
+MarkdownEditorPage::MarkdownEditorPage(const QString& id, Context* context, Member* author, const QString& title, bool editable, doSearch* parent): ContentPage(id, "qrc:/EditorView.qml", parent), m_author(author), m_owner(context), m_editable(editable) {
     d_ptr.reset(0);
-    m_text = value("document.text").toString();
+    m_text = textContent();
     store("document.author", author ? author->id() : QVariant());
     store("document.title", title);
     store("document.owner", context->id());
@@ -153,10 +144,10 @@ MarkdownEditorPage::MarkdownEditorPage(const QString& id, Context* context, Memb
     }
 }
 
-MarkdownEditorPage::MarkdownEditorPage(const QString& id, doSearch* parent): Page(id, "qrc:/EditorView.qml", parent) {
+MarkdownEditorPage::MarkdownEditorPage(const QString& id, doSearch* parent): ContentPage(id, "qrc:/EditorView.qml", parent) {
     QVariant author = value("document.author");
     m_author = author.isNull() ? 0 : parent->league()->findMember(author.toString());
-    m_text = value("document.text").toString();
+    m_text = textContent();
     m_html = buildHtmlByMD(m_text);
     League* league = doSearch::instance()->league();
     m_editable = !m_author || m_author->id() == league->id();
@@ -167,6 +158,7 @@ MarkdownEditorPage::MarkdownEditorPage(const QString& id, doSearch* parent): Pag
 }
 
 void MarkdownEditorPage::interconnect() {
+    ContentPage::interconnect();
     QVariant ownerVar = value("document.owner");
     if (ownerVar.isNull()) {
         QString contextId = id().section('/', 1, -2);
@@ -177,6 +169,10 @@ void MarkdownEditorPage::interconnect() {
 
 MarkdownEditorPage::~MarkdownEditorPage() {}
 
+Page* MarkdownEditorPage::parentPage() const {
+    return m_owner;
+}
+
 QString MarkdownEditorPage::title() const {
     return value("document.title").toString();
 }
@@ -185,12 +181,10 @@ QString MarkdownEditorPage::icon() const {
     return m_author ? m_author->avatar().toString() : "qrc:/avatar.png";
 }
 
-void MarkdownEditorPage::setText(const QString& text) {
+void MarkdownEditorPage::setTextContent(const QString& text) {
     m_text = text;
     m_html = "";
-    store("document.text", m_text);
-    save();
-    textChanged(text);
+    ContentPage::setTextContent(text);
 }
 
 QString MarkdownEditorPage::html() {

@@ -1,5 +1,6 @@
 #include "search.h"
 #include "../../dosearch.h"
+#include "../../ir/dictionary.h"
 #include "../../util/filethrottle.h"
 #include "../../util/mmath.h"
 
@@ -7,72 +8,22 @@
 #include <QUrlQuery>
 
 namespace expleague {
+
+SearchRequest* SERPage::request() const {
+    return parent()->search(query());
+}
+
+Page* SERPage::container() const {
+    return request()->session();
+}
+
+void SERPage::interconnect() {
+    connect(request(), SIGNAL(sessionChanged()), SLOT(onSessionChanged()));
+}
+
 SearchRequest SearchRequest::EMPTY("");
 
-QString SearchRequest::googleText() const {
-    QFile file(storage().absoluteFilePath("google.txt"));
-    if (!file.exists())
-        return QString(QString::null);
-    file.open(QFile::ReadOnly);
-    return QString(file.readAll());
-}
-
-void SearchRequest::setGoogleText(const QString& text) {
-    QString currentText = googleText();
-    if (currentText == text)
-        return;
-
-    FileWriteThrottle::enqueue(storage().absoluteFilePath("google.txt"), text, [this, text]() {
-        this->googleTextChanged(text);
-        QString yandexText = this->yandexText();
-        if (!yandexText.isNull())
-            this->textContentChanged(text + yandexText);
-    });
-}
-
-QString SearchRequest::yandexText() const {
-    QFile file(storage().absoluteFilePath("yandex.txt"));
-    if (!file.exists())
-        return QString(QString::null);
-    file.open(QFile::ReadOnly);
-    return QString(file.readAll());
-}
-
-void SearchRequest::setYandexText(const QString& text) {
-    QString currentText = yandexText();
-    if (currentText == text)
-        return;
-
-    FileWriteThrottle::enqueue(storage().absoluteFilePath("yandex.txt"), text, [this, text]() {
-        this->googleTextChanged(text);
-        QString googleText = this->googleText();
-        if (!googleText.isNull())
-            this->textContentChanged(googleText + text);
-    });
-}
-
-QString SearchRequest::parseGoogleQuery(const QUrl& request) const {
-    if (request.path() != "/search")
-        return "";
-    QUrlQuery query(request.hasFragment() ? request.fragment() : request.query());
-    QString queryText = query.queryItemValue("q", QUrl::PrettyDecoded);
-    queryText.replace("+", " ");
-    queryText.replace("%2B", "+");
-    static QRegExp site("site:(\\S+)");
-    int index;
-    if ((index = site.indexIn(queryText)) >= 0)
-        queryText = queryText.mid(0, index) + "#site(" + site.cap(1) + ")" + queryText.mid(index + site.matchedLength());
-    return queryText.trimmed();
-}
-
-void SearchRequest::interconnect() {
-    Page::interconnect();
-    QVariant sessionVar = value("search.session");
-    if (sessionVar.isValid())
-        m_session = static_cast<SearchSession*>(parent()->page(sessionVar.toString()));
-}
-
-QString SearchRequest::parseYandexQuery(const QUrl& request) const {
+QString YandexSERPage::parseQuery(const QUrl& request) {
     QString path = request.path();
     if (path != "/search/" && path != "/yandsearch")
         return "";
@@ -87,8 +38,34 @@ QString SearchRequest::parseYandexQuery(const QUrl& request) const {
     return queryText.trimmed();
 }
 
-QUrl SearchRequest::googleUrl() const {
-    QString queryText = m_query;
+YandexSERPage::YandexSERPage(const QString& id, const QUrl& url, doSearch* parent): SERPage(id, parseQuery(url), url, parent)
+{}
+
+YandexSERPage::YandexSERPage(const QString& id, doSearch* parent): SERPage(id, parent)
+{}
+
+QString GoogleSERPage::parseQuery(const QUrl& request) {
+    if (request.path() != "/search")
+        return "";
+    QUrlQuery query(request.hasFragment() ? request.fragment() : request.query());
+    QString queryText = query.queryItemValue("q", QUrl::PrettyDecoded);
+    queryText.replace("+", " ");
+    queryText.replace("%2B", "+");
+    static QRegExp site("site:(\\S+)");
+    int index;
+    if ((index = site.indexIn(queryText)) >= 0)
+        queryText = queryText.mid(0, index) + "#site(" + site.cap(1) + ")" + queryText.mid(index + site.matchedLength());
+    return queryText.trimmed();
+}
+
+GoogleSERPage::GoogleSERPage(const QString& id, const QUrl& url, doSearch* parent): SERPage(id, parseQuery(url), url, parent)
+{}
+
+GoogleSERPage::GoogleSERPage(const QString& id, doSearch* parent): SERPage(id, parent)
+{}
+
+QUrl googleUrl(const QString& q) {
+    QString queryText = q;
     queryText.replace("+", "%2B");
     static QRegExp site("#site\\((\\S+)\\)");
     int index;
@@ -105,8 +82,8 @@ QUrl SearchRequest::googleUrl() const {
     return result;
 }
 
-QUrl SearchRequest::yandexUrl() const {
-    QString queryText = m_query;
+QUrl yandexUrl(const QString& q) {
+    QString queryText = q;
     queryText.replace("+", "%2B");
     static QRegExp site("#site\\((\\S+)\\)");
     int index;
@@ -123,37 +100,59 @@ QUrl SearchRequest::yandexUrl() const {
     return result;
 }
 
-SearchRequest::SearchRequest(const QString& id, const QString& query, doSearch* parent): Page(id, "qrc:/WebSearchView.qml", parent), m_query(query)
+void SearchRequest::setSession(SearchSession* session) {
+    m_session = session;
+    store("search.session", session ? session->id() : QVariant());
+    save();
+    emit sessionChanged();
+}
+
+void SearchRequest::select(int index) {
+    m_selected = index;
+    store("search.engine", QVariant(index));
+    save();
+    assert(serp());
+    emit selectedChanged();
+    emit iconChanged(icon());
+}
+
+SearchRequest::SearchRequest(const QString& id, const QString& query, doSearch* parent): CompositeContentPage(id, "qrc:/SearchQueryView.qml", parent), m_query(query)
 {
     store("search.query", query);
-    SearchRequest* last = parent->navigation()->context()->lastRequest();
-    m_search_index = last ? last->searchIndex() : 0;
-    store("search.engine", m_search_index);
     save();
 }
 
-SearchRequest::SearchRequest(const QString& id, doSearch* parent): Page(id, "qrc:/WebSearchView.qml", parent),
+SearchRequest::SearchRequest(const QString& id, doSearch* parent): CompositeContentPage(id, "qrc:/SearchQueryView.qml", parent),
     m_query(value("search.query").toString()),
-    m_search_index(value("search.engine").toInt())
+    m_selected(value("search.engine").toInt())
 {}
 
-class SearchSessionModel {
+void SearchRequest::interconnect() {
+    CompositeContentPage::interconnect();
+    QVariant sessionVar = value("search.session");
 
-};
-
-SearchSession::SearchSession(const QString& id, SearchRequest* seed, doSearch* parent): Page(id, "qrc:/WebSearchView.qml", parent), m_model(new SearchSessionModel())
-{
-    append(seed);
+    if (sessionVar.isValid())
+        setSession(static_cast<SearchSession*>(parent()->page(sessionVar.toString())));
+    if (!size()) {
+        appendPart(static_cast<SERPage*>(parent()->web(googleUrl(query()))));
+        appendPart(static_cast<SERPage*>(parent()->web(yandexUrl(query()))));
+    }
+    QVariant engine = value("search.engine");
+    if (engine.isNull()) { // defauts
+        if (parent()->navigation()->context() && parent()->navigation()->context()->lastRequest())
+            select(parent()->navigation()->context()->lastRequest()->selected());
+        else
+            m_selected = 0;
+    }
+    else m_selected = engine.toInt();
 }
 
-SearchSession::SearchSession(const QString& id, doSearch* parent): Page(id, "qrc:/WebSearchView.qml", parent), m_model(new SearchSessionModel())
-{}
-
+class SearchSessionModel {};
 
 bool SearchSession::check(SearchRequest* request) {
     QList<QString> parts = request->query().toLower().split(" ");
-    for (int i = 0; i < m_queries.size(); i++) {
-        QStringList currentParts = m_queries[i]->query().toLower().split(" ");
+    for (int i = 0; i < size(); i++) {
+        QStringList currentParts = query(i)->query().toLower().split(" ");
         for (int u = 0; u < parts.size(); u++) {
             for (int v = 0; v < currentParts.size(); v++) {
                 if (levenshtein_distance(parts[u], currentParts[v]) <= 1)
@@ -164,31 +163,24 @@ bool SearchSession::check(SearchRequest* request) {
     return false;
 }
 
-void SearchSession::append(SearchRequest* request) {
-    m_queries += request;
-    connect(request, SIGNAL(textContentChanged(QString)), this, SLOT(onQueryTextContentChanged()));
-    Page::append("session.query", request->id());
-    save();
-    emit textContentChanged(textContent());
+void SearchSession::onPartAppended(ContentPage* request) {
+    static_cast<SearchRequest*>(request)->setSession(this);
     emit titleChanged(request->title());
     emit iconChanged(request->icon());
     emit queriesChanged();
 }
 
-void SearchSession::interconnect() {
-    visitKeys("session.query", [this](const QVariant& var) {
-        SearchRequest* request = static_cast<SearchRequest*>(parent()->page(var.toString()));
-        m_queries += request;
-        connect(request, SIGNAL(textContentChanged(QString)), this, SLOT(onQueryTextContentChanged()));
-    });
+SearchSession::SearchSession(const QString& id, SearchRequest* seed, doSearch* parent):
+    CompositeContentPage(id, "qrc:/SearchSessionView.qml", parent), m_model(new SearchSessionModel())
+{
+    connect(this, SIGNAL(partAppended(ContentPage*)), SLOT(onPartAppended(ContentPage*)));
+    append(seed);
 }
 
-QString SearchSession::textContent() const {
-    QString result;
-    for (int i = 0; i < m_queries.size(); i++) {
-        result += m_queries[i]->textContent();
-    }
-    return result;
+SearchSession::SearchSession(const QString& id, doSearch* parent):
+    CompositeContentPage(id, "qrc:/SearchSessionView.qml", parent), m_model(new SearchSessionModel())
+{
+    connect(this, SIGNAL(partAppended(ContentPage*)), SLOT(onPartAppended(ContentPage*)));
 }
 
 SearchSession::~SearchSession() {

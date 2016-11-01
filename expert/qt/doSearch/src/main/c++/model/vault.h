@@ -24,7 +24,6 @@ protected:
     Knugget(const QString& id, Page* source, Context* owner, const QString& uiQml, doSearch* parent);
     Knugget(const QString& id, const QString& uiQml, doSearch* parent);
 
-    void interconnect();
     Context* owner() const { return m_owner; }
 private:
     friend class Vault;
@@ -70,7 +69,7 @@ public:
     QString md() const;
 
 signals:
-    Q_INVOKABLE void screenshotChanged();
+    Q_INVOKABLE void screenshotChanged() const;
 
 public:
     LinkKnugget(const QString& id, doSearch* parent);
@@ -133,9 +132,6 @@ signals:
 public:
     GroupKnugget(const QString& id, doSearch* parent);
     GroupKnugget(const QString& id, Context* context, doSearch* parent);
-
-protected:
-    void interconnect();
 
 private:
     QString m_name;

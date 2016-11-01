@@ -2,17 +2,35 @@
 
 #include "../context.h"
 #include "../../dosearch.h"
+#include "../../ir/dictionary.h"
+#include "../../util/filethrottle.h"
 
 #include <QFile>
 #include <QQuickWindow>
 #include <QtQuick/private/qquickdroparea_p.h>
-//#include <QtWebEngine/private/qquickwebengineview_p.h>
+#include <QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
 #include <QKeyEvent>
 #include <QShortcut>
 #include <QDropEvent>
 #include <QApplication>
 
+#include <QRegularExpression>
+
 namespace expleague {
+
+QUrl WebResource::url() const {
+    return redirect() ? redirect()->url() : originalUrl();
+}
+
+bool WebResource::rootUrl(const QUrl& url) {
+    static QRegularExpression rootUrlRE("^(?:/(?:index\\.\\w+)?)?$");
+    bool result = rootUrlRE.match(url.path()).hasMatch();
+    return result;
+}
+
+bool WebResource::isRoot() const {
+    return rootUrl(originalUrl());
+}
 
 QString WebPage::icon() const {
     QVariant var = value("web.favicon");
@@ -47,16 +65,26 @@ void WebPage::setIcon(const QString& icon) {
     iconChanged(icon);
 }
 
-WebSite* WebPage::site() const {
-    QUrl siteUrl;
-    siteUrl.setHost(m_url.host());
-    siteUrl.setPort(m_url.port());
-    siteUrl.setScheme(m_url.scheme());
-    return static_cast<WebSite*>(parent()->web(siteUrl));
+void WebPage::setProfile(const BoW& profile) {
+    BoW templates = site()->templates();
+    float pagesCount = templates.freq(CollectionDictionary::DocumentBreak);
+    QVector<int> indices(profile.size());
+    QVector<float> freqs(profile.size());
+    for (int i = 0; i < profile.size(); i++) {
+        indices[i] = profile.idAt(i);
+        freqs[i] = profile.freqAt(i) * (1. - (templates.freq(profile.idAt(i)) + 1.) / (pagesCount + 2.));
+    }
+    ContentPage::setProfile(BoW(indices, freqs, profile.terms()));
 }
 
-QUrl WebPage::url() const {
-    return m_redirect ? m_redirect->url() : m_url;
+Page* WebPage::container() const {
+    return isRoot() ? static_cast<Page*>(site()) : static_cast<Page*>(const_cast<WebPage*>(this));
+}
+
+Page* WebPage::parentPage() const { return site(); }
+
+WebSite* WebPage::site() const {
+    return parent()->webSite(m_url.host());
 }
 
 void WebPage::setRedirect(WebPage* target) {
@@ -73,11 +101,9 @@ void WebPage::setRedirect(WebPage* target) {
     m_redirect = target;
     save();
     rebuildRedirects();
-    emit redirectChanged();
+    emit redirectChanged(target);
     emit urlChanged(url());
     emit titleChanged(title());
-    if (target)
-        site()->addMirror(target->site());
 }
 
 bool WebPage::forwardShortcutToWebView(const QString& shortcut, QQuickItem* view) {
@@ -136,12 +162,13 @@ bool WebPage::dropToWebView(QObject* drop, QQuickItem* view) {
     return true;
 }
 
-void WebPage::setUrl(const QUrl& url) {
-    if (url == m_url)
+void WebPage::setOriginalUrl(const QUrl& url) {
+    if (url == this->url())
         return;
     m_url = url;
-    store("web.url", m_url.toString());
+    store("web.url", url.toString());
     save();
+    emit originalUrlChanged(url);
     emit urlChanged(url);
 }
 
@@ -164,14 +191,6 @@ void WebPage::onRedirectUrlChanged(const QUrl& url) {
     emit urlChanged(url);
 }
 
-void WebPage::interconnect() {
-    Page::interconnect();
-    QVariant redirect = value("web.redirect");
-    if (!redirect.isNull())
-        m_redirect = qobject_cast<WebPage*>(parent()->page(redirect.toString()));
-    rebuildRedirects();
-}
-
 void WebPage::rebuildRedirects() {
     m_redirects.clear();
     WebPage* current = this;
@@ -181,14 +200,62 @@ void WebPage::rebuildRedirects() {
     }
 }
 
+void WebPage::open(const QUrl& url, bool newTab, bool transferUI) {
+    parent()->navigation()->open(url, this, newTab, transferUI);
+}
+
+void WebPage::open(QObject* request, bool newTab) {
+    qDebug() << request;
+
+    QQuickWebEngineNewViewRequest* nvreq = static_cast<QQuickWebEngineNewViewRequest*>(request);
+    if (newTab) {
+        nvreq->openIn(0);
+        qDebug() << request;
+    }
+}
+
 WebPage::WebPage(const QString& id, const QUrl& url, doSearch* parent):
-    Page(id, "qrc:/WebScreenView.qml", parent), m_url(url), m_redirect(0)
+    ContentPage(id, "qrc:/WebPageView.qml", parent), m_url(url), m_redirect(0)
 {
     store("web.url", m_url.toString());
     save();
 }
 
-WebPage::WebPage(const QString& id, doSearch* parent): Page(id, "qrc:/WebScreenView.qml", parent), m_url(value("web.url").toString()) {
+WebPage::WebPage(const QString& id, doSearch* parent):
+    ContentPage(id, "qrc:/WebPageView.qml", parent), m_url(value("web.url").toString())
+{}
+
+void WebPage::interconnect() {
+    ContentPage::interconnect();
+    QVariant redirect = value("web.redirect");
+    if (!redirect.isNull())
+        m_redirect = qobject_cast<WebPage*>(parent()->page(redirect.toString()));
+    rebuildRedirects();
+}
+
+void WebSite::onPageLoaded(Page* child) {
+    ContentPage* contentPage = qobject_cast<ContentPage*>(child);
+    if (contentPage)
+        appendPart(contentPage);
+    WebPage* webPage = qobject_cast<WebPage*>(child);
+    if (webPage)
+        connect(webPage, SIGNAL(redirectChanged(WebPage*)), SLOT(onChildRedirectChanged(WebPage*)));
+}
+
+void WebSite::onPartProfileChanged(const BoW& oldOne, const BoW& newOne) {
+    m_templates = updateSumComponent(m_templates, oldOne.binarize(), newOne.binarize());
+    FileWriteThrottle::enqueue(storage().absoluteFilePath("templates.txt"), m_templates.toString());
+
+    CompositeContentPage::onPartProfileChanged(oldOne, newOne);
+}
+
+void WebSite::addMirror(WebSite* site) {
+    if (m_mirrors.contains(site))
+        return;
+    m_mirrors += site;
+    append("web.site.mirrors", site->id());
+    QObject::connect(site, SIGNAL(mirrorsChanged()), this, SLOT(onMirrorsChanged()));
+    emit mirrorsChanged();
 }
 
 void WebSite::onMirrorsChanged() {
@@ -202,8 +269,28 @@ void WebSite::onMirrorsChanged() {
     }
 }
 
+WebSite::WebSite(const QString& id, const QString& /*domain*/, const QUrl& rootUrl, doSearch *parent):
+    CompositeContentPage(id, "qrc:/WebSiteView.qml", parent),
+    m_root(0)
+{
+    store("site.root", rootUrl);
+}
+
+WebSite::WebSite(const QString &id, doSearch *parent):
+    CompositeContentPage(id, "qrc:/WebSiteView.qml", parent),
+    m_root(0)
+{}
+
 void WebSite::interconnect() {
-    WebPage::interconnect();
+    QFile templatesFile(storage().absoluteFilePath("templates.txt"));
+    if (templatesFile.exists()) {
+        templatesFile.open(QFile::ReadOnly);
+        m_templates = BoW::fromString(QString::fromUtf8(templatesFile.readAll()), parent()->dictionary());
+    }
+
+    CompositeContentPage::interconnect();
+
+    m_root = parent()->webPage(value("site.root").toString());
     visitKeys("web.site.mirrors", [this](const QVariant& var) {
         WebSite* mirror = qobject_cast<WebSite*>(parent()->page(var.toString()));
         if (mirror) {
@@ -211,5 +298,10 @@ void WebSite::interconnect() {
             QObject::connect(mirror, SIGNAL(mirrorsChanged()), this, SLOT(onMirrorsChanged()));
         }
     });
+    foreach(ContentPage* part, parts()) {
+        WebPage* wpage = qobject_cast<WebPage*>(part);
+        if (wpage)
+            connect(wpage, SIGNAL(redirectChanged(WebPage*)), SLOT(onChildRedirectChanged(WebPage*)));
+    }
 }
 }

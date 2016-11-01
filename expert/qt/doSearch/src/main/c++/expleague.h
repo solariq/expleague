@@ -1,7 +1,7 @@
 #ifndef EXPLEAGUE_H
 #define EXPLEAGUE_H
 
-#define EL_DOSEARCH_VERSION "1.0-alpha"
+#define EL_DOSEARCH_VERSION "1.1-alpha"
 
 #include <QObject>
 #include <QSharedDataPointer>

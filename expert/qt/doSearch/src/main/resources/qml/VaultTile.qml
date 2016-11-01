@@ -186,7 +186,7 @@ Item {
             if (area != self.area) {
                 self.timeSpentInside = 0
                 self.area = area
-                console.log("Update position: (" + drag.x + ", " + drag.y + ") -> " + self.area)
+//                console.log("Update position: (" + drag.x + ", " + drag.y + ") -> " + self.area)
             }
         }
 
@@ -252,9 +252,8 @@ Item {
         State {
             name: "drag"
             when: tileArea.drag.active
-            ParentChange { target: self; parent: self.vault }
+            ParentChange { target: self; parent: dosearch.main.screenRef }
             AnchorChanges { target: self; anchors.verticalCenter: undefined; anchors.horizontalCenter: undefined }
-//                    PropertyChanges { target: thumbnailHolder; z: self.z + 1000 }
         },
         State {
             name: "selected"

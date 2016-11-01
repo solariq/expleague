@@ -86,6 +86,7 @@ Item {
         section.criteria: ViewSection.FullString
         delegate: pageDelegate
         focus: true
+        clip: true
     }
 
     onFocusChanged: {

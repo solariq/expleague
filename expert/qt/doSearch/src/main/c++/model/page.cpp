@@ -3,6 +3,8 @@
 #include "../dosearch.h"
 #include "../league.h"
 #include "../util/filethrottle.h"
+#include "../util/mmath.h"
+#include "../ir/dictionary.h"
 
 #include <QHash>
 #include <QStack>
@@ -13,23 +15,11 @@
 #include <QQmlContext>
 #include <QQmlApplicationEngine>
 
-#include <QXmlStreamWriter>
-#include <QXmlStreamReader>
-
 #include <QFontMetrics>
-
-#include <math.h>
-#include <time.h>
 
 #include <algorithm>
 
 static QFontMetrics titleFontMetrics(QFont("Helvetica", 10));
-
-QVariantHash buildVariantByXml(QXmlStreamReader& reader);
-void writeXml(const QString& local, const QString& ns, const QVariant& variant, QXmlStreamWriter* writer, bool attribute = false, bool enforceTag = false);
-double bisection(double left, double right, std::function<double (double)> func);
-double optimalExpansionDP(double statPower, int classes);
-double erlang(int k, double lambda, double x);
 
 namespace expleague {
 
@@ -55,155 +45,6 @@ PageModel PageModel::fromVariant(const QVariant& var) {
     return result;
 }
 
-QVariant* Page::resolve(const QStringList& path, bool create) {
-    QVariant* current = &m_properties;
-    int index = 0;
-    while (index < path.size() - 1) {
-        const QString key = path[index];
-        QVariantHash& hash = *reinterpret_cast<QVariantHash*>(current->data());
-        QVariant* next = &hash[key];
-        if (!next->canConvert(QVariant::Hash)) {
-            if (!create) {
-//                qDebug() << "Unresolved context: " + path.mid(0, index + 1).join(".") << " current: " << *next;
-                return 0;
-            }
-            if (!next->isNull())
-                qWarning() << "Expected composite element but found " << next->type() << " at [" << path.mid(0, index + 1).join(".") << "]. Rewriting with composite, previous value: " << next;
-
-            next->setValue(QVariantHash());
-        }
-        current = next;
-        index++;
-    }
-    return current;
-}
-
-QVariant Page::value(const QString& fullKey) const {
-    QStringList path = fullKey.split(".");
-    QVariant* context = const_cast<Page*>(this)->resolve(path);
-    if (!context)
-        return QVariant();
-    return context->toHash().value(path.last());
-}
-
-void Page::store(const QString& fullKey, const QVariant& value) {
-    QStringList path = fullKey.split(".");
-//    qDebug() << "Store: " << fullKey << " value: " << value << " last: " << path.last();
-    QVariant* context = resolve(path, true);
-    QVariantHash& hash = *reinterpret_cast<QVariantHash*>(context->data());
-
-//    qDebug() << " context: : " << *context;
-    if (!value.isNull()) {
-        QVariant& current = hash[path.last()];
-        if (current == value) {
-//            qDebug() << " Found the same value";
-            return;
-        }
-        current.setValue(value);
-    }
-    else {
-        if (!hash.contains(path.last())) {
-//            qDebug() << " Already clear key";
-            return;
-        }
-        hash.remove(path.last());
-    }
-//    qDebug() << " Successfully set to " << context->toHash()[path.last()];
-    m_changes++;
-}
-
-void Page::visitKeys(const QString& fullKey, std::function<void (const QVariant& value)> visitor) const {
-    QVariant value = this->value(fullKey);
-    if (value.canConvert(QVariant::List)) {
-        foreach(const QVariant& value, value.toList()) {
-            visitor(value);
-        }
-    }
-    else if (!value.isNull()) {
-        visitor(value);
-    }
-}
-
-void Page::visitChildren(const QString& fullKey, std::function<void (Page* value)> visitor) const {
-    foreach(Page* page, children(fullKey)) {
-        visitor(page);
-    }
-}
-
-void Page::append(const QString& fullKey, const QVariant& value) {
-    QStringList path = fullKey.split(".");
-    QVariant* context = resolve(path, true);
-    QVariantHash& hash = *reinterpret_cast<QVariantHash*>(context->data());
-    QVariant& current = hash[path.last()];
-    if (current.type() == QVariant::List) { // replace existing list
-        QVariantList lst = current.toList();
-        lst += value;
-        current.setValue(lst);
-    }
-    else if (!current.isNull()) { // convert current value to the list
-        QVariantList lst;
-        lst += current;
-        lst += value;
-        current.setValue(lst);
-    }
-    else { // fill new key
-        current.setValue(value);
-    }
-    m_changes++;
-}
-
-void Page::remove(const QString& key) {
-    QStringList path = key.split(".");
-    QVariant* context = resolve(path, true);
-    QVariantHash& hash = *reinterpret_cast<QVariantHash*>(context->data());
-    hash.remove(path.last());
-}
-
-void Page::replaceOrAppend(const QString& fullKey, const QVariant& value, std::function<bool (const QVariant& lhs, const QVariant& rhs)> equals) {
-    QStringList path = fullKey.split(".");
-    QVariant* context = resolve(path, true);
-    QVariantHash& hash = *reinterpret_cast<QVariantHash*>(context->data());
-    QVariant& current = hash[path.last()];
-    if (current.type() == QVariant::List) { // replace existing list
-        QVariantList lst = current.toList();
-        int index = 0;
-        while (index < lst.size()) {
-            if (equals(lst[index], value)) {
-                lst.replace(index, value);
-                break;
-            }
-            index++;
-        }
-        if (index >= lst.size())
-            lst += value;
-        current.setValue(lst);
-    }
-    else if (!current.isNull() && !equals(current, value)) { // convert current value to the list
-        QVariantList lst;
-        lst += current;
-        lst += value;
-        current.setValue(lst);
-    }
-    else { // fill new key
-        current.setValue(value);
-    }
-    m_changes++;
-}
-
-
-int Page::count(const QString& fullKey) const {
-    QVariant value = this->value(fullKey);
-    if (value.canConvert(QVariant::List)) {
-        return value.toList().size();
-    }
-    else if (!value.isNull()) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
-}
-
 QList<Page*> Page::incoming() const {
     QList<Page*> keys = m_incoming.keys();
     std::sort(keys.begin(), keys.end(), [this](Page* left, Page* right) {
@@ -218,6 +59,16 @@ QList<Page*> Page::outgoing() const {
         return pOut(left) > pOut(right);
     });
     return keys;
+}
+
+void Page::forgetIncoming(Page* page) {
+    remove("incoming", [page](const QVariant& var){ return page->id() == var.toString(); });
+    m_incoming.remove(page);
+}
+
+void Page::forgetOutgoing(Page* page) {
+    remove("outgoing", [page](const QVariant& var){ return page->id() == var.toString(); });
+    m_outgoing.remove(page);
 }
 
 QHash<QUrl, QQmlComponent*> componentsCache;
@@ -401,71 +252,22 @@ QList<Page*> Page::children(const QString& prefixOrig) const {
         if (info.isDir() && info.fileName().startsWith(start) && QFile(info.absoluteFilePath() + "/page.xml").exists())
             result.append(parent()->page(id() + "/" + prefix + "/" + info.fileName()));
     }
-
-
     return result;
 }
 
-void Page::setTextContent(const QString& content) {
-    QString currentContent = textContent();
-    if (currentContent == content)
-        return;
-
-    FileWriteThrottle::enqueue(storage().absoluteFilePath("content.txt"), content, [this, content]() {
-        this->textContentChanged(content);
-    });
-}
-
-QString Page::textContent() const {
-    QFile file(storage().absoluteFilePath("content.txt"));
-    if (!file.exists())
-        return QString(QString::null);
-    file.open(QFile::ReadOnly);
-    return QString(file.readAll());
-}
-
-void Page::processTextContentWhenAvailable(std::function<void (const QString &)> callback) const {
-    QString text = textContent();
-    if (!text.isNull())
-        callback(text);
-    else
-        connect(this, &Page::textContentChanged, [this, callback](const QString& text){
-           callback(text);
-           disconnect(const_cast<Page*>(this), &Page::textContentChanged, const_cast<Page*>(this), 0);
-        });
-}
-
-void Page::save() const {
-    if (m_saved_changes == m_changes)
-        return;
-    QByteArray buffer;
-    QXmlStreamWriter writer(&buffer);
-    writer.writeStartDocument();
-    QVariant copy = m_properties;
-    m_saved_changes = m_changes;
-    writeXml("page", "http://expleague.com/expert/page", copy, &writer);
-    writer.writeEndDocument();
-//    qDebug() << buffer;
-    FileWriteThrottle::enqueue(storage().absoluteFilePath("page.xml"), buffer);
+void Page::visitChildren(const QString& fullKey, std::function<void (Page* value)> visitor) const {
+    foreach(Page* page, children(fullKey)) {
+        visitor(page);
+    }
 }
 
 QDir Page::storage() const {
     return QDir(parent()->pageResource(id()));
 }
 
-Page::Page(const QString& id, const QString& ui, doSearch* parent): QObject(parent),
+Page::Page(const QString& id, const QString& ui, doSearch* parent): QObject(parent), PersistentPropertyHolder(parent->pageResource(id) + "/page.xml"),
     m_id(id), m_ui_url(ui), m_in_total(0), m_out_total(0)
 {
-    QDir dir(parent->pageResource(id));
-    QFile file(dir.filePath("page.xml"));
-    if (!file.exists())
-        return;
-    if (!file.open(QFile::ReadOnly)) {
-        qWarning() << "Unable to read page properties: " << dir.filePath("page.xml");
-        return;
-    }
-    QXmlStreamReader reader(&file);
-    m_properties = buildVariantByXml(reader)["page"];
     QVariant var = value("state");
     m_state = INACTIVE;
     if (!var.isNull()) {
@@ -501,175 +303,130 @@ void Page::interconnect() {
     m_last_visited = lastVisitedVar.isNull() ? 0 : parent()->page(lastVisitedVar.toString());
     if (m_last_visited == this)
         m_last_visited = 0;
-    m_saved_changes = m_changes;
-}
 }
 
-bool attributeString(const QString& str) {
-    return str.length() < 50 && !str.contains('\n');
-}
-
-void writeXml(const QString& local, const QString& ns, const QVariant& variant, QXmlStreamWriter* writer, bool attribute, bool enforceTag) {
-    if (attribute) {
-        switch(variant.type()) {
-        case QVariant::Type::Double:
-            writer->writeAttribute(local, QString::number(variant.toDouble()));
-            break;
-        case QVariant::Type::Time:
-        case QVariant::Type::LongLong:
-        case QVariant::Type::Int:
-            writer->writeAttribute(local, QString::number(variant.toLongLong()));
-            break;
-        case QVariant::Type::Url:
-        case QVariant::Type::String:
-            if (local != "type" && local != "name" && attributeString(variant.toString()))
-                writer->writeAttribute(local, variant.toString());
-            break;
-        }
+void ContentPage::setTextContent(const QString& content) {
+    auto compositeParent = qobject_cast<CompositeContentPage*>(parentPage());
+    if (compositeParent) {
+        compositeParent->appendPart(this);
     }
-    else if (variant.canConvert(QVariant::Hash)) {
-        static QRegExp illegalChars("[<>\\\\/\\.\\?&\\+!]");
-        if (local.length() > 10 || local.contains(illegalChars)) {
-            writer->writeStartElement("item");
-            writer->writeAttribute("name", local);
-        }
-        else
-            writer->writeStartElement(local);
-        if (!ns.isEmpty())
-            writer->writeDefaultNamespace(ns);
-        QHash<QString, QVariant> hash = variant.toHash();
-        {
-            QHash<QString, QVariant>::iterator iter = hash.begin();
-            while (iter != hash.end()) {
-                writeXml(iter.key(), "", iter.value(), writer, true, false);
-                iter++;
-            }
-        }
-        {
-            QHash<QString, QVariant>::iterator iter = hash.begin();
-            while (iter != hash.end()) {
-                writeXml(iter.key(), "", iter.value(), writer, false, false);
-                iter++;
-            }
-        }
-        writer->writeEndElement();
-    }
-    else if (variant.canConvert(QVariant::List)) {
-        QVariantList lst = variant.toList();
-        foreach (const QVariant& var, lst) {
-            writeXml(local, ns, var, writer, false, true);
-        }
-    }
-    else if (local == "type" || local == "name" || (variant.canConvert(QVariant::String) && (enforceTag || !attributeString(variant.toString())))) {
-        writer->writeStartElement(local);
-        writer->writeAttribute("type", "text");
-        writer->writeCharacters(variant.toString());
-        writer->writeEndElement();
-    }
-}
-
-template <typename T>
-void appendVariant(QVariant& to, const T& value) {
-    if (to.canConvert(QVariant::Type::List)) {
-        QVariantList& lst = *reinterpret_cast<QVariantList*>(to.data());
-        lst.append(value);
-    }
-    else if (!to.isNull()) {
-        QVariantList lst;
-        lst += to;
-        lst += value;
-        to.setValue(lst);
-    }
-    else to.setValue(value);
-}
-
-QVariantHash buildVariantByXml(QXmlStreamReader& reader) {
-    QString key;
-    QString type;
-    QVariantHash result;
-
-//    qDebug() << "XML reader enter ";
-    while (!reader.atEnd() && !reader.hasError()) {
-        reader.readNext();
-        if (reader.isStartElement()) {
-            key = reader.name().toString();
-            QVariantHash fold;
-            QXmlStreamAttributes attrs = reader.attributes();
-            if (attrs.hasAttribute("name"))
-                key = attrs.value("name").toString();
-            if (!attrs.hasAttribute("type")) {
-//                qDebug() << "Start element: " << reader.name();
-
-                type = "hash";
-                for (int i = 0; i < attrs.size(); i++) {
-                    const QXmlStreamAttribute& attr = attrs[i];
-                    QString local = attr.name().toString();
-                    if (local == "name")
-                        continue;
-                    bool ok;
-                    QVariant value = attr.value().toInt(&ok);
-                    if (!ok)
-                        value = attr.value().toDouble(&ok);
-                    if (!ok)
-                        value = attr.value().toString();
-                    fold[local] = value;
-                }
-                if (!reader.isEndElement())
-                    fold.unite(buildVariantByXml(reader));
-                if (!reader.isEndElement())
-                    qWarning() << "Invalid xml";
-                appendVariant<QVariantHash>(result[key], fold);
-            }
-            else type = attrs.value("type").toString();
-        }
-        else if (reader.isCharacters() && type == "text") {
-            appendVariant<QString>(result[key], reader.text().toString());
-            reader.readNext();
-        }
-        else if (reader.isEndElement()) {
-//            qDebug() << "End element: " << reader.name();
-            break;
-        }
-    }
-//    qDebug() << "XML reader exit";
-
-    return result;
-}
-
-
-
-const double EPSILON = 1e-6;
-
-double bisection(double left, double right, std::function<double (double)> func) {
-    const double fLeft = func(left);
-    if (fabs(fLeft) < EPSILON)
-        return left;
-    const double fRight = func(right);
-    if (fabs(fRight) < EPSILON)
-        return right;
-
-    if (fLeft * fRight > 0) {
-        qWarning() << "Function values for left and right parameters should lay on different sides of 0";
-        return nan("");
-    }
-
-    const double middle = (left + right) / 2.;
-    const double fMiddle = func(middle);
-    if (fLeft * fMiddle > 0)
-        return bisection(middle, right, func);
-    else
-        return bisection(left, middle, func);
-}
-
-double optimalExpansionDP(double statPower, int classes) {
-    if (statPower <= classes)
-        return std::numeric_limits<double>::infinity();
-    return bisection(0, 2 * classes, [statPower, classes](double x) {
-        return x == 0.0 ? -classes : x * log(1 + statPower / x) - classes;
+    FileWriteThrottle::enqueue(storage().absoluteFilePath("content.txt"), content, [this, content]() {
+        BoW profile = BoW::fromPlainText(content, parent()->dictionary());
+        setProfile(profile);
+        FileWriteThrottle::enqueue(storage().absoluteFilePath("profile.txt"), profile.toString());
+        this->textContentChanged();
     });
 }
 
-double erlang(int k, double lambda, double x) {
-    const double nom = exp(log(lambda)* k + log(x) * (k - 1) - lambda * x - lgamma(k));
-    return nom;
+QString ContentPage::textContent() const {
+    QFile file(storage().absoluteFilePath("content.txt"));
+    if (!file.exists())
+        return QString(QString::null);
+    file.open(QFile::ReadOnly);
+    return QString(file.readAll());
+}
+
+void ContentPage::processTextContentWhenAvailable(std::function<void (const QString &)> callback) const {
+    QString text = textContent();
+    if (!text.isNull())
+        callback(text);
+    else
+        connect(this, &ContentPage::textContentChanged, [this, callback](){
+           callback(textContent());
+           disconnect(const_cast<ContentPage*>(this), &ContentPage::textContentChanged, const_cast<ContentPage*>(this), 0);
+        });
+}
+
+void ContentPage::processProfileWhenAvailable(std::function<void (const BoW&)> callback) const {
+    QString text = textContent();
+    if (!text.isNull())
+        callback(m_profile);
+    else
+        connect(this, &ContentPage::changingProfile, [this, callback](const BoW&, const BoW& newOne){
+           callback(newOne);
+           disconnect(const_cast<ContentPage*>(this), &ContentPage::changingProfile, const_cast<ContentPage*>(this), 0);
+        });
+}
+
+void ContentPage::setProfile(const BoW& profile) {
+    emit changingProfile(m_profile, profile);
+    if (!qobject_cast<CompositeContentPage*>(this)) {
+        profile.terms()->updateProfile(m_profile, profile);
+    }
+    m_profile = profile;
+    FileWriteThrottle::enqueue(storage().absoluteFilePath("profile.txt"), profile.toString());
+}
+
+ContentPage::ContentPage(const QString& id, const QString& uiQml, doSearch* parent): Page(id, uiQml, parent) {
+    QFile profileFile(storage().absoluteFilePath("profile.txt"));
+    if (profileFile.exists()) {
+        profileFile.open(QFile::ReadOnly);
+        m_profile = BoW::fromString(QString::fromUtf8(profileFile.readAll()), parent->dictionary());
+    }
+}
+
+bool CompositeContentPage::appendPart(ContentPage* part) {
+    if (!part || m_parts.contains(part) || part == this)
+        return false;
+    m_parts.append(part);
+    setProfile(profile() + part->profile());
+    append("content.part", part->id());
+    connect(part, SIGNAL(textContentChanged()), SLOT(onPartContentsChanged()));
+    connect(part, SIGNAL(changingProfile(BoW,BoW)), SLOT(onPartProfileChanged(BoW,BoW)));
+    connect(part, SIGNAL(stateChanged(Page::State)), SLOT(onPartStateChanged(Page::State)));
+    save();
+    emit partAppended(part);
+    return true;
+}
+
+void CompositeContentPage::removePart(ContentPage* part) {
+    if (!m_parts.contains(part))
+        return;
+    m_parts.removeOne(part);
+    remove("content.part", [part](const QVariant& var){ return var.toString() == part->id(); });
+    part->forgetIncoming(this);
+    part->disconnect(this);
+    forgetOutgoing(part);
+    save();
+    setProfile(updateSumComponent(profile(), part->profile(), BoW()));
+    emit textContentChanged();
+    emit partRemoved(part);
+}
+
+void CompositeContentPage::onPartStateChanged(Page::State state) {
+    if (state != Page::CLOSED)
+        return;
+    removePart(qobject_cast<ContentPage*>(sender()));
+}
+
+void CompositeContentPage::setTextContent(const QString&) {
+    qWarning() << "Content of composite page must not be set directly!";
+}
+
+QString CompositeContentPage::textContent() const {
+    QString result;
+
+    foreach(ContentPage* page, m_parts) {
+        result += page->textContent();
+    }
+    return result;
+}
+
+void CompositeContentPage::onPartProfileChanged(const BoW &oldOne, const BoW &newOne) {
+    setProfile(updateSumComponent(profile(), oldOne, newOne));
+}
+
+CompositeContentPage::CompositeContentPage(const QString& id, const QString& uiQml, doSearch* parent): ContentPage(id, uiQml, parent)
+{}
+
+void CompositeContentPage::interconnect() {
+    visitKeys("content.part", [this](const QVariant& var){
+        ContentPage* part = static_cast<ContentPage*>(parent()->page(var.toString()));
+        m_parts.append(part);
+        connect(part, SIGNAL(textContentChanged()), SLOT(onPartContentsChanged()));
+        connect(part, SIGNAL(changingProfile(BoW,BoW)), SLOT(onPartProfileChanged(BoW,BoW)));
+        emit partAppended(part);
+    });
+    ContentPage::interconnect();
+}
 }

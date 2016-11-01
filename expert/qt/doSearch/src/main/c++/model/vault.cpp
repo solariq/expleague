@@ -19,11 +19,8 @@ Knugget::Knugget(const QString& id, Page* source, Context* owner, const QString&
 }
 
 Knugget::Knugget(const QString& id, const QString& uiQml, doSearch* parent): Page(id, uiQml, parent) {
-}
-
-void Knugget::interconnect() {
-    m_source = parent()->page(value("knugget.source").toString());
-    m_owner = static_cast<Context*>(parent()->page(value("knugget.owner").toString()));
+    m_source = parent->page(value("knugget.source").toString());
+    m_owner = static_cast<Context*>(parent->page(value("knugget.owner").toString()));
 }
 
 void Knugget::open() const {
@@ -42,9 +39,9 @@ TextKnugget::TextKnugget(const QString &id, doSearch *parent): Knugget(id, "qrc:
 }
 
 QString TextKnugget::md() const {
-    WebPage* web = qobject_cast<WebPage*>(source());
+    WebResource* web = dynamic_cast<WebResource*>(source());
     if (web)
-        return m_text + "\n[Источник](" + web->url().toString() + ")";
+        return m_text + "\n[Источник](" + web->url().toString() + ")\n";
     else
         return m_text;
 }
@@ -67,10 +64,10 @@ ImageKnugget::ImageKnugget(const QString &id, doSearch *parent):
 }
 
 QString ImageKnugget::md() const {
-    WebPage* web = qobject_cast<WebPage*>(source());
+    WebResource* web = dynamic_cast<WebResource*>(source());
     QString text = "![" + m_alt + "](" + m_src.toString() + ")";
     if (web)
-        return text + "\n[Источник](" + web->url().toString() + ")";
+        return text + "\n[Источник](" + web->url().toString() + ")\n";
     else
         return text;
 }
@@ -93,10 +90,10 @@ LinkKnugget::LinkKnugget(const QString &id, doSearch *parent):
 }
 
 QString LinkKnugget::md() const {
-    WebPage* web = qobject_cast<WebPage*>(source());
+    WebResource* web = dynamic_cast<WebResource*>(source());
     QString text = "[" + m_text + "](" + m_link.toString() + ")";
     if (web)
-        return text + "\n[Источник](" + web->url().toString() + ")";
+        return text + "\n[Источник](" + web->url().toString() + ")\n";
     else
         return text;
 }
@@ -141,15 +138,12 @@ GroupKnugget::GroupKnugget(const QString &id, doSearch *parent):
 {
     QVariant name = value("knugget.name");
     m_name = name.isNull() ? m_name : value("knugget.name").toString();
-}
 
-void GroupKnugget::interconnect() {
-    Knugget::interconnect();
-    visitKeys("knugget.element", [this](const QVariant& value) {
-        m_items.append(qobject_cast<Knugget*>(parent()->page(value.toString())));
+    visitKeys("knugget.element", [this, parent](const QVariant& value) {
+        m_items.append(qobject_cast<Knugget*>(parent->page(value.toString())));
     });
     QVariant parentGroup = value("knugget.parent");
-    m_parent_group = parentGroup.isNull() ? 0 : parent()->page(parentGroup.toString());
+    m_parent_group = parentGroup.isNull() ? 0 : parent->page(parentGroup.toString());
 }
 
 void GroupKnugget::insert(Knugget* item, int index) {

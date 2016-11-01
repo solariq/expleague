@@ -105,6 +105,7 @@ void declareTypes() {
     qRegisterMetaType<Offer*>("Offer*");
     qRegisterMetaType<doSearch*>("doSearch*");
     qRegisterMetaType<WebPage*>("WebPage*");
+    qRegisterMetaType<SERPage*>("SERPage*");
     qRegisterMetaType<Member*>("Member*");
     qRegisterMetaType<TaskTag*>("TaskTag*");
     qRegisterMetaType<History*>("History*");
@@ -140,4 +141,5 @@ void declareTypes() {
     qmlRegisterUncreatableType<GroupKnugget>("ExpLeague", 1, 0, "GroupKnugget", "Knuggets are created by vault only");
     qmlRegisterUncreatableType<PageVisit>("ExpLeague", 1, 0, "PageVisit", "Visits are created automatically");
     qmlRegisterUncreatableType<WebPage>("ExpLeague", 1, 0, "WebPage", "pages suppored to be created inside c++");
+    qmlRegisterUncreatableType<SERPage>("ExpLeague", 1, 0, "SERPPage", "pages suppored to be created inside c++");
 }

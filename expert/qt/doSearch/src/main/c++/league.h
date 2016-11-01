@@ -172,7 +172,7 @@ public:
     }
 
     Q_INVOKABLE QString id() {
-        return m_connection->jid().section('@', 0, 0);
+        return m_connection ? m_connection->id() : "local";
     }
 
     Q_INVOKABLE QUrl imageUrl(const QString& normalizeImageUrlForUI) const;
@@ -215,7 +215,7 @@ signals:
 private slots:
     void connected() {
         m_status = LS_ONLINE;
-        statusChanged(m_status);
+        emit statusChanged(m_status);
     }
 
     void disconnected();
@@ -224,7 +224,7 @@ private slots:
         Offer* roffer = registerOffer(offer);
         m_connection->sendOk(roffer);
         m_status = LS_CHECK;
-        statusChanged(m_status);
+        emit statusChanged(m_status);
     }
 
     void inviteReceived(const Offer& offer);
@@ -239,7 +239,7 @@ private slots:
         Offer* roffer = registerOffer(offer);
         roffer->cancelled();
         m_status = LS_ONLINE;
-        statusChanged(m_status);
+        emit statusChanged(m_status);
     }
 
     void taskFinished() {
@@ -247,7 +247,7 @@ private slots:
         m_tasks.removeOne(task);
         if (m_tasks.empty()) {
             m_status = LS_ONLINE;
-            statusChanged(m_status);
+            emit statusChanged(m_status);
         }
     }
 
@@ -264,7 +264,7 @@ private slots:
         qSort(m_tags.begin(), m_tags.end(), [](const TaskTag* a, const TaskTag* b) {
             return a->name() < b->name();
         });
-        tagsChanged();
+        emit tagsChanged();
     }
 
     void patternReceived(AnswerPattern* pattern) {
@@ -281,7 +281,7 @@ private slots:
             return a->name() < b->name();
         });
 
-        patternsChanged();
+        emit patternsChanged();
     }
 
     void messageReceived(const QString& room, const QString& from, const QString& text);

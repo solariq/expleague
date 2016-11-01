@@ -17,10 +17,9 @@ class Member;
 class Context;
 struct MarkdownEditorPagePrivate;
 
-class MarkdownEditorPage: public Page {
+class MarkdownEditorPage: public ContentPage {
     Q_OBJECT
 
-    Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QString html READ html NOTIFY htmlChanged)
     Q_PROPERTY(expleague::Context* owner READ owner CONSTANT)
 
@@ -28,13 +27,14 @@ public:
     QString title() const;
     QString icon() const;
 
-    QString text() const { return m_text; }
+    QString textContent() const { return m_text; }
     Context* owner() const { return m_owner; }
 
     QString html();
 
 public:
-    void setText(const QString& text);
+    void setTextContent(const QString& text);
+    Page* parentPage() const;
     void setEditable(bool editable);
     Q_INVOKABLE QStringList codeClipboard();
 
@@ -44,7 +44,6 @@ public slots:
     void onUiDestryed(QObject*);
 
 signals:
-    void textChanged(const QString&);
     void htmlChanged(const QString&) const;
 
 private slots:

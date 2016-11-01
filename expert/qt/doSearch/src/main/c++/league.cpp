@@ -101,14 +101,15 @@ void League::startTask(Offer* offer) {
     QObject::connect(task, SIGNAL(cancelled()), SLOT(taskFinished()));
     m_status = LS_ON_TASK;
     statusChanged(m_status);
-    Context* context = parent()->context(task->id());
+    Context* context = parent()->context(task->id(), task->offer()->topic().replace('\n', ' '));
     context->setTask(task);
+    parent()->navigation()->open(context);
     Member* self = findMember(id());
     MarkdownEditorPage* answerPage = parent()->document(context, "Ваш ответ", self, true);
     context->transition(answerPage, Page::TYPEIN);
     task->setAnswer(answerPage);
+    context->appendDocument(answerPage);
     parent()->append(context);
-    parent()->navigation()->activate(context);
     parent()->navigation()->open(answerPage);
 }
 
@@ -229,7 +230,8 @@ void Task::answerReceived(const QString &from, const QString& text) {
     doSearch* dosearch = doSearch::instance();
     Member* author = parent()->findMember(from);
     MarkdownEditorPage* answerPage = dosearch->document(context(), "Ответ " + QString::number(m_answers.size() + 1), author, false);
-    answerPage->setText(text);
+    answerPage->setTextContent(text);
+    context()->appendDocument(answerPage);
     context()->transition(answerPage, Page::TYPEIN);
     m_answers += answerPage;
     Bubble* bubble = this->bubble(from);
@@ -309,8 +311,8 @@ void Task::sendMessage(const QString &str) const {
 
 void Task::sendAnswer(const QString& shortAnswer) {
 //    qDebug() << "Sending answer: " << answer();
-    parent()->connection()->sendAnswer(offer()->roomJid(), shortAnswer + "\n" + answer()->text());
-    answer()->setText("");
+    parent()->connection()->sendAnswer(offer()->roomJid(), shortAnswer + "\n" + answer()->textContent());
+    answer()->setTextContent("");
     stop();
 }
 

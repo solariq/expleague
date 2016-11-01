@@ -78,7 +78,7 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
             id: input
-            text: navigation.context ? navigation.context.lastRequest.query : ""
+            text: navigation.context && navigation.context.lastRequest ? navigation.context.lastRequest.query : ""
             selectByMouse: true
             inputMethodHints: Qt.ImhNoPredictiveText
             style: TextFieldStyle{
@@ -158,7 +158,7 @@ Item {
                     input.text = Qt.binding(function() {return navigation.context.lastRequest.query})
                 })
                 completion: suggest
-                text: navigation.context ? navigation.context.lastRequest.query : ""
+                text: navigation.context && navigation.context.lastRequest ? navigation.context.lastRequest.query : ""
             }
         },
         State {

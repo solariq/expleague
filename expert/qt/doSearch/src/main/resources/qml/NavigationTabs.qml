@@ -30,7 +30,9 @@ RowLayout {
 
         MouseArea {
             anchors.fill: parent
-            onClicked: navigation.select(0, navigation.context)
+            onClicked: {
+                navigation.select(0, navigation.context)
+            }
         }
     }
     Item {Layout.preferredWidth: 6}
@@ -48,20 +50,5 @@ RowLayout {
     Item {
         Layout.fillWidth: true
         Layout.minimumWidth: 4
-    }
-
-    NavigationGroup {
-        id: contexts
-
-        Layout.preferredWidth: implicitWidth
-        Layout.preferredHeight: 24
-        Layout.alignment: Qt.AlignVCenter
-
-        group: navigation.contextsGroup
-        closeEnabled: false
-
-        append: function() {
-            navigation.activate(dosearch.createContext())
-        }
     }
 }

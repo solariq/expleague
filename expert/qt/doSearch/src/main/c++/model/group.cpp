@@ -22,13 +22,23 @@ PagesGroup::PagesGroup(Page* root, Type type, NavigationManager* manager): QObje
         QSet<Page*> known;
         known += pages.toSet();
 
-        WebPage* webRoot = qobject_cast<WebPage*>(root);
+        WebResource* webRoot = dynamic_cast<WebResource*>(root);
         while (webRoot) {
             pages.removeOne(webRoot->redirect());
-            foreach(Page* page, webRoot->outgoing()) {
-                if (!known.contains(page)) {
-                    pages += page;
-                    known += page;
+            if (webRoot->isRoot()) {
+                foreach(Page* page, webRoot->site()->outgoing()) {
+                    if (!known.contains(page)) {
+                        pages += page;
+                        known += page;
+                    }
+                }
+            }
+            else {
+                foreach(Page* page, webRoot->page()->outgoing()) {
+                    if (!known.contains(page)) {
+                        pages += page;
+                        known += page;
+                    }
                 }
             }
 

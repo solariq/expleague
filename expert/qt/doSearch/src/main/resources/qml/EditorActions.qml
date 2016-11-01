@@ -30,6 +30,7 @@ Item {
         text: qsTr("Выделить болдом")
         tooltip: qsTr("Сделать фрагмент жирнее")
         iconSource: "qrc:/editor/bold.png"
+        property string highlightedIcon: "qrc:/editor/bold_h.png"
 
         shortcut: "Ctrl+B"
         enabled: editor
@@ -52,6 +53,7 @@ Item {
         text: qsTr("Выделить курсивом")
         tooltip: qsTr("Выделить курсивом")
         iconSource: "qrc:/editor/italic.png"
+        property string highlightedIcon: "qrc:/editor/italic_h.png"
 
         enabled: editor
         shortcut: "Ctrl+I"
@@ -73,6 +75,7 @@ Item {
         text: qsTr("Заголовок 3-го уровня")
         tooltip: qsTr("Вставить заголовок 3-го уровня")
         iconSource: "qrc:/editor/header.png"
+        property string highlightedIcon: "qrc:/editor/header_h.png"
 
         enabled: editor
         shortcut: "Ctrl+H"
@@ -89,6 +92,7 @@ Item {
         text: qsTr("Вставить картинку")
         tooltip: qsTr("Вставить картинку")
         iconSource: "qrc:/editor/image.png"
+        property string highlightedIcon: "qrc:/editor/image_h.png"
 
         enabled: editor
         shortcut: "Ctrl+P"
@@ -106,6 +110,7 @@ Item {
         text: qsTr("Вставить ссылку")
         tooltip: qsTr("Вставить ссылку")
         iconSource: "qrc:/editor/link.png"
+        property string highlightedIcon: "qrc:/editor/link_h.png"
 
         enabled: editor
         shortcut: "Ctrl+L"
@@ -125,6 +130,7 @@ Item {
         text: qsTr("Вставить разделитель")
         tooltip: qsTr("Вставить разделитель")
         iconSource: "qrc:/editor/splitter.png"
+        property string highlightedIcon: "qrc:/editor/splitter_h.png"
 
         enabled: editor
         shortcut: "Ctrl+-"
@@ -142,6 +148,7 @@ Item {
         text: qsTr("Создать cut")
         tooltip: qsTr("Создать кат")
         iconSource: "qrc:/editor/cut.png"
+        property string highlightedIcon: "qrc:/editor/cut_h.png"
 
         enabled: editor
         shortcut: "Ctrl+M"
@@ -162,6 +169,7 @@ Item {
         text: qsTr("Вставить цитирование")
         tooltip: qsTr("Вставить цитирование")
         iconSource: "qrc:/editor/quote.png"
+        property string highlightedIcon: "qrc:/editor/quote_h.png"
 
         enabled: editor
         shortcut: "Ctrl+J"
@@ -178,6 +186,7 @@ Item {
         text: qsTr("Создать список")
         tooltip: qsTr("Создать список")
         iconSource: "qrc:/editor/bullets.png"
+        property string highlightedIcon: "qrc:/editor/bullets_h.png"
 
         enabled: editor
         shortcut: "Ctrl+0"
@@ -202,6 +211,7 @@ Item {
         text: qsTr("Создать нумерованный список")
         tooltip: qsTr("Создать нумерованный список")
         iconSource: "qrc:/editor/enum.png"
+        property string highlightedIcon: "qrc:/editor/enum_h.png"
 
         enabled: editor
         shortcut: "Ctrl+1"
@@ -226,6 +236,7 @@ Item {
         text: qsTr("Вставить таблицу")
         tooltip: qsTr("Вставить таблицу")
         iconSource: "qrc:/editor/table.png"
+        property string highlightedIcon: "qrc:/editor/table_h.png"
 
         enabled: editor
         shortcut: "Ctrl+T"
