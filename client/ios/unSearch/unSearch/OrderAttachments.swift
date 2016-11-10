@@ -10,6 +10,8 @@ import Foundation
 import Photos
 import UIKit
 
+import unSearchCore
+
 class OrderAttachmentsController: UIViewController {
     @IBOutlet weak var errorDescription: UITextView!
     @IBOutlet weak var attachmentsCollection: UICollectionView!
@@ -123,7 +125,7 @@ extension OrderAttachmentsController: UICollectionViewDelegate, UICollectionView
                         PHImageManager.default().requestImage(
                             for: asset,
                             targetSize: self.preview.frame.size,
-                            contentMode: PHImageContentMode.aspectFill,
+                            contentMode: PHImageContentMode.aspectFit,
                             options: nil
                         ) { (image, _) in
                             self.preview.image = image
@@ -357,7 +359,7 @@ open class OrderAttachment: Equatable {
         }
     }
     var url: URL {
-        return AppDelegate.instance.activeProfile!.imageUrl(globalId)
+        return ExpLeagueProfile.active.imageUrl(globalId)
     }
     
     @objc

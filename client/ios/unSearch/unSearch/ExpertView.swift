@@ -11,6 +11,8 @@ import UIKit
 import CoreGraphics
 import XMPPFramework
 
+import unSearchCore
+
 class ExpertViewController: UIViewController {
     @IBOutlet weak var avatar: AvatarView!
     @IBOutlet weak var avatarBg: UIImageView!
@@ -46,7 +48,6 @@ class ExpertViewController: UIViewController {
         }
         navigationController?.navigationBar.tintColor = UIColor.white
         button.layer.cornerRadius = button.frame.height / 2
-        topAvaDistance.constant = max(avatarBg.frame.height / 4, 64)
         descriptionText.textContainerInset = UIEdgeInsets.zero
         descriptionText.contentInset = UIEdgeInsets.zero
         descriptionText.textContainer.lineFragmentPadding = 0
@@ -58,6 +59,7 @@ class ExpertViewController: UIViewController {
         navigationBar?.shadowImage = UIImage()
         navigationBar?.isTranslucent = true
         AppDelegate.instance.tabs.tabBar.isHidden = true
+        topAvaDistance.constant = max(UIScreen.main.bounds.height * 0.6 / 4, 64)
         update()
         super.viewWillAppear(animated)
     }
@@ -95,10 +97,20 @@ class ExpertViewController: UIViewController {
         view.layoutIfNeeded()
     }
     
+    func onExpertChanged() {
+        DispatchQueue.main.async {
+            self.update()
+        }
+    }
+    
     init(expert: ExpLeagueMember) {
         self.expert = expert
         super.init(nibName: "ExpertView", bundle: Bundle.main)
-        expert.view = self
+        QObject.connect(expert, signal: #selector(ExpLeagueMember.changed), receiver: self, slot: #selector(onExpertChanged))
+    }
+    
+    deinit {
+        QObject.disconnect(self)
     }
 
     required init?(coder aDecoder: NSCoder) {

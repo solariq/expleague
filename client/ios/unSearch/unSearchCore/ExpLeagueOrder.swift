@@ -18,19 +18,19 @@ class Weak<T: AnyObject> {
     }
 }
 
-class ExpLeagueOrder: NSManagedObject {
-    var isActive: Bool {
+public class ExpLeagueOrder: NSManagedObject {
+    public var isActive: Bool {
         return status != .closed && status != .archived && status != .canceled
     }
     
-    var activeExpert: ExpLeagueMember? {
+    public var activeExpert: ExpLeagueMember? {
         let result = experts.last
         return _expertActive ? result : nil
     }
     
     fileprivate dynamic var _experts: [ExpLeagueMember]?
     fileprivate dynamic var _expertActive = false
-    var experts: [ExpLeagueMember] {
+    public var experts: [ExpLeagueMember] {
         guard _experts == nil else {
             return _experts!
         }
@@ -42,7 +42,9 @@ class ExpLeagueOrder: NSManagedObject {
                 active = true
             }
             else if (msg.type == .expertCancel) {
-                result.removeLast()
+                if (!result.isEmpty) {
+                    result.removeLast()
+                }
                 active = false
             }
             else if (msg.type == .answer) {
@@ -55,7 +57,7 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     fileprivate dynamic var _messages: [ExpLeagueMessage]?
-    var messages: [ExpLeagueMessage] {
+    public var messages: [ExpLeagueMessage] {
         let _messages = self._messages
         guard _messages == nil else {
             return _messages!
@@ -65,23 +67,23 @@ class ExpLeagueOrder: NSManagedObject {
         return result
     }
     
-    func messagesChanged() {
+    public func messagesChanged() {
         _unreadCount = nil
         _messages = nil
         _experts = nil
         QObject.notify(#selector(messagesChanged), self)
     }
 
-    var before: TimeInterval {
+    public var before: TimeInterval {
         return started + offer.duration
     }
     
-    var timeLeft: TimeInterval {
+    public var timeLeft: TimeInterval {
         return before - Date().timeIntervalSinceReferenceDate
     }
     
     fileprivate dynamic var _icon: UIImage?
-    var typeIcon: UIImage {
+    public var typeIcon: UIImage {
         guard _icon == nil else {
             return _icon!
         }
@@ -134,7 +136,7 @@ class ExpLeagueOrder: NSManagedObject {
             update {
                 self.flags = self.flags | ExpLeagueOrderFlags.closed.rawValue
                 DispatchQueue.main.async {
-                    AppDelegate.instance.historyView?.populate()
+                    self.messagesChanged()
                 }
             }
         }
@@ -142,13 +144,13 @@ class ExpLeagueOrder: NSManagedObject {
             update {
                 self.flags = self.flags | ExpLeagueOrderFlags.canceled.rawValue
                 DispatchQueue.main.async {
-                    AppDelegate.instance.historyView?.populate()
+                    self.messagesChanged()
                 }
             }
         }
     }
     
-    func send(text: String) {
+    public func send(text: String) {
         let msg = XMPPMessage(type: "groupchat", to: jid)!
         msg.addBody(text)
         update {
@@ -157,7 +159,7 @@ class ExpLeagueOrder: NSManagedObject {
         _ = parent.send(msg)
     }
     
-    func send(xml: DDXMLElement, type: String = "normal") {
+    public func send(xml: DDXMLElement, type: String = "normal") {
         let msg = XMPPMessage(type: type, to: jid)!
         msg.addChild(xml)
         update {
@@ -166,15 +168,15 @@ class ExpLeagueOrder: NSManagedObject {
         _ = parent.send(msg)
     }
     
-    var jid : XMPPJID {
-        return XMPPJID(string: id + "@muc." + AppDelegate.instance.activeProfile!.domain)
+    public var jid : XMPPJID {
+        return XMPPJID(string: id + "@muc." + ExpLeagueProfile.active.domain)
     }
     
-    var text: String {
+    public var text: String {
         return offer.topic
     }
     
-    func cancel(_ ownerVC: UIViewController? = nil) {
+    public func cancel(_ ownerVC: UIViewController? = nil) {
         if let vc = ownerVC {
             let alertView = UIAlertController(title: "unSearch", message: "Вы уверены, что хотите отменить задание?", preferredStyle: .alert)
             alertView.addAction(UIAlertAction(title: "Да", style: .default, handler: {(x: UIAlertAction) -> Void in
@@ -189,7 +191,7 @@ class ExpLeagueOrder: NSManagedObject {
         send(xml: DDXMLElement(name: "cancel", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
     }
     
-    func feedback(stars score: Int, payment: String?) {
+    public func feedback(stars score: Int, payment: String?) {
         let feedback = DDXMLElement(name: "feedback", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
         feedback?.addAttribute(withName: "stars", integerValue: score)
         if let id = payment {
@@ -200,26 +202,27 @@ class ExpLeagueOrder: NSManagedObject {
         close()
     }
 
-    func close() {
+    public func close() {
         send(xml: DDXMLElement(name: "done", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME))
     }
     
-    func emulate() {
+    public func emulate() {
         self.flags = self.flags | ExpLeagueOrderFlags.closed.rawValue | ExpLeagueOrderFlags.fake.rawValue
         self.flags = self.flags & ~ExpLeagueOrderFlags.archived.rawValue
         save()
     }
     
-    func markSaved() {
+    public func markSaved() {
         update {
             self.flags = self.flags | ExpLeagueOrderFlags.saved.rawValue
         }
     }
-    var fake: Bool {
+    
+    public var fake: Bool {
         return (flags & ExpLeagueOrderFlags.fake.rawValue) != 0 && (flags & ExpLeagueOrderFlags.saved.rawValue == 0)
     }
     
-    func archive() {
+    public func archive() {
         if (isActive) {
             cancel()
         }
@@ -230,7 +233,7 @@ class ExpLeagueOrder: NSManagedObject {
         }
     }
     
-    func continueTask() {
+    public func continueTask() {
         if (status == .deciding) {
             update {
                 self.flags ^= ExpLeagueOrderFlags.deciding.rawValue
@@ -238,7 +241,7 @@ class ExpLeagueOrder: NSManagedObject {
         }
     }
     
-    var status: ExpLeagueOrderStatus {
+    public var status: ExpLeagueOrderStatus {
         if (flags & ExpLeagueOrderFlags.archived.rawValue != 0) {
             return .archived
         }
@@ -263,7 +266,7 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     fileprivate dynamic var _shortAnswer: String?
-    var shortAnswer: String {
+    public var shortAnswer: String {
         guard _shortAnswer == nil else {
             return _shortAnswer!
         }
@@ -278,7 +281,7 @@ class ExpLeagueOrder: NSManagedObject {
     }
     
     internal dynamic var _unreadCount: NSNumber?
-    var unreadCount: Int {
+    public var unreadCount: Int {
         guard _unreadCount == nil else {
             return _unreadCount!.intValue
         }
@@ -300,7 +303,7 @@ class ExpLeagueOrder: NSManagedObject {
     }
 
     fileprivate dynamic var _offer: ExpLeagueOffer?
-    var offer: ExpLeagueOffer {
+    public var offer: ExpLeagueOffer {
         if _offer == nil {
             do {
                 _offer = ExpLeagueOffer(xml: try DDXMLElement(xmlString: topic))
@@ -328,10 +331,10 @@ class ExpLeagueOrder: NSManagedObject {
     }
 }
 
-class ExpLeagueOffer: NSObject {
+public class ExpLeagueOffer: NSObject {
     let xml: DDXMLElement
     
-    var duration: TimeInterval {
+    public var duration: TimeInterval {
         switch(xml.attributeStringValue(forName: "urgency")) {
         case "day":
             return 24 * 60 * 60
@@ -342,34 +345,46 @@ class ExpLeagueOffer: NSObject {
         }
     }
     
-    var topic: String {
+    public var topic: String {
         return xml.forName("topic")!.stringValue!
     }
     
-    var images: [URL] {
+    public var images: [URL] {
         var result: [URL] = []
         for imageElement in xml.elements(forName: "image") {
             result.append(URL(string: imageElement.stringValue!)!)
         }
         return result
     }
-    
-    var started: Date {
+
+    public var experts: [ExpLeagueMember] {
+        var result: [ExpLeagueMember] = []
+        if let filter = xml.forName("experts-filter") {
+            for acceptElement in filter.elements(forName: "accept") {
+                if let expert = ExpLeagueProfile.active.expert(login: XMPPJID(string: acceptElement.stringValue).user) {
+                    result.append(expert)
+                }
+            }
+        }
+        return result
+    }
+
+    public var started: Date {
         return Date(timeIntervalSince1970: xml.attributeDoubleValue(forName: "started"))
     }
     
-    var local: Bool {
+    public var local: Bool {
         return xml.attributeBoolValue(forName: "local")
     }
     
-    var location: CLLocationCoordinate2D? {
+    public var location: CLLocationCoordinate2D? {
         if let location = xml.forName("location", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
             return CLLocationCoordinate2DMake(location.attributeDoubleValue(forName: "latitude") , location.attributeDoubleValue(forName: "longitude"))
         }
         return nil
     }
     
-    var room: String {
+    public var room: String {
         let roomAttr = XMPPJID(string: self.xml.attributeStringValue(forName: "room"))
         return roomAttr!.user
     }
@@ -402,7 +417,7 @@ class ExpLeagueOffer: NSObject {
                 continue
             }
             let imageElement = DDXMLElement(name: "image", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)!
-            imageElement.stringValue = "\(AppDelegate.instance.activeProfile!.imageStorage)\(img)"
+            imageElement.stringValue = "\(ExpLeagueProfile.active.imageStorage)\(img)"
             offer?.addChild(imageElement)
         }
         
@@ -433,7 +448,7 @@ class ExpLeagueOffer: NSObject {
     }
 }
 
-enum ExpLeagueOrderStatus: Int {
+public enum ExpLeagueOrderStatus: Int {
     case open = 0
     case closed = 1
     case overtime = 2
@@ -443,7 +458,7 @@ enum ExpLeagueOrderStatus: Int {
     case deciding = 7
 }
 
-enum ExpLeagueOrderFlags: Int16 {
+public enum ExpLeagueOrderFlags: Int16 {
     case localTask = 16384
     case specificTask = 8196
     case closed = 4096

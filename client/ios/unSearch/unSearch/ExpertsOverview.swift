@@ -9,9 +9,11 @@
 import Foundation
 import UIKit
 
+import unSearchCore
+
 class ExpertsOverviewController: UITableViewController {
     var experts: [ExpLeagueMember] {
-        return AppDelegate.instance.activeProfile!.experts
+        return ExpLeagueProfile.active.experts
     }
     
     var table: UITableView {
@@ -294,22 +296,44 @@ class ExpertCell: UITableViewCell {
     @IBOutlet weak var tasks: UILabel!
     @IBOutlet weak var avatar: AvatarView!
     
-    func update(_ expert: ExpLeagueMember) {
-        name.text = expert.name
-        tags.text = expert.tags.joined(separator: ", ")
-        avatar.image = expert.avatar
-        avatar.online = expert.available
-        switch (expert.group) {
-        case .favorites:
-            tasks.text = "заданий: \(expert.tasks), ваших: \(expert.myTasks)"
-            break
-        case .top:
-            tasks.text = "заданий: \(expert.tasks)"
-            break
+    var expert: ExpLeagueMember?
+    
+    func onExpertChanged() {
+        update()
+    }
+    
+    func update(_ expert: ExpLeagueMember? = nil) {
+        if (expert != nil) {
+            if (self.expert != nil) {
+                QObject.disconnect(self)
+            }
+            self.expert = expert!
+            QObject.connect(self.expert!, signal: #selector(ExpLeagueMember.changed), receiver: self, slot: #selector(self.onExpertChanged))
         }
 
-        expert.badge = self
-        layoutIfNeeded()
+        DispatchQueue.main.async {
+            guard self.expert != nil else {
+                return
+            }
+            self.name.text = self.expert!.name
+            self.tags.text = self.expert!.tags.joined(separator: ", ")
+            self.avatar.image = self.expert!.avatar
+            self.avatar.online = self.expert!.available
+            switch (self.expert!.group) {
+            case .favorites:
+                self.tasks.text = "заданий: \(self.expert!.tasks), ваших: \(self.expert!.myTasks)"
+                break
+            case .top:
+                self.tasks.text = "заданий: \(self.expert!.tasks)"
+                break
+            }
+            
+            self.layoutIfNeeded()
+        }
+    }
+    
+    deinit {
+        QObject.disconnect(self)
     }
 }
 

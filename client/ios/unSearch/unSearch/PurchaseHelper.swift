@@ -10,6 +10,8 @@ import Foundation
 import StoreKit
 import ReachabilitySwift
 
+import unSearchCore
+
 enum PurchaseResult: Int {
     case accepted
     case rejected
@@ -95,7 +97,7 @@ class PurchaseHelper: NSObject {
             try reachability.startNotifier()
         }
         catch {
-            AppDelegate.instance.activeProfile?.log("Unable to register reachability: \(error)")
+            DataController.shared().activeProfile?.log("Unable to register reachability: \(error)")
         }
     }
 }

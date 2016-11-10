@@ -33,10 +33,19 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
     }
     
     @IBAction func send(_ sender: AnyObject) {
+        resignFirstResponder()
         if !text.text.isEmpty && text.text != placeHolder && (delegate == nil || delegate!.chatInput(self, didSend: text.text)) {
             text.text = ""
             textViewDidChange(text)
-            owner.detailsView!.scrollToChat(true)
+            let fixedWidth = text.frame.width
+            let newSize = text.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat(MAXFLOAT)))
+            UIView.animate(withDuration: 0.3, delay: 0, options: [], animations: {
+                self.inputViewHConstraint?.constant = newSize.height + self.hDiff
+            }, completion: { (Bool) -> () in
+                self.view.layoutIfNeeded()
+                self.owner.detailsView!.scrollToChat(true)
+                self.owner.view.layoutIfNeeded()
+            })
         }
     }
     @IBAction func attach(_ sender: AnyObject) {
@@ -68,12 +77,12 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
         let prevHeight = text.frame.height
         let newSize = textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat(MAXFLOAT)))
         if (newSize.height != prevHeight) {
-            print(newSize.height + hDiff)
-            UITextView.beginAnimations(nil, context: nil)
-            UITextView.setAnimationDuration(0.2)
-            inputViewHConstraint?.constant = newSize.height + hDiff
-            view.layoutIfNeeded()
-            UITextView.commitAnimations()
+            UIView.animate(withDuration: 0.3, delay: 0, options: [], animations: {
+                self.inputViewHConstraint?.constant = newSize.height + self.hDiff
+            }, completion: { (Bool) -> () in
+                self.view.layoutIfNeeded()
+                self.owner.view.layoutIfNeeded()
+            })
         }
     }
 }

@@ -3,15 +3,22 @@ platform :ios, '8.0'
 use_frameworks!
 
 target 'unSearch' do
-  pod 'XMPPFramework', :git => "https://github.com/robbiehanson/XMPPFramework.git", :branch => 'master'
-  pod 'MMMarkdown'
   pod 'ReachabilitySwift'
   pod 'GoogleMaps'
   pod 'GooglePlacePicker'
   pod 'FBSDKCoreKit'
   pod 'FBSDKLoginKit'
   pod 'FBSDKShareKit'
-#  pod 'SDCAlertView', '~> 5.1'
+end
+
+target 'unSearchCore' do
+  pod 'ReachabilitySwift'
+  pod 'XMPPFramework', :git => "https://github.com/robbiehanson/XMPPFramework.git", :branch => 'master'
+  pod 'MMMarkdown'
+end
+
+target 'SiriOrderHandler' do
+   pod 'XMPPFramework', :git => "https://github.com/robbiehanson/XMPPFramework.git", :branch => 'master'
 end
 
 post_install do |installer|

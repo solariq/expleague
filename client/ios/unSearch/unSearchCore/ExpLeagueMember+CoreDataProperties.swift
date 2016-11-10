@@ -13,7 +13,8 @@ import Foundation
 import CoreData
 
 extension ExpLeagueMember {
+    @NSManaged public var profile: ExpLeagueProfile
+
     @NSManaged var xmlStr: String
     @NSManaged var groupInt: NSNumber
-    @NSManaged var profile: ExpLeagueProfile
 }

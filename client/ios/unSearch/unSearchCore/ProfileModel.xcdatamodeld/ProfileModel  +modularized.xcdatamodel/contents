@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11232" systemVersion="16A323" minimumToolsVersion="Xcode 7.0" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
-    <entity name="Expert" representedClassName="unSearch.ExpLeagueMember" syncable="YES">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11232" systemVersion="16A323" minimumToolsVersion="Xcode 7.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Expert" representedClassName="unSearchCore.ExpLeagueMember" syncable="YES">
         <attribute name="groupInt" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="xmlStr" attributeType="String" syncable="YES"/>
         <relationship name="profile" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Profile" inverseName="expertsSet" inverseEntity="Profile" syncable="YES"/>
     </entity>
-    <entity name="Message" representedClassName="unSearch.ExpLeagueMessage" syncable="YES">
+    <entity name="Message" representedClassName="unSearchCore.ExpLeagueMessage" syncable="YES">
         <attribute name="body" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="from" attributeType="String" syncable="YES"/>
         <attribute name="propertiesRaw" optional="YES" attributeType="String" syncable="YES"/>
@@ -13,7 +13,7 @@
         <attribute name="typeRaw" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="parentRaw" maxCount="1" deletionRule="Nullify" destinationEntity="Order" inverseName="messagesRaw" inverseEntity="Order" syncable="YES"/>
     </entity>
-    <entity name="Order" representedClassName="unSearch.ExpLeagueOrder" syncable="YES">
+    <entity name="Order" representedClassName="unSearchCore.ExpLeagueOrder" syncable="YES">
         <attribute name="archived" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="flags" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="id" attributeType="String" syncable="YES"/>
@@ -22,9 +22,9 @@
         <relationship name="messagesRaw" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Message" inverseName="parentRaw" inverseEntity="Message" spotlightIndexingEnabled="YES" syncable="YES"/>
         <relationship name="parent" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Profile" inverseName="orders" inverseEntity="Profile" syncable="YES"/>
     </entity>
-    <entity name="Profile" representedClassName="unSearch.ExpLeagueProfile" syncable="YES">
+    <entity name="Profile" representedClassName="unSearchCore.ExpLeagueProfile" syncable="YES">
         <attribute name="active" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="aowId" optional="YES" syncable="YES"/>
+        <attribute name="aowId" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="aowTitle" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="domain" attributeType="String" syncable="YES"/>
         <attribute name="login" attributeType="String" syncable="YES"/>
@@ -39,12 +39,12 @@
         <relationship name="queue" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="QueueItem" inverseName="parent" inverseEntity="QueueItem" syncable="YES"/>
         <relationship name="tagsSet" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Tag" inverseName="parent" inverseEntity="Tag" syncable="YES"/>
     </entity>
-    <entity name="QueueItem" representedClassName="unSearch.QueueItem" syncable="YES">
+    <entity name="QueueItem" representedClassName="unSearchCore.QueueItem" syncable="YES">
         <attribute name="body" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="receipt" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="parent" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Profile" inverseName="queue" inverseEntity="Profile" syncable="YES"/>
     </entity>
-    <entity name="Tag" representedClassName="unSearch.ExpLeagueTag" syncable="YES">
+    <entity name="Tag" representedClassName="unSearchCore.ExpLeagueTag" syncable="YES">
         <attribute name="iconStr" attributeType="String" syncable="YES"/>
         <attribute name="name" attributeType="String" syncable="YES"/>
         <attribute name="typeInt" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>

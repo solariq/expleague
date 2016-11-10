@@ -24,7 +24,6 @@
     </entity>
     <entity name="Profile" representedClassName="unSearch.ExpLeagueProfile" syncable="YES">
         <attribute name="active" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="aowId" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="aowTitle" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="domain" attributeType="String" syncable="YES"/>
         <attribute name="login" attributeType="String" syncable="YES"/>
@@ -54,7 +53,7 @@
         <element name="Expert" positionX="-117" positionY="90" width="128" height="90"/>
         <element name="Message" positionX="-63" positionY="-18" width="128" height="135"/>
         <element name="Order" positionX="-261" positionY="-54" width="128" height="150"/>
-        <element name="Profile" positionX="-162" positionY="-9" width="128" height="270"/>
+        <element name="Profile" positionX="-162" positionY="-9" width="128" height="255"/>
         <element name="QueueItem" positionX="-162" positionY="36" width="128" height="90"/>
         <element name="Tag" positionX="-135" positionY="72" width="128" height="105"/>
     </elements>

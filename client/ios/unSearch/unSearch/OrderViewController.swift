@@ -8,6 +8,10 @@ import UIKit
 import MapKit
 import XMPPFramework
 
+import FBSDKCoreKit
+
+import unSearchCore
+
 class OrderViewController: UIViewController, CLLocationManagerDelegate {
     var keyboardTracker: KeyboardStateTracker!
     
@@ -17,12 +21,15 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
     
     @IBAction func fire(_ sender: AnyObject) {
         orderDescription.endEditing(true)
+        FBSDKAppEvents.logEvent("Issue order")
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
         guard controller.orderTextDelegate!.validate() else {
             return
         }
         if (!controller.location.isLocalOrder()) {
-            controller.location.location = controller.locationProvider.deviceLocation
+            if let location = DataController.shared().currentLocation() {
+                controller.location.location = location
+            }
         }
         guard !controller.location.isLocalOrder() || controller.location.getLocation() != nil else {
             let alertView = UIAlertController(title: "Заказ", message: "На данный момент ваша геопозиция не найдена. Подождите несколько секунд, или отключите настройку \"рядом со мной\".", preferredStyle: .alert)
@@ -37,7 +44,7 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
             return
         }
         
-        AppDelegate.instance.activeProfile!.placeOrder(
+        ExpLeagueProfile.active.placeOrder(
             topic: controller.orderText.text,
             urgency: controller.urgency.isOn ? "asap" : "day",
             local: controller.location.isLocalOrder(),
@@ -56,7 +63,8 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
         super.viewDidLoad()
         let initialBottom = self.buttonBottom.constant
         let initialTop = self.buttonTop.constant
-        keyboardTracker = KeyboardStateTracker() { height in
+        let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
+        keyboardTracker = KeyboardStateTracker(check: {controller.orderText.isFirstResponder}) { height in
             self.buttonBottom.constant = height > 0 ? height - self.tabBarController!.tabBar.frame.height + 2 : initialBottom
             self.buttonTop.constant = height > 0 ? 2 : initialTop
             self.view.layoutIfNeeded()
@@ -112,8 +120,6 @@ class OrderDescriptionViewController: UITableViewController {
     var experts: [ExpLeagueMember] = []
     var location: OrderLocation = OrderLocation()
 
-    let locationProvider = LocationProvider()
-
     func append(expert exp: ExpLeagueMember) {
         if (!experts.contains(exp)) {
             experts.append(exp)
@@ -124,7 +130,6 @@ class OrderDescriptionViewController: UITableViewController {
     var heightDiff: CGFloat = 80 + 49
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.locationProvider.setUpLocationProvider()
         orderTextBGColor = orderTextBackground.backgroundColor
 
         (view as! UITableView).allowsSelection = true
@@ -296,7 +301,7 @@ class OrderDescriptionViewController: UITableViewController {
                     return
                 }
                 self.location.setLocation(place.coordinate)
-                if let deviceLocation = self.locationProvider.deviceLocation {
+                if let deviceLocation = DataController.shared().currentLocation() {
                     let point1 = MKMapPointForCoordinate(place.coordinate)
                     let point2 = MKMapPointForCoordinate(deviceLocation)
                     let distance = MKMetersBetweenMapPoints(point1, point2)
@@ -326,6 +331,49 @@ class OrderDescriptionViewController: UITableViewController {
 protocol ImageSenderQueue {
     func append(_ id: String, image: UIImage, progress: (UIProgressView) -> Void)
     func report(_ id: String, status: Bool);
+}
+
+
+enum OrderLocationType {
+    case noLocation
+    case currentLocation
+    case customLocation
+}
+
+class OrderLocation {
+    var locationType: OrderLocationType!
+    var location: CLLocationCoordinate2D?
+    
+    init() {
+        self.locationType = .noLocation
+    }
+    
+    init(location: CLLocationCoordinate2D!) {
+        setLocation(location)
+    }
+    
+    func setCurrentLocation(_ location: CLLocationCoordinate2D) {
+        self.locationType = .currentLocation
+        self.location = location
+    }
+    
+    func setLocation(_ location: CLLocationCoordinate2D!) {
+        self.locationType = .customLocation
+        self.location = location
+    }
+    
+    func clearLocation() {
+        locationType = .noLocation
+        location = nil
+    }
+    
+    func getLocation() -> CLLocationCoordinate2D? {
+        return self.location
+    }
+    
+    func isLocalOrder() -> Bool {
+        return self.locationType != .noLocation
+    }
 }
 
 class OrderTextDelegate: NSObject, UITextViewDelegate {

@@ -6,6 +6,8 @@
 import Foundation
 import UIKit
 
+import unSearchCore
+
 @objc
 class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     fileprivate var lastKnownMessage: Int = 0
@@ -103,7 +105,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         let messages = order.messages
         while (lastKnownMessage < messages.count) {
             if (modelChangeCount > 2) {
-                AppDelegate.instance.activeProfile!.log("Loop found in the chat model! Enforcing next message.")
+                ExpLeagueProfile.active.log("Loop found in the chat model! Enforcing next message.")
                 lastKnownMessage += 1
                 guard lastKnownMessage < messages.count else {
                     break
@@ -138,7 +140,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                     expertModel?.status = .finished
                     let id = "message-\(msg.hashValue)"
                     answer += "\n<div id=\"\(id)\"/>\n"
-                    answer += (msg.body!);
+                    answer += msg.html;
                     answer += "\n<a class=\"back_to_chat\" href='unSearch:///chat-messages#\(cells.count)'>Обратно в чат</a>\n"
                     lastAnswer = AnswerReceivedModel(id: id, progress: (progressModel as? TaskInProgressModel) ?? TaskInProgressModel(order: order))
                     newModel = lastAnswer
@@ -154,6 +156,10 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                         progressModel = LookingForExpertModel(order: order)
                     }
                 }
+                else if (msg.type == .clientCancel) {
+                    expertModel?.status = .finished
+                }
+                
                 if (newModel != nil) {
                     cells.append(newModel!)
                     model = cells.last!
@@ -279,7 +285,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     init(order: ExpLeagueOrder) {
         self.order = order
         super.init()
-        QObject.connect(order, signal: #selector(ExpLeagueOrder.notify), receiver: self, slot: #selector(self.sync))
+        QObject.connect(order, signal: #selector(ExpLeagueOrder.messagesChanged), receiver: self, slot: #selector(self.sync))
     }
     
     deinit {

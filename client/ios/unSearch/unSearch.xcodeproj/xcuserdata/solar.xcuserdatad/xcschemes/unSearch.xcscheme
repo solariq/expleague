@@ -28,7 +28,36 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "EE5CFF081DC3DB7A00ACC991"
+               BuildableName = "unSearchCoreTests.xctest"
+               BlueprintName = "unSearchCoreTests"
+               ReferencedContainer = "container:unSearch.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "EE5CFF681DC63EFC00ACC991"
+               BuildableName = "TestTests.xctest"
+               BlueprintName = "TestTests"
+               ReferencedContainer = "container:unSearch.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "688A5EBB752445F69E4387AA"
+            BuildableName = "unSearch.app"
+            BlueprintName = "unSearch"
+            ReferencedContainer = "container:unSearch.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
@@ -61,6 +90,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "688A5EBB752445F69E4387AA"
+            BuildableName = "unSearch.app"
+            BlueprintName = "unSearch"
+            ReferencedContainer = "container:unSearch.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

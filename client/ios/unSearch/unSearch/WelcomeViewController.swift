@@ -10,6 +10,8 @@ import Foundation
 import UIKit
 import StoreKit
 
+import unSearchCore
+
 class WelcomeViewController: UIViewController {
     static let ACCESS_PAYMENT = "com.expleague.unSearch.accessPermanent"
     @IBOutlet weak var topConstraint: NSLayoutConstraint!
@@ -25,7 +27,7 @@ class WelcomeViewController: UIViewController {
             switch rc {
             case .accepted:
                 DispatchQueue.main.async {
-                    AppDelegate.instance.setupDefaultProfiles(payment!.hash)
+                    DataController.shared().setupDefaultProfiles(payment!.hash)
                 }
             case .error:
                 let alert = UIAlertController(title: "unSearch", message: "Не удалось провести платеж!", preferredStyle: .alert)
@@ -43,7 +45,7 @@ class WelcomeViewController: UIViewController {
         let data = try? Data(contentsOf: URL(string: "http://unsearch.expleague.com/act/getCode.php?di=\(AppDelegate.deviceId)")!)
         if let d = data, let dataStr = NSString(data: d, encoding: String.Encoding.utf8.rawValue) {
             if let enteredCode = UInt64((dataStr as String).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)) {
-                AppDelegate.instance.setupDefaultProfiles(enteredCode.hashValue)
+                DataController.shared().setupDefaultProfiles(enteredCode.hashValue)
             }
         }
     }
@@ -104,7 +106,7 @@ class WelcomeViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        QObject.track(AppDelegate.instance, #selector(AppDelegate.activate(_:))) {
+        QObject.track(DataController.shared(), #selector(DataController.profileChanged)) {
             self.performSegue(withIdentifier: "Start", sender: self)
             self.active = false
             return false
@@ -196,7 +198,7 @@ class EnterCodeViewController: UIViewController {
             if (code % 14340987 == 0 || enteredCode == 1234123123312) {
                 navigationController!.popViewController(animated: true)
                 DispatchQueue.main.async {
-                    AppDelegate.instance.setupDefaultProfiles(enteredCode.hashValue)
+                    DataController.shared().setupDefaultProfiles(enteredCode.hashValue)
                 }
                 return
             }
@@ -224,7 +226,7 @@ class EnterCodeViewController: UIViewController {
                     return
                 }
                 DispatchQueue.main.async {
-                    AppDelegate.instance.setupDefaultProfiles(purchase?.hash)
+                    DataController.shared().setupDefaultProfiles(purchase?.hash)
                 }
             }
         }

@@ -11,33 +11,33 @@ import CoreData
 import XMPPFramework
 import MMMarkdown
 
-struct ExpLeagueOrderMetaChange {
-    let type: ExpLeagueOrderMetaChangeType
-    let target: ExpLeagueOrderMetaChangeTarget
-    let name: String
+public struct ExpLeagueOrderMetaChange {
+    public let type: ExpLeagueOrderMetaChangeType
+    public let target: ExpLeagueOrderMetaChangeTarget
+    public let name: String
 }
 
-enum ExpLeagueOrderMetaChangeType: String {
+public enum ExpLeagueOrderMetaChangeType: String {
     case Add = "add"
     case Remove = "remove"
     case Visit = "visit"
 }
 
-enum ExpLeagueOrderMetaChangeTarget: String {
+public enum ExpLeagueOrderMetaChangeTarget: String {
     case Tag = "tag"
     case Pattern = "pattern"
     case Phone = "phone"
     case Url = "url"
 }
 
-class ExpLeagueMessage: NSManagedObject {
-    static let EXP_LEAGUE_SCHEME = "http://expleague.com/scheme"
+public class ExpLeagueMessage: NSManagedObject {
+    public static let EXP_LEAGUE_SCHEME = "http://expleague.com/scheme"
 
-    var isSystem: Bool {
+    public var isSystem: Bool {
         return type == .system || type == .expertAssignment || type == .expertProgress
     }
 
-    var read: Bool {
+    public var read: Bool {
         get {
             return properties["read"] as? String == "true"
         }
@@ -51,15 +51,15 @@ class ExpLeagueMessage: NSManagedObject {
         }
     }
 
-    var parent: ExpLeagueOrder {
+    public var parent: ExpLeagueOrder {
         return parentRaw as! ExpLeagueOrder
     }
     
-    var ts: Date {
+    public var ts: Date {
         return Date(timeIntervalSince1970: time)
     }
     
-    var type: ExpLeagueMessageType {
+    public var type: ExpLeagueMessageType {
         get {
             return ExpLeagueMessageType(rawValue: self.typeRaw)!
         }
@@ -68,7 +68,7 @@ class ExpLeagueMessage: NSManagedObject {
         }
     }
     
-    var expert: ExpLeagueMember? {
+    public var expert: ExpLeagueMember? {
         if (type == .expertAssignment) {
             if (body == nil || body!.isEmpty) {
                 return parent.parent.expert(login: properties["login"] as! String, factory: {context in
@@ -85,7 +85,7 @@ class ExpLeagueMessage: NSManagedObject {
         return parent.parent.expert(login: from)
     }
     
-    var change: ExpLeagueOrderMetaChange? {
+    public var change: ExpLeagueOrderMetaChange? {
         if (type == .expertProgress) {
             if (body != nil && !body!.isEmpty) {
                 let xml = try! DDXMLElement(xmlString: body!)
@@ -108,7 +108,11 @@ class ExpLeagueMessage: NSManagedObject {
         return nil
     }
     
-    func setProperty(_ name: String, value: AnyObject) {
+    public var html: String {
+        return body!
+    }
+    
+    public func setProperty(_ name: String, value: AnyObject) {
         let properties = NSMutableDictionary()
         properties.addEntries(from: self.properties)
         properties[name] = value
@@ -121,7 +125,7 @@ class ExpLeagueMessage: NSManagedObject {
         }
     }
     
-    var properties: [String: AnyObject] {
+    public var properties: [String: AnyObject] {
         if (self.propertiesRaw != nil) {
             let data = Data(base64Encoded: self.propertiesRaw!, options: [])
             let archiver = NSKeyedUnarchiver(forReadingWith: data!)
@@ -130,7 +134,7 @@ class ExpLeagueMessage: NSManagedObject {
         return [:];
     }
     
-    func visitParts(_ visitor: ExpLeagueMessageVisitor) {
+    public func visitParts(_ visitor: ExpLeagueMessageVisitor) {
         if (type == .system || type == .topic) {
             return
         }
@@ -307,14 +311,14 @@ class ExpLeagueMessage: NSManagedObject {
     }
 }
 
-protocol ExpLeagueMessageVisitor {
+public protocol ExpLeagueMessageVisitor {
     func message(_ message: ExpLeagueMessage, text: String)
     func message(_ message: ExpLeagueMessage, title: String, text: String)
     func message(_ message: ExpLeagueMessage, title: String, link: String)
     func message(_ message: ExpLeagueMessage, title: String, image: UIImage)
 }
 
-enum ExpLeagueMessageType: Int16 {
+public  enum ExpLeagueMessageType: Int16 {
     case topic = 0
     case expertMessage = 1
     case clientMessage = 2

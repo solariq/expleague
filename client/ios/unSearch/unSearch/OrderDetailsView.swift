@@ -108,6 +108,7 @@ class OrderDetailsView: UIView {
             scrollToChat(false)
         }
     }
+    
 
     func dismissKeyboard() {
         endEditing(true)
@@ -148,9 +149,10 @@ class OrderDetailsView: UIView {
         messagesViewHConstraint = NSLayoutConstraint(item: messagesView, attribute: .height, relatedBy: .equal, toItem: scrollView, attribute: .height, multiplier: 1, constant: -15)
         answerViewHConstraint = NSLayoutConstraint(item: answerView, attribute: .height, relatedBy: .equal, toItem: scrollView, attribute: .height, multiplier: 1, constant: -15)
         bottomViewBottom = NSLayoutConstraint(item: bottomView, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottomMargin, multiplier: 1, constant: 0)
-        keyboardTracker = KeyboardStateTracker() { (height: CGFloat) -> () in
-                self.bottomViewBottom.constant = -height;
-                self.layoutIfNeeded()
+        keyboardTracker = KeyboardStateTracker(check: {self.controller.input.text.isFirstResponder}) { (height: CGFloat) -> () in
+            self.bottomViewBottom.constant = -height;
+            self.layoutIfNeeded()
+            self.adjustScroll()
         }
         var constraints: [NSLayoutConstraint] = [];
                 // main view constraints

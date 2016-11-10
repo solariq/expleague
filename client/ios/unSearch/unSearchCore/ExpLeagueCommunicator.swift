@@ -9,25 +9,25 @@
 import Foundation
 import XMPPFramework
 
-enum ExpLeagueCommunicatorMode: Int {
+public enum ExpLeagueCommunicatorMode: Int {
     case foreground = 1
     case background = 2
 }
 
-enum ExpLeagueCommunicatorStatus: Int {
+public enum ExpLeagueCommunicatorStatus: Int {
     case idle = 4
     case connected = 8
     case acquiring = 16
 }
 
-class ExpLeagueCommunicatorState {
+public class ExpLeagueCommunicatorState {
     let owner: ExpLeagueCommunicator?
-    var mode: ExpLeagueCommunicatorMode {
+    public var mode: ExpLeagueCommunicatorMode {
         didSet {
             owner?.stateChanged()
         }
     }
-    var status: ExpLeagueCommunicatorStatus {
+    public var status: ExpLeagueCommunicatorStatus {
         didSet {
             owner?.stateChanged()
         }
@@ -54,6 +54,8 @@ class ExpLeagueCommunicatorState {
 
 internal class ExpLeagueCommunicator: NSObject {
     static let DEBUG = false
+    static let xmppQueue = DispatchQueue(label: "ExpLeague XMPP stream", attributes: [])
+
     // MARK: - *** Public members ***
     var state: ExpLeagueCommunicatorState!
     func stateChanged() {
@@ -99,7 +101,7 @@ internal class ExpLeagueCommunicator: NSObject {
         let aowIq = DDXMLElement(name: "iq", xmlns: "jabber:client")
         aowIq?.addAttribute(withName: "type", stringValue: "get")
         let query = DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/best-answer")!
-        query.addAttribute(withName: "lastKnown", stringValue: profile.aowTitle ?? "")
+        query.addAttribute(withName: "lastKnown", stringValue: profile.aowId ?? "")
         query.addAttribute(withName: "received", boolValue: !(profile.receiveAnswerOfTheWeek?.boolValue ?? false))
         aowIq?.addChild(query)
         stream?.send(aowIq)
@@ -111,7 +113,7 @@ internal class ExpLeagueCommunicator: NSObject {
     fileprivate let profile: ExpLeagueProfile
     fileprivate let stream = XMPPStream()
     fileprivate var thread: DispatchQueue {
-        return AppDelegate.instance.xmppQueue
+        return ExpLeagueCommunicator.xmppQueue
     }
     
     fileprivate var queue: [XMPPMessage] = []
@@ -219,7 +221,6 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
             profile.log("Failed to authenticate \(error)")
         }
     }
-    
     @objc
     func xmppStreamConnectDidTimeout(_ sender: XMPPStream!) {
         profile.log("Connection timeout");
@@ -242,8 +243,8 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         var texts = error.elements(forName: "text");
         if (texts.count > 0) {
             let txt = texts[0]
-            let text = txt.stringValue
-            if ("No such user" == String(describing: text)) {
+            let text = txt.stringValue ?? ""
+            if ("No such user" == text) {
                 do {
                     profile.log("No such user, trying to register a new one.")
                     var props: [DDXMLElement] = []
@@ -278,14 +279,15 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         profile._jid = sender.myJID
         
         // updating client version and token
-        let msg = XMPPMessage(type: "normal")
-        let token = DDXMLElement(name: "token", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
-        if (AppDelegate.instance.token != nil) {
-            token?.stringValue = AppDelegate.instance.token
+        if (DataController.shared().token != nil && DataController.shared().version != nil) {
+            let msg = XMPPMessage(type: "normal")
+            let token = DDXMLElement(name: "token", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+        
+            token?.stringValue = DataController.shared().token
+            token?.addAttribute(withName: "client", stringValue: DataController.shared().version!)
+            msg?.addChild(token!)
+            sender.send(msg)
         }
-        token?.addAttribute(withName: "client", stringValue: "unSearch " + AppDelegate.versionName() + " @iOS")
-        msg?.addChild(token!)
-        sender.send(msg)
 
         // sending not confirmed messages
         for item in queue  {
@@ -350,9 +352,6 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
                     expert.available = profile.attributeBoolValue(forName: "available")
                 }
             }
-            DispatchQueue.main.async {
-                AppDelegate.instance.expertsView?.update()
-            }
         }
         else if let query = iq.forName("query", xmlns: "http://expleague.com/scheme/tags") {
             for tag in query.elements(forName: "tag") {
@@ -386,7 +385,10 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
             }
         }
         else if let query = iq.forName("query", xmlns: "http://expleague.com/scheme/best-answer"), !iq.isErrorIQ() {
-            let offer = ExpLeagueOffer(xml: query.forName("offer", xmlns: "http://expleague.com/scheme")!)
+            guard let offerXml = query.forName("offer", xmlns: "http://expleague.com/scheme") else { // empty answer
+                return false
+            }
+            let offer = ExpLeagueOffer(xml: offerXml)
             let order = ExpLeagueOrder(offer.room, offer: offer, context: profile.managedObjectContext!)
             profile.add(aow: order)
             let content = query.forName("content", xmlns: "http://expleague.com/scheme/best-answer")

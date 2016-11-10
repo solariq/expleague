@@ -7,10 +7,9 @@
 //
 
 import Foundation
-import CoreData
 import MapKit
 
-class LocationProvider: NSManagedObject, CLLocationManagerDelegate {
+class LocationProvider: NSObject, CLLocationManagerDelegate {
     let locationManager = CLLocationManager()
     var deviceLocation: CLLocationCoordinate2D?
     
@@ -21,6 +20,14 @@ class LocationProvider: NSManagedObject, CLLocationManagerDelegate {
             locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
             locationManager.startUpdatingLocation()
         }
+    }
+    
+    func startTracking() {
+        locationManager.startUpdatingLocation()
+    }
+    
+    func stopTracking() {
+        locationManager.stopUpdatingLocation()
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {

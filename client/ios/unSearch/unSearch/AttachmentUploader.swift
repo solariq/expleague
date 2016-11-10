@@ -10,6 +10,8 @@ import Foundation
 import UIKit
 import Photos
 
+import unSearchCore
+
 class AttachmentsUploader: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionDataDelegate {
     var session: Foundation.URLSession!
     var inProgress: [OrderAttachment] = []
@@ -46,8 +48,8 @@ class AttachmentsUploader: NSObject, URLSessionDelegate, URLSessionTaskDelegate,
             return
         }
         
-        let uploadScriptUrl = AppDelegate.instance.activeProfile!.imageStorage
-        let imageUrl = AppDelegate.instance.activeProfile!.imageUrl(imageId)
+        let uploadScriptUrl = ExpLeagueProfile.active.imageStorage
+        let imageUrl = ExpLeagueProfile.active.imageUrl(imageId)
         
         
         guard let imageData = UIImageJPEGRepresentation(image, 1) else {
@@ -132,7 +134,7 @@ class AttachmentsUploader: NSObject, URLSessionDelegate, URLSessionTaskDelegate,
     
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         if (challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust) {
-            if (challenge.protectionSpace.host == "img." + AppDelegate.instance.activeProfile!.domain) {
+            if (challenge.protectionSpace.host == "img." + ExpLeagueProfile.active.domain) {
                 completionHandler(.useCredential, URLCredential(trust: challenge.protectionSpace.serverTrust!))
             }
         }

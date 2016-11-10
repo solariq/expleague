@@ -142,6 +142,10 @@ class AttachmentCell: UICollectionViewCell {
             }
             if let content = newContent {
                 contentView.addSubview(content)
+                contentView.addConstraint(NSLayoutConstraint(item: contentView, attribute: .top, relatedBy: .equal, toItem: content, attribute: .top, multiplier: 1, constant: 0))
+                contentView.addConstraint(NSLayoutConstraint(item: contentView, attribute: .left, relatedBy: .equal, toItem: content, attribute: .left, multiplier: 1, constant: 0))
+                contentView.addConstraint(NSLayoutConstraint(item: contentView, attribute: .right, relatedBy: .equal, toItem: content, attribute: .right, multiplier: 1, constant: 0))
+                contentView.addConstraint(NSLayoutConstraint(item: contentView, attribute: .bottom, relatedBy: .equal, toItem: content , attribute: .bottom, multiplier: 1, constant: 0))
             }
         }
     }
@@ -237,7 +241,7 @@ class TaskInProgressCell: SimpleChatCell {
 }
 
 class LookingForExpertCell: SimpleChatCell {
-    @IBOutlet weak var status: UILabel!
+    @IBOutlet weak var caption: UILabel!
     @IBOutlet weak var expertsOnline: UILabel!
     @IBOutlet weak var progress: UIActivityIndicatorView!
     
@@ -250,18 +254,6 @@ class LookingForExpertCell: SimpleChatCell {
         super.awakeFromNib()
         controlColor = Palette.ERROR
         LookingForExpertCell.heightFromNib = frame.height
-    }
-    
-    var online: Int {
-        get {
-            let parts = expertsOnline.text!.components(separatedBy: " ")
-            return Int(parts[0])!
-        }
-        set(online) {
-            var parts = expertsOnline.text!.components(separatedBy: " ")
-            parts[0] = String(online)
-            expertsOnline.text = parts.joined(separator: " ")
-        }
     }
 }
 

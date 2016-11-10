@@ -11,58 +11,10 @@ import UIKit
 import XMPPFramework
 import CoreData
 import MMMarkdown
-import ReachabilitySwift
 import FBSDKCoreKit
+import Intents
 
-class DataController: NSObject {
-    let managedObjectContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-    let group = DispatchGroup()
-    init(app: AppDelegate) {
-        super.init()
-        // This resource is the same name as your xcdatamodeld contained in your project.
-        guard let modelURL = Bundle.main.url(forResource: "ProfileModel", withExtension: "momd") else {
-            fatalError("Error loading model from bundle")
-        }
-        // The managed object model for the application. It is a fatal error for the application not to be able to find and load its model.
-        guard let mom = NSManagedObjectModel(contentsOf: modelURL) else {
-            fatalError("Error initializing mom from: \(modelURL)")
-        }
-        let psc = NSPersistentStoreCoordinator(managedObjectModel: mom)
-        self.managedObjectContext.persistentStoreCoordinator = psc
-        let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        let docURL = urls[urls.endIndex-1]
-        /* The directory the application uses to store the Core Data store file.
-         This code uses a file named "DataModel.sqlite" in the application's documents directory.
-        */
-        let storeURL = docURL.appendingPathComponent("ExpLeagueProfiles.sqlite")
-        do {
-            try psc.addPersistentStore(
-                ofType: NSSQLiteStoreType,
-                configurationName: nil,
-                at: storeURL,
-                options: [
-                    NSMigratePersistentStoresAutomaticallyOption: true,
-                    NSInferMappingModelAutomaticallyOption: true
-            ])
-        } catch {
-            fatalError("Error migrating store: \(error)")
-        }
-        let profilesFetch = NSFetchRequest<ExpLeagueProfile>(entityName: "Profile")
-            
-        do {
-            let profiles = try self.managedObjectContext.fetch(profilesFetch)
-            app.profiles = profiles
-            if (profiles.count > 3) {
-                app.profiles = Array(profiles[0..<3])
-            }
-            if (profiles.count > 0) {
-                AppDelegate.instance.activate(profiles.filter({$0.active.boolValue}).first ?? profiles[0])
-            }
-        } catch {
-            fatalError("Failed to fetch employees: \(error)")
-        }
-    }
-}
+import unSearchCore
 
 class Palette {
     static let CONTROL = UIColor(red: 17/256.0, green: 138/256.0, blue: 222/256.0, alpha: 1.0)
@@ -89,7 +41,6 @@ class AppDelegate: UIResponder {
     }
     
     var window: UIWindow?
-    let xmppQueue = DispatchQueue(label: "ExpLeague XMPP stream", attributes: [])
     
     var tabs: TabsViewController!
 
@@ -106,73 +57,18 @@ class AppDelegate: UIResponder {
     var orderView: OrderViewController?
     var expertsView: ExpertsOverviewController?
     var historyView: HistoryViewController?
-    var dataController: DataController!
     let uploader = AttachmentsUploader()
-    var token: String?
     
-    var activeProfile: ExpLeagueProfile?
-    
-    var profiles : [ExpLeagueProfile]?;
-    
-    func randString(_ len: Int, seed: Int? = nil) -> String {
-        let seedX = seed != nil ? seed! : Int(arc4random())
-        let chars = "0123456789ABCDEF".characters
-        var result = ""
-        
-        srand48(seedX)
-        for _ in 0..<len {
-            let idx = Int(drand48()*Double(chars.count))
-            result.append(chars[chars.index(chars.startIndex, offsetBy: idx)])
-        }
-        return result
-    }
-    
-    func setupDefaultProfiles(_ code: Int?) {
-        profiles = [];
-        let randString = UUID().uuidString
-        let userName = self.randString(8, seed: code)
-        let login = userName + "-" + randString.substring(to: randString.characters.index(randString.startIndex, offsetBy: 8))
-        let passwd = UUID().uuidString
-
-        let production = ExpLeagueProfile("Production", domain: "expleague.com", login: login, passwd: passwd, port: 5222, context: dataController.managedObjectContext)
-        if (profiles!.count == 0) {
-            profiles!.append(production)
-        }
-        if (profiles!.count == 1) {
-            profiles!.append(ExpLeagueProfile("Test", domain: "test.expleague.com", login: login, passwd: passwd, port: 5222, context: dataController.managedObjectContext))
-        }
-        if (profiles!.count == 2) {
-            profiles!.append(ExpLeagueProfile("Local", domain: "172.21.211.153", login: login, passwd: passwd, port: 5222, context: dataController.managedObjectContext))
-        }
-        if (activeProfile == nil) {
-            activate(profiles![0]);
-        }
-
-        do {
-            try dataController.managedObjectContext.save()
-        }
-        catch {
-            activeProfile!.log("\(error)")
-        }
-    }
-    
-    var reachability: Reachability?
     var connectionErrorNotification: UILocalNotification?
-    func activate(_ profile: ExpLeagueProfile) {
-        activeProfile?.disconnect();
-        print ("\(profile.domain): \(profile.orders.count)")
-        profile.connect()
-        activeProfile = profile
-        reachability = Reachability(hostname: profile.domain)
-        QObject.notify(#selector(activate), self)
-    }
     
     func prepareBackground(_ application: UIApplication) {
-        if(activeProfile?.busy ?? false) {
-            application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
-        }
-        else {
-            application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalNever)
+        DataController.shared().xmppQueue.async {
+            if(DataController.shared().activeProfile?.busy ?? false) {
+                application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
+            }
+            else {
+                application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalNever)
+            }
         }
     }
 }
@@ -188,15 +84,25 @@ extension AppDelegate: UIApplicationDelegate {
         
         GMSServices.provideAPIKey(AppDelegate.GOOGLE_API_KEY)
         GMSPlacesClient.provideAPIKey(AppDelegate.GOOGLE_API_KEY)
-        FBSDKAppEvents.activateApp()
+        
+        DataController.shared().version = "unSearch \(AppDelegate.versionName()) @iOS \(ProcessInfo.processInfo.operatingSystemVersionString)"
+        NSSetUncaughtExceptionHandler({(e: NSException) -> () in
+            print("Starck trace: \(e.callStackSymbols)")
+        })
+        if #available(iOS 10.0, *) {
+            INPreferences.requestSiriAuthorization() { (status: INSiriAuthorizationStatus) -> Void in
+                print(status)
+            }
+            INVocabulary.shared().setVocabularyStrings(["эксперт", "экспертов", "эксперта", "экспертам", "эксперту"], of: .contactGroupName)
+        }
         
         window = UIWindow(frame: UIScreen.main.bounds)
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        dataController = DataController(app: self)
-        window?.rootViewController = activeProfile != nil ? storyboard.instantiateViewController(withIdentifier: "tabs") : storyboard.instantiateInitialViewController()
+        DataController.shared().setupDefaultProfiles(UIDevice.current.identifierForVendor!.uuidString.hashValue)
+//        window?.rootViewController = DataController.shared().activeProfile != nil ? storyboard.instantiateViewController(withIdentifier: "tabs") : storyboard.instantiateInitialViewController()
+        window?.rootViewController = storyboard.instantiateViewController(withIdentifier: "tabs")
         window?.makeKeyAndVisible()
-                
-//        application.statusBarStyle = .LightContent
+        
         application.registerForRemoteNotifications()
         let settings = UIUserNotificationSettings(types: [.alert, .sound], categories: [])
         application.registerUserNotificationSettings(settings)
@@ -206,41 +112,41 @@ extension AppDelegate: UIApplicationDelegate {
     
     func applicationDidEnterBackground(_ application: UIApplication) {
         prepareBackground(application)
-        activeProfile?.suspend()
+        DataController.shared().suspend()
     }
     
     func applicationDidBecomeActive(_ application: UIApplication) {
+        FBSDKAppEvents.activateApp()
         if (connectionErrorNotification != nil) {
             application.cancelLocalNotification(connectionErrorNotification!)
         }
-        _ = dataController.group.wait(timeout: DispatchTime.distantFuture)
-        activeProfile?.resume()
+        DataController.shared().resume()
     }
     
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         if (connectionErrorNotification != nil) {
             application.cancelLocalNotification(connectionErrorNotification!)
         }
-        guard activeProfile != nil && application.applicationState != .active else {
+        guard DataController.shared().activeProfile != nil && application.applicationState != .active else {
             completionHandler(.newData)
             return
         }
-        if (!activeProfile!.busy) {
+        if (!ExpLeagueProfile.active.busy) {
             completionHandler(.noData)
         }
-        else if (reachability == nil || reachability!.isReachable) {
-            QObject.track(activeProfile!, #selector(ExpLeagueProfile.busyChanged)) {
-                guard !self.activeProfile!.busy else {
+        else if (DataController.shared().reachability?.isReachable ?? true) {
+            QObject.track(ExpLeagueProfile.active, #selector(ExpLeagueProfile.busyChanged)) {
+                guard !ExpLeagueProfile.active.busy else {
                     return true
                 }
                 self.prepareBackground(application)
-                self.activeProfile!.suspend()
+                ExpLeagueProfile.active.suspend()
                 DispatchQueue.main.async {
                     completionHandler(.newData)
                 }
                 return false
             }
-            activeProfile?.resume()
+            ExpLeagueProfile.active.resume()
         }
         else {
             self.prepareBackground(application)
@@ -251,25 +157,29 @@ extension AppDelegate: UIApplicationDelegate {
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        guard DataController.shared().activeProfile != nil else {
+            completionHandler(.newData)
+            return
+        }
         print("Received remote notification: \(userInfo)")
         if let messageId = userInfo["id"] as? String {
-            activeProfile!.expect(messageId)
+            ExpLeagueProfile.active.expect(messageId)
         }
-        else if let aowId = userInfo["aow"] as? String, aowId != activeProfile!.aowId {
-            activeProfile!.aow(aowId, title: userInfo["title"])
+        else if let aowId = userInfo["aow"] as? String {
+            ExpLeagueProfile.active.aow(aowId, title: userInfo["title"] as? String)
         }
         self.application(application, performFetchWithCompletionHandler: completionHandler)
     }
 
     func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
-        if let orderId = notification.userInfo?["order"] as? String, let order = activeProfile?.order(name: orderId) {
-            historyView?.selected = order
+        if let orderId = notification.userInfo?["order"] as? String, let order = ExpLeagueProfile.active.order(name: orderId) {
+            ExpLeagueProfile.active.selectedOrder = order
             tabs.selectedIndex = 1
         }
     }
     
     func applicationWillTerminate(_ application: UIApplication) {
-        activeProfile?.suspend()
+        ExpLeagueProfile.active.suspend()
     }
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
@@ -279,7 +189,7 @@ extension AppDelegate: UIApplicationDelegate {
         for i in 0..<deviceToken.count {
             token += String(format: "%02.2hhx", arguments: [chars[i]])
         }
-        self.token = token
+        DataController.shared().token = token
     }
 }
 

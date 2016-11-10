@@ -77,93 +77,6 @@ extension Timer {
     }
 }
 
-extension NSSet {
-    func append(_ item: Element) -> NSSet {
-        let mutable = mutableCopy() as! NSMutableSet
-        mutable.add(item)
-        return mutable.copy() as! NSSet
-    }
-    
-    func removeOne(_ item: Element) -> NSSet {
-        let mutable = mutableCopy() as! NSMutableSet
-        mutable.remove(item)
-        return mutable.copy() as! NSSet
-    }
-
-    func filter<T>(predicate p: (T) -> Bool) -> NSSet {
-        let mutable = mutableCopy() as! NSMutableSet
-        for item in mutable {
-            if (p(item as! T)) {
-                mutable.remove(item)
-            }
-        }
-        return mutable.copy() as! NSSet
-    }
-}
-
-extension NSOrderedSet {
-    func append(_ item: Element) -> NSOrderedSet {
-        let mutable = mutableCopy() as! NSMutableOrderedSet
-        mutable.add(item)
-        return mutable.copy() as! NSOrderedSet
-    }
-    
-    func removeOne(_ item: Element) -> NSOrderedSet {
-        let mutable = mutableCopy() as! NSMutableOrderedSet
-        mutable.remove(item)
-        return mutable.copy() as! NSOrderedSet
-    }
-    
-    func removeAll<T>(predicate p: (T) -> Bool) -> NSOrderedSet {
-        let mutable = mutableCopy() as! NSMutableOrderedSet
-        var found = false
-        repeat {
-            found = false
-            for item in mutable {
-                if (p(item as! T)) {
-                    mutable.remove(item)
-                    found = true
-                    break
-                }
-            }
-        }
-        while(found)
-        return mutable.copy() as! NSOrderedSet
-    }
-}
-
-extension NSManagedObject {
-    func notify() {}
-    func invalidate() {}
-    
-    func update(_ todo: @escaping () -> ()) {
-        AppDelegate.instance.xmppQueue.async {
-            todo()
-            self.save()
-        }
-    }
-    
-    func updateSync(_ todo: () -> ()) {
-        AppDelegate.instance.xmppQueue.sync {
-            todo()
-            self.save()
-        }
-    }
-    
-    internal final func save() {
-        do {
-            try self.managedObjectContext!.save()
-        }
-        catch {
-            fatalError("Failure to save context: \(error)")
-        }
-        invalidate()
-        DispatchQueue.main.async {
-            self.notify()
-        }
-    }
-}
-
 extension Array where Element : Equatable {
     mutating func removeOne(_ item: Iterator.Element) -> Bool {
         if let idx = index(where: {$0 == item}) {
@@ -207,6 +120,9 @@ class KeyboardStateTracker: NSObject {
     }
     
     @objc func keyboardShown(_ notification: Notification) {
+        guard check() else {
+            return
+        }
         let kbSize = ((notification as NSNotification).userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue.size
         let duration = (notification as NSNotification).userInfo![UIKeyboardAnimationDurationUserInfoKey] as! TimeInterval;
         let curve = (notification as NSNotification).userInfo![UIKeyboardAnimationCurveUserInfoKey] as! UInt
@@ -217,8 +133,10 @@ class KeyboardStateTracker: NSObject {
     }
     
     let closure: (CGFloat) -> ()
-    init(_ closure: @escaping (CGFloat)->()) {
-        self.closure = closure;
+    let check: ()->Bool
+    init(check: @escaping ()->Bool, closure: @escaping (CGFloat)->()) {
+        self.closure = closure
+        self.check = check
     }
 }
 

@@ -8,7 +8,7 @@
 
 import Foundation
 
-class QObject {
+public class QObject {
     class Tracker: NSObject {
         let todo: () -> Bool
         
@@ -26,23 +26,23 @@ class QObject {
     }
     
     static var trackers: [Tracker] = []
-    static func notify(_ signal: Selector, _ sender: AnyObject) {
+    public static func notify(_ signal: Selector, _ sender: AnyObject) {
 //        print("Notifying \(signal.description) from \(sender)")
         NotificationCenter.default.post(Notification(name: Notification.Name(rawValue: signal.description), object: sender))
     }
     
-    static func connect(_ sender: AnyObject, signal: Selector, receiver: AnyObject, slot: Selector) {
+    public static func connect(_ sender: AnyObject, signal: Selector, receiver: AnyObject, slot: Selector) {
 //        print("Connecting \(receiver):\(slot) to \(sender):\(signal)")
         NotificationCenter.default.addObserver(receiver, selector: slot, name: NSNotification.Name(rawValue: signal.description), object: sender)
     }
     
-    static func track(_ sender: AnyObject?, _ signal: Selector, tracker: @escaping () -> Bool) {
+    public static func track(_ sender: AnyObject?, _ signal: Selector, tracker: @escaping () -> Bool) {
         let trackerObj = Tracker(todo: tracker)
         trackers.append(trackerObj)
         NotificationCenter.default.addObserver(trackerObj, selector: #selector(Tracker.fire), name: NSNotification.Name(rawValue: signal.description), object: sender)
     }
     
-    static func disconnect(_ object: AnyObject) {
+    public static func disconnect(_ object: AnyObject) {
 //        print("Disconnecting \(object)")
         NotificationCenter.default.removeObserver(object)
     }

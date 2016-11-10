@@ -13,10 +13,11 @@ import Foundation
 import CoreData
 
 extension ExpLeagueMessage {
-    @NSManaged var from: String
+    @NSManaged public var from: String
+    @NSManaged public var time: TimeInterval
+    
     @NSManaged var parentRaw: NSManagedObject
     @NSManaged var typeRaw: Int16
     @NSManaged var body: String?
     @NSManaged var propertiesRaw: String?
-    @NSManaged var time: TimeInterval
 }

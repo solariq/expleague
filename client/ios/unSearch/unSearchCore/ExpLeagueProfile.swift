@@ -10,67 +10,45 @@ import Foundation
 import CoreData
 import XMPPFramework
 
-
 @objc
-class XMPPTracker: NSObject {
+public class XMPPTracker: NSObject {
     let onPresence: ((_ presence: XMPPPresence) -> Void)?
     let onMessage: ((_ message: XMPPMessage) -> Void)?
-    init(onPresence: ((_ presence: XMPPPresence) -> Void)?) {
+    
+    public init(onPresence: ((_ presence: XMPPPresence) -> Void)?) {
         self.onPresence = onPresence
         self.onMessage = nil
     }
 
-    init(onMessage: ((_ presence: XMPPMessage) -> Void)?) {
+    public init(onMessage: ((_ presence: XMPPMessage) -> Void)?) {
         self.onPresence = nil
         self.onMessage = onMessage
     }
 }
 
 @objc
-class ExpLeagueProfile: NSManagedObject {
-    static var active: ExpLeagueProfile {
-        return AppDelegate.instance.activeProfile!
+public class ExpLeagueProfile: NSManagedObject {
+    public static var active: ExpLeagueProfile {
+        return DataController.shared().activeProfile!
     }
     
-    static var state: ExpLeagueCommunicatorState {
-        return AppDelegate.instance.activeProfile!.communicator!.state
-    }
-    
-    var thread: DispatchQueue {
-        return AppDelegate.instance.xmppQueue
-    }
-    
-    override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?) {
-        super.init(entity: entity, insertInto: context)
+    public static var state: ExpLeagueCommunicatorState {
+        return DataController.shared().activeProfile!.communicator!.state
     }
     
     fileprivate dynamic var communicator: ExpLeagueCommunicator?
-    init(_ name: String, domain: String, login: String, passwd: String, port: Int16, context: NSManagedObjectContext) {
-        super.init(entity: NSEntityDescription.entity(forEntityName: "Profile", in: context)!, insertInto: context)
-        self.name = name
-        
-        self.domain = domain
-        self.port = NSNumber(value: port as Int16)
-        
-        self.login = login
-        self.passwd = passwd
-        self.active = false
-        save()
-    }
 
     var expectingAOW: Bool {
         return receiveAnswerOfTheWeek?.boolValue ?? false
     }
     
-    var busy: Bool {
+    public var busy: Bool {
         return incoming > 0 || outgoing > 0 || expectingAOW
     }
     
-    func busyChanged() {
-        QObject.notify(#selector(self.busyChanged), self)
-    }
+    public func busyChanged() { QObject.notify(#selector(self.busyChanged), self) }
     
-    func disconnect() {
+    public func disconnect() {
         communicator?.state.mode = .background
         communicator = nil
         updateSync {
@@ -78,31 +56,38 @@ class ExpLeagueProfile: NSManagedObject {
         }
     }
     
-    func connect() {
+    public func connect() {
         communicator = ExpLeagueCommunicator(profile: self)
         communicator!.state.mode = .foreground
+        QObject.connect(communicator!, signal: #selector(ExpLeagueCommunicator.stateChanged), receiver: self, slot: #selector(self.connectedChanged))
         updateSync {
             self.active = true
         }
     }
     
-    func suspend() {
+    public var connected: Bool {
+        return communicator?.state.status == .connected
+    }
+    
+    public func connectedChanged() { QObject.notify(#selector(self.connectedChanged), self) }
+    
+    public func suspend() {
         communicator?.state.mode = .background
     }
 
-    func resume() {
+    public func resume() {
         communicator?.state.mode = .foreground
     }
 
-    func track(_ tracker: XMPPTracker) {
+    public func track(_ tracker: XMPPTracker) {
         communicator!.track(tracker)
     }
     
-    override func awakeFromFetch() {
-        orderSelected = NSNumber(value: orders.count - 1 as Int)
+    override public func awakeFromFetch() {
+        orderSelected = NSNumber(value: -1)
     }
     
-    func expect(_ id: String) {
+    public func expect(_ id: String) {
         updateSync {
             for order in self.orders {
                 for message in (order as! ExpLeagueOrder).messagesRaw {
@@ -118,11 +103,39 @@ class ExpLeagueProfile: NSManagedObject {
     }
     
     dynamic var _jid: XMPPJID?
-    var jid: XMPPJID! {
+    public var jid: XMPPJID! {
         return _jid ?? XMPPJID(string: login + "@" + domain + "/unSearch")
     }
     
-    func order(name: String) -> ExpLeagueOrder? {
+    public func application(email: String) {
+        let application = DDXMLElement(name: "application", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)!
+        application.stringValue = email
+        let msg = XMPPMessage(type: "normal", child: application)!
+        msg.addAttribute(withName: "to", stringValue: domain)
+        ExpLeagueProfile.active.send(msg)
+    }
+    
+    public func listOrders() -> [ExpLeagueOrder] {
+        var result: [ExpLeagueOrder] = []
+        for order in self.orders {
+            result.append(order as! ExpLeagueOrder)
+        }
+        return result
+    }
+    
+    public var selectedOrder: ExpLeagueOrder? {
+        get {
+            return orderSelected.intValue >= 0 && orderSelected.intValue < orders.count ? orders[orderSelected.intValue] as? ExpLeagueOrder : nil
+        }
+        set (value) {
+            update {
+                self.orderSelected = NSNumber(value: Int16(value != nil ? self.orders.index(of:value!) : -1))
+                self.ordersChanged()
+            }
+        }
+    }
+    
+    public func order(name: String) -> ExpLeagueOrder? {
         let fit = orders.filter() {
             let order = $0 as! ExpLeagueOrder
             return order.id == name
@@ -134,7 +147,7 @@ class ExpLeagueProfile: NSManagedObject {
         communicator!.send(msg)
     }
     
-    func imageUrl(_ imageId: String) -> URL {
+    public func imageUrl(_ imageId: String) -> URL {
         if (domain == "localhost") {
             return URL(string: "http://localhost:8067/\(imageId)")!
         }
@@ -143,7 +156,7 @@ class ExpLeagueProfile: NSManagedObject {
         }
     }
     
-    var imageStorage: URL {
+    public var imageStorage: URL {
         if (domain == "localhost") {
             return URL(string: "http://localhost:8067/")!
         }
@@ -152,7 +165,10 @@ class ExpLeagueProfile: NSManagedObject {
         }
     }
     
-    func aow(_ id: String, title: String?) {
+    public func aow(_ id: String, title: String?) {
+        guard id != aowId else {
+            return
+        }
         updateSync {
             self.aowId = id
             self.aowTitle = title
@@ -165,7 +181,8 @@ class ExpLeagueProfile: NSManagedObject {
     }
     
     fileprivate dynamic var _experts: [ExpLeagueMember]?
-    var experts: [ExpLeagueMember] {
+    public var onlineExperts: [ExpLeagueMember] = []
+    public var experts: [ExpLeagueMember] {
         if (self._experts == nil) {
             var _experts: [ExpLeagueMember] = []
             for expert in self.expertsSet ?? [] {
@@ -176,12 +193,17 @@ class ExpLeagueProfile: NSManagedObject {
         return self._experts!
     }
     
-    internal func enqueue(_ msg: XMPPMessage) {
-        update {
-            self.queue = (self.queue ?? NSOrderedSet()).append(QueueItem(message: msg, context: self.managedObjectContext!))
-            self.outgoingChanged()
+    func online(expert: ExpLeagueMember, _ available: Bool = true) {
+        if (available) {
+            onlineExperts.append(expert)
         }
+        else {
+            _ = onlineExperts.removeOne(expert)
+        }
+        expertsChanged()
     }
+    
+    public func expertsChanged() { QObject.notify(#selector(expertsChanged), self) }
     
     internal func register(expert: ExpLeagueMember) -> ExpLeagueMember {
         let experts = expertsSet?.mutableCopy() ?? NSMutableSet()
@@ -191,16 +213,17 @@ class ExpLeagueProfile: NSManagedObject {
             self._experts?.append(expert)
         }
         save()
+        expertsChanged()
         return expert
     }
     
-    func expert(login id: String, factory: ((NSManagedObjectContext)->ExpLeagueMember)? = nil) -> ExpLeagueMember? {
+    public func expert(login id: String, factory: ((NSManagedObjectContext)->ExpLeagueMember)? = nil) -> ExpLeagueMember? {
         if let existing = experts.filter({return $0.login == id}).first {
             return existing
         }
         if (factory != nil) {
             var expert: ExpLeagueMember?
-            AppDelegate.instance.xmppQueue.sync {
+            ExpLeagueCommunicator.xmppQueue.sync {
                 expert = factory!(self.managedObjectContext!)
                 _ = self.register(expert: expert!)
             }
@@ -211,8 +234,9 @@ class ExpLeagueProfile: NSManagedObject {
         }
     }
     
+    
     fileprivate dynamic var _tags: [ExpLeagueTag]?
-    var tags: [ExpLeagueTag] {
+    public var tags: [ExpLeagueTag] {
         if (self._tags == nil) {
             var _tags: [ExpLeagueTag] = []
             for tag in self.tagsSet ?? [] {
@@ -233,13 +257,13 @@ class ExpLeagueProfile: NSManagedObject {
         return tag
     }
     
-    func tag(name id: String, factory: ((NSManagedObjectContext)->ExpLeagueTag)? = nil) -> ExpLeagueTag? {
+    public func tag(name id: String, factory: ((NSManagedObjectContext)->ExpLeagueTag)? = nil) -> ExpLeagueTag? {
         if let existing = tags.filter({return $0.name == id}).first {
             return existing
         }
         if (factory != nil) {
             var tag: ExpLeagueTag?
-            AppDelegate.instance.xmppQueue.sync {
+            ExpLeagueCommunicator.xmppQueue.sync {
                 tag = factory!(self.managedObjectContext!)
                 _ = self.register(tag: tag!)
             }
@@ -251,7 +275,7 @@ class ExpLeagueProfile: NSManagedObject {
     }
     
     dynamic var avatars: [String: String] = [:]
-    func avatar(_ login: String, url urlStr: String?) -> UIImage {
+    public func avatar(_ login: String, url urlStr: String?) -> UIImage {
         if let u = urlStr ?? avatars[login], let url = URL(string: u) {
             avatars[login] = u
             let request = URLRequest(url: url)
@@ -269,8 +293,10 @@ class ExpLeagueProfile: NSManagedObject {
 
         return UIImage(named: "owl_exp")!
     }
-        
-    func placeOrder(topic: String, urgency: String, local: Bool, location locationOrNil: CLLocationCoordinate2D?, experts: [XMPPJID], images: [String]) {
+    
+    public func ordersChanged() { DispatchQueue.main.async { QObject.notify(#selector(self.ordersChanged), self) } }
+    
+    public func placeOrder(topic: String, urgency: String, local: Bool, location locationOrNil: CLLocationCoordinate2D?, experts: [XMPPJID], images: [String]) {
         var rand = UUID().uuidString;
         rand = rand.substring(to: rand.characters.index(rand.startIndex, offsetBy: 8))
         update {
@@ -282,10 +308,9 @@ class ExpLeagueProfile: NSManagedObject {
         
             self.orderSelected = NSNumber(value: self.orders.count as Int)
             self.add(order: order)
-            DispatchQueue.main.async {
-                AppDelegate.instance.historyView?.selected = order
-            }
+            self.selectedOrder = order
         }
+               
     }
     
     func add(order: ExpLeagueOrder) {
@@ -296,9 +321,7 @@ class ExpLeagueProfile: NSManagedObject {
         mutableItems.add(order)
         self.orders = mutableItems.copy() as! NSOrderedSet
         save()
-        DispatchQueue.main.async {
-            AppDelegate.instance.historyView?.populate()
-        }
+        self.ordersChanged()
     }
 
     func add(aow order: ExpLeagueOrder) {
@@ -313,9 +336,12 @@ class ExpLeagueProfile: NSManagedObject {
             }
         }
         receiveAnswerOfTheWeek = false
+        aowId = order.id
         busyChanged()
         add(order: order)
-        Notifications.notifyBestAnswer(order, title: aowTitle ?? "")
+        if (aowTitle != nil) {
+            Notifications.notifyBestAnswer(order, title: aowTitle!)
+        }
     }
     
     var outgoing: Int {
@@ -347,18 +373,46 @@ class ExpLeagueProfile: NSManagedObject {
         incomingChanged()
     }
 
-    func visitQueue(_ visitor: (XMPPMessage)->()) {
+    internal func enqueue(_ msg: XMPPMessage) {
+        update {
+            self.queue = (self.queue ?? NSOrderedSet()).append(QueueItem(message: msg, context: self.managedObjectContext!))
+            self.outgoingChanged()
+        }
+    }
+    
+    public func visitQueue(_ visitor: (XMPPMessage)->()) {
         for item in queue ?? NSOrderedSet() {
             visitor(try! XMPPMessage(xmlString: (item as! QueueItem).body!))
         }
     }
     
-    func log(_ msg: String) {
+    public func log(_ msg: String) {
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .short
         dateFormatter.timeStyle = .long
         
         print(dateFormatter.string(from: Date()) + ": " + msg)
+    }
+    
+    override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?) {
+        super.init(entity: entity, insertInto: context)
+    }
+    
+    init(_ name: String, domain: String, login: String, passwd: String, port: Int16, context: NSManagedObjectContext) {
+        super.init(entity: NSEntityDescription.entity(forEntityName: "Profile", in: context)!, insertInto: context)
+        self.name = name
+        
+        self.domain = domain
+        self.port = NSNumber(value: port as Int16)
+        
+        self.login = login
+        self.passwd = passwd
+        self.active = false
+        save()
+    }
+    
+    deinit {
+        QObject.disconnect(self)
     }
 }
 

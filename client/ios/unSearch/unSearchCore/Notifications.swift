@@ -9,7 +9,7 @@
 import Foundation
 import NotificationCenter
 
-class Notifications {
+public class Notifications {
     static func notifyBestAnswer(_ aow: ExpLeagueOrder, title: String) {
         guard UIApplication.shared.applicationState != .active else {
             return

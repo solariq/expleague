@@ -28,11 +28,11 @@
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.6" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpmime:4.3.6" level="project" />
     <orderEntry type="library" name="Maven: tigase:jaxmpp-j2se:3.0.0" level="project" />
-    <orderEntry type="library" name="Maven: tigase:jaxmpp-core:3.0.0" level="project" />
     <orderEntry type="library" name="Maven: tigase:tigase-xmltools:3.4.5" level="project" />
     <orderEntry type="library" name="Maven: dnsjava:dnsjava:2.1.1" level="project" />
     <orderEntry type="library" name="Maven: junit:junit:3.8.2" level="project" />
     <orderEntry type="library" name="Maven: tigase:jaxmpp-registration:3.0.0" level="project" />
+    <orderEntry type="library" name="Maven: tigase:jaxmpp-core:3.0.0" level="project" />
     <orderEntry type="library" name="Maven: tigase:jaxmpp-muc:3.0.0" level="project" />
     <orderEntry type="library" name="Maven: tigase:jaxmpp-presence:3.0.0" level="project" />
     <orderEntry type="library" name="Maven: tigase:jaxmpp-roster:3.0.0" level="project" />
@@ -56,9 +56,9 @@
     <orderEntry type="library" name="Maven: com.google.guava:guava:16.0.1" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.7.1" level="project" />
     <orderEntry type="module" module-name="markdown-writer-fx" />
-    <orderEntry type="module" module-name="richtextfx" />
     <orderEntry type="library" name="Maven: com.miglayout:miglayout-javafx:5.0" level="project" />
     <orderEntry type="library" name="Maven: com.miglayout:miglayout-core:5.0" level="project" />
+    <orderEntry type="module" module-name="richtextfx" />
     <orderEntry type="library" name="Maven: org.fxmisc.flowless:flowless:0.4.7" level="project" />
     <orderEntry type="library" name="Maven: org.fxmisc.wellbehaved:wellbehavedfx:0.2" level="project" />
     <orderEntry type="library" name="Maven: com.lynden:GMapsFX:1.1.1" level="project" />

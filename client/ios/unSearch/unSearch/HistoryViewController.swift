@@ -6,6 +6,9 @@
 import Foundation
 import UIKit
 import XMPPFramework
+import FBSDKCoreKit
+
+import unSearchCore
 
 enum HistorySection {
     case ongoing, answerOfTheWeek, finished, none
@@ -46,7 +49,14 @@ class HistoryViewController: UITableViewController {
             NSForegroundColorAttributeName: UIColor.white
         ]
 
-        QObject.connect(AppDelegate.instance, signal: #selector(AppDelegate.activate(_:)), receiver: self, slot: #selector(self.populate))
+        QObject.connect(DataController.shared(), signal: #selector(DataController.profileChanged), receiver: self, slot: #selector(self.onProfileChanged))
+        QObject.connect(ExpLeagueProfile.active, signal: #selector(ExpLeagueProfile.ordersChanged), receiver: self, slot: #selector(self.populate))
+        populate()
+    }
+    func onProfileChanged() {
+        QObject.disconnect(self)
+        QObject.connect(DataController.shared(), signal: #selector(DataController.profileChanged), receiver: self, slot: #selector(self.onProfileChanged))
+        QObject.connect(ExpLeagueProfile.active, signal: #selector(ExpLeagueProfile.ordersChanged), receiver: self, slot: #selector(self.populate))
         populate()
     }
     
@@ -54,14 +64,13 @@ class HistoryViewController: UITableViewController {
         QObject.disconnect(self)
     }
     
+    
     func populate() {
         ongoing.removeAll()
         finished.removeAll()
         archived.removeAll()
         answerOfTheWeek = nil
-        let orders = AppDelegate.instance.activeProfile?.orders ?? []
-        for orderO in orders {
-            let order = orderO as! ExpLeagueOrder
+        for order in ExpLeagueProfile.active.listOrders() {
             if (order.isActive) {
                 ongoing.append(order)
             }
@@ -80,6 +89,7 @@ class HistoryViewController: UITableViewController {
         finished.sort(by: comparator)
         archived.sort(by: comparator)
         (view as! UITableView).reloadData()
+        self.selected = ExpLeagueProfile.active.selectedOrder
     }
     
     func indexOf(_ order: ExpLeagueOrder) -> IndexPath? {
@@ -114,6 +124,7 @@ class HistoryViewController: UITableViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        FBSDKAppEvents.logEvent("History tab active")
         AppDelegate.instance.tabs.tabBar.isHidden = false
     }
     
@@ -332,7 +343,7 @@ class OrderBadge: UITableViewCell {
     
     func setup(order o: ExpLeagueOrder) {
         QObject.disconnect(self)
-        QObject.connect(o, signal: #selector(ExpLeagueOrder.notify), receiver: self, slot: #selector(OrderBadge.invalidate(_:)))
+        QObject.connect(o, signal: #selector(ExpLeagueOrder.messagesChanged), receiver: self, slot: #selector(OrderBadge.invalidate(_:)))
         update(order: o)
     }
 
@@ -363,8 +374,25 @@ class OngoingOrderStateCell: OrderBadge {
     @IBOutlet weak var status: UILabel!
     @IBOutlet weak var date: UILabel!
     
+    var lastOrder: ExpLeagueOrder?
+    func onOrderChanged() {
+        DispatchQueue.main.async {
+            guard self.lastOrder != nil else {
+                return
+            }
+            self.update(order: self.lastOrder!)
+            self.layoutIfNeeded()
+        }
+    }
+    
     override func update(order o: ExpLeagueOrder) {
         super.update(order: o)
+        if (o != lastOrder) {
+            if lastOrder != nil {
+                QObject.disconnect(self)
+            }
+            QObject.connect(o, signal: #selector(ExpLeagueOrder.messagesChanged), receiver: self, slot: #selector(onOrderChanged))
+        }
         if (o.messages.last?.type == .answer) {
             status.textColor = Palette.OK
             status.text = "ОТВЕТ ГОТОВ"
@@ -392,6 +420,10 @@ class OngoingOrderStateCell: OrderBadge {
         
         formatter.doesRelativeDateFormatting = true
         date.text = formatter.string(from: Date(timeIntervalSinceReferenceDate: o.started))
+    }
+    
+    deinit {
+        QObject.disconnect(self)
     }
 }
 

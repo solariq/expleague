@@ -2,7 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>_XCCurrentVersionName</key>
-	<string>ProfileModel +Queue +Meta +Pending.xcdatamodel</string>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.expleague.unSearch</string>
+	</array>
 </dict>
 </plist>

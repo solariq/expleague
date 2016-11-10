@@ -13,10 +13,11 @@ import Foundation
 import CoreData
 
 extension ExpLeagueOrder {
-    @NSManaged var id: String
-    @NSManaged var started: TimeInterval
-    @NSManaged var topic: String
+    @NSManaged public var id: String
+    @NSManaged public var started: TimeInterval
+    @NSManaged public var topic: String
+    @NSManaged public var parent: ExpLeagueProfile
+
     @NSManaged var flags: Int16
     @NSManaged var messagesRaw: NSOrderedSet
-    @NSManaged var parent: ExpLeagueProfile
 }

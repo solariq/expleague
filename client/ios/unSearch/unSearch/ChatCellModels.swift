@@ -9,6 +9,8 @@ import MapKit
 import XMPPFramework
 import MMMarkdown
 
+import unSearchCore
+
 protocol ChatCellModel {
     var type: CellType {get}
 
@@ -613,30 +615,54 @@ class LookingForExpertModel: ChatCellModel {
         lfeCell.action = {
             self.order.cancel(lfeCell.controller!)
         }
-        if (lfeCell.progress != nil) {
-            if (ExpLeagueProfile.state.status == .connected) {
-                lfeCell.progress.startAnimating()
-            } else {
-                lfeCell.progress.stopAnimating()
-            }
+        switch (order.offer.experts.count) {
+        case 0:
+            lfeCell.caption.text = "Ждем эксперта"
+        case 1:
+            lfeCell.caption.text = "Ждем выбранного эксперта"
+        default:
+            lfeCell.caption.text = "Ждем выбранных экспертов"
         }
+        if (!ExpLeagueProfile.active.connected) {
+            self.cell?.progress.stopAnimating()
+            self.cell?.expertsOnline.text = "Подключаемся к серверу"
+        }
+        else if (ExpLeagueProfile.active.onlineExperts.count == 0) {
+            self.cell?.progress.startAnimating()
+            self.cell?.expertsOnline.text = "c 22 по 10 (Мск) эксперты отдыхают"
+        }
+        else {
+            let count: Int
+            if (order.offer.experts.count > 0) {
+                count = Set(order.offer.experts).intersection(Set(ExpLeagueProfile.active.onlineExperts)).count
+            }
+            else {
+                count = ExpLeagueProfile.active.onlineExperts.count
+            }
+            self.cell?.progress.startAnimating()
+            self.cell?.expertsOnline.text = "\(count) эксперт\(Lang.rusNumEnding(count, variants: ["", "а", "ов"])) online"
+        }
+        self.cell!.layoutIfNeeded()
     }
     
     func accept(_ message: ExpLeagueMessage) -> Bool {
         return false
     }
     
-    var tracker: XMPPTracker?
+    @objc
+    func onExpertsChanged() {
+        DispatchQueue.main.async {
+            if (self.cell != nil) {
+                try! self.form(chatCell: self.cell!)
+            }
+        }
+    }
+    
     let order: ExpLeagueOrder
     init (order: ExpLeagueOrder){
         self.order = order
-        tracker = XMPPTracker(onPresence: {(presence: XMPPPresence) -> Void in
-            let statuses = try! presence.nodes(forXPath: "//*[local-name()='status' and namespace-uri()='http://expleague.com/scheme']")
-            if statuses.count > 0, let status = statuses[0] as? DDXMLElement {
-                self.cell?.online = status.attributeIntegerValue(forName: "experts-online", withDefaultValue: 0)
-            }
-        })
-        order.parent.track(tracker!)
+        QObject.connect(ExpLeagueProfile.active, signal: #selector(ExpLeagueProfile.expertsChanged), receiver: self, slot: #selector(self.onExpertsChanged))
+        QObject.connect(ExpLeagueProfile.active, signal: #selector(ExpLeagueProfile.connectedChanged), receiver: self, slot: #selector(self.onExpertsChanged))
     }
 }
 

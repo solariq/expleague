@@ -10,6 +10,10 @@ import Foundation
 import UIKit
 import StoreKit
 import XMPPFramework
+import FBSDKCoreKit
+
+import unSearchCore
+
 fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
   switch (lhs, rhs) {
   case let (l?, r?):
@@ -98,6 +102,9 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
                 case .save:
                     let ask = Bundle.main.loadNibNamed("SaveView", owner: self, options: [:])?[0] as! SaveCell
                     ask.ok = {
+                        FBSDKAppEvents.logEvent("Save aow", parameters: [
+                            "order": self.data.order.id
+                        ])
                         self.data.order.markSaved()
                         self.state = .closed
                     }
@@ -137,11 +144,14 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         data.sync(true)
         detailsView?.keyboardTracker.start()
         enforceScroll = true
+        FBSDKAppEvents.logEvent("Task view", parameters: [
+            "order": data.order.id
+        ])
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        AppDelegate.instance.historyView?.selected = nil
+        ExpLeagueProfile.active.selectedOrder = nil
         detailsView?.keyboardTracker.stop()
         data.markAsRead()
         data.controller = nil

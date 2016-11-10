@@ -15,15 +15,17 @@ import CoreData
 extension ExpLeagueProfile {
 
     @NSManaged var active: NSNumber
-    @NSManaged var domain: String
-    @NSManaged var login: String
-    @NSManaged var name: String
-    @NSManaged var orderSelected: NSNumber?
+    
+    @NSManaged public var domain: String
+    @NSManaged public var login: String
+    @NSManaged public var name: String
+    @NSManaged public var passwd: String
+    @NSManaged public var port: NSNumber
+
+    @NSManaged var orderSelected: NSNumber
     @NSManaged var receiveAnswerOfTheWeek: NSNumber?
     @NSManaged var aowTitle: String?
     @NSManaged var aowId: String?
-    @NSManaged var passwd: String
-    @NSManaged var port: NSNumber
     @NSManaged var orders: NSOrderedSet
     @NSManaged var queue: NSOrderedSet?
     @NSManaged var pendingStr: String?

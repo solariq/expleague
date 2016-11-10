@@ -11,13 +11,13 @@ import CoreData
 import UIKit
 
 
-class ExpLeagueTag: NSManagedObject {
-    var type: ExpLeagueTagType {
+public class ExpLeagueTag: NSManagedObject {
+    public var type: ExpLeagueTagType {
         return ExpLeagueTagType(rawValue: self.typeInt.int16Value)!
     }
     
     fileprivate dynamic var _icon: UIImage?
-    var icon: UIImage {
+    public var icon: UIImage {
         if (_icon != nil) {
             return _icon!
         }
@@ -58,7 +58,7 @@ class ExpLeagueTag: NSManagedObject {
     }
 }
 
-enum ExpLeagueTagType: Int16 {
+public enum ExpLeagueTagType: Int16 {
     case tag = 0
     case pattern = 1
 }
