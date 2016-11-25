@@ -314,7 +314,10 @@ Item {
 
         enabled: !!dosearch.navigation.context.document
         onTriggered: {
-            dosearch.navigation.open(dosearch.navigation.context.document)
+            if (!!dosearch.navigation.context.task)
+                dosearch.navigation.open(dosearch.navigation.context.task.answer)
+            else
+                dosearch.navigation.open(dosearch.navigation.context.document)
         }
     }
 

@@ -1,26 +1,58 @@
 import QtQuick 2.7
 import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.1
+import QtWebEngine 1.3
 
 import ExpLeague 1.0
 
 import "."
-Rectangle {
+
+Item {
     id: self
     anchors.fill: parent
     property var editorActions: {
         return dosearch.main.editorActionsRef
     }
     property alias editor: edit
+    property bool options: false
 
     onFocusChanged: {
-        if (focus) {
+        if (focus && dosearch.navigation.activePage === owner) {
             edit.forceActiveFocus()
             dosearch.navigation.context.document = owner
         }
     }
 
+    Component.onCompleted: {
+        preview.updateHtml()
+    }
+
+    WebEngineView {
+        id: preview
+        visible: options
+        anchors.fill: parent
+        enabled: false
+
+        function updateHtml() {
+            loadHtml("<!DOCTYPE html><html><head>
+                    <script src=\"qrc:/md-scripts.js\"></script>
+                    <link rel=\"stylesheet\" href=\"qrc:/markdownpad-github.css\"></head>
+                    <body>" + owner.html+ "</body></html>")
+        }
+
+        Connections {
+            target: owner
+            onHtmlChanged: {
+                var focused = dosearch.main.activeFocusItem
+                var html = preview.updateHtml()
+                if (focused && focused == edit)
+                    focused.forceActiveFocus()
+            }
+        }
+    }
+
     Column {
+        visible: !options
         anchors.fill: parent
         Rectangle {
             id: buttons

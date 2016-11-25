@@ -3,6 +3,7 @@
 #include "pages/web.h"
 #include "pages/editor.h"
 #include "pages/search.h"
+#include "vault.h"
 
 #include <QDebug>
 
@@ -16,7 +17,13 @@ PagesGroup::PagesGroup(Page* root, Type type, NavigationManager* manager): QObje
         m_selected_page_index = -1;
         return;
     }
-    QList<Page*> pages = root->outgoing();
+    Context* context = qobject_cast<Context*>(root);
+    QList<Page*> pages;
+    if (context) {
+        QList<ContentPage*> parts = context->parts();
+        pages = QList<Page*>(*reinterpret_cast<const QList<Page*>*>(&parts));
+    }
+    else pages = root->outgoing();
 
     { // build redirects closure
         QSet<Page*> known;
@@ -49,7 +56,7 @@ PagesGroup::PagesGroup(Page* root, Type type, NavigationManager* manager): QObje
         QList<Page*>::iterator iter = pages.begin();
         while (iter != pages.end()) {
             Page* const page = *iter;
-            if (qobject_cast<Context*>(page) || qobject_cast<MarkdownEditorPage*>(page))
+            if (qobject_cast<Context*>(page) || qobject_cast<MarkdownEditorPage*>(page) || qobject_cast<Knugget*>(page))
                 iter = pages.erase(iter);
             else iter++;
         }
@@ -85,13 +92,15 @@ void PagesGroup::split(const QList<Page *>& active, const QList<Page *>& closed,
 }
 
 void PagesGroup::setParentGroup(PagesGroup* group) {
+    assert(group->pages().contains(m_root));
+    assert(group->type() != PagesGroup::SUGGEST);
     m_parent = group;
     if (m_selected_page_index >= 0) {
         Page* selected = m_pages[m_selected_page_index];
         while (group) {
             if (group->pages().contains(selected)) {
                 m_selected_page_index = -1;
-                selectedPageChanged(0);
+                emit selectedPageChanged(0);
                 break;
             }
             group = group->m_parent;
@@ -102,7 +111,7 @@ void PagesGroup::setParentGroup(PagesGroup* group) {
 }
 
 void PagesGroup::insert(Page* page, int position) {
-    assert(position <= m_closed_start);
+    assert(position <= m_closed_start || position == 0);
     if (page->state() == Page::CLOSED)
         page->setState(Page::INACTIVE);
     int index = m_pages.indexOf(page);
@@ -121,15 +130,15 @@ void PagesGroup::insert(Page* page, int position) {
 }
 
 bool PagesGroup::remove(Page* page) {
-    page->disconnect(this);
-    int index = m_pages.indexOf(page);
+    const int index = m_pages.indexOf(page);
+    m_pages.removeAt(index);
     if (index >=0 && index == m_selected_page_index) {
         m_selected_page_index = -1;
-        selectedPageChanged(0);
+        emit selectedPageChanged(0);
     }
     if (m_closed_start >= index)
         m_closed_start--;
-    m_pages.removeAt(index);
+    page->disconnect(this);
     emit pagesChanged();
     return true;
 }
@@ -160,13 +169,17 @@ void PagesGroup::onPageStateChanged(Page::State state) {
         m_pages.removeAt(index);
         m_pages.append(page);
         m_closed_start--;
-        if (m_selected_page_index > index)
+        bool selectedChanged = false;
+        if (m_selected_page_index > index) {
             m_selected_page_index--;
+        }
         else if (m_selected_page_index == index) {
             m_selected_page_index = -1;
-            emit selectedPageChanged(0);
+            selectedChanged = true;
         }
         emit pagesChanged();
+        if (selectedChanged)
+            emit selectedPageChanged(0);
         break;
     }
 }

@@ -233,6 +233,7 @@ private slots:
         Offer* roffer = registerOffer(offer);
         startTask(roffer);
         m_connection->sendResume(roffer);
+        notifyIfNeeded("", tr("Задание вернулось: ") + offer.topic());
     }
 
     void cancelReceived(const Offer& offer) {
@@ -289,7 +290,9 @@ private slots:
     void answerReceived(const QString& room, const QString& from, const QString&);
     void progressReceived(const QString& room, const QString& from, const Progress&);
 
-    void onTasksAvailableChanged() {
+    void onTasksAvailableChanged(int oldValue) {
+        if (m_connection->tasksAvailable() > 0 && oldValue < m_connection->tasksAvailable())
+            notifyIfNeeded("", tr("Изменилось количество доступных заданий на сервере"), true);
         emit tasksAvailableChanged();
     }
 
@@ -302,6 +305,7 @@ protected:
 private:
     Offer* registerOffer(const Offer&);
     void startTask(Offer* offer);
+    void notifyIfNeeded(const QString& from, const QString& message, bool broadcast = false);
 
 private:
     QMap<QString, Offer*> m_offers;

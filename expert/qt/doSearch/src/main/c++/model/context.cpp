@@ -71,7 +71,7 @@ SearchSession* Context::match(SearchRequest* request) {
         }
     }
 
-    SearchSession* newSession = parent()->session(request, this);
+    SearchSession* newSession = parent()->session(request);
     m_sessions.append(newSession);
     connect(newSession, SIGNAL(queriesChanged()), this, SLOT(onQueriesChanged()));
     return newSession;
@@ -79,9 +79,16 @@ SearchSession* Context::match(SearchRequest* request) {
 
 void Context::transition(Page* to, TransitionType type) {
     Page::transition(to, type);
-    SearchSession* session = qobject_cast<SearchSession*>(to);
-    if (type == Page::CHILD_GROUP_OPEN && session) {
-        emit requestsChanged();
+    if (type == Page::CHILD_GROUP_OPEN) {
+        ContentPage* cpage = qobject_cast<ContentPage*>(to);
+        if (cpage)
+            appendPart(cpage);
+        SearchSession* session = qobject_cast<SearchSession*>(to);
+        if (session) {
+            if (!m_sessions.contains(session))
+                m_sessions.append(session);
+            emit requestsChanged();
+        }
     }
 }
 
@@ -131,6 +138,7 @@ void Context::removeDocument(MarkdownEditorPage* document) {
         Page::append("context.document", m_documents[i]->id());
     }
     save();
+    removePart(document);
     emit documentsChanged();
 }
 
@@ -145,15 +153,43 @@ void Context::onTaskFinished() {
     parent()->remove(this);
 }
 
-void Context::onActiveScreenChanged() {
+void Context::onActiveScreenChanged() { // TODO append site acquisition logic
     NavigationManager* navigation = qobject_cast<NavigationManager*>(sender());
     if (navigation->context() != this)
         return;
 
     WebResource* webPage;
-    if ((webPage = dynamic_cast<WebResource*>(navigation->activePage())))
+    if ((webPage = dynamic_cast<WebResource*>(navigation->activePage()))) {
+//        foreach (ContentPage* part, parts()) {
+//            WebResource* webPart = dynamic_cast<WebResource*>(part)
+//        }
+
+//        appendPart(qobject_cast<ContentPage*>(webPage->container()));
         emit visitedUrl(webPage->url());
-    appendPart(qobject_cast<ContentPage*>(navigation->activePage()));
+    }
+//    else appendPart(qobject_cast<ContentPage*>(navigation->activePage()->container()));
+}
+
+void Context::onPartRemoved(ContentPage* part) {
+    SearchSession* session = qobject_cast<SearchSession*>(part);
+    if (session) {
+        m_sessions.removeOne(session);
+        emit requestsChanged();
+    }
+    MarkdownEditorPage* document = qobject_cast<MarkdownEditorPage*>(part);
+    if (document) {
+        m_documents.removeOne(document);
+        emit documentsChanged();
+    }
+}
+
+void Context::onPartProfileChanged(const BoW& from, const BoW& to) {
+    CompositeContentPage::onPartProfileChanged(from, to);
+    WebSite* site = qobject_cast<WebSite*>(sender());
+    if (site && cos(profile(), to) < m_min_cos) {
+        m_icon_cache = site->icon();
+        m_min_cos = cos(profile(), site->profile());
+    }
 }
 
 Context::Context(const QString& id, const QString& name, doSearch* parent): CompositeContentPage(id, "qrc:/ContextView.qml", parent) {
@@ -170,21 +206,22 @@ Context::Context(const QString& id, doSearch* parent): CompositeContentPage(id, 
 void Context::interconnect() {
     CompositeContentPage::interconnect();
     m_vault = new Vault(this);
-    visitChildren("search.session", [this](Page* session) {
-        m_sessions.append(static_cast<SearchSession*>(session));
-    });
-
-    visitKeys("context.document", [this](const QVariant& value) {
-        m_documents.append(static_cast<MarkdownEditorPage*>(parent()->page(value.toString())));
-    });
-
-    visitKeys("context.composite", [this](const QVariant& value) {
-        auto composite = static_cast<CompositeContentPage*>(parent()->page(value.toString()));
-        m_composite_parts.append(composite);
-        connect(composite, SIGNAL(partAppended(ContentPage*)), SLOT(onPartAppend(ContentPage*)));
-        connect(composite, SIGNAL(partRemoved(ContentPage*)), SLOT(onPartRemoved(ContentPage*)));
-        connect(composite, SIGNAL(stateChanged(Page::State)), SLOT(onPartStateChanged(Page::State)));
-    });
+    foreach (ContentPage* part, parts()) {
+        SearchSession* session = qobject_cast<SearchSession*>(part);
+        MarkdownEditorPage* document = qobject_cast<MarkdownEditorPage*>(part);
+        Knugget* knugget = qobject_cast<Knugget*>(part);
+        WebSite* site = qobject_cast<WebSite*>(part);
+        if (session)
+            m_sessions.append(session);
+        else if (document)
+            m_documents.append(document);
+        else if (knugget && !knugget->group())
+            m_vault->append(knugget);
+        else if (site && cos(profile(), site->profile()) < m_min_cos) {
+            m_icon_cache = site->icon();
+            m_min_cos = cos(profile(), site->profile());
+        }
+    }
 
     QVariant active = value("context.active");
     m_active_document_index = active.isNull() ? -1 : m_documents.indexOf(static_cast<MarkdownEditorPage*>(parent()->page(active.toString())));
@@ -192,6 +229,7 @@ void Context::interconnect() {
     foreach(SearchSession* session, m_sessions) {
         connect(session, SIGNAL(queriesChanged()), this, SLOT(onQueriesChanged()));
     }
+    connect(this, SIGNAL(partRemoved(ContentPage*)), this, SLOT(onPartRemoved(ContentPage*)));
 }
 
 Context::~Context() {

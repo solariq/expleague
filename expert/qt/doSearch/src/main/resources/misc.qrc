@@ -16,5 +16,10 @@
         <file>html/yandex-map.html</file>
         <file>html/yandex-map.js</file>
         <file>markdown-tile.css</file>
+        <file>dictionaries/en_US.dic</file>
+        <file>dictionaries/en_US.aff</file>
+        <file>dictionaries/ru_RU.aff</file>
+        <file>dictionaries/ru_RU.dic</file>
+        <file>sounds/kuku.wav</file>
     </qresource>
 </RCC>

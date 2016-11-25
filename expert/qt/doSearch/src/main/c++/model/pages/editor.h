@@ -21,7 +21,6 @@ class MarkdownEditorPage: public ContentPage {
     Q_OBJECT
 
     Q_PROPERTY(QString html READ html NOTIFY htmlChanged)
-    Q_PROPERTY(expleague::Context* owner READ owner CONSTANT)
 
 public:
     QString title() const;

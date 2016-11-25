@@ -8,7 +8,7 @@ Item {
     property alias instance: self
     property TextEdit editor: {
         var screen = root.navigation.activeScreen
-        if (screen && screen.editor)
+        if (screen && screen.editor && screen.toString().indexOf("EditorView") >= 0)
             return screen.editor
         return null
     }

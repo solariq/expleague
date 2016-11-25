@@ -10,7 +10,7 @@ import "."
 
 Item {
     id: self
-    property WebEngineView webView: owner.serps[owner.selected].ui().webView
+    property WebEngineView webView: owner.serps[owner.selected].ui.webView
     anchors.fill: parent
 
     RowLayout {
@@ -25,7 +25,7 @@ Item {
             ColumnLayout {
                 anchors.fill: parent
                 spacing: 5
-                Item {Layout.preferredWidth: 1}
+                Item {Layout.preferredHeight: 5}
 
                 Repeater {
                     model: owner.serps
@@ -48,11 +48,13 @@ Item {
             Repeater {
                 id: serps
                 model: owner.serps
-                delegate: Rectangle {
+                delegate: Item {
                     anchors.fill: parent
-                    visible: owner.selected === index
-                    color: "red"
-                    children: [modelData.ui()]
+                    visible: owner.selected === index && self.visible
+                    children: [ui]
+                    onVisibleChanged: {
+                        children[0].visible = (owner.selected === index && self.visible)
+                    }
                 }
             }
         }

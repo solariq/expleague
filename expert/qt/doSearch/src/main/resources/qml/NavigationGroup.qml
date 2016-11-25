@@ -98,7 +98,7 @@ Item {
                     id: others
                     property bool opened: false
                     height: parent.height
-                    visible: self.activePages.length > self.visiblePages.length
+                    visible: self.activePages.length > self.visiblePages.length || self.closedPages.length > 0
                     enabled: !opened
 
                     background: Rectangle {

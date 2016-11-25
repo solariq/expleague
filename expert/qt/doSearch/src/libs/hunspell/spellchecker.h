@@ -20,9 +20,11 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qstring.h>
 
-class Dictionary;
+#include <QList>
+
 class Hunspell;
 class QTextCodec;
+class QFile;
 
 namespace hunspell {
 
@@ -39,12 +41,11 @@ public:
     void loadDictionary(const QString &dictFilePath);
     void loadUserWordlist(const QString &userWordlistPath);
 
-    static QMap<QString, Dictionary> availableDictionaries();
-
 private:
     Hunspell *hunspellChecker;
     QString userWordlist;
     QTextCodec *textCodec;
+    QList<QFile*> tempFiles;
 };
 
 } // namespace Hunspell

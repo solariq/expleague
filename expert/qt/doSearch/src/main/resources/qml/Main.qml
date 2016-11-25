@@ -24,7 +24,7 @@ ApplicationWindow {
     property bool options: false
     property real rightMargin: 0
     property real leftMargin: 0
-    property string dragType: "none"
+    property string dragType: ""
     property var drag
 
 //    flags: {
@@ -186,7 +186,7 @@ ApplicationWindow {
 
         onDownloadRequested: {
             console.log("Download requested: " + download.path)
-            var contextUI = dosearch.navigation.context.ui()
+            var contextUI = dosearch.navigation.context.ui
             contextUI.downloads.append(download)
             download.accept()
             dosearch.navigation.select(0, dosearch.navigation.context)
@@ -537,7 +537,7 @@ ApplicationWindow {
 
             color: Palette.backgroundColor("selected")
 
-            children: [dosearch.history.ui()]
+            children: [dosearch.history.ui]
             onFocusChanged: {
                 if (focus)
                     children[0].forceActiveFocus()
@@ -662,12 +662,12 @@ ApplicationWindow {
             Connections {
                 target: self
 
-                onDragChanged: {
+                onDragTypeChanged: {
 //                    console.log("Drag changed to " + self.drag)
                     if (self.dragType == "page" && dosearch.navigation.context !== dosearch.navigation.activePage) {
                         contexts.show()
                     }
-                    else if (!self.drag && contexts.visible) {
+                    else if (self.dragType != "page" && contexts.visible) {
                         contexts.hide()
                     }
                 }

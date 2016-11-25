@@ -7,6 +7,14 @@
 #include <QString>
 #include <QCryptographicHash>
 
+inline QString randString(int length) {
+    QString result;
+    for (int i = 0; i < length; i++) {
+        result += 'a' + ((double)rand()) / RAND_MAX * ('z' - 'a');
+    }
+    return result;
+}
+
 inline QString md5(const QString& str) {
     QCryptographicHash md5(QCryptographicHash::Md5);
     md5.addData(str.toUtf8());

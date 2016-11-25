@@ -9,7 +9,6 @@
 
 #include <QDomElement>
 #include <QDateTime>
-#include <QApplication>
 #include <QPixmap>
 
 #include "QXmppClient.h"
@@ -78,7 +77,7 @@ public:
     void connect();
     void disconnect();
 
-    QString id() const { return m_profile->login().replace('.', '_'); }
+    QString id() const { return m_jid.isEmpty() ? m_profile->login().replace('.', '_') : m_jid.section('@', 0, 0); }
 
     Member* find(const QString& id);
 
@@ -102,7 +101,7 @@ public:
 
     void sendMessage(const QString& to, const QString&);
     void sendProgress(const QString& to, const Progress& progress);
-    void sendAnswer(const QString& roomId, const QString& answer);
+    void sendAnswer(const QString& roomId, int difficulty, int success, bool extraInfo, const QString& answer);
 
     void sendUserRequest(const QString&);
 
@@ -110,7 +109,7 @@ signals:
     void connected();
     void disconnected();
 
-    void tasksAvailableChanged();
+    void tasksAvailableChanged(int oldValue);
 
     void receiveCheck(const Offer& task);
     void receiveInvite(const Offer& task);
@@ -136,7 +135,7 @@ public slots:
     void iqReceived(const QXmppIq& iq);
     void messageReceived(const QXmppMessage& msg);
     void disconnectedSlot() {
-        disconnected();
+        emit disconnected();
     }
     void connectedSlot();
 private slots:
@@ -145,7 +144,7 @@ private slots:
     }
 
     void error(const QString& error) {
-        xmppError(error);
+        emit xmppError(error);
     }
 
 public:

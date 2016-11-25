@@ -64,9 +64,11 @@ private slots:
     void onTaskFinished();
     void onActiveScreenChanged();
     void onQueriesChanged() { emit requestsChanged(); }
+    void onPartRemoved(ContentPage* part);
 
 protected:
     void interconnect();
+    void onPartProfileChanged(const BoW& from, const BoW& to);
 
     friend class NavigationManager;
 public:
@@ -79,10 +81,10 @@ private:
     Task* m_task = 0;
     QList<SearchSession*> m_sessions;
     QList<MarkdownEditorPage*> m_documents;
-    QList<CompositeContentPage*> m_composite_parts;
     int m_active_document_index = -1;
     Vault* m_vault;
     mutable QString m_icon_cache;
+    mutable double m_min_cos = 2;
 
     friend class Vault;
 };

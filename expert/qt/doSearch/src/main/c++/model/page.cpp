@@ -98,25 +98,31 @@ QQuickItem* Page::ui(bool cache) const {
         //    m_ui->setParent(const_cast<Page*>(this));
         connect(m_ui, &QQuickItem::destroyed, [this](){
             m_ui = 0;
+            emit uiChanged();
         });
     }
     initUI(result);
     return result;
 }
 
-void Page::transferUI(Page* other) const {
-    if (!m_ui || !m_context)
-        return;
+bool Page::transferUI(Page* other) const {
+    if (!m_ui || !m_context || other->m_ui) // have no ui or other have alreagy got one
+        return false;
     other->m_context = m_context;
     other->m_ui = m_ui;
-    m_ui->disconnect();
+    QObject::disconnect(m_ui, 0, this, 0);
+    m_ui->setParentItem(0);
 //    m_ui->setParent(other);
     m_context->setContextProperty("owner", other);
     connect(m_ui, &QQuickItem::destroyed, [other](){
         other->m_ui = 0;
+        emit other->uiChanged();
     });
     m_ui = 0;
     m_context = 0;
+    emit other->uiChanged();
+    emit uiChanged();
+    return true;
 }
 
 double Page::pOut(Page* page) const {
@@ -307,9 +313,8 @@ void Page::interconnect() {
 
 void ContentPage::setTextContent(const QString& content) {
     auto compositeParent = qobject_cast<CompositeContentPage*>(parentPage());
-    if (compositeParent) {
+    if (compositeParent)
         compositeParent->appendPart(this);
-    }
     FileWriteThrottle::enqueue(storage().absoluteFilePath("content.txt"), content, [this, content]() {
         BoW profile = BoW::fromPlainText(content, parent()->dictionary());
         setProfile(profile);
@@ -421,7 +426,9 @@ CompositeContentPage::CompositeContentPage(const QString& id, const QString& uiQ
 
 void CompositeContentPage::interconnect() {
     visitKeys("content.part", [this](const QVariant& var){
-        ContentPage* part = static_cast<ContentPage*>(parent()->page(var.toString()));
+        ContentPage* part = qobject_cast<ContentPage*>(parent()->page(var.toString()));
+        if (m_parts.contains(part))
+            return;
         m_parts.append(part);
         connect(part, SIGNAL(textContentChanged()), SLOT(onPartContentsChanged()));
         connect(part, SIGNAL(changingProfile(BoW,BoW)), SLOT(onPartProfileChanged(BoW,BoW)));

@@ -25,18 +25,25 @@ Rectangle {
         anchors.fill: parent
         onEntered: {
 //            console.log("Entered vault drop area")
+            if (dosearch.main.dragType != "web" && dosearch.main.dragType != "delay")
+                return
+            dosearch.main.dragType = "web"
             dosearch.main.drag = drag.source
         }
 
         onExited: {
-            dosearch.main.drag = "delay"
+            if (dosearch.main.dragType != "web" && dosearch.main.dragType != "delay")
+                return
+            dosearch.main.dragType = "delay"
             dosearch.main.delay(100, function () {
-                if (dosearch.main.drag == "delay")
+                if (dosearch.main.dragType == "delay")
                     dosearch.main.drag = null
             })
         }
 
         onDropped: {
+            if (dosearch.main.dragType != "web" && dosearch.main.dragType != "delay")
+                return
             drop.getDataAsString(drop.formats[1])
             var source = "empty"
             var src = drop.source
@@ -132,7 +139,7 @@ Rectangle {
                     highlightedIcon: "qrc:/tools/back_h.png"
                     dark: true
                     onTriggered: {
-                        owner.activeGroup = group.parentGroup
+                        owner.activeGroup = group.group ? group.group : context.vault
                     }
                 }
                 TextEdit {

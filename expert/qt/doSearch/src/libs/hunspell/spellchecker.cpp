@@ -17,26 +17,57 @@
 #include "spellchecker.h"
 using hunspell::SpellChecker;
 
-#include <QApplication>
+//#include <QApplication>
 #include <QDebug>
 #include <QDir>
 #include <QDirIterator>
 #include <QTextCodec>
+#include <QTemporaryFile>
 
-//#include "hunspell.hxx"
+#include "hunspell.hxx"
 
-#include "dictionary.h"
 #include "datalocation.h"
 
 SpellChecker::SpellChecker() :
-    hunspellChecker(0),
-    textCodec(0)
+    hunspellChecker(0), textCodec(0)
 {
+    QDir dictPath(":/dictionaries");
+    dictPath.setFilter(QDir::Files);
+    dictPath.setNameFilters(QStringList() << "*.dic");
+    if (dictPath.exists()) {
+        // loop over all dictionaries in directory
+        QDirIterator it(dictPath);
+        while (it.hasNext()) {
+            it.next();
+
+            QString language = it.fileName().remove(".dic");
+            language.truncate(5); // just language and country code
+            QFile* tempDic = QTemporaryFile::createNativeFile(it.filePath());
+            QFile* tempAff = QTemporaryFile::createNativeFile(dictPath.path() + "/" + language + ".aff");
+            tempFiles.append(tempDic);
+            tempFiles.append(tempAff);
+            if (hunspellChecker)
+                hunspellChecker->add_dic(tempDic->fileName().toLatin1().data());
+            else
+                hunspellChecker = new Hunspell(tempAff->fileName().toLatin1().data(), tempDic->fileName().toLatin1().data());
+        }
+    }
+    else qDebug() << "No dictionaries folder found in resources!";
+    if (hunspellChecker) {
+        textCodec = QTextCodec::codecForName(hunspellChecker->get_dic_encoding());
+        if (!textCodec) {
+            textCodec = QTextCodec::codecForName("UTF-8");
+        }
+    }
 }
 
 SpellChecker::~SpellChecker()
 {
-    delete hunspellChecker;
+    if (hunspellChecker)
+        delete hunspellChecker;
+
+    foreach(QFile* tempFile, tempFiles)
+        delete tempFile;
 }
 
 bool SpellChecker::isCorrect(const QString &word)
@@ -46,8 +77,7 @@ bool SpellChecker::isCorrect(const QString &word)
     }
 
     QByteArray ba = textCodec->fromUnicode(word);
-    return true;
-//    return hunspellChecker->spell(ba) != 0;
+    return hunspellChecker->spell(ba) != 0;
 }
 
 QStringList SpellChecker::suggestions(const QString &word)
@@ -60,20 +90,20 @@ QStringList SpellChecker::suggestions(const QString &word)
 
     char **suggestedWords;
     QByteArray ba = textCodec->fromUnicode(word);
-//    int count = hunspellChecker->suggest(&suggestedWords, ba);
+    int count = hunspellChecker->suggest(&suggestedWords, ba);
 
-//    for (int i = 0; i < count; ++i) {
-//        suggestions << textCodec->toUnicode(suggestedWords[i]);
-//    }
+    for (int i = 0; i < count; ++i) {
+        suggestions << textCodec->toUnicode(suggestedWords[i]);
+    }
 
-//    hunspellChecker->free_list(&suggestedWords, count);
+    hunspellChecker->free_list(&suggestedWords, count);
 
     return suggestions;
 }
 
 void SpellChecker::addToUserWordlist(const QString &word)
 {
-//    hunspellChecker->add(textCodec->fromUnicode(word).constData());
+    hunspellChecker->add(textCodec->fromUnicode(word).constData());
     if(!userWordlist.isEmpty()) {
         QFile userWordlistFile(userWordlist);
         if(!userWordlistFile.open(QIODevice::Append))
@@ -87,19 +117,20 @@ void SpellChecker::addToUserWordlist(const QString &word)
 
 void SpellChecker::loadDictionary(const QString &dictFilePath)
 {
-    delete hunspellChecker;
+    if (hunspellChecker)
+        delete hunspellChecker;
 
     qDebug() << "Load dictionary from path" << dictFilePath;
 
     QString affixFilePath(dictFilePath);
     affixFilePath.replace(".dic", ".aff");
 
-//    hunspellChecker = new Hunspell(affixFilePath.toLocal8Bit(), dictFilePath.toLocal8Bit());
+    hunspellChecker = new Hunspell(affixFilePath.toLocal8Bit(), dictFilePath.toLocal8Bit());
 
-//    textCodec = QTextCodec::codecForName(hunspellChecker->get_dic_encoding());
-//    if (!textCodec) {
-//        textCodec = QTextCodec::codecForName("UTF-8");
-//    }
+    textCodec = QTextCodec::codecForName(hunspellChecker->get_dic_encoding());
+    if (!textCodec) {
+        textCodec = QTextCodec::codecForName("UTF-8");
+    }
 
     // also load user word list
     QString path = DataLocation::writableLocation();
@@ -115,7 +146,7 @@ void SpellChecker::loadUserWordlist(const QString &userWordlistPath)
         return;
 
     QTextStream stream(&userWordlistFile);
-//    for (QString word = stream.readLine(); !word.isEmpty(); word = stream.readLine()) {
-//        hunspellChecker->add(textCodec->fromUnicode(word).constData());
-//    }
+    for (QString word = stream.readLine(); !word.isEmpty(); word = stream.readLine()) {
+        hunspellChecker->add(textCodec->fromUnicode(word).constData());
+    }
 }

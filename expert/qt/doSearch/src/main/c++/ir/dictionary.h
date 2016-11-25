@@ -28,7 +28,7 @@ struct Word {
     QString toString() const;
     static Word fromString(const QString& serialized);
     explicit Word(const QString& word = ""): text(word) {}
-    explicit Word(const QString& word, int documentFreq, int totalFreq): text(word), dfreq(documentFreq), freq(totalFreq) {}
+    explicit Word(const QString& word, int totalFreq, int documentFreq): text(word), dfreq(documentFreq), freq(totalFreq) {}
 };
 
 class BoW;

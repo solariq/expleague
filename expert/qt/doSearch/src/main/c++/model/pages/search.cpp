@@ -17,6 +17,10 @@ Page* SERPage::container() const {
     return request()->session();
 }
 
+Page* SERPage::parentPage() const {
+    return request();
+}
+
 void SERPage::interconnect() {
     connect(request(), SIGNAL(sessionChanged()), SLOT(onSessionChanged()));
 }
@@ -116,6 +120,15 @@ void SearchRequest::select(int index) {
     emit iconChanged(icon());
 }
 
+void SearchRequest::onPartProfileChanged(const BoW& oldOne, const BoW& newOne) {
+    SERPage* serp = qobject_cast<SERPage*>(sender());
+    if (serp) {
+        BoW oldWOTemplates = serp->site()->removeTemplates(oldOne);
+        BoW newWOTemplates = serp->site()->removeTemplates(newOne);
+        CompositeContentPage::onPartProfileChanged(oldWOTemplates, newWOTemplates);
+    }
+}
+
 SearchRequest::SearchRequest(const QString& id, const QString& query, doSearch* parent): CompositeContentPage(id, "qrc:/SearchQueryView.qml", parent), m_query(query)
 {
     store("search.query", query);
@@ -163,11 +176,29 @@ bool SearchSession::check(SearchRequest* request) {
     return false;
 }
 
-void SearchSession::onPartAppended(ContentPage* request) {
-    static_cast<SearchRequest*>(request)->setSession(this);
+void SearchSession::setRequest(SearchRequest* request) {
+    const int index = parts().indexOf(request);
+    if (index >= 0) {
+        m_index = index;
+        emit queriesChanged();
+    }
+    else appendPart(request);
+}
+
+void SearchSession::onPartAppended(ContentPage* part) {
+    SearchRequest* request = qobject_cast<SearchRequest*>(part);
+    if (!request)
+        return;
+    request->setSession(this);
+    connect(request, SIGNAL(selectedChanged()), SLOT(onSelectedSEChanged()));
+    m_index = parts().size() - 1;
     emit titleChanged(request->title());
     emit iconChanged(request->icon());
     emit queriesChanged();
+}
+
+void SearchSession::onSelectedSEChanged() {
+    emit iconChanged(icon());
 }
 
 SearchSession::SearchSession(const QString& id, SearchRequest* seed, doSearch* parent):

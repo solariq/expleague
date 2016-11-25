@@ -16,6 +16,13 @@ Rectangle {
     anchors.fill: parent
     property alias downloads: downloadsPage
 
+    onFocusChanged: {
+        var text = owner.title
+        if (focus && (text == "" || text == qsTr("Новый контекст"))) {
+            contextName.forceActiveFocus()
+        }
+    }
+
     RowLayout {
         anchors.fill: parent
         spacing: 0
@@ -112,6 +119,7 @@ Rectangle {
                         Layout.alignment: Qt.AlignVCenter
                         text: owner.title
                         font.pixelSize: 24
+                        clip: true
 //                        color: "black"
                         Keys.onReturnPressed: {
                             owner.setName(contextName.text)
@@ -120,7 +128,6 @@ Rectangle {
                         onTextChanged: {
                             if (text == "" || text == qsTr("Новый контекст")) {
                                 contextName.selectAll()
-                                contextName.forceActiveFocus()
                             }
                         }
                     }

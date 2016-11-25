@@ -92,15 +92,19 @@ private slots:
         onGroupsChanged();
     }
     void onTypeInProfileChange(const BoW& prev, const BoW& next);
+    void onActivePageUIChanged();
 
 public:
     NavigationManager(doSearch* parent = 0);
 
 private:
     void rebalanceWidth();
+    void removeSuggestGroup();
     void unfold();
     void popTo(const PagesGroup* to, bool clearSelection);
-    void typeIn(Page*);
+    void appendGroup(PagesGroup* group);
+    void typeIn(Page* page, bool suggest = true);
+    PagesGroup* contextGroup() { return m_groups.empty() ? group(m_active_context, m_active_context, true) : m_groups.first(); }
     PagesGroup* group(Page* page, Context* context = 0, bool create = false);
 
 private:

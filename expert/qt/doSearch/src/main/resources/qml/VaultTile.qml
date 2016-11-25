@@ -11,7 +11,7 @@ Item {
 //    color: "green"
 
     property var item: QtObject {
-        function ui() {}
+        property Item ui: Item {}
         property string title: ""
         property string md: ""
     }
@@ -59,7 +59,7 @@ Item {
 
         property real size: self.size
 
-        children: [item.ui(false)]
+        children: [item.uiNoCache]
         onChildrenChanged: {
             for (var i in children) {
                 var child = children[i]

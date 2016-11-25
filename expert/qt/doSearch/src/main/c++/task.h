@@ -63,7 +63,7 @@ public:
 
 public:
     Q_INVOKABLE void sendMessage(const QString& str) const;
-    Q_INVOKABLE void sendAnswer(const QString& shortAnswer);
+    Q_INVOKABLE void sendAnswer(const QString& shortAnswer, int difficulty, int success, bool extraInfo);
     Q_INVOKABLE void tag(TaskTag*);
     Q_INVOKABLE void pattern(AnswerPattern*);
     Q_INVOKABLE void phone(const QString&);

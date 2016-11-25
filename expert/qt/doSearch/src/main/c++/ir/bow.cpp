@@ -43,10 +43,12 @@ QString BoW::toString() const {
 BoW BoW::fromString(const QString& serialized, CollectionDictionary* terms) {
     QVector<std::pair<int, float>> pairs;
     foreach(QString line, serialized.split('\n')) {
+        if (line.isEmpty())
+            continue;
         QStringList parts = line.split('\t');
         int id = terms->id(parts[0]);
-        if (id == CollectionDictionary::UnknownWord) {
-            if (parts[0].isEmpty() || parts[0] == "[unknown]")
+        if (id == CollectionDictionary::UnknownWord && parts[0] != "[unknown]") {
+            if (parts[0].isEmpty())
                 continue;
             qDebug() << "Invalid profile entry: " << line;
             id = terms->append(parts[0]);

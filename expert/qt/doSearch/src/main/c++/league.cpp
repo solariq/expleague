@@ -69,7 +69,7 @@ void League::setActive(Profile *profile) {
         QObject::connect(m_connection, SIGNAL(receiveImage(QString,QString,QUrl)), SLOT(imageReceived(QString,QString,QUrl)));
         QObject::connect(m_connection, SIGNAL(receiveAnswer(QString,QString,QString)), SLOT(answerReceived(QString,QString,QString)));
         QObject::connect(m_connection, SIGNAL(receiveProgress(QString,QString,Progress)), SLOT(progressReceived(QString,QString,Progress)));
-        QObject::connect(m_connection, SIGNAL(tasksAvailableChanged()), SLOT(onTasksAvailableChanged()));
+        QObject::connect(m_connection, SIGNAL(tasksAvailableChanged(int)), SLOT(onTasksAvailableChanged(int)));
     }
     profileChanged(profile);
 }
@@ -101,11 +101,11 @@ void League::startTask(Offer* offer) {
     QObject::connect(task, SIGNAL(cancelled()), SLOT(taskFinished()));
     m_status = LS_ON_TASK;
     statusChanged(m_status);
-    Context* context = parent()->context(task->id(), task->offer()->topic().replace('\n', ' '));
+    Context* context = parent()->context("context/" + task->id(), task->offer()->topic().replace('\n', ' '));
     context->setTask(task);
     parent()->navigation()->open(context);
     Member* self = findMember(id());
-    MarkdownEditorPage* answerPage = parent()->document(context, "Ваш ответ", self, true);
+    MarkdownEditorPage* answerPage = parent()->document(context, "Ваш ответ", self, true, task->id() + "-" + "answer");
     context->transition(answerPage, Page::TYPEIN);
     task->setAnswer(answerPage);
     context->appendDocument(answerPage);
@@ -145,15 +145,13 @@ Offer* League::registerOffer(const Offer& offer) {
 void League::disconnected() {
     foreach(Task* task, m_tasks)
         task->stop();
-
     m_status = LS_OFFLINE;
     statusChanged(m_status);
 }
 
+static time_t prevMessageTS = 0;
 void League::messageReceived(const QString& room, const QString& from, const QString& text) {
-    if (from != m_connection->id())
-        showNotification(tr("Лига Экспертов").toUtf8().data(), (tr("Получено сообщение от ") + from + ": '" + text + "'").toUtf8().data());
-
+    notifyIfNeeded(from, tr("Получено сообщение от ") + from + ": '" + text + "'");
     foreach(Task* task, m_tasks) {
         if (task->id() == room) {
             task->messageReceived(from, text);
@@ -165,6 +163,8 @@ void League::messageReceived(const QString& room, const QString& from, const QSt
 }
 
 void League::imageReceived(const QString& room, const QString& from, const QUrl& url) {
+    notifyIfNeeded(from, tr("Полученa картинка от ") + from);
+
     foreach(Task* task, m_tasks) {
         if (task->id() == room) {
             QString localUrl = "image://store/" + url.path().section('/', -1, -1);
@@ -188,6 +188,19 @@ void League::progressReceived(const QString& room, const QString& from, const xm
         if (task->id() == room) {
             task->progressReceived(from, progress);
             break;
+        }
+    }
+}
+
+void League::notifyIfNeeded(const QString& from, const QString& message, bool broadcast) {
+    if (from != m_connection->id()) {
+        if (time(0) - prevMessageTS > 10) {
+            prevMessageTS = time(0);
+            if (!broadcast)
+                QSound::play(":/sounds/owl.wav");
+            else
+                QSound::play(":/sounds/kuku.wav");
+            showNotification(tr("Лига Экспертов").toUtf8().data(), message.toUtf8().data());
         }
     }
 }
@@ -229,7 +242,7 @@ League* Task::parent() const {
 void Task::answerReceived(const QString &from, const QString& text) {
     doSearch* dosearch = doSearch::instance();
     Member* author = parent()->findMember(from);
-    MarkdownEditorPage* answerPage = dosearch->document(context(), "Ответ " + QString::number(m_answers.size() + 1), author, false);
+    MarkdownEditorPage* answerPage = dosearch->document(context(), "Ответ " + QString::number(m_answers.size() + 1), author, false, id() + "-" + QString::number(m_answers.size() + 1));
     answerPage->setTextContent(text);
     context()->appendDocument(answerPage);
     context()->transition(answerPage, Page::TYPEIN);
@@ -309,9 +322,9 @@ void Task::sendMessage(const QString &str) const {
     parent()->connection()->sendMessage(offer()->roomJid(), str);
 }
 
-void Task::sendAnswer(const QString& shortAnswer) {
+void Task::sendAnswer(const QString& shortAnswer, int difficulty, int success, bool extraInfo) {
 //    qDebug() << "Sending answer: " << answer();
-    parent()->connection()->sendAnswer(offer()->roomJid(), shortAnswer + "\n" + answer()->textContent());
+    parent()->connection()->sendAnswer(offer()->roomJid(), difficulty, success, extraInfo, shortAnswer + "\n" + answer()->textContent());
     answer()->setTextContent("");
     stop();
 }

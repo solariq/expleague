@@ -34,14 +34,14 @@ using hunspell::SpellChecker;
 
 MarkdownHighlighter::MarkdownHighlighter(QTextDocument *document, hunspell::SpellChecker *spellChecker) :
     QSyntaxHighlighter(document),
-    spellingCheckEnabled(false),
+    spellingCheckEnabled(true),
     yamlHeaderSupportEnabled(false)
 {
     this->spellChecker = spellChecker;
 
     // QTextCharFormat::SpellCheckUnderline has issues with Qt 5.
-    spellFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
-    spellFormat.setUnderlineColor(Qt::red);
+    spellFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+    spellFormat.setUnderlineColor(QColor(Qt::red));
 }
 
 void MarkdownHighlighter::setStyles(const QVector<PegMarkdownHighlight::HighlightingStyle> &styles)
@@ -61,10 +61,6 @@ void MarkdownHighlighter::setYamlHeaderSupportEnabled(bool enabled)
 
 void MarkdownHighlighter::highlightBlock(const QString& textBlock)
 {
-    if (spellingCheckEnabled) {
-        checkSpelling(textBlock);
-    }
-
     // cut YAML headers
     pmh_element **elements;
     pmh_markdown_to_elements(textBlock.toUtf8().data(), pmh_EXT_NONE, &elements);
@@ -97,6 +93,9 @@ void MarkdownHighlighter::highlightBlock(const QString& textBlock)
     }
 
     pmh_free_elements(elements);
+    if (spellingCheckEnabled) {
+        checkSpelling(textBlock);
+    }
 }
 
 void MarkdownHighlighter::checkSpelling(const QString &textBlock) {
@@ -106,7 +105,10 @@ void MarkdownHighlighter::checkSpelling(const QString &textBlock) {
         index = textBlock.indexOf(word, index);
 
         if (!spellChecker->isCorrect(word)) {
-            setFormat(index, word.length(), spellFormat);
+            QTextCharFormat format = this->format(index);
+            format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+            format.setForeground(QBrush(QColor(255, 0, 0)));
+            setFormat(index, word.length(), format);
         }
         index += word.length();
     }

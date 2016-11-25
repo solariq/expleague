@@ -2,6 +2,8 @@
 #include "../dosearch.h"
 #include "../league.h"
 
+#include <QApplication>
+
 #include <QRegularExpression>
 #include <QImageReader>
 #include <QDebug>
@@ -13,14 +15,14 @@
 
 namespace expleague {
 
-Knugget::Knugget(const QString& id, Page* source, Context* owner, const QString& uiQml, doSearch* parent): Page(id, uiQml, parent), m_source(source), m_owner(owner) {
+Knugget::Knugget(const QString& id, Page* source, const QString& uiQml, doSearch* parent): ContentPage(id, uiQml, parent), m_source(source) {
     store("knugget.source", source->id());
-    store("knugget.owner", owner->id());
 }
 
-Knugget::Knugget(const QString& id, const QString& uiQml, doSearch* parent): Page(id, uiQml, parent) {
+Knugget::Knugget(const QString& id, const QString& uiQml, doSearch* parent): ContentPage(id, uiQml, parent) {
     m_source = parent->page(value("knugget.source").toString());
-    m_owner = static_cast<Context*>(parent->page(value("knugget.owner").toString()));
+    QVariant groupVar = value("knugget.group");
+    m_group = groupVar.isNull() ? 0 : qobject_cast<GroupKnugget*>(parent->page(groupVar.toString()));
 }
 
 void Knugget::open() const {
@@ -29,8 +31,15 @@ void Knugget::open() const {
         dosearch->navigation()->open(source());
 }
 
-TextKnugget::TextKnugget(const QString &id, const QString &text, Page* source, Context* context, doSearch *parent): Knugget(id, source, context, "qrc:/TextKnuggetView.qml", parent), m_text(text) {
+void Knugget::setGroup(GroupKnugget *group) {
+    m_group = group;
+    store("knugget.group", group ? group->id() : QVariant());
+    emit groupChanged();
+}
+
+TextKnugget::TextKnugget(const QString &id, const QString &text, Page* source, doSearch *parent): Knugget(id, source, "qrc:/TextKnuggetView.qml", parent), m_text(text) {
     store("knugget.text", text);
+    setTextContent(md());
     save();
 }
 
@@ -46,13 +55,14 @@ QString TextKnugget::md() const {
         return m_text;
 }
 
-ImageKnugget::ImageKnugget(const QString &id, const QString &alt, const QUrl& imageUrl, Page* source, Context* context, doSearch *parent):
-    Knugget(id, source, context, "qrc:/ImageKnuggetView.qml", parent),
+ImageKnugget::ImageKnugget(const QString &id, const QString &alt, const QUrl& imageUrl, Page* source, doSearch *parent):
+    Knugget(id, source, "qrc:/ImageKnuggetView.qml", parent),
     m_alt(alt),
     m_src(imageUrl)
 {
     store("knugget.alt", alt);
     store("knugget.src", imageUrl);
+    setTextContent(md());
     save();
 }
 
@@ -72,13 +82,14 @@ QString ImageKnugget::md() const {
         return text;
 }
 
-LinkKnugget::LinkKnugget(const QString& id, const QString& text, const QUrl& link, Page* source, Context* context, doSearch* parent):
-    Knugget(id, source, context, "qrc:/LinkKnuggetView.qml", parent),
+LinkKnugget::LinkKnugget(const QString& id, const QString& text, const QUrl& link, Page* source, doSearch* parent):
+    Knugget(id, source, "qrc:/LinkKnuggetView.qml", parent),
     m_text(text),
     m_link(link)
 {
     store("knugget.text", text);
     store("knugget.link", link);
+    setTextContent(md());
     save();
 }
 
@@ -125,19 +136,24 @@ QString LinkKnugget::title() const {
         return m_link.host();
 }
 
-GroupKnugget::GroupKnugget(const QString &id, Context *context, doSearch *parent):
-    Knugget(id, parent->empty(), context, "qrc:/GroupKnuggetView.qml", parent),
-    m_name(tr("Новая группа")),
-    m_parent_group(0)
+GroupKnugget::GroupKnugget(const QString &id, Context* source, doSearch *parent):
+    Knugget(id, source, "qrc:/GroupKnuggetView.qml", parent)
 {
-    save();
+    QVariant name = value("knugget.name");
+    m_name = name.isNull() ? tr("Новая группа") : value("knugget.name").toString();
+
+    visitKeys("knugget.element", [this, parent](const QVariant& value) {
+        m_items.append(qobject_cast<Knugget*>(parent->page(value.toString())));
+    });
+    QVariant parentGroup = value("knugget.parent");
+    m_parent_group = parentGroup.isNull() ? 0 : parent->page(parentGroup.toString());
 }
 
 GroupKnugget::GroupKnugget(const QString &id, doSearch *parent):
     Knugget(id, "qrc:/GroupKnuggetView.qml", parent)
 {
     QVariant name = value("knugget.name");
-    m_name = name.isNull() ? m_name : value("knugget.name").toString();
+    m_name = name.isNull() ? tr("Новая группа") : value("knugget.name").toString();
 
     visitKeys("knugget.element", [this, parent](const QVariant& value) {
         m_items.append(qobject_cast<Knugget*>(parent->page(value.toString())));
@@ -149,11 +165,18 @@ GroupKnugget::GroupKnugget(const QString &id, doSearch *parent):
 void GroupKnugget::insert(Knugget* item, int index) {
     if (m_items.contains(item))
         return;
-    GroupKnugget* group = qobject_cast<GroupKnugget*>(item);
-    if (group)
-        group->setParentGroup(this);
-    m_items.insert(index >= 0 ? index : m_items.size(), item);
-    Page::append("knugget.element", item->id());
+    item->setGroup(this);
+    if (index >= 0) {
+        m_items.insert(index, item);
+        Page::remove("knugget.element");
+        for (int i = 0; i < m_items.size(); i++) {
+            Page::append("knugget.element", m_items[i]->id());
+        }
+    }
+    else {
+        m_items.append(item);
+        Page::append("knugget.element", item->id());
+    }
     save();
     emit itemsChanged();
 }
@@ -197,21 +220,10 @@ QString GroupKnugget::md() const {
 }
 
 void GroupKnugget::open() const {
-    owner()->vault()->setActiveGroup(const_cast<GroupKnugget*>(this));
+    doSearch::instance()->navigation()->context()->vault()->setActiveGroup(const_cast<GroupKnugget*>(this));
 }
 
-void GroupKnugget::setParentGroup(QObject* parent) {
-    GroupKnugget* group = qobject_cast<GroupKnugget*>(parent);
-    m_parent_group = group ? (QObject*)group : (QObject*)owner()->vault();
-    store("knugget.parent", group ? QVariant(group->id()): QVariant());
-    emit parentGroupChanged();
-}
-
-Vault::Vault(Context* context): QObject(context) {
-    context->visitKeys("context.vault.item", [this, context](const QVariant& value){
-        m_items.append(qobject_cast<Knugget*>(context->parent()->page(value.toString())));
-    });
-}
+Vault::Vault(Context* context): QObject(context) {}
 
 void Vault::insert(Knugget* item, int position) {
     if (m_items.contains(item))
@@ -219,15 +231,12 @@ void Vault::insert(Knugget* item, int position) {
     if (position < 0)
         position = m_items.size();
     m_items.insert(position, item);
-    parent()->append("context.vault.item", item->id());
-    parent()->save();
+    parent()->appendPart(item);
     emit itemsChanged();
 }
 
-QString Vault::generateKnuggetId(const QString& suffix, int index) {
-    if (index < 0)
-        index = parent()->children("knugget").size();
-    return parent()->id() + "/knugget/" + suffix + "-" + QString::number(index);
+QString Vault::generateKnuggetId(const QString& suffix) {
+    return doSearch::instance()->nextId("knugget/" + suffix + "/");
 }
 
 bool Vault::drop(const QString& text, const QString& html, const QList<QUrl>& urls, const QString& source) {
@@ -239,7 +248,6 @@ bool Vault::drop(const QString& text, const QString& html, const QList<QUrl>& ur
                     generateKnuggetId("text"),
                     text,
                     doSearch::instance()->page(source),
-                    parent(),
                     doSearch::instance()
         );
     }
@@ -276,7 +284,6 @@ bool Vault::drop(const QString& text, const QString& html, const QList<QUrl>& ur
                         altMatch.captured(1),
                         src,
                         doSearch::instance()->page(source),
-                        parent(),
                         doSearch::instance()
             );
         }
@@ -289,7 +296,6 @@ bool Vault::drop(const QString& text, const QString& html, const QList<QUrl>& ur
                                 text.section('/', -1).section('.', 0, -2),
                                 League::instance()->uploadImage(img),
                                 doSearch::instance()->page(source),
-                                parent(),
                                 doSearch::instance()
             );
         }
@@ -300,14 +306,15 @@ bool Vault::drop(const QString& text, const QString& html, const QList<QUrl>& ur
                     "",
                     urlFromText,
                     doSearch::instance()->page(source),
-                    parent(),
                     doSearch::instance()
                     );
     }
 
     if (!knugget)
         return false;
+
     knugget->interconnect();
+    parent()->appendPart(knugget);
     if (!m_active_group)
         insert(knugget);
     else m_active_group->insert(knugget);
@@ -324,7 +331,7 @@ void Vault::group(Knugget* left, Knugget* right) {
 
     if (!group) {
         group = new GroupKnugget(generateKnuggetId("group"), parent(), parent()->parent());
-        group->setParentGroup(m_active_group);
+        group->setGroup(m_active_group);
         if (m_active_group) {
             m_active_group->insert(group, m_active_group->indexOf(left));
             m_active_group->remove(left);
@@ -341,7 +348,7 @@ void Vault::group(Knugget* left, Knugget* right) {
 }
 
 void Vault::ungroup(GroupKnugget* group) {
-    GroupKnugget* parent = qobject_cast<GroupKnugget*>(group->parentGroup());
+    GroupKnugget* parent = group->group();
     if (parent) {
         int index = parent->indexOf(group);
         parent->remove(group);
@@ -352,13 +359,13 @@ void Vault::ungroup(GroupKnugget* group) {
             setActiveGroup(parent);
     }
     else {
+        if (m_active_group == group)
+            setActiveGroup(0);
         int index = m_items.indexOf(group);
         remove(group);
         foreach(Knugget* item, group->items()) {
             insert(item, index++);
         }
-        if (m_active_group == group)
-            setActiveGroup(0);
     }
 }
 
@@ -369,17 +376,15 @@ bool Vault::paste(Page* source) {
     QStringList result;
     QList<Knugget*> knuggets;
     const QMimeData* mime = clipboard->mimeData();
-    int index = parent()->children("knugget").size();
     foreach (const QUrl& url, mime->urls()) {
         if (url.scheme() == "file") {
             QImage img(url.toLocalFile());
             if (!img.isNull()) {
                 knuggets.append(new ImageKnugget(
-                                    generateKnuggetId("image", index++),
+                                    generateKnuggetId("image"),
                                     mime->hasText() ? mime->text() : "",
                                     League::instance()->uploadImage(img),
                                     source,
-                                    parent(),
                                     doSearch::instance()
                 ));
             }
@@ -387,32 +392,29 @@ bool Vault::paste(Page* source) {
         else if (url.scheme() == "http" || url.scheme() == "https" || url.scheme() == "ftp") {
             if (QImageReader::imageFormat(url.fileName()).isEmpty()) {
                 knuggets.append(new LinkKnugget(
-                                    generateKnuggetId("link", index++),
+                                    generateKnuggetId("link"),
                                     mime->hasText() ? mime->text() : "",
                                     url,
                                     source,
-                                    parent(),
                                     doSearch::instance()
                 ));
             }
             else {
                 knuggets.append(new ImageKnugget(
-                                    generateKnuggetId("image", index++),
+                                    generateKnuggetId("image"),
                                     mime->hasText() ? mime->text() : "",
                                     url,
                                     source,
-                                    parent(),
                                     doSearch::instance()
                 ));
             }
         }
         else {
             knuggets.append(new LinkKnugget(
-                                generateKnuggetId("link", index++),
+                                generateKnuggetId("link"),
                                 mime->hasText() ? mime->text() : "",
                                 url,
                                 source,
-                                parent(),
                                 doSearch::instance()
             ));
         }
@@ -421,23 +423,20 @@ bool Vault::paste(Page* source) {
         if (mime->hasImage()) {
             QUrl url = League::instance()->uploadImage(qvariant_cast<QImage>(mime->imageData()));
             knuggets.append(new ImageKnugget(
-                                generateKnuggetId("image", index++),
+                                generateKnuggetId("image"),
                                 mime->hasText() ? mime->text() : "",
                                 url,
                                 source,
-                                parent(),
                                 doSearch::instance()
             ));
         }
         else if (mime->hasText()) {
             knuggets.append(new TextKnugget(
-                        generateKnuggetId("text", index++),
+                        generateKnuggetId("text"),
                         mime->text(),
                         source,
-                        parent(),
                         doSearch::instance()
             ));
-
         }
     }
 
@@ -445,6 +444,7 @@ bool Vault::paste(Page* source) {
         return false;
     foreach (Knugget* item, knuggets) {
         item->interconnect();
+        parent()->appendPart(item);
         if (!m_active_group)
             insert(item);
         else
@@ -460,10 +460,10 @@ void Vault::appendLink(const QUrl& url, const QString& text, Page* source) {
                 text,
                 url,
                 source ? source : doSearch::instance()->empty(),
-                parent(),
                 doSearch::instance()
     );
     knugget->interconnect();
+    parent()->appendPart(knugget);
     if (!m_active_group)
         insert(knugget);
     else
@@ -471,13 +471,9 @@ void Vault::appendLink(const QUrl& url, const QString& text, Page* source) {
 }
 
 void Vault::remove(Knugget* page) {
+    parent()->removePart(page);
     if (!m_active_group) {
         m_items.removeOne(page);
-        parent()->remove("context.vault.item");
-        for (int i = 0; i < m_items.size(); i++) {
-            parent()->append("context.vault.item", m_items[i]->id());
-        }
-        parent()->save();
         emit itemsChanged();
     }
     else m_active_group->remove(page);

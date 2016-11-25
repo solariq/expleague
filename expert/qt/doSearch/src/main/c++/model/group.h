@@ -42,13 +42,13 @@ public:
     void setSelected(bool selected) {
         if (m_selected == selected) return;
         m_selected = selected;
-        selectedChanged(selected);
+        emit selectedChanged(selected);
     }
 
     bool selectPage(Page* page);
 
     Page* selectedPage() const {
-        return m_selected_page_index < 0 ? 0 : m_pages[m_selected_page_index];
+        return m_selected_page_index < 0 || m_selected_page_index >= m_pages.size() ? 0 : m_pages[m_selected_page_index];
     }
 
     PagesGroup* parentGroup() const { return m_parent; }

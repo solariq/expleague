@@ -8,10 +8,11 @@
 #include <QFile>
 #include <QQuickWindow>
 #include <QtQuick/private/qquickdroparea_p.h>
-#include <QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
+//#include <QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
 #include <QKeyEvent>
 #include <QShortcut>
 #include <QDropEvent>
+#include <QMimeData>
 #include <QApplication>
 
 #include <QRegularExpression>
@@ -65,20 +66,17 @@ void WebPage::setIcon(const QString& icon) {
     iconChanged(icon);
 }
 
-void WebPage::setProfile(const BoW& profile) {
-    BoW templates = site()->templates();
-    float pagesCount = templates.freq(CollectionDictionary::DocumentBreak);
-    QVector<int> indices(profile.size());
-    QVector<float> freqs(profile.size());
-    for (int i = 0; i < profile.size(); i++) {
-        indices[i] = profile.idAt(i);
-        freqs[i] = profile.freqAt(i) * (1. - (templates.freq(profile.idAt(i)) + 1.) / (pagesCount + 2.));
-    }
-    ContentPage::setProfile(BoW(indices, freqs, profile.terms()));
-}
-
 Page* WebPage::container() const {
     return isRoot() ? static_cast<Page*>(site()) : static_cast<Page*>(const_cast<WebPage*>(this));
+}
+
+bool WebPage::transferUI(Page* other) const {
+    WebPage* wp = qobject_cast<WebPage*>(other);
+    if (!wp)
+        return false;
+    Page::transferUI(wp);
+    wp->containerChanged();
+    return true;
 }
 
 Page* WebPage::parentPage() const { return site(); }
@@ -91,18 +89,16 @@ void WebPage::setRedirect(WebPage* target) {
     if (m_redirect == target || target == this)
         return;
     else if (m_redirect)
-        QObject::disconnect(this, SLOT(onRedirectUrlChanged(QUrl)));
-    store("web.redirect", target ? target->id() : QVariant());
+        QObject::disconnect(m_redirect, SIGNAL(urlChanged(QUrl)), this, SLOT(onRedirectUrlChanged(QUrl)));
 
+    m_redirect = target;
     if (target) {
         transition(target, FOLLOW_LINK);
         QObject::connect(target, SIGNAL(urlChanged(QUrl)), this, SLOT(onRedirectUrlChanged(QUrl)));
     }
-    m_redirect = target;
-    save();
     rebuildRedirects();
+    save();
     emit redirectChanged(target);
-    emit urlChanged(url());
     emit titleChanged(title());
 }
 
@@ -149,16 +145,12 @@ public:
     QDropEvent *event;
 };
 
-bool WebPage::dropToWebView(QObject* drop, QQuickItem* view) {
-//    QDropEvent event;
-    QQuickDropEventOpen* quickDrop = static_cast<QQuickDropEventOpen*>(drop);
-    QQuickItem* target = view;
-    while (target->isFocusScope()
-           && target->scopedFocusItem()
-           && target->scopedFocusItem()->isEnabled()) {
-        target = target->scopedFocusItem();
-    }
-    QCoreApplication::sendEvent(view, quickDrop->event);
+bool WebPage::dragToWebView(QQuickDropEvent* dropClosed, QQuickItem* view) const {
+    QQuickDropEventOpen* quickDrop = reinterpret_cast<QQuickDropEventOpen*>(dropClosed);
+    if (quickDrop)
+        QCoreApplication::sendEvent(view, quickDrop->event);
+    else
+        QCoreApplication::sendEvent(view, new QDragLeaveEvent());
     return true;
 }
 
@@ -195,6 +187,12 @@ void WebPage::rebuildRedirects() {
     m_redirects.clear();
     WebPage* current = this;
     while (current) {
+        if (m_redirects.contains(current)) {
+            foreach(WebPage* page, m_redirects) {
+                page->setRedirect(0);
+            }
+            break;
+        }
         m_redirects.insert(0, current);
         current = current->redirect();
     }
@@ -204,14 +202,14 @@ void WebPage::open(const QUrl& url, bool newTab, bool transferUI) {
     parent()->navigation()->open(url, this, newTab, transferUI);
 }
 
-void WebPage::open(QObject* request, bool newTab) {
+void WebPage::open(QObject* request, bool /*newTab*/) {
     qDebug() << request;
 
-    QQuickWebEngineNewViewRequest* nvreq = static_cast<QQuickWebEngineNewViewRequest*>(request);
-    if (newTab) {
-        nvreq->openIn(0);
-        qDebug() << request;
-    }
+//    QQuickWebEngineNewViewRequest* nvreq = static_cast<QQuickWebEngineNewViewRequest*>(request);
+//    if (newTab) {
+//        nvreq->openIn(0);
+//        qDebug() << request;
+//    }
 }
 
 WebPage::WebPage(const QString& id, const QUrl& url, doSearch* parent):
@@ -222,14 +220,11 @@ WebPage::WebPage(const QString& id, const QUrl& url, doSearch* parent):
 }
 
 WebPage::WebPage(const QString& id, doSearch* parent):
-    ContentPage(id, "qrc:/WebPageView.qml", parent), m_url(value("web.url").toString())
+    ContentPage(id, "qrc:/WebPageView.qml", parent), m_url(value("web.url").toString()), m_redirect(0)
 {}
 
 void WebPage::interconnect() {
     ContentPage::interconnect();
-    QVariant redirect = value("web.redirect");
-    if (!redirect.isNull())
-        m_redirect = qobject_cast<WebPage*>(parent()->page(redirect.toString()));
     rebuildRedirects();
 }
 
@@ -267,6 +262,25 @@ void WebSite::onMirrorsChanged() {
             addMirror(*iter);
         iter++;
     }
+}
+
+void WebSite::setProfile(const BoW& profile) {
+    ContentPage::setProfile(removeTemplates(profile));
+}
+
+BoW WebSite::removeTemplates(const BoW& profile) const {
+    BoW templates = m_templates;
+    float pagesCount = templates.freq(CollectionDictionary::DocumentBreak);
+    QVector<int> indices(profile.size());
+    QVector<float> freqs(profile.size());
+    for (int i = 0; i < profile.size(); i++) {
+        indices[i] = profile.idAt(i);
+        if (indices[i] >= 0)
+            freqs[i] = profile.freqAt(i) * (1. - (templates.freq(profile.idAt(i)) + 1.) / (pagesCount + 2.));
+        else
+            freqs[i] = profile.freqAt(i);
+    }
+    return BoW(indices, freqs, profile.terms());
 }
 
 WebSite::WebSite(const QString& id, const QString& /*domain*/, const QUrl& rootUrl, doSearch *parent):

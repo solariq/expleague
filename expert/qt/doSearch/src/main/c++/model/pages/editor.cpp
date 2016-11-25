@@ -62,7 +62,7 @@ QString buildHtmlByMD(const QString& text) {
 struct MarkdownEditorPagePrivate {
     QQuickItem* editor;
     QQuickTextDocument* document;
-    std::unique_ptr<MarkdownHighlighter> highlighter;
+    MarkdownHighlighter* highlighter;
     QThread* html_thread;
 
     virtual ~MarkdownEditorPagePrivate() {
@@ -78,8 +78,7 @@ void MarkdownEditorPage::initUI(QQuickItem* result) const {
     connect(result, SIGNAL(destroyed(QObject*)), this, SLOT(onUiDestryed(QObject*)));
     d_ptr->editor = result->property("editor").value<QQuickItem*>();
     d_ptr->document = d_ptr->editor->property("textDocument").value<QQuickTextDocument*>();
-    d_ptr->highlighter.reset(new MarkdownHighlighter(d_ptr->document->textDocument(), const_cast<hunspell::SpellChecker*>(m_spellchecker)));
-    d_ptr->highlighter->setParent(const_cast<MarkdownEditorPage*>(this));
+    d_ptr->highlighter = new MarkdownHighlighter(d_ptr->document->textDocument(), const_cast<hunspell::SpellChecker*>(m_spellchecker));
     QObject::connect(d_ptr->document->textDocument(), SIGNAL(contentsChanged()), this, SLOT(contentChanged()));
 
     QFile f(":/themes/solarized-light+.txt");
@@ -100,7 +99,7 @@ void MarkdownEditorPage::initUI(QQuickItem* result) const {
         timer->moveToThread(thread);
         timer->setInterval(1000);
         connect(timer, &QTimer::timeout, [this](){
-            if (m_html.isEmpty()) {
+            if (m_html.isNull()) {
                 m_html = buildHtmlByMD(this->m_text);
                 emit htmlChanged(m_html);
             }
@@ -131,9 +130,12 @@ void MarkdownEditorPage::contentChanged() {
     }
 }
 
+//static hunspell::SpellChecker commonSpellchecker;
+
 MarkdownEditorPage::MarkdownEditorPage(const QString& id, Context* context, Member* author, const QString& title, bool editable, doSearch* parent): ContentPage(id, "qrc:/EditorView.qml", parent), m_author(author), m_owner(context), m_editable(editable) {
     d_ptr.reset(0);
-    m_text = textContent();
+    m_text = ContentPage::textContent();
+    m_spellchecker = new hunspell::SpellChecker();
     store("document.author", author ? author->id() : QVariant());
     store("document.title", title);
     store("document.owner", context->id());
@@ -147,7 +149,8 @@ MarkdownEditorPage::MarkdownEditorPage(const QString& id, Context* context, Memb
 MarkdownEditorPage::MarkdownEditorPage(const QString& id, doSearch* parent): ContentPage(id, "qrc:/EditorView.qml", parent) {
     QVariant author = value("document.author");
     m_author = author.isNull() ? 0 : parent->league()->findMember(author.toString());
-    m_text = textContent();
+    m_spellchecker = new hunspell::SpellChecker();
+    m_text = ContentPage::textContent();
     m_html = buildHtmlByMD(m_text);
     League* league = doSearch::instance()->league();
     m_editable = !m_author || m_author->id() == league->id();
@@ -160,11 +163,7 @@ MarkdownEditorPage::MarkdownEditorPage(const QString& id, doSearch* parent): Con
 void MarkdownEditorPage::interconnect() {
     ContentPage::interconnect();
     QVariant ownerVar = value("document.owner");
-    if (ownerVar.isNull()) {
-        QString contextId = id().section('/', 1, -2);
-        m_owner = static_cast<Context*>(parent()->page(contextId));
-    }
-    else m_owner = static_cast<Context*>(parent()->page(ownerVar.toString()));
+    m_owner = static_cast<Context*>(parent()->page(ownerVar.toString()));
 }
 
 MarkdownEditorPage::~MarkdownEditorPage() {}
@@ -182,8 +181,10 @@ QString MarkdownEditorPage::icon() const {
 }
 
 void MarkdownEditorPage::setTextContent(const QString& text) {
+    if (m_text == text)
+        return;
     m_text = text;
-    m_html = "";
+    m_html = QString();
     ContentPage::setTextContent(text);
 }
 

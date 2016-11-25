@@ -36,7 +36,12 @@ class Page: public QObject, protected PersistentPropertyHolder {
     Q_PROPERTY(QString id READ id CONSTANT)
     Q_PROPERTY(QString icon READ icon NOTIFY iconChanged)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
+
+    Q_PROPERTY(QQuickItem* ui READ ui NOTIFY uiChanged)
+    Q_PROPERTY(QQuickItem* uiNoCache READ uiNoCache NOTIFY uiChanged)
+
     Q_PROPERTY(expleague::Page::State state READ state WRITE setState NOTIFY stateChanged)
+    Q_PROPERTY(Page* container READ container NOTIFY containerChanged)
 
 public:
     enum State: int {
@@ -75,7 +80,8 @@ public:
 
     void setState(State closed);
 
-    Q_INVOKABLE QQuickItem* ui(bool useCache = true) const;
+    QQuickItem* uiNoCache() const { return ui(false); }
+    QQuickItem* ui(bool useCache = true) const;
     bool compareUI(QQuickItem* item) const { return m_ui == item; }
 
     Q_INVOKABLE virtual double pOut(Page*) const;
@@ -85,19 +91,24 @@ public:
 
     virtual double titleWidth() const;
 
-    virtual Page* parentPage() const { return 0; }
     QList<Page*> children(const QString& prefix = "") const;
+
+    /** inner element of composite should return the owner */
+    virtual Page* parentPage() const { return 0; }
+    /** nested elements has container */
+    virtual Page* container() const { return const_cast<Page*>(this); }
 
 signals:
     void iconChanged(const QString& icon);
     void titleChanged(const QString& title);
     void stateChanged(Page::State closed);
+    void containerChanged();
+    void uiChanged() const;
 
 public:
     Page(): Page("undefined", "", 0) {} // never ever use this constructor, it exists for compartibility purposes only!
 
     doSearch* parent() const;
-    void transferUI(Page* other) const;
     friend class doSearch;
 
 protected:
@@ -110,6 +121,7 @@ protected:
     void visitChildren(const QString& prefix, std::function<void (Page*)> visitor) const;
 
     virtual void incomingTransition(Page* from, TransitionType type);
+    virtual bool transferUI(Page* other) const;
 
 private:
     QString m_id;
@@ -164,6 +176,7 @@ public:
     int size() const { return m_parts.size(); }
     ContentPage* part(int index) const { return m_parts[index]; }
     bool contains(ContentPage* page) const { return m_parts.contains(page); }
+    QList<ContentPage*> parts() const { return m_parts; }
 
     QString textContent() const;
     void setTextContent(const QString& content);
@@ -181,8 +194,9 @@ protected slots:
     virtual void onPartContentsChanged() { emit textContentChanged(); }
     virtual void onPartProfileChanged(const BoW& oldOne, const BoW& newOne);
     virtual void onPartStateChanged(Page::State state);
+
 protected:
-    QList<ContentPage*>& parts() { return m_parts; } // for QML purposes ONLY!!
+    QList<ContentPage*>& partsRef() { return m_parts; } // for QML purposes ONLY!!
 
     bool appendPart(ContentPage* part);
     void removePart(ContentPage* part);

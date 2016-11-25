@@ -2,9 +2,9 @@ import QtQuick 2.7
 
 Item {
     id: self
-    property var editor: children[0].editor
-    property var webView: children[0].webView
-    property var options: children[0].options
+    property var editor: owner.root.ui.editor
+    property var webView: owner.root.ui.webView
+    property var options: owner.root.ui.options
 
     onOptionsChanged: {
         if (self.children[0].options !== options)
@@ -12,11 +12,11 @@ Item {
     }
 
     anchors.fill: parent
-    children: [owner.root.ui()]
+    children: [owner.root.ui]
 
     onChildrenChanged: {
         if (children.length === 0) {
-            owner.root.ui().parent = self
+            owner.root.ui.parent = self
         }
     }
 }

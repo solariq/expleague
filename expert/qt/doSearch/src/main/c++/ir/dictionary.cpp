@@ -64,7 +64,7 @@ QVector<int> parse(const QString& plainText, CollectionDictionary* dict) {
 }
 
 QString Word::toString() const {
-    return text + " " + freq + " " + dfreq;
+    return text + " " + QString::number(freq) + " " + QString::number(dfreq);
 }
 
 Word Word::fromString(const QString& serialized) {
@@ -116,8 +116,9 @@ int CollectionDictionary::id(const QString& word) const {
     auto index = m_index.find(word);
     if (index != m_index.end())
         return index.value();
+
     else if (word == "[sentences]")
-        return SpecialWords::DocumentBreak;
+        return SpecialWords::SentenceBreak;
     else if (word == "[paragraphs]")
         return SpecialWords::ParagraphBreak;
     else if (word == "[documents]")
@@ -136,13 +137,16 @@ int CollectionDictionary::countForms(int id) const {
 
 Word CollectionDictionary::updateWord(int id, float freq, int dfreq) {
     Word result = EMPTY_WORD;
-    if (id > 0) {
+    if (id >= 0) {
         const int index = offset(id);
         if (index >= 0 && index < m_words.size()) {
-            m_words[index].dfreq += dfreq;
-            m_words[index].freq += freq;
+            Word& word = m_words[index];
+            word.dfreq += dfreq;
+            if (word.freq + freq < 0)
+                qWarning() << "Negative frequency found!";
+            word.freq += freq;
             m_total_power += freq;
-            result = m_words[index];
+            result = word;
         }
         else
             qWarning() << "Invalid word id: " << id << " no such word in dictionary";
@@ -192,12 +196,14 @@ void CollectionDictionary::updateProfile(const BoW& oldOne, const BoW& newOne) {
         }
         else if (oldId > newId) {
             id = newId;
-            update = updateWord(id, newOne.m_freqs[newIndex++], 0);
+            update = updateWord(id, newOne.m_freqs[newIndex++], 1);
         }
         else {
             id = oldId;
-            update = updateWord(id, -oldOne.m_freqs[oldIndex++], 0);
+            update = updateWord(id, -oldOne.m_freqs[oldIndex++], -1);
         }
+        assert(update.freq >= 0);
+        assert(update.dfreq >= 0);
         batch.Put(leveldb::Slice(reinterpret_cast<const char*>(&id), sizeof(id)), update.toString().toStdString());
     }
     m_lock.unlock();
@@ -231,9 +237,10 @@ CollectionDictionary::CollectionDictionary(const QString& file, std::function<QS
     QDir dbDir(file);
     if (!dbDir.exists()) {
         dbDir.cdUp();
-        dbDir.mkdir(file.section('/', -1));
+        dbDir.mkpath(file.section('/', -1));
     }
     leveldb::Status status = leveldb::DB::Open(options, file.toStdString(), &m_file);
+    assert(status.ok());
     std::unique_ptr<leveldb::Iterator> iter(m_file->NewIterator(leveldb::ReadOptions()));
     QList<Word> words;
     iter->SeekToFirst();
@@ -241,7 +248,8 @@ CollectionDictionary::CollectionDictionary(const QString& file, std::function<QS
         leveldb::Slice key = iter->key();
         leveldb::Slice value = iter->value();
         int id = *reinterpret_cast<const int*>(key.data());
-        Word word = Word::fromString(QString::fromUtf8(value.data(), value.size()));
+        QString serialized = QString::fromUtf8(value.data(), value.size());
+        Word word = Word::fromString(serialized);
         if (id >= 0) {
             if ((id & 0xFF) == 0) // lemma
                 m_lemma_offset.append(words.size());

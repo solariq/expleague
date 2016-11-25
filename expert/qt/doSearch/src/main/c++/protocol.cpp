@@ -4,6 +4,7 @@
 #include <QString>
 #include <QSharedDataPointer>
 #include <QTimer>
+#include <QApplication>
 
 #include <QDomDocument>
 #include <QDomElement>
@@ -52,6 +53,10 @@ void ExpLeagueConnection::connect() {
 
 void ExpLeagueConnection::disconnect() {
     client.disconnectFromServer();
+    int oldValue = m_tasks_available;
+
+    m_tasks_available = 0;
+    emit tasksAvailableChanged(oldValue);
 }
 
 void ExpLeagueConnection::error(QXmppClient::Error error) {
@@ -67,14 +72,19 @@ void ExpLeagueConnection::error(QXmppClient::Error error) {
     else {
         qWarning() << "XMPP error: " << error;
     }
+    emit disconnected();
 }
 
 void ExpLeagueConnection::presenceReceived(const QXmppPresence& presence) {
     foreach(const QXmppElement& ext, presence.extensions()) {
         QDomElement item = ext.sourceDomElement();
         if (item.namespaceURI() == "http://expleague.com/scheme" && item.nodeName() == "status") {
-            m_tasks_available = item.attribute("starving-tasks").toInt();
-            emit tasksAvailableChanged();
+            int tasks = item.attribute("starving-tasks").toInt();
+            if (tasks != m_tasks_available) {
+                int oldValue = m_tasks_available;
+                m_tasks_available = item.attribute("starving-tasks").toInt();
+                emit tasksAvailableChanged(oldValue);
+            }
         }
     }
 }
@@ -217,7 +227,7 @@ void ExpLeagueConnection::messageReceived(const QXmppMessage& msg) {
 }
 
 void ExpLeagueConnection::connectedSlot() {
-    connected();
+    emit connected();
 //    qDebug() << "Connected as " << client.configuration().jid();
     m_jid = client.configuration().jid();
     jidChanged(m_jid);
@@ -283,16 +293,19 @@ void ExpLeagueConnection::sendMessage(const QString& to, const QString& text) {
     QXmppMessage msg(jid(), to, text);
     msg.setType(QXmppMessage::GroupChat);
     client.sendPacket(msg);
-    messageReceived(msg);
+    emit messageReceived(msg);
 }
 
-void ExpLeagueConnection::sendAnswer(const QString& room, const QString& text) {
+void ExpLeagueConnection::sendAnswer(const QString& room, int difficulty, int success, bool extraInfo, const QString& text) {
     QXmppMessage msg("", room);
     msg.setType(QXmppMessage::GroupChat);
 
     QDomDocument holder;
     QXmppElementList protocol;
     QDomElement answer = holder.createElementNS(EXP_LEAGUE_NS, "answer");
+    answer.setAttribute("difficulty", difficulty);
+    answer.setAttribute("success", success);
+    answer.setAttribute("extra-info", extraInfo);
     answer.appendChild(holder.createTextNode(text));
     protocol.append(QXmppElement(answer));
     msg.setExtensions(protocol);

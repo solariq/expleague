@@ -111,8 +111,8 @@ Rectangle {
                         if (dosearch.main.dragType !== "page")
                             return
                         dosearch.navigation.moveTo(dosearch.main.drag, modelData)
-                        dosearch.main.drop = null
-                        dosearch.main.dropType = ""
+                        dosearch.main.drag = null
+                        dosearch.main.dragType = ""
                     }
                 }
             }

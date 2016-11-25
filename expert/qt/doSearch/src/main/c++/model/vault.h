@@ -7,29 +7,35 @@
 
 class QDropEvent;
 namespace expleague {
-class Knugget: public Page {
+class GroupKnugget;
+class Knugget: public ContentPage {
     Q_OBJECT
 
     Q_PROPERTY(expleague::Page* source READ source CONSTANT)
     Q_PROPERTY(QString md READ md CONSTANT)
+    Q_PROPERTY(expleague::GroupKnugget* group READ group WRITE setGroup NOTIFY groupChanged)
 
 public:
     Page* source() const {return m_source;}
     virtual QString md() const = 0;
     QString title() const { return m_source->title(); }
 
+    GroupKnugget* group() const { return m_group; }
+    void setGroup(GroupKnugget* group);
     Q_INVOKABLE virtual void open() const;
 
+signals:
+    void groupChanged() const;
+
 protected:
-    Knugget(const QString& id, Page* source, Context* owner, const QString& uiQml, doSearch* parent);
+    Knugget(const QString& id, Page* source, const QString& uiQml, doSearch* parent);
     Knugget(const QString& id, const QString& uiQml, doSearch* parent);
 
-    Context* owner() const { return m_owner; }
 private:
     friend class Vault;
 
+    GroupKnugget* m_group = 0;
     Page* m_source;
-    Context* m_owner;
 };
 
 class TextKnugget: public Knugget {
@@ -42,7 +48,7 @@ public:
 
 public:
     TextKnugget(const QString& id, doSearch* parent);
-    TextKnugget(const QString& id, const QString& text, Page* source, Context* context, doSearch* parent);
+    TextKnugget(const QString& id, const QString& text, Page* source, doSearch* parent);
 
 private:
     QString m_text;
@@ -73,7 +79,7 @@ signals:
 
 public:
     LinkKnugget(const QString& id, doSearch* parent);
-    LinkKnugget(const QString& id, const QString& text, const QUrl& link, Page* source, Context* context, doSearch* parent);
+    LinkKnugget(const QString& id, const QString& text, const QUrl& link, Page* source, doSearch* parent);
 
 private:
     QString m_text;
@@ -93,7 +99,7 @@ public:
 
 public:
     ImageKnugget(const QString& id, doSearch* parent);
-    ImageKnugget(const QString& id, const QString& alt, const QUrl& imageUrl, Page* source, Context* context, doSearch* parent);
+    ImageKnugget(const QString& id, const QString& alt, const QUrl& imageUrl, Page* source, doSearch* parent);
 
 private:
     QString m_alt;
@@ -104,12 +110,10 @@ class GroupKnugget: public Knugget {
     Q_OBJECT
 
     Q_PROPERTY(QQmlListProperty<expleague::Knugget> items READ itemsQml NOTIFY itemsChanged)
-    Q_PROPERTY(QObject* parentGroup READ parentGroup NOTIFY parentGroupChanged)
 
 public:
     QString title() const { return m_name; }
     QString md() const;
-    QObject* parentGroup() const { return m_parent_group; }
 
     Q_INVOKABLE void setName(const QString& name);
 
@@ -121,17 +125,14 @@ public:
     void insert(Knugget* item, int index = -1);
     int indexOf(Knugget* item) const { return m_items.indexOf(item); }
     void open() const;
-
-    void setParentGroup(QObject* group);
     QList<Knugget*> items() const { return m_items; }
 
 signals:
     void itemsChanged() const;
-    void parentGroupChanged() const;
 
 public:
+    GroupKnugget(const QString& id, Context* src, doSearch* parent);
     GroupKnugget(const QString& id, doSearch* parent);
-    GroupKnugget(const QString& id, Context* context, doSearch* parent);
 
 private:
     QString m_name;
@@ -170,12 +171,14 @@ public:
 
     Q_INVOKABLE void clearClipboard() const;
 
+    void append(Knugget* knugget) { m_items.append(knugget); emit itemsChanged(); }
+
 signals:
     void itemsChanged() const;
     void activeGroupChanged() const;
 
 private:
-    QString generateKnuggetId(const QString& suffix, int index = -1);
+    QString generateKnuggetId(const QString& suffix);
 
 public:
     Vault(Context* context);

@@ -18,8 +18,15 @@ doSearch::doSearch(QObject* parent) : QObject(parent) {
     QCoreApplication::setOrganizationName("Experts League");
 
     QCoreApplication::setOrganizationDomain("expleague.com");
+
+#ifdef QT_DEBUG
+    QCoreApplication::setApplicationName("doSearch-debug");
+#else
     QCoreApplication::setApplicationName("doSearch");
-    QApplication::setApplicationVersion(EL_DOSEARCH_VERSION);
+#endif
+
+    QCoreApplication::setApplicationVersion(EL_DOSEARCH_VERSION);
+
     m_dictionary = new CollectionDictionary(
                 QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/dictionary",
                 [](const QString& word) { return word; },
@@ -127,20 +134,25 @@ WebPage* doSearch::webPage(const QUrl& url) const {
 }
 
 
-QString doSearch::childId(const Page* parent, const QString& prefix) const {
-    QString path = "/" + prefix;
-    path.replace(".", "/");
-    return parent->id() + path + "-" + QString::number(parent->children(prefix).size() + 1);
+QString doSearch::nextId(const QString& prefix) const {
+    QString id;
+
+    do {
+        id = prefix;
+        id += (prefix.endsWith('/') ? "" : "/") + randString(10);
+    }
+    while (QFile(pageResource(id)).exists());
+    return id;
 }
 
-SearchSession* doSearch::session(SearchRequest* seed, Context* owner) const {
-    return static_cast<SearchSession*>(page(childId(owner, "search.session"), [seed](const QString& id, doSearch* parent){
+SearchSession* doSearch::session(SearchRequest* seed) const {
+    return static_cast<SearchSession*>(page(nextId("search/session"), [seed](const QString& id, doSearch* parent){
         return new SearchSession(id, seed, parent);
     }));
 }
 
 Context* doSearch::context(const QString& id, const QString& name) const {
-    return static_cast<Context*>(page("context/" + id, [name](const QString& id, doSearch* parent){
+    return static_cast<Context*>(page(id, [name](const QString& id, doSearch* parent){
         return new Context(id, name, parent);
     }));
 }
@@ -156,16 +168,19 @@ SearchRequest* doSearch::search(const QString& query, int searchIndex) const {
     return request;
 }
 
-MarkdownEditorPage* doSearch::document(Context* context, const QString& title, Member* author, bool editable) const {
-    QString prefix = "document/" + (author ? author->id() : "local");
-    QString id = context->id() + "/" + prefix + "/" + md5(title);
+MarkdownEditorPage* doSearch::document(Context* context, const QString& title, Member* author, bool editable, const QString& explicitId) const {
+    QString id = "document/" + (author ? author->id() : "local") + "/";
+    if (explicitId.isEmpty())
+        id = nextId(id);
+    else
+        id += explicitId;
     return static_cast<MarkdownEditorPage*>(page(id, [title, author, context, editable](const QString& id, doSearch* parent){
         return new MarkdownEditorPage(id, context, author, title, editable, parent);
     }));
 }
 
 Context* doSearch::createContext(const QString& name) {
-    Context* instance = context(QString::number(m_contexts.size()), name);
+    Context* instance = context(nextId("context/"), name);
     append(instance);
     emit contextsChanged();
     return instance;
@@ -173,26 +188,14 @@ Context* doSearch::createContext(const QString& name) {
 
 Page* doSearch::page(const QString &id) const {
     return page(id, [this](const QString& id, doSearch* parent) -> Page*{
-        if (id.startsWith("context/")) {
-            if (id.contains("/knugget/text"))
-                return new TextKnugget(id, parent);
-            else if (id.contains("/knugget/image"))
-                return new ImageKnugget(id, parent);
-            else if (id.contains("/knugget/link"))
-                return new LinkKnugget(id, parent);
-            else if (id.contains("/knugget/group"))
-                return new GroupKnugget(id, parent);
-            else if (id.contains("/search/session"))
-                return new SearchSession(id, parent);
-            else if (id.contains("/document"))
-                return new MarkdownEditorPage(id, parent);
-            else
-                return new Context(id, parent);
-        }
+        if (id.startsWith("context/"))
+            return new Context(id, parent);
         else if (id.startsWith("web/") && id.endsWith("site"))
             return new WebSite(id, parent);
         else if (id.startsWith("web/"))
             return new WebPage(id, parent);
+        else if (id.startsWith("search/session"))
+            return new SearchSession(id, parent);
         else if (id.startsWith("search/") && id.endsWith("/google"))
             return new GoogleSERPage(id, parent);
         else if (id.startsWith("search/") && id.endsWith("/yandex"))
@@ -201,10 +204,18 @@ Page* doSearch::page(const QString &id) const {
             return new SearchRequest(id, parent);
         else if (id.startsWith("document/"))
             return new MarkdownEditorPage(id, parent);
+        else if (id.startsWith("knugget/text"))
+            return new TextKnugget(id, parent);
+        else if (id.startsWith("knugget/image"))
+            return new ImageKnugget(id, parent);
+        else if (id.startsWith("knugget/link"))
+            return new LinkKnugget(id, parent);
+        else if (id.startsWith("knugget/group"))
+            return new GroupKnugget(id, parent);
         else if (id == "empty")
             return empty();
         else {
-//            qWarning() << "Unknown page type, or corrupted page id: " << id;
+            qWarning() << "Unknown page type, or corrupted page id: " << id;
             return 0;
         }
     });

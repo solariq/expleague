@@ -255,6 +255,10 @@ Rectangle {
                 id: webEngineView
                 enabled: !dosearch.main || !dosearch.main.drag
 
+                Drag.onDragStarted: {
+                    console.log("Web drag started")
+                }
+
                 property bool newTab: false
 
                 function find(text) {
@@ -278,7 +282,7 @@ Rectangle {
                         var iconOriginal = icon.toString()
                         if (iconOriginal.search(/^image:\/\/favicon\//) !== -1) {
                             iconOriginal = iconOriginal.substring("image://favicon/".length)
-                            owner.setIcon(iconOriginal)
+                            owner.setIcon(decodeURIComponent(iconOriginal))
                         }
                     }
                 }
@@ -369,7 +373,9 @@ Rectangle {
                 }
 
                 onVisibleChanged: {
-                    console.log("Visibility of " + self.url + " set to " + visible)
+                    console.log("Visibility of " + self.url + " set to " + visible + " (container: " + owner.container.id + " active: " + dosearch.navigation.activePage.id + ")")
+                    if (visible && self.visible)
+                        self.forceActiveFocus()
                 }
 
                 onLoadingChanged: {
@@ -377,9 +383,11 @@ Rectangle {
                     console.log("Loading changed: " + self.url + " to " + loading)
                     if (!loading) {
                         webEngineView.visible = Qt.binding(function() {
-                            console.log(owner.container + " active: " + dosearch.navigation.activePage)
+//                            console.log(owner.container + " active: " + dosearch.navigation.activePage)
                             return owner.container === dosearch.navigation.activePage
                         })
+                        if (owner.container === dosearch.navigation.activePage && self.visible) // for ui transfered views
+                            self.forceActiveFocus()
                         runJavaScript("document.body.innerText", function(result) {
                             owner.text = result;
                         });
@@ -424,22 +432,44 @@ Rectangle {
                 height: parent.height
 
                 onEntered: {
+                    if (dosearch.main.dragType != "web" && dosearch.main.dragType != "none" && dosearch.main.dragType != "")
+                        return
+                    if (owner.dragToWebView(drag, webEngineView))
+                        drag.accept()
 //                    console.log("Entered: " + drag.source.toString())
-                    if (drag.source && drag.source.toString().search("Main_QMLTYPE") >= 0)
+                    if (dosearch.main.dragType == "" && drag.source && drag.source.toString().search("Main_QMLTYPE") >= 0) {
+                        dosearch.main.dragType = "web"
                         dosearch.main.drag = drag.source
+                    }
                 }
                 onExited: {
+                    if (dosearch.main.dragType != "web" && dosearch.main.dragType != "none" && dosearch.main.dragType != "")
+                        return
+                    owner.dragToWebView(drag, webEngineView)
+                    if (dosearch.main.dragType != "web")
+                        return
 //                    console.log("Exited")
-                    dosearch.main.drag = "delay"
+                    dosearch.main.dragType == "delay"
                     dosearch.main.delay(100, function () {
-                        if (dosearch.main.drag == "delay")
+                        if (dosearch.main.drag == "delay") {
+                            dosearch.main.dragType = ""
                             dosearch.main.drag = null
+                        }
                     })
                 }
+                onPositionChanged: {
+                    if (dosearch.main.dragType != "web" && dosearch.main.dragType != "none" && dosearch.main.dragType != "")
+                        return
+                    if (owner.dragToWebView(drag, webEngineView))
+                        drag.accept()
+                }
+
                 onDropped: {
+                    if (dosearch.main.dragType != "web" && dosearch.main.dragType != "none" && dosearch.main.dragType != "")
+                        return
 //                    console.log("Dropped: " + drag)
                     dosearch.main.drag = null
-                    if (owner.dropToWebView(drop, webEngineView))
+                    if (owner.dragToWebView(drop, webEngineView))
                         drop.accept()
                 }
             }
@@ -454,7 +484,7 @@ Rectangle {
     property bool complete: false
     property bool hasFocus: false
     onFocusChanged: {
-        if (!complete || self.focus || !dosearch.main || !hasFocus) {
+        if (!complete || self.focus || !dosearch.main || !hasFocus || !visible) {
             hasFocus = focus
             return
         }
@@ -500,8 +530,7 @@ Rectangle {
     }
 
     onVisibleChanged: {
-        if (visible)
-            forceActiveFocus()
+        console.log("Entire web page " + owner.id + " visibility changed to: " + visible)
     }
 
     Component.onDestruction: {

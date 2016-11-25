@@ -9,6 +9,7 @@
 #include <QQmlListProperty>
 
 class QQuickItem;
+class QQuickDropEvent;
 namespace expleague {
 class WebSite;
 class WebPage;
@@ -37,7 +38,6 @@ class WebPage: public ContentPage, public WebResource {
     Q_PROPERTY(QUrl originalUrl READ originalUrl NOTIFY originalUrlChanged)
     Q_PROPERTY(WebPage* redirect READ redirect WRITE setRedirect NOTIFY redirectChanged)
     Q_PROPERTY(QQmlListProperty<expleague::WebPage> redirects READ redirects NOTIFY urlChanged)
-    Q_PROPERTY(Page* container READ container NOTIFY containerChanged)
 
 public: // QML
     QQmlListProperty<WebPage> redirects() const { return QQmlListProperty<WebPage>(const_cast<WebPage*>(this), const_cast<QList<WebPage*>&>(m_redirects)); }
@@ -55,11 +55,12 @@ public: // QML
                                       QQuickItem* view);
 
     Q_INVOKABLE bool forwardShortcutToWebView(const QString& shortcut, QQuickItem* view);
-    Q_INVOKABLE bool dropToWebView(QObject* drop, QQuickItem* view);
+    Q_INVOKABLE bool dragToWebView(QQuickDropEvent* drop, QQuickItem* view) const;
+//    Q_INVOKABLE bool dragToWebView(QQuickDropEvent* drop, QQuickItem* view) const;
     Q_INVOKABLE void open(QObject* request, bool newTab);
 
 public: // new functionality
-    Q_INVOKABLE bool accept(const QUrl& url) const;
+    Q_INVOKABLE virtual bool accept(const QUrl& url) const;
 
     Q_INVOKABLE virtual void open(const QUrl& url, bool newTab, bool transferUI = true);
 
@@ -70,8 +71,6 @@ public: // new functionality
 public: // overloads
     Page* parentPage() const;
 
-    void setProfile(const BoW& profile);
-
     QUrl originalUrl() const { return m_url; }
     void setOriginalUrl(const QUrl& url);
 
@@ -80,12 +79,12 @@ public: // overloads
 
     WebSite* site() const;
     WebPage* page() const { return const_cast<WebPage*>(this); }
+    bool transferUI(Page* other) const;
 
 signals:
     void redirectChanged(WebPage* target);
     void urlChanged(const QUrl& url);
     void originalUrlChanged(const QUrl& url);
-    void containerChanged();
 
 protected:
     void interconnect();
@@ -103,6 +102,7 @@ private:
     WebPage* m_redirect = 0;
 
     QList<WebPage*> m_redirects;
+    int counter = 0;
 };
 
 class WebSite: public CompositeContentPage, public WebResource {
@@ -142,7 +142,10 @@ public:
     WebPage* redirect() const { return page()->redirect(); }
     virtual void setRedirect(WebPage* target) {  page()->setRedirect(target); }
 
-    BoW templates() const { return m_templates; }
+    BoW removeTemplates(const BoW& profile) const;
+
+protected:
+    void setProfile(const BoW& profile);
 
 signals:
     void mirrorsChanged();
