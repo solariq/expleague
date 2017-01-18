@@ -224,8 +224,9 @@ Rectangle {
 
             onReleased: {
                 if (drag.active && !!drag.target && drag.target !== dropArea) {
+                    var activeGroup = owner.activeGroup
                     tile.Drag.drop()
-                    if (self.moveTo >= 0) {
+                    if (activeGroup === owner.activeGroup && self.moveTo >= 0) {
                         var moveFrom = -1;
                         for (var i in owner.activeGroup.items) {
                             if (owner.activeGroup.items[i] === drag.target.item) {

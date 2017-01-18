@@ -148,7 +148,7 @@ Item {
 //        console.log("Side: " + self.area + " spent: " + timeSpentInside)
 
         var effectiveIndex = self.visualIndex == 0 || self.visualIndex + 1 >= ownerModel.items.length - 1 ? self.visualIndex : self.visualIndex - 1
-        var moveFrom = self.dragSource.visualIndex
+        var moveFrom = self.dragSource ? self.dragSource.visualIndex : -1
         var moveTo = -1
         if (self.visualIndex > moveFrom) {
             if (self.area == "left")

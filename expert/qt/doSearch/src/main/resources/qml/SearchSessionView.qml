@@ -11,7 +11,25 @@ ColumnLayout {
     spacing: 0
 
     onVisibleChanged: {
+        console.log("Session " + owner.id + " visibility changed to " + visible)
         owner.request.ui.visible = visible
+    }
+
+    onFocusChanged: {
+        if (focus && visible) {
+            console.log("Enforce focus to session active request: " + owner.request.id)
+            owner.request.ui.forceActiveFocus()
+        }
+    }
+
+    Connections {
+        target: owner
+        onRequestChanged: {
+            if (requestHolder.children.length > 0)
+                requestHolder.children[0].visible = false
+            requestHolder.children = [owner.request.ui]
+            owner.request.ui.visible = true
+        }
     }
 
     Rectangle {
@@ -67,5 +85,11 @@ ColumnLayout {
         id: requestHolder
         color: "green"
         children: [owner.request.ui]
+        onChildrenChanged: {
+            for (var i in children) {
+                var child = children[i]
+                child.visible = Qt.binding(function () { return self.visible && owner.request.ui === child })
+            }
+        }
     }
 }

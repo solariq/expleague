@@ -10,6 +10,7 @@ import "."
 
 Item {
     id: self
+    property Item selectedSerp: owner.serps[owner.selected].ui
     property WebEngineView webView: owner.serps[owner.selected].ui.webView
     anchors.fill: parent
 
@@ -49,14 +50,23 @@ Item {
                 id: serps
                 model: owner.serps
                 delegate: Item {
+                    id: serp
                     anchors.fill: parent
                     visible: owner.selected === index && self.visible
                     children: [ui]
-                    onVisibleChanged: {
-                        children[0].visible = (owner.selected === index && self.visible)
+                    onChildrenChanged: {
+                        for (var i in children) {
+                            var child = children[i]
+                            child.visible = Qt.binding(function () { return owner.selected === index && self.visible })
+                        }
                     }
                 }
             }
         }
+    }
+
+    Component.onCompleted: {
+        if (visible)
+            owner.serps[owner.selected].ui.forceActiveFocus()
     }
 }

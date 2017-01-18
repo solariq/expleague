@@ -20,6 +20,7 @@ Item {
     property Action searchOnPage: searchOnPageAction
     property Action searchInternet: searchInternetAction
     property Action searchSite: searchSiteAction
+    property Action issueUrl: issueUrlAction
     property Action resetZoom: resetZoomAction
     property Action zoomIn: zoomInAction
     property Action zoomOut: zoomOutAction
@@ -271,6 +272,21 @@ Item {
         onTriggered: {
             if (!omnibox.visible) {
                 omnibox.select("site")
+                dosearch.main.showDialog(omnibox)
+            }
+            else {
+                omnibox.visible = false
+            }
+        }
+    }
+
+    Action {
+        id: issueUrlAction
+        shortcut: "Ctrl+Alt+N"
+        text: qsTr("Переход по URL")
+        onTriggered: {
+            if (!omnibox.visible) {
+                omnibox.select("url")
                 dosearch.main.showDialog(omnibox)
             }
             else {

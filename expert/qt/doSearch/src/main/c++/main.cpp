@@ -94,7 +94,8 @@ void declareTypes() {
 
     qRegisterMetaType<Profile::Sex>("expleague::Profile::Sex");
     qRegisterMetaType<PagesGroup::Type>("expleague::PagesGroup::Type");
-    qRegisterMetaType<Page::State>("expleague::Page::State");
+    qRegisterMetaType<League::Role>("expleague::League::Role");
+    qRegisterMetaType<BoW>("BoW");
 
     qRegisterMetaType<Profile*>("Profile*");
     qRegisterMetaType<Context*>("Context*");
@@ -118,6 +119,7 @@ void declareTypes() {
     qRegisterMetaType<Vault*>("Vault*");
     qRegisterMetaType<Knugget*>("Knugget*");
     qRegisterMetaType<GroupKnugget*>("GroupKnugget*");
+    qRegisterMetaType<RoomState*>("RoomState*");
 
     qmlRegisterType<ProfileBuilder>("ExpLeague", 1, 0, "ProfilePreview");
     qmlRegisterType<SearchRequest>("ExpLeague", 1, 0, "SearchRequest");
@@ -142,4 +144,5 @@ void declareTypes() {
     qmlRegisterUncreatableType<PageVisit>("ExpLeague", 1, 0, "PageVisit", "Visits are created automatically");
     qmlRegisterUncreatableType<WebPage>("ExpLeague", 1, 0, "WebPage", "pages suppored to be created inside c++");
     qmlRegisterUncreatableType<SERPage>("ExpLeague", 1, 0, "SERPPage", "pages suppored to be created inside c++");
+    qmlRegisterUncreatableType<RoomState>("ExpLeague", 1, 0, "RoomState", "rooms states are images of serverside object");
 }

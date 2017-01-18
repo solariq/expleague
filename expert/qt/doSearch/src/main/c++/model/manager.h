@@ -30,7 +30,7 @@ class NavigationManager: public QObject {
 
     Q_PROPERTY(QQmlListProperty<QQuickItem> screens READ screens NOTIFY screensChanged)
     Q_PROPERTY(QQmlListProperty<expleague::Page> history READ history NOTIFY historyChanged)
-    Q_PROPERTY(expleague::Context* context READ context WRITE activate NOTIFY contextChanged)
+    Q_PROPERTY(expleague::Context* context READ context NOTIFY contextChanged)
 
     Q_PROPERTY(QQuickItem* activeScreen READ activeScreen NOTIFY activeScreenChanged)
     Q_PROPERTY(expleague::Page* activePage READ activePage NOTIFY activeScreenChanged)
@@ -59,7 +59,6 @@ public:
     QQmlListProperty<expleague::Page> history() const {
         return QQmlListProperty<expleague::Page>(const_cast<NavigationManager*>(this), const_cast<QList<Page*>&>(m_history));
     }
-
 
     QQuickItem* activeScreen() const { return m_active_screen; }
     Page* activePage() const { return m_selected; }
@@ -95,7 +94,7 @@ private slots:
     void onActivePageUIChanged();
 
 public:
-    NavigationManager(doSearch* parent = 0);
+    explicit NavigationManager(doSearch* parent = 0);
 
 private:
     void rebalanceWidth();
@@ -104,23 +103,20 @@ private:
     void popTo(const PagesGroup* to, bool clearSelection);
     void appendGroup(PagesGroup* group);
     void typeIn(Page* page, bool suggest = true);
-    PagesGroup* contextGroup() { return m_groups.empty() ? group(m_active_context, m_active_context, true) : m_groups.first(); }
-    PagesGroup* group(Page* page, Context* context = 0, bool create = false);
 
 private:
-    double m_screen_width;
-    Context* m_active_context;
+    double m_screen_width = 0;
+    Context* m_active_context = 0;
 
-    Page* m_selected;
+    Page* m_selected = 0;
 
     QList<PagesGroup*> m_groups;
     QList<Page*> m_history;
 
     QList<QQuickItem*> m_screens;
     QSet<Page*> m_prev_known;
-    QHash<QString, QHash<QString, PagesGroup*>> m_known_groups;
-    QQuickItem* m_active_screen;
-    QDnsLookup* m_lookup;
+    QQuickItem* m_active_screen = 0;
+    QDnsLookup* m_lookup = 0;
 };
 
 }

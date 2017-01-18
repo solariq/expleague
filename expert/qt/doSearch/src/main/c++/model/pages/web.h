@@ -91,8 +91,8 @@ protected:
     void rebuildRedirects();
 
 public:
-    WebPage(const QString& id, const QUrl& url, doSearch* parent);
-    WebPage(const QString &id, doSearch *parent);
+    explicit WebPage(const QString& id, const QUrl& url, doSearch* parent);
+    explicit WebPage(const QString &id, doSearch *parent);
 
 private slots:
     void onRedirectUrlChanged(const QUrl& url);
@@ -109,6 +109,7 @@ class WebSite: public CompositeContentPage, public WebResource {
     Q_OBJECT
 
     Q_PROPERTY(expleague::WebPage* root READ page CONSTANT)
+    Q_PROPERTY(QUrl url READ url NOTIFY urlChanged)
 
 public:
     bool mirrorTo(WebSite* site) const { return site == this || m_mirrors.contains(site); }
@@ -150,12 +151,14 @@ protected:
 signals:
     void mirrorsChanged();
     void rootChanged();
+    void urlChanged(const QUrl& url);
 
 public slots:
     void onPageLoaded(Page* child);
 
 private slots:
     void onMirrorsChanged();
+    void onRootUrlChanged(const QUrl& url) { emit urlChanged(url); }
     void onPartProfileChanged(const BoW& oldOne, const BoW& newOne);
 
     void onChildRedirectChanged(WebPage* target) {
@@ -164,8 +167,8 @@ private slots:
     }
 
 public:
-    WebSite(const QString& id, const QString& domain, const QUrl& rootUrl, doSearch* parent);
-    WebSite(const QString &id, doSearch *parent);
+    explicit WebSite(const QString& id, const QString& domain, const QUrl& rootUrl, doSearch* parent);
+    explicit WebSite(const QString &id, doSearch *parent);
 
     void interconnect();
 
@@ -173,7 +176,7 @@ private:
     void addMirror(WebSite* site);
 
 private:
-    WebPage* m_root;
+    WebPage* m_root = 0;
     QSet<WebSite*> m_mirrors;
     BoW m_templates;
 };

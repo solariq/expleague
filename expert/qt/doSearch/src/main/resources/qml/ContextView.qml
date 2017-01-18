@@ -12,9 +12,11 @@ import ExpLeague 1.0
 import "."
 
 Rectangle {
+    id: self
     color: "white"
     anchors.fill: parent
     property alias downloads: downloadsPage
+    property var ownerCtxt: owner
 
     onFocusChanged: {
         var text = owner.title
@@ -45,6 +47,10 @@ Rectangle {
                 return -1
             }
             model: ListModel {
+                ListElement {
+                    name: qsTr("Хранилище")
+                    item: "vault"
+                }
                 ListElement {
                     name: qsTr("Документы")
                     item: "documents"
@@ -157,12 +163,23 @@ Rectangle {
                         visible: false
                         context: owner
                     }
+
+                    Vault {
+                        id: vaultPage
+                        anchors.fill: parent
+                        editMode: true
+                        size: 15
+
+                        visible: false
+                        context: ownerCtxt
+                    }
                 }
 
-                state: aspectsView.currentItem ? aspectsView.currentItem.targetState : "documents"
+                state: aspectsView.currentItem ? aspectsView.currentItem.targetState : (owner.vault.items.length > 0 ? "vault" : "documents")
                 states: [
                     State { name: "downloads"; PropertyChanges { target: downloadsPage; visible: true } },
-                    State { name: "documents"; PropertyChanges { target: editorsPage; visible: true } }
+                    State { name: "documents"; PropertyChanges { target: editorsPage; visible: true } },
+                    State { name: "vault"; PropertyChanges { target: vaultPage; visible: true } }
                 ]
             }
         }

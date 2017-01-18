@@ -32,12 +32,13 @@ class TaskTag;
 class Context;
 namespace xmpp {
 class Progress;
+class ExpLeagueConnection;
 }
 
 class Task: public QObject {
     Q_OBJECT
 
-    Q_PROPERTY(expleague::Offer* offer READ offer CONSTANT)
+    Q_PROPERTY(expleague::Offer* offer READ offer NOTIFY offerChanged)
     Q_PROPERTY(expleague::Context* context READ context CONSTANT)
     Q_PROPERTY(QQmlListProperty<expleague::Bubble> chat READ chat NOTIFY bubblesChanged)
     Q_PROPERTY(QQmlListProperty<expleague::TaskTag> tags READ tags NOTIFY tagsChanged)
@@ -47,7 +48,6 @@ class Task: public QObject {
     Q_PROPERTY(expleague::MarkdownEditorPage* answer READ answer CONSTANT)
 
 public:
-    bool active() const { return m_active; }
     Offer* offer() const { return m_offer; }
 
     QQmlListProperty<Bubble> chat() { return QQmlListProperty<Bubble>(this, m_chat); }
@@ -62,6 +62,7 @@ public:
     Context* context() const { return m_context; }
 
 public:
+    Q_INVOKABLE void enter() const;
     Q_INVOKABLE void sendMessage(const QString& str) const;
     Q_INVOKABLE void sendAnswer(const QString& shortAnswer, int difficulty, int success, bool extraInfo);
     Q_INVOKABLE void tag(TaskTag*);
@@ -71,6 +72,8 @@ public:
     Q_INVOKABLE void stop();
     Q_INVOKABLE void suspend(int seconds);
 
+    bool active() const { return m_context; }
+
     void setContext(Context* context);
 
 public:
@@ -78,9 +81,12 @@ public:
     League* parent() const;
 
 public:
-    Task(Offer* offer = 0, QObject* parent = 0);
+    explicit Task(Offer* offer = 0, QObject* parent = 0);
+    explicit Task(const QString& room, QObject* parent = 0);
 
 signals:
+    void offerChanged();
+
     void bubblesChanged();
     void chatChanged();
 
@@ -96,6 +102,7 @@ public slots:
     void setAnswer(MarkdownEditorPage* answer) {
         m_answer = answer;
     }
+    void setOffer(Offer* offer);
 
     void messageReceived(const QString& from, const QString& text);
     void imageReceived(const QString& from, const QUrl& id);
@@ -109,6 +116,7 @@ private:
     Bubble* bubble(const QString& from);
 
 private:
+    QString m_room;
     Offer* m_offer;
     QList<Bubble*> m_chat;
     MarkdownEditorPage* m_answer;
@@ -117,8 +125,7 @@ private:
     QList<AnswerPattern*> m_patterns;
     QList<MarkdownEditorPage*> m_answers;
     QStringList m_phones;
-    Context* m_context;
-    bool m_active;
+    Context* m_context = 0;
 };
 
 class Offer: public QObject {
@@ -138,6 +145,8 @@ class Offer: public QObject {
 
     Q_ENUMS(Urgency)
     Q_ENUMS(FilterType)
+    Q_ENUMS(Status)
+
 public:
     enum Urgency {
         TU_DAY,
@@ -148,6 +157,16 @@ public:
         TFT_ACCEPT,
         TFT_REJECT,
         TFT_PREFER,
+    };
+
+    enum Status {
+        OPEN,
+        FORMATION,
+        LFE,
+        IN_WORK,
+        DELIVERY,
+        UNSEEN,
+        DONE,
     };
 
     QString roomJid() const { return m_room; }
@@ -190,8 +209,8 @@ public:
     }
 
 public:
-    explicit Offer(QDomElement xml, QObject *parent = 0);
-    explicit Offer(QObject *parent = 0): QObject(parent) {}
+    explicit Offer(QDomElement xml = QDomElement(), QObject *parent = 0);
+//    explicit Offer(QObject *parent = 0): QObject(parent) {}
 
 public:
     QDomElement toXml() const;
@@ -204,6 +223,8 @@ private slots:
     void tick();
 
 private:
+    friend class xmpp::ExpLeagueConnection;
+
     Urgency m_urgency = TU_DAY;
     bool m_local = false;
     QString m_room;

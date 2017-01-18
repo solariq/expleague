@@ -10,7 +10,10 @@ import "."
 Rectangle {
     id: self
     property Task task
+    property var chat: self.task ? self.task.chat : []
+
     color: Qt.rgba(230/256.0, 233/256.0, 234/256.0, 1.0)
+    signal messageClicked(ChatMessage message)
 
     Component {
         id: message
@@ -99,6 +102,12 @@ Rectangle {
                         var split = msg.reference.split('/')
                         dosearch.navigation.handleOmnibox(root.league.imageUrl(split[split.length - 1]), 0)
                     }
+                }
+            }
+            TransparentMouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    messageClicked(modelData)
                 }
             }
         }
@@ -222,37 +231,39 @@ Rectangle {
     ColumnLayout {
         id: column
         anchors.fill: parent
-        Item {
-            Layout.fillWidth: true
+        spacing: 0
+        Flickable {
             Layout.fillHeight: true
-            ScrollView {
-                id: chatContainer
-                horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
-                verticalScrollBarPolicy: Qt.ScrollBarAsNeeded
-                anchors.centerIn: parent
-                width: parent.width - 8
-                height: parent.height - 8
+            Layout.fillWidth: true
 
-                Column {
-                    id: chat
-                    spacing: 5
-                    Item {height: 5}
-                    Repeater {
-                        model: self.task ? self.task.chat : []
-                        delegate: bubble
-                    }
-                    Item {Layout.fillHeight: true}
-                    onHeightChanged: {
-                        chatContainer.flickableItem.contentY = Math.max(0, height - chatContainer.height)
-                    }
+            id: chatContainer
+            clip: true
+            contentWidth: width - 8
+            contentHeight: chat.height
+            topMargin: 2
+            leftMargin: 2
+            rightMargin: 2
+            bottomMargin: 2
+
+            Column {
+                id: chat
+                spacing: 5
+                Item {height: 5}
+                Repeater {
+                    model: self.chat
+                    delegate: bubble
                 }
-
+                onHeightChanged: {
+                    chatContainer.contentY = Math.max(0, height - chatContainer.height)
+                }
             }
         }
 
         TextArea {
             id: send
+            visible: !!task
             Layout.fillWidth: true
+            Layout.preferredHeight: implicitHeight
             wrapMode: TextEdit.WrapAnywhere
             placeholderText: qsTr("Напишите сообщение клиенту")
             background: Rectangle {

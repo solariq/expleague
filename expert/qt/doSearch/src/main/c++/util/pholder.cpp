@@ -5,6 +5,7 @@
 #include <QHash>
 #include <QStack>
 #include <QUrl>
+#include <QFile>
 
 #include <QVariant>
 

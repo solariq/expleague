@@ -11,5 +11,6 @@
 extern expleague::doSearch* root;
 
 #include "profile.h"
+#include "model/pages/globalchat.h"
 
 #endif // EXPLEAGUE_H

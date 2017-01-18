@@ -257,6 +257,10 @@ ApplicationWindow {
             MenuItem {
                 action: commonActions.searchOnPage
             }
+            MenuItem {
+                action: commonActions.issueUrl
+            }
+
             MenuSeparator{}
             MenuItem {
                 action: commonActions.zoomIn

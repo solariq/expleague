@@ -3,10 +3,13 @@
 #include "ir/dictionary.h"
 #include "util/mmath.h"
 
+#include "model/pages/admins.h"
+
 #include <assert.h>
 
 #include <QDir>
 #include <QUrl>
+#include <QTimer>
 
 #include <QCoreApplication>
 #include <QQuickWindow>
@@ -34,10 +37,11 @@ doSearch::doSearch(QObject* parent) : QObject(parent) {
     );
     m_saver = new StateSaver(this);
     m_league = new League(this);
+    connect(m_league, SIGNAL(roleChanged(League::Role)), this, SLOT(onRoleChanged(League::Role)));
     m_navigation = new NavigationManager(this);
     connect(m_navigation, SIGNAL(activeScreenChanged()), this, SLOT(onActiveScreenChanged()));
     m_history = new History(this);
-    m_history->interconnect();
+    QTimer::singleShot(10, m_history, &History::interconnect);
 }
 
 void doSearch::setMain(QQuickWindow* main) {
@@ -187,9 +191,15 @@ Context* doSearch::createContext(const QString& name) {
 }
 
 Page* doSearch::page(const QString &id) const {
-    return page(id, [this](const QString& id, doSearch* parent) -> Page*{
+    if (id.isEmpty())
+        return 0;
+    return page(id, [this](const QString& id, doSearch* parent) -> Page* {
         if (id.startsWith("context/"))
             return new Context(id, parent);
+        else if (id == AdminContext::ID)
+            return new AdminContext(parent);
+        else if (id == GlobalChat::ID)
+            return new GlobalChat(qobject_cast<AdminContext*>(page(AdminContext::ID)));
         else if (id.startsWith("web/") && id.endsWith("site"))
             return new WebSite(id, parent);
         else if (id.startsWith("web/"))
@@ -237,13 +247,35 @@ void doSearch::onActiveScreenChanged() {
     m_history->onVisited(active, m_navigation->context());
 }
 
-void doSearch::append(Context* context) {
+void doSearch::onRoleChanged(League::Role role) {
+    switch(role) {
+    case League::ADMIN: {
+        Context* adminContext = qobject_cast<Context*>(page(AdminContext::ID));
+        append(adminContext, 0);
+        navigation()->activate(adminContext);
+        break;
+    }
+    default: {
+        foreach (Context* ctxt, m_contexts) {
+            if(qobject_cast<AdminContext*>(ctxt)) {
+                remove(ctxt);
+                break;
+            }
+        }
+    }
+    }
+}
+
+void doSearch::append(Context* context, int index) {
     assert(context->parent() == this);
-    m_contexts.append(context);
+    if (index < 0)
+        m_contexts.append(context);
+    else
+        m_contexts.insert(index, context);
     emit contextsChanged();
 }
 
-void doSearch::remove(Context* context) {
+void doSearch::remove(Context* context, bool erase) {
     assert(context->parent() == this);
     if (m_contexts.size() == 1) // unable to remove the last context
         return;
@@ -251,8 +283,10 @@ void doSearch::remove(Context* context) {
         Context* const next = m_contexts[std::max(0, m_contexts.indexOf(context))];
         m_navigation->activate(next);
     }
-    QDir contextDir(pageResource(context->id()));
-    contextDir.removeRecursively();
+    if (erase) {
+        QDir contextDir(pageResource(context->id()));
+        contextDir.removeRecursively();
+    }
     m_contexts.removeOne(context);
     m_pages.remove(context->id());
     emit contextsChanged();

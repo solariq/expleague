@@ -3,7 +3,6 @@
 
 #include <atomic>
 #include <QObject>
-#include <QFile>
 
 struct FileWriteRequest {
     QString file;
@@ -13,6 +12,7 @@ struct FileWriteRequest {
 
 class QTimer;
 class QMutex;
+class QThread;
 class FileWriteThrottle: public QObject {
     Q_OBJECT
 
@@ -25,11 +25,14 @@ private slots:
 
 public:
     explicit FileWriteThrottle(QObject* parent = 0);
+    virtual ~FileWriteThrottle();
+
     void append(const FileWriteRequest& req);
 
 private:
     QMutex* m_lock;
     QTimer* m_timer;
+    QThread* m_thread;
     std::atomic<bool> m_progress;
     QList<FileWriteRequest> m_requests;
 };

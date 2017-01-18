@@ -13,6 +13,8 @@
 namespace expleague {
 
 class doSearch;
+class GlobalChat;
+class RoomState;
 class Member: public QObject {
     Q_OBJECT
 
@@ -119,6 +121,8 @@ class League: public QObject {
     Q_OBJECT
 
     Q_PROPERTY(expleague::League::Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(expleague::League::Role role READ role NOTIFY roleChanged)
+
     Q_PROPERTY(expleague::Profile* profile READ active WRITE setActive NOTIFY profileChanged)
     Q_PROPERTY(QQmlListProperty<expleague::Profile> profiles READ profiles NOTIFY profilesChanged)
     Q_PROPERTY(QQmlListProperty<expleague::TaskTag> tags READ tags NOTIFY tagsChanged)
@@ -127,6 +131,7 @@ class League: public QObject {
     Q_PROPERTY(int tasksAvailable READ tasksAvailable NOTIFY tasksAvailableChanged)
 
     Q_ENUMS(Status)
+    Q_ENUMS(Role)
 
 public:
     enum Status {
@@ -137,12 +142,20 @@ public:
         LS_ON_TASK
     };
 
+    enum Role {
+        NONE,
+        EXPERT,
+        ADMIN
+    };
+
     Status status() const {
         return m_status;
     }
 
+    Role role() const { return m_role; }
+
     Profile* active() const {
-        return m_connection ? m_connection->profile() : 0;
+        return m_profile;
     }
 
     QQmlListProperty<Profile> profiles() {
@@ -157,19 +170,14 @@ public:
         return QQmlListProperty<AnswerPattern>(this, m_patterns);
     }
 
+    QList<RoomState*> rooms() const { return m_rooms; }
+
     int tasksAvailable() const {
         return m_connection ? m_connection->tasksAvailable() : 0;
     }
 
-    Q_INVOKABLE void connect() {
-        if (m_connection)
-            m_connection->connect();
-    }
-
-    Q_INVOKABLE void disconnect() {
-        if (m_connection)
-            m_connection->disconnect();
-    }
+    Q_INVOKABLE void connect();
+    Q_INVOKABLE void disconnect();
 
     Q_INVOKABLE QString id() {
         return m_connection ? m_connection->id() : "local";
@@ -202,8 +210,13 @@ public:
         statusChanged(m_status);
     }
 
+    GlobalChat* chat() const;
+
+    Task* task(const QString& roomId);
+
 signals:
-    void statusChanged(Status status);
+    void statusChanged(League::Status status);
+    void roleChanged(League::Role role);
     void profileChanged(Profile* profile);
     void receivedInvite(Offer* offer);
     void tasksAvailableChanged();
@@ -211,90 +224,33 @@ signals:
     Q_INVOKABLE void profilesChanged();
     void patternsChanged();
     void tagsChanged();
+    void roomsChanged();
+//    void roomDumpReceived(const QString& roomId, );
 
 private slots:
-    void connected() {
-        m_status = LS_ONLINE;
-        emit statusChanged(m_status);
-    }
-
+    void connected(int role);
     void disconnected();
-
-    void checkReceived(const Offer& offer) {
-        Offer* roffer = registerOffer(offer);
-        m_connection->sendOk(roffer);
-        m_status = LS_CHECK;
-        emit statusChanged(m_status);
-    }
-
+    void checkReceived(const Offer& offer);
     void inviteReceived(const Offer& offer);
-
-    void resumeReceived(const Offer& offer) {
-        Offer* roffer = registerOffer(offer);
-        startTask(roffer);
-        m_connection->sendResume(roffer);
-        notifyIfNeeded("", tr("Задание вернулось: ") + offer.topic());
-    }
-
-    void cancelReceived(const Offer& offer) {
-        Offer* roffer = registerOffer(offer);
-        roffer->cancelled();
-        m_status = LS_ONLINE;
-        emit statusChanged(m_status);
-    }
-
-    void taskFinished() {
-        Task* task = qobject_cast<Task*>(sender());
-        m_tasks.removeOne(task);
-        if (m_tasks.empty()) {
-            m_status = LS_ONLINE;
-            emit statusChanged(m_status);
-        }
-    }
-
-    void tagReceived(TaskTag* tag) {
-        tag->setParent(this);
-        foreach(TaskTag* current, m_tags) {
-            if (current->name() == tag->name()) {
-                m_tags.removeOne(current);
-//                delete current;
-            }
-        }
-
-        m_tags.append(tag);
-        qSort(m_tags.begin(), m_tags.end(), [](const TaskTag* a, const TaskTag* b) {
-            return a->name() < b->name();
-        });
-        emit tagsChanged();
-    }
-
-    void patternReceived(AnswerPattern* pattern) {
-        pattern->setParent(this);
-        foreach(AnswerPattern* current, m_patterns) {
-            if (current->name() == pattern->name()) {
-                m_patterns.removeOne(current);
-//                current->deleteLater();
-            }
-        }
-
-        m_patterns.append(pattern);
-        qSort(m_patterns.begin(), m_patterns.end(), [](const AnswerPattern* a, const AnswerPattern* b) {
-            return a->name() < b->name();
-        });
-
-        emit patternsChanged();
-    }
-
-    void messageReceived(const QString& room, const QString& from, const QString& text);
-    void imageReceived(const QString& room, const QString& from, const QUrl&);
-    void answerReceived(const QString& room, const QString& from, const QString&);
-    void progressReceived(const QString& room, const QString& from, const Progress&);
+    void resumeReceived(const Offer& offer);
+    void cancelReceived(const Offer& offer);
+    void taskFinished();
+    void tagReceived(TaskTag* tag);
+    void patternReceived(AnswerPattern* pattern);
+    void messageReceived(const QString& room, const QString& id, const QString& from, const QString& text);
+    void imageReceived(const QString& room, const QString& id, const QString& from, const QUrl&);
+    void answerReceived(const QString& room, const QString& id, const QString& from, const QString&);
+    void progressReceived(const QString& room, const QString& id, const QString& from, const Progress&);
 
     void onTasksAvailableChanged(int oldValue) {
-        if (m_connection->tasksAvailable() > 0 && oldValue < m_connection->tasksAvailable())
+        if (m_connection && m_connection->tasksAvailable() > 0 && oldValue < m_connection->tasksAvailable())
             notifyIfNeeded("", tr("Изменилось количество доступных заданий на сервере"), true);
+
         emit tasksAvailableChanged();
     }
+
+    void onRoomStarted(const QString& roomId, const QString& topic, const QString& client);
+    void onPresenceChanged(const QString& user, bool available);
 
 public:
     explicit League(QObject* parent = 0);
@@ -304,18 +260,109 @@ protected:
 
 private:
     Offer* registerOffer(const Offer&);
-    void startTask(Offer* offer);
+    void startTask(Offer* offer, bool cont = false);
     void notifyIfNeeded(const QString& from, const QString& message, bool broadcast = false);
 
 private:
     QMap<QString, Offer*> m_offers;
-    QList<Task*> m_tasks;
+    QHash<QString, Task*> m_tasks;
     QList<TaskTag*> m_tags;
+    QList<RoomState*> m_rooms;
     QList<AnswerPattern*> m_patterns;
     Status m_status = LS_OFFLINE;
+    Role m_role = NONE;
     xmpp::ExpLeagueConnection* m_connection = 0;
-    ImagesStore* m_store;
+    ImagesStore* m_store = 0;
+    Profile* m_profile = 0;
+    bool m_reconnect = false;
+    QSet<QString> m_known_ids;
 };
+
+class RoomState: public QObject {
+    Q_OBJECT
+
+    Q_PROPERTY(int unread READ unread NOTIFY unreadChanged)
+    Q_PROPERTY(expleague::Member* client READ client CONSTANT)
+    Q_PROPERTY(QString topic READ topic CONSTANT)
+    Q_PROPERTY(int offersCount READ offersCount NOTIFY ordersChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::Member> admins READ adminsQml NOTIFY participantsChanged)
+    Q_PROPERTY(bool occupied READ occupied NOTIFY occupiedChanged)
+    Q_PROPERTY(int feedback READ feedback NOTIFY feedbackChanged)
+    Q_PROPERTY(expleague::RoomState::Status status READ status NOTIFY statusChanged)
+
+    Q_PROPERTY(expleague::Task* task READ task NOTIFY taskChanged)
+
+    Q_ENUMS(Status)
+
+public:
+    enum Status: int {
+        OPEN,
+        CHAT,
+        RESPONSE,
+        CONFIRMATION,
+        OFFER,
+        WORK,
+        DELIVERY,
+        FEEDBACK,
+        CLOSED
+    };
+
+public:
+    int unread() const { return m_unread; }
+    Member* client() const { return m_client; }
+    QString topic() const { return m_topic; }
+    int offersCount() const { return m_orders; }
+    QQmlListProperty<Member> adminsQml() const { return QQmlListProperty<Member>(const_cast<RoomState*>(this), const_cast<QList<Member*>&>(m_admins)); }
+    int feedback() const { return m_feedback; }
+    Task* task() const { return m_task; }
+    bool occupied() const { return m_admin_active; }
+
+    Status status() const { return m_status; }
+
+    Q_INVOKABLE Task* enter();
+    QString roomId() const { return xmpp::user(m_jid); }
+
+public:
+    explicit RoomState(const QString& id, Member* client, const QString& topic, League* parent);
+
+    League* parent() const { return static_cast<League*>(QObject::parent()); }
+
+signals:
+    void unreadChanged(int unread) const;
+    void ordersChanged() const;
+    void participantsChanged() const;
+    void occupiedChanged() const;
+    void statusChanged(expleague::RoomState::Status status) const;
+    void feedbackChanged() const;
+    void taskChanged() const;
+
+private slots:
+    void onRoomStatusReceived(const QString& roomId, int status);
+    void onFeedbackReceived(const QString& roomId, int feedback);
+    void onMessageReceived(const QString& roomId, const QString& author);
+    void onAssignmentReceived(const QString& roomId, const QString& expert, int role);
+
+private:
+    bool connectTo(xmpp::ExpLeagueConnection* connection);
+
+    friend class League;
+
+private:
+    QString m_jid;
+    Member* m_client = 0;
+    QString m_topic;
+    Status m_status = OPEN;
+    int m_orders = 0;
+    int m_unread = 0;
+
+    QList<Member*> m_admins;
+    bool m_admin_active;
+
+    int m_feedback = -1;
+
+    Task* m_task = 0;
+};
+
 
 class ImagesStoreResponse: public QQuickImageResponse {
     Q_OBJECT
@@ -339,7 +386,7 @@ public:
     void setResult(const QImage& image) {
         m_result = QQuickTextureFactory::textureFactoryForImage(image);
         emit QQuickImageResponse::finished();
-//        qDebug() << "Image acquired " << image;
+        qDebug() << "Image acquired " << image;
     }
 
 public:
@@ -385,5 +432,6 @@ Q_DECLARE_METATYPE(expleague::TaskTag*)
 Q_DECLARE_METATYPE(expleague::AnswerPattern*)
 Q_DECLARE_METATYPE(expleague::League*)
 Q_DECLARE_METATYPE(expleague::League::Status)
+Q_DECLARE_METATYPE(expleague::League::Role)
 
 #endif // LEAGUE_H

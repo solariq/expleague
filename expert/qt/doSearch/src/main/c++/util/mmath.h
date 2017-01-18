@@ -18,7 +18,10 @@ inline QString randString(int length) {
 inline QString md5(const QString& str) {
     QCryptographicHash md5(QCryptographicHash::Md5);
     md5.addData(str.toUtf8());
-    return QString::fromLatin1(md5.result().toBase64().constData());
+    QString result = QString::fromLatin1(md5.result().toBase64().constData());
+    result.replace('/', '+');
+    result.replace('=', "");
+    return result;
 }
 
 template <typename T>

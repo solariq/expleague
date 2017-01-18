@@ -94,7 +94,7 @@ void MarkdownEditorPage::initUI(QQuickItem* result) const {
     d_ptr->highlighter->setStyles(styles);
 
     if (m_editable) {
-        QThread* thread = new QThread(0);
+        QThread* thread = new QThread(parent());
         QTimer* timer = new QTimer();
         timer->moveToThread(thread);
         timer->setInterval(1000);
@@ -132,13 +132,15 @@ void MarkdownEditorPage::contentChanged() {
 
 //static hunspell::SpellChecker commonSpellchecker;
 
-MarkdownEditorPage::MarkdownEditorPage(const QString& id, Context* context, Member* author, const QString& title, bool editable, doSearch* parent): ContentPage(id, "qrc:/EditorView.qml", parent), m_author(author), m_owner(context), m_editable(editable) {
+MarkdownEditorPage::MarkdownEditorPage(const QString& id, Context* context, Member* author, const QString& title, bool editable, doSearch* parent): ContentPage(id, "qrc:/EditorView.qml", parent), m_author(author), /*m_owner(context), */m_editable(editable) {
     d_ptr.reset(0);
     m_text = ContentPage::textContent();
     m_spellchecker = new hunspell::SpellChecker();
     store("document.author", author ? author->id() : QVariant());
     store("document.title", title);
-    store("document.owner", context->id());
+    store("document.editable", editable);
+//    if (context)
+//        store("document.owner", context->id());
     save();
     if (m_author) {
         QObject::connect(m_author, SIGNAL(nameChanged(QString)), this, SLOT(authorChanged()));
@@ -152,8 +154,8 @@ MarkdownEditorPage::MarkdownEditorPage(const QString& id, doSearch* parent): Con
     m_spellchecker = new hunspell::SpellChecker();
     m_text = ContentPage::textContent();
     m_html = buildHtmlByMD(m_text);
-    League* league = doSearch::instance()->league();
-    m_editable = !m_author || m_author->id() == league->id();
+    League* league = parent->league();
+    m_editable = value("document.editable").toBool();
     if (m_author) {
         QObject::connect(m_author, SIGNAL(nameChanged(QString)), this, SLOT(authorChanged()));
         QObject::connect(m_author, SIGNAL(avatarChanged(QUrl)), this, SLOT(authorChanged()));
@@ -163,14 +165,14 @@ MarkdownEditorPage::MarkdownEditorPage(const QString& id, doSearch* parent): Con
 void MarkdownEditorPage::interconnect() {
     ContentPage::interconnect();
     QVariant ownerVar = value("document.owner");
-    m_owner = static_cast<Context*>(parent()->page(ownerVar.toString()));
+//    m_owner = static_cast<Context*>(parent()->page(ownerVar.toString()));
 }
 
 MarkdownEditorPage::~MarkdownEditorPage() {}
 
-Page* MarkdownEditorPage::parentPage() const {
-    return m_owner;
-}
+//Page* MarkdownEditorPage::parentPage() const {
+//    return m_owner;
+//}
 
 QString MarkdownEditorPage::title() const {
     return value("document.title").toString();

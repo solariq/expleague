@@ -56,6 +56,7 @@ void Context::setTask(Task *task) {
     QObject::connect(task, SIGNAL(finished()), SLOT(onTaskFinished()));
     QObject::connect(task, SIGNAL(cancelled()), SLOT(onTaskFinished()));
     task->setContext(this);
+
     store("context.task", task->id());
     save();
     m_task = task;
@@ -116,6 +117,110 @@ MarkdownEditorPage* Context::createDocument() {
     return document;
 }
 
+PagesGroup* Context::associated(Page* page, bool create){
+    if (!page)
+        return 0;
+    auto ptr = m_associations.find(page->id());
+    if (ptr != m_associations.end())
+        return ptr.value();
+    if (!create)
+        return 0;
+    PagesGroup* result = new PagesGroup(page, PagesGroup::NORMAL, this);
+    connect(result, SIGNAL(pagesChanged()), this, SLOT(onGroupPagesChanged()));
+    return m_associations[page->id()] = result;
+}
+
+PagesGroup* Context::suggest(Page* root) const {
+    QList<Page*> pages;
+    if (root == this) {
+        QList<ContentPage*> parts = this->parts();
+        pages = QList<Page*>(*reinterpret_cast<const QList<Page*>*>(&parts));
+    }
+    else pages = root->outgoing();
+
+    { // build redirects closure
+        QSet<Page*> known;
+        known += pages.toSet();
+
+        WebResource* webRoot = dynamic_cast<WebResource*>(root);
+        while (webRoot) {
+            pages.removeOne(webRoot->redirect());
+            if (webRoot->isRoot()) {
+                foreach(Page* page, webRoot->site()->outgoing()) {
+                    if (!known.contains(page)) {
+                        pages += page;
+                        known += page;
+                    }
+                }
+            }
+            else {
+                foreach(Page* page, webRoot->page()->outgoing()) {
+                    if (!known.contains(page)) {
+                        pages += page;
+                        known += page;
+                    }
+                }
+            }
+            webRoot = webRoot->redirect();
+        }
+    }
+    { // cleanup invisible links
+        QList<Page*>::iterator iter = pages.begin();
+        while (iter != pages.end()) {
+            Page* const page = *iter;
+            if (qobject_cast<Context*>(page) || qobject_cast<MarkdownEditorPage*>(page) || qobject_cast<Knugget*>(page))
+                iter = pages.erase(iter);
+            else iter++;
+        }
+    }
+    PagesGroup* suggest = new PagesGroup(root, PagesGroup::SUGGEST, const_cast<Context*>(this));
+    PagesGroup* associated = const_cast<Context*>(this)->associated(root, false);
+    if (associated)
+        foreach (Page* page, associated->pages())
+            if (!associated->closed(page))
+                suggest->insert(page);
+    for (int i = 0; i < pages.size(); i++) {
+        Page* const page = pages[i];
+        if (parent()->history()->recent(page) != this)
+            continue;
+        suggest->insert(page);
+    }
+    return suggest;
+}
+
+int depth(PagesGroup* group) {
+    PagesGroup* parent = group->parentGroup();
+    int depth = 0;
+    while (parent) {
+        group = parent;
+        parent = group->parentGroup();
+        depth++;
+    }
+    return qobject_cast<Context*>(group->root()) ? depth : -1;
+}
+
+Context::GroupMatchType Context::match(Page *page, PagesGroup **match) const {
+    int minDepth = std::numeric_limits<int>::max();
+    WebResource* const web = dynamic_cast<WebResource*>(page);
+    GroupMatchType matchType = NONE;
+    foreach(PagesGroup* currentGroup, m_associations.values()) {
+        WebResource* const webRoot = page ? dynamic_cast<WebResource*>(currentGroup->root()) : 0;
+        GroupMatchType currentMatchType = NONE;
+        if (currentGroup->pages().contains(page))
+            currentMatchType = EXACT;
+        else if (webRoot && web && webRoot->site()->mirrorTo(web->site()) && matchType > EXACT)
+            currentMatchType = SITE;
+        else continue;
+        const int currentDepth = depth(currentGroup);
+        if (currentDepth >= 0 && (currentMatchType < matchType || currentDepth < minDepth)) {
+            *match = currentGroup;
+            matchType = currentMatchType;
+            minDepth = currentDepth;
+        }
+    }
+
+    return matchType;
+}
 
 void Context::appendDocument(MarkdownEditorPage* document) {
     if (m_documents.contains(document))
@@ -150,7 +255,16 @@ void Context::setActiveDocument(MarkdownEditorPage* active) {
 }
 
 void Context::onTaskFinished() {
-    parent()->remove(this);
+    parent()->remove(this, false);
+}
+
+void Context::onGroupPagesChanged() {
+    PagesGroup* source = qobject_cast<PagesGroup*>(sender());
+    foreach(Page* page, source->pages()) {
+        ContentPage* cpage = qobject_cast<ContentPage*>(page);
+        if (cpage)
+            appendPart(cpage);
+    }
 }
 
 void Context::onActiveScreenChanged() { // TODO append site acquisition logic
@@ -185,10 +299,11 @@ void Context::onPartRemoved(ContentPage* part) {
 
 void Context::onPartProfileChanged(const BoW& from, const BoW& to) {
     CompositeContentPage::onPartProfileChanged(from, to);
-    WebSite* site = qobject_cast<WebSite*>(sender());
-    if (site && cos(profile(), to) < m_min_cos) {
-        m_icon_cache = site->icon();
-        m_min_cos = cos(profile(), site->profile());
+    WebResource* resource = dynamic_cast<WebResource*>(sender());
+    if (resource && cos(profile(), to) < m_min_cos) {
+        m_icon_cache = resource->site()->icon();
+        m_min_cos = cos(profile(), to);
+        emit iconChanged(m_icon_cache);
     }
 }
 
@@ -230,6 +345,17 @@ void Context::interconnect() {
         connect(session, SIGNAL(queriesChanged()), this, SLOT(onQueriesChanged()));
     }
     connect(this, SIGNAL(partRemoved(ContentPage*)), this, SLOT(onPartRemoved(ContentPage*)));
+
+    {
+        QDir storage = this->storage();
+        storage.cd("groups");
+        foreach(QFileInfo info, storage.entryInfoList()) {
+            if (info.isDir() && !info.fileName().startsWith(".") && QFile(info.absoluteFilePath() + "/group.xml").exists()) {
+                PagesGroup* group = new PagesGroup(info.fileName(), this);
+                m_associations[group->root()->id()] = group;
+            }
+        }
+    }
 }
 
 Context::~Context() {

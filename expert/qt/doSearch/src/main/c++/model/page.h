@@ -40,16 +40,9 @@ class Page: public QObject, protected PersistentPropertyHolder {
     Q_PROPERTY(QQuickItem* ui READ ui NOTIFY uiChanged)
     Q_PROPERTY(QQuickItem* uiNoCache READ uiNoCache NOTIFY uiChanged)
 
-    Q_PROPERTY(expleague::Page::State state READ state WRITE setState NOTIFY stateChanged)
     Q_PROPERTY(Page* container READ container NOTIFY containerChanged)
 
 public:
-    enum State: int {
-        ACTIVE = 0,
-        INACTIVE = 1,
-        CLOSED = 2,
-    };
-    Q_ENUMS(State)
 
     enum TransitionType: int {
         TYPEIN,
@@ -67,8 +60,6 @@ public:
     virtual QString icon() const { return "qrc:/avatar.png"; }
     virtual QString title() const { return id(); }
 
-    State state() const { return m_state; }
-
     QList<Page*> outgoing() const;
     QList<Page*> incoming() const;
 
@@ -77,8 +68,6 @@ public:
 
     Page* lastVisited() const { return m_last_visited; }
     time_t lastVisitTs() const { return m_last_visit_ts; }
-
-    void setState(State closed);
 
     QQuickItem* uiNoCache() const { return ui(false); }
     QQuickItem* ui(bool useCache = true) const;
@@ -101,7 +90,6 @@ public:
 signals:
     void iconChanged(const QString& icon);
     void titleChanged(const QString& title);
-    void stateChanged(Page::State closed);
     void containerChanged();
     void uiChanged() const;
 
@@ -131,13 +119,11 @@ private:
     mutable QQuickItem* m_ui = 0;
 
     Page* m_last_visited = 0;
-    int m_in_total;
+    int m_in_total = 0;
     QHash<Page*, PageModel> m_incoming;
-    int m_out_total;
+    int m_out_total = 0;
     QHash<Page*, PageModel> m_outgoing;
     time_t m_last_visit_ts = 0;
-
-    State m_state;
 };
 
 class ContentPage: public Page {
@@ -193,7 +179,6 @@ signals:
 protected slots:
     virtual void onPartContentsChanged() { emit textContentChanged(); }
     virtual void onPartProfileChanged(const BoW& oldOne, const BoW& newOne);
-    virtual void onPartStateChanged(Page::State state);
 
 protected:
     QList<ContentPage*>& partsRef() { return m_parts; } // for QML purposes ONLY!!
@@ -207,7 +192,5 @@ private:
     QList<ContentPage*> m_parts;
 };
 }
-
-Q_DECLARE_METATYPE(expleague::Page::State)
 
 #endif // PAGE_H

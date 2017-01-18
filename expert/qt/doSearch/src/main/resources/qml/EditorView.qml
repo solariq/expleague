@@ -10,11 +10,14 @@ import "."
 Item {
     id: self
     anchors.fill: parent
-    property var editorActions: {
-        return dosearch.main.editorActionsRef
+    property var editorActions: !!dosearch.main && dosearch.main.editorActionsRef ? dosearch.main.editorActionsRef : stubActions
+
+    EditorActions {
+        id: stubActions
     }
+
     property alias editor: edit
-    property bool options: false
+//    property bool options: false
 
     onFocusChanged: {
         if (focus && dosearch.navigation.activePage === owner) {
@@ -23,36 +26,36 @@ Item {
         }
     }
 
-    Component.onCompleted: {
-        preview.updateHtml()
-    }
+//    Component.onCompleted: {
+//        preview.updateHtml()
+//    }
 
-    WebEngineView {
-        id: preview
-        visible: options
-        anchors.fill: parent
-        enabled: false
+//    WebEngineView {
+//        id: preview
+//        visible: false
+//        anchors.fill: parent
+//        enabled: false
 
-        function updateHtml() {
-            loadHtml("<!DOCTYPE html><html><head>
-                    <script src=\"qrc:/md-scripts.js\"></script>
-                    <link rel=\"stylesheet\" href=\"qrc:/markdownpad-github.css\"></head>
-                    <body>" + owner.html+ "</body></html>")
-        }
+//        function updateHtml() {
+//            loadHtml("<!DOCTYPE html><html><head>
+//                    <script src=\"qrc:/md-scripts.js\"></script>
+//                    <link rel=\"stylesheet\" href=\"qrc:/markdownpad-github.css\"></head>
+//                    <body>" + owner.html+ "</body></html>")
+//        }
 
-        Connections {
-            target: owner
-            onHtmlChanged: {
-                var focused = dosearch.main.activeFocusItem
-                var html = preview.updateHtml()
-                if (focused && focused == edit)
-                    focused.forceActiveFocus()
-            }
-        }
-    }
+//        Connections {
+//            target: owner
+//            onHtmlChanged: {
+//                var focused = dosearch.main.activeFocusItem
+//                var html = preview.updateHtml()
+//                if (focused && focused == edit)
+//                    focused.forceActiveFocus()
+//            }
+//        }
+//    }
 
     Column {
-        visible: !options
+        visible: true
         anchors.fill: parent
         Rectangle {
             id: buttons
@@ -153,6 +156,30 @@ Item {
                             event.accepted = true
                             pasteMD()
                         }
+                        else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
+                            var lineStart = edit.text.substring(0, edit.cursorPosition).lastIndexOf("\n") + 1
+                            var lineEnd = edit.text.indexOf("\n", lineStart)
+                            var line = edit.text.substring(lineStart, lineEnd >= 0 ? lineEnd : edit.text.length)
+                            var lineCursor = edit.cursorPosition - lineStart
+                            var prefix = "\n";
+                            if (line.search(/\s*(\*|\d+\.)\s+/) == 0) {
+                                var result = line.match(/(\s*)(\*|\d+\.)\s+(\S*)/)
+                                if (result[3] != "") {
+                                    prefix += result[1]
+                                    if (result[2] == "*")
+                                        prefix += "* "
+                                    else
+                                        prefix += (parseInt(result[2]) + 1) + ". "
+                                }
+                                else {
+                                    prefix = ""
+                                    editor.remove(lineStart, edit.cursorPosition)
+                                }
+                            }
+
+                            edit.insert(edit.cursorPosition, prefix)
+                            event.accepted = true
+                        }
                     }
 
                     function pasteMD() {
@@ -174,7 +201,7 @@ Item {
                 z: parent.z + 10
 
                 onDropped: {
-                    if (drop.hasText) {
+                    if (drop.hasText && !edit.readOnly) {
                         edit.remove(edit.selectionStart, edit.selectionEnd)
                         edit.insert(editor.cursorPosition, drop.text)
                         drop.accept()

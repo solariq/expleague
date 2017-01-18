@@ -16,8 +16,10 @@ QVector<int> parse(const QString& plainText, CollectionDictionary* dict) {
     QList<int> result;
     bool emptyDocument = true;
     foreach(QString paragraph, plainText.split(QRegularExpression("\\n\\s*\\n+"))) {
-        paragraph.replace(QRegularExpression("[\\[\\]\\{\\}\\|\\^\u00A0]"), " ");
-        paragraph.replace(QRegularExpression("\\s+"), " ");
+        static QRegularExpression invalidBrackets("[\\[\\]\\{\\}\\|\\^\u00A0]");
+        paragraph.replace(invalidBrackets, " ");
+        static QRegularExpression normalizeSpaces("\\s+");
+        paragraph.replace(normalizeSpaces, " ");
         static QRegularExpression sentenceRE("[\\.!?\\*](?:(?:\\s+\\p{Lu})|$)");
         int sentenceOffset = 0;
 
@@ -27,13 +29,18 @@ QVector<int> parse(const QString& plainText, CollectionDictionary* dict) {
             sentenceMatch = sentenceRE.match(paragraph, sentenceOffset);
             QString sentence = sentenceMatch.hasMatch() ? paragraph.mid(sentenceOffset, sentenceMatch.capturedStart()) : paragraph.mid(sentenceOffset);
             // TODO group numbers: 600 000 -> 600000
-            sentence.replace(QRegularExpression("[\"'<>/\\\\]"), " ");
-            sentence.replace(QRegularExpression("(?:\\s+\\()|(?:\\)\\s+)"), " "); // grouping bracket
-            sentence.replace(QRegularExpression("\\s+"), " ");
+            static QRegularExpression spaces1("[\"'<>/\\\\]");
+            sentence.replace(spaces1, " ");
+            static QRegularExpression groupingBrackets("(?:\\s+\\()|(?:\\)\\s+)");
+            sentence.replace(groupingBrackets, " "); // grouping bracket
+            sentence.replace(normalizeSpaces, " ");
             bool emptySentence = true;
-            foreach(QString word, sentence.split(QRegularExpression("[\\s:;]|(?: -+ )|(?:, )"))) {
-                word.replace(QRegularExpression("[^\\p{L}-&\\d\\+\\(\\)@\\.]"), "");
-                word.replace(QRegularExpression("(?:[^\\p{L}\\d]$)|(?:^[^\\p{L}\\d])"), "");
+            static QRegularExpression wordsRE("[\\s:;]|(?: -+ )|(?:, )");
+            foreach(QString word, sentence.split(wordsRE)) {
+                static QRegularExpression remove1("[^\\p{L}-&\\d\\+\\(\\)@\\.]");
+                word.replace(remove1, "");
+                static QRegularExpression remove2("(?:[^\\p{L}\\d]$)|(?:^[^\\p{L}\\d])");
+                word.replace(remove2, "");
                 word = word.toLower();
                 if (word.length() < 2 || word.length() > 20)
                     continue;

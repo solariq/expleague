@@ -20,7 +20,10 @@ Item {
     property string pageSearch: ""
 
     function select(type) {
-        if (type === "page") {
+        if (type === "url") {
+            selector.currentIndex = 3
+        }
+        else if (type === "page") {
             selector.currentIndex = 2
         }
         else if (type === "site") {
@@ -54,6 +57,9 @@ Item {
                 }
                 ListElement {
                     name: qsTr("страница: ")
+                }
+                ListElement {
+                    name: qsTr("url: ")
                 }
             }
             style: ComboBoxStyle {
@@ -132,7 +138,8 @@ Item {
                 }
                 else if (event.key === Qt.Key_Escape) {
                     self.visible = false
-                    completion.visible = false
+                    if (completion)
+                        completion.visible = false
                     event.accepted = true
                 }
             }
@@ -190,6 +197,19 @@ Item {
                 })
                 completion: null
                 text: pageSearch
+            }
+        },
+        State {
+            name: "url"
+            when: selector.currentIndex == 3
+            PropertyChanges {
+                target: self
+                commit: (function (tab) {
+                    navigation.handleOmnibox(input.text, tab)
+                    input.text = Qt.binding(function() {return !!navigation.activePage && !!navigation.activePage["url"] ? navigation.activePage.url : ""})
+                })
+                completion: null
+                text: !!navigation.activePage && !!navigation.activePage["url"] ? navigation.activePage.url : ""
             }
         }
     ]

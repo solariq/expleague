@@ -120,13 +120,13 @@ protected:
     SearchRequest* current() const { return query(m_index); }
 
 public:
-    SearchSession(const QString& id, SearchRequest* seed, doSearch* parent);
-    SearchSession(const QString& id, doSearch* parent);
+    explicit SearchSession(const QString& id, SearchRequest* seed, doSearch* parent);
+    explicit SearchSession(const QString& id, doSearch* parent);
     virtual ~SearchSession();
 
 private:
     int m_index = -1;
-    SearchSessionModel* m_model;
+    SearchSessionModel* m_model = 0;
     BoW m_profile;
 };
 

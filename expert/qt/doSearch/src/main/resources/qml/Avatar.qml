@@ -7,7 +7,7 @@ Item {
     property int size
     property string userId
     property Member user: root.league.findMember(userId)
-    property string src: user.avatar
+    property string src: user ? user.avatar : ""
     property bool showStatus: true
 
     implicitHeight: size

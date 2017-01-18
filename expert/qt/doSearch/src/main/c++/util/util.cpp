@@ -4,6 +4,7 @@
 
 #include <QMutex>
 #include <QTimer>
+#include <QThread>
 #include <QFile>
 #include <QFileInfo>
 #include <QDir>
@@ -32,13 +33,26 @@ void FileWriteThrottle::append(const FileWriteRequest& req) {
     m_requests.append(req);
 }
 
-FileWriteThrottle::FileWriteThrottle(QObject* parent): QObject(parent), m_lock(new QMutex()), m_timer(new QTimer(this)) {
+FileWriteThrottle::FileWriteThrottle(QObject* parent): QObject(parent), m_lock(new QMutex()), m_timer(new QTimer()), m_thread(new QThread(this)) {
     m_progress = false;
+    m_thread->setObjectName("FileWriteThrottle");
+    m_timer->moveToThread(m_thread);
     m_timer->setInterval(1000);
     m_timer->setTimerType(Qt::TimerType::CoarseTimer);
-    QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(tick()));
-//    qDebug() << "Starting file throttling timer";
-    m_timer->start();
+    connect(m_timer, &QTimer::timeout, [this](){
+        this->tick();
+    });
+    connect(m_thread, &QObject::destroyed, m_timer, &QTimer::deleteLater);
+    connect(m_thread, SIGNAL(started()), m_timer, SLOT(start()));
+    m_thread->start(QThread::LowPriority);
+}
+
+FileWriteThrottle::~FileWriteThrottle() {
+    m_timer->stop();
+    m_thread->exit();
+    m_thread->wait();
+    if (!m_requests.empty())
+      tick();
 }
 
 void FileWriteThrottle::tick() {

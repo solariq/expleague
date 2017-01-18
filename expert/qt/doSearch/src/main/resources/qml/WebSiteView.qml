@@ -5,6 +5,11 @@ Item {
     property var editor: owner.root.ui.editor
     property var webView: owner.root.ui.webView
     property var options: owner.root.ui.options
+    property string pageSearch: ""
+
+    onPageSearchChanged: {
+        owner.root.ui.pageSearch = pageSearch
+    }
 
     onOptionsChanged: {
         if (self.children[0].options !== options)

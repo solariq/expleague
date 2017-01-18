@@ -29,6 +29,9 @@ public:
     QList<PageVisit*> last(int depth) const;
 
     Q_INVOKABLE int visits(const QString& id) const;
+    Q_INVOKABLE Context* recent(Page* page) const;
+
+    Page* current() const;
 
 public slots:
     void onVisited(Page* to, Context* context);
@@ -46,6 +49,7 @@ protected:
 
 private:
     QList<PageVisit*> m_story;
+    int m_cursor;
     QList<PageVisit*> m_last30;
 };
 

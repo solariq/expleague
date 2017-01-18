@@ -15,6 +15,8 @@ class SearchRequest;
 class SearchSession;
 class Vault;
 class MarkdownEditorPage;
+class PagesGroup;
+
 class Context: public CompositeContentPage {
     Q_OBJECT
 
@@ -53,6 +55,15 @@ public:
     void appendDocument(MarkdownEditorPage* document);
     Q_INVOKABLE void removeDocument(MarkdownEditorPage* document);
 
+    PagesGroup* associated(Page* page, bool create = true);
+    PagesGroup* suggest(Page* page) const;
+
+    enum GroupMatchType {
+        EXACT, SITE, NONE
+    };
+
+    GroupMatchType match(Page* page, PagesGroup** match) const;
+
 signals:
     void visitedUrl(const QUrl& url) const ;
     void requestsChanged() const;
@@ -65,12 +76,15 @@ private slots:
     void onActiveScreenChanged();
     void onQueriesChanged() { emit requestsChanged(); }
     void onPartRemoved(ContentPage* part);
+    void onGroupPagesChanged();
 
 protected:
     void interconnect();
     void onPartProfileChanged(const BoW& from, const BoW& to);
 
     friend class NavigationManager;
+    friend class PagesGroup;
+
 public:
     explicit Context(const QString& id, const QString& name, doSearch* parent);
     explicit Context(const QString& id = "unknown", doSearch* parent = 0);
@@ -82,7 +96,8 @@ private:
     QList<SearchSession*> m_sessions;
     QList<MarkdownEditorPage*> m_documents;
     int m_active_document_index = -1;
-    Vault* m_vault;
+    Vault* m_vault = 0;
+    QHash<QString, PagesGroup*> m_associations;
     mutable QString m_icon_cache;
     mutable double m_min_cos = 2;
 

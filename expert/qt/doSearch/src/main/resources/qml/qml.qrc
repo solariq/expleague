@@ -47,5 +47,6 @@
         <file>SearchSessionView.qml</file>
         <file>WindowStateSaver.qml</file>
         <file>SuggestDialog.qml</file>
+        <file>GlobalChat.qml</file>
     </qresource>
 </RCC>

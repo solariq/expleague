@@ -147,10 +147,11 @@ public:
 
 bool WebPage::dragToWebView(QQuickDropEvent* dropClosed, QQuickItem* view) const {
     QQuickDropEventOpen* quickDrop = reinterpret_cast<QQuickDropEventOpen*>(dropClosed);
-    if (quickDrop)
-        QCoreApplication::sendEvent(view, quickDrop->event);
-    else
-        QCoreApplication::sendEvent(view, new QDragLeaveEvent());
+    if (quickDrop) {
+        QDropEvent event = *quickDrop->event;
+        QCoreApplication::sendEvent(view, &event);
+    }
+    else QCoreApplication::sendEvent(view, new QDragLeaveEvent());
     return true;
 }
 
@@ -213,14 +214,14 @@ void WebPage::open(QObject* request, bool /*newTab*/) {
 }
 
 WebPage::WebPage(const QString& id, const QUrl& url, doSearch* parent):
-    ContentPage(id, "qrc:/WebPageView.qml", parent), m_url(url), m_redirect(0)
+    ContentPage(id, "qrc:/WebPageView.qml", parent), m_url(url)
 {
     store("web.url", m_url.toString());
     save();
 }
 
 WebPage::WebPage(const QString& id, doSearch* parent):
-    ContentPage(id, "qrc:/WebPageView.qml", parent), m_url(value("web.url").toString()), m_redirect(0)
+    ContentPage(id, "qrc:/WebPageView.qml", parent), m_url(value("web.url").toString())
 {}
 
 void WebPage::interconnect() {
@@ -284,15 +285,13 @@ BoW WebSite::removeTemplates(const BoW& profile) const {
 }
 
 WebSite::WebSite(const QString& id, const QString& /*domain*/, const QUrl& rootUrl, doSearch *parent):
-    CompositeContentPage(id, "qrc:/WebSiteView.qml", parent),
-    m_root(0)
+    CompositeContentPage(id, "qrc:/WebSiteView.qml", parent)
 {
     store("site.root", rootUrl);
 }
 
 WebSite::WebSite(const QString &id, doSearch *parent):
-    CompositeContentPage(id, "qrc:/WebSiteView.qml", parent),
-    m_root(0)
+    CompositeContentPage(id, "qrc:/WebSiteView.qml", parent)
 {}
 
 void WebSite::interconnect() {
@@ -305,6 +304,7 @@ void WebSite::interconnect() {
     CompositeContentPage::interconnect();
 
     m_root = parent()->webPage(value("site.root").toString());
+    QObject::connect(m_root, SIGNAL(urlChanged(QUrl)), this, SLOT(onRootUrlChanged(QUrl)));
     visitKeys("web.site.mirrors", [this](const QVariant& var) {
         WebSite* mirror = qobject_cast<WebSite*>(parent()->page(var.toString()));
         if (mirror) {

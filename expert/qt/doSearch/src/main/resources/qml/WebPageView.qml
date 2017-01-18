@@ -372,22 +372,16 @@ Rectangle {
                     reloadTimer.running = true
                 }
 
-                onVisibleChanged: {
-                    console.log("Visibility of " + self.url + " set to " + visible + " (container: " + owner.container.id + " active: " + dosearch.navigation.activePage.id + ")")
-                    if (visible && self.visible)
-                        self.forceActiveFocus()
-                }
-
                 onLoadingChanged: {
                     self.complete = true
-                    console.log("Loading changed: " + self.url + " to " + loading)
+//                    console.log("Loading changed: " + self.url + " to " + loading)
                     if (!loading) {
                         webEngineView.visible = Qt.binding(function() {
 //                            console.log(owner.container + " active: " + dosearch.navigation.activePage)
-                            return owner.container === dosearch.navigation.activePage
+                            return self.visible
                         })
-                        if (owner.container === dosearch.navigation.activePage && self.visible) // for ui transfered views
-                            self.forceActiveFocus()
+//                        if (owner.container === dosearch.navigation.activePage && self.visible) // for ui transfered views
+//                            self.forceActiveFocus()
                         runJavaScript("document.body.innerText", function(result) {
                             owner.text = result;
                         });
@@ -451,7 +445,7 @@ Rectangle {
 //                    console.log("Exited")
                     dosearch.main.dragType == "delay"
                     dosearch.main.delay(100, function () {
-                        if (dosearch.main.drag == "delay") {
+                        if (dosearch.main.dragType == "delay") {
                             dosearch.main.dragType = ""
                             dosearch.main.drag = null
                         }
@@ -469,6 +463,7 @@ Rectangle {
                         return
 //                    console.log("Dropped: " + drag)
                     dosearch.main.drag = null
+                    dosearch.main.dragType = ""
                     if (owner.dragToWebView(drop, webEngineView))
                         drop.accept()
                 }
@@ -480,37 +475,35 @@ Rectangle {
         }
     }
 
-    focus: true
+    focus: self.visible
     property bool complete: false
-    property bool hasFocus: false
+
     onFocusChanged: {
-        if (!complete || self.focus || !dosearch.main || !hasFocus || !visible) {
-            hasFocus = focus
+        if (!dosearch.main || !visible || !complete || focus)
             return
-        }
+
+//        console.log("Focus of " + owner.id + " changed to " + focus + " " + complete  + " active: " + dosearch.main.activeFocusItem)
         var parent = dosearch.main ? dosearch.main.activeFocusItem : null
         while (parent) {
             if (parent === self) {
                 console.log("Enforce focus to self " + self + " from child view")
-                hasFocus = true
                 self.forceActiveFocus()
                 return
             }
             parent = parent.parent
         }
-        if (dosearch.main.activeFocusItem && dosearch.main.activeFocusItem.toString().search("QtWebEngineCore::") !== -1) {
+        if (!dosearch.main.activeFocusItem || dosearch.main.activeFocusItem.toString().search("QtWebEngineCore::") !== -1) {
             console.log("Enforce focus to self " + self + " from web view " + dosearch.main.activeFocusItem)
-            hasFocus = true
             self.forceActiveFocus()
         }
         else {
-            console.log("Focus given from " + self + " (" + owner + ") to " + dosearch.main.activeFocusItem)
-            hasFocus = false
+            if (!focus)
+                console.log("Focus given from " + self + " (" + owner + ") to " + dosearch.main.activeFocusItem)
         }
     }
 
     Keys.onPressed: {
-//        console.log("Key pressed: " + event.key)
+        console.log("Key pressed: " + event.key + " caught by " + owner.id)
         actionTs = new Date().getTime()
         if (pageSearch.length > 0) {
             if (event.key === Qt.Key_Left) {
@@ -529,8 +522,12 @@ Rectangle {
         else event.accepted = owner.forwardToWebView(event.key, event.modifiers, event.text, event.autoRepeat, event.count, webEngineView)
     }
 
+    property bool prevVisibility: false
     onVisibleChanged: {
-        console.log("Entire web page " + owner.id + " visibility changed to: " + visible)
+        if (prevVisibility == visible)
+            return
+        console.log("Web page " + owner.id + " visibility changed to: " + visible)
+        prevVisibility = visible
     }
 
     Component.onDestruction: {

@@ -172,8 +172,7 @@ void Page::transition(Page* page, TransitionType type) {
         break;
     }
     case TransitionType::CHANGED_SCREEN:
-        if (m_state == State::ACTIVE)
-            setState(State::INACTIVE);
+        break;
     }
 
     page->incomingTransition(this, type);
@@ -181,8 +180,6 @@ void Page::transition(Page* page, TransitionType type) {
 }
 
 void Page::incomingTransition(Page* page, TransitionType type) {
-    if (state() == Page::CLOSED)
-        setState(Page::INACTIVE);
     switch(type) {
     case TransitionType::TYPEIN:
         time(&m_last_visit_ts);
@@ -205,31 +202,11 @@ void Page::incomingTransition(Page* page, TransitionType type) {
         store("ts", qlonglong(m_last_visit_ts));
         break;
     case TransitionType::CHANGED_SCREEN:
-        setState(State::ACTIVE);
         m_last_visited = 0;
         store("lastVisited", QVariant());
         break;
     }
     save();
-}
-
-void Page::setState(Page::State state) {
-    if (this->state() == state)
-        return;
-    m_state = state;
-    switch(state) {
-    case ACTIVE:
-        store("state", "active");
-        break;
-    case INACTIVE:
-        store("state", "inactive");
-        break;
-    case CLOSED:
-        store("state", "closed");
-        break;
-    }
-    save();
-    emit stateChanged(state);
 }
 
 double Page::titleWidth() const {
@@ -274,19 +251,6 @@ QDir Page::storage() const {
 Page::Page(const QString& id, const QString& ui, doSearch* parent): QObject(parent), PersistentPropertyHolder(parent->pageResource(id) + "/page.xml"),
     m_id(id), m_ui_url(ui), m_in_total(0), m_out_total(0)
 {
-    QVariant var = value("state");
-    m_state = INACTIVE;
-    if (!var.isNull()) {
-        QString value = var.toString();
-        if (value == "inactive")
-            m_state = INACTIVE;
-        else if (value == "closed")
-            m_state = CLOSED;
-        else if (value == "active")
-            m_state = ACTIVE;
-        else
-            qWarning() << "Unable to parse page status: " << value << " using INACTIVE";
-    }
     m_last_visit_ts = value("ts").toInt();
 
 //    qDebug() << id << " restored: " << m_properties;
@@ -378,7 +342,6 @@ bool CompositeContentPage::appendPart(ContentPage* part) {
     append("content.part", part->id());
     connect(part, SIGNAL(textContentChanged()), SLOT(onPartContentsChanged()));
     connect(part, SIGNAL(changingProfile(BoW,BoW)), SLOT(onPartProfileChanged(BoW,BoW)));
-    connect(part, SIGNAL(stateChanged(Page::State)), SLOT(onPartStateChanged(Page::State)));
     save();
     emit partAppended(part);
     return true;
@@ -396,12 +359,6 @@ void CompositeContentPage::removePart(ContentPage* part) {
     setProfile(updateSumComponent(profile(), part->profile(), BoW()));
     emit textContentChanged();
     emit partRemoved(part);
-}
-
-void CompositeContentPage::onPartStateChanged(Page::State state) {
-    if (state != Page::CLOSED)
-        return;
-    removePart(qobject_cast<ContentPage*>(sender()));
 }
 
 void CompositeContentPage::setTextContent(const QString&) {

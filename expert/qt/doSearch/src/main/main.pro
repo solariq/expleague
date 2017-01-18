@@ -60,7 +60,9 @@ SOURCES += \
     c++/model/pages/editor.cpp \
     c++/ir/dictionary.cpp \
     c++/ir/bow.cpp \
-    c++/util/pholder.cpp
+    c++/util/pholder.cpp \
+    c++/model/pages/admins.cpp \
+    c++/model/pages/globalchat.cpp
 
 
 HEADERS += \
@@ -86,7 +88,9 @@ HEADERS += \
     c++/model/pages/search.h \
     c++/model/pages/web.h \
     c++/ir/bow.h \
-    c++/util/pholder.h
+    c++/util/pholder.h \
+    c++/model/pages/admins.h \
+    c++/model/pages/globalchat.h
 
 macx: OBJECTIVE_SOURCES += \
     objc/ExpLeagueNotification.mm

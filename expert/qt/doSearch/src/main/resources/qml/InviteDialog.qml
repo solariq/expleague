@@ -17,10 +17,11 @@ Window {
     property color backgroundColor: Palette.activeColor
     property color textColor: Palette.activeTextColor
     property int invitationTimeout: 0
+    property real offerHeight: topic.implicitHeight + 4 + eta.implicitHeight + 4 + local.implicitHeight + 4 + attachmentsCount.implicitHeight + 4 + (map.visible ? 204 : 0) + (images.visible ? 204 : 0) + 60
 
     width: 500
     height: {
-        return Math.max(400, contents.contentHeight + caption.implicitHeight + 40)
+        return Math.min(400, offerHeight + caption.implicitHeight + 40)
     }
     minimumHeight: height
     maximumHeight: height
@@ -89,11 +90,12 @@ Window {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            contentHeight: topic.implicitHeight + 4 + eta.implicitHeight + 4 + local.implicitHeight + 4 + (map.visible ? 204 : 0) + (images.visible ? 204 : 0) + 60
+            contentHeight: self.offerHeight
             contentWidth: width
+            clip: true
             GridLayout {
                 id: contentsGrid
-                anchors.margins: 15
+                width: contents.width - 30
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
@@ -138,7 +140,7 @@ Window {
                         if (!offer)
                             return textColor
 
-                        var urgency = Math.sqrt(Math.max(offer.timeLeft/offer.duration, 0))
+                        var urgency = 1 - Math.sqrt(Math.max(offer.timeLeft/offer.duration, 0))
                         return Qt.rgba(textColor.r + (1 - textColor.r) * urgency, textColor.g * urgency, textColor.b * urgency, textColor.a + (1 - textColor.a) * urgency)
                     }
                 }
@@ -151,6 +153,17 @@ Window {
                 Label {
                     id: local
                     text: offer ? (offer.local ? qsTr("Да") : qsTr("Нет")) : ""
+                    color: textColor
+                }
+
+                Label {
+                    text: qsTr("Количество приложений: ")
+                    color: textColor
+                }
+
+                Label {
+                    id: attachmentsCount
+                    text: offer ? "" + offer.images.length : ""
                     color: textColor
                 }
 
@@ -203,6 +216,9 @@ Window {
                     Layout.maximumWidth: 400
                     Layout.preferredWidth: imagesRow.implicitWidth
                     Layout.alignment: Qt.AlignHCenter
+                    horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
+                    verticalScrollBarPolicy: Qt.ScrollBarAlwaysOff
+
                     RowLayout {
                         id: imagesRow
                         height: 200
@@ -224,25 +240,36 @@ Window {
                         }
                     }
                 }
-
-                Item {Layout.fillHeight:true; Layout.columnSpan: 2}
-                Button {
-                    Layout.alignment: Qt.AlignLeft
-                    Layout.preferredWidth: 130
-                    action: reject
-                }
-
-                Button {
-                    focus: true
-                    Layout.alignment: Qt.AlignRight
-                    Layout.preferredWidth: 130
-                    action: accept
-                }
-                Item {Layout.preferredHeight: 5; Layout.columnSpan: 2}
             }
         }
+        RowLayout {
+            Layout.preferredHeight: rejectButton.implicitHeight
+            Layout.fillWidth: true
+            spacing: 0
+            Item { Layout.preferredWidth: 15 }
+            Button {
+                id: rejectButton
+                Layout.alignment: Qt.AlignLeft
+                Layout.preferredWidth: 130
+                action: reject
+            }
+            Item {
+                Layout.fillWidth: true
+            }
+            Button {
+                focus: true
+                Layout.alignment: Qt.AlignRight
+                Layout.preferredWidth: 130
+                action: accept
+            }
+            Item { Layout.preferredWidth: 15 }
+        }
+        Item {
+            Layout.preferredHeight: 5
+        }
+
         Keys.onEscapePressed: {
-            self.hide()
+            self.visible = false
         }
     }
 }

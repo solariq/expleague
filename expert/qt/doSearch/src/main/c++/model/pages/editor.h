@@ -27,14 +27,11 @@ public:
     QString icon() const;
 
     QString textContent() const { return m_text; }
-    Context* owner() const { return m_owner; }
 
     QString html();
 
 public:
     void setTextContent(const QString& text);
-    Page* parentPage() const;
-    void setEditable(bool editable);
     Q_INVOKABLE QStringList codeClipboard();
 
 public slots:
@@ -56,8 +53,8 @@ private slots:
     void acquireFocus();
 
 public:
-    MarkdownEditorPage(const QString& id, Context* context, Member* author, const QString& title, bool editable, doSearch* parent);
-    MarkdownEditorPage(const QString& id = "", doSearch* parent = 0);
+    explicit MarkdownEditorPage(const QString& id, Context* context, Member* author, const QString& title, bool editable, doSearch* parent);
+    explicit MarkdownEditorPage(const QString& id = "", doSearch* parent = 0);
     virtual ~MarkdownEditorPage();
 
 protected:
@@ -66,9 +63,9 @@ protected:
 
 private:
     QString m_text;
-    Member* m_author;
-    Context* m_owner;
-    hunspell::SpellChecker* m_spellchecker;
+    Member* m_author = 0;
+//    Context* m_owner = 0;
+    hunspell::SpellChecker* m_spellchecker = 0;
     bool m_editable;
 
     mutable QString m_html;

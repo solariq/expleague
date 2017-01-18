@@ -21,9 +21,18 @@ QVariant PageVisit::toVariant() const {
     return result;
 }
 
+PageVisit* PageVisit::fromVariant(QVariant var, History *owner) {
+    QVariantHash hash = var.toHash();
+    Page* page = owner->parent()->page(hash["page"].toString());
+    Context* context = qobject_cast<Context*>(owner->parent()->page(hash["context"].toString()));
+    time_t ts = hash["time"].toLongLong();
+    return new PageVisit(page, context, ts, owner);
+}
+
 void History::onVisited(Page *to, Context* context) {
     PageVisit* const visit = new PageVisit(to, context, time(0), this);
     m_story.append(visit);
+    m_cursor = m_story.size() - 1;
     append("history", visit->toVariant());
     save();
     m_last30 = last(30);
@@ -51,10 +60,10 @@ QList<PageVisit*> History::last(int depth) const {
             continue;
 
         Context* context = m_story[i]->context();
-        if (context->hasTask() && !context->task()->active())
+        if (context->hasTask() && !context->task())
             continue;
         if(result.size() >= depth)
-            continue;
+            break;
         result.append(m_story[i]);
         known.insert(m_story[i]->page());
     }
@@ -62,12 +71,25 @@ QList<PageVisit*> History::last(int depth) const {
     return result;
 }
 
+Page* History::current() const {
+    return m_story[m_cursor]->page();
+}
+
 void History::interconnect() {
     Page::interconnect();
-    // TODO: make global history available
-//    visitAll("history", [this](const QVariant& val) {
-//        m_story.append(parent()->page(val.toString()));
-//    });
+    visitKeys("history", [this](const QVariant& val) {
+        m_story.append(PageVisit::fromVariant(val, this));
+    });
+    m_cursor = m_story.size() - 1;
+}
+
+Context* History::recent(Page* page) const {
+    for (int i = m_story.size() - 1; i >= 0; i--) {
+        if (page == m_story.at(i)->page())
+            return m_story.at(i)->context();
+    }
+
+    return 0;
 }
 
 const QDir CONTEXT_DIR = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/doSearch/");

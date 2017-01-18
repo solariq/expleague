@@ -12,27 +12,36 @@ import "."
 
 Item {
     id: self
-    property Offer offer
     property Task task
+    property Offer offer: !!self.task ? self.task.offer : null
     property color textColor: Palette.selectedTextColor
-    property real storedWidth: 0
+    property real storedHeight: 0
     property real maxHeight: tools.implicitHeight + content.contentHeight
     property real minHeight: tools.implicitHeight
 
-    onTaskChanged: offer = !!self.task ? self.task.offer : null
+    property real offerHeight: topic.implicitHeight + geoLocal.implicitHeight + 4 + attachmentsCount.implicitHeight + 4 +
+                               33 + 4 +
+                               (offer ? time.implicitHeight + 4 : 0) +
+                               (offer && offer.hasLocation ? 200 + 4 : 0) +
+                               ((offer ? offer.images.length * (200 + 4) : 0)) +
+                               (tagsView.visible ? tagsView.implicitHeight + 4 : 0) +
+                               (patternsView.visible ? patternsView.implicitHeight + 4 : 0) +
+                               (callsView.visible ? callsView.implicitHeight + 4 : 0) +
+                               4
+
     onOfferChanged: {
-        dosearch.main.delay(100, function () {
+        dosearch.main.delay(10, function () {
             if (offer)
-                storedWidth = Math.min(450, content.contentHeight)
-            else storedWidth = 0
+                storedHeight = Math.min(400, offerHeight)
+            else storedHeight = 0
         })
     }
 
-    implicitHeight: tools.implicitHeight + storedWidth
+    implicitHeight: tools.implicitHeight + storedHeight
 
     onHeightChanged: {
         if (self.state.length == 0) {
-            storedWidth = height - tools.height
+            storedHeight = height - tools.height
         }
     }
 
@@ -154,25 +163,25 @@ Item {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/send.png"
                     highlightedIcon: "qrc:/tools/send_h.png"
-                    onTriggered: sendDialog.visible = true
+                    onTriggered: dosearch.main.showDialog(sendDialog)
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/tags.png"
                     highlightedIcon: "qrc:/tools/tags_h.png"
-                    onTriggered: tagsDialog.visible = true
+                    onTriggered: dosearch.main.showDialog(tagsDialog)
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/patterns.png"
                     highlightedIcon: "qrc:/tools/patterns_h.png"
-                    onTriggered: patternsDialog.visible = true
+                    onTriggered: dosearch.main.showDialog(patternsDialog)
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/phone.png"
                     highlightedIcon: "qrc:/tools/phone_h.png"
-                    onTriggered: callDialog.visible = true
+                    onTriggered: dosearch.main.showDialog(callDialog)
                 }
 
                 ToolbarButton {
@@ -192,15 +201,7 @@ Item {
 
             clip: true
             flickableDirection: Flickable.VerticalFlick
-            contentHeight: topic.implicitHeight + geoLocal.implicitHeight + 4 +
-                           33 + 4 +
-                           (offer ? time.implicitHeight + 4 : 0) +
-                           (offer && offer.hasLocation ? 200 + 4 : 0) +
-                           ((offer ? offer.images.length * (200 + 4) : 0)) +
-                           (tagsView.visible ? tagsView.implicitHeight + 4 : 0) +
-                           (patternsView.visible ? patternsView.implicitHeight + 4 : 0) +
-                           (callsView.visible ? callsView.implicitHeight + 4 : 0) +
-                           4
+            contentHeight: self.offerHeight
             contentWidth: width
 
             ColumnLayout {
@@ -304,6 +305,13 @@ Item {
                     text: qsTr("Гео-специфичный: ") + (offer && offer.local ? qsTr("Да") : qsTr("Нет"))
                 }
 
+                Text {
+                    id: attachmentsCount
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: parent.width - 20
+                    text: qsTr("Приложений: ") + (offer ? offer.images.length : "")
+                }
+
                 Item {
                     id: map
                     Layout.preferredHeight: 200
@@ -337,6 +345,7 @@ Item {
                             fillMode: Image.PreserveAspectFit
                             source: "image://store/" + modelData
                             onStatusChanged: {
+                                console.log("Status changed to " + status)
                                 if (sourceSize.height/sourceSize.width > 2./3.) {
                                     img.height = 200
                                     img.width = undefined

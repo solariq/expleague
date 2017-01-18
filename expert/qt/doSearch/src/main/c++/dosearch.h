@@ -50,8 +50,8 @@ public:
     Q_INVOKABLE void setMain(QQuickWindow* main);
 
     QList<Context*> contexts() const { return m_contexts; }
-    void append(Context* context);
-    Q_INVOKABLE void remove(Context* context);
+    void append(Context* context, int index = -1);
+    Q_INVOKABLE void remove(Context* context, bool erase = true);
 
     Q_INVOKABLE Page* empty() const;
     Q_INVOKABLE Context* context(const QString& id, const QString& name) const;
@@ -79,6 +79,7 @@ public:
 
 private slots:
     void onActiveScreenChanged();
+    void onRoleChanged(League::Role role);
 
 private:
     friend class StateSaver;

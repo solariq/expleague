@@ -91,7 +91,7 @@ private:
     QVector<int> m_lemma_offset;
     mutable QReadWriteLock m_lock;
 
-    leveldb::DB* m_file;
+    leveldb::DB* m_file = 0;
 };
 
 template<typename T>
