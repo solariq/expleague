@@ -141,7 +141,7 @@ bool WebPage::forwardToWebView(int key,
 class QQuickDropEventOpen: public QObject {
     Q_OBJECT
 public:
-    QQuickDropAreaPrivate *d;
+    void *d;
     QDropEvent *event;
 };
 

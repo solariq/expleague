@@ -108,19 +108,21 @@ DISTFILES += resources/doSearch.ico \
     resources/markdown-tile.css
 DISTFILES += resources/doSearch.icns
 
+win32: LIBS += -lshlwapi
+
 win32:CONFIG(release, debug|release): LIBS += \
 #    -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp \
     $$OUT_PWD/../libs/qxmpp/src/qxmpp.lib \
     -L$$OUT_PWD/../libs/discount/release/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/release/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/release/ -lcutemarked \
-    -L$$OUT_PWD/../libs/leveldb/release/ -lleveldb
+    -L$$OUT_PWD/../libs/leveldb-win/release/ -lleveldb
 else:win32:CONFIG(debug, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d \
     -L$$OUT_PWD/../libs/discount/debug/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/debug/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/debug/ -lcutemarked \
-    -L$$OUT_PWD/../libs/leveldb/debug/ -lleveldb
+    -L$$OUT_PWD/../libs/leveldb-win/debug/ -lleveldb
 else:unix:CONFIG(debug, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d \
     -L$$OUT_PWD/../libs/discount/ -ldiscount \

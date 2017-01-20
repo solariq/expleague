@@ -4,8 +4,9 @@ TEMPLATE = lib
 CONFIG += staticlib
 CONFIG -= qt
 
-QMAKE_CXXFLAGS += -DOS_MACOSX -DLEVELDB_PLATFORM_POSIX -DLEVELDB_ATOMIC_PRESENT -DNDEBUG
+QMAKE_CXXFLAGS += -DLEVELDB_PLATFORM_POSIX -DLEVELDB_ATOMIC_PRESENT -DNDEBUG
 
+macx: QMAKE_CXXFLAGS += -DOS_MACOSX
 HEADERS += \
     ./db/builder.h \
     ./db/db_impl.h \
@@ -23,7 +24,7 @@ HEADERS += \
     ./db/version_set.h \
     ./db/write_batch_internal.h \
     ./helpers/memenv/memenv.h \
-    ./include/leveldb/c.h \
+#    ./include/leveldb/c.h \
     ./include/leveldb/cache.h \
     ./include/leveldb/comparator.h \
     ./include/leveldb/db.h \
@@ -62,8 +63,8 @@ HEADERS += \
 
 SOURCES += \
     ./db/builder.cc \
-    ./db/c.cc \
-#    ./db/db_bench.cc \
+#    ./db/c.cc \
+    ./db/db_bench.cc \
     ./db/db_impl.cc \
     ./db/db_iter.cc \
     ./db/dbformat.cc \
@@ -103,5 +104,6 @@ SOURCES += \
     ./util/logging.cc \
     ./util/options.cc \
     ./util/status.cc \
+    util/env_win.cc
 
 INCLUDEPATH += ./include

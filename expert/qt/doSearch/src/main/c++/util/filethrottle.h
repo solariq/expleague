@@ -1,6 +1,7 @@
 #ifndef FILETHROTTLE_H
 #define FILETHROTTLE_H
 
+#include <functional>
 #include <atomic>
 #include <QObject>
 

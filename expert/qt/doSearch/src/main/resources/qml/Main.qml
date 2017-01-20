@@ -193,14 +193,17 @@ ApplicationWindow {
         }
     }
 
+    ProfileWizard {
+        id: createProfile
+        visible: false
+        x: self.width / 2 - width / 2
+        y: 20
+    }
+
     Action {
         id: newProfile
         text: qsTr("Новый...")
-        onTriggered: {
-            var wizardComponent = Qt.createComponent("ProfileWizard.qml");
-            var wizard = wizardComponent.createObject(self)
-            showDialog(wizard)
-        }
+        onTriggered: showDialog(createProfile)
     }
 
     Action {

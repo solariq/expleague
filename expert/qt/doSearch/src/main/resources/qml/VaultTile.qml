@@ -163,6 +163,8 @@ Item {
                 moveTo = self.visualIndex + 1
         }
 
+//        console.log("Side: " + self.area + " spent: " + timeSpentInside + " moveTo: " + moveTo + " moveFrom: " + moveFrom)
+
         if (moveTo >= 0) {
             ownerModel.items.move(moveFrom, moveTo)
             vault.moveTo = moveTo
@@ -172,7 +174,7 @@ Item {
 
     DropArea {
         id: dropArea
-        visible: self.editMode
+        visible: self.editMode && (!tileArea || !tileArea.drag.active)
         anchors.fill: parent
 
         function updateArea(drag) {
@@ -191,8 +193,10 @@ Item {
         }
 
         onPositionChanged: {
-            if (drag.source !== self)
+            if (drag.source !== self) {
+                self.dragSource = drag.source
                 updateArea(drag)
+            }
         }
 
         onEntered: {

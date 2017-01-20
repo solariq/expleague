@@ -19,6 +19,8 @@
 
 #include <algorithm>
 
+#include <time.h>
+
 static QFontMetrics titleFontMetrics(QFont("Helvetica", 10));
 
 namespace expleague {

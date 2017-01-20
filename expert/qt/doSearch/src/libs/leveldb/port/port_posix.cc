@@ -4,9 +4,9 @@
 
 #include "port/port_posix.h"
 
-#include <cstdlib>
-#include <stdio.h>
-#include <string.h>
+//#include <cstdlib>
+//#include <stdio.h>
+//#include <string.h>
 
 namespace leveldb {
 namespace port {

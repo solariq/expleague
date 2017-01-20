@@ -5,6 +5,8 @@
 
 #include <QTimer>
 
+#include <time.h>
+
 #include "../util/filethrottle.h"
 #include "../dosearch.h"
 #include "../profile.h"
@@ -30,7 +32,8 @@ PageVisit* PageVisit::fromVariant(QVariant var, History *owner) {
 }
 
 void History::onVisited(Page *to, Context* context) {
-    PageVisit* const visit = new PageVisit(to, context, time(0), this);
+    time_t ts = time(0);
+    PageVisit* visit = new PageVisit(to, context, ts, this);
     m_story.append(visit);
     m_cursor = m_story.size() - 1;
     append("history", visit->toVariant());

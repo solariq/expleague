@@ -24,6 +24,8 @@
 
 #include <QTimer>
 
+#include <time.h>
+
 #include "league.h"
 #include "dosearch.h"
 #include "profile.h"
