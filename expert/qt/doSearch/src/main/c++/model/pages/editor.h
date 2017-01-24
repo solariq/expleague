@@ -53,7 +53,7 @@ private slots:
     void acquireFocus();
 
 public:
-    explicit MarkdownEditorPage(const QString& id, Context* context, Member* author, const QString& title, bool editable, doSearch* parent);
+    explicit MarkdownEditorPage(const QString& id, Member* author, const QString& title, bool editable, doSearch* parent);
     explicit MarkdownEditorPage(const QString& id = "", doSearch* parent = 0);
     virtual ~MarkdownEditorPage();
 

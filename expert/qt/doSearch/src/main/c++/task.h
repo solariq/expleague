@@ -35,98 +35,6 @@ class Progress;
 class ExpLeagueConnection;
 }
 
-class Task: public QObject {
-    Q_OBJECT
-
-    Q_PROPERTY(expleague::Offer* offer READ offer NOTIFY offerChanged)
-    Q_PROPERTY(expleague::Context* context READ context CONSTANT)
-    Q_PROPERTY(QQmlListProperty<expleague::Bubble> chat READ chat NOTIFY bubblesChanged)
-    Q_PROPERTY(QQmlListProperty<expleague::TaskTag> tags READ tags NOTIFY tagsChanged)
-    Q_PROPERTY(QQmlListProperty<expleague::AnswerPattern> patterns READ patterns NOTIFY patternsChanged)
-    Q_PROPERTY(QStringList phones READ phones NOTIFY phonesChanged)
-
-    Q_PROPERTY(expleague::MarkdownEditorPage* answer READ answer CONSTANT)
-
-public:
-    Offer* offer() const { return m_offer; }
-
-    QQmlListProperty<Bubble> chat() { return QQmlListProperty<Bubble>(this, m_chat); }
-
-    MarkdownEditorPage* answer() const { return m_answer; }
-
-    QQmlListProperty<TaskTag> tags() { return QQmlListProperty<TaskTag>(this, m_tags); }
-    QQmlListProperty<AnswerPattern> patterns() { return QQmlListProperty<AnswerPattern>(this, m_patterns); }
-    QStringList phones() { return m_phones; }
-
-    QString id() const;
-    Context* context() const { return m_context; }
-
-public:
-    Q_INVOKABLE void enter() const;
-    Q_INVOKABLE void sendMessage(const QString& str) const;
-    Q_INVOKABLE void sendAnswer(const QString& shortAnswer, int difficulty, int success, bool extraInfo);
-    Q_INVOKABLE void tag(TaskTag*);
-    Q_INVOKABLE void pattern(AnswerPattern*);
-    Q_INVOKABLE void phone(const QString&);
-    Q_INVOKABLE void cancel();
-    Q_INVOKABLE void stop();
-    Q_INVOKABLE void suspend(int seconds);
-
-    bool active() const { return m_context; }
-
-    void setContext(Context* context);
-
-public:
-    const QList<MarkdownEditorPage*>& receivedAnswers() const { return m_answers; }
-    League* parent() const;
-
-public:
-    explicit Task(Offer* offer = 0, QObject* parent = 0);
-    explicit Task(const QString& room, QObject* parent = 0);
-
-signals:
-    void offerChanged();
-
-    void bubblesChanged();
-    void chatChanged();
-
-    void tagsChanged();
-    void patternsChanged();
-    void phonesChanged();
-
-    void receivedProgress(const xmpp::Progress&);
-    void finished();
-    void cancelled();
-
-public slots:
-    void setAnswer(MarkdownEditorPage* answer) {
-        m_answer = answer;
-    }
-    void setOffer(Offer* offer);
-
-    void messageReceived(const QString& from, const QString& text);
-    void imageReceived(const QString& from, const QUrl& id);
-    void answerReceived(const QString& from, const QString& text);
-    void progressReceived(const QString& from, const xmpp::Progress& progress);
-    void cancelReceived() { cancelled(); }
-
-    void urlVisited(const QUrl&) const;
-
-private:
-    Bubble* bubble(const QString& from);
-
-private:
-    QString m_room;
-    Offer* m_offer;
-    QList<Bubble*> m_chat;
-    MarkdownEditorPage* m_answer;
-
-    QList<TaskTag*> m_tags;
-    QList<AnswerPattern*> m_patterns;
-    QList<MarkdownEditorPage*> m_answers;
-    QStringList m_phones;
-    Context* m_context = 0;
-};
 
 class Offer: public QObject {
     Q_OBJECT
@@ -142,6 +50,7 @@ class Offer: public QObject {
     Q_PROPERTY(long duration READ duration CONSTANT)
     Q_PROPERTY(QStringList images READ images CONSTANT)
     Q_PROPERTY(long timeLeft READ timeLeft NOTIFY timeTick)
+    Q_PROPERTY(QString comment READ comment CONSTANT)
 
     Q_ENUMS(Urgency)
     Q_ENUMS(FilterType)
@@ -170,30 +79,18 @@ public:
     };
 
     QString roomJid() const { return m_room; }
-
     QString room() const { return m_room.section('@', 0, 0); }
-
     QString topic() const { return m_topic; }
-
+    QString comment() const { return m_comment; }
     QString client() const { return m_client; }
 
     bool local() const { return m_local; }
-
     bool hasLocation() const { return m_location.get(); }
+    QGeoCoordinate location() { return hasLocation() ? m_location : QGeoCoordinate(-10, 300); }
+    double longitude() const { return hasLocation() ? m_location->longitude() : -10; }
+    double latitude() const { return hasLocation() ? m_location->latitude() : -10; }
 
-    QGeoCoordinate location() { return hasLocation() ? *m_location : QGeoCoordinate(-10, 300); }
-
-    double longitude() const {
-        return hasLocation() ? m_location->longitude() : -10;
-    }
-
-    double latitude() const {
-        return hasLocation() ? m_location->latitude() : -10;
-    }
-
-    QStringList images() const {
-        return m_images;
-    }
+    QStringList images() const { return m_images; }
 
     long duration() const {
         switch (m_urgency) {
@@ -204,13 +101,27 @@ public:
         }
     }
 
-    long timeLeft() const {
-        return QDateTime::currentDateTimeUtc().msecsTo(m_started.addMSecs(duration()));
-    }
+    long timeLeft() const { return QDateTime::currentDateTimeUtc().msecsTo(m_started.addMSecs(duration())); }
+
+    QList<TaskTag*> tags() const { return m_tags; }
+    QList<AnswerPattern*> patterns() const { return m_patterns; }
+
+    void start() const;
 
 public:
     explicit Offer(QDomElement xml = QDomElement(), QObject *parent = 0);
-//    explicit Offer(QObject *parent = 0): QObject(parent) {}
+    explicit Offer(const QString& client,
+                   const QString& room,
+                   const QString& topic,
+                   Urgency urgency,
+                   bool local,
+                   const QStringList& images,
+                   const QMap<QString, FilterType>& filter,
+                   QGeoCoordinate location,
+                   QDateTime started,
+                   QList<TaskTag*> tags,
+                   QList<AnswerPattern*> m_patterns,
+                   const QString& comment);
 
 public:
     QDomElement toXml() const;
@@ -225,16 +136,124 @@ private slots:
 private:
     friend class xmpp::ExpLeagueConnection;
 
+    QString m_client;
+    QString m_room;
+    QString m_topic;
     Urgency m_urgency = TU_DAY;
     bool m_local = false;
-    QString m_room;
-    QString m_client;
-    QString m_topic;
     QStringList m_images;
     QMap<QString, FilterType> m_filter;
-    std::unique_ptr<QGeoCoordinate> m_location;
+    QGeoCoordinate m_location;
     QDateTime m_started;
-    QTimer* m_timer;
+    QTimer* m_timer = 0;
+    QList<TaskTag*> m_tags;
+    QList<AnswerPattern*> m_patterns;
+    QString m_comment;
+};
+
+class Task: public QObject {
+    Q_OBJECT
+
+    Q_PROPERTY(expleague::Offer* offer READ offer NOTIFY offerChanged)
+    Q_PROPERTY(expleague::Context* context READ context CONSTANT)
+    Q_PROPERTY(QQmlListProperty<expleague::Bubble> chat READ chat NOTIFY bubblesChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::TaskTag> tags READ tags NOTIFY tagsChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::AnswerPattern> patterns READ patterns NOTIFY patternsChanged)
+    Q_PROPERTY(QStringList phones READ phones NOTIFY phonesChanged)
+
+    Q_PROPERTY(QStringList banned READ banned NOTIFY filterChanged)
+    Q_PROPERTY(QStringList accepted READ accepted NOTIFY filterChanged)
+    Q_PROPERTY(QStringList preferred READ preferred NOTIFY filterChanged)
+
+    Q_PROPERTY(expleague::MarkdownEditorPage* answer READ answer CONSTANT)
+
+public:
+    Offer* offer() const { return m_offer; }
+
+    QQmlListProperty<Bubble> chat() { return QQmlListProperty<Bubble>(this, m_chat); }
+
+    MarkdownEditorPage* answer() const { return m_answer; }
+
+    QQmlListProperty<TaskTag> tags() { return QQmlListProperty<TaskTag>(this, m_tags); }
+    QQmlListProperty<AnswerPattern> patterns() { return QQmlListProperty<AnswerPattern>(this, m_patterns); }
+    QStringList phones() { return m_phones; }
+
+    QStringList banned() const { return filter(Offer::TFT_REJECT); }
+    QStringList accepted() const { return filter(Offer::TFT_ACCEPT); }
+    QStringList preferred() const { return filter(Offer::TFT_PREFER); }
+
+    QString id() const;
+    Context* context() const { return m_context; }
+
+public:
+    Q_INVOKABLE void enter() const;
+    Q_INVOKABLE void sendMessage(const QString& str) const;
+    Q_INVOKABLE void sendAnswer(const QString& shortAnswer, int difficulty, int success, bool extraInfo);
+    Q_INVOKABLE void tag(TaskTag*);
+    Q_INVOKABLE void pattern(AnswerPattern*);
+    Q_INVOKABLE void phone(const QString&);
+    Q_INVOKABLE void cancel();
+    Q_INVOKABLE void stop();
+    Q_INVOKABLE void suspend(int seconds);
+    Q_INVOKABLE void filter(const QString& memberId, Offer::FilterType type);
+    Q_INVOKABLE void commitOffer(const QString& topic, const QString& comment, const QList<Member*>& selected = QList<Member*>()) const;
+
+    bool active() const { return m_context; }
+
+    void setContext(Context* context);
+
+public:
+    const QList<MarkdownEditorPage*>& receivedAnswers() const { return m_answers; }
+    League* parent() const;
+
+public:
+    explicit Task(Offer* offer = 0, QObject* parent = 0);
+    explicit Task(const QString& room, QObject* parent = 0);
+
+signals:
+    void offerChanged();
+
+    void bubblesChanged();
+    void chatChanged();
+
+    void tagsChanged();
+    void patternsChanged();
+    void phonesChanged();
+
+    void receivedProgress(const xmpp::Progress&);
+    void finished();
+    void cancelled();
+
+    void filterChanged();
+
+public slots:
+    void setAnswer(MarkdownEditorPage* answer) {
+        m_answer = answer;
+    }
+    void setOffer(Offer* offer);
+
+    void messageReceived(const QString& from, const QString& text);
+    void imageReceived(const QString& from, const QUrl& id);
+    void answerReceived(const QString& from, const QString& text);
+    void progressReceived(const QString& from, const xmpp::Progress& progress);
+    void cancelReceived() { cancelled(); }
+
+    void urlVisited(const QUrl&) const;
+
+private:
+    Bubble* bubble(const QString& from);
+    QStringList filter(Offer::FilterType type);
+
+private:
+    QString m_room;
+    Offer* m_offer;
+    QList<Bubble*> m_chat;
+    MarkdownEditorPage* m_answer;
+
+    QMap<QString, Offer::FilterType> m_filter;
+    QList<MarkdownEditorPage*> m_answers;
+    QStringList m_phones;
+    Context* m_context = 0;
 };
 
 class ChatMessage: public QObject {

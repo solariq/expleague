@@ -57,18 +57,19 @@ using namespace xmpp;
 void League::connect() {
     disconnect();
     m_connection = new xmpp::ExpLeagueConnection(m_profile, this);
-    QObject::connect(m_connection, SIGNAL(connected(int)), SLOT(connected(int)));
-    QObject::connect(m_connection, SIGNAL(disconnected()), SLOT(disconnected()));
-    QObject::connect(m_connection, SIGNAL(receiveCheck(const Offer&)), SLOT(checkReceived(const Offer&)));
-    QObject::connect(m_connection, SIGNAL(receiveInvite(const Offer&)), SLOT(inviteReceived(const Offer&)));
-    QObject::connect(m_connection, SIGNAL(receiveResume(const Offer&)), SLOT(resumeReceived(const Offer&)));
-    QObject::connect(m_connection, SIGNAL(receiveCancel(const Offer&)), SLOT(cancelReceived(const Offer&)));
-    QObject::connect(m_connection, SIGNAL(receiveTag(TaskTag*)), SLOT(tagReceived(TaskTag*)));
-    QObject::connect(m_connection, SIGNAL(receivePattern(AnswerPattern*)), SLOT(patternReceived(AnswerPattern*)));
-    QObject::connect(m_connection, SIGNAL(receiveMessage(QString,QString,QString,QString)), SLOT(messageReceived(QString,QString,QString,QString)));
-    QObject::connect(m_connection, SIGNAL(receiveImage(QString,QString,QString,QUrl)), SLOT(imageReceived(QString,QString,QString,QUrl)));
-    QObject::connect(m_connection, SIGNAL(receiveAnswer(QString,QString,QString,QString)), SLOT(answerReceived(QString,QString,QString,QString)));
-    QObject::connect(m_connection, SIGNAL(receiveProgress(QString,QString,QString,Progress)), SLOT(progressReceived(QString,QString,QString,Progress)));
+    QObject::connect(m_connection, SIGNAL(connected(int)), SLOT(onConnected(int)));
+    QObject::connect(m_connection, SIGNAL(disconnected()), SLOT(onDisconnected()));
+    QObject::connect(m_connection, SIGNAL(check(const Offer&)), SLOT(onCheck(const Offer&)));
+    QObject::connect(m_connection, SIGNAL(invite(const Offer&)), SLOT(onInvite(const Offer&)));
+    QObject::connect(m_connection, SIGNAL(resume(const Offer&)), SLOT(onResume(const Offer&)));
+    QObject::connect(m_connection, SIGNAL(cancel(const Offer&)), SLOT(onCancel(const Offer&)));
+    QObject::connect(m_connection, SIGNAL(tag(TaskTag*)), SLOT(onTag(TaskTag*)));
+    QObject::connect(m_connection, SIGNAL(pattern(AnswerPattern*)), SLOT(onPattern(AnswerPattern*)));
+    QObject::connect(m_connection, SIGNAL(message(QString,QString,QString,QString)), SLOT(onMessage(QString,QString,QString,QString)));
+    QObject::connect(m_connection, SIGNAL(image(QString,QString,QString,QUrl)), SLOT(onImage(QString,QString,QString,QUrl)));
+    QObject::connect(m_connection, SIGNAL(answer(QString,QString,QString,QString)), SLOT(onAnswer(QString,QString,QString,QString)));
+    QObject::connect(m_connection, SIGNAL(progress(QString,QString,QString,Progress)), SLOT(onProgress(QString,QString,QString,Progress)));
+    QObject::connect(m_connection, SIGNAL(offer(QString,QString,Offer)), SLOT(onOffer(QString,QString,Offer)));
     QObject::connect(m_connection, SIGNAL(tasksAvailableChanged(int)), SLOT(onTasksAvailableChanged(int)));
     QObject::connect(m_connection, SIGNAL(roomStarted(QString,QString,QString)), SLOT(onRoomStarted(QString,QString,QString)));
     QObject::connect(m_connection, SIGNAL(presenceChanged(QString,bool)), SLOT(onPresenceChanged(QString,bool)));
@@ -112,25 +113,29 @@ TaskTag* League::findTag(const QString &id) const {
 void League::startTask(Offer* offer, bool cont) {
     Task* task = this->task(offer->roomJid());
     task->setOffer(offer);
-    QObject::connect(task, SIGNAL(finished()), SLOT(taskFinished()));
-    QObject::connect(task, SIGNAL(cancelled()), SLOT(taskFinished()));
+    QObject::connect(task, SIGNAL(finished()), SLOT(onTaskFinished()));
+    QObject::connect(task, SIGNAL(cancelled()), SLOT(onTaskFinished()));
     m_status = LS_ON_TASK;
-    statusChanged(m_status);
+    emit statusChanged(m_status);
     Context* context = parent()->context("context/" + task->id(), task->offer()->topic().replace('\n', ' '));
     context->setTask(task);
     parent()->navigation()->open(context);
     Member* self = findMember(id());
-    MarkdownEditorPage* answerPage = parent()->document(context, "Ваш ответ", self, true, task->id() + "-" + "answer");
+    MarkdownEditorPage* answerPage = parent()->document("Ваш ответ", self, true, task->id() + "-" + "answer");
     if (!cont)
         answerPage->setTextContent("");
     context->transition(answerPage, Page::TYPEIN);
     task->setAnswer(answerPage);
+    foreach (MarkdownEditorPage* document, context->documents()) {
+        context->removeDocument(document);
+    }
+
     context->appendDocument(answerPage);
     parent()->append(context);
     parent()->navigation()->open(answerPage);
 }
 
-void League::inviteReceived(const Offer& offer) {
+void League::onInvite(const Offer& offer) {
     Offer* roffer = registerOffer(offer);
     QSound::play(":/sounds/owl.wav");
 
@@ -146,21 +151,19 @@ void League::inviteReceived(const Offer& offer) {
 
     receivedInvite(roffer);
     m_status = LS_INVITE;
-    statusChanged(m_status);
+    emit statusChanged(m_status);
 }
 
 Offer* League::registerOffer(const Offer& offer) {
     QString roomId = offer.room();
-    Offer* result;
-    if (m_offers.contains(roomId)) {
-        result = m_offers[roomId];
-    }
-    else
-        m_offers[roomId] = result = new Offer(offer.toXml(), this);
+    if (m_offers.contains(roomId))
+        return m_offers[roomId];
+    Offer* result = m_offers[roomId] = new Offer(offer.toXml(), this);
+    result->start();
     return result;
 }
 
-void League::disconnected() {
+void League::onDisconnected() {
     if (!m_connection)
         return;
     m_connection->deleteLater();
@@ -182,30 +185,32 @@ void League::disconnected() {
 }
 
 static time_t prevMessageTS = 0;
-void League::messageReceived(const QString& room, const QString& id, const QString& from, const QString& text) {
+void League::onMessage(const QString& room, const QString& id, const QString& from, const QString& text) {
     if (m_known_ids.contains(id))
         return;
     m_known_ids.insert(id);
 
-    notifyIfNeeded(from, tr("Получено сообщение от ") + from + ": '" + text + "'");
     Task* const task = this->task(room);
+    if (task->active())
+        notifyIfNeeded(from, tr("Получено сообщение от ") + from + ": '" + text + "'");
     task->messageReceived(from, text);
     if (task->context())
         doSearch::instance()->navigation()->activate(task->context());
 }
 
-void League::imageReceived(const QString& room, const QString& id, const QString& from, const QUrl& url) {
+void League::onImage(const QString& room, const QString& id, const QString& from, const QUrl& url) {
     if (m_known_ids.contains(id))
         return;
     m_known_ids.insert(id);
 
-    notifyIfNeeded(from, tr("Полученa картинка от ") + from);
     Task* const task = this->task(room);
+    if (task->active())
+        notifyIfNeeded(from, tr("Полученa картинка от ") + from);
     QString localUrl = "image://store/" + url.path().section('/', -1, -1);
     task->imageReceived(from, QUrl(localUrl));
 }
 
-void League::answerReceived(const QString& room, const QString& id, const QString& from, const QString& text) {
+void League::onAnswer(const QString& room, const QString& id, const QString& from, const QString& text) {
     if (m_known_ids.contains(id))
         return;
     m_known_ids.insert(id);
@@ -214,7 +219,7 @@ void League::answerReceived(const QString& room, const QString& id, const QStrin
     task->answerReceived(from, text);
 }
 
-void League::progressReceived(const QString& room, const QString& id, const QString& from, const xmpp::Progress& progress) {
+void League::onProgress(const QString& room, const QString& id, const QString& from, const xmpp::Progress& progress) {
     if (m_known_ids.contains(id))
         return;
     m_known_ids.insert(id);
@@ -223,39 +228,46 @@ void League::progressReceived(const QString& room, const QString& id, const QStr
     task->progressReceived(from, progress);
 }
 
-void League::connected(int role) {
+void League::onOffer(const QString& room, const QString& id, const Offer& offer) {
+    if (m_known_ids.contains(id))
+        return;
+    m_known_ids.insert(id);
+    Offer* roffer = registerOffer(offer);
+    Task* const task = this->task(room);
+    task->setOffer(roffer);
+}
+
+void League::onConnected(int role) {
     m_status = LS_ONLINE;
     emit statusChanged(m_status);
     m_role = (Role)(NONE + role);
     emit roleChanged(m_role);
 }
 
-void League::checkReceived(const Offer& offer) {
+void League::onCheck(const Offer& offer) {
     Offer* roffer = registerOffer(offer);
     Task* const task = this->task(offer.room());
     task->setOffer(roffer);
-//    if (task->context()) {
     m_connection->sendOk(roffer);
     m_status = LS_CHECK;
     emit statusChanged(m_status);
-//    }
 }
 
-void League::resumeReceived(const Offer& offer) {
+void League::onResume(const Offer& offer) {
     Offer* roffer = registerOffer(offer);
     startTask(roffer, true);
     m_connection->sendResume(roffer);
     notifyIfNeeded("", tr("Задание вернулось: ") + offer.topic());
 }
 
-void League::cancelReceived(const Offer& offer) {
+void League::onCancel(const Offer& offer) {
     Offer* roffer = registerOffer(offer);
     emit roffer->cancelled();
     m_status = LS_ONLINE;
     emit statusChanged(m_status);
 }
 
-void League::taskFinished() {
+void League::onTaskFinished() {
     Task* const finished = qobject_cast<Task*>(sender());
     finished->setContext(0);
     foreach(Task* task, m_tasks.values()) {
@@ -267,7 +279,7 @@ void League::taskFinished() {
     emit statusChanged(m_status);
 }
 
-void League::tagReceived(TaskTag* tag) {
+void League::onTag(TaskTag* tag) {
     tag->setParent(this);
     foreach(TaskTag* current, m_tags) {
         if (current->name() == tag->name()) {
@@ -283,7 +295,7 @@ void League::tagReceived(TaskTag* tag) {
     emit tagsChanged();
 }
 
-void League::patternReceived(AnswerPattern* pattern) {
+void League::onPattern(AnswerPattern* pattern) {
     pattern->setParent(this);
     foreach(AnswerPattern* current, m_patterns) {
         if (current->name() == pattern->name()) {
@@ -318,7 +330,7 @@ void League::onRoomStarted(const QString& roomId, const QString& topic, const QS
         if ((*it)->roomId() == roomId)
             return; // already exists
     }
-    RoomState* room = new RoomState(roomId + "@" + xmpp::domain(static_cast<xmpp::ExpLeagueConnection*>(sender())->jid()), findMember(client), topic, this);
+    RoomState* room = new RoomState(roomId + "@muc." + xmpp::domain(static_cast<xmpp::ExpLeagueConnection*>(sender())->jid()), findMember(client), topic, this);
     m_rooms.append(room);
     room->connectTo(m_connection);
     emit roomsChanged();
@@ -377,6 +389,13 @@ League* Task::parent() const {
     return static_cast<League*>(QObject::parent());
 }
 
+QStringList Task::filter(Offer::FilterType type) const {
+    QStringList banned;
+    for (auto expert = m_filter.begin(); expert != m_filter.end(); expert++)
+        if (expert.value() == type)
+            banned.append(expert.key());
+}
+
 void Task::setOffer(Offer* offer) {
     QObject::disconnect(m_offer);
     QObject::connect(offer, SIGNAL(cancelled()), this, SLOT(cancelReceived()));
@@ -387,7 +406,7 @@ void Task::setOffer(Offer* offer) {
 void Task::answerReceived(const QString &from, const QString& text) {
     doSearch* dosearch = doSearch::instance();
     Member* author = parent()->findMember(from);
-    MarkdownEditorPage* answerPage = dosearch->document(context(), "Ответ " + QString::number(m_answers.size() + 1), author, false, id() + "-" + QString::number(m_answers.size() + 1));
+    MarkdownEditorPage* answerPage = dosearch->document("Ответ " + QString::number(m_answers.size() + 1), author, false, id() + "-" + QString::number(m_answers.size() + 1));
     answerPage->setTextContent(text);
     if (context()) {
         context()->appendDocument(answerPage);
@@ -543,6 +562,32 @@ void Task::enter() const {
     parent()->connection()->sendPresence(m_room);
 }
 
+void Task::commitOffer(const QString &topic, const QString& comment, const QList<Member*>& selected) const {
+    QMap<QString, FilterType> filter = m_offer->m_filter;
+    foreach(Member* expert, selected) {
+        filter[expert->id()] = Offer::TFT_ACCEPT;
+    }
+
+    Offer offer(m_offer->client(),
+                m_offer->room(),
+                topic,
+                m_offer->urgency(),
+                m_offer->local(),
+                m_offer->images(),
+                filter,
+                m_offer->location(),
+                m_offer->m_started,
+                m_offer->tags(),
+                m_offer->patterns(),
+                comment);
+    parent()->connection()->sendOffer(offer);
+}
+
+void Task::filter(const QString& memberId, Offer::FilterType type) {
+    m_filter[memberId] = type;
+    emit filterChanged();
+}
+
 QString Task::id() const  {
     return m_room;
 }
@@ -571,7 +616,7 @@ public:
                 }
                 task = m_queue.takeFirst();
             }
-            qDebug() << "Request for " << task->id() << " received";
+//            qDebug() << "Request for " << task->id() << " received";
             QFile cacheFile(m_ava_cache_dir.filePath(task->id()));
             if (!cacheFile.exists()) {
                 m_lock.lock();
@@ -589,7 +634,7 @@ public:
                 m_lock.unlock();
             }
             else {
-                qDebug() << "Cache hit on " << task->id() << " file: " << cacheFile.fileName();
+//                qDebug() << "Cache hit on " << task->id() << " file: " << cacheFile.fileName();
                 QImageReader reader(&cacheFile);
                 reader.setAutoTransform(true);
 
@@ -600,7 +645,7 @@ public:
 
     void sendRequest(const QString& id) {
         QMutexLocker locker(&m_lock);
-        qDebug() << "Sending images store request " << id;
+//        qDebug() << "Sending images store request " << id;
         QNetworkRequest request(QUrl(baseUrl() + id));
 
         auto existing = m_pending.find(id);
@@ -666,7 +711,7 @@ public:
         ImagesStoreResponse* firstPending = qobject_cast<ImagesStoreResponse*>(reply->request().originatingObject());
         if (!firstPending)
             return;
-        qDebug() << "Web request finished for " << firstPending->id();
+//        qDebug() << "Web request finished for " << firstPending->id();
         QByteArray content = reply->readAll();
         QBuffer buffer(&content);
         QImageReader reader(&buffer);
@@ -674,7 +719,7 @@ public:
         QImage img = reader.read();
         if (!img.isNull()) {
             QString id = firstPending->id();
-            qDebug() << "Saving image to " << m_ava_cache_dir.filePath(id);
+//            qDebug() << "Saving image to " << m_ava_cache_dir.filePath(id);
             img.save(m_ava_cache_dir.filePath(id));
             {
                 QMutexLocker locker(&m_lock);
@@ -750,7 +795,7 @@ QUrl ImagesStore::url(const QString &id) const {
 }
 
 QQuickImageResponse* ImagesStore::requestImageResponse(const QString& id, const QSize&) {
-    qDebug() << "Image requested: " << id;
+//    qDebug() << "Image requested: " << id;
     ImagesStoreResponse* response = new ImagesStoreResponse(id);
     QTimer::singleShot(10, [this, response]() {
         m_instance->enqueue(response);
@@ -766,7 +811,7 @@ QUrl League::normalizeImageUrlForUI(const QUrl& imageUrl) const {
     return imageUrl;
 }
 
-void RoomState::onRoomStatusReceived(const QString& id, int status) {
+void RoomState::onRoomStatus(const QString& id, int status) {
     if (id != roomId())
         return;
     m_status = (Status)status;
@@ -777,21 +822,21 @@ void RoomState::onRoomStatusReceived(const QString& id, int status) {
     }
 }
 
-void RoomState::onFeedbackReceived(const QString& id, int feedback) {
+void RoomState::onFeedback(const QString& id, int feedback) {
     if (id != roomId())
         return;
     m_feedback = feedback;
     emit feedbackChanged();
 }
 
-void RoomState::onMessageReceived(const QString& id, const QString& author) {
+void RoomState::onMessage(const QString& id, const QString& author) {
     if (id != roomId() || author == doSearch::instance()->league()->id())
         return;
     m_unread++;
     emit unreadChanged(m_unread);
 }
 
-void RoomState::onAssignmentReceived(const QString& id, const QString& expert, int iRole) {
+void RoomState::onAssignment(const QString& id, const QString& expert, int iRole) {
     if (id != roomId())
         return;
     League::Role role = (League::Role)iRole;
@@ -819,10 +864,10 @@ void RoomState::onAssignmentReceived(const QString& id, const QString& expert, i
 bool RoomState::connectTo(xmpp::ExpLeagueConnection* connection) {
     if (xmpp::domain(m_jid) != xmpp::domain(connection->jid()))
         return false;
-    connect(connection, SIGNAL(roomStatusReceived(QString,int)), SLOT(onRoomStatusReceived(QString,int)));
-    connect(connection, SIGNAL(feedbackReceived(QString,int)), SLOT(onFeedbackReceived(QString,int)));
-    connect(connection, SIGNAL(messageReceived(QString,QString)), SLOT(onMessageReceived(QString,QString)));
-    connect(connection, SIGNAL(assignmentReceived(QString,QString,int)), SLOT(onAssignmentReceived(QString,QString,int)));
+    connect(connection, SIGNAL(roomStatus(QString,int)), SLOT(onRoomStatus(QString,int)));
+    connect(connection, SIGNAL(feedback(QString,int)), SLOT(onFeedback(QString,int)));
+    connect(connection, SIGNAL(messageNotification(QString,QString)), SLOT(onMessage(QString,QString)));
+    connect(connection, SIGNAL(assignment(QString,QString,int)), SLOT(onAssignment(QString,QString,int)));
     return true;
 }
 
@@ -838,5 +883,4 @@ RoomState::RoomState(const QString& id, Member* client, const QString& topic, Le
     QObject(parent),
     m_jid(id), m_client(client), m_topic(topic)
 {}
-
 }

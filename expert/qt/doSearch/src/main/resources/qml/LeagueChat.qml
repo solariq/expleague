@@ -117,7 +117,7 @@ Rectangle {
         id: bubble
 
         Item {
-            width: chatContainer.width
+            width: chatContainer.width - chatContainer.leftMargin - chatContainer.rightMargin
             implicitHeight: content.implicitHeight
 
             Avatar {
@@ -240,10 +240,10 @@ Rectangle {
             clip: true
             contentWidth: width - 8
             contentHeight: chat.height
-            topMargin: 2
-            leftMargin: 2
-            rightMargin: 2
-            bottomMargin: 2
+            topMargin: 4
+            leftMargin: 4
+            rightMargin: 4
+            bottomMargin: 4
 
             Column {
                 id: chat

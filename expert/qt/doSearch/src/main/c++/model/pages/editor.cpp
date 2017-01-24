@@ -132,7 +132,7 @@ void MarkdownEditorPage::contentChanged() {
 
 //static hunspell::SpellChecker commonSpellchecker;
 
-MarkdownEditorPage::MarkdownEditorPage(const QString& id, Context* context, Member* author, const QString& title, bool editable, doSearch* parent): ContentPage(id, "qrc:/EditorView.qml", parent), m_author(author), /*m_owner(context), */m_editable(editable) {
+MarkdownEditorPage::MarkdownEditorPage(const QString& id, Member* author, const QString& title, bool editable, doSearch* parent): ContentPage(id, "qrc:/EditorView.qml", parent), m_author(author), /*m_owner(context), */m_editable(editable) {
     d_ptr.reset(0);
     m_text = ContentPage::textContent();
     m_spellchecker = new hunspell::SpellChecker();
@@ -154,8 +154,8 @@ MarkdownEditorPage::MarkdownEditorPage(const QString& id, doSearch* parent): Con
     m_spellchecker = new hunspell::SpellChecker();
     m_text = ContentPage::textContent();
     m_html = buildHtmlByMD(m_text);
-    League* league = parent->league();
-    m_editable = value("document.editable").toBool();
+    QVariant editableVar = value("document.editable");
+    m_editable = editableVar.isNull() ? true : editableVar.toBool();
     if (m_author) {
         QObject::connect(m_author, SIGNAL(nameChanged(QString)), this, SLOT(authorChanged()));
         QObject::connect(m_author, SIGNAL(avatarChanged(QUrl)), this, SLOT(authorChanged()));

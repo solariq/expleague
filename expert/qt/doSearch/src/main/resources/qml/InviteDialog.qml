@@ -73,6 +73,8 @@ Window {
     }
 
     ColumnLayout {
+        focus: true
+        id: visualSelf
         anchors.fill: parent
         Item {Layout.preferredHeight: 20}
         Text {
@@ -175,6 +177,7 @@ Window {
                     Layout.preferredHeight: 200
                     Layout.preferredWidth: 300
                     Layout.alignment: Qt.AlignHCenter
+                    enabled: false
 
                     url: offer ? "qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude : ""
                 }
@@ -267,9 +270,25 @@ Window {
         Item {
             Layout.preferredHeight: 5
         }
+        Keys.onPressed: {
+            if (event.key === Qt.Key_Escape) {
+                self.visible = false
+                event.accepted = true
+            }
+        }
+    }
 
-        Keys.onEscapePressed: {
+    onVisibleChanged: {
+        if (visible) {
+            visualSelf.forceActiveFocus()
+            console.log("Focused: " + self.activeFocusItem)
+        }
+    }
+
+    Keys.onPressed: {
+        if (event.key === Qt.Key_Escape) {
             self.visible = false
+            event.accepted = true
         }
     }
 }

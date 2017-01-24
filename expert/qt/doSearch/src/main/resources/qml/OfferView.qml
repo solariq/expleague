@@ -18,12 +18,15 @@ Item {
     property real storedHeight: 0
     property real maxHeight: tools.implicitHeight + content.contentHeight
     property real minHeight: tools.implicitHeight
+    property bool editable: false
 
     property real offerHeight: topic.implicitHeight + geoLocal.implicitHeight + 4 + attachmentsCount.implicitHeight + 4 +
                                33 + 4 +
-                               (offer ? time.implicitHeight + 4 : 0) +
+                               time.implicitHeight + 4 +
+                               comment.implicitHeight + 4 +
+                               filterView.implicitHeight + 4 +
                                (offer && offer.hasLocation ? 200 + 4 : 0) +
-                               ((offer ? offer.images.length * (200 + 4) : 0)) +
+                               (offer ? offer.images.length * (200 + 4) : 0) +
                                (tagsView.visible ? tagsView.implicitHeight + 4 : 0) +
                                (patternsView.visible ? patternsView.implicitHeight + 4 : 0) +
                                (callsView.visible ? callsView.implicitHeight + 4 : 0) +
@@ -225,19 +228,82 @@ Item {
                     }
                 }
 
-                TextEdit {
-                    id: topic
+                Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: parent.width - 20
                     Layout.maximumWidth: parent.width - 20
-                    horizontalAlignment: Qt.AlignHCenter
-                    renderType: Text.NativeRendering
-                    wrapMode: Text.WordWrap
-                    color: Palette.selectedTextColor
-                    text: offer ? offer.topic : ""
-                    selectByMouse: true
+                    color: self.editable ? "white" : "transparent"
+                    TextEdit {
+                        id: topic
+                        anchors.fill: parent
+                        horizontalAlignment: Qt.AlignHCenter
+                        renderType: Text.NativeRendering
+                        wrapMode: Text.WordWrap
+                        color: Palette.selectedTextColor
+                        text: offer ? offer.topic : ""
+                        selectByMouse: true
+                        readOnly: self.editable
+                    }
                 }
 
+                Rectangle {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: parent.width - 20
+                    Layout.maximumWidth: parent.width - 20
+                    color: self.editable ? "white" : "transparent"
+                    TextEdit {
+                        id: comment
+                        anchors.fill: parent
+                        horizontalAlignment: Qt.AlignHCenter
+                        renderType: Text.NativeRendering
+                        wrapMode: Text.WordWrap
+                        color: Palette.selectedTextColor
+                        text: (!editable ? "Комментарий администратора: " : "") + (offer && offer.comment != "" ? offer.comment : "нет")
+                        selectByMouse: true
+                        readOnly: self.editable
+                    }
+                }
+
+                Flow {
+                    id: filterView
+                    visible: task && task.tags.length > 0
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: parent.width - 20
+                    spacing: 3
+                    Label {
+                        visible: !!task && task.banned.length > 0
+                        text: qsTr("Забанены: ")
+                    }
+                    Repeater {
+                        model: task ? task.banned : []
+                        delegate: Avatar {
+                            userId: modelData
+                            size: 22
+                        }
+                    }
+                    Label {
+                        visible: !!task && task.banned.length > 0
+                        text: qsTr("Предпочитаются: ")
+                    }
+                    Repeater {
+                        model: task ? task.preferred : []
+                        delegate: Avatar {
+                            userId: modelData
+                            size: 22
+                        }
+                    }
+                    Label {
+                        visible: !!task && task.banned.length > 0
+                        text: qsTr("Приняты: ")
+                    }
+                    Repeater {
+                        model: task ? task.accepted : []
+                        delegate: Avatar {
+                            userId: modelData
+                            size: 22
+                        }
+                    }
+                }
                 Flow {
                     id: tagsView
                     visible: task && task.tags.length > 0

@@ -23,12 +23,12 @@ namespace xmpp {
 const QString EXP_LEAGUE_NS = "http://expleague.com/scheme";
 
 ExpLeagueConnection::ExpLeagueConnection(Profile* p, QObject* parent): QObject(parent), m_client(new QXmppClient(this)), m_profile(p) {
-    QObject::connect(m_client, SIGNAL(error(QXmppClient::Error)), this, SLOT(error(QXmppClient::Error)));
-    QObject::connect(m_client, SIGNAL(connected()), this, SLOT(connectedSlot()));
-    QObject::connect(m_client, SIGNAL(disconnected()), this, SLOT(disconnectedSlot()));
-    QObject::connect(m_client, SIGNAL(iqReceived(QXmppIq)), this, SLOT(iqReceived(QXmppIq)));
-    QObject::connect(m_client, SIGNAL(presenceReceived(QXmppPresence)), this, SLOT(presenceReceived(QXmppPresence)));
-    QObject::connect(m_client, SIGNAL(messageReceived(QXmppMessage)), this, SLOT(messageReceived(QXmppMessage)));
+    QObject::connect(m_client, SIGNAL(error(QXmppClient::Error)), this, SLOT(onError(QXmppClient::Error)));
+    QObject::connect(m_client, SIGNAL(connected()), this, SLOT(onConnected()));
+    QObject::connect(m_client, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
+    QObject::connect(m_client, SIGNAL(iqReceived(QXmppIq)), this, SLOT(onIQ(QXmppIq)));
+    QObject::connect(m_client, SIGNAL(presenceReceived(QXmppPresence)), this, SLOT(onPresence(QXmppPresence)));
+    QObject::connect(m_client, SIGNAL(messageReceived(QXmppMessage)), this, SLOT(onMessage(QXmppMessage)));
 
     m_client->logger()->setLoggingType(QXmppLogger::StdoutLogging);
     m_client->logger()->setMessageTypes(QXmppLogger::WarningMessage);
@@ -62,12 +62,12 @@ void ExpLeagueConnection::disconnect() {
     emit disconnected();
 }
 
-void ExpLeagueConnection::error(QXmppClient::Error error) {
+void ExpLeagueConnection::onError(QXmppClient::Error error) {
     if (error == QXmppClient::Error::XmppStreamError) {
         qWarning() << "XMPP stream error: " << m_client->xmppStreamError();
         if (m_client->xmppStreamError() == QXmppStanza::Error::NotAuthorized) { // trying to register
             Registrator* reg = new Registrator(profile(), this);
-            QObject::connect(reg, SIGNAL(registered(QString)), this, SLOT(registered()));
+            QObject::connect(reg, SIGNAL(onRegistered(QString)), this, SLOT(onRegistered()));
             QObject::connect(reg, SIGNAL(error(QString)), this, SLOT(error(QString)));
             reg->start();
         }
@@ -75,7 +75,7 @@ void ExpLeagueConnection::error(QXmppClient::Error error) {
     else emit disconnected();
 }
 
-void ExpLeagueConnection::presenceReceived(const QXmppPresence& presence) {
+void ExpLeagueConnection::onPresence(const QXmppPresence& presence) {
     foreach(const QXmppElement& ext, presence.extensions()) {
         QDomElement item = ext.sourceDomElement();
         if (item.namespaceURI() == EXP_LEAGUE_NS && item.nodeName() == "status") {
@@ -93,7 +93,7 @@ void ExpLeagueConnection::presenceReceived(const QXmppPresence& presence) {
     }
 }
 
-void ExpLeagueConnection::iqReceived(const QXmppIq& iq) {
+void ExpLeagueConnection::onIQ(const QXmppIq& iq) {
     foreach(const QXmppElement& ext, iq.extensions()) {
         if (ext.sourceDomElement().namespaceURI() == "jabber:iq:roster") {
             QDomElement xml = ext.sourceDomElement();
@@ -125,7 +125,7 @@ void ExpLeagueConnection::iqReceived(const QXmppIq& iq) {
                 if (element.isNull())
                     continue;
                 if (element.tagName() == "tag")
-                    receiveTag(new TaskTag(element.text(), element.hasAttribute("icon") ? element.attribute("icon") : "qrc:/unknown_topic.png"));
+                    tag(new TaskTag(element.text(), element.hasAttribute("icon") ? element.attribute("icon") : "qrc:/unknown_topic.png"));
             }
         }
         else if (ext.sourceDomElement().namespaceURI() == EXP_LEAGUE_NS + "/patterns") {
@@ -136,7 +136,7 @@ void ExpLeagueConnection::iqReceived(const QXmppIq& iq) {
                     continue;
                 if (element.tagName() == "pattern") {
                     QDomNodeList icon = element.elementsByTagName("icon");
-                    receivePattern(new AnswerPattern(element.attribute("name"), icon.count() > 0 ? icon.at(0).toElement().text() : "qrc:/unknown_pattern.png", element.elementsByTagName("body").at(0).toElement().text()));
+                    pattern(new AnswerPattern(element.attribute("name"), icon.count() > 0 ? icon.at(0).toElement().text() : "qrc:/unknown_pattern.png", element.elementsByTagName("body").at(0).toElement().text()));
                 }
             }
         }
@@ -155,7 +155,7 @@ enum Command {
     ELC_ROOM_MESSAGE
 };
 
-void ExpLeagueConnection::messageReceived(const QXmppMessage& msg) {
+void ExpLeagueConnection::onMessage(const QXmppMessage& msg) {
     Command cmd = ELC_CHECK;
     std::unique_ptr<Offer> offer = 0;
     QString text;
@@ -212,69 +212,79 @@ void ExpLeagueConnection::messageReceived(const QXmppMessage& msg) {
 
         }
     }
-    if (offer) {
+
+    QString room;
+    QString from;
+    if (msg.from().indexOf("muc.") >= 0 || msg.from().startsWith("global-chat@")) {
+        from = xmpp::resource(msg.from());
+        room = xmpp::user(msg.from());
+    }
+    else {
+        from = xmpp::user(msg.from());
+        room = xmpp::user(msg.to());
+    }
+
+    if (!!offer) {
         if (offer->room() == "")
-            offer->m_room = msg.from();
+            offer->m_room = room + "@muc." + xmpp::domain(msg.from());
+        if (offer->client() == "")
+            offer->m_client = from + "@" + xmpp::domain(msg.from());
+    }
+
+    if (!!offer && (!msg.from().contains('@') || cmd != ELC_CHECK)) { // message from system
         switch (cmd) {
         case ELC_CANCEL:
-            receiveCancel(*offer);
+            cancel(*offer);
             break;
         case ELC_CHECK:
-            receiveCheck(*offer);
+            check(*offer);
             break;
         case ELC_INVITE:
-            receiveInvite(*offer);
+            invite(*offer);
             break;
         case ELC_RESUME:
-            receiveResume(*offer);
+            resume(*offer);
             break;
         default:
             qWarning() << "Unhandeled command: " << cmd << " while offer received";
         }
     }
     else {
-        QString room;
-        QString from;
-        if (msg.from().indexOf("muc.") >= 0 || msg.from().startsWith("global-chat@")) {
-            from = xmpp::resource(msg.from());
-            room = xmpp::user(msg.from());
-        }
-        else {
-            from = xmpp::user(msg.from());
-            room = xmpp::user(msg.to());
-        }
         if (room == "global-chat") {
             switch(cmd) {
             case ELC_ENTER:
-                assignmentReceived(from, sender, League::ADMIN);
+                assignment(from, sender, League::ADMIN);
                 break;
             case ELC_EXIT:
-                assignmentReceived(from, sender, League::NONE);
+                assignment(from, sender, League::NONE);
                 break;
             case ELC_ROOM_STATUS:
-                roomStatusReceived(from, status);
+                roomStatus(from, status);
                 break;
             case ELC_ROOM_CREATE:
                 roomStarted(from, text, sender);
                 break;
             case ELC_ROOM_MESSAGE:
-                messageReceived(from, sender);
+                messageNotification(from, sender);
                 break;
             default:
                 qWarning() << "Unhandeled command: " << cmd << " in global chat: " << msg;
             }
         }
+        else if (!!offer) {
+            this->offer(room, msg.id(), *offer);
+        }
         else if (!text.isEmpty()) {
-            receiveAnswer(room, msg.id(), from, text);
+            this->answer(room, msg.id(), from, text);
         }
         else if (!progress.empty()) {
-            receiveProgress(room, msg.id(), from, progress);
+            this->progress(room, msg.id(), from, progress);
         }
         else if (image.isValid()) {
-            receiveImage(room, msg.id(), from, image);
+            this->image(room, msg.id(), from, image);
         }
         else if (!msg.body().isEmpty()) {
-            receiveMessage(room, msg.id(), from, msg.body());
+            this->message(room, msg.id(), from, msg.body());
         }
     }
     if (msg.isReceiptRequested()) {
@@ -285,8 +295,14 @@ void ExpLeagueConnection::messageReceived(const QXmppMessage& msg) {
     }
 }
 
-void ExpLeagueConnection::connectedSlot() {
-    emit connected(1); // connect as an administrator until there is no info in iq
+void ExpLeagueConnection::onConnected() {
+    QString boundJid = m_client->configuration().jid();
+    if (boundJid.endsWith("/admin"))
+        emit connected(2);
+    else if (boundJid.endsWith("/expert"))
+        emit connected(1);
+    else
+        emit connected(1); // TODO: connect as normal client when there will be no compatibility issues
 //    qDebug() << "Connected as " << m_client->configuration().jid();
     m_jid = m_client->configuration().jid();
     jidChanged(m_jid);
@@ -352,7 +368,7 @@ void ExpLeagueConnection::sendMessage(const QString& to, const QString& text) {
     QXmppMessage msg(jid(), to, text);
     msg.setType(QXmppMessage::GroupChat);
     m_client->sendPacket(msg);
-    emit messageReceived(msg);
+    onMessage(msg);
 }
 
 void ExpLeagueConnection::sendAnswer(const QString& room, int difficulty, int success, bool extraInfo, const QString& text) {
@@ -400,6 +416,17 @@ void ExpLeagueConnection::sendPresence(const QString& room) {
     QXmppPresence presence(QXmppPresence::Available);
     presence.setTo(xmpp::user(room) + "@muc." + profile()->domain());
     m_client->sendPacket(presence);
+}
+
+void ExpLeagueConnection::sendOffer(const Offer& offer) {
+    QXmppMessage msg("", to);
+    msg.setType(QXmppMessage::Normal);
+
+    QDomDocument holder;
+    QXmppElementList protocol;
+    protocol.append(QXmppElement(offer.toXml()));
+    msg.setExtensions(protocol);
+    m_client->sendPacket(msg);
 }
 
 Progress Progress::fromXml(const QDomElement& xml) {
@@ -564,52 +591,6 @@ void Registrator::disconnected() {
 
 }
 
-Offer::Offer(QDomElement xml, QObject *parent): QObject(parent) {
-    qDebug() << "Offer: " << xml;
-    if (xml.attribute("urgency") == "day")
-        m_urgency = Offer::Urgency::TU_DAY;
-    else if (xml.attribute("urgency") == "asap")
-        m_urgency = Offer::Urgency::TU_ASAP;
-    m_room = xml.attribute("room");
-    m_client = xml.attribute("client");
-    m_started = QDateTime::fromTime_t(uint(xml.attribute("started").toDouble()));
-    m_local = xml.attribute("local") == "true";
-    for(int i = 0; i < xml.childNodes().length(); i++) {
-        QDomElement element = xml.childNodes().at(i).toElement();
-        if (element.isNull())
-            continue;
-        if (element.tagName() == "topic") {
-//            qDebug() << "Topic " << element.text();
-            m_topic = element.text();
-        }
-        else if (element.tagName() == "location") {
-            m_location.reset(new QGeoCoordinate(
-                                 element.attribute("latitude").toDouble(),
-                                 element.attribute("longitude").toDouble()));
-            qDebug() << "Location " << *m_location;
-        }
-        else if (element.tagName() == "image") {
-            m_images.append(QUrl(element.text()).path().section('/', -1, -1));
-        }
-        else if (element.tagName() == "experts-filter") {
-            QDomElement rejected = element.firstChildElement("reject");
-            QDomElement accepted = element.firstChildElement("accept");
-            QDomElement prefer = element.firstChildElement("prefer");
-            // TODO: finish
-//                       if (!rejected.isNull()) {
-//                           rejected
-//                       }
-        }
-
-    }
-    m_timer = new QTimer(this);
-    m_timer->setSingleShot(false);
-    m_timer->setInterval(500);
-    m_timer->setTimerType(Qt::TimerType::CoarseTimer);
-    m_timer->start();
-    QObject::connect(m_timer, SIGNAL(timeout()), SLOT(tick()));
-}
-
 void Offer::tick() {
     timeTick();
 }
@@ -635,21 +616,136 @@ QDomElement Offer::toXml() const {
     QDomElement topic = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "topic");
     topic.appendChild(holder.createTextNode(m_topic));
     result.appendChild(topic);
-    if (m_location) {
+    QDomElement comment = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "comment");
+    comment.appendChild(holder.createTextNode(m_comment));
+    result.appendChild(comment);
+
+    if (m_location.isValid()) {
         QDomElement location = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "location");
         location.setAttribute("latitude", QString::number(m_location->latitude()));
         location.setAttribute("longitude", QString::number(m_location->longitude()));
         result.appendChild(location);
     }
+
     foreach(const QUrl& url, m_images) {
         QDomElement attachment = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "image");
         attachment.appendChild(holder.createTextNode(url.toString()));
         result.appendChild(attachment);
     }
 
+    foreach(AnswerPattern* pattern, m_patterns) {
+        QDomElement patternDom = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "pattern");
+        patternDom.appendChild(holder.createTextNode(pattern->name()));
+        result.appendChild(patternDom);
+    }
+
+    foreach(TaskTag* tag, m_patterns) {
+        QDomElement tagDom = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "tag");
+        tagDom.appendChild(holder.createTextNode(tag->name()));
+        result.appendChild(tagnDom);
+    }
+
+    if (!m_filter.isEmpty()) {
+        QDomElement filter = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "expert-filter");
+        for (auto expert = m_filter.begin(); expert != m_filter.end(); expert++) {
+            QDomElement item;
+            switch (expert.value()) {
+            case Offer::TFT_REJECT:
+                item = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "reject");
+                break;
+            case Offer::TFT_ACCEPT:
+                item = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "accept");
+                break;
+            case Offer::TFT_PREFER:
+                item = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "prefer");
+                break;
+            }
+            item.appendChild(holder.createTextNode(expert.key()));
+            filter.appendChild(item);
+        }
+        result.appendChild(filter);
+    }
+
     return QDomElement(result);
 }
 
+void Offer::start() const {
+    m_timer->start();
+}
+
+Offer::Offer(const QString& client,
+                   const QString& room,
+                   const QString& topic,
+                   Urgency urgency,
+                   bool local,
+                   const QStringList& images,
+                   const QMap<QString, FilterType>& filter,
+                   QGeoCoordinate location,
+                   QDateTime started,
+                   QList<TaskTag*> tags,
+                   QList<AnswerPattern*> patterns,
+                   const QString& comment)
+: m_room(room), m_client(client), m_topic(topic), m_urgency(urgency), m_local(local),
+  m_images(images), m_filter(filter), m_location(location), m_started(started),
+  m_tags(tags), m_patterns(patterns), m_comment(comment)
+{}
+
+Offer::Offer(QDomElement xml, QObject *parent): QObject(parent) {
+//    qDebug() << "Offer: " << xml;
+    if (xml.attribute("urgency") == "day")
+        m_urgency = Offer::Urgency::TU_DAY;
+    else if (xml.attribute("urgency") == "asap")
+        m_urgency = Offer::Urgency::TU_ASAP;
+    m_room = xml.attribute("room");
+    m_client = xml.attribute("client");
+    m_started = QDateTime::fromTime_t(uint(xml.attribute("started").toDouble()));
+    m_local = xml.attribute("local") == "true";
+    for(int i = 0; i < xml.childNodes().length(); i++) {
+        QDomElement element = xml.childNodes().at(i).toElement();
+        if (element.isNull())
+            continue;
+        if (element.tagName() == "topic") {
+//            qDebug() << "Topic " << element.text();
+            m_topic = element.text();
+        }
+        else if (element.tagName() == "location") {
+            m_location = QGeoCoordinate(element.attribute("latitude").toDouble(), element.attribute("longitude").toDouble());
+//            qDebug() << "Location " << *m_location;
+        }
+        else if (element.tagName() == "comment") {
+            m_comment = element.text();
+        }
+        else if (element.tagName() == "image") {
+            m_images.append(QUrl(element.text()).path().section('/', -1, -1));
+        }
+        else if (element.tagName() == "experts-filter") {
+            QDomElement rejected = element.firstChildElement("reject");
+            QDomElement accepted = element.firstChildElement("accept");
+            QDomElement prefer = element.firstChildElement("prefer");
+            if (!rejected.isNull())
+                m_filter[rejected.text()] = Offer::TFT_REJECT;
+            if (!accepted.isNull())
+                m_filter[accepted.text()] = Offer::TFT_ACCEPT;
+            if (!prefer.isNull())
+                m_filter[prefer.text()] = Offer::TFT_PREFER;
+        }
+        else if (element.tagName() == "patterns") {
+            AnswerPattern* const parrern = League::instance()->findPattern(element.text());
+            if (pattern)
+                m_patterns.append(pattern);
+        }
+        else if (element.tagName() == "tags") {
+            TaskTag* const tag = League::instance()->findTag(element.text());
+            if (tag)
+                m_tags.append(tag);
+        }
+    }
+    m_timer = new QTimer(this);
+    m_timer->setSingleShot(false);
+    m_timer->setInterval(500);
+    m_timer->setTimerType(Qt::TimerType::CoarseTimer);
+    QObject::connect(m_timer, SIGNAL(timeout()), SLOT(tick()));
+}
 }
 
 QDebug operator<<(QDebug dbg, const QDomNode& node) {

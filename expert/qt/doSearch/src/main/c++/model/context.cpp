@@ -29,11 +29,11 @@ QString Context::icon() const {
     if (!m_icon_cache.isEmpty())
         return m_icon_cache;
      m_icon_cache = m_task ? "qrc:/icons/owl.png" : "qrc:/icons/chrome.png";
-     foreach(Page* out, outgoing()) {
-         if (qobject_cast<SearchRequest*>(out))
+     foreach(ContentPage* part, parts()) {
+         if (!part || qobject_cast<SearchRequest*>(part) || qobject_cast<MarkdownEditorPage*>(part))
              continue;
-         if (!out->icon().isEmpty()) {
-             m_icon_cache = out->icon();
+         if (!part->icon().isEmpty()) {
+             m_icon_cache = part->icon();
              break;
          }
      }
@@ -60,7 +60,6 @@ void Context::setTask(Task *task) {
     store("context.task", task->id());
     save();
     m_task = task;
-    m_icon_cache = "";
     iconChanged(icon());
 }
 
@@ -112,7 +111,7 @@ SearchRequest* Context::lastRequest() const {
 MarkdownEditorPage* Context::createDocument() {
     Member* self = parent()->league()->findMember(parent()->league()->id());
     QString prefix = "document/" + (self ? self->id() : "local");
-    MarkdownEditorPage* document = parent()->document(this, "Документ " + QString::number(children(prefix).size()), self, true);
+    MarkdownEditorPage* document = parent()->document("Документ " + QString::number(children(prefix).size()), self, true);
     appendDocument(document);
     return document;
 }
@@ -362,5 +361,4 @@ Context::~Context() {
     if (m_task)
         m_task->setContext(0);
 }
-
 }

@@ -187,7 +187,7 @@ Rectangle {
 
             model: DelegateModel {
                 id: visualModel
-                model: owner.activeGroup.items
+                model: owner.activeGroup ? owner.activeGroup.items : []
                 delegate: tileComponent
             }
         }

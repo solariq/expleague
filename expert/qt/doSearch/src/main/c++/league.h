@@ -67,7 +67,7 @@ public:
     }
 
 public:
-    Member(const QString& id = "", QObject* parent = 0): QObject(parent), m_id(id) {}
+    explicit Member(const QString& id = "", QObject* parent = 0): QObject(parent), m_id(id) {}
 
 private:
     QString m_id;
@@ -228,19 +228,21 @@ signals:
 //    void roomDumpReceived(const QString& roomId, );
 
 private slots:
-    void connected(int role);
-    void disconnected();
-    void checkReceived(const Offer& offer);
-    void inviteReceived(const Offer& offer);
-    void resumeReceived(const Offer& offer);
-    void cancelReceived(const Offer& offer);
-    void taskFinished();
-    void tagReceived(TaskTag* tag);
-    void patternReceived(AnswerPattern* pattern);
-    void messageReceived(const QString& room, const QString& id, const QString& from, const QString& text);
-    void imageReceived(const QString& room, const QString& id, const QString& from, const QUrl&);
-    void answerReceived(const QString& room, const QString& id, const QString& from, const QString&);
-    void progressReceived(const QString& room, const QString& id, const QString& from, const Progress&);
+    void onConnected(int role);
+    void onDisconnected();
+    void onCheck(const Offer& offer);
+    void onInvite(const Offer& offer);
+    void onResume(const Offer& offer);
+    void onCancel(const Offer& offer);
+    void onTaskFinished();
+
+    void onTag(TaskTag* tag);
+    void onPattern(AnswerPattern* pattern);
+    void onMessage(const QString& room, const QString& id, const QString& from, const QString& text);
+    void onImage(const QString& room, const QString& id, const QString& from, const QUrl&);
+    void onAnswer(const QString& room, const QString& id, const QString& from, const QString&);
+    void onProgress(const QString& room, const QString& id, const QString& from, const Progress&);
+    void onOffer(const QString& room, const QString& id, const Offer& offer);
 
     void onTasksAvailableChanged(int oldValue) {
         if (m_connection && m_connection->tasksAvailable() > 0 && oldValue < m_connection->tasksAvailable())
@@ -337,10 +339,10 @@ signals:
     void taskChanged() const;
 
 private slots:
-    void onRoomStatusReceived(const QString& roomId, int status);
-    void onFeedbackReceived(const QString& roomId, int feedback);
-    void onMessageReceived(const QString& roomId, const QString& author);
-    void onAssignmentReceived(const QString& roomId, const QString& expert, int role);
+    void onRoomStatus(const QString& roomId, int status);
+    void onFeedback(const QString& roomId, int feedback);
+    void onMessage(const QString& roomId, const QString& author);
+    void onAssignment(const QString& roomId, const QString& expert, int role);
 
 private:
     bool connectTo(xmpp::ExpLeagueConnection* connection);

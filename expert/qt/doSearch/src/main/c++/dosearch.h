@@ -60,7 +60,7 @@ public:
     Q_INVOKABLE WebPage* webPage(const QUrl& host) const;
     Q_INVOKABLE SearchRequest* search(const QString& query, int searchIndex = -1) const;
     Q_INVOKABLE SearchSession* session(SearchRequest* seed) const;
-    Q_INVOKABLE MarkdownEditorPage* document(Context* context, const QString& title, Member* member, bool editable, const QString& explicitId = "") const;
+    Q_INVOKABLE MarkdownEditorPage* document(const QString& title, Member* member, bool editable, const QString& explicitId = "") const;
 
     Q_INVOKABLE Context* createContext(const QString& name);
 

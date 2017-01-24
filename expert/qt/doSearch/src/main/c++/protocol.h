@@ -29,7 +29,10 @@ class AnswerPattern;
 namespace xmpp {
 
 inline QString user(const QString& jid) { return jid.section("@", 0, 0); }
-inline QString domain(const QString& jid) { return jid.section("@", 1).section("/", 0, 0); }
+inline QString domain(const QString& jid) {
+    QString domain = jid.section("@", 1).section("/", 0, 0);
+    return domain.startsWith("muc.") ? domain.mid(4) : domain;
+}
 inline QString resource(const QString& jid) { return jid.section("@", 1).section("/", 1); }
 
 class Progress {
@@ -84,7 +87,7 @@ public:
     void connect();
     void disconnect();
 
-    QString id() const { return m_jid.isEmpty() ? m_profile->login().replace('.', '_') : user(m_jid); }
+    QString id() const { return m_jid.isEmpty() ? m_profile->login().replace('.', '_') : xmpp::user(m_jid); }
 
     Member* find(const QString& id);
 
@@ -113,36 +116,38 @@ public:
     void sendUserRequest(const QString&);
 
     void sendPresence(const QString& room);
-
+    void sendOffer(const Offer& offer);
 signals:
-    // expert signals
-    void receiveCheck(const Offer& task);
-    void receiveInvite(const Offer& task);
-    void receiveResume(const Offer& task);
-    void receiveCancel(const Offer& offer);
+    // system commands
+    void check(const Offer& task);
+    void invite(const Offer& task);
+    void resume(const Offer& task);
+    void cancel(const Offer& offer);
 
-    void receiveMessage(const QString& room, const QString& id, const QString& from, const QString&);
-    void receiveImage(const QString& room, const QString& id, const QString& from, const QUrl&);
-    void receiveAnswer(const QString& room, const QString& id, const QString& from, const QString&);
-    void receiveProgress(const QString& room, const QString& id, const QString& from, const Progress&);
+    // task update signals
+    void offer(const QString& room, const QString& id, const Offer& offer);
+    void message(const QString& room, const QString& id, const QString& from, const QString&);
+    void image(const QString& room, const QString& id, const QString& from, const QUrl&);
+    void answer(const QString& room, const QString& id, const QString& from, const QString&);
+    void progress(const QString& room, const QString& id, const QString& from, const Progress&);
 
     // admin signals
     void tasksAvailableChanged(int oldValue);
 
     void roomStarted(const QString& roomId, const QString& topic, const QString& client);
-    void roomStatusReceived(const QString& roomId, int status);
-    void feedbackReceived(const QString& roomId, int feedback);
-    void messageReceived(const QString& roomId, const QString& author);
+    void roomStatus(const QString& roomId, int status);
+    void feedback(const QString& roomId, int feedback);
+    void messageNotification(const QString& roomId, const QString& author);
     void workStarted(const QString& roomId, Offer* offer, const QString& expert);
-    void assignmentReceived(const QString& roomId, const QString& expert, int role);
+    void assignment(const QString& roomId, const QString& expert, int role);
 
     // system signals
     void connected(int role);
     void disconnected();
 
-    void receiveUser(const Member&);
-    void receiveTag(TaskTag* tag);
-    void receivePattern(AnswerPattern* pattern);
+    void user(const Member&);
+    void tag(TaskTag* tag);
+    void pattern(AnswerPattern* pattern);
 
     void presenceChanged(const QString& user, bool available);
 
@@ -151,21 +156,18 @@ signals:
     void jidChanged(const QString&);
 
 public slots:
-    void error(QXmppClient::Error err);
-    void presenceReceived(const QXmppPresence& presence);
-    void iqReceived(const QXmppIq& iq);
-    void messageReceived(const QXmppMessage& msg);
-    void disconnectedSlot() {
+    void onError(QXmppClient::Error err);
+    void onPresence(const QXmppPresence& presence);
+    void onIQ(const QXmppIq& iq);
+    void onMessage(const QXmppMessage& msg);
+    void onDisconnected() {
         disconnect();
     }
-    void connectedSlot();
-private slots:
-    void registered() {
-        connect();
-    }
+    void onConnected();
 
-    void error(const QString& error) {
-        emit xmppError(error);
+private slots:
+    void onRegistered() {
+        connect();
     }
 
 public:

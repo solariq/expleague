@@ -172,9 +172,9 @@ Item {
                     }
                 }
 
-                ColumnLayout {
-                    anchors.fill: parent
+                RowLayout {
                     visible: !!selectedRoom
+                    anchors.fill: parent
                     spacing: 0
                     LeagueChat {
                         Layout.fillHeight: true
@@ -182,10 +182,13 @@ Item {
                         task: !!selectedRoom ? selectedRoom.task : null
                     }
                     Rectangle {
-                        id: tools
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 25
-                        color: Palette.toolsBackground
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: 300
+                        color: Palette.navigationColor
+                        OfferView {
+                            anchors.fill: parent
+                            task: !!selectedRoom ? selectedRoom.task : null
+                        }
                     }
                 }
             }

@@ -172,14 +172,14 @@ SearchRequest* doSearch::search(const QString& query, int searchIndex) const {
     return request;
 }
 
-MarkdownEditorPage* doSearch::document(Context* context, const QString& title, Member* author, bool editable, const QString& explicitId) const {
+MarkdownEditorPage* doSearch::document(const QString& title, Member* author, bool editable, const QString& explicitId) const {
     QString id = "document/" + (author ? author->id() : "local") + "/";
     if (explicitId.isEmpty())
         id = nextId(id);
     else
         id += explicitId;
-    return static_cast<MarkdownEditorPage*>(page(id, [title, author, context, editable](const QString& id, doSearch* parent){
-        return new MarkdownEditorPage(id, context, author, title, editable, parent);
+    return static_cast<MarkdownEditorPage*>(page(id, [title, author, editable](const QString& id, doSearch* parent){
+        return new MarkdownEditorPage(id, author, title, editable, parent);
     }));
 }
 
