@@ -419,7 +419,7 @@ void ExpLeagueConnection::sendPresence(const QString& room) {
 }
 
 void ExpLeagueConnection::sendOffer(const Offer& offer) {
-    QXmppMessage msg("", to);
+    QXmppMessage msg("", offer.roomJid());
     msg.setType(QXmppMessage::Normal);
 
     QDomDocument holder;
@@ -622,8 +622,8 @@ QDomElement Offer::toXml() const {
 
     if (m_location.isValid()) {
         QDomElement location = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "location");
-        location.setAttribute("latitude", QString::number(m_location->latitude()));
-        location.setAttribute("longitude", QString::number(m_location->longitude()));
+        location.setAttribute("latitude", QString::number(m_location.latitude()));
+        location.setAttribute("longitude", QString::number(m_location.longitude()));
         result.appendChild(location);
     }
 
@@ -639,10 +639,10 @@ QDomElement Offer::toXml() const {
         result.appendChild(patternDom);
     }
 
-    foreach(TaskTag* tag, m_patterns) {
+    foreach(TaskTag* tag, m_tags) {
         QDomElement tagDom = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "tag");
         tagDom.appendChild(holder.createTextNode(tag->name()));
-        result.appendChild(tagnDom);
+        result.appendChild(tagDom);
     }
 
     if (!m_filter.isEmpty()) {
@@ -685,7 +685,7 @@ Offer::Offer(const QString& client,
                    QList<TaskTag*> tags,
                    QList<AnswerPattern*> patterns,
                    const QString& comment)
-: m_room(room), m_client(client), m_topic(topic), m_urgency(urgency), m_local(local),
+: m_client(client), m_room(room), m_topic(topic), m_urgency(urgency), m_local(local),
   m_images(images), m_filter(filter), m_location(location), m_started(started),
   m_tags(tags), m_patterns(patterns), m_comment(comment)
 {}
@@ -730,7 +730,7 @@ Offer::Offer(QDomElement xml, QObject *parent): QObject(parent) {
                 m_filter[prefer.text()] = Offer::TFT_PREFER;
         }
         else if (element.tagName() == "patterns") {
-            AnswerPattern* const parrern = League::instance()->findPattern(element.text());
+            AnswerPattern* const pattern = League::instance()->findPattern(element.text());
             if (pattern)
                 m_patterns.append(pattern);
         }

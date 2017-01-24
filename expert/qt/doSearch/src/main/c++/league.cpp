@@ -390,10 +390,11 @@ League* Task::parent() const {
 }
 
 QStringList Task::filter(Offer::FilterType type) const {
-    QStringList banned;
+    QStringList filtered;
     for (auto expert = m_filter.begin(); expert != m_filter.end(); expert++)
         if (expert.value() == type)
-            banned.append(expert.key());
+            filtered.append(expert.key());
+    return filtered;
 }
 
 void Task::setOffer(Offer* offer) {
@@ -563,7 +564,7 @@ void Task::enter() const {
 }
 
 void Task::commitOffer(const QString &topic, const QString& comment, const QList<Member*>& selected) const {
-    QMap<QString, FilterType> filter = m_offer->m_filter;
+    QMap<QString, Offer::FilterType> filter = m_offer->m_filter;
     foreach(Member* expert, selected) {
         filter[expert->id()] = Offer::TFT_ACCEPT;
     }
@@ -571,7 +572,7 @@ void Task::commitOffer(const QString &topic, const QString& comment, const QList
     Offer offer(m_offer->client(),
                 m_offer->room(),
                 topic,
-                m_offer->urgency(),
+                m_offer->m_urgency,
                 m_offer->local(),
                 m_offer->images(),
                 filter,

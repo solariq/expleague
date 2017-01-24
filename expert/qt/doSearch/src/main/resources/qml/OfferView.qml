@@ -231,6 +231,7 @@ Item {
                 Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: parent.width - 20
+                    Layout.preferredHeight: topic.implicitHeight
                     Layout.maximumWidth: parent.width - 20
                     color: self.editable ? "white" : "transparent"
                     TextEdit {
@@ -249,6 +250,7 @@ Item {
                 Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: parent.width - 20
+                    Layout.preferredHeight: comment.implicitHeight
                     Layout.maximumWidth: parent.width - 20
                     color: self.editable ? "white" : "transparent"
                     TextEdit {

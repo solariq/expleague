@@ -85,10 +85,10 @@ public:
     QString client() const { return m_client; }
 
     bool local() const { return m_local; }
-    bool hasLocation() const { return m_location.get(); }
+    bool hasLocation() const { return m_location.isValid(); }
     QGeoCoordinate location() { return hasLocation() ? m_location : QGeoCoordinate(-10, 300); }
-    double longitude() const { return hasLocation() ? m_location->longitude() : -10; }
-    double latitude() const { return hasLocation() ? m_location->latitude() : -10; }
+    double longitude() const { return hasLocation() ? m_location.longitude() : -10; }
+    double latitude() const { return hasLocation() ? m_location.latitude() : -10; }
 
     QStringList images() const { return m_images; }
 
@@ -135,6 +135,7 @@ private slots:
 
 private:
     friend class xmpp::ExpLeagueConnection;
+    friend class Task;
 
     QString m_client;
     QString m_room;
@@ -178,7 +179,7 @@ public:
     QQmlListProperty<AnswerPattern> patterns() { return QQmlListProperty<AnswerPattern>(this, m_patterns); }
     QStringList phones() { return m_phones; }
 
-    QStringList banned() const { return filter(Offer::TFT_REJECT); }
+    QStringList banned() const { return this->filter(Offer::TFT_REJECT); }
     QStringList accepted() const { return filter(Offer::TFT_ACCEPT); }
     QStringList preferred() const { return filter(Offer::TFT_PREFER); }
 
@@ -242,7 +243,7 @@ public slots:
 
 private:
     Bubble* bubble(const QString& from);
-    QStringList filter(Offer::FilterType type);
+    QStringList filter(Offer::FilterType type) const;
 
 private:
     QString m_room;
@@ -254,6 +255,9 @@ private:
     QList<MarkdownEditorPage*> m_answers;
     QStringList m_phones;
     Context* m_context = 0;
+
+    QList<TaskTag*> m_tags;
+    QList<AnswerPattern*> m_patterns;
 };
 
 class ChatMessage: public QObject {
