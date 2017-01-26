@@ -210,6 +210,14 @@ public abstract class ExpLeagueOrder {
     public Stream<JID> experts() {
       return participants().filter(jid -> EnumSet.of(ACTIVE, CANDIDATE, CHECKING, INVITED).contains(role(jid)));
     }
+
+    public void status(Status status) {
+      ExpLeagueOrder.this.status(status);
+    }
+
+    public Status status() {
+      return ExpLeagueOrder.this.status();
+    }
   }
 
   public enum Role {

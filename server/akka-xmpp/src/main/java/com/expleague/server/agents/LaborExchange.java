@@ -67,11 +67,12 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
   @ActorMethod
   public void invoke(Operations.StatusChange notification) {
     if (!"experts".equals(sender().path().parent().name())) { // broker
+      final ExpLeagueOrder.Status orderStatus = ExpLeagueOrder.Status.valueOf(notification.taskState());
       final BrokerRole.State from = BrokerRole.State.valueOf(notification.from());
       final BrokerRole.State to = BrokerRole.State.valueOf(notification.to());
       if (from == BrokerRole.State.STARVING)
         status.brokerFed();
-      else if (to == BrokerRole.State.STARVING)
+      else if (to == BrokerRole.State.STARVING && orderStatus == ExpLeagueOrder.Status.OPEN)
         status.brokerStarving();
     }
     else { // expert

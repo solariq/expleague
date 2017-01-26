@@ -65,6 +65,13 @@ public class Stanza extends Item {
     return (T)clone;
   }
 
+  public <T extends Item> T copy(String idSuffix){
+    final Stanza clone = super.copy();
+    clone.id = id + "-" + idSuffix;
+    //noinspection unchecked
+    return (T)clone;
+  }
+
   public JID to() {
     return to;
   }
@@ -104,5 +111,15 @@ public class Stanza extends Item {
 
   public String id() {
     return id;
+  }
+
+  @Override
+  public int hashCode() {
+    return id.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof Stanza && ((Stanza)obj).id.equals(id);
   }
 }

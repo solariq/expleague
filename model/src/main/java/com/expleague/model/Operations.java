@@ -1,8 +1,10 @@
 package com.expleague.model;
 
 import com.expleague.xmpp.Item;
+import com.expleague.xmpp.JID;
 
 import javax.xml.bind.annotation.*;
+import java.util.Arrays;
 
 /**
  * User: solar
@@ -82,6 +84,9 @@ public class Operations {
   public static class Check extends Command {}
 
   @XmlRootElement
+  public static class Confirm extends Command {}
+
+  @XmlRootElement
   public static class Suspend extends Command {
     @XmlAttribute(name="start")
     private double startTimestamp;
@@ -148,7 +153,16 @@ public class Operations {
     @XmlAttribute
     private String to;
 
+    @XmlAttribute(name = "task-state")
+    private String taskState;
+
     public StatusChange() {}
+    public StatusChange(String from, String to, String taskState) {
+      this.from = from;
+      this.to = to;
+      this.taskState = taskState;
+    }
+
     public StatusChange(String from, String to) {
       this.from = from;
       this.to = to;
@@ -160,6 +174,99 @@ public class Operations {
 
     public String to() {
       return to;
+    }
+
+    public String taskState() {
+      return taskState;
+    }
+  }
+
+  @XmlRootElement
+  public static class Enter extends Item {
+    @XmlAttribute
+    private String expert;
+
+    public Enter() {}
+    public Enter(String expert) {
+      this.expert = expert;
+    }
+
+    public String expert() {
+      return expert;
+    }
+  }
+
+  @XmlRootElement
+  public static class Exit extends Item {
+    @XmlAttribute
+    private String expert;
+
+    public Exit() {}
+    public Exit(String expert) {
+      this.expert = expert;
+    }
+
+    public String expert() {
+      return expert;
+    }
+  }
+
+  @XmlRootElement(name = "offer-changed")
+  public static class OfferChanged extends Item {
+    @XmlAttribute
+    private String client;
+    @XmlElementRef
+    private Offer topic;
+
+    public OfferChanged() {}
+    public OfferChanged(JID client, Offer offer) {
+      this.client = client.local();
+      this.topic = offer;
+    }
+  }
+
+  @XmlRootElement(name = "room-state-changed")
+  public static class RoomStateChanged extends Item {
+    @XmlAttribute(name = "state")
+    private int stateCode;
+
+    public RoomStateChanged() {}
+    public RoomStateChanged(RoomState state) {
+      this.stateCode = state.code();
+    }
+
+    public RoomState state() {
+      return Arrays.stream(RoomState.values()).filter(state -> stateCode == state.code()).findFirst().orElse(null);
+    }
+  }
+
+  @XmlRootElement(name = "room-role-update")
+  public static class RoomRoleUpdate extends Item {
+    @XmlAttribute
+    private JID expert;
+
+    @XmlAttribute
+    private UserRole role;
+
+    public RoomRoleUpdate() {}
+    public RoomRoleUpdate(JID expert, UserRole role) {
+      this.expert = expert;
+      this.role = role;
+    }
+  }
+
+  @XmlRootElement(name = "room-message-received")
+  public static class RoomMessageReceived extends Progress {
+    @XmlAttribute
+    private String from;
+
+    public RoomMessageReceived() {}
+    public RoomMessageReceived(JID from) {
+      this.from = from.local();
+    }
+
+    public String from() {
+      return from;
     }
   }
 
