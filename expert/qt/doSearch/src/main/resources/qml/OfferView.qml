@@ -55,6 +55,15 @@ Item {
         task: self.task
     }
 
+    OfferDialog {
+        id: offerDialog
+        visible: false
+        text: topic.text
+        comment: comment.text
+
+        task: self.task
+    }
+
     TagsDialog {
         id: tagsDialog
         visible: false
@@ -166,7 +175,9 @@ Item {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/send.png"
                     highlightedIcon: "qrc:/tools/send_h.png"
-                    onTriggered: dosearch.main.showDialog(sendDialog)
+                    disabledIcon: "qrc:/tools/send_d.png"
+                    onTriggered: editable ? dosearch.main.showDialog(offerDialog) : dosearch.main.showDialog(sendDialog)
+                    enabled: editable || (task && task.answer && task.answer.text.indexOf("TODO") < 0)
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
@@ -243,7 +254,7 @@ Item {
                         color: Palette.selectedTextColor
                         text: offer ? offer.topic : ""
                         selectByMouse: true
-                        readOnly: self.editable
+                        readOnly: !self.editable
                     }
                 }
 
@@ -260,9 +271,9 @@ Item {
                         renderType: Text.NativeRendering
                         wrapMode: Text.WordWrap
                         color: Palette.selectedTextColor
-                        text: (!editable ? "Комментарий администратора: " : "") + (offer && offer.comment != "" ? offer.comment : "нет")
+                        text: (!editable ? "Комментарий администратора: " + (offer && offer.comment != "" ? offer.comment : "нет") : "")
                         selectByMouse: true
-                        readOnly: self.editable
+                        readOnly: !self.editable
                     }
                 }
 

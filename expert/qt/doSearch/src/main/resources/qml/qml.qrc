@@ -48,5 +48,6 @@
         <file>WindowStateSaver.qml</file>
         <file>SuggestDialog.qml</file>
         <file>GlobalChat.qml</file>
+        <file>OfferDialog.qml</file>
     </qresource>
 </RCC>

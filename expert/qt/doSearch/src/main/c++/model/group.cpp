@@ -46,7 +46,7 @@ void PagesGroup::setParentGroup(PagesGroup* group) {
 }
 
 void PagesGroup::insert(Page* page, int position) {
-    assert(position <= m_closed_start || position == 0);
+    assert(position <= m_closed_start || position < 0);
     int index = m_pages.indexOf(page);
     position = position < 0 ? m_closed_start : position;
     if (index >= 0 && index <= position)

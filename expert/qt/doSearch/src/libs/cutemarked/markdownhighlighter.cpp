@@ -104,12 +104,18 @@ void MarkdownHighlighter::checkSpelling(const QString &textBlock) {
     foreach (QString word, wordList) {
         index = textBlock.indexOf(word, index);
 
-        if (!spellChecker->isCorrect(word)) {
+        if (word == "TODO") {
             QTextCharFormat format = this->format(index);
-            format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-            format.setForeground(QBrush(QColor(255, 0, 0)));
+            format.setForeground(QBrush(QColor(0xCC, 0xCC, 0)));
             setFormat(index, word.length(), format);
         }
+        else if (!spellChecker->isCorrect(word)) {
+            QTextCharFormat format = this->format(index);
+            format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+            format.setForeground(QBrush(QColor(0xFF, 0xA0, 0x7A)));
+            setFormat(index, word.length(), format);
+        }
+
         index += word.length();
     }
 }

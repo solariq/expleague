@@ -136,6 +136,7 @@ signals:
 
     void roomStarted(const QString& roomId, const QString& topic, const QString& client);
     void roomStatus(const QString& roomId, int status);
+    void roomOffer(const QString& roomId, const Offer& offer);
     void feedback(const QString& roomId, int feedback);
     void messageNotification(const QString& roomId, const QString& author);
     void workStarted(const QString& roomId, Offer* offer, const QString& expert);

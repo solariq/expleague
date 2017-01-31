@@ -35,16 +35,14 @@
   #include <endian.h>
   #define PLATFORM_IS_LITTLE_ENDIAN  (_BYTE_ORDER == _LITTLE_ENDIAN)
 #else
-  #define PLATFORM_IS_LITTLE_ENDIAN  false
-//  #include <endian.h>
+  #include <endian.h>
 #endif
+
+#include <pthread.h>
 #ifdef SNAPPY
 #include <snappy.h>
 #endif
-#include <cstdint>
-
-typedef __int64 ssize_t;
-
+#include <stdint.h>
 #include <string>
 #include "port/atomic_pointer.h"
 
@@ -72,8 +70,6 @@ typedef __int64 ssize_t;
 // when targetting older platforms.
 #define fdatasync fsync
 #endif
-
-#include <pthread.h>
 
 namespace leveldb {
 namespace port {

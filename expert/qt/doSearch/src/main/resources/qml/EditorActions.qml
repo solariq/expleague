@@ -13,6 +13,7 @@ Item {
         return null
     }
 
+    property alias todo: todoAction
     property alias makeBold: makeBoldAction
     property alias makeItalic: makeItalicAction
     property alias insertHeader3: insertHeader3Action
@@ -24,6 +25,24 @@ Item {
     property alias makeEnumeration: makeEnumerationAction
     property alias makeList: makeListAction
     property alias insertTable: insertTableAction
+
+    Action {
+        id: todoAction
+        text: qsTr("Добавить метку")
+        tooltip: qsTr("Добавить метку")
+        iconSource: "qrc:/tools/todo.png"
+
+        shortcut: "Ctrl+/"
+        enabled: editor
+        onTriggered: {
+            editor.forceActiveFocus()
+            var start = editor.selectionStart
+            editor.remove(editor.selectionStart, editor.selectionEnd)
+            editor.insert(start, "TODO")
+            editor.forceActiveFocus()
+        }
+    }
+
 
     Action {
         id: makeBoldAction

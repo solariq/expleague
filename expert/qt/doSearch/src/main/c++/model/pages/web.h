@@ -57,6 +57,7 @@ public: // QML
     Q_INVOKABLE bool forwardShortcutToWebView(const QString& shortcut, QQuickItem* view);
     Q_INVOKABLE bool dragToWebView(QQuickDropEvent* drop, QQuickItem* view) const;
 //    Q_INVOKABLE bool dragToWebView(QQuickDropEvent* drop, QQuickItem* view) const;
+    Q_INVOKABLE void copyToClipboard(const QString& text) const;
     Q_INVOKABLE void open(QObject* request, bool newTab);
 
 public: // new functionality

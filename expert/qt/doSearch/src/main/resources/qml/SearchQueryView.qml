@@ -69,4 +69,9 @@ Item {
         if (visible)
             owner.serps[owner.selected].ui.forceActiveFocus()
     }
+
+    onFocusChanged: {
+        if (focus && visible)
+            owner.serps[owner.selected].ui.forceActiveFocus()
+    }
 }

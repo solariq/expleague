@@ -131,9 +131,9 @@ internal class ExpLeagueCommunicator: NSObject {
         switch state.status {
         case .acquiring where connectionAttempts > 30 && state.mode == .background,
              .connected where !profile.busy && state.mode == .background:
-            if (ExpLeagueCommunicator.DEBUG) {
+//            if (ExpLeagueCommunicator.DEBUG) {
                 print("Disconnecting")
-            }
+//            }
             stream?.disconnect()
             
         case .idle where state.mode == .foreground, .acquiring:
@@ -149,9 +149,9 @@ internal class ExpLeagueCommunicator: NSObject {
 
                 break
             }
-            if (ExpLeagueCommunicator.DEBUG) {
+//            if (ExpLeagueCommunicator.DEBUG) {
                 print("Connecting")
-            }
+//            }
             do {
                 try stream?.connect(withTimeout: XMPPStreamTimeoutNone)
             }
@@ -168,7 +168,7 @@ internal class ExpLeagueCommunicator: NSObject {
             }
         }
 //        if (ExpLeagueCommunicator.DEBUG) {
-            print("Communication tick. incoming: \(pending.count), outgoing: \(queue.count), state: (\(state.mode), \(state.status))")
+            print("Communication tick. incoming: \(pending.count), outgoing: \(queue.count), state: (\(state.mode), \(state.status)), profile busy: \(profile.busy)")
 //        }
     }
     

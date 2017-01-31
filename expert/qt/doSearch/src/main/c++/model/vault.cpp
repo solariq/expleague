@@ -15,6 +15,13 @@
 
 namespace expleague {
 
+void Knugget::setTitle(const QString& name) {
+    m_title = name;
+    store("knugget.title", name);
+    save();
+    emit titleChanged(name);
+}
+
 Knugget::Knugget(const QString& id, Page* source, const QString& uiQml, doSearch* parent): ContentPage(id, uiQml, parent), m_source(source) {
     store("knugget.source", source->id());
 }
@@ -23,6 +30,7 @@ Knugget::Knugget(const QString& id, const QString& uiQml, doSearch* parent): Con
     m_source = parent->page(value("knugget.source").toString());
     QVariant groupVar = value("knugget.group");
     m_group = groupVar.isNull() ? 0 : qobject_cast<GroupKnugget*>(parent->page(groupVar.toString()));
+    m_title = value("knugget.title").toString();
 }
 
 void Knugget::open() const {
@@ -34,6 +42,7 @@ void Knugget::open() const {
 void Knugget::setGroup(GroupKnugget *group) {
     m_group = group;
     store("knugget.group", group ? group->id() : QVariant());
+    save();
     emit groupChanged();
 }
 
@@ -128,6 +137,8 @@ void LinkKnugget::open() const {
 }
 
 QString LinkKnugget::title() const {
+    if (hasExplicitTitle())
+        return Knugget::title();
     if (!m_text.isEmpty())
         return m_text;
     else if (source() != parent()->empty())
@@ -202,7 +213,7 @@ void GroupKnugget::move(int from, int to) {
     emit itemsChanged();
 }
 
-void GroupKnugget::setName(const QString& name) {
+void GroupKnugget::setTitle(const QString& name) {
     m_name = name;
     Page::store("knugget.name", name);
     save();

@@ -114,5 +114,19 @@
         <file>tools/preview.png</file>
         <file>cross_h.png</file>
         <file>tools/back_h.png</file>
+        <file>status/chat.png</file>
+        <file>status/closed.png</file>
+        <file>status/confirmation.png</file>
+        <file>status/delivery.png</file>
+        <file>status/feedback.png</file>
+        <file>status/offer.png</file>
+        <file>status/open.png</file>
+        <file>status/response.png</file>
+        <file>status/work.png</file>
+        <file>vault/image.png</file>
+        <file>vault/link.png</file>
+        <file>vault/text.png</file>
+        <file>tools/todo.png</file>
+        <file>tools/send_d.png</file>
     </qresource>
 </RCC>

@@ -112,6 +112,11 @@ Item {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.insertTable
                 }
+                ToolbarButton {
+                    Layout.alignment: Qt.AlignVCenter
+                    action: editorActions.todo
+                }
+
 
                 Item {Layout.fillWidth: true}
             }
@@ -179,6 +184,23 @@ Item {
 
                             edit.insert(edit.cursorPosition, prefix)
                             event.accepted = true
+                        }
+                        else if (event.key === Qt.Key_F2) {
+                            var nextTodo = editor.text.substring(edit.cursorPosition + 1).indexOf("TODO")
+                            if (nextTodo >= 0) {
+                                event.accepted = true
+                                editor.cursorPosition += nextTodo + 1
+                            }
+                            else {
+                                var firstTodo = editor.text.indexOf("TODO")
+                                if (firstTodo >= 0) {
+                                    event.accepted = true
+                                    editor.cursorPosition = firstTodo
+                                }
+                            }
+                            if (event.accepted) {
+                                editor.selectWord()
+                            }
                         }
                     }
 

@@ -411,7 +411,10 @@ void NavigationManager::unfold() {
     while ((next = current->selectedPage())) {
         m_selected = next;
         PagesGroup* nextGroup = m_active_context->associated(next, false);
-        if (!nextGroup || nextGroup->empty() || m_groups.contains(nextGroup) || !nextGroup->selectedPage())
+        if (!nextGroup)
+            break;
+        nextGroup->setParentGroup(current); // during setParentGroup the visible contents can be changed if pages are visible at the above level
+        if (nextGroup->empty() || m_groups.contains(nextGroup) || !nextGroup->selectedPage())
             break;
         appendGroup(nextGroup);
         current = nextGroup;

@@ -134,6 +134,26 @@ Rectangle {
                     onClicked: urlTools.redirectIndex--
                 }
             }
+            Button {
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: 15
+                Layout.preferredHeight: 15
+                padding: 3
+                focusPolicy: Qt.NoFocus
+                indicator: Image {
+                    height: 10
+                    width: 10
+                    anchors.centerIn: parent
+                    source: "qrc:/tools/paste.png"
+                }
+                background: Rectangle {
+                    color: Palette.activeColor
+                    radius: Palette.radius
+                }
+
+                onClicked: owner.copyToClipboard(urlText.text)
+            }
+
             Item {Layout.preferredWidth: 3}
             Rectangle {
                 Layout.preferredHeight: parent.height - 4

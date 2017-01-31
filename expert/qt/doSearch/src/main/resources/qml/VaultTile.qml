@@ -14,6 +14,7 @@ Item {
         property Item ui: Item {}
         property string title: ""
         property string md: ""
+        property string icon: ""
     }
 
     property real size: 10
@@ -54,21 +55,41 @@ Item {
         visible: false
         anchors.horizontalCenter: parent.horizontalCenter
         y: size / 2
-        width: size * 10 - (caption.visible ? caption.height : 0)
+        width: size * 10 - (caption.visible || captionEdit.visible ? caption.height : 0)
         height: width
 
         property real size: self.size
 
-        children: [item.uiNoCache]
-        onChildrenChanged: {
-            for (var i in children) {
-                var child = children[i]
-                child.visible = true
-                child.parent = thumbnail
-                child.width = Qt.binding(function () {return thumbnail.width})
-                child.height = Qt.binding(function () {return thumbnail.height})
-                child.enabled = false
-                child.size = Qt.binding(function () {return self.size})
+        Item {
+            anchors.fill: parent
+            children: [item.uiNoCache]
+            onChildrenChanged: {
+                for (var i in children) {
+                    var child = children[i]
+                    child.visible = true
+                    child.parent = thumbnail
+                    child.width = Qt.binding(function () {return thumbnail.width})
+                    child.height = Qt.binding(function () {return thumbnail.height})
+                    child.enabled = false
+                    child.size = Qt.binding(function () {return self.size})
+                }
+            }
+        }
+        Rectangle {
+            color: Qt.rgba(1, 1, 1, 0.8)
+            width: 30
+            height: 30
+            x: thumbnail.width - width
+            y: 0
+            z: 10
+            radius: Math.min(thumbnail.size, 6)
+            visible: !notitles && size > 5
+
+            Image {
+                anchors.centerIn: parent
+                width: 15
+                height: 15
+                source: item.icon
             }
         }
 
@@ -76,6 +97,7 @@ Item {
             PropertyAnimation {properties: "width,height"; easing.type: Easing.InOutQuad }
         }
     }
+
     Text {
         id: caption
         visible: !notitles && size > 5
@@ -89,6 +111,37 @@ Item {
         elide: Text.ElideRight
         color: "white"
         font.pixelSize: 12
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                captionEdit.selectAll()
+                captionEdit.forceActiveFocus()
+            }
+        }
+    }
+    TextField {
+        id: captionEdit
+        visible: captionEdit.activeFocus
+        anchors.centerIn: caption
+        text: item.title
+        height: implicitHeight + 2
+        z: 10
+        width: size * 10
+        color: "black"
+        font.pixelSize: 12
+        focus: false
+        background: Rectangle {
+            color: "white"
+        }
+        Keys.onEscapePressed: {
+            event.accepted = true
+            focus = false
+        }
+        Keys.onReturnPressed: {
+            event.accepted
+            item.setTitle(captionEdit.text)
+            focus = false
+        }
     }
 
     Rectangle {

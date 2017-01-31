@@ -18,7 +18,9 @@ class Knugget: public ContentPage {
 public:
     Page* source() const {return m_source;}
     virtual QString md() const = 0;
-    QString title() const { return m_source->title(); }
+
+    QString title() const { return m_title.isEmpty() ? m_source->title() : m_title; }
+    Q_INVOKABLE virtual void setTitle(const QString& name);
 
     GroupKnugget* group() const { return m_group; }
     void setGroup(GroupKnugget* group);
@@ -31,11 +33,13 @@ protected:
     Knugget(const QString& id, Page* source, const QString& uiQml, doSearch* parent);
     Knugget(const QString& id, const QString& uiQml, doSearch* parent);
 
+    bool hasExplicitTitle() const { return !m_title.isEmpty(); }
 private:
     friend class Vault;
 
     GroupKnugget* m_group = 0;
     Page* m_source;
+    QString m_title;
 };
 
 class TextKnugget: public Knugget {
@@ -45,6 +49,7 @@ class TextKnugget: public Knugget {
 public:
     QString text() const { return m_text; }
     QString md() const;
+    QString icon() const { return "qrc:/vault/text.png";}
 
 public:
     TextKnugget(const QString& id, doSearch* parent);
@@ -66,6 +71,7 @@ public:
     QUrl url() const { return m_link; }
     QString screenshot() const;
     void open() const;
+    QString icon() const { return "qrc:/vault/link.png";}
 
     QString title() const;
 
@@ -96,6 +102,7 @@ public:
     QUrl src() const { return m_src; }
     QString alt() const { return m_alt; }
     QString md() const;
+    QString icon() const { return "qrc:/vault/image.png";}
 
 public:
     ImageKnugget(const QString& id, doSearch* parent);
@@ -115,7 +122,7 @@ public:
     QString title() const { return m_name; }
     QString md() const;
 
-    Q_INVOKABLE void setName(const QString& name);
+    Q_INVOKABLE void setTitle(const QString& name);
 
     QQmlListProperty<Knugget> itemsQml() const { return QQmlListProperty<Knugget>(const_cast<GroupKnugget*>(this), const_cast<QList<Knugget*>&>(m_items)); }
 

@@ -15,94 +15,112 @@ Item {
 
     Component {
         id: roomCard
-        Rectangle {
+        Item {
             id: roomCardSelf
             property bool adminHere: modelData.occupied
-            color: "white"
             implicitHeight: 75
             implicitWidth: 350
-            ColumnLayout {
+
+            Rectangle {
+                anchors.fill: parent
+                color: "white"
+                z: -1
+            }
+
+            RowLayout {
                 anchors.fill: parent
                 spacing: 0
-                RowLayout {
+                ColumnLayout {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-                    Item {
-                        Layout.alignment: Qt.AlignVCenter
-                        Layout.preferredHeight: 45
-                        Layout.preferredWidth: 45
-                        Avatar {
-                            id: clientAva
-                            anchors.centerIn: parent
-                            size: 33
-                            user: client
-                        }
-                    }
-                    Item {
+                    spacing: 0
+                    RowLayout {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.left: parent.left
-                            id: topic
-                            text: modelData.topic
+                        Item { Layout.preferredWidth: 3 }
+                        Item {
+                            Layout.alignment: Qt.AlignVCenter
+                            Layout.preferredHeight: 45
+                            Layout.preferredWidth: 45
+                            Avatar {
+                                id: clientAva
+                                anchors.centerIn: parent
+                                size: 33
+                                user: client
+                            }
                         }
+                        Item {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.left: parent.left
+                                id: topic
+                                text: modelData.topic
+                            }
+                        }
+                        Item { Layout.preferredWidth: 3 }
                     }
-                    Item {
-                        Layout.alignment: Qt.AlignVCenter
-                        Layout.preferredHeight: 45
-                        Layout.preferredWidth: 45
+                    RowLayout {
+                        Layout.preferredHeight: 25
+                        Layout.fillWidth: true
+                        spacing: 0
+                        Item { Layout.preferredWidth: 2 }
                         Text {
-                            anchors.centerIn: parent
-                            id: status
-                            text: modelData.status.toString()
+                            Layout.preferredWidth: implicitWidth
+                            Layout.preferredHeight: implicitHeight
+                            Layout.alignment: Qt.AlignVCenter
+                            text : qsTr("Админы:")
+                            font.pixelSize: 12
                         }
-                        Text {
-                            id: eta
-                            anchors.top: status.bottom
-                            anchors.horizontalCenter: status.horizontalCenter
-                            renderType: Text.NativeRendering
-                            wrapMode: Text.WordWrap
-                            text: qsTr("Время")
-//                            {
-//                                var offer = !!offerCard ? offerCard.offer : null
-//                                if (!offer)
-//                                    return ""
-//                                var d = new Date(Math.abs(offer.timeLeft))
-//                                return (offer.timeLeft > 0 ? "" : "-") + (d.getUTCHours() + (d.getUTCDate() - 1) * 24) + qsTr(" ч. ") + d.getUTCMinutes() + qsTr(" мин.")
-//                            }
-//                            color: {
-//                                var offer = !!roomCard ? offerCard.offer : null
-//                                if (!offer)
-//                                    return textColor
-
-//                                var urgency = Math.sqrt(Math.max(offer.timeLeft/offer.duration, 0))
-//                                return Qt.rgba(textColor.r + (1 - textColor.r) * urgency, textColor.g * urgency, textColor.b * urgency, textColor.a + (1 - textColor.a) * urgency)
-//                            }
+                        Item { Layout.preferredWidth: 2 }
+                        ListView {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            id: adminsList
+                            model: modelData.admins
+                            delegate: Avatar {
+                                size: index != adminsList.model.length - 1 || !roomCardSelf.adminHere ? 20 : 23
+                                user: modelData
+                            }
                         }
                     }
                 }
-                RowLayout {
-                    Layout.preferredHeight: 25
-                    Layout.fillWidth: true
-                    spacing: 0
-                    Item { Layout.preferredWidth: 2 }
-                    Text {
-                        Layout.preferredWidth: implicitWidth
-                        Layout.preferredHeight: implicitHeight
-                        Layout.alignment: Qt.AlignVCenter
-                        text : qsTr("Админы:")
-                        font.pixelSize: 12
+                Item {
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredHeight: 45
+                    Layout.preferredWidth: 45
+                    Image {
+                        anchors.centerIn: parent
+                        height: 25
+                        width: 25
+                        id: status
+                        source: {
+                            var statuses = ["open", "chat", "response", "confirmation", "offer", "work", "delivery", "feedback", "cloded"]
+                            return "qrc:/status/" + statuses[modelData.status] + ".png"
+                        }
                     }
-                    Item { Layout.preferredWidth: 2 }
-                    ListView {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        id: adminsList
-                        model: modelData.admins
-                        delegate: Avatar {
-                            size: index != adminsList.model.length - 1 || !roomCardSelf.adminHere ? 20 : 23
-                            user: modelData
+                    Text {
+                        id: eta
+                        anchors.top: status.bottom
+                        anchors.horizontalCenter: status.horizontalCenter
+                        renderType: Text.NativeRendering
+                        wrapMode: Text.WordWrap
+                        property color textColor: "black"
+                        text: {
+                            var offer = modelData.task.offer
+                            if (!offer)
+                                return ""
+                            var d = new Date(Math.abs(offer.timeLeft))
+                            return (offer.timeLeft > 0 ? "" : "-") + (d.getUTCHours() + (d.getUTCDate() - 1) * 24) + qsTr(" ч. ") + d.getUTCMinutes() + qsTr(" мин.")
+                        }
+                        color: {
+                            var offer = modelData.task.offer
+                            if (!offer)
+                                return textColor
+
+                            var urgency = Math.sqrt(Math.max(offer.timeLeft/offer.duration, 0))
+                            return Qt.rgba(textColor.r + (1 - textColor.r) * urgency, textColor.g * urgency, textColor.b * urgency, textColor.a + (1 - textColor.a) * urgency)
                         }
                     }
                 }
@@ -148,8 +166,9 @@ Item {
                         visible: !!roomsList.currentItem
                         width: roomsList.width
                         height: 76
-                        color: "#E1EDFE"
+                        color: Qt.rgba(225/256, 237/256, 254/256, 0.5)
                         y: visible ? roomsList.currentItem.y : 0
+                        z: 10
                     }
                     footer: Item {
                         height: Math.max(0, roomsList.parent.height - roomsList.model.length * 75)
@@ -188,6 +207,7 @@ Item {
                         OfferView {
                             anchors.fill: parent
                             task: !!selectedRoom ? selectedRoom.task : null
+                            editable: true
                         }
                     }
                 }

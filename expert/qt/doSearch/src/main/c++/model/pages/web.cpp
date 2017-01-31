@@ -14,6 +14,7 @@
 #include <QDropEvent>
 #include <QMimeData>
 #include <QApplication>
+#include <QClipboard>
 
 #include <QRegularExpression>
 
@@ -136,6 +137,10 @@ bool WebPage::forwardToWebView(int key,
 
     QCoreApplication::sendEvent(target, &event);
     return event.isAccepted();
+}
+
+void WebPage::copyToClipboard(const QString& text) const {
+    QApplication::clipboard()->setText(text);
 }
 
 class QQuickDropEventOpen: public QObject {

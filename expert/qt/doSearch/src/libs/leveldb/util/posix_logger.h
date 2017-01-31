@@ -10,8 +10,7 @@
 
 #include <algorithm>
 #include <stdio.h>
-//#include <sys/time.h>
-#include <winsock2.h>
+#include <sys/time.h>
 #include <time.h>
 #include "leveldb/env.h"
 

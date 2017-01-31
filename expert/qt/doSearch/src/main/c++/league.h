@@ -219,6 +219,7 @@ signals:
     void roleChanged(League::Role role);
     void profileChanged(Profile* profile);
     void receivedInvite(Offer* offer);
+    void tasksChanged();
     void tasksAvailableChanged();
 
     Q_INVOKABLE void profilesChanged();
@@ -243,6 +244,7 @@ private slots:
     void onAnswer(const QString& room, const QString& id, const QString& from, const QString&);
     void onProgress(const QString& room, const QString& id, const QString& from, const Progress&);
     void onOffer(const QString& room, const QString& id, const Offer& offer);
+    void onRoomOffer(const QString& room, const Offer& offer);
 
     void onTasksAvailableChanged(int oldValue) {
         if (m_connection && m_connection->tasksAvailable() > 0 && oldValue < m_connection->tasksAvailable())
@@ -291,8 +293,7 @@ class RoomState: public QObject {
     Q_PROPERTY(bool occupied READ occupied NOTIFY occupiedChanged)
     Q_PROPERTY(int feedback READ feedback NOTIFY feedbackChanged)
     Q_PROPERTY(expleague::RoomState::Status status READ status NOTIFY statusChanged)
-
-    Q_PROPERTY(expleague::Task* task READ task NOTIFY taskChanged)
+    Q_PROPERTY(expleague::Task* task READ task CONSTANT)
 
     Q_ENUMS(Status)
 
@@ -321,7 +322,7 @@ public:
 
     Status status() const { return m_status; }
 
-    Q_INVOKABLE Task* enter();
+    Q_INVOKABLE void enter();
     QString roomId() const { return xmpp::user(m_jid); }
 
 public:
@@ -336,7 +337,6 @@ signals:
     void occupiedChanged() const;
     void statusChanged(expleague::RoomState::Status status) const;
     void feedbackChanged() const;
-    void taskChanged() const;
 
 private slots:
     void onRoomStatus(const QString& roomId, int status);

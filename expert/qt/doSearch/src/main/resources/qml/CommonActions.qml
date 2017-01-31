@@ -10,6 +10,7 @@ Item {
     property alias instance: self
     property Action closeTab: closeTabAction
     property Action copy: copyAction
+    property Action copyToEditor: copyToEditorAction
     property Action paste: pasteAction
     property Action cut: cutAction
     property Action selectAll: selectAllAction
@@ -103,6 +104,38 @@ Item {
             else if (webView) {
                 webView.triggerWebAction(WebEngineView.Copy)
             }
+        }
+    }
+
+    Action {
+        id: copyToEditorAction
+        text: qsTr("Скопировать в редактор")
+        shortcut: "Ctrl+Shift+C"
+        enabled: !!dosearch.navigation.context.document
+        onTriggered: {
+            var focusedWeb = focusWebView()
+            var focusedEditor = focusEditor()
+            if (focusedWeb) {
+                focusedWeb.triggerWebAction(WebEngineView.Copy)
+            }
+            else if (focusedEditor) {
+                focusedEditor.copy()
+            }
+            else if (editor && editor.selectionStart != editor.selectionEnd) {
+                editor.copy()
+            }
+            else if (webView) {
+                webView.triggerWebAction(WebEngineView.Copy)
+            }
+            var document
+            if (!!dosearch.navigation.context.task)
+                document = dosearch.navigation.context.task.answer
+            else
+                document = dosearch.navigation.context.document
+            dosearch.main.delay(100, function () {
+                if (document)
+                    document.ui.editor.pasteMD()
+            })
         }
     }
 

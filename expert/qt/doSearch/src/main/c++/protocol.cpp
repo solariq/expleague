@@ -144,6 +144,7 @@ void ExpLeagueConnection::onIQ(const QXmppIq& iq) {
 }
 
 enum Command {
+    ELC_NONE,
     ELC_RESUME,
     ELC_CANCEL,
     ELC_INVITE,
@@ -176,7 +177,8 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg) {
                 cmd = ELC_INVITE;
             }
             else if (xml.localName() == "offer") {
-                offer.reset(new Offer(xml));
+                offer.reset(new Offer(xml));                
+                cmd = cmd == ELC_NONE ? ELC_CHECK : cmd;
             }
             else if (xml.localName() == "answer") {
                 text = xml.text();
@@ -234,16 +236,16 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg) {
     if (!!offer && (!msg.from().contains('@') || cmd != ELC_CHECK)) { // message from system
         switch (cmd) {
         case ELC_CANCEL:
-            cancel(*offer);
+            emit cancel(*offer);
             break;
         case ELC_CHECK:
-            check(*offer);
+            emit check(*offer);
             break;
         case ELC_INVITE:
-            invite(*offer);
+            emit invite(*offer);
             break;
         case ELC_RESUME:
-            resume(*offer);
+            emit resume(*offer);
             break;
         default:
             qWarning() << "Unhandeled command: " << cmd << " while offer received";
@@ -253,38 +255,41 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg) {
         if (room == "global-chat") {
             switch(cmd) {
             case ELC_ENTER:
-                assignment(from, sender, League::ADMIN);
+                emit assignment(from, sender, League::ADMIN);
                 break;
             case ELC_EXIT:
-                assignment(from, sender, League::NONE);
+                emit assignment(from, sender, League::NONE);
                 break;
             case ELC_ROOM_STATUS:
-                roomStatus(from, status);
+                emit roomStatus(from, status);
                 break;
             case ELC_ROOM_CREATE:
-                roomStarted(from, text, sender);
+                emit roomStarted(from, text, sender);
                 break;
             case ELC_ROOM_MESSAGE:
-                messageNotification(from, sender);
+                emit messageNotification(from, sender);
+                break;
+            case ELC_CHECK:
+                emit roomOffer(from, *offer);
                 break;
             default:
                 qWarning() << "Unhandeled command: " << cmd << " in global chat: " << msg;
             }
         }
         else if (!!offer) {
-            this->offer(room, msg.id(), *offer);
+            emit this->offer(room, msg.id(), *offer);
         }
         else if (!text.isEmpty()) {
-            this->answer(room, msg.id(), from, text);
+            emit this->answer(room, msg.id(), from, text);
         }
         else if (!progress.empty()) {
-            this->progress(room, msg.id(), from, progress);
+            emit this->progress(room, msg.id(), from, progress);
         }
         else if (image.isValid()) {
-            this->image(room, msg.id(), from, image);
+            emit this->image(room, msg.id(), from, image);
         }
         else if (!msg.body().isEmpty()) {
-            this->message(room, msg.id(), from, msg.body());
+            emit this->message(room, msg.id(), from, msg.body());
         }
     }
     if (msg.isReceiptRequested()) {
@@ -367,6 +372,7 @@ void ExpLeagueConnection::sendSuspend(Offer *offer, long seconds) {
 void ExpLeagueConnection::sendMessage(const QString& to, const QString& text) {
     QXmppMessage msg(jid(), to, text);
     msg.setType(QXmppMessage::GroupChat);
+    msg.setReceiptRequested(true);
     m_client->sendPacket(msg);
     onMessage(msg);
 }

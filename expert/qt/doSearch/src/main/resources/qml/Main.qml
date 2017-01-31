@@ -21,7 +21,7 @@ ApplicationWindow {
     property alias editorActionsRef: editorActions
     property alias screenRef: screen
     property alias sidebarRef: sidebar
-    property bool options: false
+    property bool options: !!dosearch.navigation.context.task ? true : false
     property real rightMargin: 0
     property real leftMargin: 0
     property string dragType: ""
@@ -252,6 +252,15 @@ ApplicationWindow {
 
             MenuSeparator{}
             MenuItem {
+                action: commonActions.showEditor
+            }
+
+            MenuItem {
+                action: commonActions.showVault
+            }
+
+            MenuSeparator{}
+            MenuItem {
                 action: commonActions.searchInternet
             }
             MenuItem {
@@ -289,6 +298,9 @@ ApplicationWindow {
             }
             MenuItem {
                 action: commonActions.copy
+            }
+            MenuItem {
+                action: commonActions.copyToEditor
             }
             MenuItem {
                 action: commonActions.paste
@@ -333,6 +345,9 @@ ApplicationWindow {
             }
             MenuItem {
                 action: editorActions.insertTable
+            }
+            MenuItem {
+                action: editorActions.todo
             }
         }
     }

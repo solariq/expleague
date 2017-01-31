@@ -166,7 +166,7 @@ class Task: public QObject {
     Q_PROPERTY(QStringList accepted READ accepted NOTIFY filterChanged)
     Q_PROPERTY(QStringList preferred READ preferred NOTIFY filterChanged)
 
-    Q_PROPERTY(expleague::MarkdownEditorPage* answer READ answer CONSTANT)
+    Q_PROPERTY(expleague::MarkdownEditorPage* answer READ answer NOTIFY answerChanged)
 
 public:
     Offer* offer() const { return m_offer; }
@@ -226,10 +226,12 @@ signals:
     void cancelled();
 
     void filterChanged();
+    void answerChanged();
 
 public slots:
     void setAnswer(MarkdownEditorPage* answer) {
         m_answer = answer;
+        emit answerChanged();
     }
     void setOffer(Offer* offer);
 
@@ -249,7 +251,7 @@ private:
     QString m_room;
     Offer* m_offer;
     QList<Bubble*> m_chat;
-    MarkdownEditorPage* m_answer;
+    MarkdownEditorPage* m_answer = 0;
 
     QMap<QString, Offer::FilterType> m_filter;
     QList<MarkdownEditorPage*> m_answers;

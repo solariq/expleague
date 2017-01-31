@@ -174,15 +174,23 @@ PagesGroup* Context::suggest(Page* root) const {
     }
     PagesGroup* suggest = new PagesGroup(root, PagesGroup::SUGGEST, const_cast<Context*>(this));
     PagesGroup* associated = const_cast<Context*>(this)->associated(root, false);
-    if (associated)
-        foreach (Page* page, associated->pages())
+    if (associated) {
+        foreach (Page* page, associated->pages()) {
             if (!associated->closed(page))
                 suggest->insert(page);
+        }
+    }
     for (int i = 0; i < pages.size(); i++) {
         Page* const page = pages[i];
         if (parent()->history()->recent(page) != this)
             continue;
         suggest->insert(page);
+    }
+    if (associated) {
+        foreach (Page* page, associated->pages()) {
+            if (associated->closed(page))
+                suggest->remove(page);
+        }
     }
     return suggest;
 }

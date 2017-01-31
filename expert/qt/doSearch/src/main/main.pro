@@ -21,7 +21,7 @@
 # mkdir temp
 # mv ./doSearch.app/ ./temp/
 # hdiutil create -volname doSearch -srcfolder ./temp/ -ov -format UDZO doSearch.dmg
-VERSION = 0.7.12
+VERSION = 0.7.18
 
 QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine xml multimedia webenginecore
 QT_PRIVATE += quick-private webengine-private
@@ -31,6 +31,8 @@ target.path += ../../bin
 TARGET = doSearch
 TEMPLATE = app
 
+macx:QMAKE_LFLAGS_RPATH=
+macx:QMAKE_LFLAGS += -rpath @loader_path/../Frameworks
 ICON = resources/doSearch.icns
 RC_ICONS = resources/doSearch.ico
 QMAKE_TARGET_BUNDLE_PREFIX=com.expleague
@@ -39,8 +41,6 @@ QMAKE_CXXFLAGS += -DQXMPP_STATIC
 
 macx: CONFIG += static objective_c
 else:win32: CONFIG += static console
-
-macx:QMAKE_RPATHDIR += /Users/solar/Qt/5.6/clang_64/lib/
 
 SOURCES += \
     c++/main.cpp \

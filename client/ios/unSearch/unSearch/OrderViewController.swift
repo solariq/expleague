@@ -21,7 +21,6 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
     
     @IBAction func fire(_ sender: AnyObject) {
         orderDescription.endEditing(true)
-        FBSDKAppEvents.logEvent("Issue order")
         let controller = self.childViewControllers[0] as! OrderDescriptionViewController;
         guard controller.orderTextDelegate!.validate() else {
             return
@@ -44,6 +43,7 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
             return
         }
         
+        FBSDKAppEvents.logEvent("Issue order", parameters: ["user": ExpLeagueProfile.active.jid.user])
         ExpLeagueProfile.active.placeOrder(
             topic: controller.orderText.text,
             urgency: controller.urgency.isOn ? "asap" : "day",

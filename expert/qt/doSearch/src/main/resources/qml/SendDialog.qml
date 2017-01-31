@@ -52,7 +52,7 @@ Window {
         Item {Layout.preferredHeight: 20}
         Text {
             Layout.alignment: Qt.AlignHCenter
-            text: qsTr("Подготовка к отправке задания")
+            text: qsTr("Подготовка к отправке ответа")
             font.bold: true
             font.pointSize: 14
         }

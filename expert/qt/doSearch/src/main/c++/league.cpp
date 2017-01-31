@@ -72,6 +72,7 @@ void League::connect() {
     QObject::connect(m_connection, SIGNAL(offer(QString,QString,Offer)), SLOT(onOffer(QString,QString,Offer)));
     QObject::connect(m_connection, SIGNAL(tasksAvailableChanged(int)), SLOT(onTasksAvailableChanged(int)));
     QObject::connect(m_connection, SIGNAL(roomStarted(QString,QString,QString)), SLOT(onRoomStarted(QString,QString,QString)));
+    QObject::connect(m_connection, SIGNAL(roomOffer(QString,Offer)), SLOT(onRoomOffer(QString,Offer)));
     QObject::connect(m_connection, SIGNAL(presenceChanged(QString,bool)), SLOT(onPresenceChanged(QString,bool)));
     m_connection->connect();
     m_reconnect = true;
@@ -232,6 +233,10 @@ void League::onOffer(const QString& room, const QString& id, const Offer& offer)
     if (m_known_ids.contains(id))
         return;
     m_known_ids.insert(id);
+    onRoomOffer(room, offer);
+}
+
+void League::onRoomOffer(const QString& room, const Offer& offer) {
     Offer* roffer = registerOffer(offer);
     Task* const task = this->task(room);
     task->setOffer(roffer);
@@ -341,9 +346,10 @@ Task* League::task(const QString& roomId) {
     auto existing = m_tasks.find(room);
     if (existing != m_tasks.end())
         return existing.value();
-    qDebug() << "Creating task for room: " << room;
+//    qDebug() << "Creating task for room: " << room;
     Task* const newOne = new Task(room + "@muc." + xmpp::domain(m_connection->jid()), this);
     m_tasks[room] = newOne;
+    emit tasksChanged();
     return newOne;
 }
 
@@ -748,6 +754,8 @@ public:
         start();
     }
 
+    ~ImagesStorePrivate() { terminate(); wait(); }
+
 private:
     QMultiMap<QString, ImagesStoreResponse*> m_pending;
     QList<QNetworkReply*> m_replies;
@@ -872,16 +880,12 @@ bool RoomState::connectTo(xmpp::ExpLeagueConnection* connection) {
     return true;
 }
 
-Task* RoomState::enter() {
-    Task* const task = parent()->task(roomId());
-    task->enter();
-    m_task = task;
-    emit taskChanged();
-    return task;
+void RoomState::enter() {
+    m_task->enter();
 }
 
 RoomState::RoomState(const QString& id, Member* client, const QString& topic, League* parent):
     QObject(parent),
-    m_jid(id), m_client(client), m_topic(topic)
+    m_jid(id), m_client(client), m_topic(topic), m_task(parent->task(id))
 {}
 }

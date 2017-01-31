@@ -130,7 +130,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                     }
                 }
                 else if (msg.type == .expertCancel) {
-                    expertModel!.status = .canceled
+                    expertModel?.status = .canceled
                     expertModel = nil
                 }
                 else if (msg.type == .expertProgress) {

@@ -107,11 +107,29 @@ Item {
                         color: popup.visible ? Palette.selectedColor: Palette.idleColor
                     }
 
-                    indicator: Image {
+                    indicator: ColumnLayout {
+                        spacing: 0
+                        width: Math.max(count.implicitWidth, 7)
+                        height: count.implicitHeight + 4
                         anchors.centerIn: parent
-                        width: 7
-                        height: 4
-                        source: "qrc:/tools/rollup-menu-arrow.png"
+                        anchors.verticalCenterOffset: hiddenCount > 0 ? -2 : 0
+                        property int hiddenCount: self.activePages.length - self.visiblePages.length
+                        Text {
+                            id: count
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.preferredWidth: implicitWidth
+                            Layout.preferredHeight: implicitHeight
+                            text: "" + parent.hiddenCount
+                            font.pixelSize: 8
+                            visible: parent.hiddenCount > 0
+
+                        }
+                        Image {
+                            Layout.preferredWidth: 7
+                            Layout.preferredHeight: 4
+                            Layout.alignment: Qt.AlignHCenter
+                            source: "qrc:/tools/rollup-menu-arrow.png"
+                        }
                     }
                     property real closedTime: 0
                     onClicked: {
