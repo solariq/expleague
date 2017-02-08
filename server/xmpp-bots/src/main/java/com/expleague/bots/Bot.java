@@ -142,8 +142,8 @@ public class Bot {
 
     jaxmpp.getEventBus().addHandler(JaxmppCore.DisconnectedHandler.DisconnectedEvent.class, sessionObject -> latch.advance());
     jaxmpp.send(iq);
-    latch.state(2, 1);
     jaxmpp.disconnect();
+    latch.state(2, 1);
   }
 
   public BareJID jid() {
