@@ -50,7 +50,7 @@ public class InMemRoster implements Roster {
       }
     }
     if (associated == null) {
-      associated = new XMPPUser(query.username(), query.country(), query.city(), query.name(), 0, 0, new Date(), query.avatar());
+      associated = new XMPPUser(query.username(), query.country(), query.city(), query.name(), 0, 0, new Date(), query.avatar(), false);
       users.put(associated.id(), associated);
       log.log(Level.INFO, "Created new user " + associated.name());
     }

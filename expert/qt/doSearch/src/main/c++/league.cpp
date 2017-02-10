@@ -71,7 +71,6 @@ void League::connect() {
     QObject::connect(m_connection, SIGNAL(progress(QString,QString,QString,Progress)), SLOT(onProgress(QString,QString,QString,Progress)));
     QObject::connect(m_connection, SIGNAL(offer(QString,QString,Offer)), SLOT(onOffer(QString,QString,Offer)));
     QObject::connect(m_connection, SIGNAL(tasksAvailableChanged(int)), SLOT(onTasksAvailableChanged(int)));
-    QObject::connect(m_connection, SIGNAL(roomStarted(QString,QString,QString)), SLOT(onRoomStarted(QString,QString,QString)));
     QObject::connect(m_connection, SIGNAL(roomOffer(QString,Offer)), SLOT(onRoomOffer(QString,Offer)));
     QObject::connect(m_connection, SIGNAL(presenceChanged(QString,bool)), SLOT(onPresenceChanged(QString,bool)));
     m_connection->connect();
@@ -157,7 +156,7 @@ void League::onInvite(const Offer& offer) {
 
 Offer* League::registerOffer(const Offer& offer) {
     QString roomId = offer.room();
-    if (m_offers.contains(roomId))
+    if (m_offers.contains(roomId) && *m_offers[roomId] == offer)
         return m_offers[roomId];
     Offer* result = m_offers[roomId] = new Offer(offer.toXml(), this);
     result->start();
@@ -169,12 +168,17 @@ void League::onDisconnected() {
         return;
     m_connection->deleteLater();
     m_connection = 0;
-    foreach(Task* task, m_tasks.values())
-        task->stop();
     foreach (RoomState* state, m_rooms) {
         state->deleteLater();
     }
     m_rooms.clear();
+    m_admin_focus = QString();
+
+    foreach(Task* task, m_tasks.values()) {
+        task->stop();
+        task->deleteLater();
+    }
+    m_tasks.clear();
     emit roomsChanged();
     m_status = LS_OFFLINE;
     emit statusChanged(m_status);
@@ -330,19 +334,8 @@ void League::notifyIfNeeded(const QString& from, const QString& message, bool br
     }
 }
 
-void League::onRoomStarted(const QString& roomId, const QString& topic, const QString& client) {
-    for (auto it = m_rooms.begin(); it != m_rooms.end(); it++) {
-        if ((*it)->roomId() == roomId)
-            return; // already exists
-    }
-    RoomState* room = new RoomState(roomId + "@muc." + xmpp::domain(static_cast<xmpp::ExpLeagueConnection*>(sender())->jid()), findMember(client), topic, this);
-    m_rooms.append(room);
-    room->connectTo(m_connection);
-    emit roomsChanged();
-}
-
 Task* League::task(const QString& roomId) {
-    QString room = xmpp::user(roomId);
+    QString room = roomId.contains("@") ? xmpp::user(roomId) : roomId;
     auto existing = m_tasks.find(room);
     if (existing != m_tasks.end())
         return existing.value();
@@ -350,6 +343,10 @@ Task* League::task(const QString& roomId) {
     Task* const newOne = new Task(room + "@muc." + xmpp::domain(m_connection->jid()), this);
     m_tasks[room] = newOne;
     emit tasksChanged();
+    RoomState* roomState = new RoomState(newOne, this);
+    m_rooms.append(roomState);
+    roomState->connectTo(m_connection);
+    emit roomsChanged();
     return newOne;
 }
 
@@ -385,6 +382,14 @@ QUrl League::imageUrl(const QString& imageId) const {
     return m_store->url(imageId);
 }
 
+void League::setAdminFocus(const QString& room) {
+    if (!m_admin_focus.isNull() && m_connection)
+        m_connection->sendPresence(m_admin_focus, false);
+    m_admin_focus = room;
+    if (!m_admin_focus.isNull() && m_connection)
+        m_connection->sendPresence(m_admin_focus, true);
+}
+
 Task::Task(Offer* offer, QObject* parent): QObject(parent), m_room(offer->room()), m_offer(offer) {
     QObject::connect(offer, SIGNAL(cancelled()), this, SLOT(cancelReceived()));
 }
@@ -404,7 +409,8 @@ QStringList Task::filter(Offer::FilterType type) const {
 }
 
 void Task::setOffer(Offer* offer) {
-    QObject::disconnect(m_offer);
+    if (m_offer)
+        QObject::disconnect(m_offer);
     QObject::connect(offer, SIGNAL(cancelled()), this, SLOT(cancelReceived()));
     m_offer = offer;
     emit offerChanged();
@@ -439,6 +445,21 @@ void Task::imageReceived(const QString& from, const QUrl& id) {
     emit chatChanged();
 }
 
+bool operator ==(const Offer& left, const Offer& right) {
+    return  left.m_client == right.m_client &&
+            left.m_room == right.m_room &&
+            left.m_topic == right.m_topic &&
+            left.m_urgency == right.m_urgency &&
+            left.m_local == right.m_local &&
+            left.m_images == right.m_images &&
+            left.m_filter == right.m_filter &&
+            left.m_location == right.m_location &&
+            left.m_started == right.m_started &&
+            left.m_tags == right.m_tags &&
+            left.m_patterns == right.m_patterns &&
+            left.m_comment == right.m_comment;
+}
+
 template <typename T>
 void change(QList<T>& container, const T& item, xmpp::Progress::Operation operation) {
     switch(operation) {
@@ -469,6 +490,10 @@ void Task::progressReceived(const QString&, const xmpp::Progress& progress) {
     case xmpp::Progress::PO_URL:
         break;
     }
+}
+
+Member* Task::client() const {
+    return m_offer ? parent()->findMember(xmpp::user(m_offer->client())) : 0;
 }
 
 void Task::setContext(Context *context) {
@@ -566,7 +591,7 @@ void Task::stop() {
 }
 
 void Task::enter() const {
-    parent()->connection()->sendPresence(m_room);
+    parent()->setAdminFocus(m_room);
 }
 
 void Task::commitOffer(const QString &topic, const QString& comment, const QList<Member*>& selected) const {
@@ -576,7 +601,7 @@ void Task::commitOffer(const QString &topic, const QString& comment, const QList
     }
 
     Offer offer(m_offer->client(),
-                m_offer->room(),
+                m_offer->roomJid(),
                 topic,
                 m_offer->m_urgency,
                 m_offer->local(),
@@ -820,15 +845,11 @@ QUrl League::normalizeImageUrlForUI(const QUrl& imageUrl) const {
     return imageUrl;
 }
 
-void RoomState::onRoomStatus(const QString& id, int status) {
+void RoomState::onStatus(const QString& id, int status) {
     if (id != roomId())
         return;
     m_status = (Status)status;
     emit statusChanged(m_status);
-    if (m_status == WORK) {
-        m_orders++;
-        emit ordersChanged();
-    }
 }
 
 void RoomState::onFeedback(const QString& id, int feedback) {
@@ -845,38 +866,46 @@ void RoomState::onMessage(const QString& id, const QString& author) {
     emit unreadChanged(m_unread);
 }
 
-void RoomState::onAssignment(const QString& id, const QString& expert, int iRole) {
+void RoomState::onPresence(const QString& id, const QString& expert, const QString& roleStr, const QString& affiliationStr) {
     if (id != roomId())
         return;
-    League::Role role = (League::Role)iRole;
-    Member* const member = parent()->findMember(expert);
-    switch (role) {
-    case League::ADMIN:
-        if (m_admins.indexOf(member) != m_admins.size() - 1) {
-            m_admins.removeOne(member);
-            m_admins.append(member);
-            emit participantsChanged();
+    xmpp::Affiliation::Enum affiliation = (xmpp::Affiliation::Enum)QMetaEnum::fromType<xmpp::Affiliation::Enum>().keyToValue(affiliationStr.toLatin1().constData());
+    xmpp::Role::Enum role = (xmpp::Role::Enum)QMetaEnum::fromType<xmpp::Role::Enum>().keyToValue(roleStr.toLatin1().constData());
+    if (affiliation == Affiliation::owner)
+        return;
+    Member* const member = parent()->findMember(xmpp::user(expert));
+    if ((role != Role::none) != m_occupied.contains(member)) {
+        if (m_occupied.contains(member)) {
+            if (affiliation == Affiliation::none) {
+                m_involved.removeOne(member);
+                emit involvedChanged();
+            }
+
+            m_occupied.removeOne(member);
         }
-        if (!m_admin_active) {
-            m_admin_active = true;
-            emit occupiedChanged();
-        }
-        break;
-    default:
-        if (m_admin_active) {
-            m_admin_active = false;
-            emit occupiedChanged();
-        }
+        else
+            m_occupied.append(member);
+        emit occupiedChanged();
+    }
+    if ((affiliation != Affiliation::none || role != Role::none) && !m_involved.contains(member)) {
+        m_involved.append(member);
+        emit involvedChanged();
     }
 }
 
+void RoomState::onOfferChanged() {
+    m_involved.removeAll(m_task->client());
+    emit clientChanged();
+    emit topicChanged();
+}
+
 bool RoomState::connectTo(xmpp::ExpLeagueConnection* connection) {
-    if (xmpp::domain(m_jid) != xmpp::domain(connection->jid()))
+    if (xmpp::domain(jid()) != xmpp::domain(connection->jid()))
         return false;
-    connect(connection, SIGNAL(roomStatus(QString,int)), SLOT(onRoomStatus(QString,int)));
-    connect(connection, SIGNAL(feedback(QString,int)), SLOT(onFeedback(QString,int)));
-    connect(connection, SIGNAL(messageNotification(QString,QString)), SLOT(onMessage(QString,QString)));
-    connect(connection, SIGNAL(assignment(QString,QString,int)), SLOT(onAssignment(QString,QString,int)));
+    connect(connection, SIGNAL(roomStatus(QString,int)), SLOT(onStatus(QString,int)));
+    connect(connection, SIGNAL(roomFeedback(QString,int)), SLOT(onFeedback(QString,int)));
+    connect(connection, SIGNAL(roomMessage(QString,QString)), SLOT(onMessage(QString,QString)));
+    connect(connection, SIGNAL(roomPresence(QString,QString,QString,QString)), SLOT(onPresence(QString,QString,QString,QString)));
     return true;
 }
 
@@ -884,8 +913,9 @@ void RoomState::enter() {
     m_task->enter();
 }
 
-RoomState::RoomState(const QString& id, Member* client, const QString& topic, League* parent):
-    QObject(parent),
-    m_jid(id), m_client(client), m_topic(topic), m_task(parent->task(id))
-{}
+RoomState::RoomState(Task* task, League* parent):
+    QObject(parent), m_task(task)
+{
+    QObject::connect(m_task, SIGNAL(offerChanged()), this, SLOT(onOfferChanged()));
+}
 }

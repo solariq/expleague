@@ -1,0 +1,187 @@
+package com.expleague.server.agents;
+
+import akka.actor.ActorContext;
+import com.expleague.model.*;
+import com.expleague.model.Operations.*;
+import com.expleague.server.XMPPDevice;
+import com.expleague.xmpp.Item;
+import com.expleague.xmpp.JID;
+import com.expleague.xmpp.muc.MucHistory;
+import com.expleague.xmpp.muc.MucXData;
+import com.expleague.xmpp.stanza.Message;
+import com.expleague.xmpp.stanza.Message.MessageType;
+import com.expleague.xmpp.stanza.Presence;
+import com.expleague.xmpp.stanza.Stanza;
+
+import java.util.*;
+import java.util.logging.Logger;
+
+import static com.expleague.model.RoomState.*;
+
+/**
+ * User: solar
+ * Date: 16.12.15
+ * Time: 13:18
+ */
+@SuppressWarnings("UnusedParameters")
+public class GlobalChatAgent extends RoomAgent {
+  private static final Logger log = Logger.getLogger(GlobalChatAgent.class.getName());
+  public static final String ID = "global-chat";
+  public Map<String, RoomStatus> rooms = new HashMap<>();
+
+  public GlobalChatAgent(JID jid) {
+    super(jid, XMPP.jid());
+  }
+
+  public static boolean isTrusted(JID from) {
+    final XMPPDevice device = XMPPDevice.fromJid(from);
+    return device != null && device.role() == XMPPDevice.Role.ADMIN;
+  }
+
+  @Override
+  protected boolean filter(Presence pres) {
+    final JID from = pres.from();
+    if (isRoom(from))
+      return true;
+
+    if (isTrusted(pres.from())) {
+      if (!pres.has(MucXData.class)) {
+        final MucXData xData = new MucXData(Affiliation.MEMBER, Role.PARTICIPANT);
+        xData.append(new MucHistory());
+        pres.append(xData);
+      }
+    }
+    return super.filter(pres);
+  }
+
+  @Override
+  public Role role(JID jid) {
+    if (isRoom(jid) || isTrusted(jid))
+      return Role.PARTICIPANT;
+    return super.role(jid);
+  }
+
+  @Override
+  protected void process(Message msg) {
+    if (!isRoom(msg.from())) {
+      super.process(msg);
+      return;
+    }
+    final RoomStatus status = rooms.compute(msg.from().local(), (local, s) -> s != null ? s : new RoomStatus());
+    status.ts(msg.ts());
+    final int changes = status.changes();
+    if (msg.has(OfferChange.class))
+      status.offer(msg.get(Offer.class));
+    if (msg.has(RoomStateChanged.class))
+      status.state(msg.get(RoomStateChanged.class).state());
+    if (msg.has(Feedback.class))
+      status.feedback(msg.get(Feedback.class).stars());
+    if (msg.has(RoomRoleUpdate.class)) {
+      final RoomRoleUpdate update = msg.get(RoomRoleUpdate.class);
+      status.affiliation(update.expert().local(), update.affiliation());
+    }
+    if (changes < status.changes())
+      super.process(msg);
+  }
+
+  @Override
+  public List<Stanza> archive() {
+    final List<Stanza> result = new ArrayList<>();
+    rooms.forEach((id, status) -> {
+      if (status.currentOffer != null)
+        result.add(status.message(id));
+    });
+    return result;
+  }
+
+  @Override
+  protected void onStart() {
+    super.archive().stream()
+        .filter(msg -> msg instanceof Message)
+        .forEach(msg -> process((Message)msg));
+    rooms.forEach((room, state) -> {
+      if (EnumSet.of(OPEN, CHAT, RESPONSE, WORK).contains(state.state))
+        XMPP.whisper(XMPP.muc(room), new RoomAgent.Awake(), context()); // wake up room
+    });
+    super.onStart();
+  }
+
+  public static void tell(JID from, Item item, ActorContext context) {
+    XMPP.send(new Message(from, XMPP.jid(ID), MessageType.GROUP_CHAT, item), context);
+  }
+
+  public static void tell(JID from, Stanza item, ActorContext context) {
+    XMPP.send(item, context);
+  }
+
+  @Override
+  protected boolean relevant(Stanza msg, JID to) {
+    return !isRoom(to) && super.relevant(msg, to); // rooms must not see what happens at global chat
+  }
+
+  private boolean isRoom(JID from) {
+    return from.domain().startsWith("muc.");
+  }
+
+  private static class RoomStatus {
+    private Offer currentOffer;
+    private RoomState state = OPEN;
+    private Map<String, Affiliation> affiliations = new HashMap<>();
+    private Map<String, Role> roles = new HashMap<>();
+    private long modificationTs = -1;
+    private int changes = 0;
+    private int feedback = 0;
+
+    public void affiliation(String id, Affiliation affiliation) {
+      affiliations.compute(id, (i, a) -> a == null || affiliation != null && affiliation.priority() < a.priority() ? affiliation : a);
+      changes++;
+    }
+
+    public void role(String id, Role role) {
+      roles.put(id, role);
+      changes++;
+    }
+
+    public void ts(long ts) {
+      modificationTs = Math.max(ts, modificationTs);
+    }
+
+    public int changes() {
+      return changes;
+    }
+
+    public void offer(Offer offer) {
+      currentOffer = offer;
+      changes++;
+    }
+
+    public void state(RoomState state) {
+      this.state = state;
+      changes++;
+    }
+
+    public Stanza message(String id) {
+      final Message result = new Message("global-" + id + "-" + (modificationTs/1000));
+      result.type(MessageType.GROUP_CHAT);
+      result.append(currentOffer);
+      result.append(new RoomStateChanged(state));
+      result.from(XMPP.muc(id));
+      if (feedback > 0)
+        result.append(new Feedback(feedback));
+
+      final Set<String> ids = new HashSet<>(roles.keySet());
+      ids.addAll(affiliations.keySet());
+      for (final String nick: ids) {
+        final Role role = roles.getOrDefault(nick, Role.NONE);
+        final Affiliation affiliation = affiliations.getOrDefault(nick, Affiliation.NONE);
+        final RoomRoleUpdate update = new RoomRoleUpdate(XMPP.jid(nick), role, affiliation);
+        result.append(update);
+      }
+      return result;
+    }
+
+    public void feedback(int stars) {
+      this.feedback = stars;
+    }
+  }
+}

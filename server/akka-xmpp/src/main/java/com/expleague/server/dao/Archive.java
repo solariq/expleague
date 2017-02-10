@@ -21,6 +21,7 @@ public interface Archive {
 
   interface Dump {
     void accept(Stanza stanza);
+    void commit();
     Stream<Stanza> stream();
     JID owner();
   }

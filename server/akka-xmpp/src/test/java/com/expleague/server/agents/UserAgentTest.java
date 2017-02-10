@@ -97,8 +97,7 @@ public class UserAgentTest extends ActorSystemTestCase {
       expectMsgClass(Presence.class);
 
       // send message to jid1
-      final Iq<Operations.Ok> iq = Iq.create(jid1, Iq.IqType.GET, new Operations.Ok());
-      iq.from(jid2);
+      final Iq<Operations.Ok> iq = Iq.create(jid1, jid2, Iq.IqType.GET, new Operations.Ok());
       userAgentRef1.tell(iq, getRef());
       expectMsgEquals(iq);
     }};
@@ -125,8 +124,7 @@ public class UserAgentTest extends ActorSystemTestCase {
       expectMsgClass(Presence.class);
 
       // send message to jid1
-      final Iq<Operations.Ok> iq = Iq.create(jid1, Iq.IqType.GET, new Operations.Ok());
-      iq.from(jid2);
+      final Iq<Operations.Ok> iq = Iq.create(jid1, jid2, Iq.IqType.GET, new Operations.Ok());
       actorRef.tell(iq, getRef());
       expectMsgEquals(iq);
 
@@ -164,8 +162,7 @@ public class UserAgentTest extends ActorSystemTestCase {
       expectMsgClass(Presence.class);
 
       // send message to jid1
-      final Iq<Operations.Ok> iq = Iq.create(jid1, Iq.IqType.GET, new Operations.Ok());
-      iq.from(jid2);
+      final Iq<Operations.Ok> iq = Iq.create(jid1, jid2, Iq.IqType.GET, new Operations.Ok());
       actorRef.tell(iq, getRef());
       expectMsgEquals(iq);
     }};

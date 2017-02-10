@@ -294,6 +294,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
 
   @NotNull
   private XMPPUser createUser(ResultSet resultSet, int offset) throws SQLException {
+    final boolean trusted = resultSet.getBoolean(offset + 9);
     return new XMPPUser(
         resultSet.getString(offset + 1),
         resultSet.getString(offset + 2),
@@ -302,7 +303,8 @@ public class MySQLRoster extends MySQLOps implements Roster {
         resultSet.getInt(offset + 5),
         resultSet.getInt(offset + 6),
         resultSet.getTimestamp(offset + 7),
-        resultSet.getString(offset + 8)
+        resultSet.getString(offset + 8),
+        trusted
     );
   }
 }

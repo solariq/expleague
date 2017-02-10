@@ -119,7 +119,15 @@ public class Presence extends Stanza implements AnyHolder {
 
   @Override
   public List<? super Item> any() {
-    return this.any != null ? this.any : Collections.emptyList();
+    return this.any != null ? this.any : (this.any = new ArrayList<>());
+  }
+
+  public <T extends Item> T copy(String idSuffix){
+    final Presence clone = super.copy(idSuffix);
+    if (any != null)
+      clone.any = new ArrayList<>(any);
+    //noinspection unchecked
+    return (T)clone;
   }
 
   /**

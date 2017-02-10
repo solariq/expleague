@@ -8,6 +8,8 @@ import com.expleague.model.Delivered;
 import com.expleague.model.Operations;
 import com.expleague.server.Subscription;
 import com.expleague.server.XMPPDevice;
+import com.expleague.server.agents.subscription.ClientSubscription;
+import com.expleague.server.agents.subscription.DefaultSubscription;
 import com.expleague.server.notifications.NotificationsManager;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.PersistentActorAdapter;
@@ -31,7 +33,7 @@ import java.util.logging.Logger;
 public class UserAgent extends PersistentActorAdapter {
   private static final Logger log = Logger.getLogger(UserAgent.class.getName());
   private final JID bareJid;
-  private final List<XMPPDevice> connected = new ArrayList<>();
+  private final Map<String, XMPPDevice> connected = new HashMap<>();
   private Map<String, Subscription> subscriptions = new HashMap<>();
 
   public UserAgent(JID jid) {
@@ -73,25 +75,33 @@ public class UserAgent extends PersistentActorAdapter {
         self().forward(status, context());
         return;
       }
-      connected.add(status.device);
+      connected.put(resource, status.device);
       final ActorRef courierRef = context().actorOf(
           PersistentActorContainer.props(Courier.class, status.device, sender()),
           actorResourceAddr
       );
-      final Subscription subscription;
-      if (status.device.expert())
-        subscription = new DefaultSubscription(bareJid);
-      else
-        subscription = new ClientSubscription(bareJid);
+      Subscription subscription = null;
+      switch (status.device.role()) {
+        case ADMIN:
+          XMPP.send(new Presence(deviceJid, XMPP.jid(GlobalChatAgent.ID), true), context());
+        case EXPERT:
+          subscription = new DefaultSubscription(bareJid);
+          break;
+        case CLIENT:
+          subscription = new ClientSubscription(bareJid);
+          break;
+      }
       subscriptions.put(resource, subscription);
       XMPP.subscribe(subscription, context());
       sender().tell(courierRef, self());
+      invoke(new Presence(deviceJid, true));
     }
     else {
       if (option.isDefined())
         context().stop(option.get());
-      connected.remove(status.device);
-      invoke(new Presence(deviceJid, false));
+      connected.remove(resource);
+      if (connected.isEmpty())
+        invoke(new Presence(deviceJid, false));
       final Subscription subscription = subscriptions.remove(resource);
       if (subscription != null) {
         XMPP.unsubscribe(subscription, context());
@@ -101,7 +111,7 @@ public class UserAgent extends PersistentActorAdapter {
 
   @ActorMethod
   public void devices(Class<XMPPDevice> clazz) {
-    sender().tell(connected.toArray(new XMPPDevice[connected.size()]), self());
+    sender().tell(connected.values().toArray(new XMPPDevice[connected.size()]), self());
   }
 
   @ActorMethod
@@ -117,12 +127,17 @@ public class UserAgent extends PersistentActorAdapter {
 
   @ActorMethod
   public void invoke(final Delivered delivered) {
-    persist(delivered, param -> {});
+    if (delivered.resource() != null) // delivered to the concrete device
+      persist(delivered, param -> {});
   }
 
   private void toWorld(Stanza stanza) {
+    final JID from = stanza.from();
+    if (from == null)
+      stanza.from(jid());
     XMPP.send(stanza, context());
-    if (!(stanza instanceof Iq) && stanza.from().resource().endsWith("expert"))
+    final XMPPDevice device = device(stanza.from());
+    if (!(stanza instanceof Iq) && device != null && device.expert())
       LaborExchange.Experts.tellTo(jid(), stanza, self(), context());
   }
 
@@ -135,6 +150,10 @@ public class UserAgent extends PersistentActorAdapter {
       NotificationsManager.send((Message)stanza, context());
   }
 
+  private XMPPDevice device(JID from) {
+    return connected.get(from.resource());
+  }
+
   @Override
   public String persistenceId() {
     return bareJid.getAddr();
@@ -145,6 +164,7 @@ public class UserAgent extends PersistentActorAdapter {
     private final ActorRef connection;
     private Deque<Stanza> deliveryQueue = new ArrayDeque<>();
     private Set<String> confirmationAwaitingStanzas = new HashSet<>();
+    private Map<String, Stanza> inFlight = new HashMap<>();
 
     public Courier(XMPPDevice connectedDevice, ActorRef connection) {
       this.connectedDevice = connectedDevice;
@@ -175,6 +195,8 @@ public class UserAgent extends PersistentActorAdapter {
     public void invoke(final Delivered delivered) {
       final String id = delivered.id();
       if (confirmationAwaitingStanzas.remove(id)) {
+        final Stanza remove = inFlight.remove(id);
+        XMPP.whisper(remove.from(), new Delivered(id), context());
         nextChunk();
         context().parent().forward(delivered, context());
         NotificationsManager.delivered(id, connectedDevice, context());
@@ -204,6 +226,7 @@ public class UserAgent extends PersistentActorAdapter {
           break;
         confirmationAwaitingStanzas.add(poll.id());
         connection.tell(poll, self());
+        inFlight.put(poll.id(), poll);
       }
       while(!(border = isDeliveryOrderRequired(poll)));
     }

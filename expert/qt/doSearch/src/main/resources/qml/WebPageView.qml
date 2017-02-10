@@ -410,6 +410,10 @@ Rectangle {
                         webEngineView.visible = true
                 }
 
+                Keys.onPressed: {
+                    event.accepted = true
+                }
+
                 onJavaScriptConsoleMessage: {}
 
                 Timer {

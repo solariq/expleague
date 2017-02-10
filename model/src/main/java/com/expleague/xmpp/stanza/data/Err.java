@@ -8,6 +8,8 @@
 
 package com.expleague.xmpp.stanza.data;
 
+import org.jetbrains.annotations.Nullable;
+
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
@@ -66,10 +68,10 @@ public class Err extends Item {
 
   public Err() {}
 
-  public Err(Cause cause, ErrType type, String message) {
+  public Err(Cause cause, ErrType type, @Nullable String message) {
     this.cause = cause;
     this.type = type;
-    this.text = new Text("en", message);
+    this.text = message != null ? new Text("en", message) : null;
   }
 
   @XmlEnum
@@ -96,6 +98,7 @@ public class Err extends Item {
   @XmlEnum
   public enum Cause {
     CONFLICT,
+    NOT_ALLOWED,
     INTERNAL_SERVER_ERROR;
     public static class CauseAdapter extends XmlAdapter<JAXBElement<?>, Cause> {
       @Override

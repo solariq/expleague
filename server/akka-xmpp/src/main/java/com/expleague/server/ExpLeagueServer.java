@@ -2,7 +2,9 @@ package com.expleague.server;
 
 import akka.actor.ActorSystem;
 import com.expleague.server.admin.ExpLeagueAdminService;
+import com.expleague.server.agents.GlobalChatAgent;
 import com.expleague.server.agents.LaborExchange;
+import com.expleague.server.agents.RoomAgent;
 import com.expleague.server.agents.XMPP;
 import com.expleague.server.dao.Archive;
 import com.expleague.server.dao.PatternsRepository;

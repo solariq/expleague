@@ -7,6 +7,8 @@
 
 #include <QMap>
 
+#include <QObject>
+
 #include <QDomElement>
 #include <QDateTime>
 #include <QPixmap>
@@ -28,12 +30,38 @@ class AnswerPattern;
 
 namespace xmpp {
 
-inline QString user(const QString& jid) { return jid.section("@", 0, 0); }
+inline QString user(const QString& jid) { return jid.contains("@") ? jid.section("@", 0, 0) : QString(); }
 inline QString domain(const QString& jid) {
     QString domain = jid.section("@", 1).section("/", 0, 0);
     return domain.startsWith("muc.") ? domain.mid(4) : domain;
 }
 inline QString resource(const QString& jid) { return jid.section("@", 1).section("/", 1); }
+
+class Affiliation: public QObject {
+    Q_OBJECT
+public:
+    enum Enum {
+        owner,
+        admin,
+        member,
+        visitor,
+        none,
+        outcast
+    };
+    Q_ENUM(Enum);
+};
+
+class Role: public QObject {
+    Q_OBJECT
+public:
+    enum Enum {
+        moderator,
+        participant,
+        visitor,
+        none,
+    };
+    Q_ENUM(Enum);
+};
 
 class Progress {
 public:
@@ -115,7 +143,7 @@ public:
 
     void sendUserRequest(const QString&);
 
-    void sendPresence(const QString& room);
+    void sendPresence(const QString& room, bool available = true);
     void sendOffer(const Offer& offer);
 signals:
     // system commands
@@ -134,13 +162,11 @@ signals:
     // admin signals
     void tasksAvailableChanged(int oldValue);
 
-    void roomStarted(const QString& roomId, const QString& topic, const QString& client);
+    void roomPresence(const QString& roomId, const QString& expert, const QString& role, const QString& affiliation);
+    void roomMessage(const QString& roomId, const QString& from);
     void roomStatus(const QString& roomId, int status);
     void roomOffer(const QString& roomId, const Offer& offer);
-    void feedback(const QString& roomId, int feedback);
-    void messageNotification(const QString& roomId, const QString& author);
-    void workStarted(const QString& roomId, Offer* offer, const QString& expert);
-    void assignment(const QString& roomId, const QString& expert, int role);
+    void roomFeedback(const QString& roomId, int stars);
 
     // system signals
     void connected(int role);

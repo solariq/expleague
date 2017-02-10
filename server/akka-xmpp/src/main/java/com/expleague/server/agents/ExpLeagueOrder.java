@@ -253,6 +253,7 @@ public abstract class ExpLeagueOrder {
   }
 
   public enum Status {
+    NONE(-1),
     OPEN(0),
     IN_PROGRESS(1),
     SUSPENDED(2),

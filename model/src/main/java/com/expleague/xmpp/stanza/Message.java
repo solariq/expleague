@@ -127,6 +127,10 @@ public class Message extends Stanza implements AnyHolder {
     this.any.addAll(Arrays.asList(items));
   }
 
+  public Message(String id) {
+    super(id);
+  }
+
   public MessageType type() {
     return type;
   }
@@ -138,6 +142,15 @@ public class Message extends Stanza implements AnyHolder {
   public String body() {
     final Body t = get(Body.class);
     return t != null ? t.value : "";
+  }
+
+
+  public <T extends Item> T copy(String idSuffix){
+    final Message clone = super.copy(idSuffix);
+    if (any != null)
+      clone.any = new ArrayList<>(any);
+    //noinspection unchecked
+    return (T)clone;
   }
 
   @Override

@@ -11,7 +11,10 @@ import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
 import com.expleague.server.Subscription;
 import com.expleague.server.XMPPDevice;
-import com.expleague.util.akka.*;
+import com.expleague.util.akka.ActorAdapter;
+import com.expleague.util.akka.ActorMethod;
+import com.expleague.util.akka.AkkaTools;
+import com.expleague.util.akka.PersistentActorContainer;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
@@ -78,19 +81,28 @@ public class XMPP extends ActorAdapter<UntypedActor> {
     }
   }
 
-  public static boolean online(JID jid, ActorContext context) {
-    try {
-      final Timeout timeout = Timeout.apply(5, TimeUnit.SECONDS);
-      final Future<Object> future = Patterns.ask(context.actorSelection(XMPP_ACTOR_PATH), Pair.create(jid, XMPPDevice.class), timeout);
-      final XMPPDevice[] result = (XMPPDevice[])Await.result(future, timeout.duration());
-      return result.length > 0;
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+//  public static boolean online(JID jid, ActorContext context) {
+//    try {
+//      final Timeout timeout = Timeout.apply(5, TimeUnit.SECONDS);
+//      final Future<Object> future = Patterns.ask(context.actorSelection(XMPP_ACTOR_PATH), Pair.create(jid, XMPPDevice.class), timeout);
+//      final XMPPDevice[] result = (XMPPDevice[])Await.result(future, timeout.duration());
+//      return result.length > 0;
+//    } catch (Exception e) {
+//      throw new RuntimeException(e);
+//    }
+//  }
+
+  public static <T> void whisper(JID to, T what, ActorContext context) {
+    context.actorSelection(XMPP_ACTOR_PATH).forward(Pair.create(to, what), context);
   }
 
   public static JID jid(ActorRef ref) {
     return JID.parse(ref.path().name().replace('&', '/'));
+  }
+
+  @Override
+  protected void preStart() throws Exception {
+    findOrAllocate(jid(GlobalChatAgent.ID));
   }
 
   @ActorMethod
@@ -160,20 +172,27 @@ public class XMPP extends ActorAdapter<UntypedActor> {
   @VisibleForTesting
   @NotNull
   protected Props newActorProps(final JID jid) {
-    return jid.domain().startsWith("muc.")
-      ? PersistentActorContainer.props(ExpLeagueRoomAgent.class, jid)
-      : PersistentActorContainer.props(UserAgent.class, jid);
+    if (GlobalChatAgent.ID.equals(jid.local()))
+      return PersistentActorContainer.props(GlobalChatAgent.class, jid);
+    else if (jid.domain().startsWith("muc."))
+      return PersistentActorContainer.props(ExpLeagueRoomAgent.class, jid);
+    else
+      return PersistentActorContainer.props(UserAgent.class, jid);
   }
 
   public static JID jid(String local) {
     return new JID(local, ExpLeagueServer.config().domain(), null);
   }
 
+  public static JID muc(String local) {
+    return new JID(local, "muc." + ExpLeagueServer.config().domain(), null);
+  }
+
   public static class PresenceTracker {
     private final Map<JID, Presence> status = new HashMap<>();
 
     public boolean updatePresence(final Presence presence) {
-      final JID from = presence.from().bare();
+      final JID from = presence.from();
       return !presence.equals(status.put(from, presence));
     }
 
@@ -200,7 +219,7 @@ public class XMPP extends ActorAdapter<UntypedActor> {
     private final Map<JID, Set<Subscription>> subscriptions = new HashMap<>();
 
     public boolean isSubscribed(final JID subscriber, final JID target) {
-      return subscriptions.getOrDefault(subscriber, Collections.emptySet()).stream().filter(s -> s.relevant(target)).findAny().isPresent();
+      return subscriptions.getOrDefault(subscriber, Collections.emptySet()).stream().anyMatch(s -> s.relevant(target));
     }
 
     public void subscribe(final Subscription subscription) {

@@ -4,10 +4,7 @@ import com.expleague.server.dao.Archive;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Stanza;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -21,7 +18,7 @@ public class InMemArchive implements Archive {
 
   @Override
   public Dump dump(String local) {
-    return map.get(local);
+    return map.compute(local, (k,v) -> v != null ? v : new MyDump(k));
   }
 
   @Override
@@ -32,6 +29,7 @@ public class InMemArchive implements Archive {
   }
 
   private class MyDump implements Dump {
+    private final Set<String> known = new HashSet<>();
     private final List<Stanza> snapshot = new ArrayList<>();
     private final String owner;
 
@@ -41,8 +39,14 @@ public class InMemArchive implements Archive {
 
     @Override
     public void accept(Stanza stanza) {
+      if (known.contains(stanza.id()))
+        return;
       snapshot.add(stanza);
+      known.add(stanza.id());
     }
+
+    @Override
+    public void commit() {}
 
     @Override
     public Stream<Stanza> stream() {

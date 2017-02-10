@@ -25,6 +25,10 @@ public class Delivered extends Item {
     this.resource = resource;
   }
 
+  public Delivered(String id) {
+    this.id = id;
+  }
+
   public String id() {
     return id;
   }

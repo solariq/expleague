@@ -112,7 +112,7 @@ public class RosterService extends ActorAdapter<UntypedActor> {
             data.initial.get().items().stream()
                 .map(item -> new RosterQuery.RosterItem(item.jid(), RosterQuery.RosterItem.Subscription.NONE, item.jid().local()))
                 .forEach(query::add);
-            final Iq<RosterQuery> msg = Iq.create(iq.from(), IqType.SET, query);
+            final Iq<RosterQuery> msg = Iq.create(iq.from(), iq.to(), IqType.SET, query);
             data.waitingForId = msg.id();
             sender().tell(msg, self());
             return goTo(States.CLIENT_ROSTER_SET);
@@ -126,7 +126,7 @@ public class RosterService extends ActorAdapter<UntypedActor> {
             data.initial.get().items().stream()
                 .map(item -> new RosterQuery.RosterItem(item.jid(), RosterQuery.RosterItem.Subscription.NONE, item.jid().local(), "subscribe"))
                 .forEach(query::add);
-            final Iq<RosterQuery> msg = Iq.create(iq.from(), IqType.SET, query);
+            final Iq<RosterQuery> msg = Iq.create(iq.from(), iq.to(), IqType.SET, query);
             data.waitingForId = msg.id();
             sender().tell(msg, self());
 

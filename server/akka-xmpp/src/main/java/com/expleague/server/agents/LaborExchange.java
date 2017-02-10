@@ -32,7 +32,6 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
     AkkaTools.scheduleTimeout(context(), ExpLeagueServer.config().timeout("labor-exchange.state-timeout"), self());
     status = new ServiceStatus();
     context().actorOf(ActorContainer.props(Experts.class), EXPERTS_ACTOR_NAME);
-    board().open().forEach(o -> self().tell(o, self()));
   }
 
   @ActorMethod
@@ -179,8 +178,8 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
   }
 
   public interface Board {
-    ExpLeagueOrder active(String roomId);
-    ExpLeagueOrder register(Offer offer);
+    ExpLeagueOrder[] active(String roomId);
+    ExpLeagueOrder[] register(Offer offer);
 
     Stream<ExpLeagueOrder> history(String roomId);
     Stream<ExpLeagueOrder> related(JID jid);

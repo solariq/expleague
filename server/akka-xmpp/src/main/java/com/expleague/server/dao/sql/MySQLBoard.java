@@ -10,22 +10,21 @@ import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.ExpLeagueRoomAgent;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
-import com.expleague.server.dao.Archive;
 import com.expleague.server.dao.fake.InMemBoard;
 import com.expleague.xmpp.JID;
-import com.expleague.xmpp.stanza.Stanza;
 import com.google.common.base.Joiner;
 import com.spbsu.commons.io.StreamTools;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.ref.WeakReference;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -52,24 +51,27 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   }
 
   private final Map<String, String> replayCheckedRooms = new ConcurrentHashMap<>();
+  private final TIntObjectHashMap<WeakReference<MySQLOrder>> orders = new TIntObjectHashMap<>();
 
   @Override
-  public MySQLOrder register(Offer offer) {
+  public MySQLOrder[] register(Offer offer) {
     try {
       final PreparedStatement registerOrder = createStatement("register-order", "INSERT INTO Orders SET room = ?, offer = ?, eta = ?, status = " + ExpLeagueOrder.Status.OPEN.index(), true);
       registerOrder.setString(1, offer.room().local());
       registerOrder.setCharacterStream(2, new StringReader(offer.xmlString()));
       registerOrder.setTimestamp(3, Timestamp.from(offer.expires().toInstant()));
       registerOrder.execute();
-      final MySQLOrder result;
+      final List<MySQLOrder> result = new ArrayList<>();
       try (final ResultSet generatedKeys = registerOrder.getGeneratedKeys()) {
         generatedKeys.next();
         final int id = generatedKeys.getInt(1);
-        result = new MySQLOrder(id, offer);
+        final MySQLOrder order = new MySQLOrder(id, offer);
+        order.role(offer.client(), ExpLeagueOrder.Role.OWNER);
+        order.status(ExpLeagueOrder.Status.OPEN);
+        orders.put(id, new WeakReference<>(order));
+        result.add(order);
       }
-      result.role(offer.client(), ExpLeagueOrder.Role.OWNER);
-      result.status(ExpLeagueOrder.Status.OPEN);
-      return result;
+      return result.toArray(new MySQLOrder[result.size()]);
     }
     catch (SQLException e) {
       throw new RuntimeException(e);
@@ -78,11 +80,11 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
 
   @Nullable
   @Override
-  public ExpLeagueOrder active(final String roomId) {
+  public ExpLeagueOrder[] active(final String roomId) {
     return replayAwareStream(() -> stream(
       "active-order", "SELECT * FROM Orders WHERE room = ? AND status < " + ExpLeagueOrder.Status.DONE.index(),
       stmt -> stmt.setString(1, roomId)
-    ).map(createOrderView())).findFirst().orElse(null);
+    ).map(createOrderView())).collect(Collectors.toList()).toArray(new ExpLeagueOrder[0]);
   }
 
   @Override
@@ -125,8 +127,8 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     final Future<Object> ask = Patterns.ask(XMPP.register(jid, context), new ExpLeagueRoomAgent.DumpRequest(), timeout);
     //noinspection unchecked
     try {
-      final ExpLeagueOrder[] replay = ExpLeagueRoomAgent.replay(this, ((List<Stanza>) Await.result(ask, timeout.duration())).stream());
-      return replay.length;
+      final ExpLeagueOrder[] replay;// = ExpLeagueRoomAgent.replay(this, ((List<Stanza>) Await.result(ask, timeout.duration())).stream());
+      return 0;
     } catch (Exception e) {
       log.log(Level.WARNING, "", e);
     }
@@ -204,7 +206,14 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   protected Function<ResultSet, ExpLeagueOrder> createOrderView() {
     return rs -> {
       try {
-        return new MySQLOrder(rs);
+        final int id = rs.getInt(1);
+        final WeakReference<MySQLOrder> cached = orders.get(id);
+        MySQLOrder result;
+        if (cached != null && (result = cached.get()) != null)
+          return result;
+        result = new MySQLOrder(rs);
+        orders.put(id, new WeakReference<>(result));
+        return result;
       }
       catch (SQLException | IOException e) {
         throw new RuntimeException(e);

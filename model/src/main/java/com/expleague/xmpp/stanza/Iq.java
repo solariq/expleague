@@ -72,8 +72,9 @@ public class Iq<T> extends Stanza {
     return answer(request, null);
   }
 
-  public static <T extends Item> Iq<T> create(JID to, IqType type, T item) {
+  public static <T extends Item> Iq<T> create(JID to, JID from, IqType type, T item) {
     final Iq<T> iq = new Iq<>();
+    iq.from(from);
     iq.any = item;
     iq.to(to);
     iq.type = type;
@@ -123,8 +124,9 @@ public class Iq<T> extends Stanza {
     return null;
   }
 
-  public void error(Err error) {
+  public Iq error(Err error) {
     this.error = error;
+    return this;
   }
 
   public IqType type() {

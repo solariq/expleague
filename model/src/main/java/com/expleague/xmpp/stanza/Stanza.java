@@ -3,6 +3,7 @@ package com.expleague.xmpp.stanza;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.spbsu.commons.random.FastRandom;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
@@ -59,15 +60,19 @@ public class Stanza extends Item {
 
   @Override
   public <T extends Item> T copy(){
-    final Stanza clone = super.copy();
-    clone.id = generateId();
-    //noinspection unchecked
-    return (T)clone;
+    return copy(null);
   }
 
-  public <T extends Item> T copy(String idSuffix){
+  public <T extends Item> T copy(@Nullable String idSuffix){
     final Stanza clone = super.copy();
-    clone.id = id + "-" + idSuffix;
+
+    if (idSuffix == null)
+      clone.id = generateId();
+    else if (idSuffix.isEmpty())
+      clone.id = id;
+    else
+      clone.id = id + "-" + idSuffix;
+
     //noinspection unchecked
     return (T)clone;
   }
@@ -100,7 +105,7 @@ public class Stanza extends Item {
     return false;
   }
 
-  public long getTimestampMs() {
+  public long ts() {
     if (isTimestampPresent()) {
       return Long.parseLong(id.substring(id.lastIndexOf('-') + 1)) * 1000;
     }

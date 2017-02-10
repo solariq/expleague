@@ -11,13 +11,11 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author vpdelta
@@ -41,40 +39,40 @@ public class MySQLOrderTest {
   public void testRegisterOrderAddTag() throws Exception {
     final JID client = registerUser("x@b.c");
     final JID room = JID.parse("a@b.c");
-    final MySQLBoard.MySQLOrder order = board.register(Offer.create(
+    final MySQLBoard.MySQLOrder[] order = board.register(Offer.create(
       room,
       client,
       new Message(client, room, new Message.Subject("offer"))
     ));
-    order.tag("tag");
-    assertEquals("tag", order.tags()[0].name());
+    order[0].tag("tag");
+    assertEquals("tag", order[0].tags()[0].name());
   }
 
   @Test
   public void testRegisterOrderReplayAddTag() throws Exception {
     final JID client = registerUser("x@b.c");
     final JID room = JID.parse("a@b.c");
-    final MySQLBoard.MySQLOrder order = board.register(Offer.create(
+    final MySQLBoard.MySQLOrder[] order = board.register(Offer.create(
       room,
       client,
       new Message(client, room, new Message.Subject("offer"))
     ));
     board.open().collect(Collectors.toList());
-    order.tag("tag");
-    assertEquals("tag", order.tags()[0].name());
+    order[0].tag("tag");
+    assertEquals("tag", order[0].tags()[0].name());
   }
 
   @Test
   public void testRegisterOrderSetStatusReplayAndCheck() throws Exception {
     final JID client = registerUser("x@b.c");
     final JID room = JID.parse("a@b.c");
-    final MySQLBoard.MySQLOrder order = board.register(Offer.create(
+    final MySQLBoard.MySQLOrder order[] = board.register(Offer.create(
       room,
       client,
       new Message(client, room, new Message.Subject("offer"))
     ));
-    order.status(ExpLeagueOrder.Status.DONE);
-    final ExpLeagueOrder expLeagueOrder = board.orders(new LaborExchange.OrderFilter(false, EnumSet.allOf(ExpLeagueOrder.Status.class))).findFirst().get();
+    order[0].status(ExpLeagueOrder.Status.DONE);
+    final ExpLeagueOrder expLeagueOrder = board.orders(new LaborExchange.OrderFilter(false, EnumSet.allOf(ExpLeagueOrder.Status.class))).findFirst().orElse(null);
     assertEquals(ExpLeagueOrder.Status.DONE, expLeagueOrder.status());
     final List<ExpLeagueOrder.StatusHistoryRecord> statusHistoryRecords = expLeagueOrder.statusHistoryRecords().collect(Collectors.toList());
     assertEquals(2, statusHistoryRecords.size());
@@ -87,17 +85,17 @@ public class MySQLOrderTest {
     final JID client = registerUser("x@b.c");
     final JID expert = registerUser("expert@b.c");
     final JID room = JID.parse("a@b.c");
-    final MySQLBoard.MySQLOrder order = board.register(Offer.create(
+    final MySQLBoard.MySQLOrder order[] = board.register(Offer.create(
       room,
       client,
       new Message(client, room, new Message.Subject("offer"))
     ));
-    order.role(expert, ExpLeagueOrder.Role.CANDIDATE);
-    order.role(expert, ExpLeagueOrder.Role.INVITED);
-    order.role(expert, ExpLeagueOrder.Role.ACTIVE);
+    order[0].role(expert, ExpLeagueOrder.Role.CANDIDATE);
+    order[0].role(expert, ExpLeagueOrder.Role.INVITED);
+    order[0].role(expert, ExpLeagueOrder.Role.ACTIVE);
     final List<ExpLeagueOrder> related = board.related(expert).collect(Collectors.toList());
     assertEquals(1, related.size());
-    assertEquals(order.room(), related.get(0).room());
+    assertEquals(order[0].room(), related.get(0).room());
   }
 
   @NotNull

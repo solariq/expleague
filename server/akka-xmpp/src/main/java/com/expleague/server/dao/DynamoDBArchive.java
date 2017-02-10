@@ -1,5 +1,6 @@
 package com.expleague.server.dao;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
@@ -13,9 +14,7 @@ import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.util.cache.CacheStrategy;
 import com.spbsu.commons.util.cache.impl.FixedSizeCache;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -71,8 +70,8 @@ public class DynamoDBArchive implements Archive {
   @DynamoDBTable(tableName = TBTS_ROOMS)
   public static class RoomArchive implements Dump {
     String id;
+    Set<String> known = new HashSet<>();
     List<Message> messages;
-
     public RoomArchive() {}
 
     public RoomArchive(String id) {
@@ -96,19 +95,31 @@ public class DynamoDBArchive implements Archive {
 
     public void setMessages(List<Message> messages) {
       this.messages = messages;
+      messages.forEach(m -> known.add(m.stanza().id()));
     }
 
     public void log(CharSequence message, String authorId) {
       messages.add(new Message(authorId, message, System.currentTimeMillis()));
     }
 
+    List<AttributeValue> accumulatedChange;
     @Override
     public void accept(Stanza stanza) {
+      if (known.contains(stanza.id()))
+        return;
       final Message message = new Message(stanza.from().toString(), stanza.xmlString(), System.currentTimeMillis());
+      known.add(stanza.id());
       messages.add(message);
+      accumulatedChange.add(message.asMap());
+    }
+
+    @Override
+    public void commit() {
+      if (accumulatedChange.isEmpty())
+        return;
       try {
-        if (messages.size() != 1) {
-          client.updateItem(new UpdateItemRequest()
+        if (accumulatedChange.size() == messages.size()) {
+          final UpdateItemRequest update = new UpdateItemRequest()
               .withTableName(TBTS_ROOMS)
               .withKey(InternalUtils.toAttributeValueMap(new PrimaryKey("id", id)))
               .withUpdateExpression("set #m = list_append(#m, :i)")
@@ -116,12 +127,17 @@ public class DynamoDBArchive implements Archive {
                 put("#m", "messages");
               }})
               .withExpressionAttributeValues(new HashMap<String, AttributeValue>() {{
-                put(":i", message.asMap());
-              }}));
-        } else mapper.save(this);
+                final AttributeValue itemsList = new AttributeValue();
+                itemsList.setL(accumulatedChange);
+                put(":i", itemsList);
+              }});
+
+          client.updateItem(update);
+        }
+        else mapper.save(this);
       }
-      catch (ProvisionedThroughputExceededException ptee) {
-        log.log(Level.WARNING, "Unable to deliver message to DynamoDB: " + ptee.getMessage());
+      catch (AmazonClientException ace) {
+        log.log(Level.WARNING, "Unable to deliver message to DynamoDB: " + ace.getMessage());
       }
     }
 

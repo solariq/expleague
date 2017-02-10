@@ -34,9 +34,6 @@ public class Offer extends Item {
   @XmlElement(namespace = Operations.NS)
   private String topic;
 
-  @XmlElement(namespace = Operations.NS)
-  private Filter filter;
-
   @XmlElements(value = {
     @XmlElement(name="image", namespace = Operations.NS, type = Image.class),
     @XmlElement(name="experts-filter", namespace = Operations.NS, type = Filter.class)
@@ -52,12 +49,23 @@ public class Offer extends Item {
   @XmlElement(namespace = Operations.NS)
   private Location location;
 
+  @XmlElement(namespace = Operations.NS)
+  private String comment;
+
   @XmlAttribute
   private Double started;
 
   @XmlElementWrapper(namespace = Operations.NS)
   @XmlAnyElement(lax = true)
   private List<ExpertsProfile> workers;
+
+  @XmlElementWrapper(namespace = Operations.NS)
+  @XmlAnyElement(lax = true)
+  private List<Tag> tags;
+
+  @XmlElementWrapper(namespace = Operations.NS)
+  @XmlAnyElement(lax = true)
+  private List<Pattern> patterns;
 
   public Offer() {
   }
@@ -156,7 +164,6 @@ public class Offer extends Item {
     if (attachments == null)
       return true;
     final Optional<Filter> filter = attachments.stream().filter(a -> a instanceof Filter).map(a -> (Filter) a).findFirst();
-    //noinspection OptionalGetWithoutIsPresent
     return !filter.isPresent() || filter.get().fit(expert);
   }
 
@@ -167,16 +174,11 @@ public class Offer extends Item {
   public Filter filter() {
     if (attachments == null)
       attachments = new ArrayList<>();
+    final Optional<Filter> filterOpt = attachments.stream().filter(a -> a instanceof Filter).map(a -> (Filter) a).findFirst();
+    if (filterOpt.isPresent())
+      return filterOpt.get();
     final Filter result = new Filter();
-    try {
-      final Optional<Filter> filterOpt = attachments.stream().filter(a -> a instanceof Filter).map(a -> (Filter) a).findFirst();
-      if (filterOpt.isPresent()) {
-        return filterOpt.get();
-      }
-      attachments.add(result);
-    } catch (Exception e) {
-    }
-
+    attachments.add(result);
     return result;
   }
 

@@ -6,6 +6,7 @@ import com.expleague.model.Tag;
 import com.expleague.server.Roster;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
+import com.expleague.server.dao.sql.MySQLBoard;
 import com.expleague.xmpp.JID;
 
 import java.util.*;
@@ -24,21 +25,22 @@ import static com.expleague.server.agents.ExpLeagueOrder.Role.OWNER;
  */
 @SuppressWarnings("unused")
 public class InMemBoard implements LaborExchange.Board {
-  private final Map<String, ExpLeagueOrder> active = new ConcurrentHashMap<>();
+  private final Map<String, ExpLeagueOrder[]> active = new ConcurrentHashMap<>();
   private final List<ExpLeagueOrder> history = new CopyOnWriteArrayList<>();
 
   @Override
-  public ExpLeagueOrder active(String roomId) {
+  public ExpLeagueOrder[] active(String roomId) {
     return active.get(roomId);
   }
 
   @Override
-  public ExpLeagueOrder register(Offer offer) {
+  public ExpLeagueOrder[] register(Offer offer) {
     final MyOrder order = new MyOrder(offer);
-    active.put(order.room().local(), order);
+    final ExpLeagueOrder[] set = {order};
+    active.put(order.room().local(), set);
     order.role(offer.client(), OWNER);
     history.add(order);
-    return order;
+    return set;
   }
 
   @Override
@@ -53,7 +55,7 @@ public class InMemBoard implements LaborExchange.Board {
 
   @Override
   public Stream<ExpLeagueOrder> open() {
-    return active.values().stream();
+    return active.values().stream().flatMap(Stream::of);
   }
 
   @Override

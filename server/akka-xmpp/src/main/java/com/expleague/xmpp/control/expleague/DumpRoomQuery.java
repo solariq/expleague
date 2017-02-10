@@ -24,6 +24,9 @@ public class DumpRoomQuery extends Item {
   }
 
   @XmlAttribute
+  private String from;
+
+  @XmlAttribute
   private String room;
 
   @XmlElement(namespace = Operations.NS)
@@ -35,6 +38,10 @@ public class DumpRoomQuery extends Item {
 
   public String room() {
     return room;
+  }
+
+  public String from() {
+    return from;
   }
 
   public DumpRoomQuery() {

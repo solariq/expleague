@@ -163,10 +163,11 @@ Item {
 
         enabled: true //editor || webView
         onTriggered: {
-            if (!!webView && !!webView["transfer"] && webView.transfer(shortcut)) {
+            /*if (!!webView && !!webView["transfer"] && webView.transfer(shortcut)) {
                 return
             }
-            else if (!!webView) {
+            else*/
+            if (!!webView) {
                 webView.triggerWebAction(WebEngineView.Paste)
             }
             else if (!!editor) {

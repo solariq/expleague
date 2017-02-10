@@ -119,6 +119,12 @@ public class Operations {
     @XmlAttribute
     private String payment;
 
+    public Feedback(int stars) {
+      this.stars = stars;
+    }
+
+    public Feedback() {}
+
     public int stars() {
       return stars != null ? stars : 2;
     }
@@ -211,17 +217,14 @@ public class Operations {
     }
   }
 
-  @XmlRootElement(name = "offer-changed")
-  public static class OfferChanged extends Item {
+  @XmlRootElement(name = "offer-change")
+  public static class OfferChange extends Command {
     @XmlAttribute
-    private String client;
-    @XmlElementRef
-    private Offer topic;
+    private JID by;
 
-    public OfferChanged() {}
-    public OfferChanged(JID client, Offer offer) {
-      this.client = client.local();
-      this.topic = offer;
+    public OfferChange() {}
+    public OfferChange(JID by) {
+      this.by = by;
     }
   }
 
@@ -246,12 +249,34 @@ public class Operations {
     private JID expert;
 
     @XmlAttribute
-    private UserRole role;
+    private Affiliation affiliation;
+
+    @XmlAttribute
+    private Role role;
 
     public RoomRoleUpdate() {}
-    public RoomRoleUpdate(JID expert, UserRole role) {
+    public RoomRoleUpdate(JID expert, Affiliation affiliation) {
       this.expert = expert;
+      this.affiliation = affiliation;
+    }
+
+    public RoomRoleUpdate(JID jid, Role role, Affiliation affiliation) {
+      this.expert = jid;
       this.role = role;
+      this.affiliation = affiliation;
+    }
+
+    public Affiliation affiliation() {
+      return affiliation;
+    }
+
+
+    public Role role() {
+      return role;
+    }
+
+    public JID expert() {
+      return expert;
     }
   }
 
@@ -276,9 +301,12 @@ public class Operations {
    */
 
   @XmlRootElement
-  public static class Progress extends Item {
+  public static class Progress extends Command {
     @XmlElement(name="change", namespace = NS)
     private MetaChange metaChange;
+
+    @XmlAttribute
+    private String order;
 
     public Progress() {
     }
@@ -289,6 +317,10 @@ public class Operations {
 
     public MetaChange change() {
       return metaChange;
+    }
+
+    public String order() {
+      return order;
     }
 
     @XmlRootElement(name = "change", namespace = "NS")

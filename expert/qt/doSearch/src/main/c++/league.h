@@ -207,12 +207,14 @@ public:
     Q_INVOKABLE void rejectInvitation(Offer* offer) {
         m_connection->sendCancel(offer);
         m_status = LS_ONLINE;
-        statusChanged(m_status);
+        emit statusChanged(m_status);
     }
 
     GlobalChat* chat() const;
 
     Task* task(const QString& roomId);
+
+    void setAdminFocus(const QString& room);
 
 signals:
     void statusChanged(League::Status status);
@@ -253,7 +255,6 @@ private slots:
         emit tasksAvailableChanged();
     }
 
-    void onRoomStarted(const QString& roomId, const QString& topic, const QString& client);
     void onPresenceChanged(const QString& user, bool available);
 
 public:
@@ -280,17 +281,17 @@ private:
     Profile* m_profile = 0;
     bool m_reconnect = false;
     QSet<QString> m_known_ids;
+    QString m_admin_focus;
 };
 
 class RoomState: public QObject {
     Q_OBJECT
 
     Q_PROPERTY(int unread READ unread NOTIFY unreadChanged)
-    Q_PROPERTY(expleague::Member* client READ client CONSTANT)
-    Q_PROPERTY(QString topic READ topic CONSTANT)
-    Q_PROPERTY(int offersCount READ offersCount NOTIFY ordersChanged)
-    Q_PROPERTY(QQmlListProperty<expleague::Member> admins READ adminsQml NOTIFY participantsChanged)
-    Q_PROPERTY(bool occupied READ occupied NOTIFY occupiedChanged)
+    Q_PROPERTY(expleague::Member* client READ client NOTIFY clientChanged)
+    Q_PROPERTY(QString topic READ topic NOTIFY topicChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::Member> involved READ involvedQml NOTIFY involvedChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::Member> occupied READ occupiedQml NOTIFY occupiedChanged)
     Q_PROPERTY(int feedback READ feedback NOTIFY feedbackChanged)
     Q_PROPERTY(expleague::RoomState::Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(expleague::Task* task READ task CONSTANT)
@@ -312,10 +313,10 @@ public:
 
 public:
     int unread() const { return m_unread; }
-    Member* client() const { return m_client; }
-    QString topic() const { return m_topic; }
-    int offersCount() const { return m_orders; }
-    QQmlListProperty<Member> adminsQml() const { return QQmlListProperty<Member>(const_cast<RoomState*>(this), const_cast<QList<Member*>&>(m_admins)); }
+    Member* client() const { return m_task->client(); }
+    QString topic() const { return m_task->offer() ? m_task->offer()->topic() : ""; }
+    QQmlListProperty<Member> involvedQml() const { return QQmlListProperty<Member>(const_cast<RoomState*>(this), const_cast<QList<Member*>&>(m_involved)); }
+    QQmlListProperty<Member> occupiedQml() const { return QQmlListProperty<Member>(const_cast<RoomState*>(this), const_cast<QList<Member*>&>(m_occupied)); }
     int feedback() const { return m_feedback; }
     Task* task() const { return m_task; }
     bool occupied() const { return m_admin_active; }
@@ -323,26 +324,31 @@ public:
     Status status() const { return m_status; }
 
     Q_INVOKABLE void enter();
-    QString roomId() const { return xmpp::user(m_jid); }
+    QString roomId() const { return xmpp::user(jid()); }
+
+    QString jid() const { return m_task->id(); }
 
 public:
-    explicit RoomState(const QString& id, Member* client, const QString& topic, League* parent);
+    explicit RoomState(Task* task, League* parent);
 
     League* parent() const { return static_cast<League*>(QObject::parent()); }
 
 signals:
     void unreadChanged(int unread) const;
-    void ordersChanged() const;
-    void participantsChanged() const;
     void occupiedChanged() const;
+    void involvedChanged() const;
     void statusChanged(expleague::RoomState::Status status) const;
     void feedbackChanged() const;
+    void topicChanged() const;
+    void clientChanged() const;
 
 private slots:
-    void onRoomStatus(const QString& roomId, int status);
+    void onPresence(const QString& roomId, const QString& expert, const QString& role, const QString& affiliation);
+    void onStatus(const QString& roomId, int status);
     void onFeedback(const QString& roomId, int feedback);
     void onMessage(const QString& roomId, const QString& author);
-    void onAssignment(const QString& roomId, const QString& expert, int role);
+
+    void onOfferChanged();
 
 private:
     bool connectTo(xmpp::ExpLeagueConnection* connection);
@@ -350,19 +356,16 @@ private:
     friend class League;
 
 private:
-    QString m_jid;
-    Member* m_client = 0;
-    QString m_topic;
     Status m_status = OPEN;
-    int m_orders = 0;
     int m_unread = 0;
 
-    QList<Member*> m_admins;
+    QList<Member*> m_involved;
+    QList<Member*> m_occupied;
     bool m_admin_active;
 
     int m_feedback = -1;
 
-    Task* m_task = 0;
+    Task* m_task;
 };
 
 

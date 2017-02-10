@@ -44,7 +44,7 @@ public class DumpRoomService extends ActorAdapter<UntypedActor> {
     }
     final Timeout timeout = new Timeout(Duration.create(20, TimeUnit.SECONDS));
     final JID roomJid = new JID(roomId, "muc." + ExpLeagueServer.config().domain(), null);
-    final Future<Object> ask = Patterns.ask(XMPP.register(roomJid, context()), new ExpLeagueRoomAgent.DumpRequest(), timeout);
+    final Future<Object> ask = Patterns.ask(XMPP.register(roomJid, context()), new ExpLeagueRoomAgent.DumpRequest(rosterIq.get().from()), timeout);
     try {
       //noinspection unchecked
       final List<Stanza> result = (List<Stanza>) Await.result(ask, timeout.duration());

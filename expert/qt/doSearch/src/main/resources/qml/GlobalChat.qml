@@ -63,27 +63,38 @@ Item {
                     }
                     RowLayout {
                         Layout.preferredHeight: 25
+                        Layout.maximumHeight: 25
                         Layout.fillWidth: true
                         spacing: 0
                         Item { Layout.preferredWidth: 2 }
                         Text {
                             Layout.preferredWidth: implicitWidth
                             Layout.preferredHeight: implicitHeight
-                            Layout.alignment: Qt.AlignVCenter
-                            text : qsTr("Админы:")
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: involved.length > 0
+                            text : qsTr("Эксперты:")
                             font.pixelSize: 12
                         }
                         Item { Layout.preferredWidth: 2 }
                         ListView {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
-                            id: adminsList
-                            model: modelData.admins
+                            id: involvedList
+                            model: modelData.involved
+                            property var occupied: modelData.occupied
+                            visible: involved.length > 0
                             delegate: Avatar {
-                                size: index != adminsList.model.length - 1 || !roomCardSelf.adminHere ? 20 : 23
+                                anchors.verticalCenter: parent.verticalCenter
+                                size: {
+                                    for(var i in involvedList.occupied)
+                                        if (modelData === involvedList.occupied[i])
+                                            return 22
+                                    return 18
+                                }
                                 user: modelData
                             }
                         }
+                        Item { Layout.preferredWidth: 2 }
                     }
                 }
                 Item {
@@ -106,21 +117,22 @@ Item {
                         anchors.horizontalCenter: status.horizontalCenter
                         renderType: Text.NativeRendering
                         wrapMode: Text.WordWrap
+                        font.pixelSize: 10
                         property color textColor: "black"
                         text: {
                             var offer = modelData.task.offer
                             if (!offer)
                                 return ""
                             var d = new Date(Math.abs(offer.timeLeft))
-                            return (offer.timeLeft > 0 ? "" : "-") + (d.getUTCHours() + (d.getUTCDate() - 1) * 24) + qsTr(" ч. ") + d.getUTCMinutes() + qsTr(" мин.")
+                            return (offer.timeLeft > 0 ? "" : "-") + (d.getUTCHours() + (d.getUTCDate() - 1) * 24) + qsTr(":") + d.getUTCMinutes()
                         }
                         color: {
                             var offer = modelData.task.offer
                             if (!offer)
-                                return textColor
+                                return "black"
 
                             var urgency = Math.sqrt(Math.max(offer.timeLeft/offer.duration, 0))
-                            return Qt.rgba(textColor.r + (1 - textColor.r) * urgency, textColor.g * urgency, textColor.b * urgency, textColor.a + (1 - textColor.a) * urgency)
+                            return Qt.rgba(textColor.r + (1 - textColor.r) * (1 - urgency), textColor.g * urgency, textColor.b * urgency, textColor.a + (1 - textColor.a) * urgency)
                         }
                     }
                 }

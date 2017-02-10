@@ -62,8 +62,22 @@ public class ConnectedPhase extends XMPPPhase {
         if (payload instanceof Bind) {
           bound = true;
           device = Roster.instance().device(jid.local());
-          final String resource = ((Bind) payload).resource();
-          jid = device.user().jid().resource(device.name() + (resource.isEmpty() ? "" : "/" + resource));
+          String resource = device.name();
+          {
+            final String providedResource = ((Bind) payload).resource();
+            if (providedResource != null && !providedResource.isEmpty())
+              resource += "/" + providedResource;
+          }
+          if (device.expert()) {
+            if (resource.endsWith("expert")) {
+              if (device.user().trusted())
+                resource = resource.substring(0, resource.length() - "expert".length()) + "admin";
+            }
+            else
+              resource += "/" + (device.user().trusted() ? "admin" : "expert");
+          }
+
+          jid = device.user().jid().resource(resource);
           answer(Iq.answer(iq, new Bind(jid())));
           break;
         }
@@ -72,6 +86,7 @@ public class ConnectedPhase extends XMPPPhase {
           agent = XMPP.register(jid().bare(), context());
           agent.tell(new UserAgent.ConnStatus(true, jid.resource(), device), self());
           answer(Iq.answer(iq, new Session()));
+          log.fine("Connection to " + jid + " is now established");
           break;
         }
       }
@@ -88,6 +103,7 @@ public class ConnectedPhase extends XMPPPhase {
   public void postStop() {
     if (agent != null) {
       agent.tell(new UserAgent.ConnStatus(false, jid.resource(), device), self());
+      log.fine("Connection to " + jid + " is now closed");
     }
   }
 
@@ -101,7 +117,7 @@ public class ConnectedPhase extends XMPPPhase {
     if (msg instanceof Iq)
       return;
     if (msg.to() != null && jid().bareEq(msg.to())) { // incoming
-      tryRequestMessageReceipt(msg);
+      msg = tryRequestMessageReceipt(msg);
       answer(msg);
     }
     else { // outgoing
@@ -123,15 +139,15 @@ public class ConnectedPhase extends XMPPPhase {
   }
 
 
-  protected void tryRequestMessageReceipt(final Stanza msg) {
-    if (!(msg instanceof Message)) {
-      return;
-    }
+  protected Stanza tryRequestMessageReceipt(final Stanza msg) {
+    if (!(msg instanceof Message))
+      return msg;
 
-    final Message message = (Message) msg;
+    final Message message = msg.copy("");
     if (!message.has(Received.class) && !message.has(Request.class)) {
       message.append(new Request());
     }
+    return message;
   }
 
   protected void tryProcessMessageReceipt(final Stanza msg) {
@@ -153,6 +169,7 @@ public class ConnectedPhase extends XMPPPhase {
     else if (message.has(Request.class)) {
       final Message ack = new Message(message.from(), new Received(message.id()));
       answer(ack);
+      message.remove(Request.class);
     }
   }
 

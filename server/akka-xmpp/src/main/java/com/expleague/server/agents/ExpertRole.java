@@ -58,7 +58,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     // todo: Ok can be received here and will be unhandled
     when(State.READY,
         matchEvent(Presence.class,
-            (presence, task) -> presence.available() ? stay() : goTo(State.OFFLINE)
+            (presence, task) -> presence.available() || presence.to() == null ? stay() : goTo(State.OFFLINE)
         ).event(Offer.class,
             (offer, task) -> {
               explain("Offer received appending as variant");
@@ -192,7 +192,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     );
     when(State.BUSY,
         matchEvent(Presence.class,
-            (presence, task) -> presence.from().bareEq(jid()),
+            (presence, task) -> presence.to() == null,
             (presence, task) -> {
               if (!presence.available()) {
                 explain("Expert has gone offline during task execution. Sending suspend to broker.");

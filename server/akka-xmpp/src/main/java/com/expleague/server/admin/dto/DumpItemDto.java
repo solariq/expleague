@@ -21,6 +21,6 @@ public class DumpItemDto {
   public DumpItemDto(final Stanza stanza) {
     this.stanza = stanza.xmlString();
     this.author = stanza.from().toString();
-    this.timestamp = stanza.getTimestampMs();
+    this.timestamp = stanza.ts();
   }
 }

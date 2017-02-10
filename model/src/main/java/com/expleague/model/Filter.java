@@ -5,6 +5,7 @@ import com.expleague.xmpp.JID;
 
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -39,10 +40,10 @@ public class Filter extends Attachment {
     reject.add(slacker);
   }
 
-  public void prefer(JID worker) {
+  public void prefer(JID... worker) {
     if (prefer == null)
       prefer = new ArrayList<>();
-    prefer.add(worker);
+    prefer.addAll(Arrays.asList(worker));
   }
 
   public boolean isPrefered(JID jid) {

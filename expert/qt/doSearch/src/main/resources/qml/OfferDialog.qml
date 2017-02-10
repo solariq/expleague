@@ -56,16 +56,21 @@ Window {
         Flickable {
             Layout.alignment: Qt.AlignHCenter
             Layout.fillHeight: true
+            Layout.fillWidth: true
             contentHeight: contents.implicitHeight
             contentWidth: width - contents.anchors.margins * 2
             clip: true
             GridLayout {
                 id: contents
+                width: parent.width - anchors.margins * 2
                 anchors.margins: 15
                 anchors.horizontalCenter: parent.horizontalCenter
                 columns: 2
                 Text {
                     Layout.columnSpan: 2
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: implicitHeight
+                    horizontalAlignment: Text.AlignHCenter
                     text: dialog.text
                 }
 
@@ -76,104 +81,36 @@ Window {
 
                 Text {
                     Layout.columnSpan: 2
-                    text: dialog.comment
-                }
-
-//                TextField {
-//                    Layout.fillWidth: true
-//                    id: shortAnswer
-//                }
-
-//                GroupBox {
-//                    title: qsTr("Было сложно?")
-//                    ExclusiveGroup { id: difficulty }
-//                    Column {
-//                        spacing: 10
-//                        RadioButton {
-//                            property int value: 3
-//                            text: qsTr("АДЪ")
-//                            checked: false
-//                            exclusiveGroup: difficulty
-//                        }
-//                        RadioButton {
-//                            property int value: 2
-//                            text: qsTr("Нормально")
-//                            checked: false
-//                            exclusiveGroup: difficulty
-//                        }
-//                        RadioButton {
-//                            property int value: 1
-//                            text: "Легко"
-//                            checked: false
-//                            exclusiveGroup: difficulty
-//                        }
-//                    }
-//                }
-
-//                GroupBox {
-//                    title: qsTr("Всё нашлось?")
-//                    ExclusiveGroup { id: success }
-//                    Column {
-//                        spacing: 10
-//                        RadioButton {
-//                            property int value: 3
-//                            text: qsTr("Да")
-//                            checked: false
-//                            exclusiveGroup: success
-//                        }
-//                        RadioButton {
-//                            property int value: 2
-//                            text: qsTr("Что-то, но не всё")
-//                            checked: false
-//                            exclusiveGroup: success
-//                        }
-//                        RadioButton {
-//                            property int value: 1
-//                            text: qsTr("Ничего не нашлось!")
-//                            checked: false
-//                            exclusiveGroup: success
-//                        }
-//                    }
-//                }
-
-//                GroupBox {
-//                    title: qsTr("Требовалась доп. информация от клиента?")
-//                    Layout.columnSpan: 2
-//                    Layout.fillWidth: true
-//                    ExclusiveGroup { id: info }
-//                    Row {
-//                        anchors.centerIn: parent
-//                        spacing: 10
-//                        RadioButton {
-//                            property bool value: true
-//                            text: qsTr("Да")
-//                            checked: false
-//                            exclusiveGroup: info
-//                        }
-//                        RadioButton {
-//                            property bool value: false
-//                            text: qsTr("Нет")
-//                            checked: false
-//                            exclusiveGroup: info
-//                        }
-//                    }
-//                }
-
-//                Item {Layout.fillHeight:true; Layout.columnSpan: 2}
-                Button {
-                    Layout.alignment: Qt.AlignLeft
-                    Layout.preferredWidth: 130
-                    action: reject
-                }
-
-                Button {
-                    focus: true
-                    Layout.alignment: Qt.AlignRight
-                    Layout.preferredWidth: 130
-                    action: accept
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: implicitHeight
+                    text: dialog.comment !== "" ? dialog.comment : qsTr("Нет")
+                    horizontalAlignment: Text.AlignHCenter
                 }
             }
         }
+        RowLayout {
+            Layout.preferredHeight: rejectButton.implicitHeight
+            Layout.fillWidth: true
+            spacing: 0
+            Item { Layout.preferredWidth: 15 }
+            Button {
+                id: rejectButton
+                Layout.alignment: Qt.AlignLeft
+                Layout.preferredWidth: 130
+                action: reject
+            }
+            Item {
+                Layout.fillWidth: true
+            }
+            Button {
+                focus: true
+                Layout.alignment: Qt.AlignRight
+                Layout.preferredWidth: 130
+                action: accept
+            }
+            Item { Layout.preferredWidth: 15 }
+        }
+        Item { Layout.preferredHeight: 5 }
         Keys.onEscapePressed: {
             dialog.hide()
         }

@@ -24,7 +24,6 @@ public class ExpertsProfile extends Item {
   @XmlAttribute
   private String login;
 
-
   @XmlAttribute
   private String name;
 
@@ -36,6 +35,9 @@ public class ExpertsProfile extends Item {
 
   @XmlAttribute
   private Boolean available;
+
+  @XmlAttribute
+  private Boolean trusted;
 
   @XmlElementWrapper(name = "tags", namespace = Operations.NS)
   @XmlElements({@XmlElement(name = "tag", namespace = Operations.NS, type = Tag.class)})
@@ -101,6 +103,10 @@ public class ExpertsProfile extends Item {
     return basedOn;
   }
 
+  public boolean trusted() {
+    return trusted != null && trusted;
+  }
+
   @SuppressWarnings("unused")
   public static class Builder {
     private final ExpertsProfile result;
@@ -147,6 +153,11 @@ public class ExpertsProfile extends Item {
 
     public Builder education(Education degree) {
       result.education = degree;
+      return this;
+    }
+
+    public Builder trusted(boolean trusted) {
+      result.trusted = trusted;
       return this;
     }
 

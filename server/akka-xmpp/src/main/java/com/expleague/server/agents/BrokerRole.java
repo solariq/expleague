@@ -314,7 +314,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
     onTransition((from, to) -> {
       if (from != to) {
         final ExpLeagueOrder.State state = stateData();
-        final StatusChange statusChange = new StatusChange(from.name(), to.name(), state.status().name());
+        final StatusChange statusChange = new StatusChange(from.name(), to.name(), state != null ? state.status().name() : ExpLeagueOrder.Status.NONE.name());
         LaborExchange.reference(context()).tell(statusChange, self());
         if (this.timeout != null)
           this.timeout.cancel();

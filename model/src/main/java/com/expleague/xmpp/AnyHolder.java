@@ -1,5 +1,8 @@
 package com.expleague.xmpp;
 
+import com.expleague.xmpp.control.receipts.Request;
+
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -20,8 +23,12 @@ public interface AnyHolder {
     return (S)this;
   }
 
-
   default boolean has(Class<?> clazz) {
-    return any().stream().filter(x -> clazz.isAssignableFrom(x.getClass())).findAny().isPresent();
+    return any().stream().anyMatch(x -> x != null && clazz.isAssignableFrom(x.getClass()));
   }
+
+  default void remove(Class<Request> clazz) {
+    any().removeIf(item -> clazz.isAssignableFrom(item.getClass()));
+  }
+
 }

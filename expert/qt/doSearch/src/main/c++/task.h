@@ -125,6 +125,7 @@ public:
 
 public:
     QDomElement toXml() const;
+    friend bool operator ==(const Offer& left, const Offer& right);
 
 signals:
     void timeTick();
@@ -152,11 +153,14 @@ private:
     QString m_comment;
 };
 
+bool operator ==(const Offer& left, const Offer& right);
+
 class Task: public QObject {
     Q_OBJECT
 
     Q_PROPERTY(expleague::Offer* offer READ offer NOTIFY offerChanged)
-    Q_PROPERTY(expleague::Context* context READ context CONSTANT)
+    Q_PROPERTY(expleague::Member* client READ client NOTIFY offerChanged)
+    Q_PROPERTY(expleague::Context* context READ context NOTIFY offerChanged)
     Q_PROPERTY(QQmlListProperty<expleague::Bubble> chat READ chat NOTIFY bubblesChanged)
     Q_PROPERTY(QQmlListProperty<expleague::TaskTag> tags READ tags NOTIFY tagsChanged)
     Q_PROPERTY(QQmlListProperty<expleague::AnswerPattern> patterns READ patterns NOTIFY patternsChanged)
@@ -174,6 +178,8 @@ public:
     QQmlListProperty<Bubble> chat() { return QQmlListProperty<Bubble>(this, m_chat); }
 
     MarkdownEditorPage* answer() const { return m_answer; }
+
+    Member* client() const;
 
     QQmlListProperty<TaskTag> tags() { return QQmlListProperty<TaskTag>(this, m_tags); }
     QQmlListProperty<AnswerPattern> patterns() { return QQmlListProperty<AnswerPattern>(this, m_patterns); }

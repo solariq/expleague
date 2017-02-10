@@ -6,16 +6,26 @@ import org.jetbrains.annotations.Nullable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.expleague.server.XMPPDevice.Role.ADMIN;
+import static com.expleague.server.XMPPDevice.Role.CLIENT;
+import static com.expleague.server.XMPPDevice.Role.EXPERT;
+
 /**
  * User: solar
  * Date: 11.12.15
  * Time: 18:39
  */
 public abstract class XMPPDevice {
+  public enum Role {
+    CLIENT,
+    EXPERT,
+    ADMIN
+  }
+
   private XMPPUser user;
   private final String passwd;
   private final String name;
-  private final boolean expert;
+  private final Role role;
   protected String clientVersion;
   protected String token;
 
@@ -23,7 +33,12 @@ public abstract class XMPPDevice {
     this.user = user;
     this.passwd = passwd;
     this.name = name;
-    this.expert = expert;
+    if (!expert)
+      role = CLIENT;
+    else if (!user.trusted())
+      role = EXPERT;
+    else
+      role = ADMIN;
     this.clientVersion = clientVersion;
     this.token = token;
   }
@@ -46,8 +61,12 @@ public abstract class XMPPDevice {
 
   public abstract void updateDevice(String token, String clientVersion);
 
+  public Role role() {
+    return role;
+  }
+
   public boolean expert() {
-    return expert;
+    return role != CLIENT;
   }
 
   public static Pattern versionPattern = Pattern.compile("(.+) ([\\d\\.]+) build (\\d+) @(.+)");
