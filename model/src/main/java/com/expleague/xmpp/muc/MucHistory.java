@@ -14,13 +14,13 @@ import java.util.stream.Stream;
 @XmlRootElement(name = "history", namespace = MucXData.MUC_NS)
 public class MucHistory extends com.expleague.xmpp.Item {
   @XmlAttribute
-  private int maxstanzas = -1;
+  private Integer maxstanzas;
 
   public MucHistory() {
   }
 
   public Stream<Stanza> filter(List<Stanza> archive) {
-    if (maxstanzas >= 0)
+    if (maxstanzas != null)
       return archive.subList(archive.size() - maxstanzas, archive.size()).stream();
     return archive.stream();
   }

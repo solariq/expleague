@@ -35,7 +35,6 @@ class Progress;
 class ExpLeagueConnection;
 }
 
-
 class Offer: public QObject {
     Q_OBJECT
 
@@ -51,6 +50,7 @@ class Offer: public QObject {
     Q_PROPERTY(QStringList images READ images CONSTANT)
     Q_PROPERTY(long timeLeft READ timeLeft NOTIFY timeTick)
     Q_PROPERTY(QString comment READ comment CONSTANT)
+    Q_PROPERTY(QString region READ region NOTIFY regionChanged)
 
     Q_ENUMS(Urgency)
     Q_ENUMS(FilterType)
@@ -83,12 +83,14 @@ public:
     QString topic() const { return m_topic; }
     QString comment() const { return m_comment; }
     QString client() const { return m_client; }
+    QString region() const { return m_region; }
 
     bool local() const { return m_local; }
     bool hasLocation() const { return m_location.isValid(); }
     QGeoCoordinate location() { return hasLocation() ? m_location : QGeoCoordinate(-10, 300); }
     double longitude() const { return hasLocation() ? m_location.longitude() : -10; }
     double latitude() const { return hasLocation() ? m_location.latitude() : -10; }
+    QDateTime started() const { return m_started; }
 
     QStringList images() const { return m_images; }
 
@@ -106,7 +108,8 @@ public:
     QList<TaskTag*> tags() const { return m_tags; }
     QList<AnswerPattern*> patterns() const { return m_patterns; }
 
-    void start() const;
+    void start();
+    void setRegion(const QString& region) { m_region = region; emit regionChanged(); }
 
 public:
     explicit Offer(QDomElement xml = QDomElement(), QObject *parent = 0);
@@ -130,6 +133,7 @@ public:
 signals:
     void timeTick();
     void cancelled();
+    void regionChanged();
 
 private slots:
     void tick();
@@ -147,10 +151,12 @@ private:
     QMap<QString, FilterType> m_filter;
     QGeoCoordinate m_location;
     QDateTime m_started;
-    QTimer* m_timer = 0;
     QList<TaskTag*> m_tags;
     QList<AnswerPattern*> m_patterns;
     QString m_comment;
+
+    QTimer* m_timer = 0;
+    QString m_region;
 };
 
 bool operator ==(const Offer& left, const Offer& right);
@@ -355,12 +361,98 @@ private:
     mutable QMutex m_lock;
 };
 
+class RoomState: public QObject {
+    Q_OBJECT
+
+    Q_PROPERTY(int unread READ unread NOTIFY unreadChanged)
+    Q_PROPERTY(expleague::Member* client READ client NOTIFY clientChanged)
+    Q_PROPERTY(QString topic READ topic NOTIFY topicChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::Member> involved READ involvedQml NOTIFY involvedChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::Member> occupied READ occupiedQml NOTIFY occupiedChanged)
+    Q_PROPERTY(int feedback READ feedback NOTIFY feedbackChanged)
+    Q_PROPERTY(expleague::RoomState::Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(expleague::Task* task READ task CONSTANT)
+
+    Q_ENUMS(Status)
+
+public:
+    enum Status: int {
+        OPEN,
+        CHAT,
+        RESPONSE,
+        CONFIRMATION,
+        OFFER,
+        WORK,
+        DELIVERY,
+        FEEDBACK,
+        CLOSED
+    };
+
+public:
+    int unread() const { return m_unread; }
+    Member* client() const { return m_task->client(); }
+    QString topic() const { return m_task->offer() ? m_task->offer()->topic() : ""; }
+    QDateTime started() const { return m_task->offer() ? m_task->offer()->started() : QDateTime();}
+    QQmlListProperty<Member> involvedQml() const { return QQmlListProperty<Member>(const_cast<RoomState*>(this), const_cast<QList<Member*>&>(m_involved)); }
+    QQmlListProperty<Member> occupiedQml() const { return QQmlListProperty<Member>(const_cast<RoomState*>(this), const_cast<QList<Member*>&>(m_occupied)); }
+    int feedback() const { return m_feedback; }
+    Task* task() const { return m_task; }
+    bool occupied() const { return m_admin_active; }
+
+    Status status() const { return m_status; }
+
+    Q_INVOKABLE void enter();
+    QString roomId() const;
+
+    QString jid() const { return m_task->id(); }
+
+public:
+    explicit RoomState(Task* task, League* parent);
+
+    League* parent() const;
+
+signals:
+    void unreadChanged(int unread) const;
+    void occupiedChanged() const;
+    void involvedChanged() const;
+    void statusChanged(expleague::RoomState::Status status) const;
+    void feedbackChanged() const;
+    void topicChanged() const;
+    void clientChanged() const;
+
+private slots:
+    void onPresence(const QString& roomId, const QString& expert, const QString& role, const QString& affiliation);
+    void onStatus(const QString& roomId, int status);
+    void onFeedback(const QString& roomId, int feedback);
+    void onMessage(const QString& roomId, const QString& author);
+
+    void onOfferChanged();
+
+private:
+    bool connectTo(xmpp::ExpLeagueConnection* connection);
+
+    friend class League;
+
+private:
+    Status m_status = OPEN;
+    int m_unread = 0;
+
+    QList<Member*> m_involved;
+    QList<Member*> m_occupied;
+    bool m_admin_active;
+
+    int m_feedback = -1;
+
+    Task* m_task;
+};
+
 }
 
 #include <QQuickItem>
 
 QML_DECLARE_TYPE(expleague::Task)
 QML_DECLARE_TYPE(expleague::Offer)
+QML_DECLARE_TYPE(expleague::RoomState)
 QML_DECLARE_TYPE(expleague::Bubble)
 QML_DECLARE_TYPE(expleague::ChatMessage)
 

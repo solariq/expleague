@@ -13,8 +13,8 @@
 
 #include "call_once.h"
 
-FileWriteThrottle* globalQueue;
-QBasicAtomicInt flag;
+static FileWriteThrottle* globalQueue;
+static QBasicAtomicInt flag;
 void createGlobalQueue() {
     globalQueue = new FileWriteThrottle;
 }
@@ -122,7 +122,7 @@ double bisection(double left, double right, std::function<double (double)> func)
 double optimalExpansionDP(double statPower, int classes) {
     if (statPower <= classes)
         return std::numeric_limits<double>::infinity();
-    return bisection(0, 2 * classes, [statPower, classes](double x) {
+    return bisection(0, (classes + statPower) * 10, [statPower, classes](double x) {
         return x == 0.0 ? -classes : x * log(1 + statPower / x) - classes;
     });
 }

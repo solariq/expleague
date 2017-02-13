@@ -104,7 +104,7 @@ public class RoomAgent extends PersistentActorAdapter {
   }
 
   @ActorMethod
-  public final void dump(DumpRequest req) {
+  public void dump(DumpRequest req) {
     sender().tell(archive, self());
   }
 
@@ -112,10 +112,14 @@ public class RoomAgent extends PersistentActorAdapter {
   public final void awake(Awake awake) {}
 
   public static class DumpRequest {
-    String fromId;
+    private String fromId;
     public DumpRequest() {}
     public DumpRequest(String from) {
       fromId = from;
+    }
+
+    public String from() {
+      return fromId;
     }
   }
 
@@ -172,9 +176,7 @@ public class RoomAgent extends PersistentActorAdapter {
   }
 
   protected boolean checkRole(JID from, Affiliation affiliation, Role role) {
-    return !(role.priority() <= Role.MODERATOR.priority() && affiliation.priority() > Affiliation.ADMIN.priority())
-        && !(role.priority() <= Role.PARTICIPANT.priority() && affiliation.priority() > Affiliation.MEMBER.priority())
-        && !(role.priority() <= Role.VISITOR.priority() && affiliation.priority() > Affiliation.NONE.priority());
+    return role.priority() >= suggestRole(from, affiliation).priority();
   }
 
   public boolean update(JID from, Role role, Affiliation affiliation, boolean enforce) {
@@ -198,19 +200,16 @@ public class RoomAgent extends PersistentActorAdapter {
 
     if (!enforce && !checkRole(from, affiliation, role))
       return false;
-    boolean changed = false;
     if (status.affiliation != affiliation) {
       status.affiliation = affiliation;
-      changed = true;
       process(Iq.create(jid(), XMPP.jid(), Iq.IqType.SET, new MucAdminQuery(from.local(), affiliation, null)), iq -> {});
     }
     if (status.role != role) {
       if (status.role == Role.NONE)
         enter(roomAlias(from));
-      changed = true;
       status.role = role;
     }
-    return changed;
+    return true;
   }
 
   protected void exit(JID from) {}

@@ -23,7 +23,7 @@
 # hdiutil create -volname doSearch -srcfolder ./temp/ -ov -format UDZO doSearch.dmg
 VERSION = 0.7.18
 
-QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine xml multimedia webenginecore
+QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine xml xmlpatterns multimedia webenginecore
 QT_PRIVATE += quick-private webengine-private
 qml.path += resources/qml
 target.path += ../../bin
@@ -62,7 +62,10 @@ SOURCES += \
     c++/ir/bow.cpp \
     c++/util/pholder.cpp \
     c++/model/pages/admins.cpp \
-    c++/model/pages/globalchat.cpp
+    c++/model/pages/globalchat.cpp \
+    c++/util/region.cpp \
+    c++/task.cpp \
+    c++/imagestore.cpp
 
 
 HEADERS += \
@@ -90,7 +93,8 @@ HEADERS += \
     c++/ir/bow.h \
     c++/util/pholder.h \
     c++/model/pages/admins.h \
-    c++/model/pages/globalchat.h
+    c++/model/pages/globalchat.h \
+    c++/util/region.h
 
 macx: OBJECTIVE_SOURCES += \
     objc/ExpLeagueNotification.mm

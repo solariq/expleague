@@ -15,6 +15,8 @@ import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.PersistentActorAdapter;
 import com.expleague.util.akka.PersistentActorContainer;
 import com.expleague.xmpp.JID;
+import com.expleague.xmpp.muc.MucHistory;
+import com.expleague.xmpp.muc.MucXData;
 import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
@@ -83,7 +85,9 @@ public class UserAgent extends PersistentActorAdapter {
       Subscription subscription = null;
       switch (status.device.role()) {
         case ADMIN:
-          XMPP.send(new Presence(deviceJid, XMPP.jid(GlobalChatAgent.ID), true), context());
+          final Presence presence = new Presence(deviceJid, XMPP.jid(GlobalChatAgent.ID), true);
+          presence.append(new MucXData(new MucHistory()));
+          XMPP.send(presence, context());
         case EXPERT:
           subscription = new DefaultSubscription(bareJid);
           break;

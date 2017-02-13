@@ -57,6 +57,8 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
   @Override
   public boolean update(JID from, Role role, Affiliation affiliation, boolean enforce) {
+    if (role(from) == role && affiliation(from) == affiliation)
+      return true;
     if (!super.update(from, role, affiliation, enforce))
       return false;
     GlobalChatAgent.tell(jid(), new RoomRoleUpdate(from, role(from), affiliation(from)), context());
@@ -70,17 +72,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
   @Override
   public Role suggestRole(JID from, Affiliation affiliation) {
-    final Role role = super.suggestRole(from, affiliation);
-    if (role == Role.NONE && isTrusted(from))
+    if (isTrusted(from))
       return Role.MODERATOR;
-    return role;
-  }
-
-  protected boolean filter(Presence pres) {
-    final JID from = pres.from();
-    if (isTrusted(from) && pres.available())
-      update(from, Role.MODERATOR, null, true);
-    return true;
+    return super.suggestRole(from, affiliation);
   }
 
   private boolean isTrusted(JID from) {

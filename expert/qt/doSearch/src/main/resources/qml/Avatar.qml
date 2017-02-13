@@ -1,9 +1,12 @@
 import QtQuick 2.5
 import QtGraphicalEffects 1.0
 
+import QtQuick.Controls 2.1
+
 import ExpLeague 1.0
 
 Item {
+    id: self
     property int size
     property string userId
     property Member user: root.league.findMember(userId)
@@ -12,6 +15,8 @@ Item {
 
     implicitHeight: size
     implicitWidth: size + 2
+
+    ToolTip.delay: 1000
 
     Item {
         id: avatar
@@ -68,5 +73,11 @@ Item {
                 }
             }
         }
+    }
+    MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        onEntered: self.ToolTip.show(userId)
+        onExited: self.ToolTip.hide()
     }
 }

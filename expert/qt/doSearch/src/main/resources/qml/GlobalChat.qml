@@ -13,11 +13,20 @@ Item {
 
     anchors.fill: parent
 
+    onSelectedRoomChanged: {
+        if (!!selectedRoom) {
+            selectedRoom.client.requestHistory()
+            clientRoomsList.selectedRoom = selectedRoom
+        }
+    }
+
     Component {
         id: roomCard
         Item {
             id: roomCardSelf
-            property bool adminHere: modelData.occupied
+
+            property string status: ["open", "chat", "response", "confirmation", "offer", "work", "delivery", "feedback", "cloded"][modelData.status]
+
             implicitHeight: 75
             implicitWidth: 350
 
@@ -39,14 +48,21 @@ Item {
                         Layout.fillWidth: true
                         Item { Layout.preferredWidth: 3 }
                         Item {
-                            Layout.alignment: Qt.AlignVCenter
+                            Layout.alignment: Qt.AlignHCenter
                             Layout.preferredHeight: 45
-                            Layout.preferredWidth: 45
+                            Layout.preferredWidth: 50
                             Avatar {
                                 id: clientAva
                                 anchors.centerIn: parent
+                                anchors.verticalCenterOffset: -5
                                 size: 33
                                 user: client
+                                userId: client ? client.id : ""
+                            }
+                            Text {
+                                anchors.top: clientAva.bottom
+                                text: !!client ? client.id : ""
+                                font.pixelSize: 10
                             }
                         }
                         Item {
@@ -54,9 +70,11 @@ Item {
                             Layout.fillWidth: true
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
+                                anchors.verticalCenterOffset: -5
                                 anchors.left: parent.left
                                 id: topic
                                 text: modelData.topic
+                                elide: Text.ElideRight
                             }
                         }
                         Item { Layout.preferredWidth: 3 }
@@ -66,15 +84,6 @@ Item {
                         Layout.maximumHeight: 25
                         Layout.fillWidth: true
                         spacing: 0
-                        Item { Layout.preferredWidth: 2 }
-                        Text {
-                            Layout.preferredWidth: implicitWidth
-                            Layout.preferredHeight: implicitHeight
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: involved.length > 0
-                            text : qsTr("Эксперты:")
-                            font.pixelSize: 12
-                        }
                         Item { Layout.preferredWidth: 2 }
                         ListView {
                             Layout.fillWidth: true
@@ -91,8 +100,15 @@ Item {
                                             return 22
                                     return 18
                                 }
+                                userId: modelData.id
                                 user: modelData
                             }
+                        }
+                        Item { Layout.fillWidth: true }
+                        Text {
+                            id: region
+                            text: modelData.task.offer ? modelData.task.offer.region : ""
+                            font.pixelSize: 10
                         }
                         Item { Layout.preferredWidth: 2 }
                     }
@@ -102,14 +118,12 @@ Item {
                     Layout.preferredHeight: 45
                     Layout.preferredWidth: 45
                     Image {
+                        id: status
                         anchors.centerIn: parent
                         height: 25
                         width: 25
-                        id: status
-                        source: {
-                            var statuses = ["open", "chat", "response", "confirmation", "offer", "work", "delivery", "feedback", "cloded"]
-                            return "qrc:/status/" + statuses[modelData.status] + ".png"
-                        }
+                        anchors.verticalCenterOffset: eta.visible ? -4 : 0
+                        source: "qrc:/status/" + roomCardSelf.status + ".png"
                     }
                     Text {
                         id: eta
@@ -118,6 +132,7 @@ Item {
                         renderType: Text.NativeRendering
                         wrapMode: Text.WordWrap
                         font.pixelSize: 10
+                        visible: ["delivery", "feedback", "closed", "response"].indexOf(roomCardSelf.status) < 0
                         property color textColor: "black"
                         text: {
                             var offer = modelData.task.offer
@@ -140,8 +155,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    modelData.enter()
-                    self.selectedRoom = modelData
+                    roomCardSelf.ListView.view.selectedRoom = modelData
                 }
             }
         }
@@ -163,6 +177,11 @@ Item {
                     anchors.bottomMargin: 2
                     spacing: 2
                     clip: true
+                    property var selectedRoom
+
+                    onSelectedRoomChanged: {
+                        self.selectedRoom = roomsList.selectedRoom
+                    }
 
                     model: owner.rooms
 
@@ -193,7 +212,7 @@ Item {
                 Layout.fillWidth: true
                 color: "white"
                 Item {
-                    visible: !selectedRoom
+                    visible: !self.selectedRoom
                     anchors.fill: parent
                     Text {
                         anchors.centerIn: parent
@@ -203,23 +222,78 @@ Item {
                     }
                 }
 
-                RowLayout {
-                    visible: !!selectedRoom
-                    anchors.fill: parent
+                ColumnLayout {
                     spacing: 0
-                    LeagueChat {
+                    anchors.fill: parent
+                    visible: !!self.selectedRoom
+                    Rectangle {
+                        Layout.preferredHeight: 79
+                        Layout.fillWidth: true
+                        color: "darkgray"
+                        ListView {
+                            id: clientRoomsList
+
+                            property var selectedRoom
+
+                            orientation: ListView.Horizontal
+                            anchors.fill: parent
+                            anchors.margins: 2
+
+                            spacing: 2
+                            clip: true
+
+                            model: !!self.selectedRoom ? self.selectedRoom.client.history : []
+
+                            delegate: roomCard
+                            currentIndex: {
+                                for (var i in model) {
+                                    if (model[i] === clientRoomsList.selectedRoom)
+                                        return i
+                                }
+                                return -1
+                            }
+                            highlight: Rectangle {
+                                visible: !!clientRoomsList.currentItem
+                                width: 350
+                                height: 77
+                                color: Qt.rgba(225/256, 237/256, 254/256, 0.5)
+                                x: !!clientRoomsList.currentItem ? clientRoomsList.currentItem.x : 0
+                                y: 1
+                                z: 10
+                            }
+                            footer: Item {
+                                height: Math.max(0, roomsList.parent.height - roomsList.model.length * 75)
+                            }
+                        }
+                    }
+
+                    RowLayout {
+                        id: taskView
                         Layout.fillHeight: true
                         Layout.fillWidth: true
-                        task: !!selectedRoom ? selectedRoom.task : null
-                    }
-                    Rectangle {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: 300
-                        color: Palette.navigationColor
-                        OfferView {
-                            anchors.fill: parent
-                            task: !!selectedRoom ? selectedRoom.task : null
-                            editable: true
+                        property var task: {
+                            return !!clientRoomsList.selectedRoom ? clientRoomsList.selectedRoom.task : self.selectedRoom.task
+                        }
+
+                        onTaskChanged: {
+                            task.enter()
+                        }
+
+                        spacing: 0
+                        LeagueChat {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            task: taskView.task
+                        }
+                        Rectangle {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: 300
+                            color: Palette.navigationColor
+                            OfferView {
+                                anchors.fill: parent
+                                task: taskView.task
+                                editable: true
+                            }
                         }
                     }
                 }

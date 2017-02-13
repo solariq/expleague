@@ -234,8 +234,10 @@ void NavigationManager::open(Page* page) {
     else group->selectPage(0);
 
     if (group) {
+        QSet<PagesGroup*> known;
         PagesGroup* parent = group->parentGroup();
-        while (parent) {
+        while (parent && !known.contains(parent)) {
+            known.insert(group);
             if (parent->selectedPage() != group->root()) {
                 parent->insert(group->root());
                 parent->selectPage(group->root());
@@ -244,13 +246,23 @@ void NavigationManager::open(Page* page) {
             group = parent;
             parent = group->parentGroup();
         }
-        if (group->root() == m_active_context) {
+
+        if (qobject_cast<Context*>(group->root())) {
+            activate(static_cast<Context*>(group->root()));
+        }
+        else {
+            if (group->root() != m_active_context) {
+                PagesGroup* contextGroup = m_active_context->associated(m_active_context, false);
+                contextGroup->insert(group->root());
+                contextGroup->selectPage(group->root());
+                group->setParentGroup(contextGroup);
+                group = contextGroup;
+            }
             Page* const selected = group->selectedPage();
             m_selected = m_active_context;
             group->selectPage(0);
             select(group, selected);
         }
-        else activate(static_cast<Context*>(group->root()));
     }
     else typeIn(page);
 }

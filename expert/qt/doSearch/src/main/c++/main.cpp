@@ -32,6 +32,7 @@ QSystemTrayIcon* trayIcon;
 
 int main(int argc, char *argv[]) {
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+    QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
     QGuiApplication app(argc, argv);
     QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
 //    QCoreApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);

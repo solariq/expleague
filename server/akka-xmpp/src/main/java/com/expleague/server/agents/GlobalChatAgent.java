@@ -4,6 +4,7 @@ import akka.actor.ActorContext;
 import com.expleague.model.*;
 import com.expleague.model.Operations.*;
 import com.expleague.server.XMPPDevice;
+import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.muc.MucHistory;
@@ -15,6 +16,8 @@ import com.expleague.xmpp.stanza.Stanza;
 
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static com.expleague.model.RoomState.*;
 
@@ -38,20 +41,19 @@ public class GlobalChatAgent extends RoomAgent {
     return device != null && device.role() == XMPPDevice.Role.ADMIN;
   }
 
-  @Override
-  protected boolean filter(Presence pres) {
-    final JID from = pres.from();
-    if (isRoom(from))
-      return true;
+  @ActorMethod
+  public void dump(DumpRequest dump) {
+    final List<Message> rooms = this.rooms.values().stream().filter(room -> room.affiliation(dump.from()) == Affiliation.OWNER).map(RoomStatus::message).collect(Collectors.toList());
+    sender().tell(rooms, self());
+  }
 
-    if (isTrusted(pres.from())) {
-      if (!pres.has(MucXData.class)) {
-        final MucXData xData = new MucXData(Affiliation.MEMBER, Role.PARTICIPANT);
-        xData.append(new MucHistory());
-        pres.append(xData);
-      }
-    }
-    return super.filter(pres);
+  @Override
+  protected Role suggestRole(JID who, Affiliation affiliation) {
+    if (isRoom(who))
+      return Role.PARTICIPANT;
+    else if (isTrusted(who))
+      return Role.MODERATOR;
+    return Role.NONE;
   }
 
   @Override
@@ -67,7 +69,7 @@ public class GlobalChatAgent extends RoomAgent {
       super.process(msg);
       return;
     }
-    final RoomStatus status = rooms.compute(msg.from().local(), (local, s) -> s != null ? s : new RoomStatus());
+    final RoomStatus status = rooms.compute(msg.from().local(), (local, s) -> s != null ? s : new RoomStatus(local));
     status.ts(msg.ts());
     final int changes = status.changes();
     if (msg.has(OfferChange.class))
@@ -89,7 +91,7 @@ public class GlobalChatAgent extends RoomAgent {
     final List<Stanza> result = new ArrayList<>();
     rooms.forEach((id, status) -> {
       if (status.currentOffer != null)
-        result.add(status.message(id));
+        result.add(status.message());
     });
     return result;
   }
@@ -124,6 +126,7 @@ public class GlobalChatAgent extends RoomAgent {
   }
 
   private static class RoomStatus {
+    private String id;
     private Offer currentOffer;
     private RoomState state = OPEN;
     private Map<String, Affiliation> affiliations = new HashMap<>();
@@ -131,6 +134,10 @@ public class GlobalChatAgent extends RoomAgent {
     private long modificationTs = -1;
     private int changes = 0;
     private int feedback = 0;
+
+    public RoomStatus(String id) {
+      this.id = id;
+    }
 
     public void affiliation(String id, Affiliation affiliation) {
       affiliations.compute(id, (i, a) -> a == null || affiliation != null && affiliation.priority() < a.priority() ? affiliation : a);
@@ -160,7 +167,7 @@ public class GlobalChatAgent extends RoomAgent {
       changes++;
     }
 
-    public Stanza message(String id) {
+    public Message message() {
       final Message result = new Message("global-" + id + "-" + (modificationTs/1000));
       result.type(MessageType.GROUP_CHAT);
       result.append(currentOffer);
@@ -182,6 +189,10 @@ public class GlobalChatAgent extends RoomAgent {
 
     public void feedback(int stars) {
       this.feedback = stars;
+    }
+
+    public Affiliation affiliation(String fromId) {
+      return affiliations.getOrDefault(fromId, Affiliation.NONE);
     }
   }
 }

@@ -8,11 +8,16 @@
 #include <QCryptographicHash>
 
 inline QString randString(int length) {
-    QString result;
-    for (int i = 0; i < length; i++) {
-        result += 'a' + ((double)rand()) / RAND_MAX * ('z' - 'a');
+    static const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+    const int randomStringLength = length;
+
+    QString randomString;
+    for(int i=0; i<randomStringLength; ++i) {
+        int index = qrand() % possibleCharacters.length();
+        QChar nextChar = possibleCharacters.at(index);
+        randomString.append(nextChar);
     }
-    return result;
+    return randomString;
 }
 
 inline QString md5(const QString& str) {

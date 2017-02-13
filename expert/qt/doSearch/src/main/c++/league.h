@@ -21,6 +21,7 @@ class Member: public QObject {
     Q_PROPERTY(QString id READ id CONSTANT)
     Q_PROPERTY(QString name READ name NOTIFY nameChanged)
     Q_PROPERTY(QUrl avatar READ avatar NOTIFY avatarChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::RoomState> history READ historyQml NOTIFY historyChanged)
     Q_PROPERTY(expleague::Member::Status status READ status NOTIFY statusChanged)
 
     Q_ENUMS(Status)
@@ -45,10 +46,13 @@ public:
         return m_status;
     }
 
+    QQmlListProperty<RoomState> historyQml() const { return QQmlListProperty<RoomState>(const_cast<Member*>(this), const_cast<QList<RoomState*>&>(m_history)); }
+
 signals:
     void nameChanged(const QString& name);
     void avatarChanged(const QUrl& avatar);
     void statusChanged(bool status);
+    void historyChanged();
 
 public:
     void setStatus(Status status) {
@@ -66,6 +70,10 @@ public:
         emit avatarChanged(avatar);
     }
 
+    void append(RoomState* room);
+
+    Q_INVOKABLE void requestHistory() const;
+
 public:
     explicit Member(const QString& id = "", QObject* parent = 0): QObject(parent), m_id(id) {}
 
@@ -74,6 +82,7 @@ private:
     QString m_name;
     QUrl m_avatar = QUrl("qrc:/avatar.png");
     Status m_status;
+    QList<RoomState*> m_history;
 };
 
 class TaskTag: public QObject {
@@ -283,91 +292,6 @@ private:
     QSet<QString> m_known_ids;
     QString m_admin_focus;
 };
-
-class RoomState: public QObject {
-    Q_OBJECT
-
-    Q_PROPERTY(int unread READ unread NOTIFY unreadChanged)
-    Q_PROPERTY(expleague::Member* client READ client NOTIFY clientChanged)
-    Q_PROPERTY(QString topic READ topic NOTIFY topicChanged)
-    Q_PROPERTY(QQmlListProperty<expleague::Member> involved READ involvedQml NOTIFY involvedChanged)
-    Q_PROPERTY(QQmlListProperty<expleague::Member> occupied READ occupiedQml NOTIFY occupiedChanged)
-    Q_PROPERTY(int feedback READ feedback NOTIFY feedbackChanged)
-    Q_PROPERTY(expleague::RoomState::Status status READ status NOTIFY statusChanged)
-    Q_PROPERTY(expleague::Task* task READ task CONSTANT)
-
-    Q_ENUMS(Status)
-
-public:
-    enum Status: int {
-        OPEN,
-        CHAT,
-        RESPONSE,
-        CONFIRMATION,
-        OFFER,
-        WORK,
-        DELIVERY,
-        FEEDBACK,
-        CLOSED
-    };
-
-public:
-    int unread() const { return m_unread; }
-    Member* client() const { return m_task->client(); }
-    QString topic() const { return m_task->offer() ? m_task->offer()->topic() : ""; }
-    QQmlListProperty<Member> involvedQml() const { return QQmlListProperty<Member>(const_cast<RoomState*>(this), const_cast<QList<Member*>&>(m_involved)); }
-    QQmlListProperty<Member> occupiedQml() const { return QQmlListProperty<Member>(const_cast<RoomState*>(this), const_cast<QList<Member*>&>(m_occupied)); }
-    int feedback() const { return m_feedback; }
-    Task* task() const { return m_task; }
-    bool occupied() const { return m_admin_active; }
-
-    Status status() const { return m_status; }
-
-    Q_INVOKABLE void enter();
-    QString roomId() const { return xmpp::user(jid()); }
-
-    QString jid() const { return m_task->id(); }
-
-public:
-    explicit RoomState(Task* task, League* parent);
-
-    League* parent() const { return static_cast<League*>(QObject::parent()); }
-
-signals:
-    void unreadChanged(int unread) const;
-    void occupiedChanged() const;
-    void involvedChanged() const;
-    void statusChanged(expleague::RoomState::Status status) const;
-    void feedbackChanged() const;
-    void topicChanged() const;
-    void clientChanged() const;
-
-private slots:
-    void onPresence(const QString& roomId, const QString& expert, const QString& role, const QString& affiliation);
-    void onStatus(const QString& roomId, int status);
-    void onFeedback(const QString& roomId, int feedback);
-    void onMessage(const QString& roomId, const QString& author);
-
-    void onOfferChanged();
-
-private:
-    bool connectTo(xmpp::ExpLeagueConnection* connection);
-
-    friend class League;
-
-private:
-    Status m_status = OPEN;
-    int m_unread = 0;
-
-    QList<Member*> m_involved;
-    QList<Member*> m_occupied;
-    bool m_admin_active;
-
-    int m_feedback = -1;
-
-    Task* m_task;
-};
-
 
 class ImagesStoreResponse: public QQuickImageResponse {
     Q_OBJECT

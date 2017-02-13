@@ -16,7 +16,7 @@ public enum RoomState {
   CLOSED(8);
 
   private int code;
-  private RoomState(int code) {
+  RoomState(int code) {
     this.code = code;
   }
 

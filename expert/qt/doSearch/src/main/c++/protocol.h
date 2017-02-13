@@ -145,6 +145,9 @@ public:
 
     void sendPresence(const QString& room, bool available = true);
     void sendOffer(const Offer& offer);
+
+    void requestHistory(const QString& clientId);
+
 signals:
     // system commands
     void check(const Offer& task);
@@ -208,6 +211,7 @@ private:
     Profile* m_profile = 0;
     QString m_jid;
     QMap<QString, Member*> m_members_cache;
+    QSet<QString> m_history_requested;
     int m_tasks_available = 0;
 };
 

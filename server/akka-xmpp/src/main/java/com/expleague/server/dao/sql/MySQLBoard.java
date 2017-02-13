@@ -6,10 +6,7 @@ import akka.util.Timeout;
 import com.expleague.model.Offer;
 import com.expleague.model.Tag;
 import com.expleague.server.ExpLeagueServer;
-import com.expleague.server.agents.ExpLeagueOrder;
-import com.expleague.server.agents.ExpLeagueRoomAgent;
-import com.expleague.server.agents.LaborExchange;
-import com.expleague.server.agents.XMPP;
+import com.expleague.server.agents.*;
 import com.expleague.server.dao.fake.InMemBoard;
 import com.expleague.xmpp.JID;
 import com.google.common.base.Joiner;
@@ -124,7 +121,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     final Stack<ExpLeagueOrder> result = new Stack<>();
     final Timeout timeout = new Timeout(Duration.create(20, TimeUnit.SECONDS));
     final JID jid = new JID(roomId, "muc." + ExpLeagueServer.config().domain(), null);
-    final Future<Object> ask = Patterns.ask(XMPP.register(jid, context), new ExpLeagueRoomAgent.DumpRequest(), timeout);
+    final Future<Object> ask = Patterns.ask(XMPP.register(jid, context), new RoomAgent.DumpRequest(), timeout);
     //noinspection unchecked
     try {
       final ExpLeagueOrder[] replay;// = ExpLeagueRoomAgent.replay(this, ((List<Stanza>) Await.result(ask, timeout.duration())).stream());

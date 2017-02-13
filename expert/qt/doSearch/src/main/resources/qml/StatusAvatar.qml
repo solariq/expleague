@@ -60,6 +60,7 @@ Item {
         height: implicitHeight
         size: self.height
         showStatus: false
+        userId: dosearch.league.profile ? dosearch.league.profile.login : ""
 
         Rectangle {
             id: tasks

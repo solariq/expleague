@@ -18,10 +18,7 @@ import com.expleague.server.Roster;
 import com.expleague.server.admin.dto.*;
 import com.expleague.server.admin.series.TimeSeriesChartDto;
 import com.expleague.server.admin.series.TimeSeriesDto;
-import com.expleague.server.agents.ExpLeagueOrder;
-import com.expleague.server.agents.ExpLeagueRoomAgent;
-import com.expleague.server.agents.LaborExchange;
-import com.expleague.server.agents.XMPP;
+import com.expleague.server.agents.*;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorContainer;
 import com.expleague.util.akka.ActorMethod;
@@ -163,7 +160,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           else if (path.startsWith("/dump/")) {
             final Timeout timeout = new Timeout(Duration.create(Long.parseLong(request.getUri().query().get("timeout").getOrElse("2")), TimeUnit.SECONDS));
             final JID jid = JID.parse(path.substring("/dump/".length()));
-            final Future<Object> ask = Patterns.ask(XMPP.register(jid, context()), new ExpLeagueRoomAgent.DumpRequest(), timeout);
+            final Future<Object> ask = Patterns.ask(XMPP.register(jid, context()), new RoomAgent.DumpRequest(), timeout);
             //noinspection unchecked
             final List<Stanza> result = (List<Stanza>)Await.result(ask, timeout.duration());
             final List<DumpItemDto> messages = result.stream().map(DumpItemDto::new).collect(Collectors.toList());
