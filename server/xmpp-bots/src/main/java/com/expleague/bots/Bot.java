@@ -25,16 +25,24 @@ import tigase.jaxmpp.j2se.connectors.socket.SocketConnector;
  * Time: 16:17
  */
 public class Bot {
+  public static final String TBTS_XMLNS = "http://expleague.com/scheme";
+
   private final String passwd;
   private final String resource;
+  private final String email;
   private final BareJID jid;
 
   protected final Jaxmpp jaxmpp = new Jaxmpp(new J2SESessionObject());
 
   public Bot(final BareJID jid, final String passwd, String resource) {
+    this(jid, passwd, resource, null);
+  }
+
+  public Bot(final BareJID jid, final String passwd, String resource, String email) {
     this.jid = jid;
     this.passwd = passwd;
     this.resource = resource;
+    this.email = email;
 
     jaxmpp.getProperties().setUserProperty(SessionObject.DOMAIN_NAME, jid.getDomain());
     jaxmpp.getProperties().setUserProperty(SocketConnector.HOSTNAME_VERIFIER_DISABLED_KEY, true);
@@ -56,7 +64,7 @@ public class Bot {
               public void onReceivedRequestedFields(SessionObject sessionObject, IQ responseStanza) {
                 try {
                   final InBandRegistrationModule module = jaxmpp.getModule(InBandRegistrationModule.class);
-                  module.register(jid.toString(), passwd, null, new PrinterAsyncCallback("register", latch) {
+                  module.register(jid.toString(), passwd, email, new PrinterAsyncCallback("register", latch) {
                     @Override
                     protected void transactionComplete() {
                       super.transactionComplete();

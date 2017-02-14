@@ -93,8 +93,6 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     if (msg.has(Offer.class) && EnumSet.of(Affiliation.OWNER, Affiliation.ADMIN).contains(affiliation)) { // offers handling
       final Offer offer = msg.get(Offer.class);
       final JID owner = owner();
-      if (owner == null)
-        System.out.println();
       if (offer.client() == null)
         offer.client(owner);
       if (orders.length > 0) { // order update during the work

@@ -19,15 +19,11 @@ import tigase.xml.SimpleParser;
  * Time: 21:10
  */
 public class ExpertBot extends Bot {
-
-  public static final String TBTS_XMLNS = "http://expleague.com/scheme";
   private BareJID roomJID;
 
   public ExpertBot(final BareJID jid, final String passwd) throws JaxmppException {
     super(jid, passwd, "expert");
-    jaxmpp.getEventBus().addHandler(MucModule.InvitationReceivedHandler.InvitationReceivedEvent.class, (sessionObject, invitation, id, bareJID) -> {
-      onInvite(invitation);
-    });
+    jaxmpp.getEventBus().addHandler(MucModule.InvitationReceivedHandler.InvitationReceivedEvent.class, (sessionObject, invitation, id, bareJID) -> onInvite(invitation));
   }
 
   public void onInvite(MucModule.Invitation invitation) {

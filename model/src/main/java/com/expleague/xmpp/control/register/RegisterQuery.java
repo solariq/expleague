@@ -211,4 +211,8 @@ public class RegisterQuery {
   public boolean expert() {
     return platform() != null && platform().endsWith("/expert");
   }
+
+  public boolean trusted() {
+    return platform() != null && platform().endsWith("/admin/expert");
+  }
 }
