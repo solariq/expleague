@@ -1,9 +1,10 @@
 package com.expleague.bots;
 
-import com.spbsu.commons.util.sync.StateLatch;
 import tigase.jaxmpp.core.client.BareJID;
-import tigase.jaxmpp.core.client.Connector;
+import tigase.jaxmpp.core.client.JID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
+import tigase.jaxmpp.core.client.xml.Element;
+import tigase.jaxmpp.core.client.xml.ElementFactory;
 import tigase.jaxmpp.core.client.xmpp.stanzas.Message;
 
 /**
@@ -12,33 +13,19 @@ import tigase.jaxmpp.core.client.xmpp.stanzas.Message;
  * Time: 16:27
  */
 public class AdminBot extends Bot {
-  private static final long DEFAULT_TIMEOUT_IN_NANOS = 60L * 1000L * 1000L * 1000L;
-
   public AdminBot(final BareJID jid, final String passwd) throws JaxmppException {
     super(jid, passwd, "expert", "/admin/expert");
   }
 
-  public Message receiveMessage() {
-    return receiveMessage(DEFAULT_TIMEOUT_IN_NANOS);
-  }
+  public void startWorkState(BareJID roomJID) throws JaxmppException {
+    final Element offerElem = ElementFactory.create("offer");
+    offerElem.setXMLNS(TBTS_XMLNS);
+    offerElem.setAttribute("room", roomJID.toString());
 
-  public Message receiveMessage(long timeoutInNanos) {
-    final StateLatch latch = new StateLatch();
-    final Message[] message = new Message[1];
-    final Connector.StanzaReceivedHandler handler = (sessionObject, stanza) -> {
-      if (stanza instanceof Message) {
-        message[0] = (Message) stanza;
-        latch.advance();
-      }
-    };
-    jaxmpp.getEventBus().addHandler(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, handler);
-    latch.state(2, 1, timeoutInNanos);
-    jaxmpp.getEventBus().remove(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, handler);
-
-    if (message[0] == null) {
-      throw new RuntimeException("timeout");
-    }
-    return message[0];
+    final Message message = Message.create();
+    message.addChild(offerElem);
+    message.setTo(JID.jidInstance(roomJID));
+    jaxmpp.send(message);
   }
 
   public static void main(final String[] args) throws JaxmppException, InterruptedException {

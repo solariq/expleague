@@ -17,7 +17,7 @@ public class ClientBot extends Bot {
     super(jid, passwd, "client");
   }
 
-  public void startRoom(String topic) throws JaxmppException {
+  public BareJID startRoom(String topic) throws JaxmppException {
     final Element offerElem = ElementFactory.create("offer");
     offerElem.setXMLNS(TBTS_XMLNS);
     offerElem.setAttribute("client", jid().toString());
@@ -36,6 +36,7 @@ public class ClientBot extends Bot {
     message.addChild(offerElem);
     message.setTo(JID.jidInstance(room));
     jaxmpp.send(message);
+    return room;
   }
 
   public static void main(final String[] args) throws JaxmppException {

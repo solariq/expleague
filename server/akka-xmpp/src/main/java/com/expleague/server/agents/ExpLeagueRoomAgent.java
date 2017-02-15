@@ -7,7 +7,6 @@ import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
-import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
 
 import java.util.Arrays;

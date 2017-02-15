@@ -19,6 +19,9 @@ import tigase.jaxmpp.j2se.J2SESessionObject;
 import tigase.jaxmpp.j2se.Jaxmpp;
 import tigase.jaxmpp.j2se.connectors.socket.SocketConnector;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * User: solar
  * Date: 18.10.15
@@ -26,6 +29,7 @@ import tigase.jaxmpp.j2se.connectors.socket.SocketConnector;
  */
 public class Bot {
   public static final String TBTS_XMLNS = "http://expleague.com/scheme";
+  private static final long DEFAULT_TIMEOUT_IN_NANOS = 60L * 1000L * 1000L * 1000L;
 
   private final String passwd;
   private final String resource;
@@ -59,27 +63,27 @@ public class Bot {
     final StateLatch latch = new StateLatch();
     latch.state(1);
     jaxmpp.getEventBus().addHandler(
-            InBandRegistrationModule.ReceivedRequestedFieldsHandler.ReceivedRequestedFieldsEvent.class,
-            new InBandRegistrationModule.ReceivedRequestedFieldsHandler() {
-              public void onReceivedRequestedFields(SessionObject sessionObject, IQ responseStanza) {
-                try {
-                  final InBandRegistrationModule module = jaxmpp.getModule(InBandRegistrationModule.class);
-                  module.register(jid.toString(), passwd, email, new PrinterAsyncCallback("register", latch) {
-                    @Override
-                    protected void transactionComplete() {
-                      super.transactionComplete();
-                      try {
-                        jaxmpp.getConnector().stop();
-                      } catch (JaxmppException e) {
-                        throw new RuntimeException(e);
-                      }
-                    }
-                  });
-                } catch (JaxmppException e) {
-                  throw new RuntimeException(e);
+        InBandRegistrationModule.ReceivedRequestedFieldsHandler.ReceivedRequestedFieldsEvent.class,
+        new InBandRegistrationModule.ReceivedRequestedFieldsHandler() {
+          public void onReceivedRequestedFields(SessionObject sessionObject, IQ responseStanza) {
+            try {
+              final InBandRegistrationModule module = jaxmpp.getModule(InBandRegistrationModule.class);
+              module.register(jid.toString(), passwd, email, new PrinterAsyncCallback("register", latch) {
+                @Override
+                protected void transactionComplete() {
+                  super.transactionComplete();
+                  try {
+                    jaxmpp.getConnector().stop();
+                  } catch (JaxmppException e) {
+                    throw new RuntimeException(e);
+                  }
                 }
-              }
-            });
+              });
+            } catch (JaxmppException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        });
     jaxmpp.login();
     latch.state(2, 1);
     System.out.println("Registration phase passed");
@@ -115,12 +119,8 @@ public class Bot {
       }
     });
 
-    jaxmpp.getEventBus().addHandler(PresenceModule.ContactAvailableHandler.ContactAvailableEvent.class, new PresenceModule.ContactAvailableHandler() {
-      @Override
-      public void onContactAvailable(SessionObject sessionObject, Presence presence, JID jid, Presence.Show show, String s, Integer integer) throws JaxmppException {
-        System.out.println(jid + " available with message " + presence.getStatus());
-      }
-    });
+    jaxmpp.getEventBus().addHandler(PresenceModule.ContactAvailableHandler.ContactAvailableEvent.class,
+        (sessionObject, presence, jid, show, s, integer) -> System.out.println(jid + " available with message " + presence.getStatus()));
 
     jaxmpp.getEventBus().addHandler(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, (sessionObject, stanza) -> {
       try {
@@ -168,6 +168,50 @@ public class Bot {
     }
   }
 
+  public Message receiveMessage() {
+    return receiveMessage(DEFAULT_TIMEOUT_IN_NANOS);
+  }
+
+  public Message receiveMessage(long timeoutInNanos) {
+    List<Message> messages = receiveMessages(1, timeoutInNanos);
+    return messages.get(0);
+  }
+
+  public List<Message> receiveMessages(int messagesNum) {
+    return receiveMessages(messagesNum, DEFAULT_TIMEOUT_IN_NANOS);
+  }
+
+  public List<Message> receiveMessages(int messagesNum, long timeoutInNanos) {
+    final StateLatch latch = new StateLatch();
+    final List<Message> messages = new ArrayList<>();
+    final Connector.StanzaReceivedHandler handler = (sessionObject, stanza) -> {
+      if (stanza instanceof Message) {
+        messages.add((Message) stanza);
+        latch.advance();
+      }
+    };
+    jaxmpp.getEventBus().addHandler(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, handler);
+    latch.state(1 << messagesNum, 1, timeoutInNanos);
+    jaxmpp.getEventBus().remove(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, handler);
+
+    if (messages.size() < messagesNum) {
+      throw new RuntimeException("timeout");
+    }
+    return messages;
+  }
+
+  public void sendToGroupChat(String chatMessage, BareJID roomJID) {
+    try {
+      final Message message = Message.create();
+      message.setTo(JID.jidInstance(roomJID));
+      message.setType(StanzaType.groupchat);
+      message.setBody(chatMessage);
+      jaxmpp.send(message);
+    } catch (JaxmppException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   protected void onClose(final Runnable runnable) {
     jaxmpp.getEventBus().addHandler(Connector.DisconnectedHandler.DisconnectedEvent.class, sessionObject -> runnable.run());
   }
@@ -188,7 +232,7 @@ public class Bot {
     }
 
     public void onSuccess(Stanza responseStanza) throws JaxmppException {
-      System.out.println("Response  [" + name + "]: " +responseStanza.getAsString());
+      System.out.println("Response  [" + name + "]: " + responseStanza.getAsString());
       transactionComplete();
     }
 
@@ -196,6 +240,7 @@ public class Bot {
       System.out.println("Timeout " + name);
       transactionComplete();
     }
+
     protected void transactionComplete() {
       lock.advance();
     }

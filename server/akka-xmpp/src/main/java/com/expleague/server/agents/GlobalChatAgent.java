@@ -1,22 +1,24 @@
 package com.expleague.server.agents;
 
 import akka.actor.ActorContext;
-import com.expleague.model.*;
-import com.expleague.model.Operations.*;
+import com.expleague.model.Affiliation;
+import com.expleague.model.Offer;
+import com.expleague.model.Operations.Feedback;
+import com.expleague.model.Operations.OfferChange;
+import com.expleague.model.Operations.RoomRoleUpdate;
+import com.expleague.model.Operations.RoomStateChanged;
+import com.expleague.model.Role;
+import com.expleague.model.RoomState;
 import com.expleague.server.XMPPDevice;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
-import com.expleague.xmpp.muc.MucHistory;
-import com.expleague.xmpp.muc.MucXData;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Message.MessageType;
-import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
 
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static com.expleague.model.RoomState.*;

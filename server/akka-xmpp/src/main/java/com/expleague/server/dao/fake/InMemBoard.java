@@ -6,7 +6,6 @@ import com.expleague.model.Tag;
 import com.expleague.server.Roster;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
-import com.expleague.server.dao.sql.MySQLBoard;
 import com.expleague.xmpp.JID;
 
 import java.util.*;
@@ -30,7 +29,11 @@ public class InMemBoard implements LaborExchange.Board {
 
   @Override
   public ExpLeagueOrder[] active(String roomId) {
-    return active.get(roomId);
+    final ExpLeagueOrder[] result = active.get(roomId);
+    if (result == null) {
+      return new ExpLeagueOrder[0];
+    }
+    return result;
   }
 
   @Override
