@@ -2,9 +2,7 @@ package com.expleague.server.services;
 
 import akka.actor.*;
 import com.expleague.util.akka.ActorAdapter;
-import com.expleague.util.akka.ActorContainer;
 import com.expleague.util.akka.ActorMethod;
-import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.control.XMPPQuery;
 import com.expleague.xmpp.stanza.Iq;
@@ -29,7 +27,7 @@ public class XMPPServices extends ActorAdapter<UntypedActor> {
           .getOrElse(new AbstractFunction0<ActorRef>() {
             @Override
             public ActorRef apply() {
-              return context().actorOf(ActorContainer.props(knownServices.get(ns)), shortName);
+              return context().actorOf(props(knownServices.get(ns)), shortName);
             }
           });
       service.forward(iq, context());

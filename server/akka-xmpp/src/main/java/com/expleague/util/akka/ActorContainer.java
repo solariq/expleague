@@ -9,10 +9,6 @@ import akka.actor.UntypedActor;
 public class ActorContainer extends UntypedActor {
   private final ActorInvokeDispatcher<ActorAdapter> dispatcher;
 
-  public static Props props(final Class<? extends ActorAdapter> adapter, final Object... args) {
-    return Props.create(ActorContainer.class, new Object[]{new AdapterProps[]{AdapterProps.create(adapter, args)}});
-  }
-
   public static Props props(
     final AdapterProps adapterProps,
     final AdapterProps overrideProps

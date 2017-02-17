@@ -5,8 +5,6 @@ import akka.testkit.JavaTestKit;
 import com.expleague.server.agents.ActorSystemTestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 /**
  * @author vpdelta
  */
@@ -32,7 +30,7 @@ public class PersistentActorContainerTest extends ActorSystemTestCase {
   @Test
   public void testPersistentActorContainer() throws Exception {
     new JavaTestKit(system) {{
-      final ActorRef tester = system.actorOf(PersistentActorContainer.props(TestActor.class, "Tester"));
+      final ActorRef tester = system.actorOf(ActorAdapter.props(TestActor.class, "Tester"));
       tester.tell("hello", getRef());
       expectMsgEquals("Tester reply to hello");
     }};

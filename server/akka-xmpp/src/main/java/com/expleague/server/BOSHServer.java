@@ -1,7 +1,6 @@
 package com.expleague.server;
 
 import akka.actor.ActorRef;
-import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.http.javadsl.Http;
 import akka.http.javadsl.IncomingConnection;
@@ -85,7 +84,7 @@ public class BOSHServer extends ActorAdapter<UntypedActor> {
         response = response.addHeader(AccessControlAllowOrigin.create(HttpOriginRange.ALL));
         try {
           PipedInputStream pis = new PipedInputStream();
-          final ActorRef pipe = context().actorOf(ActorContainer.props(StreamPipe.class, pis));
+          final ActorRef pipe = context().actorOf(props(StreamPipe.class, pis));
           AkkaTools.ask(pipe, new StreamPipe.Open());
           request.entity().getDataBytes().to(Sink.actorRef(pipe, new StreamPipe.Close())).run(materializer);
           final BoshBody boshBody;
@@ -98,7 +97,7 @@ public class BOSHServer extends ActorAdapter<UntypedActor> {
             final String sid = Stanza.generateId().replace('/', 'b');
             boshBody.sid(sid);
             boshBody.requests(3);
-            context().actorOf(ActorContainer.props(BOSHSession.class), sid);
+            context().actorOf(props(BOSHSession.class), sid);
           }
           else { // synchronous form
             final Option<ActorRef> sessionOpt = context().child(boshBody.sid());

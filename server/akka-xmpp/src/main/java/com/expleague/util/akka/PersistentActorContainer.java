@@ -9,10 +9,6 @@ import akka.persistence.UntypedPersistentActor;
 public class PersistentActorContainer extends UntypedPersistentActor {
   private final ActorInvokeDispatcher<PersistentActorAdapter> dispatcher;
 
-  public static Props props(final Class<? extends ActorAdapter> adapter, final Object... args) {
-    return Props.create(PersistentActorContainer.class, new Object[] {new AdapterProps[] {AdapterProps.create(adapter, args)}});
-  }
-
   public static Props props(
     final AdapterProps adapterProps,
     final AdapterProps overrideProps

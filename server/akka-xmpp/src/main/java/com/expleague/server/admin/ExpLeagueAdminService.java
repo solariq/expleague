@@ -20,7 +20,6 @@ import com.expleague.server.admin.series.TimeSeriesChartDto;
 import com.expleague.server.admin.series.TimeSeriesDto;
 import com.expleague.server.agents.*;
 import com.expleague.util.akka.ActorAdapter;
-import com.expleague.util.akka.ActorContainer;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Stanza;
@@ -84,7 +83,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
       final IncomingConnection connection = (IncomingConnection) o;
       log.fine("Accepted new connection from " + connection.remoteAddress());
       connection.handleWithAsyncHandler((Function<HttpRequest, Future<HttpResponse>>) httpRequest -> {
-        final Future ask = (Future) Patterns.ask(context().actorOf(ActorContainer.props(Handler.class)), httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
+        final Future ask = (Future) Patterns.ask(context().actorOf(props(Handler.class)), httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
         //noinspection unchecked
         return (Future<HttpResponse>)ask;
       }, materializer);

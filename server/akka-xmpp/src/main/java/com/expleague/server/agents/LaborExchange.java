@@ -31,7 +31,7 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
     super.preStart();
     AkkaTools.scheduleTimeout(context(), ExpLeagueServer.config().timeout("labor-exchange.state-timeout"), self());
     status = new ServiceStatus();
-    context().actorOf(ActorContainer.props(Experts.class), EXPERTS_ACTOR_NAME);
+    context().actorOf(props(Experts.class), EXPERTS_ACTOR_NAME);
   }
 
   @ActorMethod

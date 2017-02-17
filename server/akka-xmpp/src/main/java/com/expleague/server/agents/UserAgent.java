@@ -13,7 +13,6 @@ import com.expleague.server.agents.subscription.DefaultSubscription;
 import com.expleague.server.notifications.NotificationsManager;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.PersistentActorAdapter;
-import com.expleague.util.akka.PersistentActorContainer;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.muc.MucHistory;
 import com.expleague.xmpp.muc.MucXData;
@@ -79,7 +78,7 @@ public class UserAgent extends PersistentActorAdapter {
       }
       connected.put(resource, status.device);
       final ActorRef courierRef = context().actorOf(
-          PersistentActorContainer.props(Courier.class, status.device, sender()),
+          props(Courier.class, status.device, sender()),
           actorResourceAddr
       );
       Subscription subscription = null;

@@ -43,13 +43,14 @@ public class ClientAdminTest {
     final BareJID roomJID = clientBot.startRoom(topicText);
 
     //Act
-    final List<Message> initMessages = adminBot.receiveMessages(2);
+    final List<Message> initMessages = adminBot.receiveMessages(3);
     adminBot.sendToGroupChat(messageFromAdminText, roomJID);
     final Message messageFromAdmin = clientBot.receiveMessage();
 
     //Assert
     Assert.assertEquals("moderator", initMessages.get(0).getFirstChild("room-role-update").getAttribute("role"));
-    Assert.assertEquals(topicText, initMessages.get(1).getFirstChild("offer").getFirstChild("topic").getValue());
+    Assert.assertEquals("0", initMessages.get(1).getFirstChild("room-state-changed").getAttribute("state"));
+    Assert.assertEquals(topicText, initMessages.get(2).getFirstChild("offer").getFirstChild("topic").getValue());
     Assert.assertEquals(messageFromAdminText, messageFromAdmin.getFirstChild("body").getValue());
   }
 }

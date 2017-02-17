@@ -10,11 +10,9 @@ import com.expleague.model.Application;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
 import com.expleague.server.Subscription;
-import com.expleague.server.XMPPDevice;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.AkkaTools;
-import com.expleague.util.akka.PersistentActorContainer;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
@@ -173,11 +171,11 @@ public class XMPP extends ActorAdapter<UntypedActor> {
   @NotNull
   protected Props newActorProps(final JID jid) {
     if (GlobalChatAgent.ID.equals(jid.local()))
-      return PersistentActorContainer.props(GlobalChatAgent.class, jid);
+      return props(GlobalChatAgent.class, jid);
     else if (jid.domain().startsWith("muc."))
-      return PersistentActorContainer.props(ExpLeagueRoomAgent.class, jid);
+      return props(ExpLeagueRoomAgent.class, jid);
     else
-      return PersistentActorContainer.props(UserAgent.class, jid);
+      return props(UserAgent.class, jid);
   }
 
   public static JID jid(String local) {

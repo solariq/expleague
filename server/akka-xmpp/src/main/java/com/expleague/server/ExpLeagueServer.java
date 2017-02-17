@@ -2,14 +2,12 @@ package com.expleague.server;
 
 import akka.actor.ActorSystem;
 import com.expleague.server.admin.ExpLeagueAdminService;
-import com.expleague.server.agents.GlobalChatAgent;
 import com.expleague.server.agents.LaborExchange;
-import com.expleague.server.agents.RoomAgent;
 import com.expleague.server.agents.XMPP;
 import com.expleague.server.dao.Archive;
 import com.expleague.server.dao.PatternsRepository;
 import com.expleague.server.services.XMPPServices;
-import com.expleague.util.akka.ActorContainer;
+import com.expleague.util.akka.ActorAdapter;
 import com.expleague.server.notifications.NotificationsManager;
 import com.google.common.annotations.VisibleForTesting;
 import com.typesafe.config.Config;
@@ -41,16 +39,16 @@ public class ExpLeagueServer {
     final ActorSystem system = ActorSystem.create("ExpLeague", load);
 
     // singletons
-    system.actorOf(ActorContainer.props(XMPP.class), "xmpp");
-    system.actorOf(ActorContainer.props(LaborExchange.class), "labor-exchange");
+    system.actorOf(ActorAdapter.props(XMPP.class), "xmpp");
+    system.actorOf(ActorAdapter.props(LaborExchange.class), "labor-exchange");
 
     // per node
-    system.actorOf(ActorContainer.props(NotificationsManager.class, config.iosPushCert(), config.iosPushPasswd()), "notifications");
-    system.actorOf(ActorContainer.props(XMPPServices.class), "services");
-    system.actorOf(ActorContainer.props(XMPPServer.class), "comm");
-    system.actorOf(ActorContainer.props(BOSHServer.class), "bosh");
-    system.actorOf(ActorContainer.props(ImageStorage.class), "image-storage");
-    system.actorOf(ActorContainer.props(ExpLeagueAdminService.class, load.getConfig("tbts.admin.embedded")), "admin-service");
+    system.actorOf(ActorAdapter.props(NotificationsManager.class, config.iosPushCert(), config.iosPushPasswd()), "notifications");
+    system.actorOf(ActorAdapter.props(XMPPServices.class), "services");
+    system.actorOf(ActorAdapter.props(XMPPServer.class), "comm");
+    system.actorOf(ActorAdapter.props(BOSHServer.class), "bosh");
+    system.actorOf(ActorAdapter.props(ImageStorage.class), "image-storage");
+    system.actorOf(ActorAdapter.props(ExpLeagueAdminService.class, load.getConfig("tbts.admin.embedded")), "admin-service");
   }
 
   public static Roster roster() {
@@ -73,6 +71,7 @@ public class ExpLeagueServer {
   @VisibleForTesting
   static void setConfig(final Cfg cfg) throws Exception {
     config = cfg;
+    ActorAdapter.cfg = cfg;
     users = config.roster().newInstance();
     leBoard = config.board().newInstance();
     archive = config.archive().newInstance();
@@ -85,6 +84,8 @@ public class ExpLeagueServer {
 
   public interface Cfg {
     ServerCfg.Type type();
+
+    boolean unitTest();
 
     String domain();
 
@@ -134,6 +135,7 @@ public class ExpLeagueServer {
     private final Class<? extends LaborExchange.Board> board;
     private final Class<? extends PatternsRepository> patterns;
     private final Type type;
+    private final boolean unitTest;
 
     public ServerCfg(Config load) throws ClassNotFoundException {
       config = load.getConfig("tbts");
@@ -148,6 +150,7 @@ public class ExpLeagueServer {
       //noinspection unchecked
       patterns = (Class<? extends PatternsRepository>) Class.forName(config.getString("patterns"));
       type = Type.valueOf(config.getString("type").toUpperCase());
+      unitTest = config.getBoolean("unit-test");
     }
 
     @Override
@@ -193,6 +196,11 @@ public class ExpLeagueServer {
     @Override
     public Type type() {
       return type;
+    }
+
+    @Override
+    public boolean unitTest() {
+      return unitTest;
     }
 
     @Override

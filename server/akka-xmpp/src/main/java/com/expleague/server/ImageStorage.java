@@ -2,7 +2,6 @@ package com.expleague.server;
 
 import akka.actor.ActorSystem;
 import akka.actor.PoisonPill;
-import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.http.javadsl.Http;
 import akka.http.javadsl.IncomingConnection;
@@ -24,7 +23,6 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.expleague.util.akka.ActorAdapter;
-import com.expleague.util.akka.ActorContainer;
 import com.expleague.util.akka.ActorMethod;
 import com.spbsu.commons.io.StreamTools;
 import org.apache.commons.fileupload.MultipartStream;
@@ -74,7 +72,7 @@ public class ImageStorage extends ActorAdapter<UntypedActor> {
 
       log.fine("Accepted new connection from " + connection.remoteAddress());
       connection.handleWithAsyncHandler((Function<HttpRequest, Future<HttpResponse>>) httpRequest -> {
-        final Future ask = (Future) Patterns.ask(context().actorOf(ActorContainer.props(RequestHandler.class, s3Client)), httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
+        final Future ask = (Future) Patterns.ask(context().actorOf(props(RequestHandler.class, s3Client)), httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
         //noinspection unchecked
         return (Future<HttpResponse>)ask;
       }, materializer);
@@ -84,7 +82,7 @@ public class ImageStorage extends ActorAdapter<UntypedActor> {
 
   public static void main(String[] args) {
     final ActorSystem system = ActorSystem.create("TBTS_Light_XMPP");
-    system.actorOf(ActorContainer.props(ImageStorage.class));
+    system.actorOf(props(ImageStorage.class));
   }
 
   private static class RequestHandler extends ActorAdapter<UntypedActor> {

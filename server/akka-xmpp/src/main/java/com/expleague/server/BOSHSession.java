@@ -88,12 +88,13 @@ public class BOSHSession extends ActorAdapter<UntypedActor> {
   public void invoke(XMPPClientConnection.ConnectionState state) {
     switch (state) {
       case AUTHORIZATION:
-        businesLogic = context().actorOf(ActorContainer.props(AuthorizationPhase.class, self(), (Action<String>) id -> BOSHSession.this.id = id));
+        final Object[] args = new Object[]{self(), (Action<String>) id -> BOSHSession.this.id = id};
+        businesLogic = context().actorOf(props(AuthorizationPhase.class, args));
         break;
       case CONNECTED:
         connected = true;
         invoke(Timeout.zero());
-        businesLogic = context().actorOf(ActorContainer.props(ConnectedPhase.class, self(), id));
+        businesLogic = context().actorOf(props(ConnectedPhase.class, self(), id));
         break;
       case CLOSED:
         businesLogic.tell(new Close(), self());

@@ -12,7 +12,6 @@ import com.expleague.server.xmpp.phase.ConnectedPhase;
 import com.expleague.server.xmpp.phase.HandshakePhase;
 import com.expleague.server.xmpp.phase.SSLHandshake;
 import com.expleague.util.akka.ActorAdapter;
-import com.expleague.util.akka.ActorContainer;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.xml.AsyncJAXBStreamReader;
 import com.expleague.xmpp.Item;
@@ -44,8 +43,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -216,7 +213,7 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
     switch (state) {
       case HANDSHAKE: {
         final Source<Tcp.Received, ActorRef> source = Source.actorRef(1000, OverflowStrategy.fail());
-        newLogic = context().actorOf(ActorContainer.props(HandshakePhase.class, self()), "handshake");
+        newLogic = context().actorOf(props(HandshakePhase.class, self()), "handshake");
         break;
       }
       case STARTTLS: {
@@ -246,7 +243,7 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
           sslEngine.setUseClientMode(false);
 //          sslEngine.setEnableSessionCreation(true);
           sslEngine.setWantClientAuth(false);
-          final ActorRef handshake = context().actorOf(ActorContainer.props(SSLHandshake.class, self(), sslEngine), "starttls");
+          final ActorRef handshake = context().actorOf(props(SSLHandshake.class, self(), sslEngine), "starttls");
           sslEngine.beginHandshake();
           helper = new SSLHelper(sslEngine);
           newLogic = handshake;
@@ -264,7 +261,8 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
         }
 
         businessLogic.tell(new Close(), self());
-        newLogic = context().actorOf(ActorContainer.props(AuthorizationPhase.class, self(), (Action<String>) id -> XMPPClientConnection.this.id = id), "authorization");
+        final Object[] args = new Object[]{self(), (Action<String>) id -> XMPPClientConnection.this.id = id};
+        newLogic = context().actorOf(props(AuthorizationPhase.class, args), "authorization");
         break;
       }
       case CONNECTED: {
@@ -273,7 +271,7 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
           asyncXml = factory.createAsyncForByteArray();
           reader = new AsyncJAXBStreamReader(asyncXml, Stream.jaxb());
         }
-        newLogic = context().actorOf(ActorContainer.props(ConnectedPhase.class, self(), id), "connected");
+        newLogic = context().actorOf(props(ConnectedPhase.class, self(), id), "connected");
         break;
       }
       case CLOSED: {

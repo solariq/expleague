@@ -1,19 +1,15 @@
 package com.expleague.server;
 
 import akka.actor.ActorRef;
-import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.io.Tcp;
 import akka.io.TcpMessage;
 import akka.io.TcpSO;
 import com.expleague.server.xmpp.XMPPClientConnection;
 import com.expleague.util.akka.ActorAdapter;
-import com.expleague.util.akka.ActorContainer;
 import com.expleague.util.akka.ActorMethod;
-import com.expleague.util.akka.UntypedActorAdapter;
 
 import java.net.InetSocketAddress;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Logger;
 
@@ -41,6 +37,6 @@ public class XMPPServer extends ActorAdapter<UntypedActor> {
     if (msg instanceof Tcp.CommandFailed)
       context().stop(self());
     else if (msg instanceof Tcp.Connected)
-      context().actorOf(ActorContainer.props(XMPPClientConnection.class, sender()));
+      context().actorOf(props(XMPPClientConnection.class, sender()));
   }
 }

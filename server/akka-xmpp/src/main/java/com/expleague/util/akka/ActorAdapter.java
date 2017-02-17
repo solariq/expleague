@@ -3,14 +3,27 @@ package com.expleague.util.akka;
 import akka.actor.Actor;
 import akka.actor.ActorContext;
 import akka.actor.ActorRef;
+import akka.actor.Props;
+import com.expleague.server.ExpLeagueServer;
 import com.spbsu.commons.func.Action;
 
 /**
  * @author vpdelta
  */
 public abstract class ActorAdapter<A extends Actor> {
+  public static ExpLeagueServer.Cfg cfg;
+  
   protected A actor;
   protected Action<Object> unhandled;
+
+  public static Props props(Class<? extends ActorAdapter> adapter, Object... args) {
+    if (PersistentActorAdapter.class.isAssignableFrom(adapter) && cfg.unitTest())
+      return Props.create(FakePersistentActorContainer.class, new Object[]{new AdapterProps[]{AdapterProps.create(adapter, args)}});
+    else if (PersistentActorAdapter.class.isAssignableFrom(adapter))
+      return Props.create(PersistentActorContainer.class, new Object[]{new AdapterProps[]{AdapterProps.create(adapter, args)}});
+    else
+      return Props.create(ActorContainer.class, new Object[]{new AdapterProps[]{AdapterProps.create(adapter, args)}});
+  }
 
   public ActorAdapter() {
     // to make it possible to create adapter outside of actor system (in tests)
@@ -68,11 +81,6 @@ public abstract class ActorAdapter<A extends Actor> {
   }
 
   public ActorRef actorOf(final Class<? extends ActorAdapter> adapter, final Object... args) {
-    if (PersistentActorAdapter.class.isAssignableFrom(adapter)) {
-      return context().actorOf(PersistentActorContainer.props(adapter, args));
-    }
-    else {
-      return context().actorOf(ActorContainer.props(adapter, args));
-    }
+    return context().actorOf(props(adapter, args));
   }
 }
