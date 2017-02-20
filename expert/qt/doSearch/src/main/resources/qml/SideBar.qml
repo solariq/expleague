@@ -88,86 +88,89 @@ Item {
         visible: false
     }
 
-    Legacy.SplitView {
-        id: rightSide
+    Rectangle {
+        color: Palette.toolsBackground
         anchors.fill: parent
-        orientation: Qt.Vertical
+
+        Legacy.SplitView {
+            id: rightSide
+            anchors.fill: parent
+            orientation: Qt.Vertical
 
 
-        OfferView {
-            Layout.fillWidth: true
-            Layout.preferredHeight: implicitHeight
-            Layout.maximumHeight: offerView.maxHeight
-            Layout.minimumHeight: offerView.minHeight
+            OfferView {
+                id: offerView
 
-            id: offerView
+                Layout.fillWidth: true
+                Layout.maximumHeight: offerView.maxHeight
+                Layout.minimumHeight: offerView.minHeight
+                task: self.task
+                visible: !!self.task
+            }
 
-            task: self.task
-            visible: !!self.task
-        }
+            Item {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
 
-        Item {
-            Layout.fillHeight: true
-            Layout.fillWidth: true
+                id: screenHolder
+                WebEngineView {
+                    id: preview
+                    visible: false
+                    focus: false
+                    anchors.fill: parent
 
-            id: screenHolder
-            WebEngineView {
-                id: preview
-                visible: false
-                focus: false
-                anchors.fill: parent
+                    property real minWidth: 320
+                    property real maxWidth: 320
 
-                property real minWidth: 320
-                property real maxWidth: 320
+                    property real storedWidth: -1
+                    property string html: ""
 
-                property real storedWidth: -1
-                property string html: ""
+                    url: "about:blank"
 
-                url: "about:blank"
-
-                onHtmlChanged: {
-                    var focused = window.activeFocusItem
-                    var html = "<!DOCTYPE html><html><head>
+                    onHtmlChanged: {
+                        var focused = window.activeFocusItem
+                        var html = "<!DOCTYPE html><html><head>
                                 <script src=\"qrc:/md-scripts.js\"></script>
                                 <link rel=\"stylesheet\" href=\"qrc:/markdownpad-github.css\"></head>
                                 <body>" + preview.html+ "</body></html>"
 
-                    loadHtml(html)
-                    if (focused)
-                        focused.forceActiveFocus()
-                }
-                onUrlChanged: {
-                    var url = "" + preview.url
-                    // console.log("New url: " + url)
-                    if (url.length > 0 && url != "about:blank" && url.indexOf("data:") !== 0) {
-                        preview.goBack()
-                        dosearch.navigation.handleOmnibox(url, 0)
+                        loadHtml(html)
+                        if (focused)
+                            focused.forceActiveFocus()
+                    }
+                    onUrlChanged: {
+                        var url = "" + preview.url
+                        // console.log("New url: " + url)
+                        if (url.length > 0 && url != "about:blank" && url.indexOf("data:") !== 0) {
+                            preview.goBack()
+                            dosearch.navigation.handleOmnibox(url, 0)
+                        }
                     }
                 }
-            }
-            LeagueChat {
-                id: dialog
-                visible: false
-                anchors.fill: parent
+                LeagueChat {
+                    id: dialog
+                    visible: false
+                    anchors.fill: parent
 
-                property real minWidth: 320
-                property real maxWidth: -1
+                    property real minWidth: 320
+                    property real maxWidth: -1
 
-                property real storedWidth: -1
+                    property real storedWidth: -1
 
-                task: self.task
-            }
-            Vault {
-                id: vault
-                visible: false
-                anchors.fill: parent
+                    task: self.task
+                }
+                Vault {
+                    id: vault
+                    visible: false
+                    anchors.fill: parent
 
-                property real minWidth: !!self.task ? 320 : -1
-                property real maxWidth: -1
+                    property real minWidth: !!self.task ? 320 : -1
+                    property real maxWidth: -1
 
-                property real storedWidth: -1
+                    property real storedWidth: -1
 
-                context: self.context
+                    context: self.context
+                }
             }
         }
     }

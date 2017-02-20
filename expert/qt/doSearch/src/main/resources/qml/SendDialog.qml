@@ -12,9 +12,10 @@ Window {
     property Task task
     property color backgroundColor: "#e8e8e8"
     property int invitationTimeout: 0
+    property bool questions: true
 
     width: 350
-    height: 290
+    height: questions ? 290 : 190
     minimumHeight: height
     maximumHeight: height
     minimumWidth: width
@@ -27,10 +28,16 @@ Window {
     signal appendTag(TaskTag tag)
     Action {
         id: accept
-        text: qsTr("Отправить")
-        enabled: shortAnswer.text.length > 0 && !!success.current && !!difficulty.current && !!info.current
+        text: questions ? qsTr("Отправить") : qsTr("Закрыть")
+        enabled: shortAnswer.text.length > 0 && (!questions || !!success.current && !!difficulty.current && !!info.current)
         onTriggered: {
-            task.sendAnswer(shortAnswer.text, success.current.value, difficulty.current.value, info.current.value)
+            if (questions) {
+                task.sendAnswer(shortAnswer.text, success.current.value, difficulty.current.value, info.current.value)
+            }
+            else {
+                task.close(shortAnswer.text)
+            }
+
             dialog.hide()
             success.current = null
             difficulty.current = null
@@ -52,7 +59,7 @@ Window {
         Item {Layout.preferredHeight: 20}
         Text {
             Layout.alignment: Qt.AlignHCenter
-            text: qsTr("Подготовка к отправке ответа")
+            text: questions ? qsTr("Подготовка к отправке ответа") : qsTr("Закрытие задания")
             font.bold: true
             font.pointSize: 14
         }
@@ -77,6 +84,7 @@ Window {
                 }
 
                 GroupBox {
+                    visible: questions
                     title: qsTr("Было сложно?")
                     ExclusiveGroup { id: difficulty }
                     Column {
@@ -103,6 +111,7 @@ Window {
                 }
 
                 GroupBox {
+                    visible: questions
                     title: qsTr("Всё нашлось?")
                     ExclusiveGroup { id: success }
                     Column {
@@ -129,6 +138,7 @@ Window {
                 }
 
                 GroupBox {
+                    visible: questions
                     title: qsTr("Требовалась доп. информация от клиента?")
                     Layout.columnSpan: 2
                     Layout.fillWidth: true

@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ServiceStatus extends Item {
   @XmlAttribute(name = "experts")
   int expertsOnline = 0;
-  @XmlAttribute(name = "experts-online")
+  @XmlAttribute(name = "experts-ready")
   int expertsAvailable = 0;
   @XmlAttribute(name = "starving-tasks")
   int starvingTasks = 0;

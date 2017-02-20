@@ -1,6 +1,7 @@
 package com.expleague.server.agents.subscription;
 
 import com.expleague.server.Subscription;
+import com.expleague.server.XMPPDevice;
 import com.expleague.xmpp.JID;
 
 /**
@@ -21,7 +22,10 @@ public class ClientSubscription implements Subscription {
 
   @Override
   public boolean relevant(JID jid) {
-    return jid.resource() != null && jid.resource().endsWith("expert");
+    if (jid.local() == null || jid.local().isEmpty())
+      return true;
+    final XMPPDevice device = XMPPDevice.fromJid(jid);
+    return device != null && device.expert();
   }
 }
 

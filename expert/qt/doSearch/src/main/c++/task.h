@@ -108,6 +108,8 @@ public:
     QList<TaskTag*> tags() const { return m_tags; }
     QList<AnswerPattern*> patterns() const { return m_patterns; }
 
+    QMap<QString, FilterType> filter() const { return m_filter; }
+
     void start();
     void setRegion(const QString& region) { m_region = region; emit regionChanged(); }
 
@@ -176,10 +178,30 @@ class Task: public QObject {
     Q_PROPERTY(QStringList accepted READ accepted NOTIFY filterChanged)
     Q_PROPERTY(QStringList preferred READ preferred NOTIFY filterChanged)
 
+    Q_PROPERTY(QQmlListProperty<expleague::Member> experts READ expertsQml NOTIFY filterChanged)
+    Q_PROPERTY(QList<int> roles READ roles NOTIFY filterChanged)
+
     Q_PROPERTY(expleague::MarkdownEditorPage* answer READ answer NOTIFY answerChanged)
+    Q_PROPERTY(expleague::Task::Status status READ status NOTIFY statusChanged)
+
+    Q_ENUMS(Status)
+
+public:
+    enum Status: int {
+        OPEN,
+        CHAT,
+        RESPONSE,
+        CONFIRMATION,
+        OFFER,
+        WORK,
+        DELIVERY,
+        FEEDBACK,
+        CLOSED
+    };
 
 public:
     Offer* offer() const { return m_offer; }
+    Status status() const { return m_status; }
 
     QQmlListProperty<Bubble> chat() { return QQmlListProperty<Bubble>(this, m_chat); }
 
@@ -191,15 +213,19 @@ public:
     QQmlListProperty<AnswerPattern> patterns() { return QQmlListProperty<AnswerPattern>(this, m_patterns); }
     QStringList phones() { return m_phones; }
 
-    QStringList banned() const { return this->filter(Offer::TFT_REJECT); }
+    QStringList banned() const { return filter(Offer::TFT_REJECT); }
     QStringList accepted() const { return filter(Offer::TFT_ACCEPT); }
     QStringList preferred() const { return filter(Offer::TFT_PREFER); }
+
+    QQmlListProperty<Member> expertsQml() const { return QQmlListProperty<Member>(const_cast<Task*>(this), const_cast<QList<Member*>&>(m_experts)); }
+    QList<int> roles() const { return m_roles; }
 
     QString id() const;
     Context* context() const { return m_context; }
 
 public:
     Q_INVOKABLE void enter() const;
+    Q_INVOKABLE void close(const QString& shortAnswer);
     Q_INVOKABLE void sendMessage(const QString& str) const;
     Q_INVOKABLE void sendAnswer(const QString& shortAnswer, int difficulty, int success, bool extraInfo);
     Q_INVOKABLE void tag(TaskTag*);
@@ -208,12 +234,14 @@ public:
     Q_INVOKABLE void cancel();
     Q_INVOKABLE void stop();
     Q_INVOKABLE void suspend(int seconds);
-    Q_INVOKABLE void filter(const QString& memberId, Offer::FilterType type);
+    Q_INVOKABLE void clearFilter();
+    Q_INVOKABLE void filter(Member* members, int role);
     Q_INVOKABLE void commitOffer(const QString& topic, const QString& comment, const QList<Member*>& selected = QList<Member*>()) const;
 
     bool active() const { return m_context; }
 
     void setContext(Context* context);
+    void setStatus(Status status) { m_status = status; emit statusChanged(); }
 
 public:
     const QList<MarkdownEditorPage*>& receivedAnswers() const { return m_answers; }
@@ -225,6 +253,7 @@ public:
 
 signals:
     void offerChanged();
+    void statusChanged();
 
     void bubblesChanged();
     void chatChanged();
@@ -258,6 +287,7 @@ public slots:
 private:
     Bubble* bubble(const QString& from);
     QStringList filter(Offer::FilterType type) const;
+    void setFilter(QMap<QString, Offer::FilterType> filter);
 
 private:
     QString m_room;
@@ -269,9 +299,13 @@ private:
     QList<MarkdownEditorPage*> m_answers;
     QStringList m_phones;
     Context* m_context = 0;
+    Status m_status;
 
     QList<TaskTag*> m_tags;
     QList<AnswerPattern*> m_patterns;
+
+    QList<Member*> m_experts;
+    QList<int> m_roles;
 };
 
 class ChatMessage: public QObject {
@@ -370,23 +404,8 @@ class RoomState: public QObject {
     Q_PROPERTY(QQmlListProperty<expleague::Member> involved READ involvedQml NOTIFY involvedChanged)
     Q_PROPERTY(QQmlListProperty<expleague::Member> occupied READ occupiedQml NOTIFY occupiedChanged)
     Q_PROPERTY(int feedback READ feedback NOTIFY feedbackChanged)
-    Q_PROPERTY(expleague::RoomState::Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(expleague::Task::Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(expleague::Task* task READ task CONSTANT)
-
-    Q_ENUMS(Status)
-
-public:
-    enum Status: int {
-        OPEN,
-        CHAT,
-        RESPONSE,
-        CONFIRMATION,
-        OFFER,
-        WORK,
-        DELIVERY,
-        FEEDBACK,
-        CLOSED
-    };
 
 public:
     int unread() const { return m_unread; }
@@ -399,7 +418,7 @@ public:
     Task* task() const { return m_task; }
     bool occupied() const { return m_admin_active; }
 
-    Status status() const { return m_status; }
+    Task::Status status() const { return m_task->status(); }
 
     Q_INVOKABLE void enter();
     QString roomId() const;
@@ -415,7 +434,7 @@ signals:
     void unreadChanged(int unread) const;
     void occupiedChanged() const;
     void involvedChanged() const;
-    void statusChanged(expleague::RoomState::Status status) const;
+    void statusChanged(expleague::Task::Status status) const;
     void feedbackChanged() const;
     void topicChanged() const;
     void clientChanged() const;
@@ -434,7 +453,6 @@ private:
     friend class League;
 
 private:
-    Status m_status = OPEN;
     int m_unread = 0;
 
     QList<Member*> m_involved;

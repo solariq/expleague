@@ -136,6 +136,9 @@ class League: public QObject {
     Q_PROPERTY(QQmlListProperty<expleague::Profile> profiles READ profiles NOTIFY profilesChanged)
     Q_PROPERTY(QQmlListProperty<expleague::TaskTag> tags READ tags NOTIFY tagsChanged)
     Q_PROPERTY(QQmlListProperty<expleague::AnswerPattern> patterns READ patterns NOTIFY patternsChanged)
+    Q_PROPERTY(QStringList helloPatterns READ helloPatterns NOTIFY chatPatternsChanged)
+    Q_PROPERTY(QStringList chatPatterns READ chatPatterns NOTIFY chatPatternsChanged)
+    Q_PROPERTY(QStringList experts READ experts NOTIFY membersChanged)
 
     Q_PROPERTY(int tasksAvailable READ tasksAvailable NOTIFY tasksAvailableChanged)
 
@@ -179,6 +182,11 @@ public:
         return QQmlListProperty<AnswerPattern>(this, m_patterns);
     }
 
+    QStringList chatPatterns() const { return m_chat_templates["chat"]; }
+    QStringList helloPatterns() const { return m_chat_templates["hello"]; }
+
+    QStringList experts() const;
+
     QList<RoomState*> rooms() const { return m_rooms; }
 
     int tasksAvailable() const {
@@ -196,6 +204,7 @@ public:
     Q_INVOKABLE QUrl normalizeImageUrlForUI(const QUrl& imageUrl) const;
 
     Q_INVOKABLE Member* findMember(const QString& id) const;
+    Q_INVOKABLE Member* findMemberByName(const QString& name) const;
     Q_INVOKABLE TaskTag* findTag(const QString& id) const;
     Q_INVOKABLE AnswerPattern* findPattern(const QString& id) const;
 
@@ -232,11 +241,13 @@ signals:
     void receivedInvite(Offer* offer);
     void tasksChanged();
     void tasksAvailableChanged();
+    void chatPatternsChanged();
 
     Q_INVOKABLE void profilesChanged();
     void patternsChanged();
     void tagsChanged();
     void roomsChanged();
+    void membersChanged();
 //    void roomDumpReceived(const QString& roomId, );
 
 private slots:
@@ -250,6 +261,7 @@ private slots:
 
     void onTag(TaskTag* tag);
     void onPattern(AnswerPattern* pattern);
+    void onChatTemplate(const QString& type, const QString& pattern);
     void onMessage(const QString& room, const QString& id, const QString& from, const QString& text);
     void onImage(const QString& room, const QString& id, const QString& from, const QUrl&);
     void onAnswer(const QString& room, const QString& id, const QString& from, const QString&);
@@ -265,6 +277,9 @@ private slots:
     }
 
     void onPresenceChanged(const QString& user, bool available);
+    void onMembersChanged() {
+        emit membersChanged();
+    }
 
 public:
     explicit League(QObject* parent = 0);
@@ -291,6 +306,7 @@ private:
     bool m_reconnect = false;
     QSet<QString> m_known_ids;
     QString m_admin_focus;
+    QHash<QString, QStringList> m_chat_templates;
 };
 
 class ImagesStoreResponse: public QQuickImageResponse {

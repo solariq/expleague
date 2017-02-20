@@ -2,6 +2,7 @@ import QtQuick 2.7
 
 import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.1
+import QtQuick.Controls 1.4 as Legacy
 
 import ExpLeague 1.0
 import "."
@@ -25,10 +26,11 @@ Item {
         Item {
             id: roomCardSelf
 
-            property string status: ["open", "chat", "response", "confirmation", "offer", "work", "delivery", "feedback", "cloded"][modelData.status]
+            property string status: modelData.status >= 0 && modelData.status < 9 ? ["open", "chat", "response", "confirmation", "offer", "work", "delivery", "feedback", "closed"][modelData.status] : ""
 
             implicitHeight: 75
-            implicitWidth: 350
+            implicitWidth: 346
+            anchors.horizontalCenter: parent.horizontalCenter
 
             Rectangle {
                 anchors.fill: parent
@@ -69,11 +71,13 @@ Item {
                             Layout.fillHeight: true
                             Layout.fillWidth: true
                             Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.verticalCenterOffset: -5
-                                anchors.left: parent.left
+                                anchors.fill: parent
+                                horizontalAlignment: Qt.AlignLeft
+                                verticalAlignment: Qt.AlignVCenter
                                 id: topic
                                 text: modelData.topic
+                                clip: true
+                                wrapMode: Text.WrapAnywhere
                                 elide: Text.ElideRight
                             }
                         }
@@ -116,38 +120,85 @@ Item {
                 Item {
                     Layout.alignment: Qt.AlignVCenter
                     Layout.preferredHeight: 45
-                    Layout.preferredWidth: 45
+                    Layout.preferredWidth: 60
                     Image {
                         id: status
                         anchors.centerIn: parent
                         height: 25
                         width: 25
+                        mipmap: true
+
                         anchors.verticalCenterOffset: eta.visible ? -4 : 0
-                        source: "qrc:/status/" + roomCardSelf.status + ".png"
+                        source: roomCardSelf.status != "" ? "qrc:/status/" + roomCardSelf.status + ".png" : ""
                     }
-                    Text {
-                        id: eta
+
+                    Item {
+                        id: statusDetails
                         anchors.top: status.bottom
                         anchors.horizontalCenter: status.horizontalCenter
-                        renderType: Text.NativeRendering
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 10
-                        visible: ["delivery", "feedback", "closed", "response"].indexOf(roomCardSelf.status) < 0
-                        property color textColor: "black"
-                        text: {
-                            var offer = modelData.task.offer
-                            if (!offer)
-                                return ""
-                            var d = new Date(Math.abs(offer.timeLeft))
-                            return (offer.timeLeft > 0 ? "" : "-") + (d.getUTCHours() + (d.getUTCDate() - 1) * 24) + qsTr(":") + d.getUTCMinutes()
-                        }
-                        color: {
-                            var offer = modelData.task.offer
-                            if (!offer)
-                                return "black"
+                        height: 12
+                        implicitHeight: 12
+                        implicitWidth: eta.visible ? eta.implicitWidth : (stars.visible ? stars.implicitWidth : 0)
+                        Text {
+                            id: eta
+                            renderType: Text.NativeRendering
+                            wrapMode: Text.WordWrap
+                            font.pixelSize: 10
+                            visible: ["delivery", "feedback", "closed", "response"].indexOf(roomCardSelf.status) < 0
+                            property color textColor: "black"
+                            text: {
+                                var offer = modelData.task.offer
+                                if (!offer)
+                                    return ""
+                                var d = new Date(Math.abs(offer.timeLeft))
+                                return (offer.timeLeft > 0 ? "" : "-") + (d.getUTCHours() + (d.getUTCDate() - 1) * 24) + qsTr(":") + d.getUTCMinutes()
+                            }
+                            color: {
+                                var offer = modelData.task.offer
+                                if (!offer)
+                                    return "black"
 
-                            var urgency = Math.sqrt(Math.max(offer.timeLeft/offer.duration, 0))
-                            return Qt.rgba(textColor.r + (1 - textColor.r) * (1 - urgency), textColor.g * urgency, textColor.b * urgency, textColor.a + (1 - textColor.a) * urgency)
+                                var urgency = Math.sqrt(Math.max(offer.timeLeft/offer.duration, 0))
+                                return Qt.rgba(textColor.r + (1 - textColor.r) * (1 - urgency), textColor.g * urgency, textColor.b * urgency, textColor.a + (1 - textColor.a) * urgency)
+                            }
+                        }
+                        RowLayout {
+                            id: stars
+                            visible: roomCardSelf.status == "closed"
+                            spacing: 0
+                            height: implicitHeight
+                            implicitHeight: 10
+
+                            Image {
+                                Layout.preferredHeight: 10
+                                Layout.preferredWidth: 10
+                                mipmap: true
+                                source: modelData.feedback > 0 ? "qrc:/tools/star-filled.png" : "qrc:/tools/star.png"
+                            }
+                            Image {
+                                Layout.preferredHeight: 10
+                                Layout.preferredWidth: 10
+                                mipmap: true
+                                source: modelData.feedback > 1 ? "qrc:/tools/star-filled.png" : "qrc:/tools/star.png"
+                            }
+                            Image {
+                                Layout.preferredHeight: 10
+                                Layout.preferredWidth: 12
+                                mipmap: true
+                                source: modelData.feedback > 2 ? "qrc:/tools/star-filled.png" : "qrc:/tools/star.png"
+                            }
+                            Image {
+                                Layout.preferredHeight: 10
+                                Layout.preferredWidth: 10
+                                mipmap: true
+                                source: modelData.feedback > 3 ? "qrc:/tools/star-filled.png" : "qrc:/tools/star.png"
+                            }
+                            Image {
+                                Layout.preferredHeight: 10
+                                Layout.preferredWidth: 10
+                                mipmap: true
+                                source: modelData.feedback > 4 ? "qrc:/tools/star-filled.png" : "qrc:/tools/star.png"
+                            }
                         }
                     }
                 }
@@ -162,14 +213,13 @@ Item {
     }
     Rectangle {
         anchors.fill: parent
-        color: "darkgrey"
+        color: Palette.toolsBackground
         RowLayout {
             anchors.fill: parent
             spacing: 1
-            Rectangle {
+            Item {
                 Layout.fillHeight: true
                 Layout.preferredWidth: 350
-                color: "darkgrey"
                 ListView {
                     id: roomsList
                     anchors.fill: parent
@@ -196,13 +246,13 @@ Item {
                     highlight: Rectangle {
                         visible: !!roomsList.currentItem
                         width: roomsList.width
-                        height: 76
+                        height: 77
                         color: Qt.rgba(225/256, 237/256, 254/256, 0.5)
                         y: visible ? roomsList.currentItem.y : 0
                         z: 10
                     }
                     footer: Item {
-                        height: Math.max(0, roomsList.parent.height - roomsList.model.length * 75)
+                        height: Math.max(0, roomsList.parent.height - roomsList.model.length * 77 - 2)
                     }
                 }
             }
@@ -226,57 +276,17 @@ Item {
                     spacing: 0
                     anchors.fill: parent
                     visible: !!self.selectedRoom
-                    Rectangle {
-                        Layout.preferredHeight: 79
-                        Layout.fillWidth: true
-                        color: "darkgray"
-                        ListView {
-                            id: clientRoomsList
-
-                            property var selectedRoom
-
-                            orientation: ListView.Horizontal
-                            anchors.fill: parent
-                            anchors.margins: 2
-
-                            spacing: 2
-                            clip: true
-
-                            model: !!self.selectedRoom ? self.selectedRoom.client.history : []
-
-                            delegate: roomCard
-                            currentIndex: {
-                                for (var i in model) {
-                                    if (model[i] === clientRoomsList.selectedRoom)
-                                        return i
-                                }
-                                return -1
-                            }
-                            highlight: Rectangle {
-                                visible: !!clientRoomsList.currentItem
-                                width: 350
-                                height: 77
-                                color: Qt.rgba(225/256, 237/256, 254/256, 0.5)
-                                x: !!clientRoomsList.currentItem ? clientRoomsList.currentItem.x : 0
-                                y: 1
-                                z: 10
-                            }
-                            footer: Item {
-                                height: Math.max(0, roomsList.parent.height - roomsList.model.length * 75)
-                            }
-                        }
-                    }
-
                     RowLayout {
                         id: taskView
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         property var task: {
-                            return !!clientRoomsList.selectedRoom ? clientRoomsList.selectedRoom.task : self.selectedRoom.task
+                            return !!clientRoomsList.selectedRoom ? clientRoomsList.selectedRoom.task : (!!self.selectedRoom ? self.selectedRoom.task : null)
                         }
 
                         onTaskChanged: {
-                            task.enter()
+                            if (!!task)
+                                task.enter()
                         }
 
                         spacing: 0
@@ -285,14 +295,58 @@ Item {
                             Layout.fillWidth: true
                             task: taskView.task
                         }
+
                         Rectangle {
                             Layout.fillHeight: true
-                            Layout.preferredWidth: 300
-                            color: Palette.navigationColor
-                            OfferView {
+                            Layout.preferredWidth: 350
+                            color: Palette.toolsBackground
+                            Legacy.SplitView {
                                 anchors.fill: parent
-                                task: taskView.task
-                                editable: true
+                                orientation: Qt.Vertical
+                                OfferView {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: implicitHeight
+                                    Layout.maximumHeight: maxHeight
+                                    Layout.minimumHeight: minHeight
+                                    task: taskView.task
+                                    editable: true
+                                }
+                                Item {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    ListView {
+                                        id: clientRoomsList
+
+                                        property var selectedRoom
+                                        anchors.fill: parent
+                                        orientation: ListView.Vertical
+
+                                        anchors.topMargin: 2
+                                        anchors.bottomMargin: 2
+                                        spacing: 2
+                                        clip: true
+
+                                        model: !!self.selectedRoom ? self.selectedRoom.client.history : []
+
+                                        delegate: roomCard
+                                        currentIndex: {
+                                            for (var i in model) {
+                                                if (model[i] === clientRoomsList.selectedRoom)
+                                                    return i
+                                            }
+                                            return -1
+                                        }
+                                        highlight: Rectangle {
+                                            visible: !!clientRoomsList.currentItem
+                                            width: 350
+                                            height: 77
+                                            color: Qt.rgba(225/256, 237/256, 254/256, 0.5)
+                                            x: !!clientRoomsList.currentItem ? clientRoomsList.currentItem.x : 0
+                                            y: 1
+                                            z: 10
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

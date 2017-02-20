@@ -13,6 +13,7 @@ import com.expleague.xmpp.control.expleague.PatternsQuery;
 import com.expleague.xmpp.control.expleague.TagsQuery;
 import com.expleague.xmpp.stanza.Iq;
 
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -26,7 +27,7 @@ public class PatternsService extends ActorAdapter<UntypedActor> {
       case PRESENTATION:
         sender().tell(Iq.answer(rosterIq, new PatternsQuery(PatternsRepository.instance().all().map(
             Pattern::presentation
-        ).collect(Collectors.toList()))), self());
+        ).filter(Objects::nonNull).collect(Collectors.toList()))), self());
         break;
       case WORK:
         sender().tell(Iq.answer(rosterIq, new PatternsQuery(PatternsRepository.instance().all().collect(Collectors.toList()))), self());

@@ -61,7 +61,7 @@ Item {
             id: buttons
             height: 33
             width: parent.width
-            gradient: Palette.navigationGradient
+            color: Palette.toolsBackground
             RowLayout {
                 anchors.centerIn: parent
                 height: 27
@@ -71,50 +71,62 @@ Item {
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.makeBold
+                    dark: true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.makeItalic
+                    dark: true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.insertHeader3
+                    dark: true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.insertImage
+                    dark: true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.insertLink
+                    dark: true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.insertSplitter
+                    dark: true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.makeCut
+                    dark: true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.insertCitation
+                    dark: true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.makeList
+                    dark: true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.makeEnumeration
+                    dark: true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.insertTable
+                    dark: true
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.todo
+                    dark: true
                 }
 
 

@@ -15,7 +15,7 @@ League* Task::parent() const {
 
 QStringList Task::filter(Offer::FilterType type) const {
     QStringList filtered;
-    for (auto expert = m_filter.begin(); expert != m_filter.end(); expert++)
+    for (auto expert = m_filter.begin(); expert != m_filter.end(); ++expert)
         if (expert.value() == type)
             filtered.append(expert.key());
     return filtered;
@@ -26,7 +26,23 @@ void Task::setOffer(Offer* offer) {
         QObject::disconnect(m_offer);
     QObject::connect(offer, SIGNAL(cancelled()), this, SLOT(cancelReceived()));
     m_offer = offer;
+    setFilter(offer->filter());
+    emit filterChanged();
     emit offerChanged();
+}
+
+void Task::setFilter(QMap<QString, Offer::FilterType> filter) {
+    m_filter = filter;
+    foreach (QString id, filter.keys()) {
+        Member* const expert = parent()->findMember(id);
+        int index = m_experts.indexOf(expert);
+        if (index < 0) {
+            index = m_experts.size();
+            m_experts.append(expert);
+            m_roles.append((int)m_filter[id]);
+        }
+        else m_roles[index] = (int)m_filter[id];
+    }
 }
 
 void Task::answerReceived(const QString &from, const QString& text) {
@@ -133,6 +149,15 @@ void Task::sendMessage(const QString &str) const {
     parent()->connection()->sendMessage(offer()->roomJid(), str);
 }
 
+void Task::close(const QString& shortAnswer) {
+    if (!m_answers.empty()) {
+        sendAnswer(shortAnswer.isEmpty() ? m_answers[0]->textContent().section("\n", 0, 0) : shortAnswer, -1, -1, false);
+    }
+    else {
+        sendAnswer(shortAnswer + tr("\nОтвет даный в диалоге:\n") + shortAnswer, -1, -1, false);
+    }
+}
+
 QString removeSpacesInside(const QString& textOrig, const QString& separator) {
     QString text = textOrig;
     int index = text.indexOf(separator);
@@ -157,13 +182,15 @@ QString removeSpacesInside(const QString& textOrig, const QString& separator) {
 }
 
 void Task::sendAnswer(const QString& shortAnswer, int difficulty, int success, bool extraInfo) {
-//    qDebug() << "Sending answer: " << answer();
-    QString text = answer()->textContent();
-    text.replace("\t", "    ");
-//    text = removeSpacesInside(text, "*");
-    text = removeSpacesInside(text, "**");
-    text.replace(QRegularExpression("#([^#])"), "# \\1");
-    parent()->connection()->sendAnswer(offer()->roomJid(), difficulty, success, extraInfo, shortAnswer + "\n" + text);
+    if (answer()) {
+        QString text = answer()->textContent();
+        text.replace("\t", "    ");
+        //    text = removeSpacesInside(text, "*");
+        text = removeSpacesInside(text, "**");
+        text.replace(QRegularExpression("#([^#])"), "# \\1");
+        parent()->connection()->sendAnswer(offer()->roomJid(), difficulty, success, extraInfo, shortAnswer + "\n" + text);
+    }
+    else parent()->connection()->sendAnswer(offer()->roomJid(), difficulty, success, extraInfo, shortAnswer);
     stop();
 }
 
@@ -228,8 +255,13 @@ void Task::commitOffer(const QString &topic, const QString& comment, const QList
     parent()->connection()->sendOffer(offer);
 }
 
-void Task::filter(const QString& memberId, Offer::FilterType type) {
-    m_filter[memberId] = type;
+void Task::clearFilter() {
+    m_filter.clear();
+    emit filterChanged();
+}
+
+void Task::filter(Member* member, int role) {
+    m_filter[member->id()] = (Offer::FilterType)role;
     emit filterChanged();
 }
 
@@ -239,6 +271,7 @@ QString Task::id() const  {
 
 Task::Task(Offer* offer, QObject* parent): QObject(parent), m_room(offer->room()), m_offer(offer) {
     QObject::connect(offer, SIGNAL(cancelled()), this, SLOT(cancelReceived()));
+    setFilter(offer->filter());
 }
 
 Task::Task(const QString& roomId, QObject* parent): QObject(parent), m_room(roomId), m_offer(0) {}
@@ -252,8 +285,8 @@ bool Bubble::incoming() const {
 void RoomState::onStatus(const QString& id, int status) {
     if (id != roomId())
         return;
-    m_status = (Status)status;
-    emit statusChanged(m_status);
+    m_task->setStatus((Task::Status)status);
+    emit statusChanged((Task::Status)status);
 }
 
 void RoomState::onFeedback(const QString& id, int feedback) {

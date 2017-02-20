@@ -125,6 +125,7 @@ void ExpLeagueConnection::onIQ(const QXmppIq& iq) {
                     }
                 }
             }
+            emit membersChanged();
         }
         else if (ext.sourceDomElement().namespaceURI() == EXP_LEAGUE_NS + "/tags") {
             QDomElement xml = ext.sourceDomElement();
@@ -144,7 +145,13 @@ void ExpLeagueConnection::onIQ(const QXmppIq& iq) {
                     continue;
                 if (element.tagName() == "pattern") {
                     QDomNodeList icon = element.elementsByTagName("icon");
-                    pattern(new AnswerPattern(element.attribute("name"), icon.count() > 0 ? icon.at(0).toElement().text() : "qrc:/unknown_pattern.png", element.elementsByTagName("body").at(0).toElement().text()));
+                    QString type = element.attribute("type");
+                    if (type == "answer") {
+                        emit pattern(new AnswerPattern(element.attribute("name"), icon.count() > 0 ? icon.at(0).toElement().text() : "qrc:/unknown_pattern.png", element.elementsByTagName("body").at(0).toElement().text()));
+                    }
+                    else {
+                        emit chatTemplate(type, element.elementsByTagName("body").at(0).toElement().text());
+                    }
                 }
             }
         }
@@ -279,6 +286,10 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg) {
             else if (xml.localName() == "room-role-update") {
                 emit roomPresence(from, xml.attribute("expert"), xml.attribute("role", "none"), xml.attribute("affiliation", "none"));
             }
+            else if (xml.localName() == "feedback") {
+                emit roomFeedback(from, xml.attribute("stars").toInt());
+            }
+
         }
     }
 
@@ -350,7 +361,12 @@ Member* ExpLeagueConnection::find(const QString &id) {
         member->setStatus(Member::ONLINE);
     sendUserRequest(id);
     m_members_cache.insert(id, member);
+    emit membersChanged();
     return member;
+}
+
+QList<Member*> ExpLeagueConnection::members() const {
+    return m_members_cache.values();
 }
 
 void ExpLeagueConnection::sendCommand(const QString& command, Offer* task, std::function<void (QDomElement* element)> init) {
@@ -668,8 +684,8 @@ QDomElement Offer::toXml() const {
     }
 
     if (!m_filter.isEmpty()) {
-        QDomElement filter = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "expert-filter");
-        for (auto expert = m_filter.begin(); expert != m_filter.end(); expert++) {
+        QDomElement filter = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "experts-filter");
+        for (auto expert = m_filter.begin(); expert != m_filter.end(); ++expert) {
             QDomElement item;
             switch (expert.value()) {
             case Offer::TFT_REJECT:
@@ -682,7 +698,7 @@ QDomElement Offer::toXml() const {
                 item = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "prefer");
                 break;
             }
-            item.appendChild(holder.createTextNode(expert.key()));
+            item.appendChild(holder.createTextNode(expert.key() + "@" + xmpp::domain(League::instance()->connection()->jid())));
             filter.appendChild(item);
         }
         result.appendChild(filter);
@@ -744,15 +760,15 @@ Offer::Offer(QDomElement xml, QObject *parent): QObject(parent) {
             m_images.append(QUrl(element.text()).path().section('/', -1, -1));
         }
         else if (element.tagName() == "experts-filter") {
-            QDomElement rejected = element.firstChildElement("reject");
-            QDomElement accepted = element.firstChildElement("accept");
-            QDomElement prefer = element.firstChildElement("prefer");
-            if (!rejected.isNull())
-                m_filter[rejected.text()] = Offer::TFT_REJECT;
-            if (!accepted.isNull())
-                m_filter[accepted.text()] = Offer::TFT_ACCEPT;
-            if (!prefer.isNull())
-                m_filter[prefer.text()] = Offer::TFT_PREFER;
+            for(int i = 0; i < element.childNodes().length(); i++) {
+                QDomElement filter = element.childNodes().at(i).toElement();
+                if (filter.tagName() == "reject")
+                    m_filter[xmpp::user(filter.text())] = Offer::TFT_REJECT;
+                if (filter.tagName() == "accept")
+                    m_filter[xmpp::user(filter.text())] = Offer::TFT_ACCEPT;
+                if (filter.tagName() == "prefer")
+                    m_filter[xmpp::user(filter.text())] = Offer::TFT_PREFER;
+            }
         }
         else if (element.tagName() == "patterns") {
             AnswerPattern* const pattern = League::instance()->findPattern(element.text());

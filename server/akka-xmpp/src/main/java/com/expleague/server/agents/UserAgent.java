@@ -102,9 +102,10 @@ public class UserAgent extends PersistentActorAdapter {
     else {
       if (option.isDefined())
         context().stop(option.get());
-      connected.remove(resource);
-      if (connected.isEmpty())
+      if (connected.size() == 1)
         invoke(new Presence(deviceJid, false));
+      connected.remove(resource);
+
       final Subscription subscription = subscriptions.remove(resource);
       if (subscription != null) {
         XMPP.unsubscribe(subscription, context());
@@ -135,16 +136,14 @@ public class UserAgent extends PersistentActorAdapter {
   }
 
   private void toWorld(Stanza stanza) {
-    final JID from = stanza.from();
-    if (from == null)
-      stanza.from(jid());
     XMPP.send(stanza, context());
     final XMPPDevice device = device(stanza.from());
-    if (!(stanza instanceof Iq) && device != null && device.expert())
+    if (!(stanza instanceof Iq) && (device != null && device.expert()))
       LaborExchange.Experts.tellTo(jid(), stanza, self(), context());
   }
 
   private void toConn(Stanza stanza) {
+
     final Collection<ActorRef> couriers = JavaConversions.asJavaCollection(context().children().seq());
     for (final ActorRef courier : couriers) {
       courier.tell(stanza, self());
@@ -154,7 +153,10 @@ public class UserAgent extends PersistentActorAdapter {
   }
 
   private XMPPDevice device(JID from) {
-    return connected.get(from.resource());
+    XMPPDevice device = connected.get(from.resource());
+    if (device == null)
+      device = XMPPDevice.fromJid(from);
+    return device;
   }
 
   @Override

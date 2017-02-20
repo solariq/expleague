@@ -77,7 +77,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
-        onEntered: self.ToolTip.show(userId)
+        onEntered: self.ToolTip.show(user && user.name && user.name !== "" ? user.name : userId)
         onExited: self.ToolTip.hide()
     }
 }

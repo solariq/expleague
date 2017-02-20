@@ -69,10 +69,12 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
       final ExpLeagueOrder.Status orderStatus = ExpLeagueOrder.Status.valueOf(notification.taskState());
       final BrokerRole.State from = BrokerRole.State.valueOf(notification.from());
       final BrokerRole.State to = BrokerRole.State.valueOf(notification.to());
-      if (from == BrokerRole.State.STARVING)
-        status.brokerFed();
-      else if (to == BrokerRole.State.STARVING && orderStatus == ExpLeagueOrder.Status.OPEN)
-        status.brokerStarving();
+      if (orderStatus != ExpLeagueOrder.Status.IN_PROGRESS) {
+        if (from == BrokerRole.State.STARVING)
+          status.brokerFed();
+        else if (to == BrokerRole.State.STARVING)
+          status.brokerStarving();
+      }
     }
     else { // expert
       final ExpertRole.State from = ExpertRole.State.valueOf(notification.from());
@@ -136,7 +138,7 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
   public static class Experts extends ActorAdapter<UntypedActor> {
     @ActorMethod
     public void invoke(JID jid) {
-      sender().tell(AkkaTools.getOrCreate(jid.bare().toString(), context(), () -> Props.create(ExpertRole.class)), self());
+      sender().tell(findOrAllocate(jid), self());
     }
 
     @ActorMethod
@@ -151,25 +153,24 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
     }
 
     @ActorMethod
-    public void invoke(Pair<Object, JID> whisper) {
-      final ActorRef ref;
-      final String name = whisper.second.bare().toString();
-      final Option<ActorRef> child = context().child(name);
-      if (child.isEmpty()) {
-        ref = context().actorOf(Props.create(ExpertRole.class), name);
-      } else {
-        ref = child.get();
-      }
+    public void whisper(Pair<Object, JID> whisper) {
+      final ActorRef allocate = findOrAllocate(whisper.second);
       if (whisper.first != null) {
-        ref.forward(whisper.first, context());
+        allocate.forward(whisper.first, context());
       }
-//      else {
-        // todo: do we need to spawn child anyway?
-//      }
     }
 
     public static JID jid(ActorRef ref) {
       return XMPP.jid(ref);
+    }
+
+    private ActorRef findOrAllocate(JID jid) {
+      final String id = jid.bare().toString();
+      final Option<ActorRef> child = context().child(id);
+      if (child.isDefined()) {
+        return child.get();
+      }
+      return context().actorOf(Props.create(ExpertRole.class), id);
     }
 
     public static void tellTo(JID jid, Object o, ActorRef from, ActorContext context) {

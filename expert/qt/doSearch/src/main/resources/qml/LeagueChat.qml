@@ -1,7 +1,8 @@
 import QtQuick 2.7
 import QtQuick.Layouts 1.1
-import QtQuick.Controls 1.4
 import QtQuick.Controls 2.0
+
+import QtGraphicalEffects 1.0
 
 import ExpLeague 1.0
 
@@ -13,7 +14,7 @@ Rectangle {
     property var chat: self.task ? self.task.chat : []
 
     color: Qt.rgba(230/256.0, 233/256.0, 234/256.0, 1.0)
-    signal messageClicked(ChatMessage message)
+    signal messageClicked(ChatMessage message)    
 
     Component {
         id: message
@@ -228,15 +229,16 @@ Rectangle {
         }
     }
 
-    ColumnLayout {
+    Item {
         id: column
         anchors.fill: parent
-        spacing: 0
         Flickable {
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-
             id: chatContainer
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: parent.height - toolsRow.implicitHeight
+
             clip: true
             contentWidth: width - 8
             contentHeight: chat.height
@@ -259,22 +261,230 @@ Rectangle {
             }
         }
 
-        TextArea {
-            id: send
-            visible: !!task
-            Layout.fillWidth: true
-            Layout.preferredHeight: implicitHeight
-            wrapMode: TextEdit.WrapAnywhere
-            placeholderText: qsTr("Напишите сообщение клиенту")
-            background: Rectangle {
-                color: send.enabled ? "white" : Palette.chatBackgroundColor
-                border.color: send.enabled ? Palette.focusBorderColor : "transparent"
-            }
-            Keys.onPressed: {
-                if ((event.key === Qt.Key_Enter || event.key === Qt.Key_Return) && ((event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) !== 0)) {
-                    self.task.sendMessage(send.text)
-                    send.text = ""
+        Component {
+            id: chatPattern
+            Rectangle {
+                implicitHeight: text.implicitHeight + 8
+                height: implicitHeight
+                width: parent.width - 8
+                color: "white"
+                radius: Palette.radius
+                TextEdit {
+                    id: text
+                    anchors.centerIn: parent
+                    width: parent.width - 8
+                    height: parent.height - 8
+                    readOnly: true
+                    selectByMouse: true
+                    textFormat: TextEdit.RichText
+                    wrapMode: TextEdit.WrapAnywhere
+                    text: modelData.replace(/TODO/g, "<b>TODO</b>")
                 }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        send.text = modelData
+                        column.activeDialog.visible = false
+                        send.forceActiveFocus()
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            id: hello
+            height: Math.min(400, helloLst.implicitHeight + 8)
+            width: 500
+            color: Palette.toolsBackground
+            x: chatContainer.x + chatContainer.width - width - 4
+            y: chatContainer.y + chatContainer.height - height - 4
+            ListView {
+                id: helloLst
+                model: dosearch.league.helloPatterns
+                delegate: chatPattern
+                spacing: 4
+                rightMargin: 4
+                leftMargin: 4
+                topMargin: 4
+                bottomMargin: 4
+                anchors.fill: parent
+                implicitHeight: contentHeight
+            }
+
+            visible: false
+        }
+
+        Rectangle {
+            id: patterns
+            height: Math.min(400, helloLst.implicitHeight + 8)
+            width: 500
+            color: Palette.toolsBackground
+            x: chatContainer.x + chatContainer.width - width - 4
+            y: chatContainer.y + chatContainer.height - height - 4
+            ListView {
+                id: patternsLst
+                model: dosearch.league.chatPatterns
+                delegate: chatPattern
+                spacing: 4
+                rightMargin: 4
+                leftMargin: 4
+                topMargin: 4
+                bottomMargin: 4
+                anchors.fill: parent
+                implicitHeight: contentHeight
+            }
+
+            visible: false
+        }
+
+        property var activeDialog: hello
+        function showDialog(d) {
+            if (activeDialog !== d) {
+                activeDialog.visible = false
+                activeDialog = d
+                activeDialog.visible = true
+            }
+            else activeDialog.visible = !activeDialog.visible
+        }
+
+        DropShadow {
+            visible: !!column.activeDialog && column.activeDialog.visible
+            anchors.fill: column.activeDialog
+            cached: true
+            radius: 8.0
+            samples: 16
+            spread: 0.4
+            color: "#80000000"
+            source: column.activeDialog
+        }
+
+        Rectangle {
+            id: toolsRow
+
+            anchors.top: chatContainer.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            height: implicitHeight
+            implicitHeight: send.implicitHeight + 16
+            color: Palette.toolsBackground
+
+            RowLayout {
+                anchors.fill: parent
+                spacing: 0
+                Item { Layout.preferredWidth: 4 }
+                Rectangle {
+                    id: sendBg
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: send.implicitHeight + 8
+                    Layout.maximumHeight: send.implicitHeight + 8
+                    Layout.minimumHeight: send.implicitHeight + 8
+                    border.color: send.enabled ? Palette.focusBorderColor : "transparent"
+                    color: send.enabled ? "white" : Palette.chatBackgroundColor
+                    radius: Palette.radius
+                    TextEdit {
+                        id: send
+                        visible: !!task
+                        anchors.centerIn: parent
+                        width: parent.width - 8
+                        height: parent.height - 8
+                        wrapMode: TextEdit.WrapAnywhere
+                        textFormat: TextEdit.RichText
+                        text: qsTr("Напишите сообщение клиенту")
+                        color: "darkgray"
+                        font.pixelSize: 14
+                        selectByMouse: true
+
+                        property string prevText: ""
+                        onTextChanged: {
+                            var plainText = getText(0, text.length)
+                            if (prevText != plainText) {
+                                prevText = plainText
+                                var richText = plainText.replace(/TODO/g, "<span style=\" font-weight:600; color:#cccc00;\">TODO</span>")
+                                var position = cursorPosition
+                                text = richText
+                                cursorPosition = position
+                            }
+                        }
+
+                        property string markerText: "TODO"
+                        Keys.onPressed: {
+                            var text = getText(0, send.text.length)
+                            if ((event.key === Qt.Key_Enter || event.key === Qt.Key_Return) && ((event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) !== 0)) {
+                                if (text.indexOf(markerText) < 0) {
+                                    self.task.sendMessage(text)
+                                    send.text = ""
+                                    event.accepted = true
+                                }
+                                else {
+                                    cursorPosition = text.indexOf(markerText)
+                                    selectWord()
+                                    event.accepted = false
+                                }
+                            }
+                            else if (event.key === Qt.Key_F2) {
+                                var nextTodo = text.substring(cursorPosition + 1).indexOf(markerText)
+                                if (nextTodo >= 0) {
+                                    event.accepted = true
+                                    cursorPosition += nextTodo + 1
+                                }
+                                else {
+                                    var firstTodo = text.indexOf(markerText)
+                                    if (firstTodo >= 0) {
+                                        event.accepted = true
+                                        cursorPosition = firstTodo
+                                    }
+                                }
+                                if (event.accepted) {
+                                    selectWord()
+                                    font.bold = false
+                                }
+                            }
+
+                        }
+                        onActiveFocusChanged: {
+                            var text = getText(0, send.text.length)
+                            if (activeFocus) {
+                                if (text == qsTr("Напишите сообщение клиенту"))
+                                    send.text = ""
+                                color = "black"
+                            }
+                            else if (text == "") {
+                                send.text = qsTr("Напишите сообщение клиенту")
+                                color = "darkgray"
+                            }
+                        }
+                    }
+                }
+                Item { Layout.preferredWidth: 4 }
+                Item {
+                    Layout.preferredHeight: 31
+                    Layout.preferredWidth: 27
+                    Layout.alignment: Qt.AlignBottom
+                    ToolbarButton {
+                        anchors.centerIn: parent
+                        icon: "qrc:/tools/chat_h.png"
+                        dark: true
+                        size: 27
+                        toggle: hello.visible
+                        onTriggered: column.showDialog(hello)
+                    }
+                }
+                Item {
+                    Layout.preferredHeight: 31
+                    Layout.preferredWidth: 27
+                    Layout.alignment: Qt.AlignBottom
+                    ToolbarButton {
+                        anchors.centerIn: parent
+                        icon: "qrc:/tools/patterns_h.png"
+                        dark: true
+                        size: 27
+                        toggle: patterns.visible
+                        onTriggered: column.showDialog(patterns)
+                    }
+                }
+                Item { Layout.preferredWidth: 4 }
             }
         }
     }

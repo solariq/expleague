@@ -152,7 +152,7 @@ public class XMPPLevelDBJournal extends AsyncWriteJournal {
         if (currentKey.capacity() >= currentKey.limit() + 9) {
           currentKey.limit(currentKey.capacity());
           currentKey.position(key.remaining() + 1);
-          final long index = currentKey.getLong();
+          long index = currentKey.getLong();
           visitor.accept(persistenceId, index, next.getKey(), next.getValue());
           if (index >= end)
             break;

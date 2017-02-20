@@ -142,8 +142,11 @@ public class GlobalChatAgent extends RoomAgent {
     }
 
     public void affiliation(String id, Affiliation affiliation) {
-      affiliations.compute(id, (i, a) -> a == null || affiliation != null && affiliation.priority() < a.priority() ? affiliation : a);
-      changes++;
+      final Affiliation a = affiliations.getOrDefault(id, Affiliation.NONE);
+      if (affiliation != null && affiliation.priority() < a.priority()) {
+        affiliations.put(id, affiliation);
+        changes++;
+      }
     }
 
     public void role(String id, Role role) {

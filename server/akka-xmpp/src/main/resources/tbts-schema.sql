@@ -115,3 +115,12 @@ CREATE TABLE IF NOT EXISTS AnswersOfTheWeek (
 
   PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS Patterns {
+    name VARCHAR(30) NOT NULL,
+    body MEDIUMTEXT NOT NULL,
+    icon VARCHAR(128),
+    type int(8) DEFAULT 0,
+
+    PRIMARY KEY name
+}

@@ -128,5 +128,13 @@
         <file>vault/text.png</file>
         <file>tools/todo.png</file>
         <file>tools/send_d.png</file>
+        <file>tools/close_h.png</file>
+        <file>tools/close.png</file>
+        <file>tools/todo_h.png</file>
+        <file>tools/star-filled.png</file>
+        <file>tools/star.png</file>
+        <file>expand_h.png</file>
+        <file>tools/experts_h.png</file>
+        <file>tools/experts.png</file>
     </qresource>
 </RCC>

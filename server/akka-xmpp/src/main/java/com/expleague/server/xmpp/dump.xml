@@ -1,9 +1,434 @@
-<message xmlns="jabber:client" type="groupchat" from="room-5567a89c-e5901966-70623254@muc.172.21.211.153"
-         to="global-chat@172.21.211.153" id="IiIi5dKwZ6-1485868554">
-    <presence type="available" from="room-5567a89c-e5901966-70623254@muc.172.21.211.153/5567a89c"
-              id="nY9JBTActv-1485868554">
-        <x xmlns="http://jabber.org/protocol/muc">
-            <item affiliation="owner" role="moderator"/>
-        </x>
-    </presence>
-</message>
+﻿This XML file does not appear to have any style information associated with it. The document tree is shown below.
+<ymaps xmlns="http://maps.yandex.ru/ymaps/1.x" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://maps.yandex.ru/business/1.x http://maps.yandex.ru/schemas/business/1.x/business.xsd http://maps.yandex.ru/geocoder/1.x http://maps.yandex.ru/schemas/geocoder/1.x/geocoder.xsd http://maps.yandex.ru/psearch/1.x http://maps.yandex.ru/schemas/psearch/1.x/psearch.xsd http://maps.yandex.ru/search/1.x http://maps.yandex.ru/schemas/search/1.x/search.xsd http://maps.yandex.ru/web/1.x http://maps.yandex.ru/schemas/web/1.x/web.xsd http://maps.yandex.ru/search/internal/1.x http://maps.yandex.ru/schemas/search/internal/1.x/internal.xsd">
+    <GeoObjectCollection>
+        <metaDataProperty xmlns="http://www.opengis.net/gml">
+            <GeocoderResponseMetaData xmlns="http://maps.yandex.ru/geocoder/1.x">
+                <request>37.611,55.758</request>
+                <found>556</found>
+                <results>10</results>
+                <boundedBy xmlns="http://www.opengis.net/gml">
+                    <Envelope>
+                        <lowerCorner>37.360996 55.507198</lowerCorner>
+                        <upperCorner>37.860998 56.007197</upperCorner>
+                    </Envelope>
+                </boundedBy>
+                <Point xmlns="http://www.opengis.net/gml">
+                    <pos>37.611000 55.758000</pos>
+                </Point>
+                <kind>locality</kind>
+            </GeocoderResponseMetaData>
+        </metaDataProperty>
+        <featureMember xmlns="http://www.opengis.net/gml">
+            <GeoObject xmlns="http://maps.yandex.ru/ymaps/1.x" xmlns:gml="http://www.opengis.net/gml" gml:id="1">
+                <metaDataProperty xmlns="http://www.opengis.net/gml">
+                    <GeocoderMetaData xmlns="http://maps.yandex.ru/geocoder/1.x">
+                        <kind>locality</kind>
+                        <text>Россия, Москва</text>
+                        <precision>other</precision>
+                        <AddressDetails xmlns="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
+                            <Country>
+                                <AddressLine>Москва</AddressLine>
+                                <CountryNameCode>RU</CountryNameCode>
+                                <CountryName>Россия</CountryName>
+                                <AdministrativeArea>
+                                    <AdministrativeAreaName>Москва</AdministrativeAreaName>
+                                    <Locality>
+                                        <LocalityName>Москва</LocalityName>
+                                    </Locality>
+                                </AdministrativeArea>
+                            </Country>
+                        </AddressDetails>
+                    </GeocoderMetaData>
+                </metaDataProperty>
+                <description xmlns="http://www.opengis.net/gml">Россия</description>
+                <name xmlns="http://www.opengis.net/gml">Москва</name>
+                <boundedBy xmlns="http://www.opengis.net/gml">
+                    <Envelope>
+                        <lowerCorner>37.32624 55.491126</lowerCorner>
+                        <upperCorner>37.967682 55.957565</upperCorner>
+                    </Envelope>
+                </boundedBy>
+                <Point xmlns="http://www.opengis.net/gml">
+                    <pos>37.617635 55.755814</pos>
+                </Point>
+            </GeoObject>
+        </featureMember>
+        <featureMember xmlns="http://www.opengis.net/gml">
+            <GeoObject xmlns="http://maps.yandex.ru/ymaps/1.x" xmlns:gml="http://www.opengis.net/gml" gml:id="2">
+                <metaDataProperty xmlns="http://www.opengis.net/gml">
+                    <GeocoderMetaData xmlns="http://maps.yandex.ru/geocoder/1.x">
+                        <kind>locality</kind>
+                        <text>
+                            Россия, Московская область, Одинцовский район, рабочий посёлок Заречье
+                        </text>
+                        <precision>other</precision>
+                        <AddressDetails xmlns="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
+                            <Country>
+                                <AddressLine>
+                                    Московская область, Одинцовский район, рабочий посёлок Заречье
+                                </AddressLine>
+                                <CountryNameCode>RU</CountryNameCode>
+                                <CountryName>Россия</CountryName>
+                                <AdministrativeArea>
+                                    <AdministrativeAreaName>Московская область</AdministrativeAreaName>
+                                    <SubAdministrativeArea>
+                                        <SubAdministrativeAreaName>Одинцовский район</SubAdministrativeAreaName>
+                                        <Locality>
+                                            <LocalityName>рабочий посёлок Заречье</LocalityName>
+                                        </Locality>
+                                    </SubAdministrativeArea>
+                                </AdministrativeArea>
+                            </Country>
+                        </AddressDetails>
+                    </GeocoderMetaData>
+                </metaDataProperty>
+                <description xmlns="http://www.opengis.net/gml">Одинцовский район, Московская область, Россия</description>
+                <name xmlns="http://www.opengis.net/gml">рабочий посёлок Заречье</name>
+                <boundedBy xmlns="http://www.opengis.net/gml">
+                    <Envelope>
+                        <lowerCorner>37.37845 55.671158</lowerCorner>
+                        <upperCorner>37.417661 55.699203</upperCorner>
+                    </Envelope>
+                </boundedBy>
+                <Point xmlns="http://www.opengis.net/gml">
+                    <pos>37.396227 55.687944</pos>
+                </Point>
+            </GeoObject>
+        </featureMember>
+        <featureMember xmlns="http://www.opengis.net/gml">
+            <GeoObject xmlns="http://maps.yandex.ru/ymaps/1.x" xmlns:gml="http://www.opengis.net/gml" gml:id="3">
+                <metaDataProperty xmlns="http://www.opengis.net/gml">
+                    <GeocoderMetaData xmlns="http://maps.yandex.ru/geocoder/1.x">
+                        <kind>locality</kind>
+                        <text>Россия, Московская область, Реутов</text>
+                        <precision>other</precision>
+                        <AddressDetails xmlns="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
+                            <Country>
+                                <AddressLine>Московская область, Реутов</AddressLine>
+                                <CountryNameCode>RU</CountryNameCode>
+                                <CountryName>Россия</CountryName>
+                                <AdministrativeArea>
+                                    <AdministrativeAreaName>Московская область</AdministrativeAreaName>
+                                    <SubAdministrativeArea>
+                                        <SubAdministrativeAreaName>городской округ Реутов</SubAdministrativeAreaName>
+                                        <Locality>
+                                            <LocalityName>Реутов</LocalityName>
+                                        </Locality>
+                                    </SubAdministrativeArea>
+                                </AdministrativeArea>
+                            </Country>
+                        </AddressDetails>
+                    </GeocoderMetaData>
+                </metaDataProperty>
+                <description xmlns="http://www.opengis.net/gml">Московская область, Россия</description>
+                <name xmlns="http://www.opengis.net/gml">Реутов</name>
+                <boundedBy xmlns="http://www.opengis.net/gml">
+                    <Envelope>
+                        <lowerCorner>37.842564 55.744531</lowerCorner>
+                        <upperCorner>37.890876 55.78276</upperCorner>
+                    </Envelope>
+                </boundedBy>
+                <Point xmlns="http://www.opengis.net/gml">
+                    <pos>37.855141 55.760515</pos>
+                </Point>
+            </GeoObject>
+        </featureMember>
+        <featureMember xmlns="http://www.opengis.net/gml">
+            <GeoObject xmlns="http://maps.yandex.ru/ymaps/1.x" xmlns:gml="http://www.opengis.net/gml" gml:id="4">
+                <metaDataProperty xmlns="http://www.opengis.net/gml">
+                    <GeocoderMetaData xmlns="http://maps.yandex.ru/geocoder/1.x">
+                        <kind>locality</kind>
+                        <text>Россия, Московская область, Балашиха</text>
+                        <precision>other</precision>
+                        <AddressDetails xmlns="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
+                            <Country>
+                                <AddressLine>Московская область, Балашиха</AddressLine>
+                                <CountryNameCode>RU</CountryNameCode>
+                                <CountryName>Россия</CountryName>
+                                <AdministrativeArea>
+                                    <AdministrativeAreaName>Московская область</AdministrativeAreaName>
+                                    <SubAdministrativeArea>
+                                        <SubAdministrativeAreaName>городской округ Балашиха</SubAdministrativeAreaName>
+                                        <Locality>
+                                            <LocalityName>Балашиха</LocalityName>
+                                        </Locality>
+                                    </SubAdministrativeArea>
+                                </AdministrativeArea>
+                            </Country>
+                        </AddressDetails>
+                    </GeocoderMetaData>
+                </metaDataProperty>
+                <description xmlns="http://www.opengis.net/gml">Московская область, Россия</description>
+                <name xmlns="http://www.opengis.net/gml">Балашиха</name>
+                <boundedBy xmlns="http://www.opengis.net/gml">
+                    <Envelope>
+                        <lowerCorner>37.822289 55.707953</lowerCorner>
+                        <upperCorner>38.144731 55.861605</upperCorner>
+                    </Envelope>
+                </boundedBy>
+                <Point xmlns="http://www.opengis.net/gml">
+                    <pos>37.938199 55.796339</pos>
+                </Point>
+            </GeoObject>
+        </featureMember>
+        <featureMember xmlns="http://www.opengis.net/gml">
+            <GeoObject xmlns="http://maps.yandex.ru/ymaps/1.x" xmlns:gml="http://www.opengis.net/gml" gml:id="5">
+                <metaDataProperty xmlns="http://www.opengis.net/gml">
+                    <GeocoderMetaData xmlns="http://maps.yandex.ru/geocoder/1.x">
+                        <kind>locality</kind>
+                        <text>
+                            Россия, Московская область, Одинцовский район, деревня Марфино
+                        </text>
+                        <precision>other</precision>
+                        <AddressDetails xmlns="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
+                            <Country>
+                                <AddressLine>
+                                    Московская область, Одинцовский район, деревня Марфино
+                                </AddressLine>
+                                <CountryNameCode>RU</CountryNameCode>
+                                <CountryName>Россия</CountryName>
+                                <AdministrativeArea>
+                                    <AdministrativeAreaName>Московская область</AdministrativeAreaName>
+                                    <SubAdministrativeArea>
+                                        <SubAdministrativeAreaName>Одинцовский район</SubAdministrativeAreaName>
+                                        <Locality>
+                                            <LocalityName>деревня Марфино</LocalityName>
+                                        </Locality>
+                                    </SubAdministrativeArea>
+                                </AdministrativeArea>
+                            </Country>
+                        </AddressDetails>
+                    </GeocoderMetaData>
+                </metaDataProperty>
+                <description xmlns="http://www.opengis.net/gml">Одинцовский район, Московская область, Россия</description>
+                <name xmlns="http://www.opengis.net/gml">деревня Марфино</name>
+                <boundedBy xmlns="http://www.opengis.net/gml">
+                    <Envelope>
+                        <lowerCorner>37.377641 55.69692</lowerCorner>
+                        <upperCorner>37.392868 55.708688</upperCorner>
+                    </Envelope>
+                </boundedBy>
+                <Point xmlns="http://www.opengis.net/gml">
+                    <pos>37.384037 55.703013</pos>
+                </Point>
+            </GeoObject>
+        </featureMember>
+        <featureMember xmlns="http://www.opengis.net/gml">
+            <GeoObject xmlns="http://maps.yandex.ru/ymaps/1.x" xmlns:gml="http://www.opengis.net/gml" gml:id="6">
+                <metaDataProperty xmlns="http://www.opengis.net/gml">
+                    <GeocoderMetaData xmlns="http://maps.yandex.ru/geocoder/1.x">
+                        <kind>locality</kind>
+                        <text>
+                            Россия, Московская область, Одинцовский район, рабочий поселок Новоивановское
+                        </text>
+                        <precision>other</precision>
+                        <AddressDetails xmlns="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
+                            <Country>
+                                <AddressLine>
+                                    Московская область, Одинцовский район, рабочий поселок Новоивановское
+                                </AddressLine>
+                                <CountryNameCode>RU</CountryNameCode>
+                                <CountryName>Россия</CountryName>
+                                <AdministrativeArea>
+                                    <AdministrativeAreaName>Московская область</AdministrativeAreaName>
+                                    <SubAdministrativeArea>
+                                        <SubAdministrativeAreaName>Одинцовский район</SubAdministrativeAreaName>
+                                        <Locality>
+                                            <LocalityName>рабочий поселок Новоивановское</LocalityName>
+                                        </Locality>
+                                    </SubAdministrativeArea>
+                                </AdministrativeArea>
+                            </Country>
+                        </AddressDetails>
+                    </GeocoderMetaData>
+                </metaDataProperty>
+                <description xmlns="http://www.opengis.net/gml">Одинцовский район, Московская область, Россия</description>
+                <name xmlns="http://www.opengis.net/gml">рабочий поселок Новоивановское</name>
+                <boundedBy xmlns="http://www.opengis.net/gml">
+                    <Envelope>
+                        <lowerCorner>37.3455 55.697549</lowerCorner>
+                        <upperCorner>37.391368 55.717538</upperCorner>
+                    </Envelope>
+                </boundedBy>
+                <Point xmlns="http://www.opengis.net/gml">
+                    <pos>37.362559 55.706092</pos>
+                </Point>
+            </GeoObject>
+        </featureMember>
+        <featureMember xmlns="http://www.opengis.net/gml">
+            <GeoObject xmlns="http://maps.yandex.ru/ymaps/1.x" xmlns:gml="http://www.opengis.net/gml" gml:id="7">
+                <metaDataProperty xmlns="http://www.opengis.net/gml">
+                    <GeocoderMetaData xmlns="http://maps.yandex.ru/geocoder/1.x">
+                        <kind>locality</kind>
+                        <text>
+                            Россия, Московская область, Одинцовский район, село Немчиновка
+                        </text>
+                        <precision>other</precision>
+                        <AddressDetails xmlns="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
+                            <Country>
+                                <AddressLine>
+                                    Московская область, Одинцовский район, село Немчиновка
+                                </AddressLine>
+                                <CountryNameCode>RU</CountryNameCode>
+                                <CountryName>Россия</CountryName>
+                                <AdministrativeArea>
+                                    <AdministrativeAreaName>Московская область</AdministrativeAreaName>
+                                    <SubAdministrativeArea>
+                                        <SubAdministrativeAreaName>Одинцовский район</SubAdministrativeAreaName>
+                                        <Locality>
+                                            <LocalityName>село Немчиновка</LocalityName>
+                                        </Locality>
+                                    </SubAdministrativeArea>
+                                </AdministrativeArea>
+                            </Country>
+                        </AddressDetails>
+                    </GeocoderMetaData>
+                </metaDataProperty>
+                <description xmlns="http://www.opengis.net/gml">Одинцовский район, Московская область, Россия</description>
+                <name xmlns="http://www.opengis.net/gml">село Немчиновка</name>
+                <boundedBy xmlns="http://www.opengis.net/gml">
+                    <Envelope>
+                        <lowerCorner>37.334109 55.706487</lowerCorner>
+                        <upperCorner>37.382771 55.730112</upperCorner>
+                    </Envelope>
+                </boundedBy>
+                <Point xmlns="http://www.opengis.net/gml">
+                    <pos>37.362217 55.71949</pos>
+                </Point>
+            </GeoObject>
+        </featureMember>
+        <featureMember xmlns="http://www.opengis.net/gml">
+            <GeoObject xmlns="http://maps.yandex.ru/ymaps/1.x" xmlns:gml="http://www.opengis.net/gml" gml:id="8">
+                <metaDataProperty xmlns="http://www.opengis.net/gml">
+                    <GeocoderMetaData xmlns="http://maps.yandex.ru/geocoder/1.x">
+                        <kind>locality</kind>
+                        <text>
+                            Россия, Московская область, Одинцовский район, деревня Сетунь Малая
+                        </text>
+                        <precision>other</precision>
+                        <AddressDetails xmlns="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
+                            <Country>
+                                <AddressLine>
+                                    Московская область, Одинцовский район, деревня Сетунь Малая
+                                </AddressLine>
+                                <CountryNameCode>RU</CountryNameCode>
+                                <CountryName>Россия</CountryName>
+                                <AdministrativeArea>
+                                    <AdministrativeAreaName>Московская область</AdministrativeAreaName>
+                                    <SubAdministrativeArea>
+                                        <SubAdministrativeAreaName>Одинцовский район</SubAdministrativeAreaName>
+                                        <Locality>
+                                            <LocalityName>деревня Сетунь Малая</LocalityName>
+                                        </Locality>
+                                    </SubAdministrativeArea>
+                                </AdministrativeArea>
+                            </Country>
+                        </AddressDetails>
+                    </GeocoderMetaData>
+                </metaDataProperty>
+                <description xmlns="http://www.opengis.net/gml">Одинцовский район, Московская область, Россия</description>
+                <name xmlns="http://www.opengis.net/gml">деревня Сетунь Малая</name>
+                <boundedBy xmlns="http://www.opengis.net/gml">
+                    <Envelope>
+                        <lowerCorner>37.379519 55.713623</lowerCorner>
+                        <upperCorner>37.384424 55.718811</upperCorner>
+                    </Envelope>
+                </boundedBy>
+                <Point xmlns="http://www.opengis.net/gml">
+                    <pos>37.382223 55.71521</pos>
+                </Point>
+            </GeoObject>
+        </featureMember>
+        <featureMember xmlns="http://www.opengis.net/gml">
+            <GeoObject xmlns="http://maps.yandex.ru/ymaps/1.x" xmlns:gml="http://www.opengis.net/gml" gml:id="9">
+                <metaDataProperty xmlns="http://www.opengis.net/gml">
+                    <GeocoderMetaData xmlns="http://maps.yandex.ru/geocoder/1.x">
+                        <kind>locality</kind>
+                        <text>
+                            Россия, Московская область, Одинцовский район, сельское поселение Барвихинское, деревня Раздоры
+                        </text>
+                        <precision>other</precision>
+                        <AddressDetails xmlns="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
+                            <Country>
+                                <AddressLine>
+                                    Московская область, Одинцовский район, сельское поселение Барвихинское, деревня Раздоры
+                                </AddressLine>
+                                <CountryNameCode>RU</CountryNameCode>
+                                <CountryName>Россия</CountryName>
+                                <AdministrativeArea>
+                                    <AdministrativeAreaName>Московская область</AdministrativeAreaName>
+                                    <SubAdministrativeArea>
+                                        <SubAdministrativeAreaName>Одинцовский район</SubAdministrativeAreaName>
+                                        <Locality>
+                                            <LocalityName>деревня Раздоры</LocalityName>
+                                        </Locality>
+                                    </SubAdministrativeArea>
+                                </AdministrativeArea>
+                            </Country>
+                        </AddressDetails>
+                    </GeocoderMetaData>
+                </metaDataProperty>
+                <description xmlns="http://www.opengis.net/gml">
+                    сельское поселение Барвихинское, Одинцовский район, Московская область, Россия
+                </description>
+                <name xmlns="http://www.opengis.net/gml">деревня Раздоры</name>
+                <boundedBy xmlns="http://www.opengis.net/gml">
+                    <Envelope>
+                        <lowerCorner>37.281324 55.739752</lowerCorner>
+                        <upperCorner>37.38702 55.809373</upperCorner>
+                    </Envelope>
+                </boundedBy>
+                <Point xmlns="http://www.opengis.net/gml">
+                    <pos>37.304527 55.746309</pos>
+                </Point>
+            </GeoObject>
+        </featureMember>
+        <featureMember xmlns="http://www.opengis.net/gml">
+            <GeoObject xmlns="http://maps.yandex.ru/ymaps/1.x" xmlns:gml="http://www.opengis.net/gml" gml:id="10">
+                <metaDataProperty xmlns="http://www.opengis.net/gml">
+                    <GeocoderMetaData xmlns="http://maps.yandex.ru/geocoder/1.x">
+                        <kind>locality</kind>
+                        <text>
+                            Россия, Московская область, Одинцовский район, сельское поселение Барвихинское, деревня Раздоры, коттеджный поселок Резиденция Рублёво
+                        </text>
+                        <precision>other</precision>
+                        <AddressDetails xmlns="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
+                            <Country>
+                                <AddressLine>
+                                    Московская область, Одинцовский район, сельское поселение Барвихинское, деревня Раздоры, коттеджный поселок Резиденция Рублёво
+                                </AddressLine>
+                                <CountryNameCode>RU</CountryNameCode>
+                                <CountryName>Россия</CountryName>
+                                <AdministrativeArea>
+                                    <AdministrativeAreaName>Московская область</AdministrativeAreaName>
+                                    <SubAdministrativeArea>
+                                        <SubAdministrativeAreaName>Одинцовский район</SubAdministrativeAreaName>
+                                        <Locality>
+                                            <LocalityName>деревня Раздоры</LocalityName>
+                                            <DependentLocality>
+                                                <DependentLocalityName>коттеджный поселок Резиденция Рублёво</DependentLocalityName>
+                                            </DependentLocality>
+                                        </Locality>
+                                    </SubAdministrativeArea>
+                                </AdministrativeArea>
+                            </Country>
+                        </AddressDetails>
+                    </GeocoderMetaData>
+                </metaDataProperty>
+                <description xmlns="http://www.opengis.net/gml">
+                    деревня Раздоры, сельское поселение Барвихинское, Одинцовский район, Московская область, Россия
+                </description>
+                <name xmlns="http://www.opengis.net/gml">коттеджный поселок Резиденция Рублёво</name>
+                <boundedBy xmlns="http://www.opengis.net/gml">
+                    <Envelope>
+                        <lowerCorner>37.374309 55.800777</lowerCorner>
+                        <upperCorner>37.384531 55.805887</upperCorner>
+                    </Envelope>
+                </boundedBy>
+                <Point xmlns="http://www.opengis.net/gml">
+                    <pos>37.380211 55.803363</pos>
+                </Point>
+            </GeoObject>
+        </featureMember>
+    </GeoObjectCollection>
+</ymaps>

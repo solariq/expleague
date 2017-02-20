@@ -41,6 +41,7 @@ void League::connect() {
     QObject::connect(m_connection, SIGNAL(cancel(const Offer&)), SLOT(onCancel(const Offer&)));
     QObject::connect(m_connection, SIGNAL(tag(TaskTag*)), SLOT(onTag(TaskTag*)));
     QObject::connect(m_connection, SIGNAL(pattern(AnswerPattern*)), SLOT(onPattern(AnswerPattern*)));
+    QObject::connect(m_connection, SIGNAL(chatTemplate(QString,QString)), SLOT(onChatTemplate(QString,QString)));
     QObject::connect(m_connection, SIGNAL(message(QString,QString,QString,QString)), SLOT(onMessage(QString,QString,QString,QString)));
     QObject::connect(m_connection, SIGNAL(image(QString,QString,QString,QUrl)), SLOT(onImage(QString,QString,QString,QUrl)));
     QObject::connect(m_connection, SIGNAL(answer(QString,QString,QString,QString)), SLOT(onAnswer(QString,QString,QString,QString)));
@@ -49,6 +50,7 @@ void League::connect() {
     QObject::connect(m_connection, SIGNAL(tasksAvailableChanged(int)), SLOT(onTasksAvailableChanged(int)));
     QObject::connect(m_connection, SIGNAL(roomOffer(QString,Offer)), SLOT(onRoomOffer(QString,Offer)));
     QObject::connect(m_connection, SIGNAL(presenceChanged(QString,bool)), SLOT(onPresenceChanged(QString,bool)));
+    QObject::connect(m_connection, SIGNAL(membersChanged()), SLOT(onMembersChanged()));
     m_connection->connect();
     m_reconnect = true;
 }
@@ -68,6 +70,14 @@ void League::setActive(Profile *profile) {
 
 Member* League::findMember(const QString &id) const {
     return m_connection ? m_connection->find(id) : 0;
+}
+
+Member* League::findMemberByName(const QString& name) const {
+    foreach(Member* member, m_connection->members()) {
+        if (member->name() == name)
+            return member;
+    }
+    return 0;
 }
 
 AnswerPattern* League::findPattern(const QString &id) const {
@@ -214,18 +224,18 @@ void League::onOffer(const QString& room, const QString& id, const Offer& offer)
         return;
     m_known_ids.insert(id);
     onRoomOffer(room, offer);
-    QList<RoomState*> old = m_rooms;
-    std::sort(m_rooms.begin(), m_rooms.end(), [this](RoomState* left, RoomState* right) {
-       return right->started().toTime_t() - left->started().toTime_t();
-    });
-    if (old != m_rooms)
-        emit roomsChanged();
 }
 
 void League::onRoomOffer(const QString& room, const Offer& offer) {
     Offer* roffer = registerOffer(offer);
     Task* const task = this->task(room);
     task->setOffer(roffer);
+    QList<RoomState*> old = m_rooms;
+    std::sort(m_rooms.begin(), m_rooms.end(), [this](RoomState* left, RoomState* right) {
+       return right->started().toTime_t() < left->started().toTime_t();
+    });
+    if (old != m_rooms)
+        emit roomsChanged();
 }
 
 void League::onConnected(int role) {
@@ -303,6 +313,13 @@ void League::onPattern(AnswerPattern* pattern) {
     emit patternsChanged();
 }
 
+void League::onChatTemplate(const QString& type, const QString& pattern) {
+    if (m_chat_templates[type].contains(pattern))
+        return;
+    m_chat_templates[type].append(pattern);
+    emit chatPatternsChanged();
+}
+
 void League::notifyIfNeeded(const QString& from, const QString& message, bool broadcast) {
     if (from != m_connection->id()) {
         if (time(0) - prevMessageTS > 10) {
@@ -328,7 +345,7 @@ Task* League::task(const QString& roomId) {
     RoomState* roomState = new RoomState(newOne, this);
     m_rooms.append(roomState);
     std::sort(m_rooms.begin(), m_rooms.end(), [this](RoomState* left, RoomState* right) {
-       return right->started().toTime_t() - left->started().toTime_t();
+       return right->started().toTime_t() < left->started().toTime_t();
     });
     roomState->connectTo(m_connection);
     emit roomsChanged();
@@ -353,6 +370,18 @@ QUrl League::imageUrl(const QString& imageId) const {
     return m_store->url(imageId);
 }
 
+QStringList League::experts() const {
+    if (!m_connection)
+        return QStringList();
+    QStringList result;
+    foreach (Member* member, m_connection->members()) {
+        QString name = member->name();
+        if (name != member->id()) // TODO: make member role visible
+            result.append(name);
+    }
+    return result;
+}
+
 void League::setAdminFocus(const QString& room) {
     if (!m_admin_focus.isNull() && m_connection)
         m_connection->sendPresence(m_admin_focus, false);
@@ -365,7 +394,7 @@ void Member::append(RoomState* room) {
     if (!m_history.contains(room)) {
         m_history.append(room);
         std::sort(m_history.begin(), m_history.end(), [this](RoomState* left, RoomState* right) {
-           return right->started().toTime_t() - left->started().toTime_t();
+           return right->started().toTime_t() < left->started().toTime_t();
         });
         emit historyChanged();
     }

@@ -81,6 +81,21 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     return profile.trusted();
   }
 
+  @Override
+  protected boolean relevant(Stanza msg, JID to) {
+    if (affiliation(to) == Affiliation.OWNER) {
+      if (msg instanceof Message) {
+        final Message message = (Message) msg;
+        return message.type() == Message.MessageType.GROUP_CHAT ||
+            message.has(Start.class) ||
+            message.has(Answer.class) ||
+            message.has(Progress.class) ||
+            super.relevant(msg, to);
+      }
+    }
+    return super.relevant(msg, to);
+  }
+
   public void process(Message msg) {
     final JID from = msg.from();
     Affiliation affiliation = affiliation(from);
@@ -127,29 +142,35 @@ public class ExpLeagueRoomAgent extends RoomAgent {
           case PATTERNS:
             break;
           case TAGS:
-            if (metaChange.operation() == Progress.MetaChange.Operation.ADD)
-              order(progress.order()).tag(metaChange.name());
-            else
-              order(progress.order()).untag(metaChange.name());
+            final ExpLeagueOrder order = order(progress.order());
+            if (order != null) {
+              if (metaChange.operation() == Progress.MetaChange.Operation.ADD)
+                order.tag(metaChange.name());
+              else
+                order.untag(metaChange.name());
+            }
             break;
         }
         if (role(from) == Role.MODERATOR)
           update(from, Role.MODERATOR, Affiliation.ADMIN, true);
       }
     }
-    else if (msg.has(Start.class) || msg.has(Resume.class)) {
+    else if (msg.has(Start.class)) {
       update(from, Role.PARTICIPANT, Affiliation.MEMBER, true);
+      invoke(new Message(jid(), roomAlias(owner()), Roster.instance().profile(from.local())));
     }
     else if (msg.has(Answer.class)) {
       state(DELIVERY);
       answer = msg;
     }
-    else if (msg.has(Feedback.class) && state == FEEDBACK) {
-      GlobalChatAgent.tell(jid(), msg.get(Feedback.class), context());
-      state(CLOSED);
-    }
-    else if (state == FEEDBACK) {
-      state(OPEN);
+    else if (affiliation == Affiliation.OWNER) {
+      if (msg.has(Feedback.class) && state == FEEDBACK) {
+        GlobalChatAgent.tell(jid(), msg.get(Feedback.class), context());
+        state(CLOSED);
+      }
+      else if (state == FEEDBACK && !msg.has(Command.class)) {
+        state(OPEN);
+      }
     }
   }
 

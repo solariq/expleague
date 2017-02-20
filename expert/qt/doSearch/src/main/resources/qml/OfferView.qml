@@ -14,11 +14,12 @@ Item {
     id: self
     property Task task
     property Offer offer: !!self.task ? self.task.offer : null
-    property color textColor: Palette.selectedTextColor
+    property color textColor: "white"
     property real storedHeight: 0
-    property real maxHeight: tools.implicitHeight + content.contentHeight
+    property real maxHeight: tools.implicitHeight + offerHeight
     property real minHeight: tools.implicitHeight
     property bool editable: false
+    property string status: task ? ["open", "chat", "response", "confirmation", "offer", "work", "delivery", "feedback", "cloded"][task.status] : ""
 
     property real offerHeight: topic.implicitHeight + geoLocal.implicitHeight + 4 + attachmentsCount.implicitHeight + 4 +
                                33 + 4 +
@@ -31,20 +32,13 @@ Item {
                                (patternsView.visible ? patternsView.implicitHeight + 4 : 0) +
                                (callsView.visible ? callsView.implicitHeight + 4 : 0) +
                                4
+    implicitHeight: Math.min(400, self.maxHeight)
 
     onOfferChanged: {
-        dosearch.main.delay(10, function () {
-            if (offer)
-                storedHeight = Math.min(400, offerHeight)
-            else storedHeight = 0
-        })
-    }
-
-    implicitHeight: tools.implicitHeight + storedHeight
-
-    onHeightChanged: {
-        if (self.state.length == 0) {
-            storedHeight = height - tools.height
+        if (offer) {
+            dosearch.main.delay(100, function () {
+                self.height = Math.min(400, self.maxHeight)
+            })
         }
     }
 
@@ -52,6 +46,7 @@ Item {
         id: sendDialog
         visible: false
 
+        questions: true
         task: self.task
     }
 
@@ -94,13 +89,20 @@ Item {
         }
     }
 
+    FilterDialog {
+        id: filterDialog
+        visible: false
+
+        experts: self.task ? self.task.experts : []
+        roles: self.task ? self.task.roles : []
+        task: self.task
+    }
+
     CallDialog {
         id: callDialog
         visible: false
 
-        onAppendCall: {
-            task.phone(phone)
-        }
+        onAppendCall: task.phone(phone)
     }
 
     SuspendDialog {
@@ -115,22 +117,9 @@ Item {
     states: [
         State{
             name: "folded"
-            PropertyChanges {
-                target: self
-
-                implicitHeight: tools.height
-            }
-
-            PropertyChanges {
-                target: content
-                visible: false
-            }
-
-            PropertyChanges {
-                target: self
-
-                height: tools.height
-            }
+            PropertyChanges { target: self; maxHeight: tools.height }
+            PropertyChanges { target: content; visible: false }
+            PropertyChanges { target: self;  height: tools.height }
         }
     ]
 
@@ -138,7 +127,7 @@ Item {
         anchors.fill: parent
         Rectangle {
             id: tools
-            gradient: Palette.navigationGradient
+            color: Palette.toolsBackground
             visible: task
             Layout.preferredHeight: implicitHeight
             Layout.fillWidth: true
@@ -156,12 +145,12 @@ Item {
                         anchors.centerIn: parent
                         fillMode: Image.PreserveAspectFit
                         mipmap: true
-                        source: "qrc:/expand.png"
-                        width: 16
-                        height: 16
-                        rotation: content.visible ? 180 : 90
+                        source: "qrc:/expand_h.png"
+                        width: 25
+                        height: 25
+                        rotation: content.visible ? 90 : 0
                     }
-                    background: Item{}
+                    background: Item {}
 
                     onClicked: {
                         if (self.state == "folded")
@@ -176,25 +165,37 @@ Item {
                     icon: "qrc:/tools/send.png"
                     highlightedIcon: "qrc:/tools/send_h.png"
                     disabledIcon: "qrc:/tools/send_d.png"
-                    onTriggered: editable ? dosearch.main.showDialog(offerDialog) : dosearch.main.showDialog(sendDialog)
+                    dark: true
+                    onTriggered: {
+                        if (editable) {
+                            dosearch.main.showDialog(offerDialog)
+                        }
+                        else {
+                            sendDialog.questions = true
+                            dosearch.main.showDialog(sendDialog)
+                        }
+                    }
                     enabled: editable || (task && task.answer && task.answer.text.indexOf("TODO") < 0)
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/tags.png"
                     highlightedIcon: "qrc:/tools/tags_h.png"
+                    dark: true
                     onTriggered: dosearch.main.showDialog(tagsDialog)
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/patterns.png"
                     highlightedIcon: "qrc:/tools/patterns_h.png"
+                    dark: true
                     onTriggered: dosearch.main.showDialog(patternsDialog)
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/phone.png"
                     highlightedIcon: "qrc:/tools/phone_h.png"
+                    dark: true
                     onTriggered: dosearch.main.showDialog(callDialog)
                 }
 
@@ -202,8 +203,31 @@ Item {
                     Layout.alignment: Qt.AlignVCenter
                     icon: "qrc:/tools/suspend.png"
                     highlightedIcon: "qrc:/tools/suspend_h.png"
+                    dark: true
                     onTriggered: suspendDialog.visible = true
                 }
+
+                ToolbarButton {
+                    visible: editable
+                    Layout.alignment: Qt.AlignVCenter
+                    icon: "qrc:/tools/experts.png"
+                    highlightedIcon: "qrc:/tools/experts_h.png"
+                    dark: true
+                    onTriggered: dosearch.main.showDialog(filterDialog)
+                }
+
+                ToolbarButton {
+                    visible: editable && ["chat", "open", "response", "offer"].indexOf(status) >= 0
+                    Layout.alignment: Qt.AlignVCenter
+                    icon: "qrc:/tools/close.png"
+                    highlightedIcon: "qrc:/tools/close_h.png"
+                    dark: true
+                    onTriggered: {
+                        sendDialog.questions = false
+                        dosearch.main.showDialog(sendDialog)
+                    }
+                }
+
                 Item { Layout.fillWidth: true }
             }
         }
@@ -251,7 +275,7 @@ Item {
                         horizontalAlignment: Qt.AlignHCenter
                         renderType: Text.NativeRendering
                         wrapMode: Text.WordWrap
-                        color: Palette.selectedTextColor
+                        color: self.editable ? "black" : self.textColor
                         text: offer ? offer.topic : ""
                         selectByMouse: true
                         readOnly: !self.editable
@@ -270,7 +294,7 @@ Item {
                         horizontalAlignment: Qt.AlignHCenter
                         renderType: Text.NativeRendering
                         wrapMode: Text.WordWrap
-                        color: Palette.selectedTextColor
+                        color: self.editable ? "black" : self.textColor
                         text: (!editable ? "Комментарий администратора: " + (offer && offer.comment != "" ? offer.comment : "нет") : "")
                         selectByMouse: true
                         readOnly: !self.editable
@@ -279,12 +303,12 @@ Item {
 
                 Flow {
                     id: filterView
-                    visible: task && task.tags.length > 0
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: parent.width - 20
                     spacing: 3
                     Label {
                         visible: !!task && task.banned.length > 0
+                        color: self.textColor
                         text: qsTr("Забанены: ")
                     }
                     Repeater {
@@ -295,8 +319,9 @@ Item {
                         }
                     }
                     Label {
-                        visible: !!task && task.banned.length > 0
-                        text: qsTr("Предпочитаются: ")
+                        visible: !!task && task.preferred.length > 0
+                        color: self.textColor
+                        text: qsTr("Приоритетны: ")
                     }
                     Repeater {
                         model: task ? task.preferred : []
@@ -306,8 +331,9 @@ Item {
                         }
                     }
                     Label {
-                        visible: !!task && task.banned.length > 0
-                        text: qsTr("Приняты: ")
+                        visible: !!task && task.accepted.length > 0
+                        color: self.textColor
+                        text: qsTr("Выбраны: ")
                     }
                     Repeater {
                         model: task ? task.accepted : []
@@ -324,6 +350,7 @@ Item {
                     Layout.preferredWidth: parent.width - 20
                     spacing: 3
                     Label {
+                        color: self.textColor
                         text: qsTr("Теги: ")
                     }
 
@@ -331,6 +358,7 @@ Item {
                         model: task ? task.tags : []
                         delegate: Component {
                             Text {
+                                color: self.textColor
                                 text: name + (index < task.tags.length - 1 ? "," : "")
                             }
                         }
@@ -344,6 +372,7 @@ Item {
 
                     spacing: 3
                     Label {
+                        color: self.textColor
                         text: qsTr("Звонки: ")
                     }
 
@@ -352,6 +381,7 @@ Item {
                         delegate: Component {
                             Text {
                                 text: modelData + (index < task.phones.length - 1 ? "," : "")
+                                color: self.textColor
                             }
                         }
                     }
@@ -365,6 +395,7 @@ Item {
                     spacing: 3
                     Label {
                         text: qsTr("Шаблоны: ")
+                        color: self.textColor
                     }
 
                     Repeater {
@@ -372,6 +403,7 @@ Item {
                         delegate: Component {
                             Text {
                                 text: name + (index < task.patterns.length - 1 ? "," : "")
+                                color: self.textColor
                             }
                         }
                     }
@@ -382,6 +414,7 @@ Item {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: parent.width - 20
                     text: qsTr("Гео-специфичный: ") + (offer && offer.local ? qsTr("Да") : qsTr("Нет"))
+                    color: self.textColor
                 }
 
                 Text {
@@ -389,6 +422,7 @@ Item {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: parent.width - 20
                     text: qsTr("Приложений: ") + (offer ? offer.images.length : "")
+                    color: self.textColor
                 }
 
                 Item {

@@ -23,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 /**
  * User: solar
@@ -31,6 +32,7 @@ import java.util.function.Consumer;
  */
 @SuppressWarnings("UnusedParameters")
 public class RoomAgent extends PersistentActorAdapter {
+//  private static final Logger log = Logger.getLogger(RoomAgent.class.getName());
   private final JID jid;
   private List<Stanza> archive = new ArrayList<>();
   private Map<JID, MucUserStatus> participants = new HashMap<>();
@@ -154,7 +156,7 @@ public class RoomAgent extends PersistentActorAdapter {
   }
 
   public Role role(JID from) {
-    if (from.local().isEmpty())
+    if (from.local().isEmpty() || from.equals(jid))
       return Role.MODERATOR;
 
     final MucUserStatus status = participants.get(from.bare());
@@ -223,6 +225,7 @@ public class RoomAgent extends PersistentActorAdapter {
   }
 
   public boolean update(Presence presence) {
+//    System.out.println("Room presence received: " + presence);
     final JID from = presence.from();
     final MucXData xData = presence.has(MucXData.class) ? presence.get(MucXData.class) : new MucXData();
     if (!presence.available())
@@ -252,7 +255,14 @@ public class RoomAgent extends PersistentActorAdapter {
   }
 
   protected boolean filter(Presence pres) { return true; }
-  protected boolean relevant(Stanza msg, JID to) { return !(msg instanceof Message) || ((Message) msg).type() == MessageType.GROUP_CHAT; }
+  protected boolean relevant(Stanza msg, JID to) {
+    final JID msgTo = msg.to();
+    if (msgTo != null && msgTo.hasResource()) {
+      final MucUserStatus status = participants.get(to);
+      return status != null && msgTo.resource().equals(status.nickname);
+    }
+    return !(msg instanceof Message) || ((Message) msg).type() == MessageType.GROUP_CHAT;
+  }
   protected boolean filter(Message msg) {
     final JID from = msg.from();
     Role role = role(from);

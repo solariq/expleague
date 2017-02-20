@@ -118,6 +118,7 @@ public:
     QString id() const { return m_jid.isEmpty() ? m_profile->login().replace('.', '_') : xmpp::user(m_jid); }
 
     Member* find(const QString& id);
+    QList<Member*> members() const;
 
     void sendOk(Offer* offer) {
         sendCommand("ok", offer);
@@ -178,12 +179,15 @@ signals:
     void user(const Member&);
     void tag(TaskTag* tag);
     void pattern(AnswerPattern* pattern);
+    void chatTemplate(const QString& type, const QString& pattern);
 
     void presenceChanged(const QString& user, bool available);
 
     void xmppError(const QString& error);
 
     void jidChanged(const QString&);
+
+    void membersChanged();
 
 public slots:
     void onError(QXmppClient::Error err);

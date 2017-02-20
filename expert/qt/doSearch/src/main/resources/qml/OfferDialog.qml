@@ -16,7 +16,7 @@ Window {
     property string comment
 
     width: 350
-    height: 200
+    height: 150 + topic.implicitHeight + comment.implicitHeight
     minimumHeight: height
     maximumHeight: height
     minimumWidth: width
@@ -67,11 +67,15 @@ Window {
                 anchors.horizontalCenter: parent.horizontalCenter
                 columns: 2
                 Text {
+                    id: topic
                     Layout.columnSpan: 2
                     Layout.fillWidth: true
                     Layout.preferredHeight: implicitHeight
                     horizontalAlignment: Text.AlignHCenter
+
                     text: dialog.text
+                    clip: true
+                    wrapMode: Text.WrapAnywhere
                 }
 
                 Label {
@@ -80,11 +84,14 @@ Window {
                 Item {}
 
                 Text {
+                    id: comment
                     Layout.columnSpan: 2
                     Layout.fillWidth: true
                     Layout.preferredHeight: implicitHeight
-                    text: dialog.comment !== "" ? dialog.comment : qsTr("Нет")
                     horizontalAlignment: Text.AlignHCenter
+                    text: dialog.comment !== "" ? dialog.comment : qsTr("Нет")
+                    clip: true
+                    wrapMode: Text.WrapAnywhere
                 }
             }
         }

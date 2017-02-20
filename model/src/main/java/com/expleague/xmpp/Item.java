@@ -218,12 +218,15 @@ public class Item implements Cloneable {
     public Item deserialize(byte[] xmlForm) {
       try {
         deserializedLength += xmlForm.length;
-        if (deserializedLength > MAXIMUM_BUFFER_SIZE)
+        if (deserializedLength > MAXIMUM_BUFFER_SIZE) {
           init();
+          deserializedLength = xmlForm.length;
+        }
         asyncXml.getInputFeeder().feedInput(xmlForm, 0, xmlForm.length);
         reader.drain(o -> {
-          if (o instanceof Item)
-            result = (Item)o;
+          if (o instanceof Item) {
+            result = (Item) o;
+          }
         });
       }
       catch (XMLStreamException | SAXException e) {

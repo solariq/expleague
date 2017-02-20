@@ -49,5 +49,6 @@
         <file>SuggestDialog.qml</file>
         <file>GlobalChat.qml</file>
         <file>OfferDialog.qml</file>
+        <file>FilterDialog.qml</file>
     </qresource>
 </RCC>
