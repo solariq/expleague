@@ -150,7 +150,7 @@ public class ExpLeagueServer {
       //noinspection unchecked
       patterns = (Class<? extends PatternsRepository>) Class.forName(config.getString("patterns"));
       type = Type.valueOf(config.getString("type").toUpperCase());
-      unitTest = config.getBoolean("unit-test");
+      unitTest = config.hasPath("unit-test") && config.getBoolean("unit-test");
     }
 
     @Override
