@@ -2,13 +2,10 @@ package com.expleague.bots;
 
 import com.spbsu.commons.util.sync.StateLatch;
 import tigase.jaxmpp.core.client.*;
-import tigase.jaxmpp.core.client.criteria.Criteria;
-import tigase.jaxmpp.core.client.criteria.ElementCriteria;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 import tigase.jaxmpp.core.client.xml.Element;
 import tigase.jaxmpp.core.client.xml.ElementFactory;
 import tigase.jaxmpp.core.client.xml.XMLException;
-import tigase.jaxmpp.core.client.xmpp.modules.AbstractStanzaModule;
 import tigase.jaxmpp.core.client.xmpp.modules.muc.MucModule;
 import tigase.jaxmpp.core.client.xmpp.modules.presence.PresenceModule;
 import tigase.jaxmpp.core.client.xmpp.modules.registration.InBandRegistrationModule;
@@ -19,8 +16,8 @@ import tigase.jaxmpp.j2se.J2SESessionObject;
 import tigase.jaxmpp.j2se.Jaxmpp;
 import tigase.jaxmpp.j2se.connectors.socket.SocketConnector;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Queue;
 
 /**
  * User: solar
@@ -35,6 +32,10 @@ public class Bot {
   private final String resource;
   private final String email;
   private final BareJID jid;
+
+  private boolean receivingStarted;
+  private Queue<Message> messageQueue;
+  private StateLatch messageStateLatch;
 
   protected final Jaxmpp jaxmpp = new Jaxmpp(new J2SESessionObject());
 
@@ -93,22 +94,6 @@ public class Bot {
     jaxmpp.getProperties().setUserProperty(SessionObject.RESOURCE, resource);
 //    jaxmpp.getModulesManager().register(new )
     jaxmpp.getEventBus().addHandler(JaxmppCore.ConnectedHandler.ConnectedEvent.class, sessionObject -> latch.advance());
-    jaxmpp.getModulesManager().register(new AbstractStanzaModule<Message>() {
-      @Override
-      public Criteria getCriteria() {
-        return new ElementCriteria("message", new String[0], new String[0]);
-      }
-
-      @Override
-      public String[] getFeatures() {
-        return new String[0];
-      }
-
-      @Override
-      public void process(Message stanza) throws JaxmppException {
-        onMessage(stanza.getAsString());
-      }
-    });
 
     jaxmpp.getEventBus().addHandler(MucModule.MucMessageReceivedHandler.MucMessageReceivedEvent.class, (sessionObject, message, room, s, date) -> {
       try {
@@ -125,6 +110,9 @@ public class Bot {
     jaxmpp.getEventBus().addHandler(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, (sessionObject, stanza) -> {
       try {
         System.out.println("Msg: " + stanza.getAsString());
+        if (stanza instanceof Message) {
+          onMessage((Message) stanza);
+        }
       } catch (XMLException e) {
         throw new RuntimeException(e);
       }
@@ -134,9 +122,6 @@ public class Bot {
     latch.state(2, 1);
     System.out.println("Logged in");
 
-  }
-
-  protected void onMessage(String asString) {
   }
 
   public void stop() throws JaxmppException {
@@ -168,38 +153,6 @@ public class Bot {
     }
   }
 
-  public Message receiveMessage() {
-    return receiveMessage(DEFAULT_TIMEOUT_IN_NANOS);
-  }
-
-  public Message receiveMessage(long timeoutInNanos) {
-    List<Message> messages = receiveMessages(1, timeoutInNanos);
-    return messages.get(0);
-  }
-
-  public List<Message> receiveMessages(int messagesNum) {
-    return receiveMessages(messagesNum, DEFAULT_TIMEOUT_IN_NANOS);
-  }
-
-  public List<Message> receiveMessages(int messagesNum, long timeoutInNanos) {
-    final StateLatch latch = new StateLatch();
-    final List<Message> messages = new ArrayList<>();
-    final Connector.StanzaReceivedHandler handler = (sessionObject, stanza) -> {
-      if (stanza instanceof Message) {
-        messages.add((Message) stanza);
-        latch.advance();
-      }
-    };
-    jaxmpp.getEventBus().addHandler(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, handler);
-    latch.state(1 << messagesNum, 1, timeoutInNanos);
-    jaxmpp.getEventBus().remove(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, handler);
-
-    if (messages.size() < messagesNum) {
-      throw new RuntimeException("timeout");
-    }
-    return messages;
-  }
-
   public void sendToGroupChat(String chatMessage, BareJID roomJID) {
     try {
       final Message message = Message.create();
@@ -214,6 +167,55 @@ public class Bot {
 
   protected void onClose(final Runnable runnable) {
     jaxmpp.getEventBus().addHandler(Connector.DisconnectedHandler.DisconnectedEvent.class, sessionObject -> runnable.run());
+  }
+
+  protected void onMessage(String asString) {
+  }
+
+  private void onMessage(Message message) throws XMLException {
+    if (receivingStarted) {
+      messageQueue.add(message);
+      messageStateLatch.advance();
+    }
+    //keep until expert bot is updated
+    onMessage(message.getAsString());
+  }
+
+  public void startReceivingMessages(StateLatch stateLatch) {
+    if (receivingStarted) {
+      throw new IllegalStateException("Messages receiving was not finished");
+    }
+
+    messageStateLatch = stateLatch;
+    messageStateLatch.state(1);
+    messageQueue = new ArrayDeque<>();
+    receivingStarted = true;
+  }
+
+  public Message getReceivedMessage() {
+    return getReceivedMessage(DEFAULT_TIMEOUT_IN_NANOS);
+  }
+
+  public Message getReceivedMessage(long timeoutInNanos) {
+    Queue<Message> messages = getReceivedMessages(1, timeoutInNanos);
+    return messages.poll();
+  }
+
+  public Queue<Message> getReceivedMessages(int messagesNum) {
+    return getReceivedMessages(messagesNum, DEFAULT_TIMEOUT_IN_NANOS);
+  }
+
+  public Queue<Message> getReceivedMessages(int messagesNum, long timeoutInNanos) {
+    if (!receivingStarted) {
+      throw new IllegalStateException("Messages receiving was not started");
+    }
+
+    final int finalState = 1 << messagesNum;
+    if (messageStateLatch.state() < finalState) {
+      messageStateLatch.state(finalState, messageStateLatch.state(), timeoutInNanos);
+    }
+    receivingStarted = false;
+    return messageQueue;
   }
 
   public static class PrinterAsyncCallback implements AsyncCallback {

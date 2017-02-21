@@ -2,12 +2,18 @@ package com.expleague.integration_tests;
 
 import com.expleague.bots.AdminBot;
 import com.expleague.bots.ClientBot;
-import org.junit.*;
+import com.spbsu.commons.util.sync.StateLatch;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
+import tigase.jaxmpp.core.client.xml.Element;
+import tigase.jaxmpp.core.client.xml.XMLException;
 import tigase.jaxmpp.core.client.xmpp.stanzas.Message;
 
-import java.util.List;
+import java.util.Queue;
 
 /**
  * User: Artem
@@ -40,17 +46,39 @@ public class ClientAdminTest {
     //Arrange
     final String topicText = "New topic";
     final String messageFromAdminText = "Message from admin";
-    final BareJID roomJID = clientBot.startRoom(topicText);
 
     //Act
-    final List<Message> initMessages = adminBot.receiveMessages(3);
+    adminBot.startReceivingMessages(new StateLatch());
+    final BareJID roomJID = clientBot.startRoom(topicText);
+    final Queue<Message> initMessages = adminBot.getReceivedMessages(3);
+
+    clientBot.startReceivingMessages(new StateLatch());
     adminBot.sendToGroupChat(messageFromAdminText, roomJID);
-    final Message messageFromAdmin = clientBot.receiveMessage();
+    final Message messageFromAdmin = clientBot.getReceivedMessage();
 
     //Assert
-    Assert.assertEquals("moderator", initMessages.get(0).getFirstChild("room-role-update").getAttribute("role"));
-    Assert.assertEquals("0", initMessages.get(1).getFirstChild("room-state-changed").getAttribute("state"));
-    Assert.assertEquals(topicText, initMessages.get(2).getFirstChild("offer").getFirstChild("topic").getValue());
+    final boolean[] messagesChecker = new boolean[3];
+    initMessages.forEach(message -> {
+      try {
+        final Element firstChild = message.getFirstChild();
+        if ("room-role-update".equals(firstChild.getName())) {
+          Assert.assertEquals("moderator", firstChild.getAttribute("role"));
+          messagesChecker[0] = true;
+        } else if ("room-state-changed".equals(firstChild.getName())) {
+          Assert.assertEquals("0", firstChild.getAttribute("state"));
+          messagesChecker[1] = true;
+        } else if ("offer".equals(firstChild.getName())) {
+          Assert.assertEquals(topicText, firstChild.getFirstChild("topic").getValue());
+          messagesChecker[2] = true;
+        } else {
+          Assert.fail("Unexpected message is received");
+        }
+      } catch (XMLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+    final boolean[] expectedChecker = new boolean[] {true, true, true};
+    Assert.assertArrayEquals(expectedChecker, messagesChecker);
     Assert.assertEquals(messageFromAdminText, messageFromAdmin.getFirstChild("body").getValue());
   }
 }

@@ -33,7 +33,7 @@ public class AdminBot extends Bot {
     admin.start();
     admin.online();
 
-    final Message message = admin.receiveMessage();
+    final Message message = admin.getReceivedMessage();
     System.out.println(message.getAsString());
 
     admin.stop();
