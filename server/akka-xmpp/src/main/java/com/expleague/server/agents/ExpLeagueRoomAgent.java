@@ -174,6 +174,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       state(DELIVERY, mode);
       answer = msg;
     }
+    else if (msg.has(Cancel.class) && affiliation == Affiliation.OWNER) {
+      state(CLOSED, mode);
+    }
     else if (affiliation == Affiliation.OWNER) {
       if (msg.has(Feedback.class) && state == FEEDBACK) {
         if (mode == ProcessMode.NORMAL)
@@ -182,6 +185,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       }
       else if (state == FEEDBACK && !msg.has(Command.class)) {
         state(OPEN, mode);
+      }
+      else if (mode == ProcessMode.NORMAL) {
+        GlobalChatAgent.tell(jid(), new RoomMessageReceived(from), context());
       }
     }
   }

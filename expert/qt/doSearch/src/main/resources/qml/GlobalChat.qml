@@ -92,10 +92,12 @@ Item {
                         ListView {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
+
                             id: involvedList
                             model: modelData.involved
                             property var occupied: modelData.occupied
                             visible: involved.length > 0
+                            orientation: Qt.Horizontal
                             delegate: Avatar {
                                 anchors.verticalCenter: parent.verticalCenter
                                 size: {

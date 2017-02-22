@@ -18,11 +18,16 @@
 #include "dosearch.h"
 
 #include "util/region.h"
+#include "util/mmath.h"
 
 namespace expleague {
 namespace xmpp {
 
 const QString EXP_LEAGUE_NS = "http://expleague.com/scheme";
+
+QString nextId() {
+    return randString(10) + "-" + QString::number(QDateTime::currentDateTime().toMSecsSinceEpoch());
+}
 
 ExpLeagueConnection::ExpLeagueConnection(Profile* p, QObject* parent): QObject(parent), m_client(new QXmppClient(this)), m_profile(p) {
     QObject::connect(m_client, SIGNAL(error(QXmppClient::Error)), this, SLOT(onError(QXmppClient::Error)));
@@ -96,7 +101,12 @@ void ExpLeagueConnection::onPresence(const QXmppPresence& presence) {
         emit presenceChanged(user, presence.type() == QXmppPresence::Available);
     }
     else if (!xmpp::user(from).isEmpty()){
-        emit this->presenceChanged(xmpp::user(from), presence.type() == QXmppPresence::Available);
+        QString user;
+        if (xmpp::domain(from).startsWith("muc.")) // room
+            user = xmpp::resource(from);
+        else
+            user = xmpp::user(from);
+        emit presenceChanged(user, presence.type() == QXmppPresence::Available);
     }
 }
 
@@ -163,6 +173,7 @@ void ExpLeagueConnection::onIQ(const QXmppIq& iq) {
                     continue;
                 if (element.tagName() == "message") {
                     QXmppMessage msg("global-chat@" + domain(jid()), jid());
+                    msg.setId(xmpp::nextId());
                     QXmppElementList protocol;
                     for(int i = 0; i < element.childNodes().length(); i++) {
                         QDomElement item = xml.childNodes().at(i).toElement();
@@ -187,15 +198,21 @@ enum Command {
     ELC_CHECK,
 };
 
-void ExpLeagueConnection::onMessage(const QXmppMessage& msg) {
+void ExpLeagueConnection::onMessage(const QXmppMessage& msg, const QString& idOrig) {
+    QString id = idOrig.isNull() ? msg.id() : idOrig;
+
     QString room;
     QString from;
     if (msg.from().indexOf("muc.") >= 0 || msg.from().startsWith("global-chat@")) {
         from = xmpp::resource(msg.from());
         room = xmpp::user(msg.from());
     }
-    else {
+    else if (!from.isEmpty()){
         from = xmpp::user(msg.from());
+        room = xmpp::user(msg.to());
+    }
+    else {
+        from = xmpp::user(jid());
         room = xmpp::user(msg.to());
     }
 
@@ -263,16 +280,16 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg) {
         }
     }
     else if (!answer.isEmpty()) {
-        emit this->answer(room, msg.id(), from, answer);
+        emit this->answer(room, id, from, answer);
     }
     else if (!progress.empty()) {
-        emit this->progress(room, msg.id(), from, progress);
+        emit this->progress(room, id, from, progress);
     }
     else if (image.isValid()) {
-        emit this->image(room, msg.id(), from, image);
+        emit this->image(room, id, from, image);
     }
     else if (!msg.body().isEmpty()) {
-        emit this->message(room, msg.id(), from, msg.body());
+        emit this->message(room, id, from, msg.body());
     }
     foreach (const QXmppElement& element, msg.extensions()) {
         QDomElement xml = element.sourceDomElement();
@@ -293,7 +310,7 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg) {
         }
     }
 
-    if (msg.isReceiptRequested()) {
+    if (msg.isReceiptRequested() && msg.id() == id) {
         QXmppMessage receipt;
         receipt.setType(QXmppMessage::Normal);
         receipt.setReceiptId(msg.id());
@@ -371,6 +388,7 @@ QList<Member*> ExpLeagueConnection::members() const {
 
 void ExpLeagueConnection::sendCommand(const QString& command, Offer* task, std::function<void (QDomElement* element)> init) {
     QXmppMessage msg("", profile()->domain());
+    msg.setId(xmpp::nextId());
     QDomDocument holder;
     QXmppElementList protocol;
     QDomElement commandXml = holder.createElementNS(EXP_LEAGUE_NS, command);
@@ -392,14 +410,17 @@ void ExpLeagueConnection::sendSuspend(Offer *offer, long seconds) {
 
 void ExpLeagueConnection::sendMessage(const QString& to, const QString& text) {
     QXmppMessage msg(jid(), to, text);
+    msg.setId(xmpp::nextId());
     msg.setType(QXmppMessage::GroupChat);
     msg.setReceiptRequested(true);
     m_client->sendPacket(msg);
-    onMessage(msg);
+    onMessage(msg, msg.id() + "-" + xmpp::user(jid()));
 }
 
 void ExpLeagueConnection::sendAnswer(const QString& room, int difficulty, int success, bool extraInfo, const QString& text) {
     QXmppMessage msg("", room);
+    msg.setId(xmpp::nextId());
+
     msg.setType(QXmppMessage::GroupChat);
 
     QDomDocument holder;
@@ -412,11 +433,13 @@ void ExpLeagueConnection::sendAnswer(const QString& room, int difficulty, int su
     protocol.append(QXmppElement(answer));
     msg.setExtensions(protocol);
     m_client->sendPacket(msg);
-    onMessage(msg);
+    onMessage(msg, msg.id() +  "-" + xmpp::user(jid()));
 }
 
 void ExpLeagueConnection::sendProgress(const QString &to, const Progress &progress) {
     QXmppMessage msg("", to);
+    msg.setId(xmpp::nextId());
+
     msg.setType(QXmppMessage::Normal);
 
     QDomDocument holder;
@@ -428,6 +451,8 @@ void ExpLeagueConnection::sendProgress(const QString &to, const Progress &progre
 
 void ExpLeagueConnection::sendUserRequest(const QString &id) {
     QXmppIq iq;
+    iq.setId(xmpp::nextId());
+
     QDomDocument holder;
     QXmppElementList protocol;
 
@@ -457,6 +482,7 @@ void ExpLeagueConnection::sendPresence(const QString& room, bool available) {
 
 void ExpLeagueConnection::sendOffer(const Offer& offer) {
     QXmppMessage msg("", offer.roomJid());
+    msg.setId(xmpp::nextId());
     msg.setType(QXmppMessage::Normal);
 
     QDomDocument holder;
@@ -787,6 +813,7 @@ Offer::Offer(QDomElement xml, QObject *parent): QObject(parent) {
     m_timer->setTimerType(Qt::TimerType::CoarseTimer);
     QObject::connect(m_timer, SIGNAL(timeout()), SLOT(tick()));
 }
+
 }
 
 QDebug operator<<(QDebug dbg, const QDomNode& node) {

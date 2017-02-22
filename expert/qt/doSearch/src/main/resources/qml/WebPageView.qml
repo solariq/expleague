@@ -72,7 +72,7 @@ Rectangle {
 
                 Material.theme: Material.System
                 indicator: CheckIndicator {
-                    x: text ? (muteCheck.mirrored ? muteCheck.width - width - muteCheck.rightPadding : muteCheck.leftPadding) : muteCheck.leftPadding + (muteCheck.availableWidth - width) / 2
+                    x: muteCheck.leftPadding + (muteCheck.availableWidth - width) / 2
                     y: muteCheck.topPadding + (muteCheck.availableHeight - height) / 2
                     width: height
                     height: parent.height

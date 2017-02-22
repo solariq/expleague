@@ -36,6 +36,7 @@ inline QString domain(const QString& jid) {
     return domain.startsWith("muc.") ? domain.mid(4) : domain;
 }
 inline QString resource(const QString& jid) { return jid.section("@", 1).section("/", 1); }
+QString nextId();
 
 class Affiliation: public QObject {
     Q_OBJECT
@@ -193,7 +194,7 @@ public slots:
     void onError(QXmppClient::Error err);
     void onPresence(const QXmppPresence& presence);
     void onIQ(const QXmppIq& iq);
-    void onMessage(const QXmppMessage& msg);
+    void onMessage(const QXmppMessage& msg, const QString& id = QString());
     void onDisconnected() {
         disconnect();
     }

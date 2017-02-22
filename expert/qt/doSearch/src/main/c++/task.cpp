@@ -154,7 +154,7 @@ void Task::close(const QString& shortAnswer) {
         sendAnswer(shortAnswer.isEmpty() ? m_answers[0]->textContent().section("\n", 0, 0) : shortAnswer, -1, -1, false);
     }
     else {
-        sendAnswer(shortAnswer + tr("\nОтвет даный в диалоге:\n") + shortAnswer, -1, -1, false);
+        sendAnswer(shortAnswer + tr("\nОтвет данный в диалоге:\n") + shortAnswer, -1, -1, false);
     }
 }
 

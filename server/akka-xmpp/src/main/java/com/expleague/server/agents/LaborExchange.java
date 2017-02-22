@@ -69,7 +69,7 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
       final ExpLeagueOrder.Status orderStatus = ExpLeagueOrder.Status.valueOf(notification.taskState());
       final BrokerRole.State from = BrokerRole.State.valueOf(notification.from());
       final BrokerRole.State to = BrokerRole.State.valueOf(notification.to());
-      if (orderStatus != ExpLeagueOrder.Status.IN_PROGRESS) {
+      if (EnumSet.of(ExpLeagueOrder.Status.IN_PROGRESS, ExpLeagueOrder.Status.SUSPENDED).contains(orderStatus)) {
         if (from == BrokerRole.State.STARVING)
           status.brokerFed();
         else if (to == BrokerRole.State.STARVING)

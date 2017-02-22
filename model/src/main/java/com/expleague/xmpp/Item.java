@@ -36,6 +36,7 @@ import java.util.logging.Logger;
  * Date: 08.12.15
  * Time: 17:57
  */
+@SuppressWarnings({"unused", "AnonymousHasLambdaAlternative"})
 @XmlTransient
 public class Item implements Cloneable {
   private static final Logger log = Logger.getLogger(Item.class.getName());
@@ -70,6 +71,7 @@ public class Item implements Cloneable {
     }
   };
 
+  @SuppressWarnings("unchecked")
   public static <T extends Item> T create(CharSequence str) {
     final XmlInputter inputter = tlReader.get();
     try {

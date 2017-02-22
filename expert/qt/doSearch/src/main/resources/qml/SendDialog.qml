@@ -28,7 +28,7 @@ Window {
     signal appendTag(TaskTag tag)
     Action {
         id: accept
-        text: questions ? qsTr("Отправить") : qsTr("Закрыть")
+        text: qsTr("Отправить")
         enabled: shortAnswer.text.length > 0 && (!questions || !!success.current && !!difficulty.current && !!info.current)
         onTriggered: {
             if (questions) {

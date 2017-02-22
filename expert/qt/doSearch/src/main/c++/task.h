@@ -299,7 +299,7 @@ private:
     QList<MarkdownEditorPage*> m_answers;
     QStringList m_phones;
     Context* m_context = 0;
-    Status m_status;
+    Status m_status = Status::OPEN;
 
     QList<TaskTag*> m_tags;
     QList<AnswerPattern*> m_patterns;
