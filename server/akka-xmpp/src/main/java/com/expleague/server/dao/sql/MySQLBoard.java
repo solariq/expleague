@@ -13,6 +13,7 @@ import com.google.common.base.Joiner;
 import com.spbsu.commons.io.StreamTools;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
+import gnu.trove.set.hash.TIntHashSet;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -71,6 +72,28 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       return result.toArray(new MySQLOrder[result.size()]);
     }
     catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void removeAllOrders(final String roomId) {
+    final PreparedStatement statement = createStatement("delete-room-orders", "DELETE FROM Orders WHERE room = ?");
+    try {
+      statement.setString(1, roomId);
+      statement.execute();
+      TIntHashSet removed = new TIntHashSet();
+      orders.forEachEntry((id, orderRef) -> {
+        final MySQLOrder order = orderRef.get();
+        if (order.room().local().equals(roomId))
+          removed.add(id);
+        return true;
+      });
+      removed.forEach(id -> {
+        orders.remove(id);
+        return true;
+      });
+    } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }

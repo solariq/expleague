@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import com.expleague.model.Offer;
 import com.expleague.model.Tag;
 import com.expleague.xmpp.JID;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
@@ -55,6 +56,7 @@ public abstract class ExpLeagueOrder {
     this.broker = broker;
   }
 
+  @NotNull
   public JID room() {
     return offer.room();
   }

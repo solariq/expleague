@@ -261,7 +261,10 @@ void Task::clearFilter() {
 }
 
 void Task::filter(Member* member, int role) {
-    m_filter[member->id()] = (Offer::FilterType)role;
+    if (role < 0)
+        m_filter.remove(member->id());
+    else
+        m_filter[member->id()] = (Offer::FilterType)role;
     emit filterChanged();
 }
 

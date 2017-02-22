@@ -256,16 +256,12 @@ public class Operations {
 
     public RoomRoleUpdate() {}
     public RoomRoleUpdate(JID expert, Affiliation affiliation) {
-      if (expert.domain().startsWith("muc."))
-        System.out.println();
       this.expert = expert;
       this.affiliation = affiliation;
     }
 
     public RoomRoleUpdate(JID jid, Role role, Affiliation affiliation) {
       this.expert = jid;
-      if (expert.domain().startsWith("muc."))
-        System.out.println();
       this.role = role;
       this.affiliation = affiliation;
     }

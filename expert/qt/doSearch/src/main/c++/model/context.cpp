@@ -233,8 +233,7 @@ void Context::appendDocument(MarkdownEditorPage* document) {
     if (m_documents.contains(document))
         return;
     m_documents.append(document);
-    Page::append("context.document", document->id());
-    save();
+    appendPart(document);
     emit documentsChanged();
 }
 
@@ -245,11 +244,6 @@ void Context::removeDocument(MarkdownEditorPage* document) {
     m_documents.removeAt(index);
     if (m_active_document_index >= index)
         m_active_document_index--;
-    Page::remove("context.document");
-    for (int i = 0; i < m_documents.size(); i++) {
-        Page::append("context.document", m_documents[i]->id());
-    }
-    save();
     removePart(document);
     emit documentsChanged();
 }

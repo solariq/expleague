@@ -119,6 +119,8 @@ public class ExpLeagueServer {
     String iosPushCert();
     String iosPushPasswd();
 
+    String dynamoDB();
+
     enum Type {
       PRODUCTION,
       TEST
@@ -166,6 +168,12 @@ public class ExpLeagueServer {
     @Override
     public String iosPushPasswd() {
       return config.getString("notifications.ios.passwd");
+    }
+
+    @Override
+    public String dynamoDB() {
+      final String string = config.getString("dynamo.db");
+      return string != null ? string : "expleague-rooms-test";
     }
 
     @Override

@@ -9,7 +9,9 @@ import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
 import com.amazonaws.services.dynamodbv2.document.internal.InternalUtils;
 import com.amazonaws.services.dynamodbv2.model.*;
+import com.expleague.server.ExpLeagueServer;
 import com.expleague.xmpp.JID;
+import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.util.cache.CacheStrategy;
 import com.spbsu.commons.util.cache.impl.FixedSizeCache;
@@ -27,19 +29,24 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public class DynamoDBArchive implements Archive {
   private static final Logger log = Logger.getLogger(DynamoDBArchive.class.getName());
-  public static final String TBTS_ROOMS = "tbts-rooms";
   private final DynamoDBMapper mapper;
   private final AmazonDynamoDBAsyncClient client;
 
   public DynamoDBArchive() {
     final BasicAWSCredentials credentials = new BasicAWSCredentials("AKIAJPLJBHVNFAWY3S4A", "UEnvfQ2ver5mlOu7IJsjxRH3G9uF3/f0WNLFZ9c6");
     client = new AmazonDynamoDBAsyncClient(credentials);
-    mapper = new DynamoDBMapper(client);
+    mapper = new DynamoDBMapper(client, new DynamoDBMapperConfig((DynamoDBMapperConfig.TableNameResolver) (clazz, config) -> ExpLeagueServer.config().dynamoDB()));
     final List<String> tableNames = client.listTables().getTableNames();
-    if (!tableNames.contains(TBTS_ROOMS)) {
+    final String tableName = ExpLeagueServer.config().dynamoDB();
+    if (!tableNames.contains(tableName)) {
       final CreateTableRequest createReq = mapper.generateCreateTableRequest(RoomArchive.class);
       createReq.setProvisionedThroughput(new ProvisionedThroughput(10L, 10L));
-      client.createTable(createReq);
+      final CreateTableResult createTableResult = client.createTable(createReq);
+      try {
+        Thread.sleep(5000);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
     }
     final DynamoDB db = new DynamoDB(client);
   }
@@ -48,9 +55,10 @@ public class DynamoDBArchive implements Archive {
   @Override
   public synchronized Dump dump(String local) {
     return dumpsCache.get(local, id -> {
-      final RoomArchive archive = mapper.load(getRoomArchiveClass(), id);
-      if (archive != null)
-        archive.handlers(client, mapper);
+      RoomArchive archive = mapper.load(getRoomArchiveClass(), id);
+      if (archive == null)
+        archive = new RoomArchive(id);
+      archive.handlers(client, mapper);
       return archive;
     });
   }
@@ -67,7 +75,7 @@ public class DynamoDBArchive implements Archive {
     return RoomArchive.class;
   }
 
-  @DynamoDBTable(tableName = TBTS_ROOMS)
+  @DynamoDBTable(tableName = "expleague-rooms")
   public static class RoomArchive implements Dump {
     String id;
     Set<String> known = new HashSet<>();
@@ -102,7 +110,7 @@ public class DynamoDBArchive implements Archive {
       messages.add(new Message(authorId, message, System.currentTimeMillis()));
     }
 
-    List<AttributeValue> accumulatedChange;
+    private final List<AttributeValue> accumulatedChange = new ArrayList<>();
     @Override
     public void accept(Stanza stanza) {
       if (known.contains(stanza.id()))
@@ -110,17 +118,26 @@ public class DynamoDBArchive implements Archive {
       final Message message = new Message(stanza.from().toString(), stanza.xmlString(), System.currentTimeMillis());
       known.add(stanza.id());
       messages.add(message);
-      accumulatedChange.add(message.asMap());
+      final AttributeValue value = message.asMap();
+      accumulatedChange.add(value);
     }
 
     @Override
     public void commit() {
       if (accumulatedChange.isEmpty())
         return;
+      final StringBuilder expressionBuilder = new StringBuilder();
       try {
-        if (accumulatedChange.size() == messages.size()) {
+        if (accumulatedChange.size() < messages.size()) {
+          expressionBuilder.append("set ");
+          for (int i = 0; i < accumulatedChange.size(); i++) {
+            if (i > 0)
+              expressionBuilder.append(", ");
+            expressionBuilder.append("messages[").append(i + messages.size()).append("]=:i[").append(i).append("]");
+          }
+
           final UpdateItemRequest update = new UpdateItemRequest()
-              .withTableName(TBTS_ROOMS)
+              .withTableName(ExpLeagueServer.config().dynamoDB())
               .withKey(InternalUtils.toAttributeValueMap(new PrimaryKey("id", id)))
               .withUpdateExpression("set #m = list_append(#m, :i)")
               .withExpressionAttributeNames(new HashMap<String, String>() {{
@@ -221,10 +238,10 @@ public class DynamoDBArchive implements Archive {
     }
 
     public AttributeValue asMap() {
-      return new AttributeValue().withL(new AttributeValue()
+      return new AttributeValue()
           .addMEntry("text", new AttributeValue().withS(text))
           .addMEntry("author", new AttributeValue().withS(author))
-          .addMEntry("ts", new AttributeValue().withN(Long.toString(ts))));
+          .addMEntry("ts", new AttributeValue().withN(Long.toString(ts)));
     }
   }
 }

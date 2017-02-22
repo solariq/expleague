@@ -20,7 +20,7 @@ public class ReadOnlyDynamoDBArchive extends DynamoDBArchive {
     throw new UnsupportedOperationException();
   }
 
-  @DynamoDBTable(tableName = TBTS_ROOMS)
+  @DynamoDBTable(tableName = "expleague-rooms")
   public static class ReadOnlyRoomArchive extends RoomArchive {
     public ReadOnlyRoomArchive() {}
 

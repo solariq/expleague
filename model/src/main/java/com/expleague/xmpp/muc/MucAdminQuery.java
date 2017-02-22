@@ -5,10 +5,7 @@ import com.expleague.model.Role;
 import com.expleague.xmpp.Item;
 import org.jetbrains.annotations.Nullable;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 
 /**
  * Experts League
@@ -18,7 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class MucAdminQuery extends Item {
   public static final String NS = "http://jabber.org/protocol/muc#admin";
 
-  @XmlElementRef(name = "item", namespace = NS)
+  @XmlElementRef(namespace = NS)
   Item item;
 
   public MucAdminQuery() {}
@@ -43,6 +40,7 @@ public class MucAdminQuery extends Item {
   }
 
   @XmlRootElement(name = "item", namespace = NS)
+  @XmlType(name = "muc-item")
   public static class Item extends com.expleague.xmpp.Item {
     @XmlAttribute
     private String nick;

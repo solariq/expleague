@@ -234,20 +234,24 @@ void NavigationManager::open(Page* page) {
     else group->selectPage(0);
 
     if (group) {
-        QSet<PagesGroup*> known;
-        PagesGroup* parent = group->parentGroup();
-        while (parent && !known.contains(parent)) {
-            known.insert(group);
-            if (parent->selectedPage() != group->root()) {
-                parent->insert(group->root());
-                parent->selectPage(group->root());
-                parent->root()->transition(group->root(), Page::TransitionType::CHILD_GROUP_OPEN);
+        {
+            QSet<PagesGroup*> known;
+            PagesGroup* parent = group->parentGroup();
+            while (parent) {
+                if (known.contains(group))
+                    break;
+                known.insert(group);
+                if (parent->selectedPage() != group->root()) {
+                    parent->insert(group->root());
+                    parent->selectPage(group->root());
+                    parent->root()->transition(group->root(), Page::TransitionType::CHILD_GROUP_OPEN);
+                }
+                group = parent;
+                parent = group->parentGroup();
             }
-            group = parent;
-            parent = group->parentGroup();
         }
 
-        if (qobject_cast<Context*>(group->root())) {
+        if (qobject_cast<Context*>(group->root()) && group->root() != m_active_context) {
             activate(static_cast<Context*>(group->root()));
         }
         else {

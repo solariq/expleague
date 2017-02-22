@@ -66,9 +66,9 @@ public class GlobalChatAgent extends RoomAgent {
   }
 
   @Override
-  protected void process(Message msg) {
+  protected void process(Message msg, ProcessMode mode) {
     if (!isRoom(msg.from())) {
-      super.process(msg);
+      super.process(msg, mode);
       return;
     }
     final RoomStatus status = rooms.compute(msg.from().local(), (local, s) -> s != null ? s : new RoomStatus(local));
@@ -85,7 +85,7 @@ public class GlobalChatAgent extends RoomAgent {
       status.affiliation(update.expert().local(), update.affiliation());
     }
     if (changes < status.changes())
-      super.process(msg);
+      super.process(msg, mode);
   }
 
   @Override
@@ -100,9 +100,6 @@ public class GlobalChatAgent extends RoomAgent {
 
   @Override
   protected void onStart() {
-    super.archive().stream()
-        .filter(msg -> msg instanceof Message)
-        .forEach(msg -> process((Message)msg));
     rooms.forEach((room, state) -> {
       if (EnumSet.of(OPEN, CHAT, RESPONSE, WORK).contains(state.state))
         XMPP.whisper(XMPP.muc(room), new RoomAgent.Awake(), context()); // wake up room

@@ -1,6 +1,8 @@
-import QtQuick 2.7
+import QtQuick 2.8
 import QtQuick.Layouts 1.1
-import QtQuick.Controls 2.0
+import QtQuick.Controls 2.1
+import QtQuick.Controls.impl 2.1
+import QtQuick.Controls.Material 2.1
 import QtQuick.Controls 1.4 as Legacy
 import QtWebEngine 1.3
 import QtQuick.Window 2.0
@@ -58,6 +60,28 @@ Rectangle {
             }
 
             Item {Layout.preferredWidth: 40}
+            Label {
+                Layout.alignment: Qt.AlignVCenter
+                text: "mute:"
+            }
+
+            CheckBox {
+                id: muteCheck
+                Layout.maximumHeight: 15
+                Layout.preferredHeight: 15
+
+                Material.theme: Material.System
+                indicator: CheckIndicator {
+                    x: text ? (muteCheck.mirrored ? muteCheck.width - width - muteCheck.rightPadding : muteCheck.leftPadding) : muteCheck.leftPadding + (muteCheck.availableWidth - width) / 2
+                    y: muteCheck.topPadding + (muteCheck.availableHeight - height) / 2
+                    width: height
+                    height: parent.height
+                    control: muteCheck
+                }
+
+                checked: true
+            }
+
             Label {
                 Layout.alignment: Qt.AlignVCenter
                 text: "redirs:"
@@ -275,9 +299,11 @@ Rectangle {
                 id: webEngineView
                 enabled: !dosearch.main || !dosearch.main.drag
 
-                Drag.onDragStarted: {
-                    console.log("Web drag started")
-                }
+                audioMuted: true
+
+//                Drag.onDragStarted: {
+//                    console.log("Web drag started")
+//                }
 
                 property bool newTab: false
 
@@ -399,6 +425,9 @@ Rectangle {
                         webEngineView.visible = Qt.binding(function() {
 //                            console.log(owner.container + " active: " + dosearch.navigation.activePage)
                             return self.visible
+                        })
+                        webEngineView.audioMuted = Qt.binding(function() {
+                            return muteCheck.checked
                         })
 //                        if (owner.container === dosearch.navigation.activePage && self.visible) // for ui transfered views
 //                            self.forceActiveFocus()
@@ -527,7 +556,7 @@ Rectangle {
     }
 
     Keys.onPressed: {
-        console.log("Key pressed: " + event.key + " caught by " + owner.id)
+//        console.log("Key pressed: " + event.key + " caught by " + owner.id)
         actionTs = new Date().getTime()
         if (pageSearch.length > 0) {
             if (event.key === Qt.Key_Left) {

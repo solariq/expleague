@@ -165,6 +165,30 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
             final List<DumpItemDto> messages = result.stream().map(DumpItemDto::new).collect(Collectors.toList());
             response = getJsonResponse("messages", messages);
           }
+          else if (path.startsWith("/rebuild-archive")) {
+            final List<JID> failed = new ArrayList<>();
+            final List<JID> success = new ArrayList<>();
+            LaborExchange.board()
+                .orders(new LaborExchange.OrderFilter(false, EnumSet.noneOf(ExpLeagueOrder.Status.class)))
+                .map(ExpLeagueOrder::room)
+                .forEach(roomJid -> {
+                  final Future<Object> result = Patterns.ask(XMPP.register(roomJid, context()), new RoomAgent.Replay(), Timeout.apply(10, TimeUnit.HOURS));
+                  try {
+                    final RoomAgent.Replay replay = (RoomAgent.Replay)Await.result(result, Duration.Inf());
+                    if (replay.success) {
+                      success.add(roomJid);
+                    }
+                    else {
+                      failed.add(roomJid);
+                    }
+                  } catch (Exception e) {
+                    throw new RuntimeException(e);
+                  }
+                  XMPP.whisper(roomJid, new RoomAgent.DumpRequest("archive"), context());
+                  success.add(roomJid);
+                });
+            response = HttpResponse.create().withStatus(200).withEntity("Archive restored for " + success.size() + ", failed for: " + failed.toString());
+          }
           else if ("/kpi".equals(path)) {
             response = getJsonResponse("charts", prepareKpiCharts(board));
           }

@@ -169,6 +169,7 @@ void League::onDisconnected() {
     m_status = LS_OFFLINE;
     emit statusChanged(m_status);
     m_role = NONE;
+    m_known_ids.clear();
     emit roleChanged(m_role);
     emit tasksAvailableChanged();
     if (m_reconnect)

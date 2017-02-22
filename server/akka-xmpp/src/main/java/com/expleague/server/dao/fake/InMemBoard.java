@@ -47,6 +47,11 @@ public class InMemBoard implements LaborExchange.Board {
   }
 
   @Override
+  public void removeAllOrders(String roomId) {
+    active.remove(roomId);
+  }
+
+  @Override
   public Stream<ExpLeagueOrder> history(String roomId) {
     return history.stream().filter(order -> order.room().local().equals(roomId));
   }
