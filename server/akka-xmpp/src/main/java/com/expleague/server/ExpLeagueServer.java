@@ -69,7 +69,7 @@ public class ExpLeagueServer {
   }
 
   @VisibleForTesting
-  static void setConfig(final Cfg cfg) throws Exception {
+  public static void setConfig(final Cfg cfg) throws Exception {
     config = cfg;
     ActorAdapter.cfg = cfg;
     users = config.roster().newInstance();
