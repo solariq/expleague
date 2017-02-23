@@ -37,7 +37,10 @@ public class ClientAdminTest {
 
   @After
   public void tearDown() throws JaxmppException {
+    clientBot.offline();
     clientBot.stop();
+
+    adminBot.offline();
     adminBot.stop();
   }
 

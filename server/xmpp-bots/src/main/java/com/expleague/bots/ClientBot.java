@@ -38,12 +38,4 @@ public class ClientBot extends Bot {
     jaxmpp.send(message);
     return room;
   }
-
-  public static void main(final String[] args) throws JaxmppException {
-    final ClientBot client = new ClientBot(BareJID.bareJIDInstance("client-bot-1", "localhost"), "poassord");
-    client.start();
-    client.online();
-    client.startRoom("Hello world");
-    client.stop();
-  }
 }

@@ -27,15 +27,4 @@ public class AdminBot extends Bot {
     message.setTo(JID.jidInstance(roomJID));
     jaxmpp.send(message);
   }
-
-  public static void main(final String[] args) throws JaxmppException, InterruptedException {
-    final AdminBot admin = new AdminBot(BareJID.bareJIDInstance("expert-bot-1", "localhost"), "poassord");
-    admin.start();
-    admin.online();
-
-    final Message message = admin.getReceivedMessage();
-    System.out.println(message.getAsString());
-
-    admin.stop();
-  }
 }

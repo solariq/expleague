@@ -121,7 +121,6 @@ public class Bot {
     jaxmpp.login();
     latch.state(2, 1);
     System.out.println("Logged in");
-
   }
 
   public void stop() throws JaxmppException {
@@ -153,6 +152,17 @@ public class Bot {
     }
   }
 
+  public void offline() {
+    try {
+      final Presence presence = Presence.create();
+      presence.setShow(Presence.Show.xa);
+      jaxmpp.send(presence);
+      System.out.println("Sent offline presence");
+    } catch (JaxmppException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public void sendToGroupChat(String chatMessage, BareJID roomJID) {
     try {
       final Message message = Message.create();
@@ -163,22 +173,6 @@ public class Bot {
     } catch (JaxmppException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  protected void onClose(final Runnable runnable) {
-    jaxmpp.getEventBus().addHandler(Connector.DisconnectedHandler.DisconnectedEvent.class, sessionObject -> runnable.run());
-  }
-
-  protected void onMessage(String asString) {
-  }
-
-  private void onMessage(Message message) throws XMLException {
-    if (receivingStarted) {
-      messageQueue.add(message);
-      messageStateLatch.advance();
-    }
-    //keep until expert bot is updated
-    onMessage(message.getAsString());
   }
 
   public void startReceivingMessages(StateLatch stateLatch) {
@@ -218,6 +212,13 @@ public class Bot {
     return messageQueue;
   }
 
+  private void onMessage(Message message) throws XMLException {
+    if (receivingStarted) {
+      messageQueue.add(message);
+      messageStateLatch.advance();
+    }
+  }
+
   public static class PrinterAsyncCallback implements AsyncCallback {
     private final String name;
 
@@ -246,6 +247,5 @@ public class Bot {
     protected void transactionComplete() {
       lock.advance();
     }
-
   }
 }
