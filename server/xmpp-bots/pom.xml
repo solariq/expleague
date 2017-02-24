@@ -12,6 +12,9 @@
     <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
     <java.version>1.8</java.version>
     <runSuite>**/IntegrationTestsSuite.class</runSuite>
+    <!-- Configure the os-maven-plugin extension to expand the classifier on -->
+    <!-- Fedora-"like" systems. -->
+    <os.detection.classifierWithLikes>fedora</os.detection.classifierWithLikes>
   </properties>
 
   <repositories>
