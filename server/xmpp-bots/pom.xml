@@ -11,6 +11,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
     <java.version>1.8</java.version>
+    <runSuite>**/IntegrationTestsSuite.class</runSuite>
   </properties>
 
   <repositories>
@@ -84,6 +85,15 @@
         <configuration>
           <source>${java.version}</source>
           <target>${java.version}</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>${runSuite}</include>
+          </includes>
         </configuration>
       </plugin>
     </plugins>

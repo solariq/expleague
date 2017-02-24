@@ -1,4 +1,4 @@
-package com.expleague.integration_tests;
+package integration_tests;
 
 import com.expleague.bots.AdminBot;
 import com.expleague.bots.ClientBot;

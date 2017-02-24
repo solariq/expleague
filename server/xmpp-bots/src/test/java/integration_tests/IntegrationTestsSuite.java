@@ -1,4 +1,4 @@
-package com.expleague.integration_tests;
+package integration_tests;
 
 import akka.actor.ActorSystem;
 import com.expleague.server.ExpLeagueServer;
