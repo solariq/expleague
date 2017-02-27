@@ -84,6 +84,14 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   @Override
+  protected boolean filter(Message msg) {
+    if (msg.has(Start.class)) { // expert has passed interview and starts his work
+      update(msg.from(), Role.PARTICIPANT, Affiliation.MEMBER, ProcessMode.NORMAL);
+    }
+    return super.filter(msg);
+  }
+
+  @Override
   protected boolean relevant(Stanza msg, JID to) {
     if (affiliation(to) == Affiliation.OWNER) {
       if (msg instanceof Message) {
