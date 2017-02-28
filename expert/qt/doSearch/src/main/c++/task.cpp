@@ -224,6 +224,8 @@ void Task::suspend(int seconds) {
 }
 
 void Task::stop() {
+    if (parent()->connection())
+        parent()->connection()->sendPresence(offer()->roomJid(), false);
     m_answers.clear();
     m_tags.clear();
     m_patterns.clear();

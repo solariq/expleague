@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -156,7 +157,18 @@ public class MySQLRoster extends MySQLOps implements Roster {
       catch (SQLException e) {
         throw new RuntimeException(e);
       }
-    }).filter(d -> d != null);
+    }).filter(Objects::nonNull);
+  }
+
+  @Override
+  public Stream<XMPPUser> allExperts() {
+    return stream("all-experts", "SELECT Users.id FROM Users JOIN Devices ON Users.id = Devices.user WHERE Devices.expert = true GROUP BY Users.id", null).map(rs -> {
+      try {
+        return user(rs.getString(1));
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }).filter(Objects::nonNull);
   }
 
   private final FixedSizeCache<String, XMPPDevice> deviceCache = new FixedSizeCache<>(1000, CacheStrategy.Type.LRU);

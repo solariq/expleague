@@ -5,11 +5,11 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 import com.expleague.server.Roster;
+import com.expleague.server.XMPPUser;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
-import com.expleague.util.akka.UntypedActorAdapter;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.roster.RosterQuery;
 import com.expleague.xmpp.stanza.Iq;
@@ -17,6 +17,7 @@ import com.expleague.xmpp.stanza.Iq.IqType;
 import scala.Option;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static com.expleague.xmpp.control.roster.RosterQuery.RosterItem.Subscription.FROM;
@@ -39,8 +40,9 @@ public class RosterService extends ActorAdapter<UntypedActor> {
     }
     switch (rosterIq.type()) {
       case GET:
-        final Set<JID> online = XMPP.online(context());
-        if (rosterIq.get().items().isEmpty()) {
+        final List<RosterQuery.RosterItem> items = rosterIq.get().items();
+        if (items.isEmpty()) {
+          final Set<JID> online = XMPP.online(context());
           final RosterQuery query = new RosterQuery();
           final Set<JID> known = new HashSet<>(100);
           Roster.instance().favorites(rosterIq.from())
@@ -69,9 +71,24 @@ public class RosterService extends ActorAdapter<UntypedActor> {
               .forEach(query::add);
           sender().tell(Iq.answer(rosterIq, query), self());
         }
-        else {
+        else if (items.get(0).jid().local().equals("experts")) {
           final RosterQuery query = new RosterQuery();
-          rosterIq.get().items().stream()
+          Roster.instance().allExperts()
+              .map(XMPPUser::jid)
+              .map(jid -> Roster.instance().profile(jid.local()))
+              .map(p -> {
+                final JID jid = p.jid();
+                final RosterQuery.RosterItem item = new RosterQuery.RosterItem(jid, FROM, p.name());
+                item.append(p);
+                return item;
+              })
+              .forEach(query::add);
+          sender().tell(Iq.answer(rosterIq, query), self());
+        }
+        else {
+          final Set<JID> online = XMPP.online(context());
+          final RosterQuery query = new RosterQuery();
+          items.stream()
               .map(RosterQuery.RosterItem::jid)
               .map(jid -> Roster.instance().profile(jid.local()))
               .map(p -> {

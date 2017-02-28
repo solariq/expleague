@@ -26,6 +26,7 @@ Item {
                                time.implicitHeight + 4 +
                                comment.implicitHeight + 4 +
                                filterView.implicitHeight + 4 +
+                               (roomId.visible ? roomId.implicitHeight : 0) +
                                (offer && offer.hasLocation ? 200 + 4 : 0) +
                                (offer ? offer.images.length * (200 + 4) : 0) +
                                (tagsView.visible ? tagsView.implicitHeight + 4 : 0) +
@@ -245,6 +246,16 @@ Item {
             ColumnLayout {
                 anchors.fill: parent
                 spacing: 0
+                TextEdit {
+                    id: roomId
+                    Layout.alignment: Qt.AlignHCenter
+                    visible: editable
+                    text: offer.room
+                    selectByMouse: true
+                    readOnly: true
+                    color: textColor
+                }
+
                 Text {
                     Layout.alignment: Qt.AlignHCenter
                     id: time

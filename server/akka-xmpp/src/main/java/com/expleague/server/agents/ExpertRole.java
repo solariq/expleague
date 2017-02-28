@@ -52,6 +52,11 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               }
               return stay();
             }
+        ).event(Resume.class,
+            (resume, task) -> {
+              explain("Resume skipped, the expert is offline");
+              return stay();
+            }
         )
     );
 
@@ -192,9 +197,8 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     );
     when(State.BUSY,
         matchEvent(Presence.class,
-            (presence, task) -> presence.to() == null,
             (presence, task) -> {
-              if (!presence.available()) {
+              if (!presence.available() && presence.to() == null) {
                 explain("Expert has gone offline during task execution. Sending suspend to broker.");
                 task.broker().tell(new Suspend(), self());
                 return goTo(State.OFFLINE);

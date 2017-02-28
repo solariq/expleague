@@ -35,6 +35,11 @@ inline QString domain(const QString& jid) {
     QString domain = jid.section("@", 1).section("/", 0, 0);
     return domain.startsWith("muc.") ? domain.mid(4) : domain;
 }
+inline bool isRoom(const QString& jid) {
+    QString domain = jid.section("@", 1).section("/", 0, 0);
+    return domain.startsWith("muc.");
+}
+
 inline QString resource(const QString& jid) { return jid.section("@", 1).section("/", 1); }
 QString nextId();
 
@@ -96,21 +101,10 @@ class ExpLeagueConnection: public QObject {
     Q_PROPERTY(int tasksAvailable READ tasksAvailable NOTIFY tasksAvailableChanged)
 
 public:
-    Profile* profile() {
-        return m_profile;
-    }
-
-    QString jid() {
-        return m_jid;
-    }
-
-    bool valid() {
-        return m_client->isAuthenticated();
-    }
-
-    int tasksAvailable() const {
-        return m_tasks_available;
-    }
+    Profile* profile() const { return m_profile; }
+    QString jid() const { return m_jid; }
+    bool valid() const { return m_client->isAuthenticated(); }
+    int tasksAvailable() const { return m_tasks_available; }
 
 public:
     void connect();
@@ -118,8 +112,9 @@ public:
 
     QString id() const { return m_jid.isEmpty() ? m_profile->login().replace('.', '_') : xmpp::user(m_jid); }
 
-    Member* find(const QString& id);
+    Member* find(const QString& id, bool requestProfile = true);
     QList<Member*> members() const;
+    void listExperts() const;
 
     void sendOk(Offer* offer) {
         sendCommand("ok", offer);

@@ -96,7 +96,7 @@ public abstract class XMPPDevice {
 
   @Nullable
   public static XMPPDevice fromJid(JID from) {
-    if (from.resource() == null || from.resource().isEmpty())
+    if (from.resource().isEmpty())
       return null;
     final String[] split = from.resource().split("/");
     return Roster.instance().device(split[0]);

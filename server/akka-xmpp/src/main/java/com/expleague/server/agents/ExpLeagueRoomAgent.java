@@ -9,6 +9,7 @@ import com.expleague.server.XMPPDevice;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.DeliveryQuery;
+import com.expleague.xmpp.muc.MucHistory;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Stanza;
 
@@ -62,7 +63,8 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       return true;
     if (!super.update(from, role, affiliation, mode))
       return false;
-    GlobalChatAgent.tell(jid(), new RoomRoleUpdate(from, role(from), affiliation(from)), context());
+    if (mode != ProcessMode.RECOVER)
+      GlobalChatAgent.tell(jid(), new RoomRoleUpdate(from, role(from), affiliation(from)), context());
     return true;
   }
 
@@ -84,16 +86,8 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   @Override
-  protected boolean filter(Message msg) {
-    if (msg.has(Start.class)) { // expert has passed interview and starts his work
-      update(msg.from(), Role.PARTICIPANT, Affiliation.MEMBER, ProcessMode.NORMAL);
-    }
-    return super.filter(msg);
-  }
-
-  @Override
   protected boolean relevant(Stanza msg, JID to) {
-    if (affiliation(to) == Affiliation.OWNER) {
+    if (affiliation(to) == Affiliation.OWNER) { // client
       if (msg instanceof Message) {
         final Message message = (Message) msg;
         return message.type() == Message.MessageType.GROUP_CHAT ||
@@ -103,10 +97,22 @@ public class ExpLeagueRoomAgent extends RoomAgent {
             super.relevant(msg, to);
       }
     }
-    return super.relevant(msg, to);
+    else if (EnumSet.of(Affiliation.MEMBER, Affiliation.ADMIN).contains(affiliation(to))) { // expert or admin
+      if (msg instanceof Message) {
+        final Message message = (Message) msg;
+        return message.type() == Message.MessageType.GROUP_CHAT ||
+            message.has(Progress.class) ||
+            message.has(Offer.class) ||
+            message.has(Answer.class) ||
+            super.relevant(msg, to);
+      }
+    }
+    return false;
   }
 
   public void process(Message msg, ProcessMode mode) {
+    if (owner() == null)
+      update(msg.from(), null, Affiliation.OWNER, mode);
     super.process(msg, mode);
     final JID from = msg.from();
     Affiliation affiliation = affiliation(from);
@@ -198,6 +204,19 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         GlobalChatAgent.tell(jid(), new RoomMessageReceived(from), context());
       }
     }
+  }
+
+  @Override
+  protected <S extends Stanza> S participantCopy(S stanza, JID to) {
+    if (stanza instanceof Message) {
+      final Message message = (Message) stanza;
+      if (affiliation(to) == Affiliation.OWNER && message.has(Progress.class)) {
+        return stanza.<S>copy(to.local())
+            .to(to)
+            .from(jid());
+      }
+    }
+    return super.participantCopy(stanza, to);
   }
 
   @ActorMethod

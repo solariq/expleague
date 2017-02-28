@@ -20,11 +20,13 @@ import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
+import org.jetbrains.annotations.NotNull;
 import scala.Option;
 import scala.collection.JavaConversions;
 
 import java.util.*;
 import java.util.logging.Logger;
+
 
 /**
  * User: solar
@@ -35,7 +37,7 @@ public class UserAgent extends PersistentActorAdapter {
   private static final Logger log = Logger.getLogger(UserAgent.class.getName());
   private final JID bareJid;
   private final Map<String, XMPPDevice> connected = new HashMap<>();
-  private Map<String, Subscription> subscriptions = new HashMap<>();
+//  private Map<String, Subscription> subscriptions = new HashMap<>();
 
   public UserAgent(JID jid) {
     this.bareJid = jid.bare();
@@ -61,7 +63,7 @@ public class UserAgent extends PersistentActorAdapter {
   public void invoke(ConnStatus status) { // connection acquired
     final String resource = status.resource;
     final JID deviceJid = new JID(jid().local(), jid().domain(), resource);
-    final String actorResourceAddr = resource.isEmpty() ? "@@empty@@" : resource.replace('/', '&');
+    final String actorResourceAddr = courierActorName(deviceJid);
     final Option<ActorRef> option = context().child(actorResourceAddr);
     if (status.connected) {
       final ActorRef courier;
@@ -78,26 +80,10 @@ public class UserAgent extends PersistentActorAdapter {
       }
       connected.put(resource, status.device);
       final ActorRef courierRef = context().actorOf(
-          props(Courier.class, status.device, sender()),
+          props(Courier.class, status.device, deviceJid, sender()),
           actorResourceAddr
       );
-      Subscription subscription = null;
-      switch (status.device.role()) {
-        case ADMIN:
-          final Presence presence = new Presence(deviceJid, XMPP.jid(GlobalChatAgent.ID), true);
-          presence.append(new MucXData(new MucHistory()));
-          XMPP.send(presence, context());
-        case EXPERT:
-          subscription = new DefaultSubscription(bareJid);
-          break;
-        case CLIENT:
-          subscription = new ClientSubscription(bareJid);
-          break;
-      }
-      subscriptions.put(resource, subscription);
-      XMPP.subscribe(subscription, context());
       sender().tell(courierRef, self());
-      invoke(new Presence(deviceJid, true));
     }
     else {
       if (option.isDefined())
@@ -105,12 +91,13 @@ public class UserAgent extends PersistentActorAdapter {
       if (connected.size() == 1)
         invoke(new Presence(deviceJid, false));
       connected.remove(resource);
-
-      final Subscription subscription = subscriptions.remove(resource);
-      if (subscription != null) {
-        XMPP.unsubscribe(subscription, context());
-      }
     }
+  }
+
+  @NotNull
+  private String courierActorName(JID jid) {
+    final String resource = jid.resource();
+    return resource.isEmpty() ? "@@empty@@" : resource.replace('/', '&');
   }
 
   @ActorMethod
@@ -143,13 +130,26 @@ public class UserAgent extends PersistentActorAdapter {
   }
 
   private void toConn(Stanza stanza) {
-
-    final Collection<ActorRef> couriers = JavaConversions.asJavaCollection(context().children().seq());
-    for (final ActorRef courier : couriers) {
-      courier.tell(stanza, self());
+    final String resource = stanza.to().resource();
+    if (!resource.isEmpty()) {
+      final Option<ActorRef> child = context().child(courierActorName(stanza.to()));
+      if (child.isDefined())
+        child.get().tell(stanza, self());
+      else if (stanza instanceof Message)
+        NotificationsManager.send((Message)stanza, context());
+      else
+        log.fine("Stanza " + stanza.xmlString() + " was not delivered: no courier found");
     }
-    if (couriers.isEmpty() && stanza instanceof Message)
-      NotificationsManager.send((Message)stanza, context());
+    else {
+      final Collection<ActorRef> couriers = JavaConversions.asJavaCollection(context().children().seq());
+      if (couriers.isEmpty())
+        log.fine("Stanza " + stanza.xmlString() + " was not delivered: no courier found");
+      for (final ActorRef courier : couriers) {
+        courier.tell(stanza, self());
+      }
+      if (couriers.isEmpty() && stanza instanceof Message)
+        NotificationsManager.send((Message)stanza, context());
+    }
   }
 
   private XMPPDevice device(JID from) {
@@ -167,13 +167,20 @@ public class UserAgent extends PersistentActorAdapter {
   public static class Courier extends PersistentActorAdapter {
     private final XMPPDevice connectedDevice;
     private final ActorRef connection;
+    private final JID deviceJid;
     private Deque<Stanza> deliveryQueue = new ArrayDeque<>();
     private Set<String> confirmationAwaitingStanzas = new HashSet<>();
     private Map<String, Stanza> inFlight = new HashMap<>();
+    private final Subscription subscription;
 
-    public Courier(XMPPDevice connectedDevice, ActorRef connection) {
+    public Courier(XMPPDevice connectedDevice, JID deviceJid, ActorRef connection) {
       this.connectedDevice = connectedDevice;
+      this.deviceJid = deviceJid;
       this.connection = connection;
+      if (EnumSet.of(XMPPDevice.Role.ADMIN, XMPPDevice.Role.EXPERT).contains(connectedDevice.role()))
+        subscription = new DefaultSubscription(deviceJid);
+      else
+        subscription = new ClientSubscription(deviceJid);
     }
 
     @Override
@@ -193,7 +200,19 @@ public class UserAgent extends PersistentActorAdapter {
       }
       else if (o instanceof RecoveryCompleted) {
         nextChunk();
+        XMPP.subscribe(subscription, context());
+        if (connectedDevice.role() == XMPPDevice.Role.ADMIN) {
+          final Presence presence = new Presence(deviceJid, XMPP.jid(GlobalChatAgent.ID), true);
+          presence.append(new MucXData(new MucHistory()));
+          XMPP.send(presence, context());
+        }
+        invoke(new Presence(deviceJid, true));
       }
+    }
+
+    @Override
+    protected void postStop() {
+      XMPP.unsubscribe(subscription, context());
     }
 
     @ActorMethod

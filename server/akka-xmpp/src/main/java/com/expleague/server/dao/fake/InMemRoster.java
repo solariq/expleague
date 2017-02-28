@@ -89,6 +89,11 @@ public class InMemRoster implements Roster {
   }
 
   @Override
+  public Stream<XMPPUser> allExperts() {
+    return devices.values().stream().filter(XMPPDevice::expert).map(XMPPDevice::user).collect(Collectors.toSet()).stream();
+  }
+
+  @Override
   public void invalidateProfile(JID jid) {
   }
 

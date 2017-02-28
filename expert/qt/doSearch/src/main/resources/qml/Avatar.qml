@@ -40,7 +40,10 @@ Item {
             width: height
             radius: status.width/2
 
-            color: user && user.status == Member.ONLINE ? "green" : "red"
+            color: {
+                console.log(user + " " + user.id + " status is " + user.status)
+                return user && user.status == Member.ONLINE ? "green" : "red"
+            }
             x: avatar.width - status.width
             y: avatar.height - status.height - 1
             z: avatar.z + 1

@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: io.netty:netty-tcnative:${os.detected.classifier}:1.1.33.Fork9">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/io/netty/netty-tcnative/1.1.33.Fork9/netty-tcnative-1.1.33.Fork9-${os.detected.classifier}.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/io/netty/netty-tcnative/1.1.33.Fork9/netty-tcnative-1.1.33.Fork9-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/io/netty/netty-tcnative/1.1.33.Fork9/netty-tcnative-1.1.33.Fork9-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

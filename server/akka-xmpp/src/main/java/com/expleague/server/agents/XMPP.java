@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * User: solar
@@ -70,7 +71,7 @@ public class XMPP extends ActorAdapter<UntypedActor> {
 
   public static Set<JID> online(ActorContext context) {
     try {
-      final Timeout timeout = Timeout.apply(5, TimeUnit.SECONDS);
+      final Timeout timeout = Timeout.apply(30, TimeUnit.SECONDS);
       final Future<Object> future = Patterns.ask(context.actorSelection(XMPP_ACTOR_PATH), Presence.class, timeout);
       //noinspection unchecked
       return (Set<JID>)Await.result(future, timeout.duration());
@@ -135,16 +136,15 @@ public class XMPP extends ActorAdapter<UntypedActor> {
 
   @ActorMethod
   public void invoke(Presence presence) {
-    if (!presence.isBroadcast() || !presenceTracker.updatePresence(presence)) {
+    if (!presence.isBroadcast() || !presenceTracker.updatePresence(presence))
       return;
-    }
 
     final JID from = presence.from();
     for (final ActorRef agent : JavaConversions.asJavaCollection(context().children())) {
       final JID actorJid = jid(agent);
-      if (subscriptions.isSubscribed(actorJid, from)) {
-        agent.tell(presence.<Presence>copy().to(actorJid), self());
-      }
+      subscriptions.subscribed(actorJid, from).forEach(jid ->
+          agent.tell(presence.<Presence>copy().to(jid), self())
+      );
     }
   }
 
@@ -216,12 +216,13 @@ public class XMPP extends ActorAdapter<UntypedActor> {
   public static class Subscriptions {
     private final Map<JID, Set<Subscription>> subscriptions = new HashMap<>();
 
-    public boolean isSubscribed(final JID subscriber, final JID target) {
-      return subscriptions.getOrDefault(subscriber, Collections.emptySet()).stream().anyMatch(s -> s.relevant(target));
+    public Stream<JID> subscribed(final JID subscriber, final JID target) {
+      return subscriptions.getOrDefault(subscriber, Collections.emptySet()).stream()
+          .filter(s -> s.relevant(target)).map(Subscription::who);
     }
 
     public void subscribe(final Subscription subscription) {
-      subscriptions.compute(subscription.who(), (jid, set) -> {
+      subscriptions.compute(subscription.who().bare(), (jid, set) -> {
         if (set == null) {
           set = new HashSet<>();
         }
@@ -231,7 +232,7 @@ public class XMPP extends ActorAdapter<UntypedActor> {
     }
 
     public void unsubscribe(Subscription subscription) {
-      final Set<Subscription> set = this.subscriptions.get(subscription.who());
+      final Set<Subscription> set = this.subscriptions.get(subscription.who().bare());
       if (set != null)
         set.remove(subscription);
     }

@@ -119,6 +119,7 @@ void League::startTask(Offer* offer, bool cont) {
     context->appendDocument(answerPage);
     parent()->append(context);
     parent()->navigation()->open(answerPage);
+    connection()->sendPresence(offer->roomJid(), true);
 }
 
 void League::onInvite(const Offer& offer) {
@@ -244,14 +245,19 @@ void League::onConnected(int role) {
     emit statusChanged(m_status);
     m_role = (Role)(NONE + role);
     emit roleChanged(m_role);
+    if (m_role == Role::ADMIN) {
+        connection()->listExperts();
+    }
 }
 
 void League::onCheck(const Offer& offer) {
     Offer* roffer = registerOffer(offer);
     Task* const task = this->task(offer.room());
     task->setOffer(roffer);
-    m_connection->sendOk(roffer);
-    m_status = LS_CHECK;
+    if (!task->active()) { // if the task is active the offer changed due to offer-change command
+        m_connection->sendOk(roffer);
+        m_status = LS_CHECK;
+    }
     emit statusChanged(m_status);
 }
 

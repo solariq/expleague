@@ -81,7 +81,7 @@ private:
     QString m_id;
     QString m_name;
     QUrl m_avatar = QUrl("qrc:/avatar.png");
-    Status m_status;
+    Status m_status = OFFLINE;
     QList<RoomState*> m_history;
 };
 

@@ -104,7 +104,7 @@ class CompositeCellModel: ChatCellModel {
             let blockSize = self.blockSize(width: width - 12, index: i)
             height += blockSize.height
         }
-        return ceil(height + 8)
+        return ceil(height + 10)
     }
 
     func form(chatCell cell: UIView) throws {
@@ -216,7 +216,7 @@ class CompositeCellModel: ChatCellModel {
             }
         }
 
-        cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .height, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: ceil(height + 10)))
+        cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .height, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: ceil(height)))
         cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .width, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: ceil(width + 12)))
 //        print("Cell: \(cell.dynamicType), content size: (\(width), \(height)), cell size: \(cell.frame.size)")
     }
@@ -287,7 +287,7 @@ class ChatMessageModel: CompositeCellModel {
     }
     
     override func accept(_ message: ExpLeagueMessage) -> Bool {
-        if (message.from != author || message.type == .answer) {
+        if (message.from != author || (message.type != .expertMessage && message.type != .clientMessage)) {
             return false
         }
 

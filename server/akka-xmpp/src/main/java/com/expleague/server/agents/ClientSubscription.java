@@ -21,7 +21,7 @@ public class ClientSubscription implements Subscription {
 
   @Override
   public boolean relevant(JID jid) {
-    return jid.resource() != null && jid.resource().endsWith("expert");
+    return jid.resource().endsWith("expert");
   }
 }
 

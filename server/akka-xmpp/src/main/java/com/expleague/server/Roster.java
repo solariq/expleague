@@ -28,6 +28,7 @@ public interface Roster {
   XMPPDevice[] devices(String id);
 
   Stream<XMPPDevice> allDevices();
+  Stream<XMPPUser> allExperts();
 
   static Roster instance() {
     return ExpLeagueServer.roster();

@@ -88,9 +88,9 @@ public class SSLHelper {
         log.log(Level.WARNING, "SSL exception caught, closing connection", e);
         consumer.accept(null);
       }
-      finally {
-        log.finest((incoming ? "Incoming" : "Outgoing") + " stream received: " + msgIn.length() + " sent: " + sent);
-      }
+//      finally {
+//        log.finest((incoming ? "Incoming" : "Outgoing") + " stream received: " + msgIn.length() + " sent: " + sent);
+//      }
     }
 
     private int sendChunk(Consumer<ByteString> consumer) {

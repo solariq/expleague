@@ -71,8 +71,10 @@ public class RoomAgent extends PersistentActorAdapter {
 
   @ActorMethod
   public final void invoke(Presence presence) {
-    if (archive().isEmpty() && presence.available())
-      update(presence.from(), Role.MODERATOR, Affiliation.OWNER, ProcessMode.NORMAL);
+    final JID from = presence.from();
+    final Role role = role(presence.from());
+    if (role == Role.NONE)
+      update(from, suggestRole(presence.from(), affiliation(from)), null, ProcessMode.NORMAL);
     if (!filter(presence) || !update(presence))
       return;
     broadcast(presence);
@@ -210,7 +212,7 @@ public class RoomAgent extends PersistentActorAdapter {
         final JID user = XMPP.jid(query.nick());
         if (query.affiliation() != Affiliation.NONE) {
           if (!knownUser.isPresent())
-            participants.put(user, new MucUserStatus(user.local(), query.affiliation()));
+            participants.put(user, new MucUserStatus(user.local(), query.affiliation(), new Presence(from, false)));
           else
             knownUser.get().affiliation = query.affiliation();
         }
@@ -270,7 +272,7 @@ public class RoomAgent extends PersistentActorAdapter {
           return null;
         return s;
       }
-      return new MucUserStatus(jid.local(), Affiliation.NONE);
+      return new MucUserStatus(jid.local(), Affiliation.NONE, new Presence(from, mode == ProcessMode.NORMAL));
     });
 
     if (status == null)
@@ -286,8 +288,8 @@ public class RoomAgent extends PersistentActorAdapter {
       process(Iq.create(jid(), XMPP.jid(), Iq.IqType.SET, new MucAdminQuery(from.local(), affiliation, null)), ProcessMode.RECOVER);
     }
     if (role != null && status.role != role) {
-      if (status.role == Role.NONE)
-        enter(roomAlias(from));
+      if (status.role == Role.NONE && mode == ProcessMode.NORMAL)
+        enter(from);
       status.role = role;
     }
     return true;
@@ -297,9 +299,9 @@ public class RoomAgent extends PersistentActorAdapter {
 
   protected void enter(JID jid) {
     participants.forEach((id, s) -> {
-      if (id.local().equals(jid.resource()))
+      if (id.bareEq(jid))
         return;
-      XMPP.send(participantCopy(s.presence, id), context());
+      XMPP.send(participantCopy(s.presence, jid), context());
     });
   }
 
@@ -317,6 +319,7 @@ public class RoomAgent extends PersistentActorAdapter {
     }
     if (xData.affiliation() == null)
       xData.affiliation(affiliation(from));
+
     if (!update(from, xData.role(), xData.affiliation(), ProcessMode.NORMAL))
       return false;
 
@@ -360,9 +363,6 @@ public class RoomAgent extends PersistentActorAdapter {
   private int msgIndex = 0;
   protected void process(Message msg, ProcessMode mode) {
     final JID from = msg.from();
-    if (participants.isEmpty())
-      update(from, Role.MODERATOR, Affiliation.OWNER, mode);
-
     if (role(from) == Role.NONE)
       update(from, suggestRole(from, affiliation(from)), null, mode);
 
@@ -487,11 +487,12 @@ public class RoomAgent extends PersistentActorAdapter {
     private Affiliation affiliation = Affiliation.NONE;
     private String nickname;
     private Role role;
-    private Presence presence = new Presence(jid(), false);
+    private Presence presence;
 
-    public MucUserStatus(String nick, Affiliation affiliation) {
+    public MucUserStatus(String nick, Affiliation affiliation, Presence presence) {
       this.nickname = nick;
       this.affiliation = affiliation;
+      this.presence = presence;
       role = Role.NONE;
     }
   }

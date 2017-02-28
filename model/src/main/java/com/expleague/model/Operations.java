@@ -223,6 +223,7 @@ public class Operations {
     private JID by;
 
     public OfferChange() {}
+
     public OfferChange(JID by) {
       this.by = by;
     }

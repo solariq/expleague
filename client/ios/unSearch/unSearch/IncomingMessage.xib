@@ -1,8 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11201" systemVersion="15G1004" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -13,20 +16,21 @@
             <rect key="frame" x="0.0" y="0.0" width="367" height="304"/>
             <autoresizingMask key="autoresizingMask"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Em6-Hl-a3b" id="Nb7-0I-srg">
-                <frame key="frameInset" width="367" height="303"/>
+                <rect key="frame" x="0.0" y="0.0" width="367" height="303"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chat_expert_tail" translatesAutoresizingMaskIntoConstraints="NO" id="Ccx-0y-Ber">
+                        <rect key="frame" x="12" y="284" width="14" height="12"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="14" id="eot-DQ-dE6"/>
                             <constraint firstAttribute="height" constant="12" id="rjr-uU-I3V"/>
                         </constraints>
                     </imageView>
-                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Cbx-yh-ZRR">
+                    <view contentMode="scaleToFill" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Cbx-yh-ZRR">
+                        <rect key="frame" x="24" y="8" width="327" height="293.5"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="25" id="O6O-gC-hDu"/>
-                            <constraint firstAttribute="width" constant="50" placeholder="YES" id="Z5E-lI-yQz"/>
+                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="25" id="0BN-Kv-NSB"/>
                         </constraints>
                         <edgeInsets key="layoutMargins" top="6" left="6" bottom="4" right="6"/>
                     </view>
@@ -34,12 +38,11 @@
                 <color key="backgroundColor" red="0.2470588235" green="0.3294117647" blue="0.50980392159999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                 <constraints>
                     <constraint firstItem="Ccx-0y-Ber" firstAttribute="leading" secondItem="Nb7-0I-srg" secondAttribute="leadingMargin" constant="-8" id="09p-Jq-YGc"/>
-                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="Nb7-0I-srg" secondAttribute="trailingMargin" constant="8" id="6rN-G8-KGg"/>
                     <constraint firstItem="Cbx-yh-ZRR" firstAttribute="leading" secondItem="Nb7-0I-srg" secondAttribute="leadingMargin" constant="4" id="CZQ-Xw-nbL"/>
                     <constraint firstAttribute="bottomMargin" secondItem="Ccx-0y-Ber" secondAttribute="bottom" id="TCc-rz-PdH"/>
-                    <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="Cbx-yh-ZRR" secondAttribute="trailing" constant="8" id="VOI-fS-yFx"/>
-                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="bottom" secondItem="Nb7-0I-srg" secondAttribute="bottomMargin" constant="6" id="Wyr-X8-x9j"/>
-                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="top" secondItem="Nb7-0I-srg" secondAttribute="topMargin" id="nzB-3A-1pP"/>
+                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="bottom" secondItem="Nb7-0I-srg" secondAttribute="bottomMargin" constant="8" id="Wyr-X8-x9j"/>
+                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="top" secondItem="Nb7-0I-srg" secondAttribute="topMargin" constant="-2" id="nzB-3A-1pP"/>
+                    <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="Cbx-yh-ZRR" secondAttribute="trailing" constant="8" id="p3X-yL-zPY"/>
                 </constraints>
                 <edgeInsets key="layoutMargins" top="8" left="20" bottom="8" right="8"/>
             </tableViewCellContentView>

@@ -102,7 +102,7 @@ void ExpLeagueConnection::onPresence(const QXmppPresence& presence) {
     }
     else if (!xmpp::user(from).isEmpty()){
         QString user;
-        if (xmpp::domain(from).startsWith("muc.")) // room
+        if (xmpp::isRoom(from)) // room
             user = xmpp::resource(from);
         else
             user = xmpp::user(from);
@@ -120,14 +120,12 @@ void ExpLeagueConnection::onIQ(const QXmppIq& iq) {
                     continue;
                 if (element.tagName() == "item") {
                     QString id = element.attribute("jid").section('@', 0, 0);
-                    Member* member = find(id);
+                    Member* member = find(id, false);
                     if (element.hasAttribute("name")) {
                         member->setName(element.attribute("name"));
                     }
                     QDomElement expert = element.firstChildElement("expert");
                     if (!expert.isNull()) {
-                        if (member->id() != xmpp::user(jid()))
-                            member->setStatus(expert.attribute("available") == "true" ? Member::ONLINE : Member::OFFLINE);
                         QDomElement avatar = expert.firstChildElement("avatar");
                         if (!avatar.isNull()) {
                             member->setAvatar(avatar.text());
@@ -203,7 +201,7 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg, const QString& idOr
 
     QString room;
     QString from;
-    if (msg.from().indexOf("muc.") >= 0 || msg.from().startsWith("global-chat@")) {
+    if (xmpp::isRoom(msg.from()) || msg.from().startsWith("global-chat@")) {
         from = xmpp::resource(msg.from());
         room = xmpp::user(msg.from());
     }
@@ -369,14 +367,15 @@ void ExpLeagueConnection::requestHistory(const QString& clientId) {
     m_history_requested.insert(clientId);
 }
 
-Member* ExpLeagueConnection::find(const QString &id) {
+Member* ExpLeagueConnection::find(const QString &id, bool requestProfile) {
     QMap<QString, Member*>::iterator found = m_members_cache.find(id);
     if (found != m_members_cache.end())
         return found.value();
     Member* const member = new Member(id, this);
     if (member->id() == xmpp::user(jid()))
         member->setStatus(Member::ONLINE);
-    sendUserRequest(id);
+    if (requestProfile)
+        sendUserRequest(id);
     m_members_cache.insert(id, member);
     emit membersChanged();
     return member;
@@ -384,6 +383,22 @@ Member* ExpLeagueConnection::find(const QString &id) {
 
 QList<Member*> ExpLeagueConnection::members() const {
     return m_members_cache.values();
+}
+
+void ExpLeagueConnection::listExperts() const {
+    QXmppIq iq;
+    iq.setId(xmpp::nextId());
+
+    QDomDocument holder;
+    QXmppElementList protocol;
+
+    QDomElement query = holder.createElementNS("jabber:iq:roster", "query");
+    QDomElement item = holder.createElementNS("jabber:iq:roster", "item");
+    item.setAttribute("jid", "experts@" + profile()->domain());
+    query.appendChild(item);
+    protocol.append(QXmppElement(query));
+    iq.setExtensions(protocol);
+    m_client->sendPacket(iq);
 }
 
 void ExpLeagueConnection::sendCommand(const QString& command, Offer* task, std::function<void (QDomElement* element)> init) {
