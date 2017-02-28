@@ -301,11 +301,13 @@ void RoomState::onFeedback(const QString& id, int feedback) {
     emit feedbackChanged();
 }
 
-void RoomState::onMessage(const QString& id, const QString& author) {
+void RoomState::onMessage(const QString& id, const QString& author, int count) {
     if (id != roomId() || author == doSearch::instance()->league()->id())
         return;
-    m_unread++;
-    emit unreadChanged(m_unread);
+    if (parent()->adminFocus() != id && !task()->active()) {
+        m_unread += count;
+        emit unreadChanged(m_unread);
+    }
 }
 
 void RoomState::onPresence(const QString& id, const QString& expert, const QString& roleStr, const QString& affiliationStr) {
@@ -348,7 +350,7 @@ bool RoomState::connectTo(xmpp::ExpLeagueConnection* connection) {
         return false;
     connect(connection, SIGNAL(roomStatus(QString,int)), SLOT(onStatus(QString,int)));
     connect(connection, SIGNAL(roomFeedback(QString,int)), SLOT(onFeedback(QString,int)));
-    connect(connection, SIGNAL(roomMessage(QString,QString)), SLOT(onMessage(QString,QString)));
+    connect(connection, SIGNAL(roomMessage(QString,QString,int)), SLOT(onMessage(QString,QString,int)));
     connect(connection, SIGNAL(roomPresence(QString,QString,QString,QString)), SLOT(onPresence(QString,QString,QString,QString)));
     return true;
 }
@@ -359,6 +361,8 @@ QString RoomState::roomId() const {
 
 void RoomState::enter() {
     m_task->enter();
+    m_unread = 0;
+    emit unreadChanged(0);
 }
 
 League* RoomState::parent() const {

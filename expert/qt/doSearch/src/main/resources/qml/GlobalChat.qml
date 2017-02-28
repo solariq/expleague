@@ -38,6 +38,21 @@ Item {
                 z: -1
             }
 
+            Rectangle {
+                x: parent.width - 20
+                y: 4
+                radius: 8
+                width: 16
+                height: 16
+                color: "red"
+                visible: modelData.unread > 0
+                Text {
+                    anchors.centerIn: parent
+                    color: "white"
+                    text: "" + modelData.unread
+                }
+            }
+
             RowLayout {
                 anchors.fill: parent
                 spacing: 0

@@ -96,6 +96,14 @@ TaskTag* League::findTag(const QString &id) const {
     return 0;
 }
 
+RoomState* League::state(const QString& id) const {
+    foreach(RoomState* state, m_rooms) {
+        if (xmpp::user(state->jid()) == id)
+            return state;
+    }
+    return 0;
+}
+
 void League::startTask(Offer* offer, bool cont) {
     Task* task = this->task(offer->roomJid());
     task->setOffer(offer);
@@ -103,6 +111,7 @@ void League::startTask(Offer* offer, bool cont) {
     QObject::connect(task, SIGNAL(cancelled()), SLOT(onTaskFinished()));
     m_status = LS_ON_TASK;
     emit statusChanged(m_status);
+    state(offer->room())->clearUnread();
     Context* context = parent()->context("context/" + task->id(), task->offer()->topic().replace('\n', ' '));
     context->setTask(task);
     parent()->navigation()->open(context);
@@ -155,18 +164,21 @@ void League::onDisconnected() {
         return;
     m_connection->deleteLater();
     m_connection = 0;
-    foreach (RoomState* state, m_rooms) {
+    QList<RoomState*> rooms = m_rooms;
+    m_rooms.clear();
+    emit roomsChanged();
+
+    foreach (RoomState* state, rooms) {
         state->deleteLater();
     }
-    m_rooms.clear();
     m_admin_focus = QString();
-
-    foreach(Task* task, m_tasks.values()) {
+    QList<Task*> tasks = m_tasks.values();
+    m_tasks.clear();
+    foreach(Task* task, tasks) {
         task->stop();
         task->deleteLater();
     }
-    m_tasks.clear();
-    emit roomsChanged();
+
     m_status = LS_OFFLINE;
     emit statusChanged(m_status);
     m_role = NONE;
@@ -177,7 +189,7 @@ void League::onDisconnected() {
         QTimer::singleShot(500, this, &League::connect);
 }
 
-static time_t prevMessageTS = 0;
+static time_t prevMessageTS = QDateTime::currentSecsSinceEpoch();
 void League::onMessage(const QString& room, const QString& id, const QString& from, const QString& text) {
     if (m_known_ids.contains(id))
         return;

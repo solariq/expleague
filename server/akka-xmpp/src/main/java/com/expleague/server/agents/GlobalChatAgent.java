@@ -1,14 +1,11 @@
 package com.expleague.server.agents;
 
 import akka.actor.ActorContext;
-import com.expleague.model.Affiliation;
-import com.expleague.model.Offer;
+import com.expleague.model.*;
 import com.expleague.model.Operations.Feedback;
 import com.expleague.model.Operations.OfferChange;
 import com.expleague.model.Operations.RoomRoleUpdate;
 import com.expleague.model.Operations.RoomStateChanged;
-import com.expleague.model.Role;
-import com.expleague.model.RoomState;
 import com.expleague.server.XMPPDevice;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Item;
@@ -84,6 +81,9 @@ public class GlobalChatAgent extends RoomAgent {
       final RoomRoleUpdate update = msg.get(RoomRoleUpdate.class);
       status.affiliation(update.expert().local(), update.affiliation());
     }
+    if (msg.has(Operations.RoomMessageReceived.class)) {
+      status.clientMessage(msg.get(Operations.RoomMessageReceived.class).count());
+    }
     if (changes < status.changes())
       super.process(msg, mode);
   }
@@ -132,6 +132,7 @@ public class GlobalChatAgent extends RoomAgent {
     private Map<String, Role> roles = new HashMap<>();
     private long modificationTs = -1;
     private int changes = 0;
+    private int clientMsgCount;
     private int feedback = 0;
 
     public RoomStatus(String id) {
@@ -169,11 +170,17 @@ public class GlobalChatAgent extends RoomAgent {
       changes++;
     }
 
+    public void clientMessage(int count) {
+      this.clientMsgCount += count;
+      changes++;
+    }
+
     public Message message() {
       final Message result = new Message("global-" + id + "-" + (modificationTs/1000));
       result.type(MessageType.GROUP_CHAT);
       result.append(currentOffer);
       result.append(new RoomStateChanged(state));
+      result.append(new Operations.RoomMessageReceived(clientMsgCount));
       result.from(XMPP.muc(id));
       if (feedback > 0)
         result.append(new Feedback(feedback));

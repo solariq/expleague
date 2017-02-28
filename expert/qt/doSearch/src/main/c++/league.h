@@ -231,7 +231,9 @@ public:
     GlobalChat* chat() const;
 
     Task* task(const QString& roomId);
+    RoomState* state(const QString& roomId) const;
 
+    QString adminFocus() const { return m_admin_focus; }
     void setAdminFocus(const QString& room);
 
 signals:

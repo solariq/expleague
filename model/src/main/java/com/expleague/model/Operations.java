@@ -285,13 +285,24 @@ public class Operations {
     @XmlAttribute
     private String from;
 
+    @XmlAttribute
+    private Integer count;
+
     public RoomMessageReceived() {}
     public RoomMessageReceived(JID from) {
       this.from = from.local();
     }
 
+    public RoomMessageReceived(int msgCount) {
+      count = msgCount;
+    }
+
     public String from() {
       return from;
+    }
+
+    public int count() {
+      return count != null ? count : 1;
     }
   }
 

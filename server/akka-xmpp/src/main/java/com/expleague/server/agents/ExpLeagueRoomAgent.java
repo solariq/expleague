@@ -97,7 +97,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
             super.relevant(msg, to);
       }
     }
-    else if (EnumSet.of(Affiliation.MEMBER, Affiliation.ADMIN).contains(affiliation(to))) { // expert or admin
+    else if (EnumSet.of(Role.MODERATOR, Role.PARTICIPANT).contains(role(to))) { // expert or admin
       if (msg instanceof Message) {
         final Message message = (Message) msg;
         return message.type() == Message.MessageType.GROUP_CHAT ||

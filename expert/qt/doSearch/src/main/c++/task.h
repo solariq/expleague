@@ -429,6 +429,7 @@ public:
     explicit RoomState(Task* task, League* parent);
 
     League* parent() const;
+    void clearUnread() { m_unread = 0; emit unreadChanged(0); }
 
 signals:
     void unreadChanged(int unread) const;
@@ -443,7 +444,7 @@ private slots:
     void onPresence(const QString& roomId, const QString& expert, const QString& role, const QString& affiliation);
     void onStatus(const QString& roomId, int status);
     void onFeedback(const QString& roomId, int feedback);
-    void onMessage(const QString& roomId, const QString& author);
+    void onMessage(const QString& roomId, const QString& author, int count);
 
     void onOfferChanged();
 

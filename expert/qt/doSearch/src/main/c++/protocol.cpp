@@ -296,7 +296,7 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg, const QString& idOr
                 emit roomStatus(from, xml.attribute("state").toInt());
             }
             else if (xml.localName() == "room-message-received") {
-                emit roomMessage(from, xml.attribute("from"));
+                emit roomMessage(from, xml.attribute("from"), xml.hasAttribute("count") ? xml.attribute("count").toInt() : 1);
             }
             else if (xml.localName() == "room-role-update") {
                 emit roomPresence(from, xml.attribute("expert"), xml.attribute("role", "none"), xml.attribute("affiliation", "none"));
