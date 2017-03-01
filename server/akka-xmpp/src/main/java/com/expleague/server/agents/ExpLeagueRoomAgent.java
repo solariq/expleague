@@ -9,7 +9,6 @@ import com.expleague.server.XMPPDevice;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.DeliveryQuery;
-import com.expleague.xmpp.muc.MucHistory;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Stanza;
 
@@ -110,6 +109,14 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     return false;
   }
 
+  @Override
+  protected boolean filter(Message msg) {
+    if (msg.has(Start.class)) {
+      update(msg.from(), Role.PARTICIPANT, Affiliation.MEMBER, ProcessMode.NORMAL);
+    }
+    return super.filter(msg);
+  }
+
   public void process(Message msg, ProcessMode mode) {
     if (owner() == null)
       update(msg.from(), null, Affiliation.OWNER, mode);
@@ -179,7 +186,6 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       }
     }
     else if (msg.has(Start.class)) {
-      update(from, Role.PARTICIPANT, Affiliation.MEMBER, mode);
       if (mode == ProcessMode.NORMAL) {
         invoke(new Message(jid(), roomAlias(owner()), Roster.instance().profile(from.local())));
       }

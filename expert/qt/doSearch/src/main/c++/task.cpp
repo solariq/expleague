@@ -306,9 +306,9 @@ void RoomState::onMessage(const QString& id, const QString& author, bool expert,
         return;
 //    if (parent()->adminFocus() != id && !task()->active()) {
 //    }
+    parent()->notifyIfNeeded(author, "Новое сообщение в комнате: " + roomId());
     m_unread = expert ? 0 : m_unread + count;
     emit unreadChanged(m_unread);
-
 }
 
 void RoomState::onPresence(const QString& id, const QString& expert, const QString& roleStr, const QString& affiliationStr) {
