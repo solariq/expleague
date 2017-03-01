@@ -227,6 +227,10 @@ public class Operations {
     public OfferChange(JID by) {
       this.by = by;
     }
+
+    public JID by() {
+      return by;
+    }
   }
 
   @XmlRootElement(name = "room-state-changed")

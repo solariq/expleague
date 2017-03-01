@@ -68,7 +68,7 @@ public class GlobalChatAgent extends RoomAgent {
     status.ts(msg.ts());
     final int changes = status.changes();
     if (msg.has(OfferChange.class))
-      status.offer(msg.get(Offer.class));
+      status.offer(msg.get(Offer.class), msg.get(OfferChange.class).by());
     if (msg.has(RoomStateChanged.class))
       status.state(msg.get(RoomStateChanged.class).state());
     if (msg.has(Feedback.class))
@@ -157,14 +157,19 @@ public class GlobalChatAgent extends RoomAgent {
       return changes;
     }
 
-    public void offer(Offer offer) {
+    public void offer(Offer offer, JID by) {
       currentOffer = offer;
-      unread = 0;
+      if (offer.client().equals(by))
+        unread++;
+      else
+        unread = 0;
       changes++;
     }
 
     public void state(RoomState state) {
       this.state = state;
+      if (state == CLOSED)
+        unread = 0;
       changes++;
     }
 
@@ -182,6 +187,9 @@ public class GlobalChatAgent extends RoomAgent {
       result.from(XMPP.muc(id));
       if (feedback > 0)
         result.append(new Feedback(feedback));
+
+      if (unread > 0)
+        System.out.println();
 
       final Set<String> ids = new HashSet<>(roles.keySet());
       ids.addAll(affiliations.keySet());

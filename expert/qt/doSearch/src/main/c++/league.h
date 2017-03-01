@@ -70,6 +70,11 @@ public:
         emit avatarChanged(avatar);
     }
 
+    void clear() {
+        m_history.clear();
+        emit historyChanged();
+    }
+
     void append(RoomState* room);
 
     Q_INVOKABLE void requestHistory() const;
@@ -236,6 +241,8 @@ public:
     QString adminFocus() const { return m_admin_focus; }
     void setAdminFocus(const QString& room);
 
+    void notifyIfNeeded(const QString& from, const QString& message, bool broadcast = false);
+
 signals:
     void statusChanged(League::Status status);
     void roleChanged(League::Role role);
@@ -292,7 +299,6 @@ protected:
 private:
     Offer* registerOffer(const Offer&);
     void startTask(Offer* offer, bool cont = false);
-    void notifyIfNeeded(const QString& from, const QString& message, bool broadcast = false);
 
 private:
     QMap<QString, Offer*> m_offers;

@@ -508,6 +508,13 @@ void ExpLeagueConnection::sendOffer(const Offer& offer) {
     m_client->sendPacket(msg);
 }
 
+ExpLeagueConnection::~ExpLeagueConnection() {
+    // todo: find the way to remove leak of members on connection close
+    foreach (Member* member, m_members_cache.values()) {
+        member->clear();
+    }
+}
+
 Progress Progress::fromXml(const QDomElement& xml) {
     QString name;
     Operation operation = PO_VISIT;

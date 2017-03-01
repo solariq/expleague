@@ -166,6 +166,7 @@ void League::onDisconnected() {
     m_connection = 0;
     QList<RoomState*> rooms = m_rooms;
     m_rooms.clear();
+
     emit roomsChanged();
 
     foreach (RoomState* state, rooms) {
@@ -242,6 +243,7 @@ void League::onOffer(const QString& room, const QString& id, const Offer& offer)
 
 void League::onRoomOffer(const QString& room, const Offer& offer) {
     Offer* roffer = registerOffer(offer);
+    notifyIfNeeded(room, tr("Задание в комнате ") + room + tr(" изменено."));
     Task* const task = this->task(room);
     task->setOffer(roffer);
     QList<RoomState*> old = m_rooms;

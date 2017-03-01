@@ -160,13 +160,13 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     else if (msg.has(Progress.class)) {
       final Progress progress = msg.get(Progress.class);
       final Progress.MetaChange metaChange = progress.change();
-      if (metaChange != null) {
+      if (metaChange != null && mode != ProcessMode.RECOVER) {
         switch (metaChange.target()) {
           case PATTERNS:
             break;
           case TAGS:
             final ExpLeagueOrder order = order(progress.order());
-            if (order != null) {
+            if (order != null ) {
               if (metaChange.operation() == Progress.MetaChange.Operation.ADD)
                 order.tag(metaChange.name());
               else
@@ -186,6 +186,8 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     }
     else if (msg.has(Answer.class)) {
       state(DELIVERY, mode);
+      if (mode == ProcessMode.NORMAL)
+        GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, true), context());
       answer = msg;
     }
     else if (msg.has(Cancel.class) && affiliation == Affiliation.OWNER) {
@@ -227,7 +229,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
 
   private ExpLeagueOrder order(String id) {
-    return orders.length > 0 ? orders[0] : null;
+    return orders != null && orders.length > 0 ? orders[0] : null;
   }
 
   @Override
