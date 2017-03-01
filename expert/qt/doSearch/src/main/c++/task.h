@@ -444,7 +444,7 @@ private slots:
     void onPresence(const QString& roomId, const QString& expert, const QString& role, const QString& affiliation);
     void onStatus(const QString& roomId, int status);
     void onFeedback(const QString& roomId, int feedback);
-    void onMessage(const QString& roomId, const QString& author, int count);
+    void onMessage(const QString& roomId, const QString& author, bool expert, int count);
 
     void onOfferChanged();
 

@@ -174,6 +174,7 @@ Window {
                         }
                     }
                     ComboBox {
+                        id: suggestRole
                         Layout.preferredHeight: implicitHeight
                         Layout.preferredWidth: 100
                         model: ListModel {
@@ -187,13 +188,17 @@ Window {
                             if (index > 2)
                                 return
                             var experts = []
+                            var roles = []
                             for (var i in dialog.expertsInner) {
-                                experts.push([dialog.expertsInner[i]])
+                                experts.push(dialog.expertsInner[i])
+                                roles.push(dialog.rolesInner[i])
                             }
                             experts.push(dosearch.league.findMemberByName(expertsOptions.currentText))
-
-                            dialog.rolesInner.push(index)
+                            roles.push(index)
+                            dialog.rolesInner = roles
                             dialog.expertsInner = experts
+                            suggestRole.currentIndex = 3
+                            expertsOptions.currentIndex = -1
                         }
                     }
                 }

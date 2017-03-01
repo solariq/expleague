@@ -288,9 +288,13 @@ public class Operations {
     @XmlAttribute
     private Integer count;
 
+    @XmlAttribute
+    private Boolean expert;
+
     public RoomMessageReceived() {}
-    public RoomMessageReceived(JID from) {
+    public RoomMessageReceived(JID from, boolean expert) {
       this.from = from.local();
+      this.expert = expert;
     }
 
     public RoomMessageReceived(int msgCount) {
@@ -303,6 +307,10 @@ public class Operations {
 
     public int count() {
       return count != null ? count : 1;
+    }
+
+    public boolean expert() {
+      return expert != null ? expert : false;
     }
   }
 

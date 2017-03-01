@@ -163,7 +163,7 @@ signals:
     void tasksAvailableChanged(int oldValue);
 
     void roomPresence(const QString& roomId, const QString& expert, const QString& role, const QString& affiliation);
-    void roomMessage(const QString& roomId, const QString& from, int count);
+    void roomMessage(const QString& roomId, const QString& from, bool expert, int count);
     void roomStatus(const QString& roomId, int status);
     void roomOffer(const QString& roomId, const Offer& offer);
     void roomFeedback(const QString& roomId, int stars);

@@ -53,7 +53,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   protected void onStart() {
     super.onStart();
     orders = LaborExchange.board().active(jid().local());
-    if (orders.length > 0)
+    if (state == WORK && orders.length > 0)
       Stream.of(orders).forEach(o -> LaborExchange.tell(context(), o, self()));
   }
 
@@ -64,7 +64,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     if (!super.update(from, role, affiliation, mode))
       return false;
     if (mode != ProcessMode.RECOVER)
-      GlobalChatAgent.tell(jid(), new RoomRoleUpdate(from, role(from), affiliation(from)), context());
+      GlobalChatAgent.tell(jid(), new RoomRoleUpdate(from.bare(), role(from), affiliation(from)), context());
     return true;
   }
 
@@ -191,17 +191,17 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     else if (msg.has(Cancel.class) && affiliation == Affiliation.OWNER) {
       state(CLOSED, mode);
     }
-    else if (affiliation == Affiliation.OWNER) {
-      if (msg.has(Feedback.class) && state == FEEDBACK) {
-        if (mode == ProcessMode.NORMAL)
-          GlobalChatAgent.tell(jid(), msg.get(Feedback.class), context());
-        state(CLOSED, mode);
-      }
-      else if (state == FEEDBACK && !msg.has(Command.class)) {
+    else if (msg.has(Feedback.class) && state == FEEDBACK) {
+      if (mode == ProcessMode.NORMAL)
+        GlobalChatAgent.tell(jid(), msg.get(Feedback.class), context());
+      state(CLOSED, mode);
+    }
+    else {
+      if (state == FEEDBACK && !msg.has(Command.class) && affiliation == Affiliation.OWNER) {
         state(OPEN, mode);
       }
       else if (mode == ProcessMode.NORMAL) {
-        GlobalChatAgent.tell(jid(), new RoomMessageReceived(from), context());
+        GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, affiliation != Affiliation.OWNER), context());
       }
     }
   }

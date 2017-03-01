@@ -2,10 +2,7 @@ package com.expleague.server.agents;
 
 import akka.actor.ActorContext;
 import com.expleague.model.*;
-import com.expleague.model.Operations.Feedback;
-import com.expleague.model.Operations.OfferChange;
-import com.expleague.model.Operations.RoomRoleUpdate;
-import com.expleague.model.Operations.RoomStateChanged;
+import com.expleague.model.Operations.*;
 import com.expleague.server.XMPPDevice;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Item;
@@ -27,7 +24,6 @@ import static com.expleague.model.RoomState.*;
  */
 @SuppressWarnings("UnusedParameters")
 public class GlobalChatAgent extends RoomAgent {
-  private static final Logger log = Logger.getLogger(GlobalChatAgent.class.getName());
   public static final String ID = "global-chat";
   public Map<String, RoomStatus> rooms = new HashMap<>();
 
@@ -81,8 +77,9 @@ public class GlobalChatAgent extends RoomAgent {
       final RoomRoleUpdate update = msg.get(RoomRoleUpdate.class);
       status.affiliation(update.expert().local(), update.affiliation());
     }
-    if (msg.has(Operations.RoomMessageReceived.class)) {
-      status.clientMessage(msg.get(Operations.RoomMessageReceived.class).count());
+    if (msg.has(RoomMessageReceived.class)) {
+      final RoomMessageReceived received = msg.get(RoomMessageReceived.class);
+      status.clientMessage(received.expert(), received.count());
     }
     if (changes < status.changes())
       super.process(msg, mode);
@@ -132,7 +129,7 @@ public class GlobalChatAgent extends RoomAgent {
     private Map<String, Role> roles = new HashMap<>();
     private long modificationTs = -1;
     private int changes = 0;
-    private int clientMsgCount;
+    private int unread = 0;
     private int feedback = 0;
 
     public RoomStatus(String id) {
@@ -162,6 +159,7 @@ public class GlobalChatAgent extends RoomAgent {
 
     public void offer(Offer offer) {
       currentOffer = offer;
+      unread = 0;
       changes++;
     }
 
@@ -170,8 +168,8 @@ public class GlobalChatAgent extends RoomAgent {
       changes++;
     }
 
-    public void clientMessage(int count) {
-      this.clientMsgCount += count;
+    public void clientMessage(boolean expert, int count) {
+      this.unread = expert ? 0 : this.unread + count;
       changes++;
     }
 
@@ -180,7 +178,7 @@ public class GlobalChatAgent extends RoomAgent {
       result.type(MessageType.GROUP_CHAT);
       result.append(currentOffer);
       result.append(new RoomStateChanged(state));
-      result.append(new Operations.RoomMessageReceived(clientMsgCount));
+      result.append(new RoomMessageReceived(unread));
       result.from(XMPP.muc(id));
       if (feedback > 0)
         result.append(new Feedback(feedback));
