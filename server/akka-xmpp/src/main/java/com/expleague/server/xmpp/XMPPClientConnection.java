@@ -54,6 +54,8 @@ import java.util.logging.Logger;
  */
 @SuppressWarnings("unused")
 public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
+  public static ExpLeagueServer.Cfg cfg;
+
   private static final Logger log = Logger.getLogger(XMPPClientConnection.class.getName());
 
   private ActorRef connection;
@@ -219,7 +221,15 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
       case STARTTLS: {
         try {
           final String domain = ExpLeagueServer.config().domain();
-          final File file = new File("./certs/" + domain + ".p12");
+          final File file;
+          if (cfg.unitTest()) {
+            final ClassLoader classLoader = getClass().getClassLoader();
+            //noinspection ConstantConditions
+            file = new File(classLoader.getResource(domain + ".p12").getFile());
+          } else {
+            file = new File("./certs/" + domain + ".p12");
+          }
+
           if (!file.exists()) {
             synchronized (XMPPClientConnection.class) {
               if (!file.exists()) {
@@ -312,7 +322,7 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
 
   private static SslContext getSslContextWithCertificateAndPrivateKey(final X509Certificate certificate, final PrivateKey privateKey, final String privateKeyPassword) throws SSLException {
     return SslContextBuilder.forServer(privateKey, privateKeyPassword, certificate)
-        .sslProvider(SslProvider.OPENSSL)
+        .sslProvider(cfg.unitTest() ? SslProvider.JDK : SslProvider.OPENSSL)
 //        .ciphers(Http2SecurityUtil.CIPHERS, SupportedCipherSuiteFilter.INSTANCE)
         .build();
   }

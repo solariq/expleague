@@ -34,6 +34,7 @@ public class Bot {
   private final BareJID jid;
 
   private boolean receivingStarted;
+  private int expectedMessagesNumber;
   private Queue<Message> messageQueue;
   private StateLatch messageStateLatch;
 
@@ -113,7 +114,7 @@ public class Bot {
         if (stanza instanceof Message) {
           onMessage((Message) stanza);
         }
-      } catch (XMLException e) {
+      } catch (JaxmppException e) {
         throw new RuntimeException(e);
       }
     });
@@ -142,80 +143,92 @@ public class Bot {
     return jid;
   }
 
-  public void online() {
-    try {
-      final Presence stanza = Presence.create();
-      jaxmpp.send(stanza);
-      System.out.println("Online presence sent");
-    } catch (JaxmppException e) {
-      throw new RuntimeException(e);
-    }
+  public void online() throws JaxmppException {
+    final Presence stanza = Presence.create();
+    jaxmpp.send(stanza);
+    System.out.println("Online presence sent");
   }
 
-  public void offline() {
-    try {
-      final Presence presence = Presence.create();
-      presence.setShow(Presence.Show.xa);
-      jaxmpp.send(presence);
-      System.out.println("Sent offline presence");
-    } catch (JaxmppException e) {
-      throw new RuntimeException(e);
-    }
+  public void offline() throws JaxmppException {
+    final Presence presence = Presence.create();
+    presence.setShow(Presence.Show.xa);
+    jaxmpp.send(presence);
+    System.out.println("Sent offline presence");
   }
 
-  public void sendToGroupChat(String chatMessage, BareJID roomJID) {
-    try {
-      final Message message = Message.create();
-      message.setTo(JID.jidInstance(roomJID));
-      message.setType(StanzaType.groupchat);
-      message.setBody(chatMessage);
-      jaxmpp.send(message);
-    } catch (JaxmppException e) {
-      throw new RuntimeException(e);
-    }
+  public void sendTextMessageToGroupChat(String chatMessage, BareJID roomJID) throws JaxmppException {
+    final Message message = Message.create();
+    message.setTo(JID.jidInstance(roomJID));
+    message.setType(StanzaType.groupchat);
+    message.setBody(chatMessage);
+    jaxmpp.send(message);
   }
 
-  public void startReceivingMessages(StateLatch stateLatch) {
+  public void startReceivingMessages(int expectedMessagesNumber, StateLatch stateLatch) {
     if (receivingStarted) {
       throw new IllegalStateException("Messages receiving was not finished");
     }
 
+    this.expectedMessagesNumber = expectedMessagesNumber;
     messageStateLatch = stateLatch;
     messageStateLatch.state(1);
     messageQueue = new ArrayDeque<>();
     receivingStarted = true;
   }
 
-  public Message getReceivedMessage() {
-    return getReceivedMessage(DEFAULT_TIMEOUT_IN_NANOS);
+  public Message waitAndGetReceivedMessage() {
+    return waitAndGetReceivedMessage(DEFAULT_TIMEOUT_IN_NANOS);
   }
 
-  public Message getReceivedMessage(long timeoutInNanos) {
-    Queue<Message> messages = getReceivedMessages(1, timeoutInNanos);
+  public Message waitAndGetReceivedMessage(long timeoutInNanos) {
+    final Queue<Message> messages = getReceivedMessages(timeoutInNanos);
     return messages.poll();
   }
 
-  public Queue<Message> getReceivedMessages(int messagesNum) {
-    return getReceivedMessages(messagesNum, DEFAULT_TIMEOUT_IN_NANOS);
+  public Queue<Message> getReceivedMessages() {
+    return getReceivedMessages(DEFAULT_TIMEOUT_IN_NANOS);
   }
 
-  public Queue<Message> getReceivedMessages(int messagesNum, long timeoutInNanos) {
+  public Queue<Message> getReceivedMessages(long timeoutInNanos) {
     if (!receivingStarted) {
       throw new IllegalStateException("Messages receiving was not started");
     }
 
-    final int finalState = 1 << messagesNum;
-    if (messageStateLatch.state() < finalState) {
-      messageStateLatch.state(finalState, messageStateLatch.state(), timeoutInNanos);
-    }
+    final int finalState = 1 << expectedMessagesNumber;
+    messageStateLatch.state(finalState, 1, timeoutInNanos);
     receivingStarted = false;
     return messageQueue;
   }
 
-  private void onMessage(Message message) throws XMLException {
+  private void onMessage(Message message) throws JaxmppException {
+    sendReceivedIfNeeded(message);
     if (receivingStarted) {
-      messageQueue.add(message);
-      messageStateLatch.advance();
+      //noinspection SynchronizeOnNonFinalField
+      synchronized (messageQueue) {
+        if (receivingStarted) {
+          if (messageQueue.size() + 1 > expectedMessagesNumber) {
+            throw new RuntimeException("Unexpected message is received");
+          }
+          else {
+            messageQueue.add(message);
+            messageStateLatch.advance();
+          }
+        }
+      }
+    }
+  }
+
+  private void sendReceivedIfNeeded(Message message) throws JaxmppException {
+    final String receivedXMLNS = "urn:xmpp:receipts";
+    final Element request = message.getFirstChild("request");
+    if (request != null && receivedXMLNS.equals(request.getXMLNS())) {
+      final Message receivedMessage = Message.create();
+      receivedMessage.setType(StanzaType.normal);
+
+      final Element received = receivedMessage.addChild(ElementFactory.create("received"));
+      received.setAttribute("id", message.getId());
+      received.setXMLNS(receivedXMLNS);
+      jaxmpp.send(receivedMessage);
     }
   }
 

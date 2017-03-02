@@ -9,6 +9,7 @@ import com.expleague.server.services.XMPPServices;
 import com.expleague.util.akka.ActorAdapter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import integration_tests.tests.ClientAdminTest;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

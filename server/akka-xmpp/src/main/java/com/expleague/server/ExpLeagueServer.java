@@ -7,6 +7,7 @@ import com.expleague.server.agents.XMPP;
 import com.expleague.server.dao.Archive;
 import com.expleague.server.dao.PatternsRepository;
 import com.expleague.server.services.XMPPServices;
+import com.expleague.server.xmpp.XMPPClientConnection;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.server.notifications.NotificationsManager;
 import com.google.common.annotations.VisibleForTesting;
@@ -72,6 +73,7 @@ public class ExpLeagueServer {
   public static void setConfig(final Cfg cfg) throws Exception {
     config = cfg;
     ActorAdapter.cfg = cfg;
+    XMPPClientConnection.cfg = cfg;
     users = config.roster().newInstance();
     leBoard = config.board().newInstance();
     archive = config.archive().newInstance();

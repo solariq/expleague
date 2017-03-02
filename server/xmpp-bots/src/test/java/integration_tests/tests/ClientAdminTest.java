@@ -1,8 +1,7 @@
-package integration_tests;
+package integration_tests.tests;
 
-import com.expleague.bots.AdminBot;
-import com.expleague.bots.ClientBot;
 import com.spbsu.commons.util.sync.StateLatch;
+import integration_tests.BaseSingleBotsTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -13,6 +12,7 @@ import tigase.jaxmpp.core.client.xml.Element;
 import tigase.jaxmpp.core.client.xml.XMLException;
 import tigase.jaxmpp.core.client.xmpp.stanzas.Message;
 
+import java.util.Arrays;
 import java.util.Queue;
 
 /**
@@ -20,67 +20,64 @@ import java.util.Queue;
  * Date: 15.02.2017
  * Time: 11:51
  */
-public class ClientAdminTest {
-  private ClientBot clientBot;
-  private AdminBot adminBot;
+public class ClientAdminTest extends BaseSingleBotsTest {
 
   @Before
   public void setUp() throws JaxmppException {
-    clientBot = new ClientBot(BareJID.bareJIDInstance("client-bot-1", "localhost"), "poassord");
-    clientBot.start();
-    clientBot.online();
-
-    adminBot = new AdminBot(BareJID.bareJIDInstance("expert-bot-1", "localhost"), "poassord");
-    adminBot.start();
-    adminBot.online();
+    super.setUpAdmin();
+    super.setUpClient();
   }
 
   @After
   public void tearDown() throws JaxmppException {
-    clientBot.offline();
-    clientBot.stop();
-
-    adminBot.offline();
-    adminBot.stop();
+    super.tearDownAdmin();
+    super.tearDownClient();
   }
 
   @Test
-  public void testClientAdminInteraction() throws JaxmppException {
+  public void testClientAdminDialogue() throws JaxmppException {
     //Arrange
     final String topicText = "New topic";
     final String messageFromAdminText = "Message from admin";
+    final int receivedByAdminMsgNum = 4;
 
     //Act
-    adminBot.startReceivingMessages(new StateLatch());
+    adminBot.startReceivingMessages(receivedByAdminMsgNum, new StateLatch());
     final BareJID roomJID = clientBot.startRoom(topicText);
-    final Queue<Message> initMessages = adminBot.getReceivedMessages(3);
+    final Queue<Message> initMessages = adminBot.getReceivedMessages();
 
-    clientBot.startReceivingMessages(new StateLatch());
-    adminBot.sendToGroupChat(messageFromAdminText, roomJID);
-    final Message messageFromAdmin = clientBot.getReceivedMessage();
+    clientBot.startReceivingMessages(1, new StateLatch());
+    adminBot.sendTextMessageToGroupChat(messageFromAdminText, roomJID);
+    final Message messageFromAdmin = clientBot.waitAndGetReceivedMessage();
 
     //Assert
-    final boolean[] messagesChecker = new boolean[3];
-    initMessages.forEach(message -> {
+    final boolean[] messagesChecker = new boolean[receivedByAdminMsgNum];
+    for (int i = 0; i < receivedByAdminMsgNum; i++) {
+      final Message message = initMessages.poll();
       try {
         final Element firstChild = message.getFirstChild();
         if ("room-role-update".equals(firstChild.getName())) {
-          Assert.assertEquals("moderator", firstChild.getAttribute("role"));
-          messagesChecker[0] = true;
+          if ("none".equals(firstChild.getAttribute("role"))) {
+            messagesChecker[i] = true;
+          } else if ("moderator".equals(firstChild.getAttribute("role"))) {
+            messagesChecker[i] = true;
+          }
         } else if ("room-state-changed".equals(firstChild.getName())) {
           Assert.assertEquals("0", firstChild.getAttribute("state"));
-          messagesChecker[1] = true;
+          messagesChecker[i] = true;
         } else if ("offer".equals(firstChild.getName())) {
           Assert.assertEquals(topicText, firstChild.getFirstChild("topic").getValue());
-          messagesChecker[2] = true;
+          messagesChecker[i] = true;
         } else {
           Assert.fail("Unexpected message is received");
         }
       } catch (XMLException e) {
         throw new RuntimeException(e);
       }
-    });
-    final boolean[] expectedChecker = new boolean[] {true, true, true};
+    }
+
+    final boolean[] expectedChecker = new boolean[receivedByAdminMsgNum];
+    Arrays.fill(expectedChecker, true);
     Assert.assertArrayEquals(expectedChecker, messagesChecker);
     Assert.assertEquals(messageFromAdminText, messageFromAdmin.getFirstChild("body").getValue());
   }
