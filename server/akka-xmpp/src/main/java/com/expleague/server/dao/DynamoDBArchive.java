@@ -10,6 +10,7 @@ import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
 import com.amazonaws.services.dynamodbv2.document.internal.InternalUtils;
 import com.amazonaws.services.dynamodbv2.model.*;
 import com.expleague.server.ExpLeagueServer;
+import com.expleague.server.agents.XMPP;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Stanza;
@@ -54,6 +55,30 @@ public class DynamoDBArchive implements Archive {
   private FixedSizeCache<String, RoomArchive> dumpsCache = new FixedSizeCache<>(1000, CacheStrategy.Type.LRU);
   @Override
   public synchronized Dump dump(String local) {
+    if ("global-chat".equals(local)) {
+      return new Dump() {
+        private final List<Stanza> stanzas = new ArrayList<>();
+
+        @Override
+        public void accept(Stanza stanza) {
+          stanzas.add(stanza);
+        }
+
+        @Override
+        public void commit() {
+        }
+
+        @Override
+        public Stream<Stanza> stream() {
+          return stanzas.stream();
+        }
+
+        @Override
+        public JID owner() {
+          return XMPP.jid();
+        }
+      };
+    }
     return dumpsCache.get(local, id -> {
       RoomArchive archive = mapper.load(getRoomArchiveClass(), id);
       if (archive == null)
