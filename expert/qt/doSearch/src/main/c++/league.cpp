@@ -166,12 +166,12 @@ void League::onDisconnected() {
     m_connection = 0;
     QList<RoomState*> rooms = m_rooms;
     m_rooms.clear();
-
     emit roomsChanged();
-
-    foreach (RoomState* state, rooms) {
-        state->deleteLater();
-    }
+    QTimer::singleShot(100, this, [rooms](){
+        foreach (RoomState* state, rooms) {
+            state->deleteLater();
+        }
+    });
     m_admin_focus = QString();
     QList<Task*> tasks = m_tasks.values();
     m_tasks.clear();

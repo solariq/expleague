@@ -60,7 +60,7 @@ void Context::setTask(Task *task) {
     store("context.task", task->id());
     save();
     m_task = task;
-    iconChanged(icon());
+    emit iconChanged(icon());
 }
 
 SearchSession* Context::match(SearchRequest* request) {

@@ -154,7 +154,7 @@ public class DynamoDBArchive implements Archive {
         else mapper.save(this);
       }
       catch (AmazonClientException ace) {
-        log.log(Level.WARNING, "Unable to deliver message to DynamoDB: " + ace.getMessage());
+        log.log(Level.WARNING, "Unable to deliver message to DynamoDB: " + ace.getMessage() + " expression: [" + expressionBuilder.toString() + "]");
       }
     }
 

@@ -280,16 +280,17 @@ void doSearch::remove(Context* context, bool erase) {
     if (m_contexts.size() == 1) // unable to remove the last context
         return;
     if (m_navigation->context() == context) {
-        Context* const next = m_contexts[std::max(0, m_contexts.indexOf(context))];
+        const int index = m_contexts.indexOf(context);
+        Context* const next = m_contexts[index > 0 ? index - 1 : 1];
         m_navigation->activate(next);
-    }
-    if (erase) {
-        QDir contextDir(pageResource(context->id()));
-        contextDir.removeRecursively();
     }
     m_contexts.removeOne(context);
     m_pages.remove(context->id());
     emit contextsChanged();
+    if (erase) {
+        QDir contextDir(pageResource(context->id()));
+        contextDir.removeRecursively();
+    }
 }
 
 }
