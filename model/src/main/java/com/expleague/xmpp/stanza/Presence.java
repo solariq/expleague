@@ -77,15 +77,11 @@ public class Presence extends Stanza implements AnyHolder {
 
   public Presence(JID from, boolean available) {
     this.from = from;
-    if (from.isRoom() && from.resource().startsWith("room"))
-      System.out.println();
     type = available ? PresenceType.AVAILABLE : PresenceType.UNAVAILABLE;
   }
 
   public Presence(JID from, boolean available, Item... contents) {
     this.from = from;
-    if (from.isRoom() && from.resource().startsWith("room"))
-      System.out.println();
     type = available ? PresenceType.AVAILABLE : PresenceType.UNAVAILABLE;
     any = new ArrayList<>(Arrays.asList(contents));
   }
@@ -93,8 +89,6 @@ public class Presence extends Stanza implements AnyHolder {
   public Presence(JID from, JID to, boolean available) {
     this.from = from;
     this.to = to;
-    if (from.isRoom() && from.resource().startsWith("room"))
-      System.out.println();
     type = available ? PresenceType.AVAILABLE : PresenceType.UNAVAILABLE;
   }
 

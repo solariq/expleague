@@ -50,6 +50,7 @@ class Offer: public QObject {
     Q_PROPERTY(QStringList images READ images CONSTANT)
     Q_PROPERTY(long timeLeft READ timeLeft NOTIFY timeTick)
     Q_PROPERTY(QString comment READ comment CONSTANT)
+    Q_PROPERTY(QString draft READ draft CONSTANT)
     Q_PROPERTY(QString region READ region NOTIFY regionChanged)
 
     Q_ENUMS(Urgency)
@@ -82,6 +83,7 @@ public:
     QString room() const { return m_room.section('@', 0, 0); }
     QString topic() const { return m_topic; }
     QString comment() const { return m_comment; }
+    QString draft() const { return m_draft; }
     QString client() const { return m_client; }
     QString region() const { return m_region; }
 
@@ -126,7 +128,8 @@ public:
                    QDateTime started,
                    QList<TaskTag*> tags,
                    QList<AnswerPattern*> m_patterns,
-                   const QString& comment);
+                   const QString& comment,
+                   const QString& draft);
 
 public:
     QDomElement toXml() const;
@@ -159,6 +162,7 @@ private:
 
     QTimer* m_timer = 0;
     QString m_region;
+    QString m_draft;
 };
 
 bool operator ==(const Offer& left, const Offer& right);

@@ -123,6 +123,7 @@ void declareTypes() {
     qRegisterMetaType<Knugget*>("Knugget*");
     qRegisterMetaType<GroupKnugget*>("GroupKnugget*");
     qRegisterMetaType<RoomState*>("RoomState*");
+    qRegisterMetaType<GlobalChat*>("GlobalChat*");
 
     qmlRegisterType<ProfileBuilder>("ExpLeague", 1, 0, "ProfilePreview");
     qmlRegisterType<SearchRequest>("ExpLeague", 1, 0, "SearchRequest");

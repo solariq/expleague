@@ -240,18 +240,17 @@ void Context::appendDocument(MarkdownEditorPage* document) {
 void Context::removeDocument(MarkdownEditorPage* document) {
     int index = m_documents.indexOf(document);
     if (document == this->document())
-        setActiveDocument(m_documents.size() > 1 ? m_documents[std::max(0, index - 1)] : 0);
+        setActiveDocument(m_documents.size() > 1 ? m_documents[index > 0 ? index - 1 : 1] : 0);
     m_documents.removeAt(index);
-    if (m_active_document_index >= index)
-        m_active_document_index--;
     removePart(document);
     emit documentsChanged();
 }
 
 void Context::setActiveDocument(MarkdownEditorPage* active) {
-    m_active_document_index = m_documents.indexOf(active);
-    store("context.active", m_active_document_index >= 0 ? QVariant(active->id()) : QVariant());
+    const int index = m_documents.indexOf(active);
+    store("context.active", index >= 0 ? QVariant(active->id()) : QVariant());
     save();
+    m_active_document = active;
     emit activeDocumentChanged();
 }
 
@@ -340,7 +339,7 @@ void Context::interconnect() {
     }
 
     QVariant active = value("context.active");
-    m_active_document_index = active.isNull() ? -1 : m_documents.indexOf(static_cast<MarkdownEditorPage*>(parent()->page(active.toString())));
+    m_active_document = static_cast<MarkdownEditorPage*>(parent()->page(active.toString()));
 
     foreach(SearchSession* session, m_sessions) {
         connect(session, SIGNAL(queriesChanged()), this, SLOT(onQueriesChanged()));

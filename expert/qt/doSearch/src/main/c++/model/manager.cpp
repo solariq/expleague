@@ -291,8 +291,8 @@ void NavigationManager::activate(Context *ctxt) {
     PagesGroup* group = ctxt->associated(ctxt);
     appendGroup(group);
     unfold();
-    emit contextChanged();
     emit groupsChanged();
+    emit contextChanged();
 }
 
 double effectiveWidth(const QVector<QList<Page*>>& pages, const QVector<QList<Page*>>& closed, const QVector<int>& visibleStart, const QVector<int>& visibleCount) {

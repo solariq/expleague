@@ -202,7 +202,7 @@ private slots:
 
 public:
     explicit ExpLeagueConnection(Profile* profile, QObject* parent = 0);
-    virtual ~ExpLeagueConnection();
+    ~ExpLeagueConnection();
 
 private:
     void sendCommand(const QString& cmd, Offer* context = 0, std::function<void (QDomElement* element)> init = 0);

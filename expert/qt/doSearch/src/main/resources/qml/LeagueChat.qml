@@ -398,10 +398,11 @@ Rectangle {
 
                         property string prevText: ""
                         onTextChanged: {
-                            var plainText = getText(0, text.length)
+                            var plainText = getText(0, text.length).replace(/\xA0/g, " ")
                             if (prevText != plainText) {
                                 prevText = plainText
-                                var richText = plainText.replace(/TODO/g, "<span style=\" font-weight:600; color:#cccc00;\">TODO</span>")
+                                var richText = plainText.replace(/ /g, "&nbsp;")
+                                richText = richText.replace(/TODO/g, "<span style=\" font-weight:600; color:#cccc00;\">TODO</span>")
                                 var position = cursorPosition
                                 text = richText
                                 cursorPosition = position
@@ -441,11 +442,15 @@ Rectangle {
                                     font.bold = false
                                 }
                             }
+                            else if (event.key === Qt.Key_Escape) {
+                                dosearch.main.forceActiveFocus()
+                            }
 
                         }
                         onActiveFocusChanged: {
                             var text = getText(0, send.text.length)
                             if (activeFocus) {
+                                text = text.replace(/\s+/g, " ")
                                 if (text == qsTr("Напишите сообщение клиенту"))
                                     send.text = ""
                                 color = "black"

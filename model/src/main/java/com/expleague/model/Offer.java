@@ -52,6 +52,9 @@ public class Offer extends Item {
   @XmlElement(namespace = Operations.NS)
   private String comment;
 
+  @XmlElement(namespace = Operations.NS)
+  private String draft;
+
   @XmlAttribute
   private Double started;
 

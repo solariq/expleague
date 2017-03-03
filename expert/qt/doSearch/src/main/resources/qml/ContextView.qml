@@ -140,6 +140,8 @@ Rectangle {
                     ToolbarButton {
                         id: ungroupButton
                         icon: "qrc:/cross.png"
+                        visible: !owner.task && owner.toString().indexOf("AdminContext") < 0
+
                         onTriggered: dosearch.remove(owner);
                     }
                     Item { Layout.preferredWidth: 10 }

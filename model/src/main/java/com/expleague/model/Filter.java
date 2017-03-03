@@ -37,13 +37,18 @@ public class Filter extends Attachment {
   public void reject(JID slacker) {
     if (reject == null)
       reject = new ArrayList<>();
-    reject.add(slacker);
+    if (!reject.contains(slacker))
+      reject.add(slacker);
   }
 
   public void prefer(JID... worker) {
     if (prefer == null)
       prefer = new ArrayList<>();
-    prefer.addAll(Arrays.asList(worker));
+    for (int i = 0; i < worker.length; i++) {
+      if (prefer.contains(worker[i]))
+        continue;
+      prefer.add(worker[i]);
+    }
   }
 
   public boolean isPrefered(JID jid) {

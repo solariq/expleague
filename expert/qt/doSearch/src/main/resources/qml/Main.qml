@@ -231,6 +231,9 @@ ApplicationWindow {
             MenuItem {
                 action: switchProfile
             }
+            MenuItem {
+                action: commonActions.gotoAdmin
+            }
         }
         Menu {
             title: qsTr("Серфинг")

@@ -54,7 +54,9 @@ public class Operations {
   public static class Resume extends Command {
     @XmlElementRef
     private Offer offer;
-    public Resume() { }
+    public Resume() {
+
+    }
 
     public Resume(Offer offer) {
       this.offer = offer;

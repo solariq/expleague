@@ -277,7 +277,7 @@ void doSearch::append(Context* context, int index) {
 
 void doSearch::remove(Context* context, bool erase) {
     assert(context->parent() == this);
-    if (m_contexts.size() == 1) // unable to remove the last context
+    if (m_contexts.size() == 1) // unable to remove the last context, admins context or active
         return;
     if (m_navigation->context() == context) {
         const int index = m_contexts.indexOf(context);

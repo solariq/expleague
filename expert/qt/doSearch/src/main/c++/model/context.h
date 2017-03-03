@@ -35,7 +35,7 @@ public:
     SearchRequest* lastRequest() const;
 
     QQmlListProperty<MarkdownEditorPage> documentsQml() const { return QQmlListProperty<MarkdownEditorPage>(const_cast<Context*>(this), const_cast<QList<MarkdownEditorPage*>&>(m_documents)); }
-    MarkdownEditorPage* document() const { return m_active_document_index >= 0 ? m_documents[m_active_document_index] : 0; }
+    MarkdownEditorPage* document() const { return m_active_document; }
     void setActiveDocument(MarkdownEditorPage* active);
 
     Vault* vault() const { return m_vault; }
@@ -94,8 +94,8 @@ private:
     QString m_name;
     Task* m_task = 0;
     QList<SearchSession*> m_sessions;
+    MarkdownEditorPage* m_active_document = 0;
     QList<MarkdownEditorPage*> m_documents;
-    int m_active_document_index = -1;
     Vault* m_vault = 0;
     QHash<QString, PagesGroup*> m_associations;
     mutable QString m_icon_cache;

@@ -234,9 +234,8 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg, const QString& idOr
             }
             else if (xml.localName() == "offer") {
                 offer.reset(new Offer(xml));                
-                cmd = cmd == ELC_NONE ? ELC_CHECK : cmd;
             }
-            else if (xml.localName() == "offer-change") {
+            else if (xml.localName() == "check") {
                 cmd = ELC_CHECK;
             }
             else if (xml.localName() == "answer") {
@@ -262,16 +261,16 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg, const QString& idOr
             emit cancel(*offer);
             break;
         case ELC_CHECK:
-            if (room != "global-chat")
-                emit check(*offer);
-            else
-                emit roomOffer(from, *offer);
+            emit check(*offer);
             break;
         case ELC_INVITE:
             emit invite(*offer);
             break;
         case ELC_RESUME:
             emit resume(*offer);
+            break;
+        case ELC_NONE:
+            emit roomOffer((room != "global-chat" ? room : from), *offer);
             break;
         default:
             qWarning() << "Unhandeled command: " << cmd << " while offer received";
@@ -462,6 +461,7 @@ void ExpLeagueConnection::sendProgress(const QString &to, const Progress &progre
     protocol.append(QXmppElement(progress.toXml()));
     msg.setExtensions(protocol);
     m_client->sendPacket(msg);
+    onMessage(msg, msg.id() +  "-" + xmpp::user(jid()));
 }
 
 void ExpLeagueConnection::sendUserRequest(const QString &id) {
@@ -699,12 +699,23 @@ QDomElement Offer::toXml() const {
     result.setAttribute("local", m_local ? "true" : "false");
     result.setAttribute("started", m_started.toTime_t());
     result.setAttribute("urgency", urgencyToString(m_urgency));
-    QDomElement topic = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "topic");
-    topic.appendChild(holder.createTextNode(m_topic));
-    result.appendChild(topic);
-    QDomElement comment = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "comment");
-    comment.appendChild(holder.createTextNode(m_comment));
-    result.appendChild(comment);
+    {
+        QDomElement topic = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "topic");
+        topic.appendChild(holder.createTextNode(m_topic));
+        result.appendChild(topic);
+    }
+
+    if (!m_comment.isEmpty()) {
+        QDomElement comment = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "comment");
+        comment.appendChild(holder.createTextNode(m_comment));
+        result.appendChild(comment);
+    }
+
+    if (!m_draft.isEmpty()) {
+        QDomElement draft = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "draft");
+        draft.appendChild(holder.createTextNode(m_draft));
+        result.appendChild(draft);
+    }
 
     if (m_location.isValid()) {
         QDomElement location = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "location");
@@ -763,20 +774,21 @@ void Offer::start() {
 }
 
 Offer::Offer(const QString& client,
-                   const QString& room,
-                   const QString& topic,
-                   Urgency urgency,
-                   bool local,
-                   const QStringList& images,
-                   const QMap<QString, FilterType>& filter,
-                   QGeoCoordinate location,
-                   QDateTime started,
-                   QList<TaskTag*> tags,
-                   QList<AnswerPattern*> patterns,
-                   const QString& comment)
+             const QString& room,
+             const QString& topic,
+             Urgency urgency,
+             bool local,
+             const QStringList& images,
+             const QMap<QString, FilterType>& filter,
+             QGeoCoordinate location,
+             QDateTime started,
+             QList<TaskTag*> tags,
+             QList<AnswerPattern*> patterns,
+             const QString& comment,
+             const QString& draft)
 : m_client(client), m_room(room), m_topic(topic), m_urgency(urgency), m_local(local),
   m_images(images), m_filter(filter), m_location(location), m_started(started),
-  m_tags(tags), m_patterns(patterns), m_comment(comment)
+  m_tags(tags), m_patterns(patterns), m_comment(comment), m_draft(draft)
 {}
 
 Offer::Offer(QDomElement xml, QObject *parent): QObject(parent) {
@@ -803,6 +815,9 @@ Offer::Offer(QDomElement xml, QObject *parent): QObject(parent) {
         }
         else if (element.tagName() == "comment") {
             m_comment = element.text();
+        }
+        else if (element.tagName() == "draft") {
+            m_draft = element.text();
         }
         else if (element.tagName() == "image") {
             m_images.append(QUrl(element.text()).path().section('/', -1, -1));

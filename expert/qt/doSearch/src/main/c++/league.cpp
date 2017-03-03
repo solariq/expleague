@@ -9,6 +9,8 @@
 #include "profile.h"
 #include "protocol.h"
 
+#include "model/pages/globalchat.h"
+
 #ifdef Q_OS_MAC
 int showNotification(const char* titleC, const char* detailsC);
 #else
@@ -104,6 +106,10 @@ RoomState* League::state(const QString& id) const {
     return 0;
 }
 
+GlobalChat* League::chat() const {
+    return qobject_cast<GlobalChat*>(parent()->page(GlobalChat::ID));
+}
+
 void League::startTask(Offer* offer, bool cont) {
     Task* task = this->task(offer->roomJid());
     task->setOffer(offer);
@@ -115,10 +121,9 @@ void League::startTask(Offer* offer, bool cont) {
     Context* context = parent()->context("context/" + task->id(), task->offer()->topic().replace('\n', ' '));
     context->setTask(task);
     parent()->navigation()->open(context);
-    Member* self = findMember(id());
-    MarkdownEditorPage* answerPage = parent()->document("Ваш ответ", self, true, task->id() + "-" + "answer");
+    MarkdownEditorPage* answerPage = parent()->document("Ваш ответ", self(), true, task->id() + "-" + "answer");
     if (!cont)
-        answerPage->setTextContent("");
+        answerPage->setTextContent(offer->draft());
     context->transition(answerPage, Page::TYPEIN);
     task->setAnswer(answerPage);
     foreach (MarkdownEditorPage* document, context->documents()) {
@@ -243,7 +248,7 @@ void League::onOffer(const QString& room, const QString& id, const Offer& offer)
 
 void League::onRoomOffer(const QString& room, const Offer& offer) {
     Offer* roffer = registerOffer(offer);
-    notifyIfNeeded(room, tr("Задание в комнате ") + room + tr(" изменено."));
+//    notifyIfNeeded(room, tr("Задание в комнате ") + room + tr(" изменено."));
     Task* const task = this->task(room);
     task->setOffer(roffer);
     QList<RoomState*> old = m_rooms;
@@ -255,6 +260,7 @@ void League::onRoomOffer(const QString& room, const Offer& offer) {
 }
 
 void League::onConnected(int role) {
+    prevMessageTS = QDateTime::currentSecsSinceEpoch();
     m_status = LS_ONLINE;
     emit statusChanged(m_status);
     m_role = (Role)(NONE + role);

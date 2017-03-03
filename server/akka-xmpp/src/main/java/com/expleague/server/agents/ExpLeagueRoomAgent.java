@@ -12,10 +12,7 @@ import com.expleague.xmpp.control.DeliveryQuery;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Stanza;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,7 +28,7 @@ import static com.expleague.server.agents.ExpLeagueOrder.Role.ACTIVE;
 @SuppressWarnings("UnusedParameters")
 public class ExpLeagueRoomAgent extends RoomAgent {
   private static final Logger log = Logger.getLogger(ExpLeagueRoomAgent.class.getName());
-  private ExpLeagueOrder[] orders;
+  private List<ExpLeagueOrder> orders = new ArrayList<>();
   private RoomState state;
 
   public ExpLeagueRoomAgent(JID jid) {
@@ -51,9 +48,14 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   @Override
   protected void onStart() {
     super.onStart();
-    orders = LaborExchange.board().active(jid().local());
-    if (state == WORK && orders.length > 0)
-      Stream.of(orders).forEach(o -> LaborExchange.tell(context(), o, self()));
+    if (state == WORK) {
+      final List<ExpLeagueOrder> active = Arrays.asList(LaborExchange.board().active(jid().local()));
+      if (active.isEmpty())
+        orders.addAll(Arrays.asList(LaborExchange.board().register(offer())));
+      else
+        orders.addAll(active);
+      orders.forEach(o -> LaborExchange.tell(context(), o, self()));
+    }
   }
 
   @Override
@@ -135,17 +137,20 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       if (offer.client() == null)
         offer.client(owner);
       if (state == WORK) { // order update during the work
-        if (mode != ProcessMode.RECOVER) {
-          final List<JID> activeExperts = Arrays.stream(orders).flatMap(o -> o.of(ACTIVE)).collect(Collectors.toList());
-          Arrays.stream(orders).map(ExpLeagueOrder::broker).filter(Objects::nonNull).forEach(b -> b.tell(new Cancel(), self()));
+        if (mode != ProcessMode.RECOVER && !from.equals(jid())) {
+          final List<JID> activeExperts = orders.stream().flatMap(o -> o.of(ACTIVE)).collect(Collectors.toList());
+          orders.stream().map(ExpLeagueOrder::broker).filter(Objects::nonNull).forEach(b -> b.tell(new Cancel(), self()));
           if (activeExperts != null)
             offer.filter().prefer(activeExperts.toArray(new JID[activeExperts.size()]));
-          orders = LaborExchange.board().register(offer);
+          orders.clear();
+          orders.addAll(Arrays.asList(LaborExchange.board().register(offer)));
           if (mode == ProcessMode.NORMAL)
-            Stream.of(orders).forEach(o -> LaborExchange.tell(context(), o, self()));
+            orders.forEach(o -> LaborExchange.tell(context(), o, self()));
         }
       }
       else if (affiliation == Affiliation.OWNER) {
+        if (mode != ProcessMode.RECOVER)
+          GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, false), context());
         state(OPEN, mode);
       }
       else if (affiliation == Affiliation.ADMIN) {
@@ -155,11 +160,14 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         }
         else {
           state(WORK, mode);
-          if (mode != ProcessMode.RECOVER)
-            orders = LaborExchange.board().register(offer);
+          if (mode != ProcessMode.RECOVER) {
+            orders.addAll(Arrays.asList(LaborExchange.board().register(offer)));
+          }
           if (mode == ProcessMode.NORMAL)
-            Stream.of(orders).forEach(o -> LaborExchange.tell(context(), o, self()));
+            orders.forEach(o -> LaborExchange.tell(context(), o, self()));
         }
+        if (mode != ProcessMode.RECOVER)
+          GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, true), context());
       }
       if (mode == ProcessMode.NORMAL)
         GlobalChatAgent.tell(jid(), new Message(jid(), XMPP.jid(GlobalChatAgent.ID), Message.MessageType.GROUP_CHAT, offer, new OfferChange(from.bare())), context());
@@ -173,7 +181,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
             break;
           case TAGS:
             final ExpLeagueOrder order = order(progress.order());
-            if (order != null ) {
+            if (order != null) {
               if (metaChange.operation() == Progress.MetaChange.Operation.ADD)
                 order.tag(metaChange.name());
               else
@@ -188,6 +196,10 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     else if (msg.has(Start.class)) {
       if (mode == ProcessMode.NORMAL) {
         invoke(new Message(jid(), roomAlias(owner()), Roster.instance().profile(from.local())));
+        final Offer offer = offer();
+        assert offer != null;
+        offer.filter().prefer(from);
+        self().tell(new Message(jid(), jid(), offer), self());
       }
     }
     else if (msg.has(Answer.class)) {
@@ -196,20 +208,40 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, true), context());
       answer = msg;
     }
-    else if (msg.has(Cancel.class) && affiliation == Affiliation.OWNER) {
-      state(CLOSED, mode);
+    else if (msg.has(Cancel.class)) {
+      if (affiliation == Affiliation.OWNER) {
+        if (mode == ProcessMode.NORMAL && orders != null) {
+          orders.stream().map(ExpLeagueOrder::broker).filter(Objects::nonNull).forEach(b -> b.tell(new Cancel(), self()));
+          orders.clear();
+        }
+
+        state(CLOSED, mode);
+      }
+      else if (mode == ProcessMode.NORMAL){
+        final Offer offer = offer();
+        assert offer != null;
+        offer.filter().reject(from);
+        self().tell(new Message(from, jid(), offer), self());
+      }
     }
     else if (msg.has(Feedback.class) && state == FEEDBACK) {
       if (mode == ProcessMode.NORMAL)
         GlobalChatAgent.tell(jid(), msg.get(Feedback.class), context());
       state(CLOSED, mode);
     }
+    else if (msg.has(Done.class)) {
+      orders.removeIf(next -> next.status() == ExpLeagueOrder.Status.DONE);
+    }
     else {
-      if (state == FEEDBACK && !msg.has(Command.class) && affiliation == Affiliation.OWNER) {
+      if (EnumSet.of(CLOSED, FEEDBACK, DELIVERY).contains(state) && !msg.has(Command.class) && affiliation == Affiliation.OWNER) {
         state(OPEN, mode);
       }
-      else if (mode == ProcessMode.NORMAL) {
-        GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, affiliation != Affiliation.OWNER), context());
+      else if (EnumSet.of(OPEN, CHAT).contains(state)) {
+        if (affiliation == Affiliation.ADMIN)
+          state(CHAT, mode);
+        if (mode == ProcessMode.NORMAL) {
+          GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, affiliation != Affiliation.OWNER), context());
+        }
       }
     }
   }
@@ -235,7 +267,20 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
 
   private ExpLeagueOrder order(String id) {
-    return orders != null && orders.length > 0 ? orders[0] : null;
+    return orders.size() > 0 ? orders.get(0) : null;
+  }
+
+  private Offer offer() {
+    final List<Stanza> archive = archive();
+    for (int i = archive.size() - 1; i >= 0; i--) {
+      final Stanza stanza =  archive.get(i);
+      if (stanza instanceof Message) {
+        final Message message = (Message) stanza;
+        if (message.has(Offer.class))
+          return message.get(Offer.class);
+      }
+    }
+    return null;
   }
 
   @Override

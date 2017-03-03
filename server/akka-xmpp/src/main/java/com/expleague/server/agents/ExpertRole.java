@@ -91,7 +91,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               }
               else {
                 explain("Sending offer " + task.offer().room().local() + " to expert.");
-                XMPP.send(new Message(XMPP.jid(), jid(), task.offer()), context());
+                XMPP.send(new Message(XMPP.jid(), jid(), task.offer(), new Check()), context());
                 return goTo(State.CHECK);
               }
             }

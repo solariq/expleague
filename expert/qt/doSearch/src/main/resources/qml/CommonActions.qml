@@ -29,6 +29,7 @@ Item {
     property Action exitFullScreen: exitFullScreenAction
     property Action showEditor: showEditorAction
     property Action showVault: showVaultAction
+    property Action gotoAdmin: gotoAdminAction
 
     property QtObject screen: {
         return root.navigation.activeScreen
@@ -45,9 +46,9 @@ Item {
     }
 
     property TextEdit editor: {
-        if (screen && screen.editor) {
-            return screen.editor
-        }
+        var document = dosearch.navigation.context.document
+        if (document)
+            return document.ui.editor
         return null
     }
 
@@ -326,6 +327,16 @@ Item {
             else {
                 omnibox.visible = false
             }
+        }
+    }
+
+    Action {
+        id: gotoAdminAction
+        shortcut: "Ctrl+Shift+A"
+        text: qsTr("Переход к админке")
+        enabled: dosearch.league.role == League.ADMIN
+        onTriggered: {
+            dosearch.navigation.open(dosearch.league.chat)
         }
     }
 

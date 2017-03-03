@@ -155,7 +155,7 @@ Item {
                         anchors.horizontalCenter: status.horizontalCenter
                         height: 12
                         implicitHeight: 12
-                        implicitWidth: eta.visible ? eta.implicitWidth : (stars.visible ? stars.implicitWidth : 0)
+                        implicitWidth: eta.visible ? eta.implicitWidth : (stars.visible ? stars.implicitWidth : (canceled.visible ? canceled.implicitWidth : 0))
                         Text {
                             id: eta
                             renderType: Text.NativeRendering
@@ -181,7 +181,7 @@ Item {
                         }
                         RowLayout {
                             id: stars
-                            visible: roomCardSelf.status == "closed"
+                            visible: roomCardSelf.status == "closed" && modelData.feedback > 0
                             spacing: 0
                             height: implicitHeight
                             implicitHeight: 10
@@ -216,6 +216,14 @@ Item {
                                 mipmap: true
                                 source: modelData.feedback > 4 ? "qrc:/tools/star-filled.png" : "qrc:/tools/star.png"
                             }
+                        }
+                        Text {
+                            id: canceled
+                            visible: roomCardSelf.status == "closed" && modelData.feedback == 0
+                            height: implicitHeight
+                            width: implicitWidth
+                            text: qsTr("отменено")
+                            font.pixelSize: 12
                         }
                     }
                 }
@@ -302,8 +310,8 @@ Item {
                         }
 
                         onTaskChanged: {
-                            if (!!task)
-                                task.enter()
+                            if (!!clientRoomsList.selectedRoom)
+                                owner.enter(clientRoomsList.selectedRoom)
                         }
 
                         spacing: 0

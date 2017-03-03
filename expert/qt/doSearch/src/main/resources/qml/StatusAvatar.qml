@@ -64,7 +64,7 @@ Item {
 
         Rectangle {
             id: tasks
-            visible: dosearch.league.tasksAvailable > 0
+            visible: dosearch.league.chat.openCount > 0
             x: 1
             y: 1
             z: parent.z + 1
@@ -76,7 +76,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 font.pointSize: 8
-                text: "" + dosearch.league.tasksAvailable
+                text: "" + dosearch.league.chat.openCount
                 color: "white"
             }
         }

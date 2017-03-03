@@ -187,6 +187,8 @@ void MarkdownEditorPage::setTextContent(const QString& text) {
         return;
     m_text = text;
     m_html = QString();
+    if (!!d_ptr)
+        d_ptr->document->textDocument()->setPlainText(m_text);
     ContentPage::setTextContent(text);
 }
 

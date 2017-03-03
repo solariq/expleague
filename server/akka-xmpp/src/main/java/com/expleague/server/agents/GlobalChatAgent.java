@@ -12,7 +12,6 @@ import com.expleague.xmpp.stanza.Message.MessageType;
 import com.expleague.xmpp.stanza.Stanza;
 
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.expleague.model.RoomState.*;
@@ -79,7 +78,7 @@ public class GlobalChatAgent extends RoomAgent {
     }
     if (msg.has(RoomMessageReceived.class)) {
       final RoomMessageReceived received = msg.get(RoomMessageReceived.class);
-      status.clientMessage(received.expert(), received.count());
+      status.message(received.expert(), received.count());
     }
     if (changes < status.changes())
       super.process(msg, mode);
@@ -159,10 +158,6 @@ public class GlobalChatAgent extends RoomAgent {
 
     public void offer(Offer offer, JID by) {
       currentOffer = offer;
-      if (offer.client().equals(by))
-        unread++;
-      else
-        unread = 0;
       changes++;
     }
 
@@ -173,7 +168,7 @@ public class GlobalChatAgent extends RoomAgent {
       changes++;
     }
 
-    public void clientMessage(boolean expert, int count) {
+    public void message(boolean expert, int count) {
       this.unread = expert ? 0 : this.unread + count;
       changes++;
     }
@@ -187,9 +182,6 @@ public class GlobalChatAgent extends RoomAgent {
       result.from(XMPP.muc(id));
       if (feedback > 0)
         result.append(new Feedback(feedback));
-
-      if (unread > 0)
-        System.out.println();
 
       final Set<String> ids = new HashSet<>(roles.keySet());
       ids.addAll(affiliations.keySet());

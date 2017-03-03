@@ -44,6 +44,7 @@ Window {
         onTriggered: {
             dialog.appendTag(league.tags[tags.currentIndex])
             dialog.hide()
+            tags.currentIndex = -1
         }
     }
 

@@ -12,6 +12,7 @@ class GlobalChat: public ContentPage {
     Q_OBJECT
 
     Q_PROPERTY(QQmlListProperty<expleague::RoomState> rooms READ rooms NOTIFY roomsChanged)
+    Q_PROPERTY(int openCount READ openCount NOTIFY openCountChanged)
 public:
     static QString ID;
 
@@ -19,8 +20,12 @@ public:
 
     QString title() const { return tr("Админка Лиги"); }
 
+    Q_INVOKABLE void enter(RoomState* room) const;
+    int openCount();
+
 signals:
     void roomsChanged() const;
+    void openCountChanged() const;
 
 public:
     explicit GlobalChat(AdminContext* owner): ContentPage(ID, "qrc:/GlobalChat.qml", owner->parent()), m_owner(owner) {}
@@ -28,6 +33,7 @@ public:
 
 private slots:
     void onRoomsChanged();
+    void onRoomStatusChanged(expleague::Task::Status);
 
 protected:
     void interconnect();
@@ -35,6 +41,7 @@ protected:
 private:
     AdminContext* m_owner = 0;
     QList<RoomState*> m_rooms;
+    int m_open = 0;
 };
 }
 

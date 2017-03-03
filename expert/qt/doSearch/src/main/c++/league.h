@@ -144,6 +144,7 @@ class League: public QObject {
     Q_PROPERTY(QStringList helloPatterns READ helloPatterns NOTIFY chatPatternsChanged)
     Q_PROPERTY(QStringList chatPatterns READ chatPatterns NOTIFY chatPatternsChanged)
     Q_PROPERTY(QStringList experts READ experts NOTIFY membersChanged)
+    Q_PROPERTY(expleague::GlobalChat* chat READ chat CONSTANT)
 
     Q_PROPERTY(int tasksAvailable READ tasksAvailable NOTIFY tasksAvailableChanged)
 
@@ -175,6 +176,9 @@ public:
         return m_profile;
     }
 
+    Member* self() const { return findMember(id()); }
+
+
     QQmlListProperty<Profile> profiles() {
         return QQmlListProperty<Profile>(this, Profile::list());
     }
@@ -201,7 +205,7 @@ public:
     Q_INVOKABLE void connect();
     Q_INVOKABLE void disconnect();
 
-    Q_INVOKABLE QString id() {
+    Q_INVOKABLE QString id() const {
         return m_connection ? m_connection->id() : "local";
     }
 
@@ -234,7 +238,6 @@ public:
     }
 
     GlobalChat* chat() const;
-
     Task* task(const QString& roomId);
     RoomState* state(const QString& roomId) const;
 
@@ -251,6 +254,7 @@ signals:
     void tasksChanged();
     void tasksAvailableChanged();
     void chatPatternsChanged();
+    void globalchatChanged();
 
     Q_INVOKABLE void profilesChanged();
     void patternsChanged();

@@ -196,20 +196,14 @@ void Task::sendAnswer(const QString& shortAnswer, int difficulty, int success, b
 
 void Task::tag(TaskTag* tag) {
 //    qDebug() << "Sending tag: " << tag;
-    m_tags.append(tag);
-    tagsChanged();
     parent()->connection()->sendProgress(offer()->roomJid(), {xmpp::Progress::PO_ADD, xmpp::Progress::PO_TAG, tag->name()});
 }
 
 void Task::pattern(AnswerPattern* pattern) {
-    m_patterns.append(pattern);
-    patternsChanged();
     parent()->connection()->sendProgress(offer()->roomJid(), {xmpp::Progress::PO_ADD, xmpp::Progress::PO_PATTERN, pattern->name()});
 }
 
 void Task::phone(const QString& phone) {
-    m_phones.append(phone);
-    phonesChanged();
     parent()->connection()->sendProgress(offer()->roomJid(), {xmpp::Progress::PO_ADD, xmpp::Progress::PO_PHONE, phone});
 }
 
@@ -253,7 +247,8 @@ void Task::commitOffer(const QString &topic, const QString& comment, const QList
                 m_offer->m_started,
                 m_offer->tags(),
                 m_offer->patterns(),
-                comment);
+                comment,
+                answer()->textContent());
     parent()->connection()->sendOffer(offer);
 }
 
@@ -291,6 +286,8 @@ void RoomState::onStatus(const QString& id, int status) {
     if (id != roomId())
         return;
     m_task->setStatus((Task::Status)status);
+    if (m_task->status() == Task::OPEN)
+        parent()->notifyIfNeeded(id, "Комната: " + task()->offer()->topic() + " перешла в открытое состояние");
     emit statusChanged((Task::Status)status);
 }
 
@@ -306,7 +303,9 @@ void RoomState::onMessage(const QString& id, const QString& author, bool expert,
         return;
 //    if (parent()->adminFocus() != id && !task()->active()) {
 //    }
-    parent()->notifyIfNeeded(author, "Новое сообщение в комнате: " + roomId());
+    if (!expert) {
+        parent()->notifyIfNeeded(author, "Новое сообщение в комнате: " + task()->offer()->topic());
+    }
     m_unread = expert ? 0 : m_unread + count;
     emit unreadChanged(m_unread);
 }

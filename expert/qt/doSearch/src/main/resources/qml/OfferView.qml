@@ -78,14 +78,13 @@ Item {
 
         league: root.league
         onAppendPattern: {
-            var screen = root.navigation.activeScreen
-            if (!screen || !screen.editor)
-                return
-
-            var editor = screen.editor
-            var start = editor.selectionStart
-            editor.insert(start, pattern.text)
-            editor.cursorPosition = editor.cursorPosition - pattern.length
+            var answer = task.answer
+            if (answer) {
+                var editor = answer.ui.editor
+                var start = editor.selectionStart
+                editor.insert(start, "\n" + pattern.text)
+                editor.cursorPosition = editor.cursorPosition - pattern.length
+            }
             task.pattern(pattern)
         }
     }
@@ -250,7 +249,7 @@ Item {
                     id: roomId
                     Layout.alignment: Qt.AlignHCenter
                     visible: editable
-                    text: offer.room
+                    text: offer? offer.room : ""
                     selectByMouse: true
                     readOnly: true
                     color: textColor

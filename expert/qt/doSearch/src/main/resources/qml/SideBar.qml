@@ -17,7 +17,7 @@ Item {
     property TagsDialog tagsDialog
     property Item statusBar
     property Context context
-    property var task: context ? context.task : null
+    property var task
     property real defaultWidth: 320
     property bool screenDnD: false
     property bool containsDnD: false
@@ -26,6 +26,18 @@ Item {
     property real minWidth: 0
     property var activeItem
     implicitWidth: 0
+
+    onContextChanged: {
+        preview.html = ""
+        if (context)
+            task = context.task
+        else
+            task = null
+        if (task)
+            state = "dialog"
+        else
+            state = ""
+    }
 
     onWidthChanged: {
         if (width <= 0)
@@ -230,14 +242,5 @@ Item {
         onCancelled: {
             window.showDialog(taskCancelledDialog)
         }
-    }
-
-
-    onContextChanged: {
-        preview.html = ""
-        if (!!context.task)
-            state = "dialog"
-        else
-            state = ""
     }
 }
