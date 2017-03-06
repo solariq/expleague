@@ -98,13 +98,11 @@ class ExpLeagueConnection: public QObject {
     Q_OBJECT
 
     Q_PROPERTY(QString jid READ jid NOTIFY jidChanged)
-    Q_PROPERTY(int tasksAvailable READ tasksAvailable NOTIFY tasksAvailableChanged)
 
 public:
     Profile* profile() const { return m_profile; }
     QString jid() const { return m_jid; }
     bool valid() const { return m_client->isAuthenticated(); }
-    int tasksAvailable() const { return m_tasks_available; }
 
 public:
     void connect();
@@ -159,9 +157,6 @@ signals:
     void answer(const QString& room, const QString& id, const QString& from, const QString&);
     void progress(const QString& room, const QString& id, const QString& from, const Progress&);
 
-    // admin signals
-    void tasksAvailableChanged(int oldValue);
-
     void roomPresence(const QString& roomId, const QString& expert, const QString& role, const QString& affiliation);
     void roomMessage(const QString& roomId, const QString& from, bool expert, int count);
     void roomStatus(const QString& roomId, int status);
@@ -213,7 +208,6 @@ private:
     QString m_jid;
     QMap<QString, Member*> m_members_cache;
     QSet<QString> m_history_requested;
-    int m_tasks_available = 0;
 };
 
 class Registrator: public QXmppClientExtension {

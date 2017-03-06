@@ -170,6 +170,7 @@ Window {
                                 if (!found)
                                     result.push(experts[i])
                             }
+                            result.sort()
                             return result
                         }
                     }
@@ -197,8 +198,10 @@ Window {
                             roles.push(index)
                             dialog.rolesInner = roles
                             dialog.expertsInner = experts
-                            suggestRole.currentIndex = 3
                             expertsOptions.currentIndex = -1
+                            dosearch.main.delay(100, function () {
+                                suggestRole.currentIndex = 3
+                            })
                         }
                     }
                 }

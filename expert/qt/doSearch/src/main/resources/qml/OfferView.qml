@@ -20,6 +20,7 @@ Item {
     property real minHeight: tools.implicitHeight
     property bool editable: false
     property string status: task ? ["open", "chat", "response", "confirmation", "offer", "work", "delivery", "feedback", "cloded"][task.status] : ""
+    property var comments
 
     property real offerHeight: topic.implicitHeight + geoLocal.implicitHeight + 4 + attachmentsCount.implicitHeight + 4 +
                                33 + 4 +
@@ -153,10 +154,14 @@ Item {
                     background: Item {}
 
                     onClicked: {
-                        if (self.state == "folded")
+                        if (self.state == "folded") {
                             self.state = ""
-                        else
+                            self.height = storedHeight
+                        }
+                        else {
+                            storedHeight = self.height
                             self.state = "folded"
+                        }
                     }
                 }
 
@@ -249,7 +254,7 @@ Item {
                     id: roomId
                     Layout.alignment: Qt.AlignHCenter
                     visible: editable
-                    text: offer? offer.room : ""
+                    text: offer ? offer.room : ""
                     selectByMouse: true
                     readOnly: true
                     color: textColor
@@ -305,9 +310,12 @@ Item {
                         renderType: Text.NativeRendering
                         wrapMode: Text.WordWrap
                         color: self.editable ? "black" : self.textColor
-                        text: (!editable ? "Комментарий администратора: " + (offer && offer.comment != "" ? offer.comment : "нет") : "")
+                        text: (!editable ? "Комментарий администратора: " + (offer && offer.comment != "" ? offer.comment : "нет") : (task ? task.comment : ""))
                         selectByMouse: true
                         readOnly: !self.editable
+                        onTextChanged: {
+                            task.comment = text
+                        }
                     }
                 }
 

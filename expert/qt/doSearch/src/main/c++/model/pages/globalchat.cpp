@@ -36,7 +36,7 @@ void GlobalChat::interconnect() {
         m_owner = qobject_cast<AdminContext*>(parent()->page(ID));
 }
 
-void GlobalChat::onRoomStatusChanged(Task::Status status) {
+void GlobalChat::onRoomStatusChanged(Task::Status /*status*/) {
     emit openCountChanged();
 }
 

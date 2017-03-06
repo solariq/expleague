@@ -169,8 +169,10 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         if (mode != ProcessMode.RECOVER)
           GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, true), context());
       }
-      if (mode == ProcessMode.NORMAL)
+      if (mode == ProcessMode.NORMAL) {
         GlobalChatAgent.tell(jid(), new Message(jid(), XMPP.jid(GlobalChatAgent.ID), Message.MessageType.GROUP_CHAT, offer, new OfferChange(from.bare())), context());
+        GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, true), context());
+      }
     }
     else if (msg.has(Progress.class)) {
       final Progress progress = msg.get(Progress.class);

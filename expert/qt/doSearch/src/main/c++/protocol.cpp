@@ -63,9 +63,6 @@ void ExpLeagueConnection::connect() {
 void ExpLeagueConnection::disconnect() {
     if (m_client->state() != QXmppClient::DisconnectedState)
         m_client->disconnectFromServer();
-    int oldValue = m_tasks_available;
-    m_tasks_available = 0;
-    emit tasksAvailableChanged(oldValue);
     emit disconnected();
 }
 
@@ -83,17 +80,6 @@ void ExpLeagueConnection::onError(QXmppClient::Error error) {
 }
 
 void ExpLeagueConnection::onPresence(const QXmppPresence& presence) {
-    foreach(const QXmppElement& ext, presence.extensions()) {
-        QDomElement item = ext.sourceDomElement();
-        if (item.namespaceURI() == EXP_LEAGUE_NS && item.nodeName() == "status") {
-            int tasks = item.attribute("starving-tasks").toInt();
-            if (tasks != m_tasks_available) {
-                int oldValue = m_tasks_available;
-                m_tasks_available = item.attribute("starving-tasks").toInt();
-                emit tasksAvailableChanged(oldValue);
-            }
-        }
-    }
     QString from = presence.from();
 
     if (xmpp::user(from) == "global-chat") {
@@ -270,7 +256,10 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg, const QString& idOr
             emit resume(*offer);
             break;
         case ELC_NONE:
-            emit roomOffer((room != "global-chat" ? room : from), *offer);
+            if (room != "global-chat")
+                emit this->offer(room, id, *offer);
+            else
+                emit roomOffer(from, *offer);
             break;
         default:
             qWarning() << "Unhandeled command: " << cmd << " while offer received";
@@ -732,7 +721,7 @@ QDomElement Offer::toXml() const {
 
     foreach(AnswerPattern* pattern, m_patterns) {
         QDomElement patternDom = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "pattern");
-        patternDom.appendChild(holder.createTextNode(pattern->name()));
+        patternDom.setAttribute("name", pattern->name());
         result.appendChild(patternDom);
     }
 
@@ -833,12 +822,12 @@ Offer::Offer(QDomElement xml, QObject *parent): QObject(parent) {
                     m_filter[xmpp::user(filter.text())] = Offer::TFT_PREFER;
             }
         }
-        else if (element.tagName() == "patterns") {
-            AnswerPattern* const pattern = League::instance()->findPattern(element.text());
+        else if (element.tagName() == "pattern") {
+            AnswerPattern* const pattern = League::instance()->findPattern(element.attribute("name"));
             if (pattern)
                 m_patterns.append(pattern);
         }
-        else if (element.tagName() == "tags") {
+        else if (element.tagName() == "tag") {
             TaskTag* const tag = League::instance()->findTag(element.text());
             if (tag)
                 m_tags.append(tag);

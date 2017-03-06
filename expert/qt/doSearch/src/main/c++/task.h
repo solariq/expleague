@@ -177,6 +177,7 @@ class Task: public QObject {
     Q_PROPERTY(QQmlListProperty<expleague::TaskTag> tags READ tags NOTIFY tagsChanged)
     Q_PROPERTY(QQmlListProperty<expleague::AnswerPattern> patterns READ patterns NOTIFY patternsChanged)
     Q_PROPERTY(QStringList phones READ phones NOTIFY phonesChanged)
+    Q_PROPERTY(QString comment READ comment WRITE setComment NOTIFY commentChanged)
 
     Q_PROPERTY(QStringList banned READ banned NOTIFY filterChanged)
     Q_PROPERTY(QStringList accepted READ accepted NOTIFY filterChanged)
@@ -226,6 +227,8 @@ public:
 
     QString id() const;
     Context* context() const { return m_context; }
+    QString comment() const { return m_comment; }
+    void setComment(const QString& comment) { m_comment = comment; emit commentChanged(); }
 
 public:
     Q_INVOKABLE void enter() const;
@@ -273,6 +276,8 @@ signals:
     void filterChanged();
     void answerChanged();
 
+    void commentChanged();
+
 public slots:
     void setAnswer(MarkdownEditorPage* answer) {
         m_answer = answer;
@@ -310,6 +315,7 @@ private:
 
     QList<Member*> m_experts;
     QList<int> m_roles;
+    QString m_comment;
 };
 
 class ChatMessage: public QObject {

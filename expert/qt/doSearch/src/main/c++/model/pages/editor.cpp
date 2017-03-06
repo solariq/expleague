@@ -60,6 +60,7 @@ QString buildHtmlByMD(const QString& text) {
 }
 
 struct MarkdownEditorPagePrivate {
+    QQuickItem* ui;
     QQuickItem* editor;
     QQuickTextDocument* document;
     MarkdownHighlighter* highlighter;
@@ -76,6 +77,7 @@ struct MarkdownEditorPagePrivate {
 void MarkdownEditorPage::initUI(QQuickItem* result) const {
     d_ptr.reset(new MarkdownEditorPagePrivate());
     connect(result, SIGNAL(destroyed(QObject*)), this, SLOT(onUiDestryed(QObject*)));
+    d_ptr->ui = result;
     d_ptr->editor = result->property("editor").value<QQuickItem*>();
     d_ptr->document = d_ptr->editor->property("textDocument").value<QQuickTextDocument*>();
     d_ptr->highlighter = new MarkdownHighlighter(d_ptr->document->textDocument(), const_cast<hunspell::SpellChecker*>(m_spellchecker));
@@ -126,7 +128,9 @@ void MarkdownEditorPage::contentChanged() {
     MarkdownEditorPagePrivate* privatePart = d_ptr.get();
     if (privatePart && privatePart->document) {
         QString text = privatePart->document->textDocument()->toPlainText();
-        setTextContent(text);
+        m_text = text;
+        m_html = QString();
+        ContentPage::setTextContent(text);
     }
 }
 
@@ -204,7 +208,8 @@ void MarkdownEditorPage::acquireFocus() {
 }
 
 void MarkdownEditorPage::onUiDestryed(QObject*) {
-    d_ptr.reset(0);
+    if (!!d_ptr && sender() == d_ptr->ui)
+        d_ptr.reset(0);
 }
 
 QStringList MarkdownEditorPage::codeClipboard() {

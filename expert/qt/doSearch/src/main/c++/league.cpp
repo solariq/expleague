@@ -121,18 +121,15 @@ void League::startTask(Offer* offer, bool cont) {
     Context* context = parent()->context("context/" + task->id(), task->offer()->topic().replace('\n', ' '));
     context->setTask(task);
     parent()->navigation()->open(context);
-    MarkdownEditorPage* answerPage = parent()->document("Ваш ответ", self(), true, task->id() + "-" + "answer");
-    if (!cont)
-        answerPage->setTextContent(offer->draft());
-    context->transition(answerPage, Page::TYPEIN);
-    task->setAnswer(answerPage);
     foreach (MarkdownEditorPage* document, context->documents()) {
         context->removeDocument(document);
     }
 
-    context->appendDocument(answerPage);
+    context->appendDocument(task->answer());
+    if (!cont)
+        task->answer()->setTextContent(offer->draft());
     parent()->append(context);
-    parent()->navigation()->open(answerPage);
+    parent()->navigation()->open(task->answer());
     connection()->sendPresence(offer->roomJid(), true);
 }
 
@@ -410,10 +407,10 @@ QStringList League::experts() const {
 }
 
 void League::setAdminFocus(const QString& room) {
-    if (!m_admin_focus.isNull() && m_connection)
+    if (!m_admin_focus.isEmpty() && m_connection)
         m_connection->sendPresence(m_admin_focus, false);
     m_admin_focus = room;
-    if (!m_admin_focus.isNull() && m_connection)
+    if (!m_admin_focus.isEmpty() && m_connection)
         m_connection->sendPresence(m_admin_focus, true);
 }
 

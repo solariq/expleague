@@ -146,8 +146,6 @@ class League: public QObject {
     Q_PROPERTY(QStringList experts READ experts NOTIFY membersChanged)
     Q_PROPERTY(expleague::GlobalChat* chat READ chat CONSTANT)
 
-    Q_PROPERTY(int tasksAvailable READ tasksAvailable NOTIFY tasksAvailableChanged)
-
     Q_ENUMS(Status)
     Q_ENUMS(Role)
 
@@ -197,10 +195,6 @@ public:
     QStringList experts() const;
 
     QList<RoomState*> rooms() const { return m_rooms; }
-
-    int tasksAvailable() const {
-        return m_connection ? m_connection->tasksAvailable() : 0;
-    }
 
     Q_INVOKABLE void connect();
     Q_INVOKABLE void disconnect();
@@ -281,13 +275,6 @@ private slots:
     void onProgress(const QString& room, const QString& id, const QString& from, const Progress&);
     void onOffer(const QString& room, const QString& id, const Offer& offer);
     void onRoomOffer(const QString& room, const Offer& offer);
-
-    void onTasksAvailableChanged(int oldValue) {
-        if (m_connection && m_connection->tasksAvailable() > 0 && oldValue < m_connection->tasksAvailable())
-            notifyIfNeeded("", tr("Изменилось количество доступных заданий на сервере"), true);
-
-        emit tasksAvailableChanged();
-    }
 
     void onPresenceChanged(const QString& user, bool available);
     void onMembersChanged() {

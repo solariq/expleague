@@ -102,8 +102,8 @@ QQuickItem* Page::ui(bool cache) const {
             m_ui = 0;
             emit uiChanged();
         });
+        initUI(result);
     }
-    initUI(result);
     return result;
 }
 

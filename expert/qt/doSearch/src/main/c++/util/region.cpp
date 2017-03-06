@@ -31,7 +31,7 @@ void RegionQuery::process(QNetworkReply* reply) {
     QString result;
     bool rc = query.evaluateTo(&result);
     if (rc) {
-        result = result.section(",", 0, 3);
+        result = result.section(" ", 0, 2);
         m_callback(result.trimmed());
     }
 }

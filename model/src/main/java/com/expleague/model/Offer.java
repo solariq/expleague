@@ -62,12 +62,14 @@ public class Offer extends Item {
   @XmlAnyElement(lax = true)
   private List<ExpertsProfile> workers;
 
-  @XmlElementWrapper(namespace = Operations.NS)
-  @XmlAnyElement(lax = true)
+  @XmlElements(value = {
+      @XmlElement(name="tag", namespace = Operations.NS, type = Tag.class),
+  })
   private List<Tag> tags;
 
-  @XmlElementWrapper(namespace = Operations.NS)
-  @XmlAnyElement(lax = true)
+  @XmlElements(value = {
+      @XmlElement(name="pattern", namespace = Operations.NS, type = Pattern.class),
+  })
   private List<Pattern> patterns;
 
   public Offer() {

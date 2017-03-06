@@ -16,7 +16,7 @@ public class Pattern extends Item {
   private String name;
 
   @XmlAttribute
-  private Type type;
+  private Type type = Type.ANSWER;
 
   @XmlElement(namespace = Operations.NS)
   private String body;

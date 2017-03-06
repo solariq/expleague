@@ -26,7 +26,15 @@ void Task::setOffer(Offer* offer) {
         QObject::disconnect(m_offer);
     QObject::connect(offer, SIGNAL(cancelled()), this, SLOT(cancelReceived()));
     m_offer = offer;
+    m_comment = m_offer->comment();
+    m_patterns = offer->patterns();
+    m_tags = offer->tags();
+    if (!m_offer->draft().isEmpty() && answer()->textContent().isEmpty()) {
+        answer()->setTextContent(m_offer->draft());
+    }
     setFilter(offer->filter());
+    emit tagsChanged();
+    emit patternsChanged();
     emit filterChanged();
     emit offerChanged();
 }
@@ -154,7 +162,7 @@ void Task::close(const QString& shortAnswer) {
         sendAnswer(shortAnswer.isEmpty() ? m_answers[0]->textContent().section("\n", 0, 0) : shortAnswer, -1, -1, false);
     }
     else {
-        sendAnswer(shortAnswer + tr("\nОтвет данный в диалоге:\n") + shortAnswer, -1, -1, false);
+        sendAnswer(shortAnswer + tr("\nОтвет получен в диалоге:\n") + shortAnswer, -1, -1, false);
     }
 }
 
@@ -182,7 +190,7 @@ QString removeSpacesInside(const QString& textOrig, const QString& separator) {
 }
 
 void Task::sendAnswer(const QString& shortAnswer, int difficulty, int success, bool extraInfo) {
-    if (answer()) {
+    if (!answer()->textContent().isEmpty()) {
         QString text = answer()->textContent();
         text.replace("\t", "    ");
         //    text = removeSpacesInside(text, "*");
@@ -231,7 +239,7 @@ void Task::enter() const {
 }
 
 void Task::commitOffer(const QString &topic, const QString& comment, const QList<Member*>& selected) const {
-    QMap<QString, Offer::FilterType> filter = m_offer->m_filter;
+    QMap<QString, Offer::FilterType> filter = m_filter;
     foreach(Member* expert, selected) {
         filter[expert->id()] = Offer::TFT_ACCEPT;
     }
@@ -245,8 +253,8 @@ void Task::commitOffer(const QString &topic, const QString& comment, const QList
                 filter,
                 m_offer->location(),
                 m_offer->m_started,
-                m_offer->tags(),
-                m_offer->patterns(),
+                m_tags,
+                m_patterns,
                 comment,
                 answer()->textContent());
     parent()->connection()->sendOffer(offer);
@@ -269,12 +277,21 @@ QString Task::id() const  {
     return m_room;
 }
 
-Task::Task(Offer* offer, QObject* parent): QObject(parent), m_room(offer->room()), m_offer(offer) {
+Task::Task(Offer* offer, QObject* parent): QObject(parent), m_room(offer->room()), m_offer(offer), m_comment(offer->comment()) {
     QObject::connect(offer, SIGNAL(cancelled()), this, SLOT(cancelReceived()));
+    setFilter(offer->filter());
+    m_answer = doSearch::instance()->document("Ваш ответ", League::instance()->self(), true, id() + "-" + "answer");
+    m_patterns = offer->patterns();
+    m_tags = offer->tags();
+    if (!m_offer->draft().isEmpty() && answer()->textContent().isEmpty()) {
+        answer()->setTextContent(m_offer->draft());
+    }
     setFilter(offer->filter());
 }
 
-Task::Task(const QString& roomId, QObject* parent): QObject(parent), m_room(roomId), m_offer(0) {}
+Task::Task(const QString& roomId, QObject* parent): QObject(parent), m_room(roomId), m_offer(0) {
+    m_answer = doSearch::instance()->document("Ваш ответ", League::instance()->self(), true, id() + "-" + "answer");
+}
 
 
 bool Bubble::incoming() const {
@@ -299,13 +316,10 @@ void RoomState::onFeedback(const QString& id, int feedback) {
 }
 
 void RoomState::onMessage(const QString& id, const QString& author, bool expert, int count) {
-    if (id != roomId() || author == doSearch::instance()->league()->id())
+    if (id != roomId())
         return;
-//    if (parent()->adminFocus() != id && !task()->active()) {
-//    }
-    if (!expert) {
+    if (!expert)
         parent()->notifyIfNeeded(author, "Новое сообщение в комнате: " + task()->offer()->topic());
-    }
     m_unread = expert ? 0 : m_unread + count;
     emit unreadChanged(m_unread);
 }
@@ -361,8 +375,6 @@ QString RoomState::roomId() const {
 
 void RoomState::enter() {
     m_task->enter();
-    m_unread = 0;
-    emit unreadChanged(0);
 }
 
 League* RoomState::parent() const {

@@ -83,7 +83,8 @@ public class Operations {
   public static class Done extends Command {}
 
   @XmlRootElement
-  public static class Check extends Command {}
+  public static class Check extends Command {
+  }
 
   @XmlRootElement
   public static class Confirm extends Command {}
