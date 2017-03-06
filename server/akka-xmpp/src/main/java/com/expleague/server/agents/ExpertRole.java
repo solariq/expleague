@@ -30,7 +30,6 @@ import static com.expleague.model.Operations.*;
 public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.Variants> {
   private static final Logger log = Logger.getLogger(ExpertRole.class.getName());
   public static final FiniteDuration CHOICE_TIMEOUT = ExpLeagueServer.config().timeout("expert-role.choice-timeout");
-  public static final FiniteDuration CONTINUATION_TIMEOUT = ExpLeagueServer.config().timeout("expert-role.continuation-timeout");
   public static final FiniteDuration INVITE_TIMEOUT = ExpLeagueServer.config().timeout("expert-role.invite-timeout");
   private Cancellable timer;
 
@@ -39,9 +38,18 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     return 5;
   }
 
+
+  public FSM.State<ExpertRole.State, ExpertRole.Variants> goTo1(ExpertRole.State state) {
+    return goTo(state);
+  }
+
   private String explanation = "";
+
   {
+    System.out.println("Expert " + jid() + "restarted!");
     startWith(State.OFFLINE, new Variants());
+    if (XMPP.online(context()).contains(jid().bare()))
+      laborExchange(new Variants());
 
     when(State.OFFLINE,
         matchEvent(Presence.class,
@@ -63,7 +71,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     // todo: Ok can be received here and will be unhandled
     when(State.READY,
         matchEvent(Presence.class,
-            (presence, task) -> presence.available() || presence.to() == null ? stay() : goTo(State.OFFLINE)
+            (presence, task) -> presence.available() || presence.to() != null ? stay() : goTo1(State.OFFLINE)
         ).event(Offer.class,
             (offer, task) -> {
               explain("Offer received appending as variant");
@@ -87,12 +95,12 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               if (sourceCommand instanceof Resume) {
                 explain("Resume command received from " + sender() + " sending resume command to the expert");
                 XMPP.send(new Message(XMPP.jid(), jid(), sourceCommand, taskOption.getOffer()), context());
-                return goTo(State.INVITE);
+                return goTo1(State.INVITE);
               }
               else {
                 explain("Sending offer " + task.offer().room().local() + " to expert.");
                 XMPP.send(new Message(XMPP.jid(), jid(), task.offer(), new Check()), context());
-                return goTo(State.CHECK);
+                return goTo1(State.CHECK);
               }
             }
         ).event(Cancel.class,
@@ -109,14 +117,14 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 return stay();
               explain("Expert has gone offline. Cancelling the check.");
               task.broker().tell(new Ignore(), self());
-              return goTo(State.OFFLINE).using(task.clean());
+              return goTo1(State.OFFLINE).using(task.clean());
             }
         ).event(Message.class,  // expert accepted check
             (msg, task) -> msg.get(Ok.class) != null,
             (msg, task) -> {
               explain("Received Ok message from expert, forwarding it to broker");
               task.broker().tell(new Ok(), self());
-              return goTo(State.INVITE).using(task);
+              return goTo1(State.INVITE).using(task);
             }
         ).event(Message.class, // expert canceled check
             (msg, task) -> msg.get(Cancel.class) != null,
@@ -141,7 +149,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               if (!presence.available()) {
                 explain("Expert has gone offline during invitation. Sending ignore to broker.");
                 task.broker().tell(new Ignore(), self());
-                return goTo(State.OFFLINE).using(task.clean());
+                return goTo1(State.OFFLINE).using(task.clean());
               }
               return stay();
             }
@@ -175,13 +183,13 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 explain("Expert started working on " + task.offer().room().local());
                 stopTimer();
                 task.broker().tell(new Start(), self());
-                return goTo(State.BUSY);
+                return goTo1(State.BUSY);
               }
               if (message.has(Resume.class)) {
                 explain("Expert resumed working on " + task.offer().room().local());
                 stopTimer();
                 task.broker().tell(new Resume(), self());
-                return goTo(State.BUSY);
+                return goTo1(State.BUSY);
               }
               explain("Ignoring message: " + message);
               return stay();
@@ -201,7 +209,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               if (!presence.available() && presence.to() == null) {
                 explain("Expert has gone offline during task execution. Sending suspend to broker.");
                 task.broker().tell(new Suspend(), self());
-                return goTo(State.OFFLINE);
+                return goTo1(State.OFFLINE);
               }
               return stay();
             }
@@ -216,13 +224,12 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 explain("Expert has suspended task execution. Sending suspend to broker.");
                 task.broker().tell(msg.get(Suspend.class), self());
                 task.removeVariant(task.broker());
-                return goTo(State.READY);
+                return goTo1(State.READY);
               }
               if (msg.has(Done.class) || msg.has(Answer.class)) { // hack for answer
-                explain("Expert has finished task execution. Notifying broker and going to labor exchange with slight suspension to let user send a message to restart the task.");
-                timer = AkkaTools.scheduleTimeout(context(), CONTINUATION_TIMEOUT, self());
+                explain("Expert has finished task execution. Notifying broker and going to labor exchange.");
                 task.broker().tell(new Done(), self());
-                return stay();
+                return laborExchange(task);
               }
               explain("Ignoring message inside busy state: " + msg);
               return stay();
@@ -242,7 +249,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
         ).event(Offer.class, // continue the task
             (offer, task) -> offer.room().equals(task.offer().room()),
             (offer, task) -> {
-              return goTo(State.INVITE).using(task.enforce(offer, sender())).replying(new Ok());
+              return goTo1(State.INVITE).using(task.enforce(offer, sender())).replying(new Ok());
             }
         )
     );
@@ -294,22 +301,27 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
 
   @Override
   public void processEvent(FSM.Event<Variants> event, Object source) {
-    final State from = stateName();
-    super.processEvent(event, source);
-    if (explanation.isEmpty())
-      return;
+    try {
+      final State from = stateName();
+      super.processEvent(event, source);
+      if (explanation.isEmpty())
+        return;
 
-    final State to = stateName();
-    final Offer first = stateData() != null && stateData().taskOptions.size() == 1 ? stateData().offer() : null;
-    log.fine("Expert " + jid() + " state change " + from + " -> " + to +
-        (first != null ? " " + first.room().local() : "")
-        + " " + explanation);
-    explanation = "";
+      final State to = stateName();
+      final Offer first = stateData() != null && stateData().taskOptions.size() == 1 ? stateData().offer() : null;
+      log.fine("Expert " + jid() + " state change " + from + " -> " + to +
+          (first != null ? " " + first.room().local() : "")
+          + " " + explanation);
+      explanation = "";
+    }
+    catch (Throwable th) {
+      th.printStackTrace();
+    }
   }
 
   private FSM.State<State, Variants> laborExchange(Variants task) {
     LaborExchange.tell(context(), self(), self());
-    return goTo(State.READY).using(task.clean());
+    return goTo1(State.READY).using(task.clean());
   }
 
   private void explain(String s) {

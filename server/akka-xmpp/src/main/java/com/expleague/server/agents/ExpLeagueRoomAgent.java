@@ -131,13 +131,13 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         update(from, null, Affiliation.ADMIN, mode);
       affiliation = Affiliation.ADMIN;
     }
-    if (msg.has(Offer.class) && EnumSet.of(Affiliation.OWNER, Affiliation.ADMIN).contains(affiliation)) { // offers handling
+    if (msg.has(Offer.class)) { // offers handling
       final Offer offer = msg.get(Offer.class);
       final JID owner = owner();
       if (offer.client() == null)
         offer.client(owner);
       if (state == WORK) { // order update during the work
-        if (mode != ProcessMode.RECOVER && !from.equals(jid())) {
+        if (mode != ProcessMode.RECOVER && affiliation == Affiliation.ADMIN) {
           final List<JID> activeExperts = orders.stream().flatMap(o -> o.of(ACTIVE)).collect(Collectors.toList());
           orders.stream().map(ExpLeagueOrder::broker).filter(Objects::nonNull).forEach(b -> b.tell(new Cancel(), self()));
           if (activeExperts != null)

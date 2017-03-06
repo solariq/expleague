@@ -205,7 +205,7 @@ public class XMPP extends ActorAdapter<UntypedActor> {
     public Set<JID> online() {
       return status.entrySet().stream().filter(
           entry -> entry.getValue().available()
-      ).map(Map.Entry::getKey).collect(Collectors.toSet());
+      ).map(Map.Entry::getKey).map(JID::bare).collect(Collectors.toSet());
     }
 
     public Presence status(JID jid) {

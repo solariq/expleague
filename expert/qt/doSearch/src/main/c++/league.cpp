@@ -49,7 +49,6 @@ void League::connect() {
     QObject::connect(m_connection, SIGNAL(answer(QString,QString,QString,QString)), SLOT(onAnswer(QString,QString,QString,QString)));
     QObject::connect(m_connection, SIGNAL(progress(QString,QString,QString,Progress)), SLOT(onProgress(QString,QString,QString,Progress)));
     QObject::connect(m_connection, SIGNAL(offer(QString,QString,Offer)), SLOT(onOffer(QString,QString,Offer)));
-    QObject::connect(m_connection, SIGNAL(tasksAvailableChanged(int)), SLOT(onTasksAvailableChanged(int)));
     QObject::connect(m_connection, SIGNAL(roomOffer(QString,Offer)), SLOT(onRoomOffer(QString,Offer)));
     QObject::connect(m_connection, SIGNAL(presenceChanged(QString,bool)), SLOT(onPresenceChanged(QString,bool)));
     QObject::connect(m_connection, SIGNAL(membersChanged()), SLOT(onMembersChanged()));
@@ -164,6 +163,7 @@ Offer* League::registerOffer(const Offer& offer) {
 void League::onDisconnected() {
     if (!m_connection)
         return;
+    m_admin_focus = "";
     m_connection->deleteLater();
     m_connection = 0;
     QList<RoomState*> rooms = m_rooms;
@@ -174,7 +174,6 @@ void League::onDisconnected() {
             state->deleteLater();
         }
     });
-    m_admin_focus = QString();
     QList<Task*> tasks = m_tasks.values();
     m_tasks.clear();
     foreach(Task* task, tasks) {

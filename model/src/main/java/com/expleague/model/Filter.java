@@ -37,6 +37,12 @@ public class Filter extends Attachment {
   public void reject(JID slacker) {
     if (reject == null)
       reject = new ArrayList<>();
+    if (accept != null) {
+      accept.remove(slacker);
+    }
+    if (prefer != null) {
+      prefer.remove(slacker);
+    }
     if (!reject.contains(slacker))
       reject.add(slacker);
   }
