@@ -131,7 +131,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         update(from, null, Affiliation.ADMIN, mode);
       affiliation = Affiliation.ADMIN;
     }
-    if (msg.has(Offer.class) && !msg.has(Command.class)) { // offers handling
+    if (msg.has(Offer.class) && (!msg.has(Command.class) || msg.has(OfferChange.class))) { // offers handling
       final Offer offer = msg.get(Offer.class);
       final JID owner = owner();
       if (offer.client() == null)
