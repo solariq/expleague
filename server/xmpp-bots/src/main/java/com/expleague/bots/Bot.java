@@ -2,10 +2,13 @@ package com.expleague.bots;
 
 import com.spbsu.commons.util.sync.StateLatch;
 import tigase.jaxmpp.core.client.*;
+import tigase.jaxmpp.core.client.criteria.Criteria;
+import tigase.jaxmpp.core.client.criteria.ElementCriteria;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 import tigase.jaxmpp.core.client.xml.Element;
 import tigase.jaxmpp.core.client.xml.ElementFactory;
 import tigase.jaxmpp.core.client.xml.XMLException;
+import tigase.jaxmpp.core.client.xmpp.modules.AbstractStanzaModule;
 import tigase.jaxmpp.core.client.xmpp.modules.muc.MucModule;
 import tigase.jaxmpp.core.client.xmpp.modules.presence.PresenceModule;
 import tigase.jaxmpp.core.client.xmpp.modules.registration.InBandRegistrationModule;
@@ -32,11 +35,6 @@ public class Bot {
   private final String resource;
   private final String email;
   private final BareJID jid;
-
-  private boolean receivingStarted;
-  private int expectedMessagesNumber;
-  private Queue<Message> messageQueue;
-  private StateLatch messageStateLatch;
 
   protected final Jaxmpp jaxmpp = new Jaxmpp(new J2SESessionObject());
 
@@ -95,6 +93,22 @@ public class Bot {
     jaxmpp.getProperties().setUserProperty(SessionObject.RESOURCE, resource);
 //    jaxmpp.getModulesManager().register(new )
     jaxmpp.getEventBus().addHandler(JaxmppCore.ConnectedHandler.ConnectedEvent.class, sessionObject -> latch.advance());
+    jaxmpp.getModulesManager().register(new AbstractStanzaModule<Message>() {
+      @Override
+      public Criteria getCriteria() {
+        return new ElementCriteria("message", new String[0], new String[0]);
+      }
+
+      @Override
+      public String[] getFeatures() {
+        return new String[0];
+      }
+
+      @Override
+      public void process(Message stanza) throws JaxmppException {
+        onMessage(stanza);
+      }
+    });
 
     jaxmpp.getEventBus().addHandler(MucModule.MucMessageReceivedHandler.MucMessageReceivedEvent.class, (sessionObject, message, room, s, date) -> {
       try {
@@ -107,17 +121,6 @@ public class Bot {
 
     jaxmpp.getEventBus().addHandler(PresenceModule.ContactAvailableHandler.ContactAvailableEvent.class,
         (sessionObject, presence, jid, show, s, integer) -> System.out.println(jid + " available with message " + presence.getStatus()));
-
-    jaxmpp.getEventBus().addHandler(Connector.StanzaReceivedHandler.StanzaReceivedEvent.class, (sessionObject, stanza) -> {
-      try {
-        System.out.println("Msg: " + stanza.getAsString());
-        if (stanza instanceof Message) {
-          onMessage((Message) stanza);
-        }
-      } catch (JaxmppException e) {
-        throw new RuntimeException(e);
-      }
-    });
 
     jaxmpp.login();
     latch.state(2, 1);
@@ -165,15 +168,7 @@ public class Bot {
   }
 
   public void startReceivingMessages(int expectedMessagesNumber, StateLatch stateLatch) {
-    if (receivingStarted) {
-      throw new IllegalStateException("Messages receiving was not finished");
-    }
-
-    this.expectedMessagesNumber = expectedMessagesNumber;
-    messageStateLatch = stateLatch;
-    messageStateLatch.state(1);
-    messageQueue = new ArrayDeque<>();
-    receivingStarted = true;
+    messagesReceiver.start(expectedMessagesNumber, stateLatch);
   }
 
   public Message waitAndGetReceivedMessage() {
@@ -181,41 +176,21 @@ public class Bot {
   }
 
   public Message waitAndGetReceivedMessage(long timeoutInNanos) {
-    final Queue<Message> messages = getReceivedMessages(timeoutInNanos);
+    final Queue<Message> messages = waitAndGetReceivedMessages(timeoutInNanos);
     return messages.poll();
   }
 
-  public Queue<Message> getReceivedMessages() {
-    return getReceivedMessages(DEFAULT_TIMEOUT_IN_NANOS);
+  public Queue<Message> waitAndGetReceivedMessages() {
+    return waitAndGetReceivedMessages(DEFAULT_TIMEOUT_IN_NANOS);
   }
 
-  public Queue<Message> getReceivedMessages(long timeoutInNanos) {
-    if (!receivingStarted) {
-      throw new IllegalStateException("Messages receiving was not started");
-    }
-
-    final int finalState = 1 << expectedMessagesNumber;
-    messageStateLatch.state(finalState, 1, timeoutInNanos);
-    receivingStarted = false;
-    return messageQueue;
+  public Queue<Message> waitAndGetReceivedMessages(long timeoutInNanos) {
+    return messagesReceiver.stop(timeoutInNanos);
   }
 
   private void onMessage(Message message) throws JaxmppException {
     sendReceivedIfNeeded(message);
-    if (receivingStarted) {
-      //noinspection SynchronizeOnNonFinalField
-      synchronized (messageQueue) {
-        if (receivingStarted) {
-          if (messageQueue.size() + 1 > expectedMessagesNumber) {
-            throw new RuntimeException("Unexpected message is received");
-          }
-          else {
-            messageQueue.add(message);
-            messageStateLatch.advance();
-          }
-        }
-      }
-    }
+    messagesReceiver.receive(message);
   }
 
   private void sendReceivedIfNeeded(Message message) throws JaxmppException {
@@ -231,6 +206,48 @@ public class Bot {
       jaxmpp.send(receivedMessage);
     }
   }
+
+  private interface MessagesReceiver {
+    void start(int expectedMessagesNumber, StateLatch latch);
+    void receive(Message message);
+    Queue<Message> stop(long timeoutInNanos);
+  }
+
+  private MessagesReceiver messagesReceiver = new MessagesReceiver() {
+    private volatile int expectedMessagesNumber;
+    private volatile Queue<Message> messageQueue;
+    private volatile StateLatch latch;
+    private volatile boolean started = false;
+
+    public void start(int expectedMessagesNumber, StateLatch latch) {
+      if (started) {
+        throw new IllegalStateException("Receiver is not stopped");
+      }
+
+      this.expectedMessagesNumber = expectedMessagesNumber;
+      this.latch = latch;
+      messageQueue = new ArrayDeque<>();
+      started = true;
+    }
+
+    public synchronized void receive(Message message) {
+      if (started && messageQueue.size() < expectedMessagesNumber) {
+        messageQueue.add(message);
+        latch.advance();
+      }
+    }
+
+    public Queue<Message> stop(long timeoutInNanos) {
+      if (!started) {
+        throw new IllegalStateException("Receiver is not started");
+      }
+
+      final int finalState = 1 << expectedMessagesNumber;
+      latch.state(finalState, 1, timeoutInNanos);
+      started = false;
+      return messageQueue;
+    }
+  };
 
   public static class PrinterAsyncCallback implements AsyncCallback {
     private final String name;

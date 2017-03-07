@@ -4,20 +4,19 @@ import akka.actor.Actor;
 import akka.actor.ActorContext;
 import akka.actor.ActorRef;
 import akka.actor.Props;
-import com.expleague.server.ExpLeagueServer;
 import com.spbsu.commons.func.Action;
 
 /**
  * @author vpdelta
  */
 public abstract class ActorAdapter<A extends Actor> {
-  public static ExpLeagueServer.Cfg cfg;
+  private static boolean unitTestEnabled = false;
   
   protected A actor;
   protected Action<Object> unhandled;
 
   public static Props props(Class<? extends ActorAdapter> adapter, Object... args) {
-    if (PersistentActorAdapter.class.isAssignableFrom(adapter) && cfg.unitTest())
+    if (unitTestEnabled && PersistentActorAdapter.class.isAssignableFrom(adapter))
       return Props.create(FakePersistentActorContainer.class, new Object[]{new AdapterProps[]{AdapterProps.create(adapter, args)}});
     else if (PersistentActorAdapter.class.isAssignableFrom(adapter))
       return Props.create(PersistentActorContainer.class, new Object[]{new AdapterProps[]{AdapterProps.create(adapter, args)}});
@@ -82,5 +81,9 @@ public abstract class ActorAdapter<A extends Actor> {
 
   public ActorRef actorOf(final Class<? extends ActorAdapter> adapter, final Object... args) {
     return context().actorOf(props(adapter, args));
+  }
+
+  public static void setUnitTestEnabled(boolean unitTestEnabled) {
+    ActorAdapter.unitTestEnabled = unitTestEnabled;
   }
 }

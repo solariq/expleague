@@ -10,6 +10,10 @@ import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 import tigase.jaxmpp.core.client.xmpp.stanzas.Message;
 
+import java.util.Queue;
+
+import static integration_tests.utils.FunctionalUtils.throwablePredicate;
+
 /**
  * User: Artem
  * Date: 28.02.2017
@@ -32,14 +36,15 @@ public class ClientExpertTest extends BaseSingleBotsTest {
   }
 
   @Test
-  public void testExpertReceivesInvitation() throws JaxmppException {
+  public void testExpertAnswers() throws JaxmppException {
     //Arrange
     final String topicText = "New topic";
+    final String answer = "Answer!";
 
     //Act
-    adminBot.startReceivingMessages(4, new StateLatch());
+    adminBot.startReceivingMessages(6, new StateLatch());
     final BareJID roomJID = clientBot.startRoom(topicText);
-    adminBot.getReceivedMessages();
+    adminBot.waitAndGetReceivedMessages();
 
     expertBot.startReceivingMessages(1, new StateLatch());
     adminBot.startWorkState(roomJID);
@@ -49,9 +54,31 @@ public class ClientExpertTest extends BaseSingleBotsTest {
     expertBot.sendOk(offerFromClient);
     final Message invitation = expertBot.waitAndGetReceivedMessage();
 
+    clientBot.startReceivingMessages(4, new StateLatch());
+    expertBot.sendStart(roomJID);
+    final Queue<Message> clientReceivedMessages = clientBot.waitAndGetReceivedMessages();
+
+    clientBot.startReceivingMessages(1, new StateLatch());
+    expertBot.sendAnswer(roomJID, answer);
+    final Message answerMessage = clientBot.waitAndGetReceivedMessage();
+
     //Assert
-    Assert.assertNotNull(offerFromClient.getFirstChild("offer"));
-    Assert.assertNotNull(invitation.getFirstChild("offer"));
-    Assert.assertNotNull(invitation.getFirstChild("invite"));
+    Assert.assertNotNull("offer was not received", offerFromClient.getFirstChild("offer"));
+    Assert.assertNotNull("invitation offer was not received", invitation.getFirstChild("offer"));
+    Assert.assertNotNull("invite was not received", invitation.getFirstChild("invite"));
+
+    Assert.assertEquals("start was not received (2 times)", 2, clientReceivedMessages.stream()
+        .filter(throwablePredicate(message -> "start".equals(message.getFirstChild().getName())))
+        .count());
+    Assert.assertNotNull("expert(tasks=0) was not received", clientReceivedMessages.stream()
+        .filter(throwablePredicate(message -> "expert".equals(message.getFirstChild().getName()) && "0".equals(message.getFirstChild().getAttribute("tasks"))))
+        .findAny()
+        .orElse(null));
+    Assert.assertNotNull("expert(tasks=1) was not received", clientReceivedMessages.stream()
+        .filter(throwablePredicate(message -> "expert".equals(message.getFirstChild().getName()) && "1".equals(message.getFirstChild().getAttribute("tasks"))))
+        .findAny()
+        .orElse(null));
+
+    Assert.assertEquals("answer was not received", answer, answerMessage.getFirstChild("answer").getValue());
   }
 }

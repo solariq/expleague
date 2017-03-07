@@ -8,12 +8,11 @@ import org.junit.Before;
 import org.junit.Test;
 import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
-import tigase.jaxmpp.core.client.xml.Element;
-import tigase.jaxmpp.core.client.xml.XMLException;
 import tigase.jaxmpp.core.client.xmpp.stanzas.Message;
 
-import java.util.Arrays;
 import java.util.Queue;
+
+import static integration_tests.utils.FunctionalUtils.throwablePredicate;
 
 /**
  * User: Artem
@@ -39,46 +38,42 @@ public class ClientAdminTest extends BaseSingleBotsTest {
     //Arrange
     final String topicText = "New topic";
     final String messageFromAdminText = "Message from admin";
-    final int receivedByAdminMsgNum = 4;
+    final int receivedByAdminMsgNum = 6;
 
     //Act
     adminBot.startReceivingMessages(receivedByAdminMsgNum, new StateLatch());
     final BareJID roomJID = clientBot.startRoom(topicText);
-    final Queue<Message> initMessages = adminBot.getReceivedMessages();
+    final Queue<Message> initMessages = adminBot.waitAndGetReceivedMessages();
 
     clientBot.startReceivingMessages(1, new StateLatch());
     adminBot.sendTextMessageToGroupChat(messageFromAdminText, roomJID);
     final Message messageFromAdmin = clientBot.waitAndGetReceivedMessage();
 
     //Assert
-    final boolean[] messagesChecker = new boolean[receivedByAdminMsgNum];
-    for (int i = 0; i < receivedByAdminMsgNum; i++) {
-      final Message message = initMessages.poll();
-      try {
-        final Element firstChild = message.getFirstChild();
-        if ("room-role-update".equals(firstChild.getName())) {
-          if ("none".equals(firstChild.getAttribute("role"))) {
-            messagesChecker[i] = true;
-          } else if ("moderator".equals(firstChild.getAttribute("role"))) {
-            messagesChecker[i] = true;
-          }
-        } else if ("room-state-changed".equals(firstChild.getName())) {
-          Assert.assertEquals("0", firstChild.getAttribute("state"));
-          messagesChecker[i] = true;
-        } else if ("offer".equals(firstChild.getName())) {
-          Assert.assertEquals(topicText, firstChild.getFirstChild("topic").getValue());
-          messagesChecker[i] = true;
-        } else {
-          Assert.fail("Unexpected message is received");
-        }
-      } catch (XMLException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    final boolean[] expectedChecker = new boolean[receivedByAdminMsgNum];
-    Arrays.fill(expectedChecker, true);
-    Assert.assertArrayEquals(expectedChecker, messagesChecker);
+    Assert.assertNotNull("room-role-update(none) was not received", initMessages.stream()
+        .filter(throwablePredicate(message -> "room-role-update".equals(message.getFirstChild().getName()) && "none".equals(message.getFirstChild().getAttribute("role"))))
+        .findAny()
+        .orElse(null));
+    Assert.assertNotNull("room-role-update(moderator) was not received", initMessages.stream()
+        .filter(throwablePredicate(message -> "room-role-update".equals(message.getFirstChild().getName()) && "moderator".equals(message.getFirstChild().getAttribute("role"))))
+        .findAny()
+        .orElse(null));
+    Assert.assertNotNull("room-state-changed(0) was not received", initMessages.stream()
+        .filter(throwablePredicate(message -> "room-state-changed".equals(message.getFirstChild().getName()) && "0".equals(message.getFirstChild().getAttribute("state"))))
+        .findAny()
+        .orElse(null));
+    Assert.assertNotNull("offer was not received", initMessages.stream()
+        .filter(throwablePredicate(message -> "offer".equals(message.getFirstChild().getName()) && topicText.equals(message.getFirstChild().getFirstChild("topic").getValue())))
+        .findAny()
+        .orElse(null));
+    Assert.assertNotNull("room-message-received(expert=false) was not received", initMessages.stream()
+        .filter(throwablePredicate(message -> "room-message-received".equals(message.getFirstChild().getName()) && "false".equals(message.getFirstChild().getAttribute("expert"))))
+        .findAny()
+        .orElse(null));
+    Assert.assertNotNull("room-message-received(expert=true) was not received", initMessages.stream()
+        .filter(throwablePredicate(message -> "room-message-received".equals(message.getFirstChild().getName()) && "true".equals(message.getFirstChild().getAttribute("expert"))))
+        .findAny()
+        .orElse(null));
     Assert.assertEquals(messageFromAdminText, messageFromAdmin.getFirstChild("body").getValue());
   }
 }

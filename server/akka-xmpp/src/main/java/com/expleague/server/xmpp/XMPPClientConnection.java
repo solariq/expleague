@@ -54,9 +54,8 @@ import java.util.logging.Logger;
  */
 @SuppressWarnings("unused")
 public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
-  public static ExpLeagueServer.Cfg cfg;
-
   private static final Logger log = Logger.getLogger(XMPPClientConnection.class.getName());
+  private static boolean unitTestEnabled = false;
 
   private ActorRef connection;
   private SSLHelper helper;
@@ -222,7 +221,7 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
         try {
           final String domain = ExpLeagueServer.config().domain();
           final File file;
-          if (cfg.unitTest()) {
+          if (unitTestEnabled) {
             final ClassLoader classLoader = getClass().getClassLoader();
             //noinspection ConstantConditions
             file = new File(classLoader.getResource(domain + ".p12").getFile());
@@ -322,9 +321,13 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
 
   private static SslContext getSslContextWithCertificateAndPrivateKey(final X509Certificate certificate, final PrivateKey privateKey, final String privateKeyPassword) throws SSLException {
     return SslContextBuilder.forServer(privateKey, privateKeyPassword, certificate)
-        .sslProvider(cfg.unitTest() ? SslProvider.JDK : SslProvider.OPENSSL)
+        .sslProvider(unitTestEnabled ? SslProvider.JDK : SslProvider.OPENSSL)
 //        .ciphers(Http2SecurityUtil.CIPHERS, SupportedCipherSuiteFilter.INSTANCE)
         .build();
+  }
+
+  public static void setUnitTestEnabled(boolean unitTestEnabled) {
+    XMPPClientConnection.unitTestEnabled = unitTestEnabled;
   }
 
   public enum ConnectionState {

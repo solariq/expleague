@@ -72,8 +72,8 @@ public class ExpLeagueServer {
   @VisibleForTesting
   public static void setConfig(final Cfg cfg) throws Exception {
     config = cfg;
-    ActorAdapter.cfg = cfg;
-    XMPPClientConnection.cfg = cfg;
+    ActorAdapter.setUnitTestEnabled(cfg.unitTest());
+    XMPPClientConnection.setUnitTestEnabled(cfg.unitTest());
     users = config.roster().newInstance();
     leBoard = config.board().newInstance();
     archive = config.archive().newInstance();

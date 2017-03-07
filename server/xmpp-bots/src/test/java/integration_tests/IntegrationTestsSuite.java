@@ -10,6 +10,7 @@ import com.expleague.util.akka.ActorAdapter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import integration_tests.tests.ClientAdminTest;
+import integration_tests.tests.ClientExpertTest;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -20,7 +21,7 @@ import org.junit.runners.Suite;
  * Time: 19:51
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({ClientAdminTest.class})
+@Suite.SuiteClasses({ClientAdminTest.class, ClientExpertTest.class})
 public class IntegrationTestsSuite {
 
   @BeforeClass
