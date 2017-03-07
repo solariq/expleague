@@ -125,7 +125,7 @@ void League::startTask(Offer* offer, bool cont) {
     }
 
     context->appendDocument(task->answer());
-    if (!cont)
+    if (task->answer()->textContent().isEmpty())
         task->answer()->setTextContent(offer->draft());
     parent()->append(context);
     parent()->navigation()->open(task->answer());

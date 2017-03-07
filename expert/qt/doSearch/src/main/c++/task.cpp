@@ -197,6 +197,7 @@ void Task::sendAnswer(const QString& shortAnswer, int difficulty, int success, b
         text = removeSpacesInside(text, "**");
         text.replace(QRegularExpression("#([^#])"), "# \\1");
         parent()->connection()->sendAnswer(offer()->roomJid(), difficulty, success, extraInfo, shortAnswer + "\n" + text);
+        answer()->setTextContent("");
     }
     else parent()->connection()->sendAnswer(offer()->roomJid(), difficulty, success, extraInfo, shortAnswer);
     stop();

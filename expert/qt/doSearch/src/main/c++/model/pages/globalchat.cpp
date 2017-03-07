@@ -8,16 +8,12 @@ QString GlobalChat::ID = "league/global-chat";
 
 void GlobalChat::enter(RoomState* room) const {
     room->enter();
-    if (!room->task()->answer()) {
-        MarkdownEditorPage* pattern = parent()->document(tr("Шаблон ответа ") + room->task()->id(), League::instance()->self(), true);
-        if (pattern->textContent().isEmpty())
-            pattern->setTextContent(room->task()->offer()->draft());
-        room->task()->setAnswer(pattern);
-    }
     m_owner->setActiveDocument(room->task()->answer());
 }
 
 int GlobalChat::openCount() {
+    if (parent()->league()->role() != League::ADMIN)
+        return 0;
     int result = 0;
     foreach(RoomState* room, m_rooms) {
         if (room->status() == Task::OPEN)

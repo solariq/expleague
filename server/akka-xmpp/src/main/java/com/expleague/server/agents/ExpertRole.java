@@ -113,7 +113,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     when(State.CHECK,
         matchEvent(Presence.class,
             (presence, task) -> {
-              if (presence.available())
+              if (presence.available() || presence.to() != null)
                 return stay();
               explain("Expert has gone offline. Cancelling the check.");
               task.broker().tell(new Ignore(), self());
@@ -146,7 +146,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
         matchEvent(Presence.class,
             (presence, task) -> presence.from().bareEq(jid()),
             (presence, task) -> {
-              if (!presence.available()) {
+              if (!presence.available() && presence.to() == null) {
                 explain("Expert has gone offline during invitation. Sending ignore to broker.");
                 task.broker().tell(new Ignore(), self());
                 return goTo1(State.OFFLINE).using(task.clean());
