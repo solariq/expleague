@@ -159,11 +159,19 @@ public class Bot {
     System.out.println("Sent offline presence");
   }
 
-  public void sendTextMessageToGroupChat(String chatMessage, BareJID roomJID) throws JaxmppException {
+  public void sendTextMessageToRoom(String chatMessage, BareJID roomJID) throws JaxmppException {
     final Message message = Message.create();
     message.setTo(JID.jidInstance(roomJID));
     message.setType(StanzaType.groupchat);
     message.setBody(chatMessage);
+    jaxmpp.send(message);
+  }
+
+  protected void sendToGroupChat(Element element, JID to) throws JaxmppException {
+    final Message message = Message.create();
+    message.addChild(element);
+    message.setType(StanzaType.groupchat);
+    message.setTo(to);
     jaxmpp.send(message);
   }
 

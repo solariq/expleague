@@ -63,22 +63,48 @@ public class ClientExpertTest extends BaseSingleBotsTest {
     final Message answerMessage = clientBot.waitAndGetReceivedMessage();
 
     //Assert
-    Assert.assertNotNull("offer was not received", offerFromClient.getFirstChild("offer"));
-    Assert.assertNotNull("invitation offer was not received", invitation.getFirstChild("offer"));
-    Assert.assertNotNull("invite was not received", invitation.getFirstChild("invite"));
+    Assert.assertNotNull("offer was not received by expert", offerFromClient.getFirstChild("offer"));
+    Assert.assertNotNull("invitation offer was not received by expert", invitation.getFirstChild("offer"));
+    Assert.assertNotNull("invite was not received by expert", invitation.getFirstChild("invite"));
 
-    Assert.assertEquals("start was not received (2 times)", 2, clientReceivedMessages.stream()
+    Assert.assertEquals("start was not received (2 times) by client", 2, clientReceivedMessages.stream()
         .filter(throwablePredicate(message -> "start".equals(message.getFirstChild().getName())))
         .count());
-    Assert.assertNotNull("expert(tasks=0) was not received", clientReceivedMessages.stream()
-        .filter(throwablePredicate(message -> "expert".equals(message.getFirstChild().getName()) && "0".equals(message.getFirstChild().getAttribute("tasks"))))
-        .findAny()
-        .orElse(null));
-    Assert.assertNotNull("expert(tasks=1) was not received", clientReceivedMessages.stream()
-        .filter(throwablePredicate(message -> "expert".equals(message.getFirstChild().getName()) && "1".equals(message.getFirstChild().getAttribute("tasks"))))
-        .findAny()
-        .orElse(null));
+    Assert.assertEquals("expert was not received (2 times) by client", 2, clientReceivedMessages.stream()
+        .filter(throwablePredicate(message -> "expert".equals(message.getFirstChild().getName())))
+        .count());
 
-    Assert.assertEquals("answer was not received", answer, answerMessage.getFirstChild("answer").getValue());
+    Assert.assertNotNull("answer was not received by client", answerMessage.getFirstChild("answer"));
+    Assert.assertEquals("answer was not correct", answer, answerMessage.getFirstChild("answer").getValue());
+  }
+
+  @Test
+  public void testExpertCancels() throws JaxmppException {
+    //Arrange
+    final String topicText = "New topic";
+
+    //Act
+    adminBot.startReceivingMessages(6, new StateLatch());
+    final BareJID roomJID = clientBot.startRoom(topicText);
+    adminBot.waitAndGetReceivedMessages();
+
+    expertBot.startReceivingMessages(1, new StateLatch());
+    adminBot.startWorkState(roomJID);
+    final Message offerFromClient = expertBot.waitAndGetReceivedMessage();
+
+    expertBot.startReceivingMessages(1, new StateLatch());
+    expertBot.sendOk(offerFromClient);
+    expertBot.waitAndGetReceivedMessage();
+
+    clientBot.startReceivingMessages(4, new StateLatch());
+    expertBot.sendStart(roomJID);
+    clientBot.waitAndGetReceivedMessages();
+
+    clientBot.startReceivingMessages(1, new StateLatch());
+    expertBot.sendCancel(roomJID);
+    final Message cancelMessage = clientBot.waitAndGetReceivedMessage();
+
+    //Assert
+    Assert.assertNotNull("cancel was not received by client", cancelMessage.getFirstChild("cancel"));
   }
 }
