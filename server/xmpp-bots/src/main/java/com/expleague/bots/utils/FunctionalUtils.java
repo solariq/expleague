@@ -1,6 +1,6 @@
-package integration_tests.utils;
+package com.expleague.bots.utils;
 
-import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * User: Artem
@@ -9,17 +9,17 @@ import java.util.function.Predicate;
  */
 public class FunctionalUtils {
   @FunctionalInterface
-  public interface ThrowablePredicate<T> {
-    boolean test(T t) throws Exception;
+  public interface ThrowableSupplier<T> {
+    T get() throws Exception;
   }
 
-  public static <T> Predicate<T> throwablePredicate(ThrowablePredicate<T> predicate) {
-    return t -> {
+  public static <T> Supplier<T> throwableSupplier(ThrowableSupplier<T> supplier) {
+    return () -> {
       try {
-        return predicate.test(t);
+        return supplier.get();
       } catch (Exception exception) {
         throwAsUnchecked(exception);
-        return false;
+        return null;
       }
     };
   }

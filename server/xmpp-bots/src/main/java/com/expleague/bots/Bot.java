@@ -1,5 +1,6 @@
 package com.expleague.bots;
 
+import com.expleague.bots.utils.ExpectedMessage;
 import com.spbsu.commons.util.sync.StateLatch;
 import tigase.jaxmpp.core.client.*;
 import tigase.jaxmpp.core.client.criteria.Criteria;
@@ -19,8 +20,7 @@ import tigase.jaxmpp.j2se.J2SESessionObject;
 import tigase.jaxmpp.j2se.Jaxmpp;
 import tigase.jaxmpp.j2se.connectors.socket.SocketConnector;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
+import java.util.List;
 
 /**
  * User: solar
@@ -159,6 +159,12 @@ public class Bot {
     System.out.println("Sent offline presence");
   }
 
+  public void sendCancel(BareJID roomJID) throws JaxmppException {
+    final Element cancelElem = ElementFactory.create("cancel");
+    cancelElem.setXMLNS(TBTS_XMLNS);
+    sendToGroupChat(cancelElem, JID.jidInstance(roomJID));
+  }
+
   public void sendTextMessageToRoom(String chatMessage, BareJID roomJID) throws JaxmppException {
     final Message message = Message.create();
     message.setTo(JID.jidInstance(roomJID));
@@ -175,25 +181,16 @@ public class Bot {
     jaxmpp.send(message);
   }
 
-  public void startReceivingMessages(int expectedMessagesNumber, StateLatch stateLatch) {
-    messagesReceiver.start(expectedMessagesNumber, stateLatch);
+  public void startReceivingMessages(List<ExpectedMessage> expectedMessages, StateLatch stateLatch) {
+    messagesReceiver.start(expectedMessages, stateLatch);
   }
 
-  public Message waitAndGetReceivedMessage() {
-    return waitAndGetReceivedMessage(DEFAULT_TIMEOUT_IN_NANOS);
+  public void waitForMessages() {
+    waitForMessages(DEFAULT_TIMEOUT_IN_NANOS);
   }
 
-  public Message waitAndGetReceivedMessage(long timeoutInNanos) {
-    final Queue<Message> messages = waitAndGetReceivedMessages(timeoutInNanos);
-    return messages.poll();
-  }
-
-  public Queue<Message> waitAndGetReceivedMessages() {
-    return waitAndGetReceivedMessages(DEFAULT_TIMEOUT_IN_NANOS);
-  }
-
-  public Queue<Message> waitAndGetReceivedMessages(long timeoutInNanos) {
-    return messagesReceiver.stop(timeoutInNanos);
+  public void waitForMessages(long timeoutInNanos) {
+    messagesReceiver.stop(timeoutInNanos);
   }
 
   private void onMessage(Message message) throws JaxmppException {
@@ -215,45 +212,47 @@ public class Bot {
     }
   }
 
+  @SuppressWarnings("unused")
   private interface MessagesReceiver {
-    void start(int expectedMessagesNumber, StateLatch latch);
-    void receive(Message message);
-    Queue<Message> stop(long timeoutInNanos);
+    void start(List<ExpectedMessage> expectedMessages, StateLatch latch);
+    void receive(Message message) throws JaxmppException;
+    void stop(long timeoutInNanos);
   }
 
-  private MessagesReceiver messagesReceiver = new MessagesReceiver() {
-    private volatile int expectedMessagesNumber;
-    private volatile Queue<Message> messageQueue;
+  private final MessagesReceiver messagesReceiver = new MessagesReceiver() {
+    private volatile List<ExpectedMessage> expectedMessages;
     private volatile StateLatch latch;
     private volatile boolean started = false;
 
-    public void start(int expectedMessagesNumber, StateLatch latch) {
+    public void start(List<ExpectedMessage> expectedMessages, StateLatch latch) {
       if (started) {
         throw new IllegalStateException("Receiver is not stopped");
       }
 
-      this.expectedMessagesNumber = expectedMessagesNumber;
+      this.expectedMessages = expectedMessages;
       this.latch = latch;
-      messageQueue = new ArrayDeque<>();
       started = true;
     }
 
-    public synchronized void receive(Message message) {
-      if (started && messageQueue.size() < expectedMessagesNumber) {
-        messageQueue.add(message);
-        latch.advance();
+    public synchronized void receive(Message message) throws JaxmppException {
+      if (started) {
+        for (ExpectedMessage expectedMessage : expectedMessages) {
+          if (!expectedMessage.received() && expectedMessage.tryReceive(message)) {
+            latch.advance();
+            break;
+          }
+        }
       }
     }
 
-    public Queue<Message> stop(long timeoutInNanos) {
+    public void stop(long timeoutInNanos) {
       if (!started) {
         throw new IllegalStateException("Receiver is not started");
       }
 
-      final int finalState = 1 << expectedMessagesNumber;
+      final int finalState = 1 << expectedMessages.size();
       latch.state(finalState, 1, timeoutInNanos);
       started = false;
-      return messageQueue;
     }
   };
 

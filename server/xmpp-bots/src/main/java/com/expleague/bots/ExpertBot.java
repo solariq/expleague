@@ -5,7 +5,6 @@ import tigase.jaxmpp.core.client.JID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 import tigase.jaxmpp.core.client.xml.Element;
 import tigase.jaxmpp.core.client.xml.ElementFactory;
-import tigase.jaxmpp.core.client.xmpp.stanzas.Message;
 
 /**
  * User: solar
@@ -18,10 +17,10 @@ public class ExpertBot extends Bot {
     super(jid, passwd, "expert", "/expert");
   }
 
-  public void sendOk(Message offer) throws JaxmppException {
+  public void sendOk(BareJID roomJID) throws JaxmppException {
     final Element okElem = ElementFactory.create("ok");
     okElem.setXMLNS(TBTS_XMLNS);
-    sendToGroupChat(okElem, offer.getFrom());
+    sendToGroupChat(okElem, JID.jidInstance(roomJID));
   }
 
   public void sendStart(BareJID roomJID) throws JaxmppException {
@@ -35,11 +34,5 @@ public class ExpertBot extends Bot {
     answerElem.setXMLNS(TBTS_XMLNS);
     answerElem.setValue(answer);
     sendToGroupChat(answerElem, JID.jidInstance(roomJID));
-  }
-
-  public void sendCancel(BareJID roomJID) throws JaxmppException {
-    final Element cancelElem = ElementFactory.create("cancel");
-    cancelElem.setXMLNS(TBTS_XMLNS);
-    sendToGroupChat(cancelElem, JID.jidInstance(roomJID));
   }
 }
