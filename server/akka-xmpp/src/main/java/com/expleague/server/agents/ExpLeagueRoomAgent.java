@@ -76,8 +76,11 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
   @Override
   public Role suggestRole(JID from, Affiliation affiliation) {
+    final XMPPDevice device = XMPPDevice.fromJid(from);
     if (isTrusted(from))
       return Role.MODERATOR;
+    else if (device != null && device.expert())
+        return Role.PARTICIPANT;
     return super.suggestRole(from, affiliation);
   }
 
