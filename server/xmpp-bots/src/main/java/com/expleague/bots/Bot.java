@@ -30,6 +30,7 @@ import java.util.List;
 public class Bot {
   public static final String TBTS_XMLNS = "http://expleague.com/scheme";
   private static final long DEFAULT_TIMEOUT_IN_NANOS = 60L * 1000L * 1000L * 1000L;
+  private static final long LOGIN_SLEEP_TIMEOUT_IN_MILLIS = 5L * 1000L;
 
   private final String passwd;
   private final String resource;
@@ -84,7 +85,19 @@ public class Bot {
             }
           }
         });
-    jaxmpp.login();
+
+    try {
+      jaxmpp.login();
+    } catch (JaxmppException je) {
+      try {
+        Thread.sleep(LOGIN_SLEEP_TIMEOUT_IN_MILLIS);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      } finally {
+        jaxmpp.login();
+      }
+    }
+
     latch.state(2, 1);
     System.out.println("Registration phase passed");
     jaxmpp.getSessionObject().setProperty(InBandRegistrationModule.IN_BAND_REGISTRATION_MODE_KEY, Boolean.FALSE);
