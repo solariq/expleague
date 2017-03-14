@@ -18,7 +18,24 @@ import static com.expleague.bots.utils.FunctionalUtils.throwableSupplier;
  * Date: 15.02.2017
  * Time: 11:51
  */
-public class AdminRoomMessagesTest extends BaseSingleBotsTest {
+public class ClientAdminTest extends BaseSingleBotsTest {
+
+  @Test
+  public void testAdminClosesRoom() throws JaxmppException {
+    //Arrange
+    final String answerText = generateRandomString();
+    final ExpectedMessage answer = ExpectedMessage.create("answer", answerText, null);
+    final BareJID roomJID = obtainRoomOpenState();
+
+    //Act
+    clientBot.startReceivingMessages(Collections.singletonList(answer), new StateLatch());
+    adminBot.sendAnswer(roomJID, answerText);
+    clientBot.waitForMessages();
+    roomCloseStateByClientFeedback(roomJID);
+
+    //Assert
+    Assert.assertTrue("answer was not received by client", answer.received());
+  }
 
   @Test
   public void testClientReceivesMessageInOpenRoomState() throws JaxmppException {

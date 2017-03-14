@@ -17,6 +17,10 @@ public class ExpertBot extends Bot {
     super(jid, passwd, "expert", "/expert");
   }
 
+  protected ExpertBot(final BareJID jid, final String passwd, String resource, String email) {
+    super(jid, passwd, resource, email);
+  }
+
   public void sendOk(BareJID roomJID) throws JaxmppException {
     final Element okElem = ElementFactory.create("ok");
     okElem.setXMLNS(TBTS_XMLNS);

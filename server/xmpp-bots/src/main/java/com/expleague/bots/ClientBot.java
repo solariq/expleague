@@ -17,19 +17,21 @@ public class ClientBot extends Bot {
     super(jid, passwd, "client");
   }
 
-  public BareJID startRoom(String topic) throws JaxmppException {
+  public BareJID startRoom(String topic, String urgency, long started, double longitude, double latitude, String imageSrc) throws JaxmppException {
     final Element offerElem = ElementFactory.create("offer");
     offerElem.setXMLNS(TBTS_XMLNS);
     offerElem.setAttribute("client", jid().toString());
-    offerElem.setAttribute("local", "false");
-    offerElem.setAttribute("urgency", "day");
-    offerElem.setAttribute("started", Long.toString(System.currentTimeMillis()));
+    offerElem.setAttribute("urgency", urgency);
+    offerElem.setAttribute("started", Long.toString(started));
 
     final Element topicElem = offerElem.addChild(ElementFactory.create("topic"));
     topicElem.setValue(topic);
     final Element locationElem = offerElem.addChild(ElementFactory.create("location"));
-    locationElem.setAttribute("longitude", "30.32538469883643");
-    locationElem.setAttribute("latitude", "59.98062295379115");
+    locationElem.setAttribute("longitude", Double.toString(longitude));
+    locationElem.setAttribute("latitude", Double.toString(latitude));
+
+    final Element imageElem = offerElem.addChild(ElementFactory.create("image"));
+    imageElem.setValue(imageSrc);
 
     final BareJID room = BareJID.bareJIDInstance(jid().getLocalpart() + "-room-" + (int) (System.currentTimeMillis() / 1000), "muc." + jid().getDomain());
     final Message message = Message.create();
@@ -37,5 +39,13 @@ public class ClientBot extends Bot {
     message.setTo(JID.jidInstance(room));
     jaxmpp.send(message);
     return room;
+  }
+
+  public void sendFeedback(BareJID roomJID, int stars, String payment) throws JaxmppException {
+    final Element feedbackElem = ElementFactory.create("feedback");
+    feedbackElem.setXMLNS(TBTS_XMLNS);
+    feedbackElem.setAttribute("stars", Integer.toString(stars));
+    feedbackElem.setAttribute("payment", payment);
+    sendToGroupChat(feedbackElem, JID.jidInstance(roomJID));
   }
 }
