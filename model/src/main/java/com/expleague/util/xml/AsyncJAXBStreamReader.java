@@ -5,6 +5,7 @@ import com.spbsu.commons.func.Action;
 import com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallerImpl;
 import com.expleague.util.xml.stolen.StAXStreamConnector;
 import com.expleague.xmpp.Stream;
+import com.sun.xml.bind.v2.runtime.unmarshaller.XmlVisitor;
 import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBContext;
@@ -37,7 +38,9 @@ public class AsyncJAXBStreamReader {
             action.invoke(target);
         }
       });
-      connector = new StAXStreamConnector(reader, unmarshaller.createUnmarshallerHandler(null, false, null));
+      final XmlVisitor handler = unmarshaller.createUnmarshallerHandler(null, false, null);
+      handler.getContext().clearStates();
+      connector = new StAXStreamConnector(reader, handler);
     } catch (JAXBException e) {
       throw new RuntimeException(e);
     }
