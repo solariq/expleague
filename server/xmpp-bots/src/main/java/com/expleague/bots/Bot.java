@@ -217,7 +217,7 @@ public class Bot {
     return result;
   }
 
-  private synchronized void onMessage(Message message) throws JaxmppException {
+  private void onMessage(Message message) throws JaxmppException {
     { //sending receipts
       final String receivedXMLNS = "urn:xmpp:receipts";
       final Element request = message.getFirstChild("request");
