@@ -4,6 +4,7 @@ import com.expleague.bots.AdminBot;
 import com.expleague.bots.ClientBot;
 import com.expleague.bots.ExpertBot;
 import com.expleague.bots.utils.ExpectedMessage;
+import com.expleague.model.RoomState;
 import com.spbsu.commons.util.Pair;
 import com.spbsu.commons.util.sync.StateLatch;
 import org.junit.After;
@@ -87,7 +88,7 @@ public class BaseSingleBotsTest {
   protected void roomCloseStateByClientCancel(BareJID roomJID) throws JaxmppException {
     //Arrange
     final ExpectedMessage cancel = ExpectedMessage.create("cancel", null, null);
-    final ExpectedMessage roomStateChanged = ExpectedMessage.create("room-state-changed", null, Collections.singletonList(new Pair<>("state", "8")));
+    final ExpectedMessage roomStateChanged = ExpectedMessage.create("room-state-changed", null, Collections.singletonList(new Pair<>("state", Integer.toString(RoomState.CLOSED.code()))));
 
     //Act
     adminBot.execute(throwableSupplier(() -> {
@@ -97,7 +98,7 @@ public class BaseSingleBotsTest {
 
     //Assert
     Assert.assertTrue("cancel was not received by admin", cancel.received());
-    Assert.assertTrue("room-state-changed(8) was not received by admin", roomStateChanged.received());
+    Assert.assertTrue("room-state-changed(CLOSE) was not received by admin", roomStateChanged.received());
   }
 
   protected void roomCloseStateByClientFeedback(BareJID roomJID) throws JaxmppException {
@@ -105,7 +106,7 @@ public class BaseSingleBotsTest {
     final int stars = generateRandomInt(1, 5);
     final String payment = generateRandomString();
     final ExpectedMessage feedback = ExpectedMessage.create("feedback", null, Arrays.asList(new Pair<>("stars", Integer.toString(stars)), new Pair<>("payment", payment)));
-    final ExpectedMessage roomStateChanged = ExpectedMessage.create("room-state-changed", null, Collections.singletonList(new Pair<>("state", "8")));
+    final ExpectedMessage roomStateChanged = ExpectedMessage.create("room-state-changed", null, Collections.singletonList(new Pair<>("state", Integer.toString(RoomState.CLOSED.code()))));
 
     //Act
     adminBot.execute(throwableSupplier(() -> {
@@ -114,7 +115,7 @@ public class BaseSingleBotsTest {
     }), Arrays.asList(feedback, roomStateChanged), new StateLatch());
 
     //Assert
-    Assert.assertTrue("room-state-changed(8) was not received by admin", roomStateChanged.received());
+    Assert.assertTrue("room-state-changed(CLOSE) was not received by admin", roomStateChanged.received());
     Assert.assertTrue("feedback was not received by admin", feedback.received());
   }
 
@@ -145,7 +146,7 @@ public class BaseSingleBotsTest {
 
     final ExpectedMessage roomRoleUpdateNone = ExpectedMessage.create("room-role-update", null, Collections.singletonList(new Pair<>("role", "none")));
     final ExpectedMessage roomRoleUpdateModer = ExpectedMessage.create("room-role-update", null, Collections.singletonList(new Pair<>("role", "moderator")));
-    final ExpectedMessage roomStateChanged = ExpectedMessage.create("room-state-changed", null, Collections.singletonList(new Pair<>("state", "0")));
+    final ExpectedMessage roomStateChanged = ExpectedMessage.create("room-state-changed", null, Collections.singletonList(new Pair<>("state", Integer.toString(RoomState.OPEN.code()))));
     final ExpectedMessage offer = ExpectedMessage.create("offer", null, Arrays.asList(new Pair<>("urgency", urgency), new Pair<>("started", Long.toString(started))));
     final ExpectedMessage offerTopic = ExpectedMessage.create(new String[]{"message", "offer", "topic"}, topicText, null);
     final ExpectedMessage offerImage = ExpectedMessage.create(new String[]{"message", "offer", "image"}, imageSrc, null);
@@ -157,7 +158,7 @@ public class BaseSingleBotsTest {
     //Assert
     Assert.assertTrue("room-role-update(none) was not received by admin", roomRoleUpdateNone.received());
     Assert.assertTrue("room-role-update(moderator) was not received by admin", roomRoleUpdateModer.received());
-    Assert.assertNotNull("room-state-changed(0) was not received by admin", roomStateChanged.received());
+    Assert.assertNotNull("room-state-changed(OPEN) was not received by admin", roomStateChanged.received());
     Assert.assertNotNull("offer was not received by admin", offer.received());
     Assert.assertNotNull("offer was not contained topic", offerTopic.received());
     Assert.assertNotNull("offer was not contained image", offerImage.received());

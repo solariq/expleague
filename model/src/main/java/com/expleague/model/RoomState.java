@@ -20,5 +20,5 @@ public enum RoomState {
     this.code = code;
   }
 
-  int code() { return code; }
+  public int code() { return code; }
 }
