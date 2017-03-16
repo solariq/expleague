@@ -17,6 +17,8 @@ import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static com.expleague.bots.utils.FunctionalUtils.throwableSupplier;
+
 /**
  * User: Artem
  * Date: 28.02.2017
@@ -88,9 +90,10 @@ public class BaseSingleBotsTest {
     final ExpectedMessage roomStateChanged = ExpectedMessage.create("room-state-changed", null, Collections.singletonList(new Pair<>("state", "8")));
 
     //Act
-    adminBot.startReceivingMessages(Arrays.asList(cancel, roomStateChanged), new StateLatch());
-    clientBot.sendCancel(roomJID);
-    adminBot.waitForMessages();
+    adminBot.execute(throwableSupplier(() -> {
+      clientBot.sendCancel(roomJID);
+      return null;
+    }), Arrays.asList(cancel, roomStateChanged), new StateLatch());
 
     //Assert
     Assert.assertTrue("cancel was not received by admin", cancel.received());
@@ -105,9 +108,10 @@ public class BaseSingleBotsTest {
     final ExpectedMessage roomStateChanged = ExpectedMessage.create("room-state-changed", null, Collections.singletonList(new Pair<>("state", "8")));
 
     //Act
-    adminBot.startReceivingMessages(Arrays.asList(feedback, roomStateChanged), new StateLatch());
-    clientBot.sendFeedback(roomJID, stars, payment);
-    adminBot.waitForMessages();
+    adminBot.execute(throwableSupplier(() -> {
+      clientBot.sendFeedback(roomJID, stars, payment);
+      return null;
+    }), Arrays.asList(feedback, roomStateChanged), new StateLatch());
 
     //Assert
     Assert.assertTrue("room-state-changed(8) was not received by admin", roomStateChanged.received());
@@ -148,9 +152,7 @@ public class BaseSingleBotsTest {
     final ExpectedMessage offerLocation = ExpectedMessage.create(new String[]{"message", "offer", "location"}, null, Arrays.asList(new Pair<>("longitude", Double.toString(longitude)), new Pair<>("latitude", Double.toString(latitude))));
 
     //Act
-    adminBot.startReceivingMessages(Arrays.asList(roomRoleUpdateNone, roomRoleUpdateModer, roomStateChanged, offerTopic), new StateLatch());
-    final BareJID roomJID = clientBot.startRoom(topicText, urgency, started, longitude, latitude, imageSrc);
-    adminBot.waitForMessages();
+    final BareJID roomJID = adminBot.execute(throwableSupplier(() -> clientBot.startRoom(topicText, urgency, started, longitude, latitude, imageSrc)), Arrays.asList(roomRoleUpdateNone, roomRoleUpdateModer, roomStateChanged, offerTopic), new StateLatch());
 
     //Assert
     Assert.assertTrue("room-role-update(none) was not received by admin", roomRoleUpdateNone.received());
@@ -169,9 +171,10 @@ public class BaseSingleBotsTest {
     final ExpectedMessage offer = ExpectedMessage.create("offer", null, null);
 
     //Act
-    expertBot.startReceivingMessages(Collections.singletonList(offer), new StateLatch());
-    adminBot.startWorkState(roomJID);
-    expertBot.waitForMessages();
+    expertBot.execute(throwableSupplier(() -> {
+      adminBot.startWorkState(roomJID);
+      return null;
+    }), Collections.singletonList(offer), new StateLatch());
 
     //Assert
     Assert.assertTrue("offer was not received by expert", offer.received());
@@ -184,13 +187,15 @@ public class BaseSingleBotsTest {
     final ExpectedMessage expert = ExpectedMessage.create("expert", null, null);
 
     //Act
-    expertBot.startReceivingMessages(Collections.singletonList(invite), new StateLatch());
-    expertBot.sendOk(roomJID);
-    expertBot.waitForMessages();
+    expertBot.execute(throwableSupplier(() -> {
+      expertBot.sendOk(roomJID);
+      return null;
+    }), Collections.singletonList(invite), new StateLatch());
 
-    clientBot.startReceivingMessages(Arrays.asList(start, expert), new StateLatch());
-    expertBot.sendStart(roomJID);
-    clientBot.waitForMessages();
+    clientBot.execute(throwableSupplier(() -> {
+      expertBot.sendStart(roomJID);
+      return null;
+    }), Arrays.asList(start, expert), new StateLatch());
 
     //Assert
     Assert.assertTrue("invite was not received by expert", invite.received());

@@ -1,6 +1,7 @@
 package com.expleague.bots;
 
 import com.expleague.bots.utils.ExpectedMessage;
+import com.spbsu.commons.util.Pair;
 import com.spbsu.commons.util.sync.StateLatch;
 import tigase.jaxmpp.core.client.*;
 import tigase.jaxmpp.core.client.criteria.Criteria;
@@ -21,6 +22,9 @@ import tigase.jaxmpp.j2se.Jaxmpp;
 import tigase.jaxmpp.j2se.connectors.socket.SocketConnector;
 
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Supplier;
 
 /**
  * User: solar
@@ -38,6 +42,7 @@ public class Bot {
   private final BareJID jid;
 
   protected final Jaxmpp jaxmpp = new Jaxmpp(new J2SESessionObject());
+  private final BlockingQueue<Pair<ExpectedMessage, StateLatch>> expectedMessagesQueue = new LinkedBlockingQueue<>();
 
   public Bot(final BareJID jid, final String passwd, String resource) {
     this(jid, passwd, resource, null);
@@ -194,80 +199,46 @@ public class Bot {
     jaxmpp.send(message);
   }
 
-  public void startReceivingMessages(List<ExpectedMessage> expectedMessages, StateLatch stateLatch) {
-    messagesReceiver.start(expectedMessages, stateLatch);
+  public <T> T execute(Supplier<T> action, List<ExpectedMessage> expectedMessages, StateLatch stateLatch) {
+    return execute(action, expectedMessages, stateLatch, DEFAULT_TIMEOUT_IN_NANOS);
   }
 
-  public void waitForMessages() {
-    waitForMessages(DEFAULT_TIMEOUT_IN_NANOS);
-  }
+  public <T> T execute(Supplier<T> action, List<ExpectedMessage> expectedMessages, StateLatch stateLatch, long timeoutInNanos) {
+    final int initState = stateLatch.state();
+    final int finalState = initState << expectedMessages.size();
+    expectedMessages.forEach(expectedMessage -> expectedMessagesQueue.offer(new Pair<>(expectedMessage, stateLatch)));
 
-  public void waitForMessages(long timeoutInNanos) {
-    messagesReceiver.stop(timeoutInNanos);
-  }
-
-  private void onMessage(Message message) throws JaxmppException {
-    sendReceivedIfNeeded(message);
-    messagesReceiver.receive(message);
-  }
-
-  private void sendReceivedIfNeeded(Message message) throws JaxmppException {
-    final String receivedXMLNS = "urn:xmpp:receipts";
-    final Element request = message.getFirstChild("request");
-    if (request != null && receivedXMLNS.equals(request.getXMLNS())) {
-      final Message receivedMessage = Message.create();
-      receivedMessage.setType(StanzaType.normal);
-
-      final Element received = receivedMessage.addChild(ElementFactory.create("received"));
-      received.setAttribute("id", message.getId());
-      received.setXMLNS(receivedXMLNS);
-      jaxmpp.send(receivedMessage);
+    T result = action.get();
+    stateLatch.state(finalState, initState, timeoutInNanos);
+    if (stateLatch.state() != initState) {
+      stateLatch.state(initState);
     }
+    expectedMessagesQueue.clear();
+    return result;
   }
 
-  @SuppressWarnings("unused")
-  private interface MessagesReceiver {
-    void start(List<ExpectedMessage> expectedMessages, StateLatch latch);
-    void receive(Message message) throws JaxmppException;
-    void stop(long timeoutInNanos);
-  }
+  private synchronized void onMessage(Message message) throws JaxmppException {
+    { //sending receipts
+      final String receivedXMLNS = "urn:xmpp:receipts";
+      final Element request = message.getFirstChild("request");
+      if (request != null && receivedXMLNS.equals(request.getXMLNS())) {
+        final Message receivedMessage = Message.create();
+        receivedMessage.setType(StanzaType.normal);
 
-  private final MessagesReceiver messagesReceiver = new MessagesReceiver() {
-    private volatile List<ExpectedMessage> expectedMessages;
-    private volatile StateLatch latch;
-    private volatile boolean started = false;
-
-    public void start(List<ExpectedMessage> expectedMessages, StateLatch latch) {
-      if (started) {
-        throw new IllegalStateException("Receiver is not stopped");
-      }
-
-      this.expectedMessages = expectedMessages;
-      this.latch = latch;
-      started = true;
-    }
-
-    public synchronized void receive(Message message) throws JaxmppException {
-      if (started) {
-        for (ExpectedMessage expectedMessage : expectedMessages) {
-          if (!expectedMessage.received() && expectedMessage.tryReceive(message)) {
-            latch.advance();
-            break;
-          }
-        }
+        final Element received = receivedMessage.addChild(ElementFactory.create("received"));
+        received.setAttribute("id", message.getId());
+        received.setXMLNS(receivedXMLNS);
+        jaxmpp.send(receivedMessage);
       }
     }
 
-    public void stop(long timeoutInNanos) {
-      if (!started) {
-        throw new IllegalStateException("Receiver is not started");
+    for (Pair<ExpectedMessage, StateLatch> pair : expectedMessagesQueue) {
+      if (!pair.first.received() && pair.first.tryReceive(message)) {
+        pair.second.advance();
+        break;
       }
-
-      final int finalState = 1 << expectedMessages.size();
-      latch.state(finalState, 1, timeoutInNanos);
-      started = false;
     }
-  };
+  }
 
   public static class PrinterAsyncCallback implements AsyncCallback {
     private final String name;

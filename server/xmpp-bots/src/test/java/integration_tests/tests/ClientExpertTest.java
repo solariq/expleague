@@ -10,6 +10,8 @@ import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 
 import java.util.Collections;
 
+import static com.expleague.bots.utils.FunctionalUtils.throwableSupplier;
+
 /**
  * User: Artem
  * Date: 28.02.2017
@@ -25,9 +27,11 @@ public class ClientExpertTest extends BaseSingleBotsTest {
     final BareJID roomJID = obtainRoomDeliverState();
 
     //Act
-    clientBot.startReceivingMessages(Collections.singletonList(answer), new StateLatch());
-    expertBot.sendAnswer(roomJID, answerText);
-    clientBot.waitForMessages();
+    clientBot.execute(throwableSupplier(() -> {
+      expertBot.sendAnswer(roomJID, answerText);
+      return null;
+    }), Collections.singletonList(answer), new StateLatch());
+
     roomCloseStateByClientCancel(roomJID);
 
     //Assert
@@ -41,9 +45,11 @@ public class ClientExpertTest extends BaseSingleBotsTest {
     final BareJID roomJID = obtainRoomDeliverState();
 
     //Act
-    clientBot.startReceivingMessages(Collections.singletonList(cancel), new StateLatch());
-    expertBot.sendCancel(roomJID);
-    clientBot.waitForMessages();
+    clientBot.execute(throwableSupplier(() -> {
+      expertBot.sendCancel(roomJID);
+      return null;
+    }), Collections.singletonList(cancel), new StateLatch());
+
     roomCloseStateByClientCancel(roomJID);
 
     //Assert

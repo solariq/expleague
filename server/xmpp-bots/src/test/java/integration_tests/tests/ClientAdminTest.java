@@ -28,9 +28,10 @@ public class ClientAdminTest extends BaseSingleBotsTest {
     final BareJID roomJID = obtainRoomOpenState();
 
     //Act
-    clientBot.startReceivingMessages(Collections.singletonList(answer), new StateLatch());
-    adminBot.sendAnswer(roomJID, answerText);
-    clientBot.waitForMessages();
+    clientBot.execute(throwableSupplier(() -> {
+      adminBot.sendAnswer(roomJID, answerText);
+      return null;
+    }), Collections.singletonList(answer), new StateLatch());
     roomCloseStateByClientFeedback(roomJID);
 
     //Assert
@@ -63,9 +64,11 @@ public class ClientAdminTest extends BaseSingleBotsTest {
     final BareJID roomJID = obtainState.get();
 
     //Act
-    clientBot.startReceivingMessages(Collections.singletonList(messageFromAdmin), new StateLatch());
-    adminBot.sendTextMessageToRoom(messageFromAdminText, roomJID);
-    clientBot.waitForMessages();
+    clientBot.execute(throwableSupplier(() -> {
+      adminBot.sendTextMessageToRoom(messageFromAdminText, roomJID);
+      return null;
+    }), Collections.singletonList(messageFromAdmin), new StateLatch());
+
     if (closeRoom) {
       roomCloseStateByClientCancel(roomJID);
     }
