@@ -1,14 +1,15 @@
 package integration_tests.tests;
 
 import com.expleague.bots.utils.ExpectedMessage;
+import com.expleague.bots.utils.ExpectedMessageBuilder;
+import com.expleague.model.Answer;
+import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.util.sync.StateLatch;
 import integration_tests.BaseSingleBotsTest;
-import org.junit.Assert;
 import org.junit.Test;
 import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 
-import java.util.Collections;
 import java.util.function.Supplier;
 
 import static com.expleague.bots.utils.FunctionalUtils.throwableSupplier;
@@ -23,19 +24,17 @@ public class ClientAdminTest extends BaseSingleBotsTest {
   @Test
   public void testAdminClosesRoom() throws JaxmppException {
     //Arrange
-    final String answerText = generateRandomString();
-    final ExpectedMessage answer = ExpectedMessage.create("answer", answerText, null);
     final BareJID roomJID = obtainRoomOpenState();
+    final Answer answer = new Answer(generateRandomString());
+    final ExpectedMessage expectedAnswer = new ExpectedMessageBuilder().has(Answer.class, a -> answer.value().equals(a.value())).build();
 
     //Act
-    clientBot.execute(throwableSupplier(() -> {
-      adminBot.sendAnswer(roomJID, answerText);
-      return null;
-    }), Collections.singletonList(answer), new StateLatch());
+    adminBot.sendAnswer(roomJID, answer);
+    final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedAnswer);
     roomCloseStateByClientFeedback(roomJID);
 
     //Assert
-    Assert.assertTrue("answer was not received by client", answer.received());
+    AssertAllExpectedMessagesAreReceived(notReceivedMessages);
   }
 
   @Test
@@ -59,21 +58,18 @@ public class ClientAdminTest extends BaseSingleBotsTest {
 
   private void testClientReceivesMessage(Supplier<BareJID> obtainState, boolean closeRoom) throws JaxmppException {
     //Arrange
-    final String messageFromAdminText = generateRandomString();
-    final ExpectedMessage messageFromAdmin = ExpectedMessage.create("body", messageFromAdminText, null);
-    final BareJID roomJID = obtainState.get();
+    final Message.Body body = new Message.Body(generateRandomString());
+    final ExpectedMessage expectedMessageFromAdmin = new ExpectedMessageBuilder().has(Message.Body.class, b -> body.value().equals(b.value())).build();
 
     //Act
-    clientBot.execute(throwableSupplier(() -> {
-      adminBot.sendTextMessageToRoom(messageFromAdminText, roomJID);
-      return null;
-    }), Collections.singletonList(messageFromAdmin), new StateLatch());
-
+    final BareJID roomJID = obtainState.get();
+    adminBot.sendTextMessageToRoom(roomJID, body);
+    final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedMessageFromAdmin);
     if (closeRoom) {
       roomCloseStateByClientCancel(roomJID);
     }
 
     //Assert
-    Assert.assertTrue("message from admin was not received by client", messageFromAdmin.received());
+    AssertAllExpectedMessagesAreReceived(notReceivedMessages);
   }
 }

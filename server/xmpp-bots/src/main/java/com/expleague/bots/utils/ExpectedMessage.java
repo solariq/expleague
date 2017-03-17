@@ -1,61 +1,46 @@
 package com.expleague.bots.utils;
 
+import com.expleague.xmpp.AnyHolder;
+import com.expleague.xmpp.control.receipts.Request;
+import com.spbsu.commons.filters.Filter;
 import com.spbsu.commons.util.Pair;
-import tigase.jaxmpp.core.client.exceptions.JaxmppException;
-import tigase.jaxmpp.core.client.xml.Element;
-import tigase.jaxmpp.core.client.xmpp.stanzas.Message;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * User: Artem
- * Date: 10.03.2017
- * Time: 16:17
+ * Date: 17.03.2017
+ * Time: 14:59
  */
 public class ExpectedMessage {
-  private final Map<Pair<String[], String>, List<Pair<String, String>>> childrenAndAttributes;
+  private final List<Pair<Class, Filter>> filters;
   private boolean received = false;
 
-  public ExpectedMessage(Map<Pair<String[], String>, List<Pair<String, String>>> childrenAndAttributes) {
-    this.childrenAndAttributes = childrenAndAttributes;
+  public ExpectedMessage(List<Pair<Class, Filter>> filters) {
+    this.filters = filters;
+  }
+
+  public boolean tryReceive(AnyHolder anyHolder) {
+    //not consider receipts
+    final long holderSize = anyHolder.any().stream().filter(a -> !(a instanceof Request)).count();
+    if (holderSize != filters.size()) {
+      return false;
+    }
+    //noinspection unchecked
+    received = filters.stream().allMatch(pair -> pair.second != null ? anyHolder.has(pair.first, pair.second) : anyHolder.has(pair.first));
+    return received;
   }
 
   public boolean received() {
     return received;
   }
 
-  public boolean tryReceive(Message message) throws JaxmppException {
-    for (Map.Entry<Pair<String[], String>, List<Pair<String, String>>> entry : childrenAndAttributes.entrySet()) {
-      final Element element = message.findChild(entry.getKey().first);
-      if (element == null) {
-        return false;
-      }
-      if (element.getValue() != null && !element.getValue().equals(entry.getKey().second)) {
-        return false;
-      }
-
-      if (entry.getValue() != null) {
-        for (Pair<String, String> attribute : entry.getValue()) {
-          if (!attribute.second.equals(element.getAttribute(attribute.first))) {
-            return false;
-          }
-        }
-      }
-    }
-    received = true;
-    return true;
-  }
-
-  public static ExpectedMessage create(String childName, String childBody, List<Pair<String, String>> attributes) {
-    return create(new String[]{"message", childName}, childBody, attributes);
-  }
-
-  public static ExpectedMessage create(String[] childPath, String childBody, List<Pair<String, String>> attributes) {
-    final Map<Pair<String[], String>, List<Pair<String, String>>> childrenAndAttributes = new HashMap<Pair<String[], String>, List<Pair<String, String>>>() {{
-      put(new Pair<>(childPath, childBody), attributes);
-    }};
-    return new ExpectedMessage(childrenAndAttributes);
+  public String toString() {
+    final StringBuilder stringBuilder = new StringBuilder();
+    filters.forEach(filter -> {
+      stringBuilder.append(filter.first.toString());
+      stringBuilder.append(", ");
+    });
+    return stringBuilder.toString();
   }
 }

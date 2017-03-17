@@ -4,8 +4,8 @@ import com.expleague.bots.AdminBot;
 import com.expleague.bots.ClientBot;
 import com.expleague.bots.ExpertBot;
 import com.expleague.bots.utils.ExpectedMessage;
-import com.expleague.model.RoomState;
-import com.spbsu.commons.util.Pair;
+import com.expleague.bots.utils.ExpectedMessageBuilder;
+import com.expleague.model.*;
 import com.spbsu.commons.util.sync.StateLatch;
 import org.junit.After;
 import org.junit.Assert;
@@ -14,11 +14,8 @@ import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-
-import static com.expleague.bots.utils.FunctionalUtils.throwableSupplier;
 
 /**
  * User: Artem
@@ -85,122 +82,121 @@ public class BaseSingleBotsTest {
     return ThreadLocalRandom.current().nextInt(min, max + 1);
   }
 
+  protected void AssertAllExpectedMessagesAreReceived(ExpectedMessage[] notReceivedMessages) {
+    if (notReceivedMessages.length > 0) {
+      final StringBuilder stringBuilder = new StringBuilder();
+      for (ExpectedMessage expectedMessage : notReceivedMessages) {
+        stringBuilder.append(String.format("%s was/were not received or had incorrect attributes\n", expectedMessage));
+      }
+      Assert.fail(stringBuilder.toString());
+    }
+  }
+
   protected void roomCloseStateByClientCancel(BareJID roomJID) throws JaxmppException {
     //Arrange
-    final ExpectedMessage cancel = ExpectedMessage.create("cancel", null, null);
-    final ExpectedMessage roomStateChanged = ExpectedMessage.create("room-state-changed", null, Collections.singletonList(new Pair<>("state", Integer.toString(RoomState.CLOSED.code()))));
+    final ExpectedMessage cancel = new ExpectedMessageBuilder().has(Operations.Cancel.class).build();
+    final ExpectedMessage roomStateChanged = new ExpectedMessageBuilder()
+        .has(Operations.RoomStateChanged.class, rsc -> RoomState.CLOSED.equals(rsc.state()))
+        .build();
 
     //Act
-    adminBot.execute(throwableSupplier(() -> {
-      clientBot.sendCancel(roomJID);
-      return null;
-    }), Arrays.asList(cancel, roomStateChanged), new StateLatch());
+    clientBot.sendCancel(roomJID);
+    final ExpectedMessage[] notReceivedMessages = adminBot.tryReceiveMessages(new StateLatch(), cancel, roomStateChanged);
 
     //Assert
-    Assert.assertTrue("cancel was not received by admin", cancel.received());
-    Assert.assertTrue("room-state-changed(CLOSE) was not received by admin", roomStateChanged.received());
+    AssertAllExpectedMessagesAreReceived(notReceivedMessages);
   }
 
   protected void roomCloseStateByClientFeedback(BareJID roomJID) throws JaxmppException {
     //Arrange
-    final int stars = generateRandomInt(1, 5);
-    final String payment = generateRandomString();
-    final ExpectedMessage feedback = ExpectedMessage.create("feedback", null, Arrays.asList(new Pair<>("stars", Integer.toString(stars)), new Pair<>("payment", payment)));
-    final ExpectedMessage roomStateChanged = ExpectedMessage.create("room-state-changed", null, Collections.singletonList(new Pair<>("state", Integer.toString(RoomState.CLOSED.code()))));
+    final Operations.Feedback feedback = new Operations.Feedback(generateRandomInt(1, 5));
+    final ExpectedMessage roomStateChanged = new ExpectedMessageBuilder()
+        .has(Operations.RoomStateChanged.class, rsc -> RoomState.CLOSED.equals(rsc.state()))
+        .build();
+    final ExpectedMessage expectedFeedback = new ExpectedMessageBuilder().has(Operations.Feedback.class, f -> feedback.stars() == f.stars()).build();
 
     //Act
-    adminBot.execute(throwableSupplier(() -> {
-      clientBot.sendFeedback(roomJID, stars, payment);
-      return null;
-    }), Arrays.asList(feedback, roomStateChanged), new StateLatch());
+    clientBot.sendFeedback(roomJID, feedback);
+    final ExpectedMessage[] notReceivedMessages = adminBot.tryReceiveMessages(new StateLatch(), roomStateChanged, expectedFeedback);
 
     //Assert
-    Assert.assertTrue("room-state-changed(CLOSE) was not received by admin", roomStateChanged.received());
-    Assert.assertTrue("feedback was not received by admin", feedback.received());
+    AssertAllExpectedMessagesAreReceived(notReceivedMessages);
   }
 
   protected BareJID obtainRoomOpenState() throws JaxmppException {
-    return openRoom();
+    //Arrange
+    final String topicText = generateRandomString();
+    final double started = System.currentTimeMillis() / 1000.;
+    final Offer.Urgency urgency = Offer.Urgency.ASAP;
+    final Offer.Location location = new Offer.Location(59.98062295379115, 30.32538469883643);
+    final String imageUrl = generateRandomString();
+
+    final ExpectedMessage roomRoleUpdateNone = new ExpectedMessageBuilder()
+        .has(Operations.RoomRoleUpdate.class, rru -> Role.NONE.equals(rru.role()) && Affiliation.OWNER.equals(rru.affiliation()))
+        .build();
+    final ExpectedMessage roomRoleUpdateModer = new ExpectedMessageBuilder()
+        .has(Operations.RoomRoleUpdate.class, rru -> Role.MODERATOR.equals(rru.role()) && Affiliation.OWNER.equals(rru.affiliation()))
+        .build();
+    final ExpectedMessage roomStateChanged = new ExpectedMessageBuilder()
+        .has(Operations.RoomStateChanged.class, rsc -> RoomState.OPEN.equals(rsc.state()))
+        .build();
+    final ExpectedMessage offer = new ExpectedMessageBuilder()
+        .has(Offer.class, o -> location.longitude() == o.location().longitude()
+            && location.latitude() == o.location().latitude()
+            && Arrays.stream(o.attachments()).anyMatch(a -> a instanceof Image && imageUrl.equals(((Image) a).url()))
+            && topicText.equals(o.topic())
+            && Offer.Urgency.ASAP.equals(o.urgency())
+            && Double.compare(started, o.started()) == 0
+        )
+        .has(Operations.OfferChange.class)
+        .build();
+
+    //Act
+    final BareJID roomJID = clientBot.startRoom(topicText, started, urgency, location, imageUrl);
+    final ExpectedMessage[] notReceivedMessages = adminBot.tryReceiveMessages(new StateLatch(), roomRoleUpdateNone, roomRoleUpdateModer, roomStateChanged, offer);
+
+    //Assert
+    AssertAllExpectedMessagesAreReceived(notReceivedMessages);
+
+    return roomJID;
   }
 
   protected BareJID obtainRoomWorkState() throws JaxmppException {
     final BareJID roomJID = obtainRoomOpenState();
-    roomWorkState(roomJID);
+    { //obtain work state
+      //Arrange
+      final ExpectedMessage offerCheck = new ExpectedMessageBuilder().has(Offer.class).has(Operations.Check.class).build();
+
+      //Act
+      adminBot.startWorkState(roomJID);
+      final ExpectedMessage[] notReceivedMessages = expertBot.tryReceiveMessages(new StateLatch(), offerCheck);
+
+      //Assert
+      AssertAllExpectedMessagesAreReceived(notReceivedMessages);
+    }
     return roomJID;
   }
 
   protected BareJID obtainRoomDeliverState() throws JaxmppException {
     final BareJID roomJID = obtainRoomWorkState();
-    roomDeliverState(roomJID);
-    return roomJID;
-  }
+    { //obtain deliver state
+      //Arrange
+      final ExpectedMessage invite = new ExpectedMessageBuilder().has(Offer.class).has(Operations.Invite.class).build();
+      final ExpectedMessage start = new ExpectedMessageBuilder().has(Operations.Start.class).build();
+      final ExpectedMessage expert = new ExpectedMessageBuilder().has(ExpertsProfile.class).build();
 
-  private BareJID openRoom() throws JaxmppException {
-    //Arrange
-    final String topicText = generateRandomString();
-    final String urgency = "asap";
-    final long started = System.currentTimeMillis();
-    final double longitude = 59.98062295379115;
-    final double latitude = 30.32538469883643;
-    final String imageSrc = generateRandomString();
-
-    final ExpectedMessage roomRoleUpdateNone = ExpectedMessage.create("room-role-update", null, Collections.singletonList(new Pair<>("role", "none")));
-    final ExpectedMessage roomRoleUpdateModer = ExpectedMessage.create("room-role-update", null, Collections.singletonList(new Pair<>("role", "moderator")));
-    final ExpectedMessage roomStateChanged = ExpectedMessage.create("room-state-changed", null, Collections.singletonList(new Pair<>("state", Integer.toString(RoomState.OPEN.code()))));
-    final ExpectedMessage offer = ExpectedMessage.create("offer", null, Arrays.asList(new Pair<>("urgency", urgency), new Pair<>("started", Long.toString(started))));
-    final ExpectedMessage offerTopic = ExpectedMessage.create(new String[]{"message", "offer", "topic"}, topicText, null);
-    final ExpectedMessage offerImage = ExpectedMessage.create(new String[]{"message", "offer", "image"}, imageSrc, null);
-    final ExpectedMessage offerLocation = ExpectedMessage.create(new String[]{"message", "offer", "location"}, null, Arrays.asList(new Pair<>("longitude", Double.toString(longitude)), new Pair<>("latitude", Double.toString(latitude))));
-
-    //Act
-    final BareJID roomJID = adminBot.execute(throwableSupplier(() -> clientBot.startRoom(topicText, urgency, started, longitude, latitude, imageSrc)), Arrays.asList(roomRoleUpdateNone, roomRoleUpdateModer, roomStateChanged, offerTopic), new StateLatch());
-
-    //Assert
-    Assert.assertTrue("room-role-update(none) was not received by admin", roomRoleUpdateNone.received());
-    Assert.assertTrue("room-role-update(moderator) was not received by admin", roomRoleUpdateModer.received());
-    Assert.assertNotNull("room-state-changed(OPEN) was not received by admin", roomStateChanged.received());
-    Assert.assertNotNull("offer was not received by admin", offer.received());
-    Assert.assertNotNull("offer was not contained topic", offerTopic.received());
-    Assert.assertNotNull("offer was not contained image", offerImage.received());
-    Assert.assertNotNull("offer was not contained location", offerLocation.received());
-
-    return roomJID;
-  }
-
-  private void roomWorkState(BareJID roomJID) throws JaxmppException {
-    //Arrange
-    final ExpectedMessage offer = ExpectedMessage.create("offer", null, null);
-
-    //Act
-    expertBot.execute(throwableSupplier(() -> {
-      adminBot.startWorkState(roomJID);
-      return null;
-    }), Collections.singletonList(offer), new StateLatch());
-
-    //Assert
-    Assert.assertTrue("offer was not received by expert", offer.received());
-  }
-
-  private void roomDeliverState(BareJID roomJID) throws JaxmppException {
-    //Arrange
-    final ExpectedMessage invite = ExpectedMessage.create("invite", null, null);
-    final ExpectedMessage start = ExpectedMessage.create("start", null, null);
-    final ExpectedMessage expert = ExpectedMessage.create("expert", null, null);
-
-    //Act
-    expertBot.execute(throwableSupplier(() -> {
+      //Act
       expertBot.sendOk(roomJID);
-      return null;
-    }), Collections.singletonList(invite), new StateLatch());
+      final ExpectedMessage[] notReceivedByExpert = expertBot.tryReceiveMessages(new StateLatch(), invite);
 
-    clientBot.execute(throwableSupplier(() -> {
       expertBot.sendStart(roomJID);
-      return null;
-    }), Arrays.asList(start, expert), new StateLatch());
+      final ExpectedMessage[] notReceivedByClient = clientBot.tryReceiveMessages(new StateLatch(), start, expert);
 
-    //Assert
-    Assert.assertTrue("invite was not received by expert", invite.received());
-    Assert.assertTrue("start was not received by client", start.received());
-    Assert.assertTrue("expert was not received by client", expert.received());
+      //Assert
+      AssertAllExpectedMessagesAreReceived(notReceivedByExpert);
+      AssertAllExpectedMessagesAreReceived(notReceivedByClient);
+    }
+    return roomJID;
   }
+
 }

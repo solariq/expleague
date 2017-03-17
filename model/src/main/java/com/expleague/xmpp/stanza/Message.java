@@ -192,6 +192,10 @@ public class Message extends Stanza implements AnyHolder {
     public Body(String message) {
       value = message;
     }
+
+    public String value() {
+      return value;
+    }
   }
 
   /**

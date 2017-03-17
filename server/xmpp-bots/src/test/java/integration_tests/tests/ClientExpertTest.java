@@ -1,16 +1,14 @@
 package integration_tests.tests;
 
 import com.expleague.bots.utils.ExpectedMessage;
+import com.expleague.bots.utils.ExpectedMessageBuilder;
+import com.expleague.model.Answer;
+import com.expleague.model.Operations;
 import com.spbsu.commons.util.sync.StateLatch;
 import integration_tests.BaseSingleBotsTest;
-import org.junit.Assert;
 import org.junit.Test;
 import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
-
-import java.util.Collections;
-
-import static com.expleague.bots.utils.FunctionalUtils.throwableSupplier;
 
 /**
  * User: Artem
@@ -22,37 +20,31 @@ public class ClientExpertTest extends BaseSingleBotsTest {
   @Test
   public void testExpertAnswers() throws JaxmppException {
     //Arrange
-    final String answerText = generateRandomString();
-    final ExpectedMessage answer = ExpectedMessage.create("answer", answerText, null);
+    final Answer answer = new Answer(generateRandomString());
     final BareJID roomJID = obtainRoomDeliverState();
+    final ExpectedMessage expectedAnswer = new ExpectedMessageBuilder().has(Answer.class, a -> answer.value().equals(a.value())).build();
 
     //Act
-    clientBot.execute(throwableSupplier(() -> {
-      expertBot.sendAnswer(roomJID, answerText);
-      return null;
-    }), Collections.singletonList(answer), new StateLatch());
-
+    expertBot.sendAnswer(roomJID, answer);
+    final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedAnswer);
     roomCloseStateByClientCancel(roomJID);
 
     //Assert
-    Assert.assertTrue("answer was not received by client", answer.received());
+    AssertAllExpectedMessagesAreReceived(notReceivedMessages);
   }
 
   @Test
   public void testExpertCancels() throws JaxmppException {
     //Arrange
-    final ExpectedMessage cancel = ExpectedMessage.create("cancel", null, null);
     final BareJID roomJID = obtainRoomDeliverState();
+    final ExpectedMessage expectedCancel = new ExpectedMessageBuilder().has(Operations.Cancel.class).build();
 
     //Act
-    clientBot.execute(throwableSupplier(() -> {
-      expertBot.sendCancel(roomJID);
-      return null;
-    }), Collections.singletonList(cancel), new StateLatch());
-
+    expertBot.sendCancel(roomJID);
+    final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedCancel);
     roomCloseStateByClientCancel(roomJID);
 
     //Assert
-    Assert.assertTrue("cancel was not received by client", cancel.received());
+    AssertAllExpectedMessagesAreReceived(notReceivedMessages);
   }
 }

@@ -1,5 +1,7 @@
 package com.expleague.bots;
 
+import com.expleague.model.Offer;
+import com.expleague.model.Operations;
 import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.JID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
@@ -17,21 +19,21 @@ public class ClientBot extends Bot {
     super(jid, passwd, "client");
   }
 
-  public BareJID startRoom(String topic, String urgency, long started, double longitude, double latitude, String imageSrc) throws JaxmppException {
+  public BareJID startRoom(String topic, double started, Offer.Urgency urgency, Offer.Location location, String imageUrl) throws JaxmppException {
     final Element offerElem = ElementFactory.create("offer");
     offerElem.setXMLNS(TBTS_XMLNS);
     offerElem.setAttribute("client", jid().toString());
-    offerElem.setAttribute("urgency", urgency);
-    offerElem.setAttribute("started", Long.toString(started));
+    offerElem.setAttribute("urgency", urgency.name().toLowerCase());
+    offerElem.setAttribute("started", Double.toString(started));
 
     final Element topicElem = offerElem.addChild(ElementFactory.create("topic"));
     topicElem.setValue(topic);
     final Element locationElem = offerElem.addChild(ElementFactory.create("location"));
-    locationElem.setAttribute("longitude", Double.toString(longitude));
-    locationElem.setAttribute("latitude", Double.toString(latitude));
+    locationElem.setAttribute("longitude", Double.toString(location.longitude()));
+    locationElem.setAttribute("latitude", Double.toString(location.latitude()));
 
     final Element imageElem = offerElem.addChild(ElementFactory.create("image"));
-    imageElem.setValue(imageSrc);
+    imageElem.setValue(imageUrl);
 
     final BareJID room = BareJID.bareJIDInstance(jid().getLocalpart() + "-room-" + (int) (System.currentTimeMillis() / 1000), "muc." + jid().getDomain());
     final Message message = Message.create();
@@ -41,11 +43,11 @@ public class ClientBot extends Bot {
     return room;
   }
 
-  public void sendFeedback(BareJID roomJID, int stars, String payment) throws JaxmppException {
+  public void sendFeedback(BareJID roomJID, Operations.Feedback feedback) throws JaxmppException {
     final Element feedbackElem = ElementFactory.create("feedback");
     feedbackElem.setXMLNS(TBTS_XMLNS);
-    feedbackElem.setAttribute("stars", Integer.toString(stars));
-    feedbackElem.setAttribute("payment", payment);
+    feedbackElem.setAttribute("stars", Integer.toString(feedback.stars()));
+    //feedbackElem.setAttribute("payment", payment);
     sendToGroupChat(feedbackElem, JID.jidInstance(roomJID));
   }
 }

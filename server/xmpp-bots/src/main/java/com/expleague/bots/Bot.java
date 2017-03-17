@@ -1,7 +1,8 @@
 package com.expleague.bots;
 
 import com.expleague.bots.utils.ExpectedMessage;
-import com.spbsu.commons.util.Pair;
+import com.expleague.xmpp.AnyHolder;
+import com.expleague.xmpp.Item;
 import com.spbsu.commons.util.sync.StateLatch;
 import tigase.jaxmpp.core.client.*;
 import tigase.jaxmpp.core.client.criteria.Criteria;
@@ -21,10 +22,9 @@ import tigase.jaxmpp.j2se.J2SESessionObject;
 import tigase.jaxmpp.j2se.Jaxmpp;
 import tigase.jaxmpp.j2se.connectors.socket.SocketConnector;
 
-import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Supplier;
 
 /**
  * User: solar
@@ -42,7 +42,7 @@ public class Bot {
   private final BareJID jid;
 
   protected final Jaxmpp jaxmpp = new Jaxmpp(new J2SESessionObject());
-  private final BlockingQueue<Pair<ExpectedMessage, StateLatch>> expectedMessagesQueue = new LinkedBlockingQueue<>();
+  private final BlockingQueue<Message> messagesQueue = new LinkedBlockingQueue<>();
 
   public Bot(final BareJID jid, final String passwd, String resource) {
     this(jid, passwd, resource, null);
@@ -183,11 +183,11 @@ public class Bot {
     sendToGroupChat(cancelElem, JID.jidInstance(roomJID));
   }
 
-  public void sendTextMessageToRoom(String chatMessage, BareJID roomJID) throws JaxmppException {
+  public void sendTextMessageToRoom(BareJID roomJID, com.expleague.xmpp.stanza.Message.Body body) throws JaxmppException {
     final Message message = Message.create();
     message.setTo(JID.jidInstance(roomJID));
     message.setType(StanzaType.groupchat);
-    message.setBody(chatMessage);
+    message.setBody(body.value());
     jaxmpp.send(message);
   }
 
@@ -199,25 +199,46 @@ public class Bot {
     jaxmpp.send(message);
   }
 
-  public <T> T execute(Supplier<T> action, List<ExpectedMessage> expectedMessages, StateLatch stateLatch) {
-    return execute(action, expectedMessages, stateLatch, DEFAULT_TIMEOUT_IN_NANOS);
+  public ExpectedMessage[] tryReceiveMessages(StateLatch stateLatch, ExpectedMessage... messages) {
+    return tryReceiveMessages(stateLatch, DEFAULT_TIMEOUT_IN_NANOS, messages);
   }
 
-  public <T> T execute(Supplier<T> action, List<ExpectedMessage> expectedMessages, StateLatch stateLatch, long timeoutInNanos) {
+  public ExpectedMessage[] tryReceiveMessages(StateLatch stateLatch, long timeoutInNanos, ExpectedMessage... expectedMessages) {
     final int initState = stateLatch.state();
-    final int finalState = initState << expectedMessages.size();
-    expectedMessages.forEach(expectedMessage -> expectedMessagesQueue.offer(new Pair<>(expectedMessage, stateLatch)));
+    final int finalState = initState << expectedMessages.length;
+    final Thread messagesConsumer = new Thread(() -> {
+      while (!Thread.currentThread().isInterrupted()) {
+        final Message message;
+        try {
+          message = messagesQueue.take();
+          final AnyHolder anyHolder = Item.create(message.getAsString());
+          for (ExpectedMessage expectedMessage : expectedMessages) {
+            if (!expectedMessage.received() && expectedMessage.tryReceive(anyHolder)) {
+              stateLatch.advance();
+              if (stateLatch.state() == initState) {
+                return;
+              }
+              break;
+            }
+          }
+        } catch (InterruptedException ignored) {
+          Thread.currentThread().interrupt();
+          return;
+        } catch (JaxmppException ignored) {
+        }
+      }
+    });
 
-    T result = action.get();
+    messagesConsumer.start();
     stateLatch.state(finalState, initState, timeoutInNanos);
+    messagesConsumer.interrupt();
     if (stateLatch.state() != initState) {
       stateLatch.state(initState);
     }
-    expectedMessagesQueue.clear();
-    return result;
+    return Arrays.stream(expectedMessages).filter(em -> !em.received()).toArray(ExpectedMessage[]::new);
   }
 
-  private void onMessage(Message message) throws JaxmppException {
+  private synchronized void onMessage(Message message) throws JaxmppException {
     { //sending receipts
       final String receivedXMLNS = "urn:xmpp:receipts";
       final Element request = message.getFirstChild("request");
@@ -231,13 +252,7 @@ public class Bot {
         jaxmpp.send(receivedMessage);
       }
     }
-
-    for (Pair<ExpectedMessage, StateLatch> pair : expectedMessagesQueue) {
-      if (!pair.first.received() && pair.first.tryReceive(message)) {
-        pair.second.advance();
-        break;
-      }
-    }
+    messagesQueue.offer(message);
   }
 
   public static class PrinterAsyncCallback implements AsyncCallback {

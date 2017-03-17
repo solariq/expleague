@@ -1,5 +1,6 @@
 package com.expleague.bots;
 
+import com.expleague.model.Answer;
 import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.JID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
@@ -33,10 +34,10 @@ public class ExpertBot extends Bot {
     sendToGroupChat(startElem, JID.jidInstance(roomJID));
   }
 
-  public void sendAnswer(BareJID roomJID, String answer) throws JaxmppException {
+  public void sendAnswer(BareJID roomJID, Answer answer) throws JaxmppException {
     final Element answerElem = ElementFactory.create("answer");
     answerElem.setXMLNS(TBTS_XMLNS);
-    answerElem.setValue(answer);
+    answerElem.setValue(answer.value());
     sendToGroupChat(answerElem, JID.jidInstance(roomJID));
   }
 }
