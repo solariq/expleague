@@ -1,6 +1,7 @@
 package com.expleague.xmpp;
 
 import com.expleague.xmpp.control.receipts.Request;
+import com.spbsu.commons.filters.Filter;
 
 import java.util.Iterator;
 import java.util.List;
@@ -25,6 +26,11 @@ public interface AnyHolder {
 
   default boolean has(Class<?> clazz) {
     return any().stream().anyMatch(x -> x != null && clazz.isAssignableFrom(x.getClass()));
+  }
+
+  default <T extends Item> boolean has(Class<T> clazz, Filter<T> filter) {
+    //noinspection unchecked
+    return any().stream().filter(x -> x != null && clazz.isAssignableFrom(x.getClass())).map(x -> filter.accept((T)x)).anyMatch(b -> b);
   }
 
   default void remove(Class<Request> clazz) {
