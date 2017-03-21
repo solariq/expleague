@@ -376,14 +376,29 @@ public class RoomAgent extends PersistentActorAdapter {
     started = true;
   }
 
+  public JID participantByAlias(String alias) {
+    final Holder<JID> result = new Holder<>();
+    participants.forEach((jid, status) -> {
+      if (jid.local().equals(alias) || status.nickname.equals(alias))
+        result.setValue(jid);
+    });
+    return result.getValue();
+  }
   protected void broadcast(Stanza stanza) {
     if (!started)
       return;
-    participants.forEach((jid, status) -> {
-      if (jid.bareEq(stanza.from()) || !relevant(stanza, jid))
-        return;
-      XMPP.send(participantCopy(stanza, jid), context());
-    });
+    if (stanza.to() == null || stanza.to().equals(jid())) {
+      participants.forEach((jid, status) -> {
+        if (jid.bareEq(stanza.from()) || !relevant(stanza, jid))
+          return;
+        XMPP.send(participantCopy(stanza, jid), context());
+      });
+    }
+    else if(stanza.to().bareEq(jid())) { // room alias
+      participantCopy(stanza, participantByAlias(stanza.to().resource()));
+    }
+    else
+      participantCopy(stanza, stanza.to());
   }
 
   protected <S extends Stanza> S participantCopy(final S stanza, final JID to) {

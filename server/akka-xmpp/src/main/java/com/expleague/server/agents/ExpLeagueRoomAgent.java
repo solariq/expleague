@@ -203,7 +203,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
       if (mode == ProcessMode.NORMAL) {
         final ExpertsProfile profile = Roster.instance().profile(from.local());
-        invoke(new Message(jid(), roomAlias(owner()), msg.get(Start.class), profile));
+        invoke(new Message(jid(), roomAlias(owner()), profile));
         GlobalChatAgent.tell(jid(), new Message(jid(), roomAlias(owner()), msg.get(Start.class), profile.shorten()), context());
         final Offer offer = offer();
         assert offer != null;
@@ -214,8 +214,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     else if (msg.has(Answer.class)) {
       if (authority.priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
         state(DELIVERY, mode);
-        if (mode == ProcessMode.NORMAL)
-          invoke(new Message(jid(), roomAlias(owner()), msg.get(Answer.class), new Verified(from)));
+        if (mode == ProcessMode.NORMAL) {
+          invoke(new Message(from, roomAlias(owner()), msg.get(Answer.class), new Verified(from)));
+        }
       }
       else state(VERIFY, mode);
       answer = msg;
@@ -226,7 +227,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       if (state == VERIFY && authority.priority() >= ExpertsProfile.Authority.EXPERT.priority()) {
         state(DELIVERY, mode);
         if (mode == ProcessMode.NORMAL)
-          invoke(new Message(jid(), roomAlias(owner()), answer, new Verified(from)));
+          invoke(new Message(from, roomAlias(owner()), answer, new Verified(from)));
       }
     }
     else if (msg.has(Cancel.class)) {
@@ -245,9 +246,13 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         self().tell(new Message(from, jid(), offer), self());
       }
     }
-    else if (msg.has(Feedback.class) && state == FEEDBACK || state == DELIVERY) {
-      if (mode == ProcessMode.NORMAL)
-        GlobalChatAgent.tell(jid(), msg.get(Feedback.class), context());
+    else if (msg.has(Feedback.class) && state == FEEDBACK) {
+      if (mode == ProcessMode.NORMAL) {
+        final Feedback feedback = msg.get(Feedback.class);
+        if (!orders.isEmpty())
+          orders.get(0).feedback(feedback.stars(), feedback.payment());
+        GlobalChatAgent.tell(jid(), feedback, context());
+      }
       state(CLOSED, mode);
     }
     else if (msg.has(Done.class)) {
