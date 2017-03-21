@@ -91,11 +91,11 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     if (affiliation(to) == Affiliation.OWNER) { // client
       if (msg instanceof Message) {
         final Message message = (Message) msg;
-        return message.type() == Message.MessageType.GROUP_CHAT ||
+        return (message.type() == Message.MessageType.GROUP_CHAT && !message.body().isEmpty()) ||
             message.has(Start.class) ||
+            message.has(ExpertsProfile.class) ||
             message.has(Answer.class) && message.has(Verified.class) ||
-            message.has(Progress.class) && message.get(Progress.class).meta() != null ||
-            super.relevant(msg, to);
+            message.has(Progress.class) && message.get(Progress.class).meta() != null;
       }
     }
     else if (EnumSet.of(Role.MODERATOR, Role.PARTICIPANT).contains(role(to))) { // expert or admin
@@ -226,7 +226,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, true), context());
     }
     else if (msg.has(Verified.class)) {
-      if (state == VERIFY && authority.priority() >= ExpertsProfile.Authority.EXPERT.priority()) {
+      if (state == VERIFY && authority.priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
         state(DELIVERY, mode);
         if (mode == ProcessMode.NORMAL)
           invoke(new Message(from, roomAlias(owner()), answer.get(Answer.class), new Verified(from)));
