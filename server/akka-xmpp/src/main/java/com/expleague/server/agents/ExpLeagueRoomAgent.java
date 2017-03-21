@@ -229,7 +229,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       if (state == VERIFY && authority.priority() >= ExpertsProfile.Authority.EXPERT.priority()) {
         state(DELIVERY, mode);
         if (mode == ProcessMode.NORMAL)
-          invoke(new Message(from, roomAlias(owner()), answer, new Verified(from)));
+          invoke(new Message(from, roomAlias(owner()), answer.get(Answer.class), new Verified(from)));
       }
     }
     else if (msg.has(Cancel.class)) {
@@ -328,7 +328,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       persist(new DeliveryReceit(id, null), delivered -> {});
   }
 
-  Stanza answer = null;
+  Message answer = null;
   private Stanza answer() {
     if (answer != null)
       return answer;
@@ -336,7 +336,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     for (int i = archive.size() - 1; i >= 0; i--) {
       final Stanza stanza = archive.get(i);
       if (stanza instanceof Message && ((Message)stanza).has(Answer.class))
-        return answer = stanza;
+        return answer = (Message)stanza;
     }
     return null;
   }
