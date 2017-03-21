@@ -24,6 +24,7 @@ import com.expleague.xmpp.stanza.Stanza;
 import com.expleague.xmpp.stanza.data.Err;
 import com.spbsu.commons.util.Holder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -47,9 +48,13 @@ public class RoomAgent extends PersistentActorAdapter {
 
   public RoomAgent(JID jid) {
     this.jid = jid;
+    if (!jid.resource().isEmpty())
+      System.out.println();
   }
   public RoomAgent(JID jid, JID owner) {
     this.jid = jid;
+    if (!jid.resource().isEmpty())
+      System.out.println();
   }
 
   public JID jid() {
@@ -123,7 +128,7 @@ public class RoomAgent extends PersistentActorAdapter {
     final JID jid = XMPP.jid(req.from());
     sender().tell(
         archive().stream()
-            .filter(stanza -> !jid.bareEq(stanza.from()) && relevant(stanza, jid))
+            .filter(stanza -> checkDst(stanza, jid, true) && relevant(stanza, jid))
             .collect(Collectors.toList()),
         self());
   }
@@ -329,7 +334,7 @@ public class RoomAgent extends PersistentActorAdapter {
       status.presence = presence;
     if (xData.has(MucHistory.class) && presence.available()) {
       xData.get(MucHistory.class).filter(archive()).forEach(stanza -> {
-        if (stanza instanceof Message && relevant(stanza, from)) {
+        if (stanza instanceof Message && checkDst(stanza, from, true) && relevant(stanza, from)) {
           XMPP.send(participantCopy(stanza, from), context());
         }
       });
@@ -339,13 +344,28 @@ public class RoomAgent extends PersistentActorAdapter {
 
   protected boolean filter(Presence pres) { return true; }
   protected boolean relevant(Stanza msg, JID to) {
-    final JID msgTo = msg.to();
+    return !(msg instanceof Message) || ((Message) msg).type() == MessageType.GROUP_CHAT;
+  }
+
+  private boolean checkDst(Stanza stanza, JID to, boolean sendBack) {
+    final JID msgTo = stanza.to();
+    if (!sendBack) {
+      final JID msgFrom = stanza.from();
+      if (msgFrom.bareEq(to))
+        return false;
+      if (msgFrom.bareEq(jid()) && msgFrom.hasResource()) {
+        final MucUserStatus status = participants.get(to);
+        if (status != null && !msgFrom.resource().equals(status.nickname))
+          return false;
+      }
+    }
     if (msgTo != null && msgTo.hasResource()) {
       final MucUserStatus status = participants.get(to);
       return status != null && msgTo.resource().equals(status.nickname);
     }
-    return !(msg instanceof Message) || ((Message) msg).type() == MessageType.GROUP_CHAT;
+    return true;
   }
+
   protected boolean filter(Message msg) {
     final JID from = msg.from();
     Role role = role(from);
@@ -376,29 +396,13 @@ public class RoomAgent extends PersistentActorAdapter {
     started = true;
   }
 
-  public JID participantByAlias(String alias) {
-    final Holder<JID> result = new Holder<>();
-    participants.forEach((jid, status) -> {
-      if (jid.local().equals(alias) || status.nickname.equals(alias))
-        result.setValue(jid);
-    });
-    return result.getValue();
-  }
   protected void broadcast(Stanza stanza) {
     if (!started)
       return;
-    if (stanza.to() == null || stanza.to().equals(jid())) {
-      participants.forEach((jid, status) -> {
-        if (jid.bareEq(stanza.from()) || !relevant(stanza, jid))
-          return;
+    participants.forEach((jid, status) -> {
+      if (checkDst(stanza, jid, false) && relevant(stanza, jid))
         XMPP.send(participantCopy(stanza, jid), context());
-      });
-    }
-    else if(stanza.to().bareEq(jid())) { // room alias
-      participantCopy(stanza, participantByAlias(stanza.to().resource()));
-    }
-    else
-      participantCopy(stanza, stanza.to());
+    });
   }
 
   protected <S extends Stanza> S participantCopy(final S stanza, final JID to) {

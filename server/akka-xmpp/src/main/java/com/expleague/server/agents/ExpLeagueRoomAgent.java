@@ -139,10 +139,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       if (state == WORK) { // order update during the work
         if (mode != ProcessMode.RECOVER && affiliation == Affiliation.ADMIN) {
           final List<JID> activeExperts = orders.stream().flatMap(o -> o.of(ACTIVE)).collect(Collectors.toList());
-          orders.stream().map(ExpLeagueOrder::broker).filter(Objects::nonNull).forEach(b -> b.tell(new Cancel(), self()));
+          cancelOrders();
           if (activeExperts != null)
             offer.filter().prefer(activeExperts.toArray(new JID[activeExperts.size()]));
-          orders.clear();
           orders.addAll(Arrays.asList(LaborExchange.board().register(offer)));
           if (mode == ProcessMode.NORMAL)
             orders.forEach(o -> LaborExchange.tell(context(), o, self()));
@@ -217,6 +216,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         if (mode == ProcessMode.NORMAL) {
           invoke(new Message(from, roomAlias(owner()), msg.get(Answer.class), new Verified(from)));
         }
+        if (mode != ProcessMode.RECOVER) {
+          cancelOrders();
+        }
       }
       else state(VERIFY, mode);
       answer = msg;
@@ -270,6 +272,11 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         }
       }
     }
+  }
+
+  private void cancelOrders() {
+    orders.stream().filter(o -> o.state() != OrderState.DONE).map(ExpLeagueOrder::broker).filter(Objects::nonNull).forEach(b -> b.tell(new Cancel(), self()));
+    orders.clear();
   }
 
   @Override
