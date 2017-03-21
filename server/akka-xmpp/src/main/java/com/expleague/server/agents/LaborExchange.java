@@ -66,10 +66,10 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
   @ActorMethod
   public void invoke(Operations.StatusChange notification) {
     if (!"experts".equals(sender().path().parent().name())) { // broker
-      final ExpLeagueOrder.Status orderStatus = ExpLeagueOrder.Status.valueOf(notification.taskState());
+      final OrderState orderState = OrderState.valueOf(notification.taskState());
       final BrokerRole.State from = BrokerRole.State.valueOf(notification.from());
       final BrokerRole.State to = BrokerRole.State.valueOf(notification.to());
-      if (EnumSet.of(ExpLeagueOrder.Status.IN_PROGRESS, ExpLeagueOrder.Status.SUSPENDED).contains(orderStatus)) {
+      if (EnumSet.of(OrderState.IN_PROGRESS, OrderState.SUSPENDED).contains(orderState)) {
         if (from == BrokerRole.State.STARVING)
           status.brokerFed();
         else if (to == BrokerRole.State.STARVING)
@@ -228,9 +228,9 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
   public static class OrderFilter {
     // todo: should be a full-blown rich feature filter
     private final boolean withoutFeedback;
-    private final EnumSet<ExpLeagueOrder.Status> statuses;
+    private final EnumSet<OrderState> statuses;
 
-    public OrderFilter(final boolean withoutFeedback, final EnumSet<ExpLeagueOrder.Status> statuses) {
+    public OrderFilter(final boolean withoutFeedback, final EnumSet<OrderState> statuses) {
       this.withoutFeedback = withoutFeedback;
       this.statuses = statuses;
     }
@@ -239,7 +239,7 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
       return withoutFeedback;
     }
 
-    public EnumSet<ExpLeagueOrder.Status> getStatuses() {
+    public EnumSet<OrderState> getStatuses() {
       return statuses;
     }
   }

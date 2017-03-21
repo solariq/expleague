@@ -14,6 +14,7 @@ import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import akka.util.Timeout;
+import com.expleague.model.OrderState;
 import com.expleague.server.Roster;
 import com.expleague.server.admin.dto.*;
 import com.expleague.server.admin.series.TimeSeriesChartDto;
@@ -128,12 +129,12 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           }
           else if ("/closed/without/feedback".equals(path)) {
             response = getOrders(board.orders(
-              new LaborExchange.OrderFilter(true, EnumSet.of(ExpLeagueOrder.Status.DONE))
+              new LaborExchange.OrderFilter(true, EnumSet.of(OrderState.DONE))
             ));
           }
           else if ("/closed".equals(path)) {
             response = getOrders(board.orders(
-              new LaborExchange.OrderFilter(false, EnumSet.of(ExpLeagueOrder.Status.DONE))
+              new LaborExchange.OrderFilter(false, EnumSet.of(OrderState.DONE))
             ));
           }
           else if ("/top/experts".equals(path)) {
@@ -169,7 +170,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
             final List<JID> failed = new ArrayList<>();
             final List<JID> success = new ArrayList<>();
             LaborExchange.board()
-                .orders(new LaborExchange.OrderFilter(false, EnumSet.noneOf(ExpLeagueOrder.Status.class)))
+                .orders(new LaborExchange.OrderFilter(false, EnumSet.noneOf(OrderState.class)))
                 .map(ExpLeagueOrder::room)
                 .forEach(roomJid -> {
                   final Future<Object> result = Patterns.ask(XMPP.register(roomJid, context()), new RoomAgent.Replay(), Timeout.apply(10, TimeUnit.HOURS));
@@ -217,7 +218,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
       final TLongLongHashMap timestamp2TaskDuration = new TLongLongHashMap();
       final TLongDoubleHashMap timestamp2Feedback = new TLongDoubleHashMap();
 
-      board.orders(new LaborExchange.OrderFilter(false, EnumSet.allOf(ExpLeagueOrder.Status.class))).forEach(
+      board.orders(new LaborExchange.OrderFilter(false, EnumSet.allOf(OrderState.class))).forEach(
         order -> {
           final long startTimestamp = (long) (order.offer().started() * 1000);
           final DateTime startDay = new DateTime(startTimestamp).dayOfMonth().roundFloorCopy();
@@ -228,9 +229,9 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
             timestamp2NewUsers.put(startDay.getMillis(), user);
           }
 
-          if (order.status() == ExpLeagueOrder.Status.DONE) {
+          if (order.state() == OrderState.DONE) {
             final long closeTimestamp = order.statusHistoryRecords()
-              .filter(statusHistoryRecord -> statusHistoryRecord.getStatus() == ExpLeagueOrder.Status.DONE)
+              .filter(statusHistoryRecord -> statusHistoryRecord.getStatus() == OrderState.DONE)
               .findFirst().get()
               .getDate().getTime();
 

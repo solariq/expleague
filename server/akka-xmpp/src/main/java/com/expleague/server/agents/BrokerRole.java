@@ -6,6 +6,7 @@ import akka.actor.Cancellable;
 import akka.actor.FSM;
 import akka.util.Timeout;
 import com.expleague.model.Operations.*;
+import com.expleague.model.OrderState;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.util.akka.AkkaTools;
 import com.expleague.xmpp.JID;
@@ -18,9 +19,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.expleague.model.OrderState.OPEN;
 import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
-import static com.expleague.server.agents.ExpLeagueOrder.Status.IN_PROGRESS;
-import static com.expleague.server.agents.ExpLeagueOrder.Status.SUSPENDED;
+import static com.expleague.model.OrderState.IN_PROGRESS;
+import static com.expleague.model.OrderState.SUSPENDED;
 import static com.expleague.server.agents.LaborExchange.Experts;
 import static com.expleague.server.agents.LaborExchange.experts;
 
@@ -29,7 +31,7 @@ import static com.expleague.server.agents.LaborExchange.experts;
  * Date: 18.12.15
  * Time: 22:50
  */
-public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.State> {
+public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Status> {
   private static final Logger log = Logger.getLogger(BrokerRole.class.getName());
 
   public static final FiniteDuration RETRY_TIMEOUT = ExpLeagueServer.config().timeout("broker-role.retry-timeout");
@@ -48,12 +50,13 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               sender().tell(new Ok(), self());
               order.broker(self());
 
-              if (order.status() == IN_PROGRESS) {// server was shut down
-                order.state().suspend();
+              final ExpLeagueOrder.Status status = order.state(context());
+              if (order.state() == IN_PROGRESS) {// server was shut down
+                status.suspend();
               }
 
               final JID expertOnTask = order.of(ACTIVE).findAny().orElse(null);
-              if (order.status() == SUSPENDED && expertOnTask != null) {
+              if (order.state() == SUSPENDED && expertOnTask != null) {
                 final long activationTimestampMs = order.activationTimestampMs();
                 final long currentTimeMillis = System.currentTimeMillis();
                 final long suspendIntervalMs = activationTimestampMs - currentTimeMillis;
@@ -65,12 +68,13 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
                   //noinspection ConstantConditions
                   explain("Trying to get active worker " + expertOnTask.local() + " back to the order.");
                   Experts.tellTo(expertOnTask, new Resume(order.offer()), self(), context());
-                  return goTo(State.STARVING).using(order.state());
+                  return goTo(State.STARVING).using(status);
                 }
               }
               else {
+                status.state(OPEN);
                 explain("No active work on order found.");
-                return lookForExpert(order.state()).using(order.state());
+                return lookForExpert(status).using(status);
               }
             }
         )
@@ -97,7 +101,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
             }
         ).event(ActorRef.class,
             (expert, task) -> {
-              if (task.order().status() == SUSPENDED) {
+              if (task.order().state() == SUSPENDED) {
                 if (task.role(Experts.jid(expert)) == ACTIVE) {
                   explain("Worker returned online, sending resume.");
                   expert.tell(new Resume(task.order().offer()), self());
@@ -142,7 +146,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
         ).event(Timeout.class,
             (to, task) -> {
               timeout = AkkaTools.scheduleTimeout(context(), RETRY_TIMEOUT.plus(FiniteDuration.apply(rng.nextDouble(), ExpLeagueServer.config().timeUnit("broker-role.retry-timeout-delta"))), self());
-              return task.order().status() != SUSPENDED ? lookForExpert(task) : stay();
+              return task.order().state() != SUSPENDED ? lookForExpert(task) : stay();
             }
         )
     );
@@ -157,7 +161,6 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
                   .filter(jid -> !jid.bareEq(expert))
                   .forEach(jid -> Experts.tellTo(jid, new Cancel(), self(), context()));
               task.enter(expert);
-              XMPP.send(new Message(expert, task.jid(), new Start()), context());
               return goTo(State.WORK_TRACKING);
             }
         ).event(Resume.class,
@@ -265,6 +268,13 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
         ).event(Cancel.class, // cancel from the room
             (cancel, task) -> task.jid().bareEq(XMPP.jid(sender())),
             (cancel, task) -> cancelTask(task)
+        ).event(Progress.class, // cancel from the room
+            (progress, task) -> {
+              explain("Resending progress to room");
+              progress.order(task.order().id());
+              XMPP.send(new Message(Experts.jid(sender()), task.jid(), progress), context());
+              return stay();
+            }
         ).event(Suspend.class,
             (suspend, task) -> {
               XMPP.send(new Message(Experts.jid(sender()), task.jid(), suspend), context());
@@ -315,8 +325,8 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
 
     onTransition((from, to) -> {
       if (from != to) {
-        final ExpLeagueOrder.State state = stateData();
-        final StatusChange statusChange = new StatusChange(from.name(), to.name(), state != null ? state.status().name() : ExpLeagueOrder.Status.NONE.name());
+        final ExpLeagueOrder.Status status = stateData();
+        final StatusChange statusChange = new StatusChange(from.name(), to.name(), status != null ? status.state().name() : OrderState.NONE.name());
         LaborExchange.reference(context()).tell(statusChange, self());
         if (this.timeout != null)
           this.timeout.cancel();
@@ -331,7 +341,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
         ).stop(Shutdown(),
             (state, data) -> log.warning("BrokerRole shut down on " + data)
         ).stop(Failure.class,
-            (reason, data, state) -> log.warning("ExpertRole terminated on " + data + " in state " + state)
+            (reason, data, status) -> log.warning("ExpertRole terminated on " + data + " in state " + status)
         )
     );
 
@@ -339,7 +349,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
   }
 
   @Override
-  public void processEvent(FSM.Event<ExpLeagueOrder.State> event, Object source) {
+  public void processEvent(FSM.Event<ExpLeagueOrder.Status> event, Object source) {
     try {
       final State from = stateName();
       super.processEvent(event, source);
@@ -354,10 +364,10 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
     }
   }
 
-  private FSM.State<State, ExpLeagueOrder.State> cancelTask(ExpLeagueOrder.State orderState) {
+  private FSM.State<State, ExpLeagueOrder.Status> cancelTask(ExpLeagueOrder.Status orderStatus) {
     explain("The order was canceled by client. Sending all experts cancel.");
-    orderState.experts().forEach(jid -> Experts.tellTo(jid, new Cancel(), self(), context()));
-    orderState.cancel();
+    orderStatus.experts().forEach(jid -> Experts.tellTo(jid, new Cancel(), self(), context()));
+    orderStatus.cancel();
     return goTo(State.UNEMPLOYED).using(null);
   }
 
@@ -367,13 +377,13 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
     this.explanation += explanation;
   }
 
-  private FSM.State<State, ExpLeagueOrder.State> lookForExpert(ExpLeagueOrder.State orderState) {
+  private FSM.State<State, ExpLeagueOrder.Status> lookForExpert(ExpLeagueOrder.Status orderStatus) {
     explain("Going to labor exchange to find expert.");
-    orderState.experts().forEach(
+    orderStatus.experts().forEach(
       jid -> Experts.tellTo(jid, new Cancel(), self(), context())
     );
-    orderState.nextRound();
-    experts(context()).tell(orderState.order().offer(), self());
+    orderStatus.nextRound();
+    experts(context()).tell(orderStatus.order().offer(), self());
     return stateName() != State.STARVING ? goTo(State.STARVING) : stay();
   }
 

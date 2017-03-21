@@ -1,6 +1,7 @@
 package com.expleague.server.dao.fake;
 
 import com.expleague.model.Application;
+import com.expleague.model.ExpertsProfile;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
 import com.expleague.server.XMPPUser;
@@ -50,7 +51,7 @@ public class InMemRoster implements Roster {
       }
     }
     if (associated == null) {
-      associated = new XMPPUser(query.username(), query.country(), query.city(), query.name(), 0, 0, new Date(), query.avatar(), query.trusted());
+      associated = new XMPPUser(query.username(), query.country(), query.city(), query.name(), 0, 0, new Date(), query.avatar(), query.trusted() ? ExpertsProfile.Authority.ADMIN : ExpertsProfile.Authority.EXPERT);
       users.put(associated.id(), associated);
       log.log(Level.INFO, "Created new user " + associated.name());
     }

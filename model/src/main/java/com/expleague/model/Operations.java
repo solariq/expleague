@@ -77,13 +77,41 @@ public class Operations {
   public static class Create extends Command {}
 
   @XmlRootElement
-  public static class Start extends Command {}
+  public static class Start extends Command {
+    @XmlAttribute
+    private String order;
+
+    @XmlAttribute
+    private JID expert;
+
+    public Start() {}
+    public Start(String orderId, JID expert) {
+      order = orderId;
+      this.expert = expert;
+    }
+
+    public String order() {
+      return order;
+    }
+  }
 
   @XmlRootElement
   public static class Done extends Command {}
 
   @XmlRootElement
   public static class Check extends Command {
+  }
+
+
+  @XmlRootElement
+  public static class Verified extends Item {
+    @XmlAttribute
+    private JID authority;
+
+    public Verified() {}
+    public Verified(JID authority) {
+      this.authority = authority;
+    }
   }
 
   @XmlRootElement
@@ -262,6 +290,9 @@ public class Operations {
     @XmlAttribute
     private Role role;
 
+    @XmlAttribute
+    private String order;
+
     public RoomRoleUpdate() {}
     public RoomRoleUpdate(JID expert, Affiliation affiliation) {
       this.expert = expert;
@@ -327,9 +358,12 @@ public class Operations {
    */
 
   @XmlRootElement
-  public static class Progress extends Command {
+  public static class Progress extends Item {
     @XmlElement(name="change", namespace = NS)
     private MetaChange metaChange;
+
+    @XmlElement(name="state", namespace = NS)
+    private StateChange stateChange;
 
     @XmlAttribute
     private String order;
@@ -337,11 +371,17 @@ public class Operations {
     public Progress() {
     }
 
-    public Progress(MetaChange metaChange) {
+    public Progress(String id, MetaChange metaChange) {
+      this.order = id;
       this.metaChange = metaChange;
     }
 
-    public MetaChange change() {
+    public Progress(String id, OrderState state) {
+      this.order = id;
+      this.stateChange = new StateChange(state);
+    }
+
+    public MetaChange meta() {
       return metaChange;
     }
 
@@ -349,7 +389,15 @@ public class Operations {
       return order;
     }
 
-    @XmlRootElement(name = "change", namespace = "NS")
+    public OrderState state() {
+      return stateChange != null ? stateChange.state : null;
+    }
+
+    public void order(String id) {
+      this.order = id;
+    }
+
+    @XmlRootElement(name = "change", namespace = NS)
     public static class MetaChange {
       @XmlAttribute
       private Operation operation;
@@ -394,6 +442,19 @@ public class Operations {
         @XmlEnumValue("tag") TAGS,
         @XmlEnumValue("phone") PHONE,
         @XmlEnumValue("url") URL,
+      }
+    }
+
+    @XmlRootElement(name = "state", namespace = NS)
+    public static class StateChange {
+      @XmlValue
+      private OrderState state;
+
+      @SuppressWarnings("unused")
+      public StateChange() {}
+
+      public StateChange(OrderState state) {
+        this.state = state;
       }
     }
   }

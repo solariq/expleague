@@ -109,7 +109,7 @@ public class doSearch extends Application {
         if (item.startsWith("{\"type\":\"pageVisited\"")) {
           if (task != null) {
             final JsonNode data = mapper.readTree(item).get("data");
-            task.progress(new Progress(new Progress.MetaChange(data.asText(), Operation.VISIT, Target.URL)));
+            task.progress(new Progress(null, new Progress.MetaChange(data.asText(), Operation.VISIT, Target.URL)));
           }
           else
             response.setStatus(503);

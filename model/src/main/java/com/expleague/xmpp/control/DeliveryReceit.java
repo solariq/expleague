@@ -12,16 +12,16 @@ import javax.xml.bind.annotation.XmlType;
  * Created by solar on 21.02.17.
  */
 @SuppressWarnings("unused")
-@XmlRootElement(name = "query", namespace = DeliveryQuery.NS)
-public class DeliveryQuery extends Item {
+@XmlRootElement(name = "query", namespace = DeliveryReceit.NS)
+public class DeliveryReceit extends Item {
   public static final String NS = "http://expleague.com/delivery";
 
   @XmlElementRef(namespace = NS)
-  private DeliveryQuery.Item item;
+  private DeliveryReceit.Item item;
 
-  public DeliveryQuery() {}
+  public DeliveryReceit() {}
 
-  public DeliveryQuery(String id, String resource) {
+  public DeliveryReceit(String id, String resource) {
     item = new Item(id, resource);
   }
 

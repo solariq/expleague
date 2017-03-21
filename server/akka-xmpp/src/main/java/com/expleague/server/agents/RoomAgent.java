@@ -12,7 +12,7 @@ import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.PersistentActorAdapter;
 import com.expleague.xmpp.JID;
-import com.expleague.xmpp.control.DeliveryQuery;
+import com.expleague.xmpp.control.DeliveryReceit;
 import com.expleague.xmpp.muc.MucAdminQuery;
 import com.expleague.xmpp.muc.MucHistory;
 import com.expleague.xmpp.muc.MucXData;
@@ -95,7 +95,8 @@ public class RoomAgent extends PersistentActorAdapter {
 
     persist(message, msg -> {
       archive(msg);
-      process(msg, ProcessMode.NORMAL);
+      if (msg.to().resource().isEmpty()) // process only messages
+        process(msg, ProcessMode.NORMAL);
       broadcast(msg);
     });
   }
@@ -178,7 +179,8 @@ public class RoomAgent extends PersistentActorAdapter {
   public void recover(DeleteMessagesSuccess success) {
     dump.stream().forEach(stanza -> {
       if (stanza instanceof Message) {
-        process((Message)stanza, ProcessMode.REPLAY);
+        if (stanza.to().resource().isEmpty())
+          process((Message)stanza, ProcessMode.REPLAY);
       }
       else if (stanza instanceof Iq) {
         process((Iq)stanza, ProcessMode.REPLAY);
@@ -225,8 +227,8 @@ public class RoomAgent extends PersistentActorAdapter {
         return mode != ProcessMode.RECOVER;
       }
     }
-    else if (iq.get() instanceof DeliveryQuery) {
-      delivered(((DeliveryQuery) iq.get()).id(), mode);
+    else if (iq.get() instanceof DeliveryReceit) {
+      delivered(((DeliveryReceit) iq.get()).id(), mode);
     }
     return false;
   }
@@ -288,9 +290,9 @@ public class RoomAgent extends PersistentActorAdapter {
       process(Iq.create(jid(), XMPP.jid(), Iq.IqType.SET, new MucAdminQuery(from.local(), affiliation, null)), ProcessMode.RECOVER);
     }
     if (role != null && status.role != role) {
+      status.role = role;
       if (status.role == Role.NONE && mode == ProcessMode.NORMAL)
         enter(from);
-      status.role = role;
     }
     return true;
   }
@@ -306,7 +308,6 @@ public class RoomAgent extends PersistentActorAdapter {
   }
 
   public boolean update(Presence presence) {
-//    System.out.println("Room presence received: " + presence);
     final JID from = presence.from();
     final MucXData xData = presence.has(MucXData.class) ? presence.get(MucXData.class) : new MucXData();
     if (!presence.available())
@@ -438,16 +439,25 @@ public class RoomAgent extends PersistentActorAdapter {
       final Stanza stanza = (Stanza) o;
       if (o instanceof Iq)
         process((Iq) o, ProcessMode.RECOVER);
-      else if (o instanceof Message)
-        process((Message) o, ProcessMode.RECOVER);
+      else if (o instanceof Message) {
+        final Message message = (Message) o;
+        if (message.to().resource().isEmpty())
+          process(message, ProcessMode.RECOVER);
+      }
       archive.add(stanza);
+    }
+    else if (o instanceof DeliveryReceit) {
+      delivered(((DeliveryReceit) o).id(), ProcessMode.RECOVER);
     }
     else if (o instanceof RecoveryCompleted) {
       if (archive.isEmpty()) {
         final Archive.Dump dump = Archive.instance().dump(jid.local());
         dump.stream().forEach(s -> persist(s, stanza -> {
-          if (stanza instanceof Message)
-            process((Message) stanza, ProcessMode.REPLAY);
+          if (stanza instanceof Message) {
+            final Message message = (Message) stanza;
+            if (message.to().resource().isEmpty())
+              process(message, ProcessMode.REPLAY);
+          }
           else if (stanza instanceof Iq)
             process((Iq) stanza, ProcessMode.REPLAY);
         }));

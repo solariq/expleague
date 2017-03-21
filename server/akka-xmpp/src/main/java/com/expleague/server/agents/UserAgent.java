@@ -2,6 +2,8 @@ package com.expleague.server.agents;
 
 import akka.actor.ActorRef;
 import akka.actor.PoisonPill;
+import akka.persistence.DeleteMessagesFailure;
+import akka.persistence.DeleteMessagesSuccess;
 import akka.persistence.RecoveryCompleted;
 import com.expleague.model.Answer;
 import com.expleague.model.Delivered;
@@ -172,6 +174,7 @@ public class UserAgent extends PersistentActorAdapter {
     private Set<String> confirmationAwaitingStanzas = new HashSet<>();
     private Map<String, Stanza> inFlight = new HashMap<>();
     private final Subscription subscription;
+    private int totalMessages;
 
     public Courier(XMPPDevice connectedDevice, JID deviceJid, ActorRef connection) {
       this.connectedDevice = connectedDevice;
@@ -184,9 +187,26 @@ public class UserAgent extends PersistentActorAdapter {
     }
 
     @Override
+    protected void preStart() throws Exception {
+      totalMessages = 0;
+    }
+
+    @ActorMethod
+    public void repackDeliveryQueue(DeleteMessagesSuccess success) {
+      deliveryQueue.forEach(stanza -> persist(stanza, s -> {}));
+      totalMessages = deliveryQueue.size();
+    }
+
+    @ActorMethod
+    public void failedToDeleteMessaged(DeleteMessagesFailure failure) {
+      log.warning("Unable to clear out user mailbox: " + deviceJid);
+    }
+
+    @Override
     public void onReceiveRecover(Object o) throws Exception {
       if (o instanceof Stanza) {
         final Stanza stanza = (Stanza) o;
+        totalMessages++;
         deliveryQueue.add(stanza);
       }
       else if (o instanceof Delivered) {
@@ -199,6 +219,11 @@ public class UserAgent extends PersistentActorAdapter {
         }
       }
       else if (o instanceof RecoveryCompleted) {
+        if (totalMessages > 100 && deliveryQueue.size() < 50) {
+          // TODO: snapshot
+          deleteMessages(); // clear the mailbox
+        }
+
         nextChunk();
         XMPP.subscribe(subscription, context());
         if (connectedDevice.role() == XMPPDevice.Role.ADMIN) {

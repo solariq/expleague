@@ -7,7 +7,6 @@ import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
 import com.expleague.server.XMPPUser;
-import com.expleague.server.dao.fake.InMemRoster;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.register.RegisterQuery;
 import com.spbsu.commons.util.cache.CacheStrategy;
@@ -19,7 +18,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -306,7 +304,8 @@ public class MySQLRoster extends MySQLOps implements Roster {
 
   @NotNull
   private XMPPUser createUser(ResultSet resultSet, int offset) throws SQLException {
-    final boolean trusted = resultSet.getBoolean(offset + 9);
+    final int priority = resultSet.getInt(offset + 9);
+
     return new XMPPUser(
         resultSet.getString(offset + 1),
         resultSet.getString(offset + 2),
@@ -316,7 +315,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
         resultSet.getInt(offset + 6),
         resultSet.getTimestamp(offset + 7),
         resultSet.getString(offset + 8),
-        trusted
+        ExpertsProfile.Authority.valueOf(priority)
     );
   }
 }

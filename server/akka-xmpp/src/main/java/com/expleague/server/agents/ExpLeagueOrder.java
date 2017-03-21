@@ -1,9 +1,13 @@
 package com.expleague.server.agents;
 
+import akka.actor.ActorContext;
 import akka.actor.ActorRef;
 import com.expleague.model.Offer;
+import com.expleague.model.Operations;
+import com.expleague.model.OrderState;
 import com.expleague.model.Tag;
 import com.expleague.xmpp.JID;
+import com.expleague.xmpp.stanza.Message;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,9 +29,8 @@ public abstract class ExpLeagueOrder {
 
   public static int SIMULTANEOUSLY_INVITED = 3;
   private final Offer offer;
-  private final State state = new State();
 
-  protected Status status = Status.OPEN;
+  protected OrderState state = OrderState.NONE;
   private ActorRef broker;
 
   protected long snapshotTimestamp = NO_SNAPSHOT_TIMESTAMP;
@@ -36,12 +39,12 @@ public abstract class ExpLeagueOrder {
     this.offer = offer;
   }
 
-  public Status status() {
-    return status;
+  public OrderState state() {
+    return state;
   }
 
-  protected State state() {
-    return state;
+  protected Status state(ActorContext context) {
+    return new Status(context);
   }
 
   public Offer offer() {
@@ -61,6 +64,7 @@ public abstract class ExpLeagueOrder {
     return offer.room();
   }
 
+  public abstract String id();
   public abstract Role role(JID jid);
   public abstract Stream<JID> participants();
   public abstract void feedback(double stars, @Nullable String payment);
@@ -78,8 +82,8 @@ public abstract class ExpLeagueOrder {
   protected abstract void untag(String tag);
   protected abstract void updateActivationTimestampMs(final long timestamp);
 
-  protected void status(Status status) {
-    this.status = status;
+  protected void state(OrderState state) {
+    this.state = state;
   }
 
   protected long currentTimestampMillis() {
@@ -98,7 +102,13 @@ public abstract class ExpLeagueOrder {
     return of(OWNER).findFirst().get();
   }
 
-  public class State {
+  public class Status {
+    private final ActorContext context;
+
+    public Status(ActorContext context) {
+      this.context = context;
+    }
+
     public boolean check(JID expert) {
       if (role(expert) == Role.NONE && of(CANDIDATE).count() < SIMULTANEOUSLY_INVITED) {
         role(expert, CHECKING);
@@ -119,24 +129,27 @@ public abstract class ExpLeagueOrder {
       return false;
     }
 
-    public ExpLeagueOrder.State enter(JID expert) {
+    public Status enter(JID expert) {
       if (expert != null)
         role(expert, ACTIVE);
       mapTempRoles(role -> role.permanent() ? role : Role.NONE);
-      status(expert != null ? Status.IN_PROGRESS : Status.OPEN);
+      if (state() == OrderState.OPEN && expert != null)
+        XMPP.send(new Message(expert, jid(), new Operations.Start(order().id(), expert)), context);
+      state(expert != null ? OrderState.IN_PROGRESS : OrderState.OPEN);
+
       return this;
     }
 
-    public ExpLeagueOrder.State cancel() {
+    public Status cancel() {
       mapTempRoles(role -> role.permanent() ? role : Role.NONE);
-      status(Status.DONE);
+      state(OrderState.DONE);
       return this;
     }
 
-    public ExpLeagueOrder.State refused(JID expert) {
+    public Status refused(JID expert) {
       switch (role(expert)) {
         case ACTIVE:
-          status(Status.OPEN);
+          state(OrderState.OPEN);
           role(expert, SLACKER);
           break;
         case INVITED:
@@ -149,7 +162,7 @@ public abstract class ExpLeagueOrder {
       return this;
     }
 
-    public ExpLeagueOrder.State ignored(JID expert) {
+    public Status ignored(JID expert) {
       final Role role = role(expert);
       if (role == INVITED)
         role(expert, DND);
@@ -189,7 +202,7 @@ public abstract class ExpLeagueOrder {
     }
 
     public void suspend(final long endTimestampMs) {
-      status(Status.SUSPENDED);
+      state(OrderState.SUSPENDED);
       updateActivationTimestampMs(endTimestampMs);
     }
 
@@ -206,19 +219,21 @@ public abstract class ExpLeagueOrder {
     }
 
     public void close() {
-      status(Status.DONE);
+      state(OrderState.DONE);
     }
 
     public Stream<JID> experts() {
       return participants().filter(jid -> EnumSet.of(ACTIVE, CANDIDATE, CHECKING, INVITED).contains(role(jid)));
     }
 
-    public void status(Status status) {
-      ExpLeagueOrder.this.status(status);
+    public void state(OrderState state) {
+      if (state != this.state())
+        XMPP.send(new Message(jid(), jid(), new Operations.Progress(order().id(), state)), context);
+      ExpLeagueOrder.this.state(state);
     }
 
-    public Status status() {
-      return ExpLeagueOrder.this.status();
+    public OrderState state() {
+      return ExpLeagueOrder.this.state();
     }
   }
 
@@ -254,39 +269,16 @@ public abstract class ExpLeagueOrder {
     }
   }
 
-  public enum Status {
-    NONE(-1),
-    OPEN(0),
-    IN_PROGRESS(1),
-    SUSPENDED(2),
-    DONE(3),
-    ;
-
-    int index;
-
-    Status(int index) {
-      this.index = index;
-    }
-
-    public static Status valueOf(int index) {
-      return Stream.of(Status.values()).filter(s -> s.index == index).findAny().orElse(null);
-    }
-
-    public int index() {
-      return index;
-    }
-  }
-
   public static class StatusHistoryRecord {
-    private final Status status;
+    private final OrderState status;
     private final Date date;
 
-    public StatusHistoryRecord(final Status status, final Date date) {
+    public StatusHistoryRecord(final OrderState status, final Date date) {
       this.status = status;
       this.date = date;
     }
 
-    public Status getStatus() {
+    public OrderState getStatus() {
       return status;
     }
 

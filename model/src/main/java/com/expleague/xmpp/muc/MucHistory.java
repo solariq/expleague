@@ -29,7 +29,7 @@ public class MucHistory extends com.expleague.xmpp.Item {
     else if (lastId != null) {
       for (int i = 0; i < archive.size(); i++) {
         if (lastId.startsWith(archive.get(i).id()))
-          return archive.subList(i, archive.size()).stream();
+          return archive.subList(i + 1, archive.size()).stream();
       }
     }
     return archive.stream();

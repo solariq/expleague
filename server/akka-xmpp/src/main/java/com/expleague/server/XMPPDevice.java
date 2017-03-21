@@ -1,5 +1,6 @@
 package com.expleague.server;
 
+import com.expleague.model.ExpertsProfile;
 import com.expleague.xmpp.JID;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +36,7 @@ public abstract class XMPPDevice {
     this.name = name;
     if (!expert)
       role = CLIENT;
-    else if (!user.trusted())
+    else if (user.authority() != ExpertsProfile.Authority.ADMIN)
       role = EXPERT;
     else
       role = ADMIN;

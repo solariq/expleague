@@ -46,7 +46,6 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
   private String explanation = "";
 
   {
-    System.out.println("Expert " + jid() + "restarted!");
     startWith(State.OFFLINE, new Variants());
     if (XMPP.online(context()).contains(jid().bare()))
       laborExchange(new Variants());
@@ -226,7 +225,13 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 task.removeVariant(task.broker());
                 return goTo1(State.READY);
               }
-              if (msg.has(Done.class) || msg.has(Answer.class)) { // hack for answer
+              else if (msg.has(Progress.class)) {
+                if (msg.to() == null || msg.to().local().isEmpty())
+                  task.broker().tell(msg.get(Progress.class), self());
+                return stay();
+              }
+
+              else if (msg.has(Done.class) || msg.has(Answer.class)) { // hack for answer
                 explain("Expert has finished task execution. Notifying broker and going to labor exchange.");
                 task.broker().tell(new Done(), self());
                 return laborExchange(task);
@@ -248,9 +253,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
             }
         ).event(Offer.class, // continue the task
             (offer, task) -> offer.room().equals(task.offer().room()),
-            (offer, task) -> {
-              return goTo1(State.INVITE).using(task.enforce(offer, sender())).replying(new Ok());
-            }
+            (offer, task) -> goTo1(State.INVITE).using(task.enforce(offer, sender())).replying(new Ok())
         )
     );
 
@@ -404,7 +407,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     }
 
     public Variants enforce(Offer offer, ActorRef sender) {
-      taskOptions = Lists.newArrayList(new TaskOption(sender, offer, new Start()));
+      taskOptions = Lists.newArrayList(new TaskOption(sender, offer, new Check()));
       return this;
     }
 

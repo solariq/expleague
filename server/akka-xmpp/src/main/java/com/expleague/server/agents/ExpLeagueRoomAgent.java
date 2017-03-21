@@ -8,7 +8,7 @@ import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.JID;
-import com.expleague.xmpp.control.DeliveryQuery;
+import com.expleague.xmpp.control.DeliveryReceit;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Stanza;
 
@@ -70,23 +70,18 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   @Override
-  public void exit(JID userId) {
-    GlobalChatAgent.tell(jid(), new RoomRoleUpdate(userId, Role.NONE, affiliation(userId)), context());
-  }
-
-  @Override
   public Role suggestRole(JID from, Affiliation affiliation) {
     final XMPPDevice device = XMPPDevice.fromJid(from);
-    if (isTrusted(from))
+    if (authority(from) == ExpertsProfile.Authority.ADMIN)
       return Role.MODERATOR;
     else if (device != null && device.expert())
         return Role.PARTICIPANT;
     return super.suggestRole(from, affiliation);
   }
 
-  private boolean isTrusted(JID from) {
+  private ExpertsProfile.Authority authority(JID from) {
     final ExpertsProfile profile = Roster.instance().profile(from.local());
-    return profile.trusted();
+    return profile != null ? profile.authority() : ExpertsProfile.Authority.NONE;
   }
 
   @Override
@@ -96,8 +91,8 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         final Message message = (Message) msg;
         return message.type() == Message.MessageType.GROUP_CHAT ||
             message.has(Start.class) ||
-            message.has(Answer.class) ||
-            message.has(Progress.class) ||
+            message.has(Answer.class) && message.has(Verified.class) ||
+            message.has(Progress.class) && message.get(Progress.class).meta() != null ||
             super.relevant(msg, to);
       }
     }
@@ -128,8 +123,8 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     super.process(msg, mode);
     final JID from = msg.from();
     Affiliation affiliation = affiliation(from);
-    final boolean trusted = isTrusted(from);
-    if (trusted && affiliation == Affiliation.NONE) {
+    final ExpertsProfile.Authority authority = authority(from);
+    if (authority == ExpertsProfile.Authority.ADMIN && affiliation == Affiliation.NONE) {
       if (mode != ProcessMode.RECOVER)
         update(from, null, Affiliation.ADMIN, mode);
       affiliation = Affiliation.ADMIN;
@@ -177,10 +172,10 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, true), context());
       }
     }
-    else if (msg.has(Progress.class)) {
+    else if (msg.has(Progress.class) && mode != ProcessMode.RECOVER) {
       final Progress progress = msg.get(Progress.class);
-      final Progress.MetaChange metaChange = progress.change();
-      if (metaChange != null && mode != ProcessMode.RECOVER) {
+      final Progress.MetaChange metaChange = progress.meta();
+      if (metaChange != null) {
         switch (metaChange.target()) {
           case PATTERNS:
             break;
@@ -197,10 +192,17 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         if (role(from) == Role.MODERATOR && mode == ProcessMode.NORMAL)
           update(from, Role.MODERATOR, Affiliation.ADMIN, mode);
       }
+      else if (progress.state() != null && mode == ProcessMode.NORMAL) {
+        GlobalChatAgent.tell(jid(), progress, context());
+      }
     }
     else if (msg.has(Start.class)) {
+      msg.has(Start.class, s -> s.order() != null);
+
       if (mode == ProcessMode.NORMAL) {
-        invoke(new Message(jid(), roomAlias(owner()), Roster.instance().profile(from.local())));
+        final ExpertsProfile profile = Roster.instance().profile(from.local());
+        invoke(new Message(jid(), roomAlias(owner()), msg.get(Start.class), profile));
+        GlobalChatAgent.tell(jid(), new Message(jid(), roomAlias(owner()), msg.get(Start.class), profile.shorten()), context());
         final Offer offer = offer();
         assert offer != null;
         offer.filter().prefer(from);
@@ -208,10 +210,22 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       }
     }
     else if (msg.has(Answer.class)) {
-      state(DELIVERY, mode);
+      if (authority.priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
+        state(DELIVERY, mode);
+        if (mode == ProcessMode.NORMAL)
+          invoke(new Message(jid(), roomAlias(owner()), msg.get(Answer.class), new Verified(from)));
+      }
+      else state(VERIFY, mode);
+      answer = msg;
       if (mode == ProcessMode.NORMAL)
         GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, true), context());
-      answer = msg;
+    }
+    else if (msg.has(Verified.class)) {
+      if (state == VERIFY && authority.priority() >= ExpertsProfile.Authority.EXPERT.priority()) {
+        state(DELIVERY, mode);
+        if (mode == ProcessMode.NORMAL)
+          invoke(new Message(jid(), roomAlias(owner()), answer, new Verified(from)));
+      }
     }
     else if (msg.has(Cancel.class)) {
       if (affiliation == Affiliation.OWNER) {
@@ -229,13 +243,13 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         self().tell(new Message(from, jid(), offer), self());
       }
     }
-    else if (msg.has(Feedback.class) && state == FEEDBACK) {
+    else if (msg.has(Feedback.class) && state == FEEDBACK || state == DELIVERY) {
       if (mode == ProcessMode.NORMAL)
         GlobalChatAgent.tell(jid(), msg.get(Feedback.class), context());
       state(CLOSED, mode);
     }
     else if (msg.has(Done.class)) {
-      orders.removeIf(next -> next.status() == ExpLeagueOrder.Status.DONE);
+      orders.removeIf(next -> next.state() == OrderState.DONE);
     }
     else {
       if (EnumSet.of(CLOSED, FEEDBACK, DELIVERY).contains(state) && !msg.has(Command.class) && affiliation == Affiliation.OWNER) {
@@ -297,7 +311,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       state(FEEDBACK, ProcessMode.NORMAL);
     }
     if (mode == ProcessMode.NORMAL)
-      persist(new DeliveryQuery(id, null), delivered -> {});
+      persist(new DeliveryReceit(id, null), delivered -> {});
   }
 
   Stanza answer = null;

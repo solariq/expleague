@@ -67,7 +67,6 @@ public class DumpRoomService extends ActorAdapter<UntypedActor> {
     }
     catch (Exception e) {
       log.log(Level.WARNING, "Unable to receive answer of the week room dump!", e);
-
     }
   }
 }

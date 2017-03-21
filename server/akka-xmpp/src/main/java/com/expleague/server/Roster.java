@@ -42,7 +42,7 @@ public interface Roster {
 
       builder.name(user.name())
           .avatar(user.avatar())
-          .trusted(user.trusted());
+          .authority(user.authority());
       user.tags().forEach(tag -> builder.tag(tag.name(), tag.score()));
 
       final int tasks = ((Long) LaborExchange.board().related(jid)

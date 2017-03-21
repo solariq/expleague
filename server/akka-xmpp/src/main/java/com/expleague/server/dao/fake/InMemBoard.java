@@ -2,6 +2,7 @@ package com.expleague.server.dao.fake;
 
 import akka.actor.ActorContext;
 import com.expleague.model.Offer;
+import com.expleague.model.OrderState;
 import com.expleague.model.Tag;
 import com.expleague.server.Roster;
 import com.expleague.server.agents.ExpLeagueOrder;
@@ -69,7 +70,7 @@ public class InMemBoard implements LaborExchange.Board {
   @Override
   public Stream<ExpLeagueOrder> orders(LaborExchange.OrderFilter filter) {
     return history.stream()
-      .filter(o -> filter.getStatuses().isEmpty() || filter.getStatuses().contains(o.status()))
+      .filter(o -> filter.getStatuses().isEmpty() || filter.getStatuses().contains(o.state()))
       .filter(o -> !filter.withoutFeedback() || o.feedback() == -1);
   }
 
@@ -101,14 +102,21 @@ public class InMemBoard implements LaborExchange.Board {
     protected double score = -1;
     protected long activationTimestampMs = 0;
     protected String payment;
+    private static int idIndex = 0;
+    private final String id = "" + idIndex++;
 
     public MyOrder(Offer offer) {
       super(offer);
     }
 
     @Override
-    protected void status(final Status status) {
-      super.status(status);
+    public String id() {
+      return id;
+    }
+
+    @Override
+    protected void state(final OrderState status) {
+      super.state(status);
       statusHistory.add(new StatusHistoryRecord(status, new Date(currentTimestampMillis())));
     }
 

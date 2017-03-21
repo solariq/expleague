@@ -1,5 +1,6 @@
 package com.expleague.server.admin.dto;
 
+import com.expleague.model.OrderState;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,7 +17,7 @@ public class OrderDto {
   private final OfferDto offer;
 
   @JsonProperty
-  private final ExpLeagueOrder.Status status;
+  private final OrderState status;
 
   @JsonProperty
   private final List<ParticipantDto> participants;
@@ -29,7 +30,7 @@ public class OrderDto {
 
   public OrderDto(final ExpLeagueOrder order) {
     this.offer = new OfferDto(order.offer());
-    this.status = order.status();
+    this.status = order.state();
     this.participants = order.participants().map(jid -> new ParticipantDto(
       new JIDDto(jid),
       order.role(jid)
@@ -61,7 +62,7 @@ public class OrderDto {
   @JsonIgnoreProperties(ignoreUnknown = true)
   public static class StatusHistoryRecordDto {
     @JsonProperty
-    private ExpLeagueOrder.Status status;
+    private OrderState status;
 
     @JsonProperty
     private long timestamp;

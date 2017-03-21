@@ -122,7 +122,7 @@ public class ExpertTask {
     else if (command instanceof Progress) {
       final Progress progress = (Progress) command;
 
-      final MetaChange change = progress.change();
+      final MetaChange change = progress.meta();
       if (change != null) {
         switch(change.target()) {
           case PATTERNS: // already in answer
@@ -292,20 +292,20 @@ public class ExpertTask {
   private final List<Tag> tags = new ArrayList<>();
   public void tag(Tag tag) {
     tags.add(tag);
-    final Progress progress = new Progress(new MetaChange(tag.name(), Progress.MetaChange.Operation.ADD, MetaChange.Target.TAGS));
+    final Progress progress = new Progress(null, new MetaChange(tag.name(), Progress.MetaChange.Operation.ADD, MetaChange.Target.TAGS));
     ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.NORMAL, progress));
     eventsReceiver.accept(new TaskTagsAssignedEvent(progress, this));
   }
 
   public void untag(Tag tag) {
     tags.remove(tag);
-    final Progress progress = new Progress(new Progress.MetaChange(tag.name(), MetaChange.Operation.REMOVE, MetaChange.Target.TAGS));
+    final Progress progress = new Progress(null, new Progress.MetaChange(tag.name(), MetaChange.Operation.REMOVE, MetaChange.Target.TAGS));
     ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.NORMAL, progress));
     eventsReceiver.accept(new TaskTagsAssignedEvent(progress, this));
   }
 
   public void use(Pattern pattern) {
-    final Progress progress = new Progress(new Progress.MetaChange(pattern.name(), Progress.MetaChange.Operation.ADD, MetaChange.Target.PATTERNS));
+    final Progress progress = new Progress(null, new Progress.MetaChange(pattern.name(), Progress.MetaChange.Operation.ADD, MetaChange.Target.PATTERNS));
     ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.NORMAL, progress));
     eventsReceiver.accept(new TaskTagsAssignedEvent(progress, this));
   }
@@ -317,7 +317,7 @@ public class ExpertTask {
   private final List<String> calls = new ArrayList<>();
   public void call(String phone) {
     calls.add(phone);
-    final Progress progress = new Progress(new MetaChange(phone, MetaChange.Operation.VISIT, MetaChange.Target.PHONE));
+    final Progress progress = new Progress(null, new MetaChange(phone, MetaChange.Operation.VISIT, MetaChange.Target.PHONE));
     ExpLeagueConnection.instance().send(new Message(offer.room(), Message.MessageType.NORMAL, progress));
     eventsReceiver.accept(new TaskCallEvent(progress, this));
   }

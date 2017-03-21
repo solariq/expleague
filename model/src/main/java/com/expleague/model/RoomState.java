@@ -13,7 +13,9 @@ public enum RoomState {
   WORK(5),
   DELIVERY(6),
   FEEDBACK(7),
-  CLOSED(8);
+  CLOSED(8),
+  VERIFY(9),
+  ;
 
   private int code;
   RoomState(int code) {

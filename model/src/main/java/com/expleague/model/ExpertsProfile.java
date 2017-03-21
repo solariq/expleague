@@ -37,7 +37,7 @@ public class ExpertsProfile extends Item {
   private Boolean available;
 
   @XmlAttribute
-  private Boolean trusted;
+  private Authority authority;
 
   @XmlElementWrapper(name = "tags", namespace = Operations.NS)
   @XmlElements({@XmlElement(name = "tag", namespace = Operations.NS, type = Tag.class)})
@@ -103,8 +103,16 @@ public class ExpertsProfile extends Item {
     return basedOn;
   }
 
-  public boolean trusted() {
-    return trusted != null && trusted;
+  public Authority authority() {
+    return authority;
+  }
+
+  public ExpertsProfile shorten() {
+    final ExpertsProfile profile = new ExpertsProfile();
+    profile.jid = this.jid;
+    profile.name = this.name;
+    profile.authority = this.authority;
+    return profile;
   }
 
   @SuppressWarnings("unused")
@@ -133,6 +141,11 @@ public class ExpertsProfile extends Item {
       return this;
     }
 
+    public Builder authority(Authority authority) {
+      result.authority = authority;
+      return this;
+    }
+
     public Builder tag(String name, double score) {
       final Stat stat = tags.getOrDefault(name, new Stat());
       stat.weight ++;
@@ -153,11 +166,6 @@ public class ExpertsProfile extends Item {
 
     public Builder education(Education degree) {
       result.education = degree;
-      return this;
-    }
-
-    public Builder trusted(boolean trusted) {
-      result.trusted = trusted;
       return this;
     }
 
@@ -185,5 +193,27 @@ public class ExpertsProfile extends Item {
     @XmlEnumValue("undergrad") MEDIUM_RARE,
     @XmlEnumValue("school") RARE,
     @XmlEnumValue("preschool") BLOODY,
+  }
+
+  @XmlEnum
+  public enum Authority {
+    @XmlEnumValue("admin") ADMIN(0),
+    @XmlEnumValue("expert") EXPERT(1),
+    @XmlEnumValue("newbie") NEWBIE(2),
+    @XmlEnumValue("none") NONE(100500),;
+
+    final int priority;
+
+    Authority(int priority) {
+      this.priority = priority;
+    }
+
+    public int priority() {
+      return priority;
+    }
+
+    public static Authority valueOf(int index) {
+      return Stream.of(Authority.values()).filter(s -> s.priority == index).findAny().orElse(null);
+    }
   }
 }

@@ -22,8 +22,10 @@ public abstract class PersistentActorAdapter extends ActorAdapter<Actor> {
   }
 
   public void deleteMessages() {
-    if (actor instanceof PersistentActor) {
-      ((PersistentActor) actor).deleteMessages(-1);
+    if (actor instanceof PersistentActorContainer) {
+      final PersistentActorContainer actor = (PersistentActorContainer) this.actor;
+      actor.snapshotSequenceNr();
+      actor.deleteMessages(actor.lastSequenceNr());
     }
   }
 

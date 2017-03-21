@@ -2,9 +2,6 @@ package com.expleague.expert.xmpp.events;
 
 import com.expleague.expert.xmpp.ExpertTask;
 import com.expleague.model.Operations;
-import com.expleague.model.Tag;
-
-import java.util.stream.Stream;
 
 /**
  * Experts League
@@ -16,7 +13,7 @@ public class TaskCallEvent extends ExpertTaskEvent {
   }
 
   public String phone() {
-    return source().change().name();
+    return source().meta().name();
   }
 
   @Override

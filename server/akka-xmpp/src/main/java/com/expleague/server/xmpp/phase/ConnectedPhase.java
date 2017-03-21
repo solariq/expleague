@@ -2,6 +2,7 @@ package com.expleague.server.xmpp.phase;
 
 import akka.actor.ActorRef;
 import com.expleague.model.Delivered;
+import com.expleague.model.ExpertsProfile;
 import com.expleague.model.Operations;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
@@ -70,11 +71,11 @@ public class ConnectedPhase extends XMPPPhase {
           }
           if (device.expert()) {
             if (resource.endsWith("expert")) {
-              if (device.user().trusted())
+              if (device.user().authority() == ExpertsProfile.Authority.ADMIN)
                 resource = resource.substring(0, resource.length() - "expert".length()) + "admin";
             }
             else
-              resource += "/" + (device.user().trusted() ? "admin" : "expert");
+              resource += "/" + (device.user().authority() == ExpertsProfile.Authority.ADMIN ? "admin" : "expert");
           }
 
           jid = device.user().jid().resource(resource);

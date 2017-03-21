@@ -1,5 +1,6 @@
 package com.expleague.server;
 
+import com.expleague.model.ExpertsProfile;
 import com.expleague.model.Tag;
 import com.expleague.xmpp.JID;
 
@@ -16,16 +17,16 @@ public class XMPPUser {
   private final String country;
   private final String city;
   private final String avatar;
-  private final boolean trusted;
+  private final ExpertsProfile.Authority authority;
   private JID jid;
 
-  public XMPPUser(String id, String country, String city, String name, int sex, int age, Date created, String avatar, boolean trusted) {
+  public XMPPUser(String id, String country, String city, String name, int sex, int age, Date created, String avatar, ExpertsProfile.Authority authority) {
     this.id = id;
     this.name = name;
     this.country = country;
     this.city = city;
     this.avatar = avatar;
-    this.trusted = trusted;
+    this.authority = authority;
     jid = new JID(id, ExpLeagueServer.config().domain(), null);
   }
 
@@ -49,10 +50,6 @@ public class XMPPUser {
     return id;
   }
 
-  public boolean trusted() {
-    return trusted;
-  }
-
   public XMPPDevice[] devices() {
     return Roster.instance().devices(this.id);
   }
@@ -62,5 +59,9 @@ public class XMPPUser {
 
   public JID jid() {
     return jid;
+  }
+
+  public ExpertsProfile.Authority authority() {
+    return authority;
   }
 }

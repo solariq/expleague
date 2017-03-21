@@ -3,6 +3,7 @@ package com.expleague.server.agents;
 import akka.actor.ActorContext;
 import com.expleague.model.*;
 import com.expleague.model.Operations.*;
+import com.expleague.model.RoomState;
 import com.expleague.server.XMPPDevice;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Item;
@@ -80,6 +81,16 @@ public class GlobalChatAgent extends RoomAgent {
       final RoomMessageReceived received = msg.get(RoomMessageReceived.class);
       status.message(received.expert(), received.count());
     }
+    if (msg.has(Progress.class)) {
+      final Progress progress = msg.get(Progress.class);
+      if (progress.state() != null)
+        status.order(progress.order(), progress.state());
+    }
+    if (msg.has(Start.class)) {
+      final Start start = msg.get(Start.class);
+      final ExpertsProfile profile = msg.get(ExpertsProfile.class);
+      status.start(start.order(), profile.jid());
+    }
     if (changes < status.changes())
       super.process(msg, mode);
   }
@@ -126,6 +137,7 @@ public class GlobalChatAgent extends RoomAgent {
     private RoomState state = OPEN;
     private Map<String, Affiliation> affiliations = new HashMap<>();
     private Map<String, Role> roles = new HashMap<>();
+    private Map<String, OrderStatus> orders = new HashMap<>();
     private long modificationTs = -1;
     private int changes = 0;
     private int unread = 0;
@@ -165,6 +177,8 @@ public class GlobalChatAgent extends RoomAgent {
       this.state = state;
       if (state == CLOSED)
         unread = 0;
+      if (state != WORK && state != VERIFY)
+        orders.clear();
       changes++;
     }
 
@@ -191,6 +205,12 @@ public class GlobalChatAgent extends RoomAgent {
         final RoomRoleUpdate update = new RoomRoleUpdate(XMPP.jid(nick), role, affiliation);
         result.append(update);
       }
+
+      orders.forEach((order, status) -> {
+        result.append(new Progress(order, status.state));
+        if (status.expert != null)
+          result.append(new Start(order, status.expert));
+      });
       return result;
     }
 
@@ -201,5 +221,18 @@ public class GlobalChatAgent extends RoomAgent {
     public Affiliation affiliation(String fromId) {
       return affiliations.getOrDefault(fromId, Affiliation.NONE);
     }
+
+    public void order(String order, OrderState state) {
+      orders.compute(order, (o, v) -> v != null ? v : new OrderStatus()).state = state;
+    }
+
+    public void start(String order, JID jid) {
+      orders.compute(order, (o, v) -> v != null ? v : new OrderStatus()).expert = jid;
+    }
+  }
+
+  public static class OrderStatus {
+    public OrderState state;
+    public JID expert;
   }
 }

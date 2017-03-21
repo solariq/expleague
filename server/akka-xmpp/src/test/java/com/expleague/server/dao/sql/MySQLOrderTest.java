@@ -1,6 +1,7 @@
 package com.expleague.server.dao.sql;
 
 import com.expleague.model.Offer;
+import com.expleague.model.OrderState;
 import com.expleague.server.ExpLeagueServerTestCase;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
@@ -71,13 +72,13 @@ public class MySQLOrderTest {
       client,
       new Message(client, room, new Message.Subject("offer"))
     ));
-    order[0].status(ExpLeagueOrder.Status.DONE);
-    final ExpLeagueOrder expLeagueOrder = board.orders(new LaborExchange.OrderFilter(false, EnumSet.allOf(ExpLeagueOrder.Status.class))).findFirst().orElse(null);
-    assertEquals(ExpLeagueOrder.Status.DONE, expLeagueOrder.status());
+    order[0].state(OrderState.DONE);
+    final ExpLeagueOrder expLeagueOrder = board.orders(new LaborExchange.OrderFilter(false, EnumSet.allOf(OrderState.class))).findFirst().orElse(null);
+    assertEquals(OrderState.DONE, expLeagueOrder.state());
     final List<ExpLeagueOrder.StatusHistoryRecord> statusHistoryRecords = expLeagueOrder.statusHistoryRecords().collect(Collectors.toList());
     assertEquals(2, statusHistoryRecords.size());
-    assertEquals(ExpLeagueOrder.Status.OPEN, statusHistoryRecords.get(0).getStatus());
-    assertEquals(ExpLeagueOrder.Status.DONE, statusHistoryRecords.get(1).getStatus());
+    assertEquals(OrderState.OPEN, statusHistoryRecords.get(0).getStatus());
+    assertEquals(OrderState.DONE, statusHistoryRecords.get(1).getStatus());
   }
 
   @Test

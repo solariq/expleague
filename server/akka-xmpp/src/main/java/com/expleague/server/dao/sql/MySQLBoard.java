@@ -4,6 +4,7 @@ import akka.actor.ActorContext;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 import com.expleague.model.Offer;
+import com.expleague.model.OrderState;
 import com.expleague.model.Tag;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.*;
@@ -54,7 +55,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @Override
   public MySQLOrder[] register(Offer offer) {
     try {
-      final PreparedStatement registerOrder = createStatement("register-order", "INSERT INTO Orders SET room = ?, offer = ?, eta = ?, status = " + ExpLeagueOrder.Status.OPEN.index(), true);
+      final PreparedStatement registerOrder = createStatement("register-order", "INSERT INTO Orders SET room = ?, offer = ?, eta = ?, status = " + OrderState.OPEN.code(), true);
       registerOrder.setString(1, offer.room().local());
       registerOrder.setCharacterStream(2, new StringReader(offer.xmlString()));
       registerOrder.setTimestamp(3, Timestamp.from(offer.expires().toInstant()));
@@ -65,7 +66,6 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
         final int id = generatedKeys.getInt(1);
         final MySQLOrder order = new MySQLOrder(id, offer);
         order.role(offer.client(), ExpLeagueOrder.Role.OWNER);
-        order.status(ExpLeagueOrder.Status.OPEN);
         orders.put(id, new WeakReference<>(order));
         result.add(order);
       }
@@ -102,7 +102,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @Override
   public ExpLeagueOrder[] active(final String roomId) {
     return replayAwareStream(() -> stream(
-      "active-order", "SELECT * FROM Orders WHERE room = ? AND status < " + ExpLeagueOrder.Status.DONE.index(),
+      "active-order", "SELECT * FROM Orders WHERE room = ? AND status < " + OrderState.DONE.code(),
       stmt -> stmt.setString(1, roomId)
     ).map(createOrderView())).collect(Collectors.toList()).toArray(new ExpLeagueOrder[0]);
   }
@@ -126,7 +126,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
 
   @Override
   public Stream<ExpLeagueOrder> open() {
-    return orders(new LaborExchange.OrderFilter(false, EnumSet.complementOf(EnumSet.of(ExpLeagueOrder.Status.DONE))));
+    return orders(new LaborExchange.OrderFilter(false, EnumSet.complementOf(EnumSet.of(OrderState.DONE))));
   }
 
   @Override
@@ -308,7 +308,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     public MySQLOrder(ResultSet resultSet) throws SQLException, IOException {
       super(Offer.create(StreamTools.readReader(resultSet.getCharacterStream(3))));
       id = resultSet.getInt(1);
-      super.status(Status.valueOf((int)resultSet.getByte(5)));
+      super.state(OrderState.valueOf((int)resultSet.getByte(5)));
       super.feedback(resultSet.getDouble(6),resultSet.getString(8));
       super.updateActivationTimestampMs(resultSet.getLong(7));
       final PreparedStatement restoreRoles = createStatement("roles-restore", "SELECT * FROM Participants WHERE `order` = ? ORDER BY id");
@@ -325,24 +325,28 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       try (final ResultSet statusHistory = restoreStatusHistory.executeQuery()) {
         while (statusHistory.next()) {
           super.statusHistory.add(new StatusHistoryRecord(
-            Status.valueOf(statusHistory.getByte(3)), new Date(statusHistory.getTimestamp(4).getTime())
+            OrderState.valueOf(statusHistory.getByte(3)), new Date(statusHistory.getTimestamp(4).getTime())
           ));
         }
       }
     }
 
+    public String id() {
+      return "" + id;
+    }
+
     @Override
-    protected void status(Status status) {
+    protected void state(OrderState status) {
       try {
-        super.status(status);
+        super.state(status);
         final PreparedStatement statusUpdate = createStatement("status-update", "UPDATE Orders SET status = ? WHERE id = ?");
         statusUpdate.setInt(2, id);
-        statusUpdate.setInt(1, status.index());
+        statusUpdate.setInt(1, status.code());
         statusUpdate.execute();
 
         final PreparedStatement statusHistoryInsert = createStatement("status-history-insert", "INSERT INTO OrderStatusHistory (`order`, status, timestamp) VALUES(?, ?, ?)");
         statusHistoryInsert.setInt(1, id);
-        statusHistoryInsert.setByte(2, (byte) status.index());
+        statusHistoryInsert.setByte(2, (byte) status.code());
         statusHistoryInsert.setTimestamp(3, new Timestamp(currentTimestampMillis()));
         statusHistoryInsert.execute();
       }
@@ -449,10 +453,10 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   protected OrderQuery createQuery(final LaborExchange.OrderFilter filter) {
     final List<String> queryKeys = new ArrayList<>();
     final List<String> conditions = new ArrayList<>();
-    final EnumSet<ExpLeagueOrder.Status> statuses = filter.getStatuses();
+    final EnumSet<OrderState> statuses = filter.getStatuses();
     if (!statuses.isEmpty()) {
       queryKeys.add(statuses.stream().map(Enum::name).collect(Collectors.joining("-")));
-      final String statusesStr = statuses.stream().map(s -> Integer.toString(s.index())).collect(Collectors.joining(","));
+      final String statusesStr = statuses.stream().map(s -> Integer.toString(s.code())).collect(Collectors.joining(","));
       conditions.add("status in (" + statusesStr + ")");
     }
     if (filter.withoutFeedback()) {
