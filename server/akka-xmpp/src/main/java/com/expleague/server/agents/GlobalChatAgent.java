@@ -13,6 +13,7 @@ import com.expleague.xmpp.stanza.Message.MessageType;
 import com.expleague.xmpp.stanza.Stanza;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.expleague.model.RoomState.*;
@@ -65,31 +66,31 @@ public class GlobalChatAgent extends RoomAgent {
       return;
     }
     final RoomStatus status = rooms.compute(msg.from().local(), (local, s) -> s != null ? s : new RoomStatus(local));
-    status.ts(msg.ts());
+    final long ts = msg.ts();
     final int changes = status.changes();
     if (msg.has(OfferChange.class))
-      status.offer(msg.get(Offer.class), msg.get(OfferChange.class).by());
+      status.offer(msg.get(Offer.class), msg.get(OfferChange.class).by(), ts);
     if (msg.has(RoomStateChanged.class))
-      status.state(msg.get(RoomStateChanged.class).state());
+      status.state(msg.get(RoomStateChanged.class).state(), ts);
     if (msg.has(Feedback.class))
-      status.feedback(msg.get(Feedback.class).stars());
+      status.feedback(msg.get(Feedback.class).stars(), ts);
     if (msg.has(RoomRoleUpdate.class)) {
       final RoomRoleUpdate update = msg.get(RoomRoleUpdate.class);
       status.affiliation(update.expert().local(), update.affiliation());
     }
     if (msg.has(RoomMessageReceived.class)) {
       final RoomMessageReceived received = msg.get(RoomMessageReceived.class);
-      status.message(received.expert(), received.count());
+      status.message(received.expert(), received.count(), ts);
     }
     if (msg.has(Progress.class)) {
       final Progress progress = msg.get(Progress.class);
       if (progress.state() != null)
-        status.order(progress.order(), progress.state());
+        status.order(progress.order(), progress.state(), ts);
     }
     if (msg.has(Start.class)) {
       final Start start = msg.get(Start.class);
       final ExpertsProfile profile = msg.get(ExpertsProfile.class);
-      status.start(start.order(), profile.jid());
+      status.start(start.order(), profile.jid(), ts);
     }
     if (changes < status.changes())
       super.process(msg, mode);
@@ -99,7 +100,7 @@ public class GlobalChatAgent extends RoomAgent {
   public List<Stanza> archive() {
     final List<Stanza> result = new ArrayList<>();
     rooms.forEach((id, status) -> {
-      if (status.currentOffer != null)
+      if (status.currentOffer != null && (!EnumSet.of(CLOSED, FEEDBACK).contains(status.state) || status.lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)))
         result.add(status.message());
     });
     return result;
@@ -160,7 +161,7 @@ public class GlobalChatAgent extends RoomAgent {
       changes++;
     }
 
-    public void ts(long ts) {
+    private void ts(long ts) {
       modificationTs = Math.max(ts, modificationTs);
     }
 
@@ -168,23 +169,26 @@ public class GlobalChatAgent extends RoomAgent {
       return changes;
     }
 
-    public void offer(Offer offer, JID by) {
+    public void offer(Offer offer, JID by, long ts) {
       currentOffer = offer;
       changes++;
+      ts(ts);
     }
 
-    public void state(RoomState state) {
+    public void state(RoomState state, long ts) {
       this.state = state;
       if (state == CLOSED)
         unread = 0;
       if (state != WORK && state != VERIFY)
         orders.clear();
       changes++;
+      ts(ts);
     }
 
-    public void message(boolean expert, int count) {
+    public void message(boolean expert, int count, long ts) {
       this.unread = expert ? 0 : this.unread + count;
       changes++;
+      ts(ts);
     }
 
     public Message message() {
@@ -214,20 +218,27 @@ public class GlobalChatAgent extends RoomAgent {
       return result;
     }
 
-    public void feedback(int stars) {
+    public void feedback(int stars, long ts) {
       this.feedback = stars;
+      ts(ts);
     }
 
     public Affiliation affiliation(String fromId) {
       return affiliations.getOrDefault(fromId, Affiliation.NONE);
     }
 
-    public void order(String order, OrderState state) {
+    public void order(String order, OrderState state, long ts) {
       orders.compute(order, (o, v) -> v != null ? v : new OrderStatus()).state = state;
+      ts(ts);
     }
 
-    public void start(String order, JID jid) {
+    public void start(String order, JID jid, long ts) {
       orders.compute(order, (o, v) -> v != null ? v : new OrderStatus()).expert = jid;
+      ts(ts);
+    }
+
+    public long lastModified() {
+      return modificationTs;
     }
   }
 

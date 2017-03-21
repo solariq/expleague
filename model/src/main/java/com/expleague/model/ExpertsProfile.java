@@ -200,7 +200,8 @@ public class ExpertsProfile extends Item {
     @XmlEnumValue("admin") ADMIN(0),
     @XmlEnumValue("expert") EXPERT(1),
     @XmlEnumValue("newbie") NEWBIE(2),
-    @XmlEnumValue("none") NONE(100500),;
+    @XmlEnumValue("none") NONE(10),
+    ;
 
     final int priority;
 
