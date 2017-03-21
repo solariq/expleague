@@ -112,6 +112,7 @@ public class ExpertsProfile extends Item {
     profile.jid = this.jid;
     profile.name = this.name;
     profile.authority = this.authority;
+    profile.login = this.login;
     return profile;
   }
 
