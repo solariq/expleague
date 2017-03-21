@@ -60,6 +60,8 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
   @Override
   public boolean update(JID from, Role role, Affiliation affiliation, ProcessMode mode) {
+    if (from.isRoom())
+      return true;
     if ((role == null || role(from) == role) && (affiliation == null || affiliation(from) == affiliation))
       return true;
     if (!super.update(from, role, affiliation, mode))
