@@ -171,11 +171,11 @@ public class XMPP extends ActorAdapter<UntypedActor> {
   @NotNull
   protected Props newActorProps(final JID jid) {
     if (GlobalChatAgent.ID.equals(jid.local()))
-      return props(GlobalChatAgent.class, jid);
+      return props(GlobalChatAgent.class, jid.bare());
     else if (jid.domain().startsWith("muc."))
-      return props(ExpLeagueRoomAgent.class, jid);
+      return props(ExpLeagueRoomAgent.class, jid.bare());
     else
-      return props(UserAgent.class, jid);
+      return props(UserAgent.class, jid.bare());
   }
 
   public static JID jid(String local) {

@@ -234,7 +234,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     }
     else if (msg.has(Cancel.class)) {
       if (affiliation == Affiliation.OWNER) {
-        if (mode == ProcessMode.NORMAL && orders != null) {
+        if (mode == ProcessMode.NORMAL) {
           orders.stream().map(ExpLeagueOrder::broker).filter(Objects::nonNull).forEach(b -> b.tell(new Cancel(), self()));
           orders.clear();
         }

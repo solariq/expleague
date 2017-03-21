@@ -48,13 +48,9 @@ public class RoomAgent extends PersistentActorAdapter {
 
   public RoomAgent(JID jid) {
     this.jid = jid;
-    if (!jid.resource().isEmpty())
-      System.out.println();
   }
   public RoomAgent(JID jid, JID owner) {
     this.jid = jid;
-    if (!jid.resource().isEmpty())
-      System.out.println();
   }
 
   public JID jid() {
@@ -423,6 +419,8 @@ public class RoomAgent extends PersistentActorAdapter {
   @NotNull
   protected JID roomAlias(JID from) {
     final MucUserStatus status = participants.get(from);
+    if (from.equals(jid()))
+      return jid();
     return new JID(this.jid.local(), this.jid.domain(), status == null ? from.local() : status.nickname);
   }
 
