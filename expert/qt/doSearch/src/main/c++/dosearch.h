@@ -21,6 +21,8 @@ extern QSystemTrayIcon* trayIcon;
 
 #include "league.h"
 
+class QQuickTextDocument;
+class MarkdownHighlighter;
 namespace expleague {
 class StateSaver;
 class CollectionDictionary;
@@ -43,11 +45,13 @@ public:
 
     QQmlListProperty<Context> contextsQml() const { return QQmlListProperty<Context>(const_cast<doSearch*>(this), const_cast<QList<Context*>&>(m_contexts)); }
 
-public:    
+    Q_INVOKABLE void setMain(QQuickWindow* main);
+    Q_INVOKABLE void setupHighlighter(QQuickTextDocument* document) const;
+
+public:
     static doSearch* instance();
     void restoreState();
 
-    Q_INVOKABLE void setMain(QQuickWindow* main);
 
     QList<Context*> contexts() const { return m_contexts; }
     void append(Context* context, int index = -1);

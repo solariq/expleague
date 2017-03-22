@@ -19,7 +19,7 @@ Item {
     property real maxHeight: tools.implicitHeight + offerHeight
     property real minHeight: tools.implicitHeight
     property bool editable: false
-    property string status: task ? ["open", "chat", "response", "confirmation", "offer", "work", "delivery", "feedback", "cloded"][task.status] : ""
+    property string status: task && task.status ? ["open", "chat", "response", "confirmation", "offer", "work", "delivery", "feedback", "closed", "verify"][task.status.status] : "work"
     property var comments
 
     property real offerHeight: topic.implicitHeight + geoLocal.implicitHeight + 4 + attachmentsCount.implicitHeight + 4 +
@@ -230,6 +230,17 @@ Item {
                     onTriggered: {
                         sendDialog.questions = false
                         dosearch.main.showDialog(sendDialog)
+                    }
+                }
+
+                ToolbarButton {
+                    visible: editable && "verify" == status
+                    Layout.alignment: Qt.AlignVCenter
+                    icon: "qrc:/tools/verify.png"
+                    highlightedIcon: "qrc:/tools/verify_h.png"
+                    dark: true
+                    onTriggered: {
+                        task.verify()
                     }
                 }
 

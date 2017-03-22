@@ -18,18 +18,6 @@ expleague::doSearch* root;
 namespace expleague {
 
 doSearch::doSearch(QObject* parent) : QObject(parent) {
-    QCoreApplication::setOrganizationName("Experts League");
-
-    QCoreApplication::setOrganizationDomain("expleague.com");
-
-#ifdef QT_DEBUG
-    QCoreApplication::setApplicationName("doSearch-debug");
-#else
-    QCoreApplication::setApplicationName("doSearch");
-#endif
-
-    QCoreApplication::setApplicationVersion(EL_DOSEARCH_VERSION);
-
     m_dictionary = new CollectionDictionary(
                 QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/dictionary",
                 [](const QString& word) { return word; },
@@ -199,7 +187,7 @@ Page* doSearch::page(const QString &id) const {
         else if (id == AdminContext::ID)
             return new AdminContext(parent);
         else if (id == GlobalChat::ID)
-            return new GlobalChat(qobject_cast<AdminContext*>(page(AdminContext::ID)));
+            return new GlobalChat(parent);
         else if (id.startsWith("web/") && id.endsWith("site"))
             return new WebSite(id, parent);
         else if (id.startsWith("web/"))

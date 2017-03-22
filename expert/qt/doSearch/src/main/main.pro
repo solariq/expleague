@@ -21,7 +21,7 @@
 # mkdir temp
 # mv ./doSearch.app/ ./temp/
 # hdiutil create -volname doSearch -srcfolder ./temp/ -ov -format UDZO doSearch.dmg
-VERSION = 0.7.18
+VERSION = 0.8.5
 
 QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine xml xmlpatterns multimedia webenginecore
 QT_PRIVATE += quick-private webengine-private
@@ -41,6 +41,9 @@ QMAKE_CXXFLAGS += -DQXMPP_STATIC
 
 macx: CONFIG += static objective_c
 else:win32: CONFIG += static console
+
+#breakpad app need debug info inside binaries
+unix: QMAKE_CXXFLAGS+=-g
 
 SOURCES += \
     c++/main.cpp \
@@ -120,24 +123,28 @@ win32:CONFIG(release, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/discount/release/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/release/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/release/ -lcutemarked \
+#    -L$$OUT_PWD/../libs/breakpad/release -lbreakpad \
     -L$$OUT_PWD/../libs/leveldb-win/release/ -lleveldb
 else:win32:CONFIG(debug, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d \
     -L$$OUT_PWD/../libs/discount/debug/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/debug/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/debug/ -lcutemarked \
+#    -L$$OUT_PWD/../libs/breakpad/debug -lbreakpad \
     -L$$OUT_PWD/../libs/leveldb-win/debug/ -lleveldb
 else:unix:CONFIG(debug, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d \
     -L$$OUT_PWD/../libs/discount/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/ -lcutemarked \
+#    -L$$OUT_PWD/../libs/breakpad/ -lbreakpad \
     -L$$OUT_PWD/../libs/leveldb/ -lleveldb
 else:unix:CONFIG(release, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp \
     -L$$OUT_PWD/../libs/discount/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/ -lcutemarked \
+#    -L$$OUT_PWD/../libs/breakpad/ -lbreakpad \
     -L$$OUT_PWD/../libs/leveldb/ -lleveldb
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../libs/peg-markdown-highlight/release/ -lpmh
@@ -152,6 +159,8 @@ INCLUDEPATH += \
     $$PWD/../libs/peg-markdown-highlight \
     $$PWD/../libs/hunspell \
     $$PWD/../libs/cutemarked \
+    $$PWD/../libs/breakpad \
+    $$PWD/../libs/breakpad/src \
     $$PWD/../libs/leveldb/include
 
 DEPENDPATH += \
@@ -159,6 +168,7 @@ DEPENDPATH += \
     $$PWD/../libs/discount \
     $$PWD/../libs/hunspell \
     $$PWD/../libs/peg-markdown-highlight \
+    $$PWD/../libs/breakpad \
     $$PWD/../libs/cutemarked
 
 unix:PRE_TARGETDEPS += $$OUT_PWD/../libs/cutemarked/libcutemarked.a

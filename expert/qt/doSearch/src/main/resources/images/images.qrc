@@ -136,5 +136,8 @@
         <file>expand_h.png</file>
         <file>tools/experts_h.png</file>
         <file>tools/experts.png</file>
+        <file>status/verify.png</file>
+        <file>tools/verify_h.png</file>
+        <file>tools/verify.png</file>
     </qresource>
 </RCC>

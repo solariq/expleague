@@ -34,9 +34,9 @@ Item {
         }
     }
 
-    onFocusChanged: {
-        if (focus) {
-            input.focus = true
+    onActiveFocusChanged: {
+        if (activeFocus) {
+            input.forceActiveFocus()
         }
     }
     RowLayout {
@@ -102,10 +102,12 @@ Item {
                     completion.visible = false
                 }
             }
-            onFocusChanged: {
-                if (!focus) {
-                    if (completion && !completion.list.focus)
+            onActiveFocusChanged: {
+                if (!activeFocus) {
+                    if (completion && !completion.list.activeFocus) {
+                        self.visible = false
                         completion.visible = false
+                    }
                     return
                 }
 

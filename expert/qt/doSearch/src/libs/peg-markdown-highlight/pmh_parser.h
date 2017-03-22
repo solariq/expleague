@@ -5,7 +5,7 @@
  * pmh_parser.h
  */
 
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+// #pragma GCC diagnostic ignored "-Wunused-parameter"
 
 /** \file
 * \brief Parser public interface.

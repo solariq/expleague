@@ -8,6 +8,8 @@ QMAKE_CXXFLAGS += -DLEVELDB_PLATFORM_WINDOWS -DLEVELDB_ATOMIC_PRESENT -DNDEBUG
 
 INCLUDEPATH += ./include ./port/win
 
+LIBS += -lshlwapi
+
 HEADERS += \
     db/builder.h \
     db/db_impl.h \
@@ -39,11 +41,11 @@ HEADERS += \
     include/leveldb/table_builder.h \
     include/leveldb/write_batch.h \
 #    LevelDB/resource.h \
-    port/win/unistd.h \
+#    port/win/unistd.h \
     port/atomic_pointer.h \
     port/port.h \
-    port/port_example.h \
-    port/port_posix.h \
+#    port/port_example.h \
+#    port/port_posix.h \
     port/port_win.h \
     port/thread_annotations.h \
     table/block.h \
@@ -64,11 +66,11 @@ HEADERS += \
     util/random.h \
 
 SOURCES += \
-    db/autocompact_test.cc \
+#    db/autocompact_test.cc \
     db/builder.cc \
 #    db/c.cc \
-    db/corruption_test.cc \
-    db/db_bench.cc \
+#    db/corruption_test.cc \
+#    db/db_bench.cc \
     db/db_impl.cc \
     db/db_iter.cc \
     db/dbformat.cc \
@@ -80,21 +82,21 @@ SOURCES += \
     db/repair.cc \
     db/table_cache.cc \
     db/version_edit.cc \
-    db/version_edit_test.cc \
+#    db/version_edit_test.cc \
     db/version_set.cc \
-    db/version_set_test.cc \
+#    db/version_set_test.cc \
     db/write_batch.cc \
-    db/write_batch_test.cc \
+#    db/write_batch_test.cc \
     helpers/memenv/memenv.cc \
-    helpers/memenv/memenv_test.cc \
-#    LevelDB/dllmain.cpp \
-    util/crc32c_win.cc \
+#    helpers/memenv/memenv_test.cc \
+    LevelDB/dllmain.cpp \
+#    util/crc32c_win.cc \
 #    port/port_posix.cc \
     port/port_win.cc \
     table/block.cc \
     table/block_builder.cc \
     table/filter_block.cc \
-    table/filter_block_test.cc \
+#    table/filter_block_test.cc \
     table/format.cc \
     table/iterator.cc \
     table/merger.cc \
@@ -106,7 +108,7 @@ SOURCES += \
     util/cache.cc \
     util/coding.cc \
     util/comparator.cc \
-    util/crc32c.cc \
+#    util/crc32c.cc \
     util/env.cc \
     util/env_win.cc \
     util/filter_policy.cc \

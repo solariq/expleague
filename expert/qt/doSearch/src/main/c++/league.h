@@ -14,14 +14,14 @@ namespace expleague {
 
 class doSearch;
 class GlobalChat;
-class RoomState;
+class RoomStatus;
 class Member: public QObject {
     Q_OBJECT
 
     Q_PROPERTY(QString id READ id CONSTANT)
     Q_PROPERTY(QString name READ name NOTIFY nameChanged)
     Q_PROPERTY(QUrl avatar READ avatar NOTIFY avatarChanged)
-    Q_PROPERTY(QQmlListProperty<expleague::RoomState> history READ historyQml NOTIFY historyChanged)
+    Q_PROPERTY(QQmlListProperty<expleague::RoomStatus> history READ historyQml NOTIFY historyChanged)
     Q_PROPERTY(expleague::Member::Status status READ status NOTIFY statusChanged)
 
     Q_ENUMS(Status)
@@ -46,7 +46,7 @@ public:
         return m_status;
     }
 
-    QQmlListProperty<RoomState> historyQml() const { return QQmlListProperty<RoomState>(const_cast<Member*>(this), const_cast<QList<RoomState*>&>(m_history)); }
+    QQmlListProperty<RoomStatus> historyQml() const { return QQmlListProperty<RoomStatus>(const_cast<Member*>(this), const_cast<QList<RoomStatus*>&>(m_history)); }
 
 signals:
     void nameChanged(const QString& name);
@@ -75,7 +75,8 @@ public:
         emit historyChanged();
     }
 
-    void append(RoomState* room);
+    void append(RoomStatus* room);
+    void remove(RoomStatus* room);
 
     Q_INVOKABLE void requestHistory() const;
 
@@ -87,7 +88,7 @@ private:
     QString m_name;
     QUrl m_avatar = QUrl("qrc:/avatar.png");
     Status m_status = OFFLINE;
-    QList<RoomState*> m_history;
+    QList<RoomStatus*> m_history;
 };
 
 class TaskTag: public QObject {
@@ -194,8 +195,6 @@ public:
 
     QStringList experts() const;
 
-    QList<RoomState*> rooms() const { return m_rooms; }
-
     Q_INVOKABLE void connect();
     Q_INVOKABLE void disconnect();
 
@@ -233,7 +232,6 @@ public:
 
     GlobalChat* chat() const;
     Task* task(const QString& roomId);
-    RoomState* state(const QString& roomId) const;
 
     QString adminFocus() const { return m_admin_focus; }
     void setAdminFocus(const QString& room);
@@ -255,6 +253,7 @@ signals:
     void tagsChanged();
     void roomsChanged();
     void membersChanged();
+    void connectionChanged();
 //    void roomDumpReceived(const QString& roomId, );
 
 private slots:
@@ -272,7 +271,7 @@ private slots:
     void onMessage(const QString& room, const QString& id, const QString& from, const QString& text);
     void onImage(const QString& room, const QString& id, const QString& from, const QUrl&);
     void onAnswer(const QString& room, const QString& id, const QString& from, const QString&);
-    void onProgress(const QString& room, const QString& id, const QString& from, const Progress&);
+    void onProgress(const QString& room, const QString& id, const QString& from, const xmpp::Progress&);
     void onOffer(const QString& room, const QString& id, const Offer& offer);
     void onRoomOffer(const QString& room, const Offer& offer);
 
@@ -283,6 +282,7 @@ private slots:
 
 public:
     explicit League(QObject* parent = 0);
+    virtual ~League() { if (m_connection) m_connection->disconnect(); }
 
 protected:
     doSearch* parent() const;
@@ -295,7 +295,6 @@ private:
     QMap<QString, Offer*> m_offers;
     QHash<QString, Task*> m_tasks;
     QList<TaskTag*> m_tags;
-    QList<RoomState*> m_rooms;
     QList<AnswerPattern*> m_patterns;
     Status m_status = LS_OFFLINE;
     Role m_role = NONE;

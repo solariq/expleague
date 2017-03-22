@@ -19,6 +19,8 @@
 
 #include <QDebug>
 
+#include "./util/pholder.h"
+
 class QTimer;
 namespace expleague {
 class League;
@@ -67,6 +69,7 @@ public:
         TFT_ACCEPT,
         TFT_REJECT,
         TFT_PREFER,
+        TFT_LAST
     };
 
     enum Status {
@@ -167,6 +170,7 @@ private:
 
 bool operator ==(const Offer& left, const Offer& right);
 
+class RoomStatus;
 class Task: public QObject {
     Q_OBJECT
 
@@ -187,7 +191,7 @@ class Task: public QObject {
     Q_PROPERTY(QList<int> roles READ roles NOTIFY filterChanged)
 
     Q_PROPERTY(expleague::MarkdownEditorPage* answer READ answer NOTIFY answerChanged)
-    Q_PROPERTY(expleague::Task::Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(expleague::RoomStatus* status READ status CONSTANT)
 
     Q_ENUMS(Status)
 
@@ -201,12 +205,13 @@ public:
         WORK,
         DELIVERY,
         FEEDBACK,
-        CLOSED
+        CLOSED,
+        VERIFY,
     };
 
 public:
     Offer* offer() const { return m_offer; }
-    Status status() const { return m_status; }
+    RoomStatus* status() const;
 
     QQmlListProperty<Bubble> chat() { return QQmlListProperty<Bubble>(this, m_chat); }
 
@@ -232,6 +237,7 @@ public:
 
 public:
     Q_INVOKABLE void enter() const;
+    Q_INVOKABLE void verify() const;
     Q_INVOKABLE void close(const QString& shortAnswer);
     Q_INVOKABLE void sendMessage(const QString& str) const;
     Q_INVOKABLE void sendAnswer(const QString& shortAnswer, int difficulty, int success, bool extraInfo);
@@ -246,17 +252,15 @@ public:
     Q_INVOKABLE void commitOffer(const QString& topic, const QString& comment, const QList<Member*>& selected = QList<Member*>()) const;
 
     bool active() const { return m_context; }
-
     void setContext(Context* context);
-    void setStatus(Status status) { m_status = status; emit statusChanged(); }
 
 public:
     const QList<MarkdownEditorPage*>& receivedAnswers() const { return m_answers; }
     League* parent() const;
 
 public:
-    explicit Task(Offer* offer = 0, QObject* parent = 0);
-    explicit Task(const QString& room, QObject* parent = 0);
+    explicit Task(Offer* offer = 0, League* parent = 0);
+    explicit Task(const QString& room, League* parent = 0);
 
 signals:
     void offerChanged();
@@ -289,7 +293,7 @@ public slots:
     void imageReceived(const QString& from, const QUrl& id);
     void answerReceived(const QString& from, const QString& text);
     void progressReceived(const QString& from, const xmpp::Progress& progress);
-    void cancelReceived() { cancelled(); }
+    void cancelReceived();
 
     void urlVisited(const QUrl&) const;
 
@@ -308,7 +312,6 @@ private:
     QList<MarkdownEditorPage*> m_answers;
     QStringList m_phones;
     Context* m_context = 0;
-    Status m_status = Status::OPEN;
 
     QList<TaskTag*> m_tags;
     QList<AnswerPattern*> m_patterns;
@@ -404,84 +407,12 @@ private:
     QList<ChatMessage*> m_messages;
     mutable QMutex m_lock;
 };
-
-class RoomState: public QObject {
-    Q_OBJECT
-
-    Q_PROPERTY(int unread READ unread NOTIFY unreadChanged)
-    Q_PROPERTY(expleague::Member* client READ client NOTIFY clientChanged)
-    Q_PROPERTY(QString topic READ topic NOTIFY topicChanged)
-    Q_PROPERTY(QQmlListProperty<expleague::Member> involved READ involvedQml NOTIFY involvedChanged)
-    Q_PROPERTY(QQmlListProperty<expleague::Member> occupied READ occupiedQml NOTIFY occupiedChanged)
-    Q_PROPERTY(int feedback READ feedback NOTIFY feedbackChanged)
-    Q_PROPERTY(expleague::Task::Status status READ status NOTIFY statusChanged)
-    Q_PROPERTY(expleague::Task* task READ task CONSTANT)
-
-public:
-    int unread() const { return m_unread; }
-    Member* client() const { return m_task->client(); }
-    QString topic() const { return m_task->offer() ? m_task->offer()->topic() : ""; }
-    QDateTime started() const { return m_task->offer() ? m_task->offer()->started() : QDateTime();}
-    QQmlListProperty<Member> involvedQml() const { return QQmlListProperty<Member>(const_cast<RoomState*>(this), const_cast<QList<Member*>&>(m_involved)); }
-    QQmlListProperty<Member> occupiedQml() const { return QQmlListProperty<Member>(const_cast<RoomState*>(this), const_cast<QList<Member*>&>(m_occupied)); }
-    int feedback() const { return m_feedback; }
-    Task* task() const { return m_task; }
-    bool occupied() const { return m_admin_active; }
-
-    Task::Status status() const { return m_task->status(); }
-
-    Q_INVOKABLE void enter();
-    QString roomId() const;
-
-    QString jid() const { return m_task->id(); }
-
-public:
-    explicit RoomState(Task* task, League* parent);
-
-    League* parent() const;
-    void clearUnread() { m_unread = 0; emit unreadChanged(0); }
-
-signals:
-    void unreadChanged(int unread) const;
-    void occupiedChanged() const;
-    void involvedChanged() const;
-    void statusChanged(expleague::Task::Status status) const;
-    void feedbackChanged() const;
-    void topicChanged() const;
-    void clientChanged() const;
-
-private slots:
-    void onPresence(const QString& roomId, const QString& expert, const QString& role, const QString& affiliation);
-    void onStatus(const QString& roomId, int status);
-    void onFeedback(const QString& roomId, int feedback);
-    void onMessage(const QString& roomId, const QString& author, bool expert, int count);
-
-    void onOfferChanged();
-
-private:
-    bool connectTo(xmpp::ExpLeagueConnection* connection);
-
-    friend class League;
-
-private:
-    int m_unread = 0;
-
-    QList<Member*> m_involved;
-    QList<Member*> m_occupied;
-    bool m_admin_active;
-
-    int m_feedback = -1;
-
-    Task* m_task;
-};
-
 }
 
 #include <QQuickItem>
 
 QML_DECLARE_TYPE(expleague::Task)
 QML_DECLARE_TYPE(expleague::Offer)
-QML_DECLARE_TYPE(expleague::RoomState)
 QML_DECLARE_TYPE(expleague::Bubble)
 QML_DECLARE_TYPE(expleague::ChatMessage)
 

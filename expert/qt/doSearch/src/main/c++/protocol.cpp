@@ -24,6 +24,8 @@ namespace expleague {
 namespace xmpp {
 
 const QString EXP_LEAGUE_NS = "http://expleague.com/scheme";
+const QString XMPP_START = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><stream:stream xmlns:stream=\"http://etherx.jabber.org/streams\" version=\"1.0\" xmlns=\"jabber:client\" xml:lang=\"en\" xmlns:xml=\"http://www.w3.org/XML/1998/namespace\">";
+const QString XMPP_END = "</stream:stream>";
 
 QString nextId() {
     return randString(10) + "-" + QString::number(QDateTime::currentDateTime().toMSecsSinceEpoch());
@@ -86,13 +88,16 @@ void ExpLeagueConnection::onPresence(const QXmppPresence& presence) {
         QString user = xmpp::resource(from);
         emit presenceChanged(user, presence.type() == QXmppPresence::Available);
     }
-    else if (!xmpp::user(from).isEmpty()){
+    else if (!xmpp::user(from).isEmpty() && !xmpp::isRoom(presence.to())){
         QString user;
-        if (xmpp::isRoom(from)) // room
+        if (xmpp::isRoom(from)) {// room
             user = xmpp::resource(from);
-        else
+//            emit roomPresence(xmpp::user(from), user);
+        }
+        else {
             user = xmpp::user(from);
-        emit presenceChanged(user, presence.type() == QXmppPresence::Available);
+            emit presenceChanged(user, presence.type() == QXmppPresence::Available);
+        }
     }
 }
 
@@ -151,22 +156,22 @@ void ExpLeagueConnection::onIQ(const QXmppIq& iq) {
         }
         else if (ext.sourceDomElement().namespaceURI() == EXP_LEAGUE_NS + "/history") {
             QDomElement xml = ext.sourceDomElement();
+            QDomElement content;
             for(int i = 0; i < xml.childNodes().length(); i++) {
                 QDomElement element = xml.childNodes().at(i).toElement();
                 if (element.isNull())
                     continue;
+                if (element.tagName() == "content") {
+                    content = element;
+                }
+            }
+            for(int i = 0; i < content.childNodes().length(); i++) {
+                QDomElement element = content.childNodes().at(i).toElement();
+                if (element.isNull())
+                    continue;
                 if (element.tagName() == "message") {
-                    QXmppMessage msg("global-chat@" + domain(jid()), jid());
-                    msg.setId(xmpp::nextId());
-                    QXmppElementList protocol;
-                    for(int i = 0; i < element.childNodes().length(); i++) {
-                        QDomElement item = xml.childNodes().at(i).toElement();
-                        if (item.isNull())
-                            continue;
-                        protocol.append(QXmppElement(item));
-                    }
-
-                    msg.setExtensions(protocol);
+                    QXmppMessage msg;
+                    msg.parse(element);
                     onMessage(msg);
                 }
             }
@@ -265,34 +270,41 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg, const QString& idOr
             qWarning() << "Unhandeled command: " << cmd << " while offer received";
         }
     }
-    else if (!answer.isEmpty()) {
+    if (!answer.isEmpty()) {
         emit this->answer(room, id, from, answer);
     }
-    else if (!progress.empty()) {
-        emit this->progress(room, id, from, progress);
+    if (!progress.empty()) {
+        if (room == "global-chat")
+            emit this->progress(from, id, from, progress);
+        else
+            emit this->progress(room, id, from, progress);
     }
-    else if (image.isValid()) {
+    if (image.isValid()) {
         emit this->image(room, id, from, image);
     }
-    else if (!msg.body().isEmpty()) {
+    if (!msg.body().isEmpty()) {
         emit this->message(room, id, from, msg.body());
     }
-    foreach (const QXmppElement& element, msg.extensions()) {
-        QDomElement xml = element.sourceDomElement();
-        if (xml.namespaceURI() == EXP_LEAGUE_NS) {
-            if (xml.localName() == "room-state-changed") {
-                emit roomStatus(from, xml.attribute("state").toInt());
+    if (room == "global-chat") {
+        foreach (const QXmppElement& element, msg.extensions()) {
+            QDomElement xml = element.sourceDomElement();
+            if (xml.namespaceURI() == EXP_LEAGUE_NS) {
+                if (xml.localName() == "room-state-changed") {
+                    emit roomStatus(from, xml.attribute("state").toInt());
+                }
+                else if (xml.localName() == "room-message-received") {
+                    emit roomMessage(from, xml.attribute("from"), xml.attribute("expert") == "true", xml.hasAttribute("count") ? xml.attribute("count").toInt() : 1);
+                }
+                else if (xml.localName() == "room-role-update") {
+                    emit roomPresence(from, xml.attribute("expert"), xml.attribute("role", "none"), xml.attribute("affiliation", "none"));
+                }
+                else if (xml.localName() == "feedback") {
+                    emit roomFeedback(from, xml.attribute("stars").toInt());
+                }
+                else if (xml.localName() == "start") {
+                    emit roomOrderStart(from, xml.attribute("order"), xml.attribute("expert"));
+                }
             }
-            else if (xml.localName() == "room-message-received") {
-                emit roomMessage(from, xml.attribute("from"), xml.attribute("expert") == "true", xml.hasAttribute("count") ? xml.attribute("count").toInt() : 1);
-            }
-            else if (xml.localName() == "room-role-update") {
-                emit roomPresence(from, xml.attribute("expert"), xml.attribute("role", "none"), xml.attribute("affiliation", "none"));
-            }
-            else if (xml.localName() == "feedback") {
-                emit roomFeedback(from, xml.attribute("stars").toInt());
-            }
-
         }
     }
 
@@ -302,19 +314,28 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg, const QString& idOr
         receipt.setReceiptId(msg.id());
         m_client->sendPacket(receipt);
     }
+
+    if (xmpp::isRoom(msg.from())) {
+        m_last_id[xmpp::user(msg.from())] = msg.id();
+    }
 }
 
 void ExpLeagueConnection::onConnected() {
     QString boundJid = m_client->configuration().jid();
+//    qDebug() << "Connected as " << m_client->configuration().jid();
+
+    m_jid = m_client->configuration().jid();
+    { // restore configuration for reconnect purposes
+        m_client->configuration().setJid(profile()->deviceJid());
+        m_client->configuration().setResource("doSearchQt-" + QApplication::applicationVersion() + "/expert");
+    }
+    emit jidChanged(m_jid);
     if (boundJid.endsWith("/admin"))
         emit connected(2);
     else if (boundJid.endsWith("/expert"))
         emit connected(1);
     else
         emit connected(1); // TODO: connect as normal client when there will be no compatibility issues
-//    qDebug() << "Connected as " << m_client->configuration().jid();
-    m_jid = m_client->configuration().jid();
-    jidChanged(m_jid);
     { // requesting tags
         QXmppIq iq;
         QDomDocument holder;
@@ -333,11 +354,6 @@ void ExpLeagueConnection::onConnected() {
         protocol.append(QXmppElement(query));
         iq.setExtensions(protocol);
         m_client->sendPacket(iq);
-    }
-
-    { // restore configuration for reconnect purposes
-        m_client->configuration().setJid(profile()->deviceJid());
-        m_client->configuration().setResource("doSearchQt-" + QApplication::applicationVersion() + "/expert");
     }
 }
 
@@ -389,6 +405,14 @@ void ExpLeagueConnection::listExperts() const {
     m_client->sendPacket(iq);
 }
 
+void ExpLeagueConnection::clear() {
+    auto members = m_members_cache.values();
+    m_members_cache.clear();
+    foreach (Member* member, members) {
+        delete member;
+    }
+}
+
 void ExpLeagueConnection::sendCommand(const QString& command, Offer* task, std::function<void (QDomElement* element)> init) {
     QXmppMessage msg("", profile()->domain());
     msg.setId(xmpp::nextId());
@@ -423,8 +447,7 @@ void ExpLeagueConnection::sendMessage(const QString& to, const QString& text) {
 void ExpLeagueConnection::sendAnswer(const QString& room, int difficulty, int success, bool extraInfo, const QString& text) {
     QXmppMessage msg("", room);
     msg.setId(xmpp::nextId());
-
-    msg.setType(QXmppMessage::GroupChat);
+//    msg.setType(QXmppMessage::GroupChat);
 
     QDomDocument holder;
     QXmppElementList protocol;
@@ -439,8 +462,8 @@ void ExpLeagueConnection::sendAnswer(const QString& room, int difficulty, int su
     onMessage(msg, msg.id() +  "-" + xmpp::user(jid()));
 }
 
-void ExpLeagueConnection::sendProgress(const QString &to, const Progress &progress) {
-    QXmppMessage msg("", to);
+void ExpLeagueConnection::sendProgress(const QString& /*to*/, const Progress& progress) {
+    QXmppMessage msg("", profile()->domain());
     msg.setId(xmpp::nextId());
 
     msg.setType(QXmppMessage::Normal);
@@ -471,12 +494,16 @@ void ExpLeagueConnection::sendUserRequest(const QString &id) {
 
 void ExpLeagueConnection::sendPresence(const QString& room, bool available) {
     QXmppPresence presence(available ? QXmppPresence::Available : QXmppPresence::Unavailable);
-    presence.setTo(xmpp::user(room) + "@muc." + profile()->domain());
+    QString roomId = xmpp::user(room);
+    presence.setTo(roomId + "@muc." + profile()->domain());
     if (available) {
         QDomDocument holder;
         QXmppElementList protocol;
         QDomElement x = holder.createElementNS("http://jabber.org/protocol/muc", "x");
         QDomElement history = holder.createElementNS("http://jabber.org/protocol/muc", "history");
+        auto pos = m_last_id.find(roomId);
+        if (pos != m_last_id.end())
+            history.setAttribute("last-id", *pos);
         x.appendChild(history);
         protocol.append(QXmppElement(x));
         presence.setExtensions(protocol);
@@ -497,19 +524,39 @@ void ExpLeagueConnection::sendOffer(const Offer& offer) {
     m_client->sendPacket(msg);
 }
 
-ExpLeagueConnection::~ExpLeagueConnection() {
-    // todo: find the way to remove leak of members on connection close
-    foreach (Member* member, m_members_cache.values()) {
+void ExpLeagueConnection::sendVerify(const QString& room) {
+    QXmppMessage msg("", room);
+    msg.setId(xmpp::nextId());
+    msg.setType(QXmppMessage::Normal);
+
+    QDomDocument holder;
+    QXmppElementList protocol;
+    QDomElement verify = holder.createElementNS(EXP_LEAGUE_NS, "verified");
+    verify.setAttribute("authority", jid());
+    protocol.append(verify);
+    msg.setExtensions(protocol);
+    m_client->sendPacket(msg);
+}
+
+void ExpLeagueConnection::clearHistory() {
+    foreach(Member* member, m_members_cache.values()) {
         member->clear();
     }
 }
 
+ExpLeagueConnection::~ExpLeagueConnection() {
+    clear();
+}
+
 Progress Progress::fromXml(const QDomElement& xml) {
+    QString order = xml.attribute("order");
     QString name;
     Operation operation = PO_VISIT;
     Target target = PO_URL;
+    OrderState state = OS_NONE;
 
     QDomElement change = xml.elementsByTagName("change").at(0).toElement();
+    QDomElement stateXml = xml.elementsByTagName("state").at(0).toElement();
     if (!change.isNull()) {
         name = change.text();
         QString operationStr = change.attribute("operation");
@@ -529,7 +576,20 @@ Progress Progress::fromXml(const QDomElement& xml) {
         else if (targetStr == "phone")
             target = Progress::PO_PHONE;
     }
-    return {operation, target, name};
+    if (!stateXml.isNull()) {
+        QString stateStr = stateXml.text();
+        if (stateStr == "none")
+            state = OS_NONE;
+        else if (stateStr == "open")
+            state = OS_OPEN;
+        else if (stateStr == "in-progress")
+            state = OS_IN_PROGRESS;
+        else if (stateStr == "suspended")
+            state = OS_SUSPENDED;
+        else if (stateStr == "done")
+            state = OS_DONE;
+    }
+    return Progress(order, operation, target, name, state);
 }
 
 QDomElement Progress::toXml() const {
@@ -720,12 +780,16 @@ QDomElement Offer::toXml() const {
     }
 
     foreach(AnswerPattern* pattern, m_patterns) {
+        if (!pattern)
+            continue;
         QDomElement patternDom = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "pattern");
         patternDom.setAttribute("name", pattern->name());
         result.appendChild(patternDom);
     }
 
     foreach(TaskTag* tag, m_tags) {
+        if (!tag)
+            continue;
         QDomElement tagDom = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "tag");
         tagDom.appendChild(holder.createTextNode(tag->name()));
         result.appendChild(tagDom);
@@ -744,6 +808,8 @@ QDomElement Offer::toXml() const {
                 break;
             case Offer::TFT_PREFER:
                 item = holder.createElementNS(xmpp::EXP_LEAGUE_NS, "prefer");
+                break;
+            default:
                 break;
             }
             item.appendChild(holder.createTextNode(expert.key() + "@" + xmpp::domain(League::instance()->connection()->jid())));

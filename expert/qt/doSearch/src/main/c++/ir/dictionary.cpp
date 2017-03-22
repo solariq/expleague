@@ -255,7 +255,7 @@ CollectionDictionary::CollectionDictionary(const QString& file, std::function<QS
         leveldb::Slice key = iter->key();
         leveldb::Slice value = iter->value();
         int id = *reinterpret_cast<const int*>(key.data());
-        QString serialized = QString::fromUtf8(value.data(), value.size());
+        QString serialized = QString::fromUtf8(value.data(), (int)value.size());
         Word word = Word::fromString(serialized);
         if (id >= 0) {
             if ((id & 0xFF) == 0) // lemma

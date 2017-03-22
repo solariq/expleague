@@ -75,7 +75,7 @@ Window {
             Layout.preferredWidth: 24 + 200 + 100
             Layout.alignment: Qt.AlignHCenter
             property Member expert: modelData
-            property var roles: ["accepted", "rejected", "prefered"]
+            property var roles: ["accepted", "rejected", "prefered", "none"]
             property int index: {
                 for (var i in dialog.expertsInner) {
                     if (dialog.expertsInner[i] === expert)
@@ -83,7 +83,7 @@ Window {
                 }
                 return -1
             }
-            property string role: expertSelf.roles[dialog.rolesInner[index]]
+            property string role: index >= 0 ? expertSelf.roles[dialog.rolesInner[index]] : "none"
             Avatar {
                 Layout.preferredHeight: implicitHeight
                 Layout.preferredWidth: implicitWidth
@@ -102,7 +102,7 @@ Window {
                     ListElement { text: qsTr("выбран"); role: "accepted" }
                     ListElement { text: qsTr("забанен"); role: "rejected" }
                     ListElement { text: qsTr("приоритет"); role: "prefered" }
-                    ListElement { text: qsTr("нет"); role: "" }
+                    ListElement { text: qsTr("нет"); role: "none" }
                 }
                 currentIndex: {
                     for (var i = 0; i < model.count; i++) {
@@ -182,7 +182,7 @@ Window {
                             ListElement { text: qsTr("выбран"); role: "accepted" }
                             ListElement { text: qsTr("забанен"); role: "rejected" }
                             ListElement { text: qsTr("приоритет"); role: "prefered" }
-                            ListElement { text: qsTr("нет"); role: "" }
+                            ListElement { text: qsTr("нет"); role: "none" }
                         }
                         currentIndex: 3
                         onActivated: {

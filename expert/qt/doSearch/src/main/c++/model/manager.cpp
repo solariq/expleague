@@ -1,5 +1,7 @@
 #include "manager.h"
 #include "../dosearch.h"
+#include "pages/admins.h"
+#include "pages/globalchat.h"
 
 #include <assert.h>
 
@@ -210,6 +212,10 @@ void NavigationManager::open(Page* page) {
         request->select(serp->index());
         open(request);
         return;
+    }
+    else if (qobject_cast<GlobalChat*>(page) && League::instance()->role() == League::ADMIN) {
+        if (!qobject_cast<AdminContext*>(m_active_context))
+            open(parent()->page(AdminContext::ID));
     }
 
     PagesGroup* group = m_active_context->associated(page, false);

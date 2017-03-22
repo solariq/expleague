@@ -26,7 +26,7 @@ Item {
         Item {
             id: roomCardSelf
 
-            property string status: modelData.status >= 0 && modelData.status < 9 ? ["open", "chat", "response", "confirmation", "offer", "work", "delivery", "feedback", "closed"][modelData.status] : ""
+            property string status: modelData.status >= 0 && modelData.status < 10 ? ["open", "chat", "response", "confirmation", "offer", "work", "delivery", "feedback", "closed", "verify"][modelData.status] : ""
 
             implicitHeight: 75
             implicitWidth: 346
@@ -105,8 +105,10 @@ Item {
                         spacing: 0
                         Item { Layout.preferredWidth: 2 }
                         ListView {
-                            Layout.fillWidth: true
+                            Layout.preferredWidth: 100/*Math.min(100, implicitWidth)*/
                             Layout.fillHeight: true
+
+                            implicitWidth: model.length * 20 + 6
 
                             id: involvedList
                             model: modelData.involved
@@ -118,18 +120,54 @@ Item {
                                 size: {
                                     for(var i in involvedList.occupied)
                                         if (modelData === involvedList.occupied[i])
-                                            return 22
+                                            return 24
                                     return 18
                                 }
                                 userId: modelData.id
                                 user: modelData
                             }
                         }
+                        ListView {
+                            Layout.preferredWidth: 60/*Math.min(60, implicitWidth)*/
+                            Layout.fillHeight: true
+
+                            implicitWidth: 30 * model.size
+
+                            id: ordersList
+                            model: modelData.orderStatuses
+                            visible: modelData.orderStatuses.length > 0
+                            orientation: Qt.Horizontal
+                            delegate: Rectangle {
+                                height: 24
+                                width: 24
+//                                border.color: Palette.borderColor("active")
+//                                border.width: 2
+//                                radius: height / 2
+                                Image {
+                                    width: 16
+                                    height: 16
+                                    mipmap: true
+                                    anchors.centerIn: parent
+                                    source: {
+                                        if (modelData == "progress")
+                                            return "qrc:/status/play_h.png"
+                                        else if (modelData == "open")
+                                            return "qrc:/status/new_task_h.png"
+                                        else if (modelData == "suspended")
+                                            return "qrc:/status/waiting_h.png"
+                                        return ""
+                                    }
+                                }
+                            }
+                        }
+
                         Item { Layout.fillWidth: true }
                         Text {
+                            Layout.preferredWidth: Math.min(130, implicitWidth)
+                            elide: Text.ElideRight
                             id: region
-                            text: modelData.task.offer ? modelData.task.offer.region : ""
-                            font.pixelSize: 10
+                            text: modelData.offer ? modelData.offer.region : ""
+                            font.pixelSize: 9
                         }
                         Item { Layout.preferredWidth: 2 }
                     }
@@ -164,14 +202,14 @@ Item {
                             visible: ["delivery", "feedback", "closed", "response"].indexOf(roomCardSelf.status) < 0
                             property color textColor: "black"
                             text: {
-                                var offer = modelData.task.offer
+                                var offer = modelData.offer
                                 if (!offer)
                                     return ""
                                 var d = new Date(Math.abs(offer.timeLeft))
                                 return (offer.timeLeft > 0 ? "" : "-") + (d.getUTCHours() + (d.getUTCDate() - 1) * 24) + qsTr(":") + d.getUTCMinutes()
                             }
                             color: {
-                                var offer = modelData.task.offer
+                                var offer = modelData.offer
                                 if (!offer)
                                     return "black"
 
@@ -351,7 +389,7 @@ Item {
                                         spacing: 2
                                         clip: true
 
-                                        model: !!self.selectedRoom ? self.selectedRoom.client.history : []
+                                        model: !!self.selectedRoom && self.selectedRoom.client ? self.selectedRoom.client.history : []
 
                                         delegate: roomCard
                                         currentIndex: {

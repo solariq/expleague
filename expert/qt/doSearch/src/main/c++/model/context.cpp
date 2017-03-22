@@ -248,8 +248,10 @@ void Context::removeDocument(MarkdownEditorPage* document) {
 
 void Context::setActiveDocument(MarkdownEditorPage* active) {
     const int index = m_documents.indexOf(active);
-    store("context.active", index >= 0 ? QVariant(active->id()) : QVariant());
-    save();
+    if (index >= 0) {
+        store("context.active", active->id());
+        save();
+    }
     m_active_document = active;
     emit activeDocumentChanged();
 }

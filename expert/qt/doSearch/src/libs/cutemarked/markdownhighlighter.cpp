@@ -107,7 +107,7 @@ void MarkdownHighlighter::checkSpelling(const QString &textBlock) {
         if (word == "TODO") {
             QTextCharFormat format = this->format(index);
             format.setForeground(QBrush(QColor(0xCC, 0xCC, 0)));
-            format.setFontWeight(600);
+            format.setFontWeight(90);
             setFormat(index, word.length(), format);
         }
         else if (!spellChecker->isCorrect(word)) {

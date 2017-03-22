@@ -167,6 +167,7 @@ public:
 
 public:
     explicit ImagesStorePrivate(ImagesStore* facade): m_facade(facade), m_nam(new QNetworkAccessManager(facade)) {
+        this->setObjectName("Image store thread");
         QObject::connect(m_nam, SIGNAL(finished(QNetworkReply*)), facade, SLOT(requestFinished(QNetworkReply*)));
         start();
     }

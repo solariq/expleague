@@ -747,6 +747,7 @@ ApplicationWindow {
                 callback()
             }
         }
+        property bool delayedPP: false
 
         onUrlChanged: {
 //            console.log("url changed to " + url.toString())
@@ -759,6 +760,14 @@ ApplicationWindow {
 
             var surl = url.toString()
             surl.trim()
+            if (!delayedPP) {
+                delayedPP = true
+                self.delay(200, function() {
+                    delayedPP = false
+                    if (!loading && linkReceiver.url.toString() == surl)
+                        finish()
+                })
+            }
             if (surl == "" || surl == "about:blank" || surl.search(/google\.\w+\/url/) !== -1 || surl.search(/yandex\.\w+\/clck\/jsredir/) !== -1) {
                 return
             }
@@ -771,10 +780,14 @@ ApplicationWindow {
             var surl = url.toString()
 
             if (operation == "resolve" && !loading) {
-                self.delay(200, function() {
-                    if (!loading && linkReceiver.url.toString() == surl)
-                        finish()
-                })
+                if (!delayedPP) {
+                    delayedPP = true
+                    self.delay(200, function() {
+                        delayedPP = false
+                        if (!loading && linkReceiver.url.toString() == surl)
+                            finish()
+                    })
+                }
             }
 
             if (operation != "screenshot") {

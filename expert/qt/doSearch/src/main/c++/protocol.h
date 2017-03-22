@@ -29,6 +29,8 @@ class TaskTag;
 class AnswerPattern;
 
 namespace xmpp {
+extern const QString XMPP_START;
+extern const QString XMPP_END;
 
 inline QString user(const QString& jid) { return jid.contains("@") ? jid.section("@", 0, 0) : QString(); }
 inline QString domain(const QString& jid) {
@@ -72,26 +74,48 @@ public:
 class Progress {
 public:
     enum Operation {
-      PO_ADD,
-      PO_REMOVE,
-      PO_VISIT
+        PO_ADD,
+        PO_REMOVE,
+        PO_VISIT
     };
 
     enum Target {
-      PO_PATTERN,
-      PO_TAG,
-      PO_PHONE,
-      PO_URL,
+        PO_PATTERN,
+        PO_TAG,
+        PO_PHONE,
+        PO_URL,
     };
+
+    enum OrderState {
+        OS_NONE,
+        OS_OPEN,
+        OS_IN_PROGRESS,
+        OS_SUSPENDED,
+        OS_DONE
+    };
+
+    QString order;
 
     Operation operation;
     Target target;
     QString name;
+    OrderState state = OS_NONE;
 
-    bool empty() { return name.isEmpty(); }
+    bool empty() { return name.isEmpty() && state == OS_NONE; }
 
     QDomElement toXml() const;
     static Progress fromXml(const QDomElement&);
+
+    Progress(const QString& porder, Operation poper, Target ptgt, const QString& nm, OrderState st):
+        order(porder), operation(poper), target(ptgt), name(nm), state(st) {}
+
+    Progress(Operation poper, Target ptgt, const QString& nm):
+        operation(poper), target(ptgt), name(nm) {}
+
+    Progress(const QString& porder, OrderState st):
+        order(porder), state(st) {}
+
+    Progress() {}
 };
 
 class ExpLeagueConnection: public QObject {
@@ -113,6 +137,8 @@ public:
     Member* find(const QString& id, bool requestProfile = true);
     QList<Member*> members() const;
     void listExperts() const;
+    void clear();
+    void clearHistory();
 
     void sendOk(Offer* offer) {
         sendCommand("ok", offer);
@@ -140,6 +166,7 @@ public:
 
     void sendPresence(const QString& room, bool available = true);
     void sendOffer(const Offer& offer);
+    void sendVerify(const QString& room);
 
     void requestHistory(const QString& clientId);
 
@@ -155,11 +182,12 @@ signals:
     void message(const QString& room, const QString& id, const QString& from, const QString&);
     void image(const QString& room, const QString& id, const QString& from, const QUrl&);
     void answer(const QString& room, const QString& id, const QString& from, const QString&);
-    void progress(const QString& room, const QString& id, const QString& from, const Progress&);
+    void progress(const QString& room, const QString& id, const QString& from, const xmpp::Progress&);
 
     void roomPresence(const QString& roomId, const QString& expert, const QString& role, const QString& affiliation);
     void roomMessage(const QString& roomId, const QString& from, bool expert, int count);
     void roomStatus(const QString& roomId, int status);
+    void roomOrderStart(const QString& roomId, const QString& orderId, const QString& expert);
     void roomOffer(const QString& roomId, const Offer& offer);
     void roomFeedback(const QString& roomId, int stars);
 
@@ -208,6 +236,7 @@ private:
     QString m_jid;
     QMap<QString, Member*> m_members_cache;
     QSet<QString> m_history_requested;
+    QMap<QString, QString> m_last_id;
 };
 
 class Registrator: public QXmppClientExtension {
@@ -240,11 +269,6 @@ private:
     bool m_reconnecting = false;
     const Profile* m_profile = 0;
 };
-}
-
-QXmppElement parse(const QString& str);
-}
-
-QDebug operator<<(QDebug dbg, const QDomNode& node);
+}}
 
 #endif // PROTOCOL_H

@@ -45,12 +45,8 @@ Item {
         return screen.webView
     }
 
-    property TextEdit editor: {
-        var document = dosearch.navigation.context.document
-        if (document)
-            return document.ui.editor
-        return null
-    }
+    property var document: !!dosearch.navigation.context ? dosearch.navigation.context.document : null
+    property TextEdit editor: document ? document.ui.editor : null
 
     property var omnibox: {
         if (root.main)

@@ -278,13 +278,14 @@ Rectangle {
                     selectByMouse: true
                     textFormat: TextEdit.RichText
                     wrapMode: TextEdit.WrapAnywhere
-                    text: modelData.replace(/TODO/g, "<b>TODO</b>")
+                    text: modelData.replace(/TODO/g, "<b>TODO</b>").replace(/\n/g, "<br/>")
                 }
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
                         send.text = modelData
+                        send.cursorPosition = modelData.length
                         column.activeDialog.visible = false
                         send.forceActiveFocus()
                     }
@@ -390,29 +391,19 @@ Rectangle {
                         width: parent.width - 8
                         height: parent.height - 8
                         wrapMode: TextEdit.WrapAnywhere
-                        textFormat: TextEdit.RichText
                         text: qsTr("Напишите сообщение клиенту")
                         color: "darkgray"
                         font.pixelSize: 14
                         selectByMouse: true
 
-                        property string prevText: ""
-                        onTextChanged: {
-                            var plainText = getText(0, text.length).replace(/\xA0/g, " ")
-                            if (prevText != plainText) {
-                                prevText = plainText
-                                var richText = plainText.replace(/ /g, "&nbsp;")
-                                richText = richText.replace(/TODO/g, "<span style=\" font-weight:600; color:#cccc00;\">TODO</span>")
-                                var position = cursorPosition
-                                text = richText
-                                cursorPosition = position
-                            }
+                        Component.onCompleted: {
+                            dosearch.setupHighlighter(textDocument)
                         }
 
-                        property string markerText: "TODO"
                         Keys.onPressed: {
                             var text = getText(0, send.text.length)
-                            if ((event.key === Qt.Key_Enter || event.key === Qt.Key_Return) && ((event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) !== 0)) {
+                            var markerText = "TODO"
+                            if ((event.key === Qt.Key_Enter || event.key === Qt.Key_Return) && ((event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) === 0)) {
                                 if (text.indexOf(markerText) < 0) {
                                     self.task.sendMessage(text)
                                     send.text = ""
@@ -421,7 +412,7 @@ Rectangle {
                                 else {
                                     cursorPosition = text.indexOf(markerText)
                                     selectWord()
-                                    event.accepted = false
+                                    event.accepted = true
                                 }
                             }
                             else if (event.key === Qt.Key_F2) {
@@ -443,9 +434,8 @@ Rectangle {
                                 }
                             }
                             else if (event.key === Qt.Key_Escape) {
-                                dosearch.main.forceActiveFocus()
+                                dosearch.main.screenRef.forceActiveFocus()
                             }
-
                         }
                         onActiveFocusChanged: {
                             var text = getText(0, send.text.length)

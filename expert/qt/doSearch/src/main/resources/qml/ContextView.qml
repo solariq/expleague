@@ -18,9 +18,9 @@ Rectangle {
     property alias downloads: downloadsPage
     property var ownerCtxt: owner
 
-    onFocusChanged: {
+    onActiveFocusChanged: {
         var text = owner.title
-        if (focus && (text == "" || text == qsTr("Новый контекст"))) {
+        if (activeFocus && (text == "" || text == qsTr("Новый контекст"))) {
             contextName.forceActiveFocus()
         }
     }

@@ -333,6 +333,10 @@ Rectangle {
                     }
                 }
 
+                onActiveFocusChanged: {
+                    console.log("Focus of " + owner.id + " changed to " + focus + " " + complete  + " active: " + dosearch.main.activeFocusItem)
+                }
+
                 property int historyLength: 1
                 onUrlChanged: {
                     console.log(new Date().getTime() + " url changed: [" + url + "] owner url: [" + owner.url + "]" + " history length: " + navigationHistory.items.rowCount())
@@ -429,14 +433,17 @@ Rectangle {
                         webEngineView.audioMuted = Qt.binding(function() {
                             return muteCheck.checked
                         })
+                        webEngineView.enabled = true
 //                        if (owner.container === dosearch.navigation.activePage && self.visible) // for ui transfered views
 //                            self.forceActiveFocus()
                         runJavaScript("document.body.innerText", function(result) {
                             owner.text = result;
                         });
                     }
-                    else
+                    else {
+                        webEngineView.enabled = webEngineView.visible
                         webEngineView.visible = true
+                    }
                 }
 
                 Keys.onPressed: {
@@ -528,14 +535,12 @@ Rectangle {
         }
     }
 
-    focus: self.visible
     property bool complete: false
 
-    onFocusChanged: {
-        if (!dosearch.main || !visible || !complete || focus)
+    onActiveFocusChanged: {
+        if (!dosearch.main || !visible || !complete || activeFocus)
             return
 
-//        console.log("Focus of " + owner.id + " changed to " + focus + " " + complete  + " active: " + dosearch.main.activeFocusItem)
         var parent = dosearch.main ? dosearch.main.activeFocusItem : null
         while (parent) {
             if (parent === self) {
@@ -556,7 +561,7 @@ Rectangle {
     }
 
     Keys.onPressed: {
-//        console.log("Key pressed: " + event.key + " caught by " + owner.id)
+        console.log("Key pressed: " + event.key + " caught by " + owner.id)
         actionTs = new Date().getTime()
         if (pageSearch.length > 0) {
             if (event.key === Qt.Key_Left) {

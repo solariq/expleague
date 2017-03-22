@@ -2,11 +2,15 @@
 
 #include <QRegularExpression>
 
+#include <QDomDocument>
+#include <QBuffer>
+
 #include "league.h"
 #include "protocol.h"
 #include "model/context.h"
 #include "dosearch.h"
 #include "model/pages/editor.h"
+#include "model/pages/globalchat.h"
 
 namespace expleague {
 League* Task::parent() const {
@@ -26,10 +30,10 @@ void Task::setOffer(Offer* offer) {
         QObject::disconnect(m_offer);
     QObject::connect(offer, SIGNAL(cancelled()), this, SLOT(cancelReceived()));
     m_offer = offer;
-    m_comment = m_offer->comment();
+    m_comment = offer->comment();
     m_patterns = offer->patterns();
     m_tags = offer->tags();
-    if (!m_offer->draft().isEmpty() && answer()->textContent().isEmpty()) {
+    if (!offer->draft().isEmpty() && answer()->textContent().isEmpty()) {
         answer()->setTextContent(m_offer->draft());
     }
     setFilter(offer->filter());
@@ -37,6 +41,10 @@ void Task::setOffer(Offer* offer) {
     emit patternsChanged();
     emit filterChanged();
     emit offerChanged();
+}
+
+void Task::cancelReceived() {
+    emit cancelled();
 }
 
 void Task::setFilter(QMap<QString, Offer::FilterType> filter) {
@@ -58,6 +66,7 @@ void Task::answerReceived(const QString &from, const QString& text) {
     Member* author = parent()->findMember(from);
     MarkdownEditorPage* answerPage = dosearch->document("Ответ " + QString::number(m_answers.size() + 1), author, false, id() + "-" + QString::number(m_answers.size() + 1));
     answerPage->setTextContent(text);
+    answerPage->setEditable(false);
     if (context()) {
         context()->appendDocument(answerPage);
         context()->transition(answerPage, Page::TYPEIN);
@@ -129,6 +138,10 @@ void Task::progressReceived(const QString&, const xmpp::Progress& progress) {
     }
 }
 
+RoomStatus* Task::status() const {
+    return parent()->chat()->state(xmpp::user(m_room));
+}
+
 Member* Task::client() const {
     return m_offer ? parent()->findMember(xmpp::user(m_offer->client())) : 0;
 }
@@ -140,7 +153,8 @@ void Task::setContext(Context *context) {
 }
 
 void Task::urlVisited(const QUrl& url) const {
-    parent()->connection()->sendProgress(offer()->roomJid(), {Progress::PO_VISIT, Progress::PO_URL, url.toString()});
+    if (parent()->connection())
+        parent()->connection()->sendProgress(offer()->roomJid(), {"", Progress::PO_VISIT, Progress::PO_URL, url.toString(), Progress::OS_NONE});
 }
 
 Bubble* Task::bubble(const QString& from) {
@@ -154,7 +168,8 @@ Bubble* Task::bubble(const QString& from) {
 }
 
 void Task::sendMessage(const QString &str) const {
-    parent()->connection()->sendMessage(offer()->roomJid(), str);
+    if (parent()->connection())
+        parent()->connection()->sendMessage(offer()->roomJid(), str);
 }
 
 void Task::close(const QString& shortAnswer) {
@@ -190,6 +205,8 @@ QString removeSpacesInside(const QString& textOrig, const QString& separator) {
 }
 
 void Task::sendAnswer(const QString& shortAnswer, int difficulty, int success, bool extraInfo) {
+    if (!parent()->connection())
+        return;
     if (!answer()->textContent().isEmpty()) {
         QString text = answer()->textContent();
         text.replace("\t", "    ");
@@ -204,25 +221,35 @@ void Task::sendAnswer(const QString& shortAnswer, int difficulty, int success, b
 }
 
 void Task::tag(TaskTag* tag) {
-//    qDebug() << "Sending tag: " << tag;
-    parent()->connection()->sendProgress(offer()->roomJid(), {xmpp::Progress::PO_ADD, xmpp::Progress::PO_TAG, tag->name()});
+    if (active()) {
+        if (parent()->connection())
+            parent()->connection()->sendProgress(offer()->roomJid(), {"", xmpp::Progress::PO_ADD, xmpp::Progress::PO_TAG, tag->name(), xmpp::Progress::OS_NONE});
+    }
+    else m_tags.append(tag);
 }
 
 void Task::pattern(AnswerPattern* pattern) {
-    parent()->connection()->sendProgress(offer()->roomJid(), {xmpp::Progress::PO_ADD, xmpp::Progress::PO_PATTERN, pattern->name()});
+    if (active()) {
+        if (parent()->connection())
+            parent()->connection()->sendProgress(offer()->roomJid(), {"", xmpp::Progress::PO_ADD, xmpp::Progress::PO_PATTERN, pattern->name(), xmpp::Progress::OS_NONE});
+    }
+    else m_patterns.append(pattern);
 }
 
 void Task::phone(const QString& phone) {
-    parent()->connection()->sendProgress(offer()->roomJid(), {xmpp::Progress::PO_ADD, xmpp::Progress::PO_PHONE, phone});
+    if (parent()->connection())
+        parent()->connection()->sendProgress(offer()->roomJid(), {"", xmpp::Progress::PO_ADD, xmpp::Progress::PO_PHONE, phone, xmpp::Progress::OS_NONE});
 }
 
 void Task::cancel() {
-    parent()->connection()->sendCancel(offer());
+    if (parent()->connection())
+        parent()->connection()->sendCancel(offer());
     stop();
 }
 
 void Task::suspend(int seconds) {
-    parent()->connection()->sendSuspend(offer(), seconds);
+    if (parent()->connection())
+        parent()->connection()->sendSuspend(offer(), seconds);
     stop();
 }
 
@@ -237,9 +264,18 @@ void Task::stop() {
 
 void Task::enter() const {
     parent()->setAdminFocus(m_room);
+    if (parent()->connection())
+        parent()->connection()->sendPresence(m_room, true);
+}
+
+void Task::verify() const {
+    if (parent()->connection())
+        parent()->connection()->sendVerify(m_room);
 }
 
 void Task::commitOffer(const QString &topic, const QString& comment, const QList<Member*>& selected) const {
+    if (!parent()->connection())
+        return;
     QMap<QString, Offer::FilterType> filter = m_filter;
     foreach(Member* expert, selected) {
         filter[expert->id()] = Offer::TFT_ACCEPT;
@@ -267,7 +303,7 @@ void Task::clearFilter() {
 }
 
 void Task::filter(Member* member, int role) {
-    if (role < 0)
+    if (role < 0 || role >= Offer::TFT_LAST)
         m_filter.remove(member->id());
     else
         m_filter[member->id()] = (Offer::FilterType)role;
@@ -278,7 +314,10 @@ QString Task::id() const  {
     return m_room;
 }
 
-Task::Task(Offer* offer, QObject* parent): QObject(parent), m_room(offer->room()), m_offer(offer), m_comment(offer->comment()) {
+Task::Task(Offer* offer, League* parent):
+    QObject(parent),
+    m_room(offer->room()), m_offer(offer), m_comment(offer->comment())
+{
     QObject::connect(offer, SIGNAL(cancelled()), this, SLOT(cancelReceived()));
     setFilter(offer->filter());
     m_answer = doSearch::instance()->document("Ваш ответ", League::instance()->self(), true, id() + "-" + "answer");
@@ -290,101 +329,12 @@ Task::Task(Offer* offer, QObject* parent): QObject(parent), m_room(offer->room()
     setFilter(offer->filter());
 }
 
-Task::Task(const QString& roomId, QObject* parent): QObject(parent), m_room(roomId), m_offer(0) {
+Task::Task(const QString& roomId, League* parent): QObject(parent), m_room(roomId), m_offer(0) {
     m_answer = doSearch::instance()->document("Ваш ответ", League::instance()->self(), true, id() + "-" + "answer");
 }
 
 
 bool Bubble::incoming() const {
     return m_from != doSearch::instance()->league()->id();
-}
-
-
-void RoomState::onStatus(const QString& id, int status) {
-    if (id != roomId())
-        return;
-    m_task->setStatus((Task::Status)status);
-    if (m_task->status() == Task::OPEN)
-        parent()->notifyIfNeeded(id, "Комната: " + task()->offer()->topic() + " перешла в открытое состояние");
-    emit statusChanged((Task::Status)status);
-}
-
-void RoomState::onFeedback(const QString& id, int feedback) {
-    if (id != roomId())
-        return;
-    m_feedback = feedback;
-    emit feedbackChanged();
-}
-
-void RoomState::onMessage(const QString& id, const QString& author, bool expert, int count) {
-    if (id != roomId())
-        return;
-    if (!expert)
-        parent()->notifyIfNeeded(author, "Новое сообщение в комнате: " + task()->offer()->topic());
-    m_unread = expert ? 0 : m_unread + count;
-    emit unreadChanged(m_unread);
-}
-
-void RoomState::onPresence(const QString& id, const QString& expert, const QString& roleStr, const QString& affiliationStr) {
-    if (id != roomId())
-        return;
-    xmpp::Affiliation::Enum affiliation = (xmpp::Affiliation::Enum)QMetaEnum::fromType<xmpp::Affiliation::Enum>().keyToValue(affiliationStr.toLatin1().constData());
-    xmpp::Role::Enum role = (xmpp::Role::Enum)QMetaEnum::fromType<xmpp::Role::Enum>().keyToValue(roleStr.toLatin1().constData());
-    if (affiliation == xmpp::Affiliation::owner)
-        return;
-    Member* const member = parent()->findMember(xmpp::user(expert));
-    if ((role != xmpp::Role::none) != m_occupied.contains(member)) {
-        if (m_occupied.contains(member)) {
-            if (affiliation == xmpp::Affiliation::none) {
-                m_involved.removeOne(member);
-                emit involvedChanged();
-            }
-
-            m_occupied.removeOne(member);
-        }
-        else
-            m_occupied.append(member);
-        emit occupiedChanged();
-    }
-    if ((affiliation != xmpp::Affiliation::none || role != xmpp::Role::none) && !m_involved.contains(member)) {
-        m_involved.append(member);
-        emit involvedChanged();
-    }
-}
-
-void RoomState::onOfferChanged() {
-    Member* client = m_task->client();
-    m_involved.removeAll(client);
-    client->append(this);
-    emit clientChanged();
-    emit topicChanged();
-}
-
-bool RoomState::connectTo(xmpp::ExpLeagueConnection* connection) {
-    if (xmpp::domain(jid()) != xmpp::domain(connection->jid()))
-        return false;
-    connect(connection, SIGNAL(roomStatus(QString,int)), SLOT(onStatus(QString,int)));
-    connect(connection, SIGNAL(roomFeedback(QString,int)), SLOT(onFeedback(QString,int)));
-    connect(connection, SIGNAL(roomMessage(QString,QString,bool,int)), SLOT(onMessage(QString,QString,bool,int)));
-    connect(connection, SIGNAL(roomPresence(QString,QString,QString,QString)), SLOT(onPresence(QString,QString,QString,QString)));
-    return true;
-}
-
-QString RoomState::roomId() const {
-    return xmpp::user(jid());
-}
-
-void RoomState::enter() {
-    m_task->enter();
-}
-
-League* RoomState::parent() const {
-    return static_cast<League*>(QObject::parent());
-}
-
-RoomState::RoomState(Task* task, League* parent):
-    QObject(parent), m_task(task)
-{
-    QObject::connect(m_task, SIGNAL(offerChanged()), this, SLOT(onOfferChanged()));
 }
 }

@@ -10,11 +10,7 @@ import "."
 Item {
     id: self
     anchors.fill: parent
-    property var editorActions: !!dosearch.main && dosearch.main.editorActionsRef ? dosearch.main.editorActionsRef : stubActions
-
-    EditorActions {
-        id: stubActions
-    }
+    property var editorActions: !!dosearch.main && dosearch.main.editorActionsRef ? dosearch.main.editorActionsRef : "stubActions"
 
     property alias editor: edit
 //    property bool options: false

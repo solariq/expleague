@@ -33,6 +33,7 @@ public:
 
 public:
     void setTextContent(const QString& text);
+    void setEditable(bool editable);
     Q_INVOKABLE QStringList codeClipboard();
 
 public slots:
@@ -46,10 +47,7 @@ signals:
 private slots:
     void contentChanged();
 
-    void authorChanged() {
-        emit Page::titleChanged(title());
-        emit Page::iconChanged(icon());
-    }
+    void onAuthorChanged();
 
     void acquireFocus();
 
@@ -64,9 +62,9 @@ protected:
 
 private:
     QString m_text;
+    QString m_author_id;
     Member* m_author = 0;
 //    Context* m_owner = 0;
-    hunspell::SpellChecker* m_spellchecker = 0;
     bool m_editable;
 
     mutable QString m_html;
