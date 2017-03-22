@@ -25,7 +25,7 @@ public class UserHistoryQuery extends Item implements AnyHolder {
   public static final String NS = "http://expleague.com/scheme/history";
 
   @XmlAttribute
-  private JID client;
+  private String client;
 
   @XmlElementWrapper(name = "content", namespace = NS)
   @XmlAnyElement
@@ -38,7 +38,7 @@ public class UserHistoryQuery extends Item implements AnyHolder {
   public UserHistoryQuery() {
   }
 
-  public JID client() {
+  public String client() {
     return client;
   }
 

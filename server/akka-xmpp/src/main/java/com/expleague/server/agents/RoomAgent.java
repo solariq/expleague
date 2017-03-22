@@ -66,8 +66,12 @@ public class RoomAgent extends PersistentActorAdapter {
     return result.getValue();
   }
 
-  public List<Stanza> archive() {
-    return archive;
+  public final List<Stanza> archive() {
+    return archive(new MucHistory());
+  }
+
+  public List<Stanza> archive(MucHistory history) {
+    return history.filter(archive).collect(Collectors.toList());
   }
 
   @ActorMethod
@@ -329,7 +333,8 @@ public class RoomAgent extends PersistentActorAdapter {
     if (status != null)
       status.presence = presence;
     if (xData.has(MucHistory.class) && presence.available()) {
-      xData.get(MucHistory.class).filter(archive()).forEach(stanza -> {
+      final MucHistory history = xData.get(MucHistory.class);
+      archive(history).forEach(stanza -> {
         if (stanza instanceof Message && checkDst(stanza, from, true) && relevant(stanza, from)) {
           XMPP.send(participantCopy(stanza, from), context());
         }

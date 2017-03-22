@@ -248,7 +248,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         self().tell(new Message(from, jid(), offer), self());
       }
     }
-    else if (msg.has(Feedback.class) && state == FEEDBACK) {
+    else if (msg.has(Feedback.class) && (state == FEEDBACK || state == DELIVERY)) {
       if (mode == ProcessMode.NORMAL) {
         final Feedback feedback = msg.get(Feedback.class);
         if (!orders.isEmpty())

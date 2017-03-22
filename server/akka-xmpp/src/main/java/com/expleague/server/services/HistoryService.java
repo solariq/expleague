@@ -34,7 +34,7 @@ public class HistoryService extends ActorAdapter<UntypedActor> {
     final Timeout timeout = new Timeout(Duration.create(20, TimeUnit.SECONDS));
     final JID roomJid = XMPP.jid(GlobalChatAgent.ID);
 
-    final Future<Object> ask = Patterns.ask(XMPP.register(roomJid, context()), new RoomAgent.DumpRequest(answer.client().local()), timeout);
+    final Future<Object> ask = Patterns.ask(XMPP.register(roomJid, context()), new RoomAgent.DumpRequest(answer.client()), timeout);
     try {
       //noinspection unchecked
       final List<Stanza> result = (List<Stanza>) Await.result(ask, timeout.duration());

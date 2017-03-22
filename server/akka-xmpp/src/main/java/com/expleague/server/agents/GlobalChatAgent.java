@@ -8,6 +8,7 @@ import com.expleague.server.XMPPDevice;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
+import com.expleague.xmpp.muc.MucHistory;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Message.MessageType;
 import com.expleague.xmpp.stanza.Stanza;
@@ -39,7 +40,11 @@ public class GlobalChatAgent extends RoomAgent {
 
   @ActorMethod
   public void dump(DumpRequest dump) {
-    final List<Message> rooms = this.rooms.values().stream().filter(room -> room.affiliation(dump.from()) == Affiliation.OWNER).map(RoomStatus::message).collect(Collectors.toList());
+    final List<Message> rooms = this.rooms.values().stream()
+        .filter(room -> room.affiliation(dump.from()) == Affiliation.OWNER)
+        .map(RoomStatus::message)
+        .map(message -> participantCopy(message, XMPP.jid(dump.from())))
+        .collect(Collectors.toList());
     sender().tell(rooms, self());
   }
 
@@ -97,12 +102,15 @@ public class GlobalChatAgent extends RoomAgent {
   }
 
   @Override
-  public List<Stanza> archive() {
+  public List<Stanza> archive(MucHistory history) {
     final List<Stanza> result = new ArrayList<>();
-    rooms.forEach((id, status) -> {
-      if (status.currentOffer != null && (!EnumSet.of(CLOSED, FEEDBACK).contains(status.state) || status.lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)))
-        result.add(status.message());
-    });
+    if (history.recent()) {
+      rooms.forEach((id, status) -> {
+        if (status.currentOffer != null && (!EnumSet.of(CLOSED, FEEDBACK).contains(status.state) || status.lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)))
+          result.add(status.message());
+      });
+    }
+    else rooms.forEach((id, status) -> result.add(status.message()));
     return result;
   }
 

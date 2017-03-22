@@ -1,9 +1,11 @@
 package com.expleague.xmpp.muc;
 
 import com.expleague.xmpp.stanza.Stanza;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -20,6 +22,9 @@ public class MucHistory extends com.expleague.xmpp.Item {
   @XmlAttribute(name = "last-id")
   private String lastId;
 
+  @XmlAttribute(name = "recent")
+  private Boolean recent;
+
   public MucHistory() {
   }
 
@@ -32,6 +37,19 @@ public class MucHistory extends com.expleague.xmpp.Item {
           return archive.subList(i + 1, archive.size()).stream();
       }
     }
+    else if (recent != null && recent) {
+      final List<Stanza> result = new ArrayList<>();
+
+      return result.stream();
+    }
     return archive.stream();
+  }
+
+  public void recent(boolean recent) {
+    this.recent = recent;
+  }
+
+  public boolean recent() {
+    return recent != null && recent;
   }
 }

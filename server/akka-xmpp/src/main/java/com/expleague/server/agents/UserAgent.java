@@ -228,7 +228,9 @@ public class UserAgent extends PersistentActorAdapter {
         XMPP.subscribe(subscription, context());
         if (connectedDevice.role() == XMPPDevice.Role.ADMIN) {
           final Presence presence = new Presence(deviceJid, XMPP.jid(GlobalChatAgent.ID), true);
-          presence.append(new MucXData(new MucHistory()));
+          final MucHistory history = new MucHistory();
+          history.recent(true);
+          presence.append(new MucXData(history));
           XMPP.send(presence, context());
         }
         invoke(new Presence(deviceJid, true));
