@@ -1,7 +1,6 @@
 package com.expleague.bots;
 
 import com.expleague.model.Offer;
-import com.expleague.model.Operations;
 import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.JID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
@@ -41,13 +40,5 @@ public class ClientBot extends Bot {
     message.setTo(JID.jidInstance(room));
     jaxmpp.send(message);
     return room;
-  }
-
-  public void sendFeedback(BareJID roomJID, Operations.Feedback feedback) throws JaxmppException {
-    final Element feedbackElem = ElementFactory.create("feedback");
-    feedbackElem.setXMLNS(TBTS_XMLNS);
-    feedbackElem.setAttribute("stars", Integer.toString(feedback.stars()));
-    //feedbackElem.setAttribute("payment", payment);
-    sendToGroupChat(feedbackElem, JID.jidInstance(roomJID));
   }
 }

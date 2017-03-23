@@ -22,29 +22,29 @@ public class ClientExpertTest extends BaseSingleBotsTest {
     //Arrange
     final Answer answer = new Answer(generateRandomString());
     final BareJID roomJID = obtainRoomDeliverState();
-    final ExpectedMessage expectedAnswer = new ExpectedMessageBuilder().has(Answer.class, a -> answer.value().equals(a.value())).build();
+    final ExpectedMessage expectedAnswer = new ExpectedMessageBuilder().from(botRoomJID(roomJID, expertBot)).has(Answer.class, a -> answer.value().equals(a.value())).build();
 
     //Act
-    expertBot.sendAnswer(roomJID, answer);
+    expertBot.sendToGroupChat(roomJID, answer);
     final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedAnswer);
     roomCloseStateByClientCancel(roomJID);
 
     //Assert
-    AssertAllExpectedMessagesAreReceived(notReceivedMessages);
+    assertAllExpectedMessagesAreReceived(notReceivedMessages);
   }
 
-  @Test
+  /*@Test
   public void testExpertCancels() throws JaxmppException {
     //Arrange
     final BareJID roomJID = obtainRoomDeliverState();
     final ExpectedMessage expectedCancel = new ExpectedMessageBuilder().has(Operations.Cancel.class).build();
 
     //Act
-    expertBot.sendCancel(roomJID);
+    expertBot.sendToGroupChat(roomJID, new Operations.Cancel());
     final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedCancel);
     roomCloseStateByClientCancel(roomJID);
 
     //Assert
-    AssertAllExpectedMessagesAreReceived(notReceivedMessages);
-  }
+    assertAllExpectedMessagesAreReceived(notReceivedMessages);
+  }*/
 }

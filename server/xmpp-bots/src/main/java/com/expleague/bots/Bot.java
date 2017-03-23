@@ -1,7 +1,7 @@
 package com.expleague.bots;
 
 import com.expleague.bots.utils.ExpectedMessage;
-import com.expleague.xmpp.AnyHolder;
+import com.expleague.bots.utils.ItemToTigaseElementParser;
 import com.expleague.xmpp.Item;
 import com.spbsu.commons.util.sync.StateLatch;
 import tigase.jaxmpp.core.client.*;
@@ -177,25 +177,13 @@ public class Bot {
     System.out.println("Sent offline presence");
   }
 
-  public void sendCancel(BareJID roomJID) throws JaxmppException {
-    final Element cancelElem = ElementFactory.create("cancel");
-    cancelElem.setXMLNS(TBTS_XMLNS);
-    sendToGroupChat(cancelElem, JID.jidInstance(roomJID));
-  }
-
-  public void sendTextMessageToRoom(BareJID roomJID, com.expleague.xmpp.stanza.Message.Body body) throws JaxmppException {
+  public void sendToGroupChat(BareJID to, Item... items) throws JaxmppException {
     final Message message = Message.create();
-    message.setTo(JID.jidInstance(roomJID));
+    for (Item item : items) {
+      message.addChild(ItemToTigaseElementParser.parse(item));
+    }
     message.setType(StanzaType.groupchat);
-    message.setBody(body.value());
-    jaxmpp.send(message);
-  }
-
-  protected void sendToGroupChat(Element element, JID to) throws JaxmppException {
-    final Message message = Message.create();
-    message.addChild(element);
-    message.setType(StanzaType.groupchat);
-    message.setTo(to);
+    message.setTo(JID.jidInstance(to));
     jaxmpp.send(message);
   }
 
@@ -211,7 +199,7 @@ public class Bot {
         final Message message;
         try {
           message = messagesQueue.take();
-          final AnyHolder anyHolder = Item.create(message.getAsString());
+          final com.expleague.xmpp.stanza.Message anyHolder = Item.create(message.getAsString());
           for (ExpectedMessage expectedMessage : expectedMessages) {
             if (!expectedMessage.received() && expectedMessage.tryReceive(anyHolder)) {
               stateLatch.advance();

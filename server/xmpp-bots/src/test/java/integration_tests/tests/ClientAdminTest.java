@@ -26,15 +26,17 @@ public class ClientAdminTest extends BaseSingleBotsTest {
     //Arrange
     final BareJID roomJID = obtainRoomOpenState();
     final Answer answer = new Answer(generateRandomString());
-    final ExpectedMessage expectedAnswer = new ExpectedMessageBuilder().has(Answer.class, a -> answer.value().equals(a.value())).build();
+    final ExpectedMessage expectedAnswer = new ExpectedMessageBuilder()
+        .from(botRoomJID(roomJID, adminBot))
+        .has(Answer.class, a -> answer.value().equals(a.value())).build();
 
     //Act
-    adminBot.sendAnswer(roomJID, answer);
+    adminBot.sendToGroupChat(roomJID, answer);
     final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedAnswer);
     roomCloseStateByClientFeedback(roomJID);
 
     //Assert
-    AssertAllExpectedMessagesAreReceived(notReceivedMessages);
+    assertAllExpectedMessagesAreReceived(notReceivedMessages);
   }
 
   @Test
@@ -58,18 +60,20 @@ public class ClientAdminTest extends BaseSingleBotsTest {
 
   private void testClientReceivesMessage(Supplier<BareJID> obtainState, boolean closeRoom) throws JaxmppException {
     //Arrange
+    final BareJID roomJID = obtainState.get();
     final Message.Body body = new Message.Body(generateRandomString());
-    final ExpectedMessage expectedMessageFromAdmin = new ExpectedMessageBuilder().has(Message.Body.class, b -> body.value().equals(b.value())).build();
+    final ExpectedMessage expectedMessageFromAdmin = new ExpectedMessageBuilder()
+        .from(botRoomJID(roomJID, adminBot))
+        .has(Message.Body.class, b -> body.value().equals(b.value())).build();
 
     //Act
-    final BareJID roomJID = obtainState.get();
-    adminBot.sendTextMessageToRoom(roomJID, body);
+    adminBot.sendToGroupChat(roomJID, body);
     final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedMessageFromAdmin);
     if (closeRoom) {
       roomCloseStateByClientCancel(roomJID);
     }
 
     //Assert
-    AssertAllExpectedMessagesAreReceived(notReceivedMessages);
+    assertAllExpectedMessagesAreReceived(notReceivedMessages);
   }
 }
