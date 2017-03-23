@@ -32,7 +32,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   private RoomState state;
 
   public ExpLeagueRoomAgent(JID jid) {
-    super(jid);
+    super(jid, true);
   }
 
   private void state(RoomState newState, ProcessMode mode) {

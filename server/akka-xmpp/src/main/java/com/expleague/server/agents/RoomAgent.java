@@ -46,11 +46,10 @@ public class RoomAgent extends PersistentActorAdapter {
   private Subscription subscription;
   private boolean started;
 
-  public RoomAgent(JID jid) {
+  public RoomAgent(JID jid, boolean archive) {
     this.jid = jid;
-  }
-  public RoomAgent(JID jid, JID owner) {
-    this.jid = jid;
+    if (archive)
+      this.archive = new ArrayList<>();
   }
 
   public JID jid() {
@@ -71,7 +70,10 @@ public class RoomAgent extends PersistentActorAdapter {
   }
 
   public List<Stanza> archive(MucHistory history) {
-    return history.filter(archive).collect(Collectors.toList());
+    if (archive != null)
+      return history.filter(archive).collect(Collectors.toList());
+    else
+      return Collections.emptyList();
   }
 
   @ActorMethod
@@ -239,8 +241,10 @@ public class RoomAgent extends PersistentActorAdapter {
   }
 
   private void archive(Stanza iq) {
-    archive.add(iq);
-    dump.accept(iq);
+    if (archive != null) {
+      archive.add(iq);
+      dump.accept(iq);
+    }
   }
 
   public Role role(JID from) {
@@ -466,27 +470,30 @@ public class RoomAgent extends PersistentActorAdapter {
         if (message.to().resource().isEmpty())
           process(message, ProcessMode.RECOVER);
       }
-      archive.add(stanza);
+      if (archive != null)
+        archive.add(stanza);
     }
     else if (o instanceof DeliveryReceit) {
       delivered(((DeliveryReceit) o).id(), ProcessMode.RECOVER);
     }
     else if (o instanceof RecoveryCompleted) {
-      if (archive.isEmpty()) {
-        final Archive.Dump dump = Archive.instance().dump(jid.local());
-        dump.stream().forEach(s -> persist(s, stanza -> {
-          if (stanza instanceof Message) {
-            final Message message = (Message) stanza;
-            if (message.to().resource().isEmpty())
-              process(message, ProcessMode.REPLAY);
-          }
-          else if (stanza instanceof Iq)
-            process((Iq) stanza, ProcessMode.REPLAY);
-        }));
-      }
-      else {
-        archive().forEach(dump::accept);
-        commit();
+      if (archive != null) {
+        if (archive.isEmpty()) {
+          final Archive.Dump dump = Archive.instance().dump(jid.local());
+          dump.stream().forEach(s -> persist(s, stanza -> {
+            if (stanza instanceof Message) {
+              final Message message = (Message) stanza;
+              if (message.to().resource().isEmpty())
+                process(message, ProcessMode.REPLAY);
+            }
+            else if (stanza instanceof Iq)
+              process((Iq) stanza, ProcessMode.REPLAY);
+          }));
+        }
+        else {
+          archive().forEach(dump::accept);
+          commit();
+        }
       }
       onStart();
     }
@@ -506,6 +513,8 @@ public class RoomAgent extends PersistentActorAdapter {
         return participants.containsKey(jid.bare());
       }
     };
+    if (archive != null)
+      archive.clear();
     XMPP.subscribe(subscription, context());
     dump = Archive.instance().dump(jid.local());
   }

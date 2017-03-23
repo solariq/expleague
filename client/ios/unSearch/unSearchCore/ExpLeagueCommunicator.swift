@@ -172,6 +172,9 @@ internal class ExpLeagueCommunicator: NSObject {
 //        }
     }
     
+    fileprivate var requested: [String] = []
+    fileprivate var dumpRequestId: String = ""
+
     // MARK: - *** Life cycle ***
     internal init(profile: ExpLeagueProfile) {
         self.profile = profile
@@ -324,6 +327,7 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         completionHandler(true)
     }
     
+    
     func xmppStream(_ sender: XMPPStream!, didReceive iq: XMPPIQ!) -> Bool {
         if (ExpLeagueCommunicator.DEBUG) {
             print(iq)
@@ -397,7 +401,7 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
                 order.message(message: message, notify: false)
             }
         }
-        else if let query = iq.forName("query", xmlns: "http://expleague.com/scheme/dump-room"), !iq.isErrorIQ() {
+        else if let query = iq.forName("query", xmlns: "http://expleague.com/scheme/dump-room") {
             let offer = ExpLeagueOffer(xml: query.forName("offer", xmlns: "http://expleague.com/scheme")!)
             let order = ExpLeagueOrder(offer.room, offer: offer, context: profile.managedObjectContext!)
             profile.add(order: order)
@@ -412,14 +416,22 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         else if let query = iq.forName("query", xmlns: "http://expleague.com/scheme/restore"), !iq.isErrorIQ() {
             for room in query.elements(forName: "room") {
                 let roomId = (room ).stringValue
-                guard self.profile.order(name: roomId!) == nil else {
+                guard self.profile.order(name: roomId!) == nil && !requested.contains(roomId!) else {
                     continue
                 }
+                requested.append(roomId!)
                 let dumpRequest = DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/dump-room")
                 dumpRequest?.addAttribute(withName: "room", stringValue: roomId!)
-                stream?.send(XMPPIQ(type: "get", child: dumpRequest))
+                let iq = XMPPIQ(type: "get", child: dumpRequest)!
+                iq.addAttribute(withName: "id", stringValue: "restore-" + String(requested.count))
+                stream?.send(iq)
+                dumpRequestId = iq.elementID()
                 break // one at a time
             }
+        }
+        else if iq.elementID() == dumpRequestId {
+            let restore = DDXMLElement(name: "query", xmlns: "http://expleague.com/scheme/restore")
+            stream?.send(XMPPIQ(type: "get", child: restore))
         }
         return false
     }

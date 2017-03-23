@@ -30,7 +30,7 @@ public class GlobalChatAgent extends RoomAgent {
   public Map<String, RoomStatus> rooms = new HashMap<>();
 
   public GlobalChatAgent(JID jid) {
-    super(jid, XMPP.jid());
+    super(jid, false);
   }
 
   public static boolean isTrusted(JID from) {

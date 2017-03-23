@@ -41,6 +41,7 @@ import java.util.logging.Logger;
 public class Item implements Cloneable {
   private static final Logger log = Logger.getLogger(Item.class.getName());
   public static final String XMPP_START = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><stream:stream xmlns:stream=\"http://etherx.jabber.org/streams\" version=\"1.0\" xmlns=\"jabber:client\" xml:lang=\"en\" xmlns:xml=\"http://www.w3.org/XML/1998/namespace\">";
+  public static final String XMPP_END = "</stream:stream>";
   private static ThreadLocal<XmlOutputter> tlWriter = new ThreadLocal<XmlOutputter>() {
     @Override
     protected XmlOutputter initialValue() {
@@ -221,6 +222,8 @@ public class Item implements Cloneable {
       try {
         deserializedLength += xmlForm.length;
         if (deserializedLength > MAXIMUM_BUFFER_SIZE) {
+          asyncXml.getInputFeeder().feedInput(XMPP_END.getBytes(), 0, XMPP_END.length());
+          reader.drain(o -> { });
           init();
           deserializedLength = xmlForm.length;
         }
