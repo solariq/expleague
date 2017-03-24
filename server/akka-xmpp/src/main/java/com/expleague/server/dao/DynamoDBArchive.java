@@ -2,7 +2,6 @@ package com.expleague.server.dao;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
@@ -12,12 +11,16 @@ import com.amazonaws.services.dynamodbv2.model.*;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.XMPP;
 import com.expleague.xmpp.JID;
-import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.util.cache.CacheStrategy;
 import com.spbsu.commons.util.cache.impl.FixedSizeCache;
+import gnu.trove.iterator.TLongIterator;
+import gnu.trove.list.TLongList;
+import gnu.trove.list.linked.TLongLinkedList;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -30,6 +33,7 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public class DynamoDBArchive implements Archive {
   private static final Logger log = Logger.getLogger(DynamoDBArchive.class.getName());
+  private final ConcurrentHashMap<String, ConcurrentLinkedQueue<AttributeValue>> roomAccumulatedChangesMap = new ConcurrentHashMap<>();
   private final DynamoDBMapper mapper;
   private final AmazonDynamoDBAsyncClient client;
 
@@ -39,9 +43,10 @@ public class DynamoDBArchive implements Archive {
     mapper = new DynamoDBMapper(client, new DynamoDBMapperConfig((DynamoDBMapperConfig.TableNameResolver) (clazz, config) -> ExpLeagueServer.config().dynamoDB()));
     final List<String> tableNames = client.listTables().getTableNames();
     final String tableName = ExpLeagueServer.config().dynamoDB();
+    final long readWriteCapacity = 10L;
     if (!tableNames.contains(tableName)) {
       final CreateTableRequest createReq = mapper.generateCreateTableRequest(RoomArchive.class);
-      createReq.setProvisionedThroughput(new ProvisionedThroughput(10L, 10L));
+      createReq.setProvisionedThroughput(new ProvisionedThroughput(readWriteCapacity, readWriteCapacity));
       final CreateTableResult createTableResult = client.createTable(createReq);
       try {
         Thread.sleep(5000);
@@ -50,9 +55,90 @@ public class DynamoDBArchive implements Archive {
       }
     }
     final DynamoDB db = new DynamoDB(client);
+
+    { //Start update consumer
+      final Thread updateConsumer = new Thread(() -> {
+        final long intervalInMillis = 1000L;
+        final TLongList history = new TLongLinkedList();
+        //noinspection InfiniteLoopStatement
+        while (true) {
+          if (!roomAccumulatedChangesMap.isEmpty()) {
+            roomAccumulatedChangesMap.forEach((id, accumulatedChanges) -> {
+              if (!accumulatedChanges.isEmpty()) {
+                final TLongIterator iterator = history.iterator();
+                final long timeMs = System.currentTimeMillis();
+                while (iterator.hasNext()) {
+                  final Long time = iterator.next();
+                  if (timeMs - time > intervalInMillis) {
+                    iterator.remove();
+                  }
+                }
+
+                boolean skip = false;
+                if (history.size() < readWriteCapacity) {
+                  history.add(System.currentTimeMillis());
+                }
+                else {
+                  skip = true;
+                }
+
+                if (!skip) {
+                  int messagesThroughput = 1000;
+                  boolean updated = false;
+                  while (!updated && messagesThroughput > 0) {
+                    final List<AttributeValue> changesToApply = new ArrayList<>();
+                    while (!accumulatedChanges.isEmpty() && changesToApply.size() < messagesThroughput) {
+                      changesToApply.add(accumulatedChanges.poll());
+                    }
+                    messagesThroughput = Math.min(messagesThroughput, changesToApply.size());
+
+                    final UpdateItemRequest update = new UpdateItemRequest()
+                        .withTableName(ExpLeagueServer.config().dynamoDB())
+                        .withKey(InternalUtils.toAttributeValueMap(new PrimaryKey("id", id)))
+                        .withUpdateExpression("set #m = list_append(#m, :i)")
+                        .withExpressionAttributeNames(new HashMap<String, String>() {{
+                          put("#m", "messages");
+                        }})
+                        .withExpressionAttributeValues(new HashMap<String, AttributeValue>() {{
+                          final AttributeValue itemsList = new AttributeValue();
+                          itemsList.setL(changesToApply);
+                          put(":i", itemsList);
+                        }});
+
+                    try {
+                      client.updateItem(update);
+                      updated = true;
+                    } catch (AmazonClientException ace) {
+                      accumulatedChanges.addAll(changesToApply);
+                      messagesThroughput /= 2;
+                    }
+                  }
+                }
+                else {
+                  try {
+                    Thread.sleep(100);
+                  } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                  }
+                }
+              }
+            });
+          } else {
+            try {
+              Thread.sleep(1000);
+            } catch (InterruptedException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        }
+      });
+      updateConsumer.setDaemon(true);
+      updateConsumer.start();
+    }
   }
 
   private FixedSizeCache<String, RoomArchive> dumpsCache = new FixedSizeCache<>(1000, CacheStrategy.Type.LRU);
+
   @Override
   public synchronized Dump dump(String local) {
     if ("global-chat".equals(local)) {
@@ -83,7 +169,7 @@ public class DynamoDBArchive implements Archive {
       RoomArchive archive = mapper.load(getRoomArchiveClass(), id);
       if (archive == null)
         archive = new RoomArchive(id);
-      archive.handlers(client, mapper);
+      archive.handlers(roomAccumulatedChangesMap, mapper);
       return archive;
     });
   }
@@ -91,7 +177,7 @@ public class DynamoDBArchive implements Archive {
   @Override
   public synchronized Dump register(String room, String owner) {
     final RoomArchive archive = new RoomArchive(room);
-    archive.handlers(client, mapper);
+    archive.handlers(roomAccumulatedChangesMap, mapper);
     dumpsCache.put(room, archive);
     return archive;
   }
@@ -105,7 +191,9 @@ public class DynamoDBArchive implements Archive {
     String id;
     Set<String> known = new HashSet<>();
     List<Message> messages;
-    public RoomArchive() {}
+
+    public RoomArchive() {
+    }
 
     public RoomArchive(String id) {
       this.id = id;
@@ -136,6 +224,7 @@ public class DynamoDBArchive implements Archive {
     }
 
     private final List<AttributeValue> accumulatedChange = new ArrayList<>();
+
     @Override
     public void accept(Stanza stanza) {
       if (known.contains(stanza.id()))
@@ -160,25 +249,11 @@ public class DynamoDBArchive implements Archive {
               expressionBuilder.append(", ");
             expressionBuilder.append("messages[").append(i + messages.size()).append("]=:i[").append(i).append("]");
           }
-
-          final UpdateItemRequest update = new UpdateItemRequest()
-              .withTableName(ExpLeagueServer.config().dynamoDB())
-              .withKey(InternalUtils.toAttributeValueMap(new PrimaryKey("id", id)))
-              .withUpdateExpression("set #m = list_append(#m, :i)")
-              .withExpressionAttributeNames(new HashMap<String, String>() {{
-                put("#m", "messages");
-              }})
-              .withExpressionAttributeValues(new HashMap<String, AttributeValue>() {{
-                final AttributeValue itemsList = new AttributeValue();
-                itemsList.setL(accumulatedChange);
-                put(":i", itemsList);
-              }});
-
-          client.updateItem(update);
+          roomAccumulatedChangesMap.putIfAbsent(id, new ConcurrentLinkedQueue<>());
+          roomAccumulatedChangesMap.get(id).addAll(accumulatedChange);
         }
         else mapper.save(this);
-      }
-      catch (AmazonClientException ace) {
+      } catch (AmazonClientException ace) {
         log.log(Level.WARNING, "Unable to deliver message to DynamoDB: " + ace.getMessage() + " expression: [" + expressionBuilder.toString() + "]");
       }
     }
@@ -189,6 +264,7 @@ public class DynamoDBArchive implements Archive {
     }
 
     private JID jid;
+
     @Override
     public JID owner() {
       if (jid != null)
@@ -202,10 +278,10 @@ public class DynamoDBArchive implements Archive {
     }
 
     private DynamoDBMapper mapper;
-    private AmazonDynamoDB client;
+    private ConcurrentHashMap<String, ConcurrentLinkedQueue<AttributeValue>> roomAccumulatedChangesMap;
 
-    public void handlers(AmazonDynamoDB client, DynamoDBMapper mapper) {
-      this.client = client;
+    public void handlers(ConcurrentHashMap<String, ConcurrentLinkedQueue<AttributeValue>> roomAccumulatedChangesMap, DynamoDBMapper mapper) {
+      this.roomAccumulatedChangesMap = roomAccumulatedChangesMap;
       this.mapper = mapper;
     }
   }
@@ -216,7 +292,8 @@ public class DynamoDBArchive implements Archive {
     private String author;
     private long ts;
 
-    public Message() {}
+    public Message() {
+    }
 
     public Message(String authorId, CharSequence message, long ts) {
       this.author = authorId;
@@ -240,6 +317,7 @@ public class DynamoDBArchive implements Archive {
     public String getText() {
       return text;
     }
+
     public void setText(String text) {
       this.text = text;
     }
