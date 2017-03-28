@@ -12,6 +12,7 @@ import java.util.stream.Stream;
  * Created by solar on 02/03/16.
  */
 public class XMPPUser {
+  public static final XMPPUser NO_SUCH_USER = new XMPPUser("", "", "", "No Such User", 0, 0, new Date(), "", ExpertsProfile.Authority.NONE);
   private final String id;
   private final String name;
   private final String country;

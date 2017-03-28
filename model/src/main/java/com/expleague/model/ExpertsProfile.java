@@ -104,7 +104,7 @@ public class ExpertsProfile extends Item {
   }
 
   public Authority authority() {
-    return authority;
+    return authority != null ? authority : Authority.NONE;
   }
 
   public ExpertsProfile shorten() {

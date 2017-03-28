@@ -1,5 +1,6 @@
 package com.expleague.server.agents;
 
+import akka.actor.PoisonPill;
 import akka.persistence.DeleteMessagesSuccess;
 import com.expleague.model.*;
 import com.expleague.model.Operations.*;
@@ -11,8 +12,10 @@ import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.DeliveryReceit;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Stanza;
+import scala.concurrent.duration.Duration;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,6 +59,12 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         orders.addAll(active);
       orders.forEach(o -> LaborExchange.tell(context(), o, self()));
     }
+    context().setReceiveTimeout(Duration.apply(1, TimeUnit.HOURS));
+  }
+
+  @ActorMethod
+  public void inactivityShutDown() {
+    self().tell(PoisonPill.getInstance(), self());
   }
 
   @Override

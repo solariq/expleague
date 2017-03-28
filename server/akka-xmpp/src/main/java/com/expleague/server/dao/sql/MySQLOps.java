@@ -81,7 +81,14 @@ public class MySQLOps {
       final PreparedStatement statement = createStatement(name, stmt);
       if (setup != null)
         setup.setup(statement);
-      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new ResultSetIterator(statement), 0), false);
+      final Stream<ResultSet> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(new ResultSetIterator(statement), 0), false);
+      return stream.onClose(() -> {
+        try {
+          statement.close();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
+      });
     }
     catch (SQLException e) {
       throw new RuntimeException(e);
@@ -131,7 +138,7 @@ public class MySQLOps {
 
     private void close() {
       try {
-        if (rs != null)
+        if (rs != null && !rs.isClosed())
           rs.close();
       } catch (SQLException ignore) {
       }

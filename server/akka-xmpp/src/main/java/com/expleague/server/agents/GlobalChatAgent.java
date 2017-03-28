@@ -12,6 +12,7 @@ import com.expleague.xmpp.muc.MucHistory;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Message.MessageType;
 import com.expleague.xmpp.stanza.Stanza;
+import gnu.trove.map.hash.TObjectIntHashMap;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -117,8 +118,9 @@ public class GlobalChatAgent extends RoomAgent {
   @Override
   protected void onStart() {
     rooms.forEach((room, state) -> {
-      if (EnumSet.of(OPEN, CHAT, RESPONSE, WORK).contains(state.state))
+      if (state.currentOffer != null && EnumSet.of(OPEN, CHAT, RESPONSE, WORK).contains(state.state)) {
         XMPP.whisper(XMPP.muc(room), new RoomAgent.Awake(), context()); // wake up room
+      }
     });
     super.onStart();
   }

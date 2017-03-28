@@ -174,24 +174,19 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
   @ActorMethod
   public void failedToSend(Tcp.CommandFailed failed) {
     log.warning("Unable to send message to " + id + " stopping connection");
-    if(businessLogic != null)
-      businessLogic.tell(PoisonPill.getInstance(), self());
-    else context().stop(self());
+    invoke(ConnectionState.CLOSED);
   }
 
   @ActorMethod
   public void invoke(Status.Failure failure) {
-    if(businessLogic != null)
-      businessLogic.tell(PoisonPill.getInstance(), self());
     log.log(Level.SEVERE, "Stream failure", failure.cause());
+    invoke(ConnectionState.CLOSED);
   }
 
   @ActorMethod
   public void invoke(Tcp.ConnectionClosed ignore) {
-    if(businessLogic != null)
-      businessLogic.tell(PoisonPill.getInstance(), self());
-    closed = true;
     log.fine("Client connection closed");
+    invoke(ConnectionState.CLOSED);
   }
 
   @ActorMethod
@@ -284,6 +279,8 @@ public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
         break;
       }
       case CLOSED: {
+        if (businessLogic != null)
+          businessLogic.tell(PoisonPill.getInstance(), self());
         connection.tell(PoisonPill.getInstance(), self());
         self().tell(PoisonPill.getInstance(), self());
         return;

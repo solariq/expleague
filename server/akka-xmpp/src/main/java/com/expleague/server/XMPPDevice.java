@@ -23,6 +23,11 @@ public abstract class XMPPDevice {
     ADMIN
   }
 
+  public static final XMPPDevice NO_SUCH_DEVICE = new XMPPDevice(XMPPUser.NO_SUCH_USER, "", "", false, "", "") {
+    @Override
+    public void updateDevice(String token, String clientVersion) {}
+  };
+
   private XMPPUser user;
   private final String passwd;
   private final String name;

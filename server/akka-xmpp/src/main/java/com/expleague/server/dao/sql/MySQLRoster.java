@@ -219,7 +219,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
               }
             };
           }
-          else return null;
+          else return XMPPDevice.NO_SUCH_DEVICE;
         }
       }
       catch (SQLException e) {
