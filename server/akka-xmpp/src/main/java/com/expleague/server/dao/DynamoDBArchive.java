@@ -1,6 +1,7 @@
 package com.expleague.server.dao;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
@@ -12,17 +13,18 @@ import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.XMPP;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Stanza;
+import com.spbsu.commons.text.charset.TextDecoderTools;
 import com.spbsu.commons.util.cache.CacheStrategy;
 import com.spbsu.commons.util.cache.impl.FixedSizeCache;
-import gnu.trove.iterator.TLongIterator;
-import gnu.trove.list.TLongList;
-import gnu.trove.list.linked.TLongLinkedList;
+import gnu.trove.list.array.TLongArrayList;
 
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -33,7 +35,8 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public class DynamoDBArchive implements Archive {
   private static final Logger log = Logger.getLogger(DynamoDBArchive.class.getName());
-  private final ConcurrentHashMap<String, ConcurrentLinkedQueue<AttributeValue>> roomAccumulatedChangesMap = new ConcurrentHashMap<>();
+  private final BlockingQueue<Message> roomAccumulatedChangesQueue = new LinkedBlockingQueue<>();
+  private final Set<String> fullRooms = Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final DynamoDBMapper mapper;
   private final AmazonDynamoDBAsyncClient client;
 
@@ -58,83 +61,88 @@ public class DynamoDBArchive implements Archive {
 
     { //Start update consumer
       final Thread updateConsumer = new Thread(() -> {
-        final long intervalInMillis = 1000L;
-        final TLongList history = new TLongLinkedList();
-        //noinspection InfiniteLoopStatement
-        while (true) {
-          if (!roomAccumulatedChangesMap.isEmpty()) {
-            roomAccumulatedChangesMap.forEach((id, accumulatedChanges) -> {
-              if (!accumulatedChanges.isEmpty()) {
-                final TLongIterator iterator = history.iterator();
-                final long timeMs = System.currentTimeMillis();
-                while (iterator.hasNext()) {
-                  final Long time = iterator.next();
-                  if (timeMs - time > intervalInMillis) {
-                    iterator.remove();
-                  }
-                }
+        final long intervalInNanos = 1000L * 1000L * 1000L;
+        final int throughputInBytesPerInterval = 1000;
+        final TLongArrayList history = new TLongArrayList();
+        try {
+          //noinspection InfiniteLoopStatement
+          while (true) {
+            final Message message = roomAccumulatedChangesQueue.take();
+            final String roomId = message.stanza().to().local();
+            if (fullRooms.contains(roomId))
+              continue;
 
-                boolean skip = false;
-                if (history.size() < readWriteCapacity) {
-                  history.add(System.currentTimeMillis());
-                }
-                else {
-                  skip = true;
-                }
+            final long timeInNanos = System.nanoTime();
+            long first = timeInNanos;
+            while (!history.isEmpty()) {
+              first = history.get(0);
+              if (timeInNanos - first <= intervalInNanos)
+                break;
+              history.remove(0, 1);
+            }
+            if (history.size() >= readWriteCapacity) {
+              final long waitTimeInNanos = intervalInNanos - (timeInNanos - first) + 1000L;
+              Thread.sleep(waitTimeInNanos / (1000L * 1000L), (int) (waitTimeInNanos % (1000L * 1000L)));
+            }
+            history.add(System.nanoTime());
 
-                if (!skip) {
-                  int messagesThroughput = 1000;
-                  boolean updated = false;
-                  while (!updated && messagesThroughput > 0) {
-                    final List<AttributeValue> changesToApply = new ArrayList<>();
-                    while (!accumulatedChanges.isEmpty() && changesToApply.size() < messagesThroughput) {
-                      changesToApply.add(accumulatedChanges.poll());
-                    }
-                    messagesThroughput = Math.min(messagesThroughput, changesToApply.size());
+            final List<Message> changesToApply = new ArrayList<>(Collections.singletonList(message));
+            UpdateItemRequest currentUpdate = updateRequest(roomId, changesToApply);
+            final Iterator<Message> queueIterator = roomAccumulatedChangesQueue.iterator();
+            while (queueIterator.hasNext()) {
+              final Message next = queueIterator.next();
+              if (!roomId.equals(next.stanza().to().local()))
+                continue;
+              changesToApply.add(next);
 
-                    final UpdateItemRequest update = new UpdateItemRequest()
-                        .withTableName(ExpLeagueServer.config().dynamoDB())
-                        .withKey(InternalUtils.toAttributeValueMap(new PrimaryKey("id", id)))
-                        .withUpdateExpression("set #m = list_append(#m, :i)")
-                        .withExpressionAttributeNames(new HashMap<String, String>() {{
-                          put("#m", "messages");
-                        }})
-                        .withExpressionAttributeValues(new HashMap<String, AttributeValue>() {{
-                          final AttributeValue itemsList = new AttributeValue();
-                          itemsList.setL(changesToApply);
-                          put(":i", itemsList);
-                        }});
-
-                    try {
-                      client.updateItem(update);
-                      updated = true;
-                    } catch (AmazonClientException ace) {
-                      accumulatedChanges.addAll(changesToApply);
-                      messagesThroughput /= 2;
-                    }
-                  }
-                }
-                else {
-                  try {
-                    Thread.sleep(100);
-                  } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                  }
-                }
+              final UpdateItemRequest update = updateRequest(roomId, changesToApply);
+              //noinspection ConstantConditions
+              boolean tooBig = TextDecoderTools.getBytes(update.toString(), TextDecoderTools.UTF8).length > throughputInBytesPerInterval;
+              if (tooBig) {
+                changesToApply.remove(changesToApply.size() - 1);
+                break;
               }
-            });
-          } else {
+              else {
+                queueIterator.remove();
+                currentUpdate = update;
+              }
+            }
+
             try {
-              Thread.sleep(1000);
-            } catch (InterruptedException e) {
-              throw new RuntimeException(e);
+              client.updateItem(currentUpdate);
+            } catch (AmazonClientException ace) {
+              if (ace instanceof AmazonServiceException && ((AmazonServiceException) ace).getErrorType() == AmazonServiceException.ErrorType.Client) {
+                fullRooms.add(roomId);
+              }
+              else {
+                roomAccumulatedChangesQueue.addAll(changesToApply);
+              }
+              log.log(Level.WARNING, "Unable to deliver message to DynamoDB: " + ace.getMessage());
             }
           }
+        } catch (InterruptedException ie) {
+          log.fine("Interrupting DynamoDB saving queue");
+          Thread.currentThread().interrupt();
         }
       });
       updateConsumer.setDaemon(true);
       updateConsumer.start();
     }
+  }
+
+  private UpdateItemRequest updateRequest(String roomId, List<Message> changesToApply) {
+    return new UpdateItemRequest()
+        .withTableName(ExpLeagueServer.config().dynamoDB())
+        .withKey(InternalUtils.toAttributeValueMap(new PrimaryKey("id", roomId)))
+        .withUpdateExpression("set #m = list_append(#m, :i)")
+        .withExpressionAttributeNames(new HashMap<String, String>() {{
+          put("#m", "messages");
+        }})
+        .withExpressionAttributeValues(new HashMap<String, AttributeValue>() {{
+          final AttributeValue itemsList = new AttributeValue();
+          itemsList.setL(changesToApply.stream().map(Message::asMap).collect(Collectors.toList()));
+          put(":i", itemsList);
+        }});
   }
 
   private FixedSizeCache<String, RoomArchive> dumpsCache = new FixedSizeCache<>(1000, CacheStrategy.Type.LRU);
@@ -169,7 +177,7 @@ public class DynamoDBArchive implements Archive {
       RoomArchive archive = mapper.load(getRoomArchiveClass(), id);
       if (archive == null)
         archive = new RoomArchive(id);
-      archive.handlers(roomAccumulatedChangesMap, mapper);
+      archive.handlers(roomAccumulatedChangesQueue, fullRooms, mapper);
       return archive;
     });
   }
@@ -177,7 +185,7 @@ public class DynamoDBArchive implements Archive {
   @Override
   public synchronized Dump register(String room, String owner) {
     final RoomArchive archive = new RoomArchive(room);
-    archive.handlers(roomAccumulatedChangesMap, mapper);
+    archive.handlers(roomAccumulatedChangesQueue, fullRooms, mapper);
     dumpsCache.put(room, archive);
     return archive;
   }
@@ -223,7 +231,7 @@ public class DynamoDBArchive implements Archive {
       messages.add(new Message(authorId, message, System.currentTimeMillis()));
     }
 
-    private final List<AttributeValue> accumulatedChange = new ArrayList<>();
+    private final List<Message> accumulatedChange = new ArrayList<>();
 
     @Override
     public void accept(Stanza stanza) {
@@ -232,29 +240,21 @@ public class DynamoDBArchive implements Archive {
       final Message message = new Message(stanza.from().toString(), stanza.xmlString(), System.currentTimeMillis());
       known.add(stanza.id());
       messages.add(message);
-      final AttributeValue value = message.asMap();
-      accumulatedChange.add(value);
+      accumulatedChange.add(message);
     }
 
     @Override
     public void commit() {
       if (accumulatedChange.isEmpty())
         return;
-      final StringBuilder expressionBuilder = new StringBuilder();
-      try {
-        if (accumulatedChange.size() < messages.size()) {
-          expressionBuilder.append("set ");
-          for (int i = 0; i < accumulatedChange.size(); i++) {
-            if (i > 0)
-              expressionBuilder.append(", ");
-            expressionBuilder.append("messages[").append(i + messages.size()).append("]=:i[").append(i).append("]");
-          }
-          roomAccumulatedChangesMap.putIfAbsent(id, new ConcurrentLinkedQueue<>());
-          roomAccumulatedChangesMap.get(id).addAll(accumulatedChange);
+
+      if (accumulatedChange.size() < messages.size()) {
+        if (!fullRooms.contains(id)) {
+          roomAccumulatedChangesQueue.addAll(accumulatedChange);
         }
-        else mapper.save(this);
-      } catch (AmazonClientException ace) {
-        log.log(Level.WARNING, "Unable to deliver message to DynamoDB: " + ace.getMessage() + " expression: [" + expressionBuilder.toString() + "]");
+      }
+      else {
+        mapper.save(this);
       }
     }
 
@@ -278,10 +278,12 @@ public class DynamoDBArchive implements Archive {
     }
 
     private DynamoDBMapper mapper;
-    private ConcurrentHashMap<String, ConcurrentLinkedQueue<AttributeValue>> roomAccumulatedChangesMap;
+    private BlockingQueue<Message> roomAccumulatedChangesQueue;
+    private Set<String> fullRooms;
 
-    public void handlers(ConcurrentHashMap<String, ConcurrentLinkedQueue<AttributeValue>> roomAccumulatedChangesMap, DynamoDBMapper mapper) {
-      this.roomAccumulatedChangesMap = roomAccumulatedChangesMap;
+    public void handlers(BlockingQueue<Message> roomAccumulatedChangesQueue, Set<String> fullRooms, DynamoDBMapper mapper) {
+      this.roomAccumulatedChangesQueue = roomAccumulatedChangesQueue;
+      this.fullRooms = fullRooms;
       this.mapper = mapper;
     }
   }
