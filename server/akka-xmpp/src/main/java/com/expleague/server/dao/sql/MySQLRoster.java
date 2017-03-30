@@ -48,7 +48,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
   public XMPPDevice register(RegisterQuery query) throws Exception {
     log.log(Level.FINE, "Registering device " + query.username());
     final XMPPDevice device = device(query.username());
-    if (device != null) {
+    if (device != XMPPDevice.NO_SUCH_DEVICE) {
       if (device.passwd().equals(query.passwd()))
         return device;
       throw new AuthenticationException("User known with different password");
