@@ -61,7 +61,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
     else
       userName = query.username();
 
-    XMPPUser associated = null;
+    XMPPUser associated = XMPPUser.NO_SUCH_USER;
     final PreparedStatement associateUser = createStatement("associate-user",
         "SELECT * FROM Users WHERE avatar = ? AND avatar IS NOT NULL OR name = ? AND name IS NOT NULL OR id = ?"
     );
@@ -75,7 +75,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
         log.log(Level.INFO, "Have found associated user " + associated.name());
       }
     }
-    if (associated == null) {
+    if (associated == XMPPUser.NO_SUCH_USER) {
       final PreparedStatement createUser = createStatement("create-user",
           "INSERT INTO Users SET id = ?, country = ?, city = ?, name = ?, avatar = ?, age = ?, sex = ?;"
       );
@@ -87,6 +87,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
       createUser.setInt(6, query.age());
       createUser.setInt(7, query.sex());
       createUser.execute();
+      usersCache.clear(userName);
       associated = user(userName);
       log.log(Level.INFO, "Created new user " + associated.name());
     }
@@ -99,6 +100,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
     register.setString(4, query.platform());
     register.setBoolean(5, query.expert());
     register.execute();
+    deviceCache.clear(query.username());
     devicesCache.clear(associated.id());
     return device(query.username());
   }
