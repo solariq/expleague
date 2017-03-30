@@ -27,6 +27,7 @@ class AOWNotificationScheduler extends NotificationScheduler {
     return new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
         "\"alert\": \"Пятница — время для ответа недели: '" + topic + "'\", " +
         "\"content-available\": 1," +
+        "\"badge\": 1," +
         "\"sound\": \"owl.wav\"" +
         "}, \"aow\": \"" + aow.roomId() + "\"}"
     );
@@ -37,6 +38,7 @@ class AOWNotificationScheduler extends NotificationScheduler {
     return new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
         "\"alert\": \"Пятница — время для ответа недели:  '" + topic + "', который мы пока не смогли доставить\", " +
         "\"content-available\": 1," +
+        "\"badge\": 1," +
         "\"sound\": \"owl.wav\"" +
         "}, \"aow\": \"" + aow.roomId() + "\"}"
     );

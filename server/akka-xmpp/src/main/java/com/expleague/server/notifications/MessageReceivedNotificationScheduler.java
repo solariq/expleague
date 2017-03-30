@@ -25,6 +25,7 @@ class MessageReceivedNotificationScheduler extends NotificationScheduler {
     return new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
         "\"alert\": \"Получено новое сообщение от " + expertProfile.name() + ": '" + msg.body().replace("\"", "") + "'\", " +
         "\"content-available\": 1," +
+        "\"badge\": 1," +
         "\"sound\": \"owl.wav\"" +
         "}, \"order\": \"" + from.local() + "\"}", NotificationScheduler.tomorrow());
   }
@@ -34,6 +35,7 @@ class MessageReceivedNotificationScheduler extends NotificationScheduler {
     return new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
         "\"alert\": \"Получено новое сообщение от " + expertProfile.name() + ": '" + msg.body().replace("\"", "") + "'\", " +
         "\"content-available\": 1," +
+        "\"badge\": 1," +
         "\"sound\": \"owl.wav\"" +
         "}, \"id\": \"" + msg.id() + "\", \"visible\": 1}", NotificationScheduler.tomorrow());
   }

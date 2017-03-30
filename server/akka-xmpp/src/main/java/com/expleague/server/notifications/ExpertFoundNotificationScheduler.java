@@ -24,6 +24,7 @@ class ExpertFoundNotificationScheduler extends NotificationScheduler {
     return new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
         "\"alert\": \"Эксперт найден! Для Вас работает " + expertProfile.name() + "!\", " +
         "\"content-available\": 1," +
+        "\"badge\": 1," +
         "\"sound\": \"owl.wav\"" +
         "}, \"order\": \"" + from.local() + "\"}", NotificationScheduler.tomorrow()
     );
@@ -34,6 +35,7 @@ class ExpertFoundNotificationScheduler extends NotificationScheduler {
     return new SimpleApnsPushNotification(token, "com.expleague.ios.unSearch", "{\"aps\":{" +
         "\"alert\": \"Эксперт найден! Для Вас работает " + expertProfile.name() + "!\", " +
         "\"content-available\": 1," +
+        "\"badge\": 1," +
         "\"sound\": \"owl.wav\"" +
         "}, \"id\": \"" + msg.id() + "\", \"visible\": 1}", NotificationScheduler.tomorrow()
     );
