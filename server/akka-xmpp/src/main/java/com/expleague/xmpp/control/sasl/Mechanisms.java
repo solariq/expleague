@@ -15,6 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
@@ -48,6 +49,7 @@ public class Mechanisms extends XMPPFeature {
   }
 
   public static class AuthMechanismXmlAdapter extends XmlAdapter<String, SaslServer> {
+    private static final Logger log = Logger.getLogger(AuthMechanismXmlAdapter.class.getName());
     @Override
     public SaslServer unmarshal(String mechanism) {
       try {
@@ -58,7 +60,7 @@ public class Mechanisms extends XMPPFeature {
           if (passwdO.isPresent() && nameO.isPresent()) {
             final PasswordCallback passwd = passwdO.get();
             final XMPPDevice user = ExpLeagueServer.roster().device(nameO.get().getDefaultName());
-            if (user != null)
+            if (user != XMPPDevice.NO_SUCH_DEVICE)
               passwd.setPassword(user.passwd().toCharArray());
             else
               throw new AuthenticationException("No such user");
