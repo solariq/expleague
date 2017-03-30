@@ -60,10 +60,8 @@ public class Mechanisms extends XMPPFeature {
           if (passwdO.isPresent() && nameO.isPresent()) {
             final PasswordCallback passwd = passwdO.get();
             final XMPPDevice user = ExpLeagueServer.roster().device(nameO.get().getDefaultName());
-            if (user != null) {
-              log.finest("Acquiring passwd for " + user.name());
+            if (user != XMPPDevice.NO_SUCH_DEVICE)
               passwd.setPassword(user.passwd().toCharArray());
-            }
             else
               throw new AuthenticationException("No such user");
           }
