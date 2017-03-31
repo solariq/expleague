@@ -31,7 +31,7 @@ public class ClientAdminTest extends BaseSingleBotsTest {
         .has(Answer.class, a -> answer.value().equals(a.value())).build();
 
     //Act
-    adminBot.sendToGroupChat(roomJID, answer);
+    adminBot.sendGroupchat(roomJID, answer);
     final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedAnswer);
     roomCloseStateByClientFeedback(roomJID);
 
@@ -67,7 +67,7 @@ public class ClientAdminTest extends BaseSingleBotsTest {
         .has(Message.Body.class, b -> body.value().equals(b.value())).build();
 
     //Act
-    adminBot.sendToGroupChat(roomJID, body);
+    adminBot.sendGroupchat(roomJID, body);
     final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedMessageFromAdmin);
     if (closeRoom) {
       roomCloseStateByClientCancel(roomJID);

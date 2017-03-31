@@ -125,6 +125,7 @@ public class DynamoDBArchive implements Archive {
           Thread.currentThread().interrupt();
         }
       });
+      updateConsumer.setName("DynamoDB saving queue");
       updateConsumer.setDaemon(true);
       updateConsumer.start();
     }

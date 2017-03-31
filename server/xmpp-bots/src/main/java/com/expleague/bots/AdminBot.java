@@ -16,15 +16,4 @@ public class AdminBot extends ExpertBot {
   public AdminBot(final BareJID jid, final String passwd) throws JaxmppException {
     super(jid, passwd, "expert", "/admin/expert");
   }
-
-  public void startWorkState(BareJID roomJID) throws JaxmppException {
-    final Element offerElem = ElementFactory.create("offer");
-    offerElem.setXMLNS(TBTS_XMLNS);
-    offerElem.setAttribute("room", roomJID.toString());
-
-    final Message message = Message.create();
-    message.addChild(offerElem);
-    message.setTo(JID.jidInstance(roomJID));
-    jaxmpp.send(message);
-  }
 }

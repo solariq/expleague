@@ -75,6 +75,18 @@ public class Offer extends Item {
   public Offer() {
   }
 
+  public Offer(JID client, String topic, Urgency urgency, Location location, double started) {
+    this.client = client;
+    this.topic = topic;
+    this.urgency = urgency;
+    this.location = location;
+    this.started = started;
+  }
+
+  public Offer(JID room) {
+    this.room = room;
+  }
+
   public static Offer create(JID room, JID client, Message description) {
     if (description.has(Offer.class)) {
       final Offer offer = description.get(Offer.class);

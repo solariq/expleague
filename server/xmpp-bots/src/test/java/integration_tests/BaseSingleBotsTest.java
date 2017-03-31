@@ -121,7 +121,7 @@ public class BaseSingleBotsTest {
         .build();
 
     //Act
-    clientBot.sendToGroupChat(roomJID, new Operations.Cancel());
+    clientBot.sendGroupchat(roomJID, new Operations.Cancel());
     final ExpectedMessage[] notReceivedMessages = adminBot.tryReceiveMessages(new StateLatch(), cancel, roomStateChanged);
 
     //Assert
@@ -138,7 +138,7 @@ public class BaseSingleBotsTest {
     final ExpectedMessage expectedFeedback = new ExpectedMessageBuilder().from(botRoomJID(roomJID, clientBot)).has(Operations.Feedback.class, f -> feedback.stars() == f.stars()).build();
 
     //Act
-    clientBot.sendToGroupChat(roomJID, feedback);
+    clientBot.sendGroupchat(roomJID, feedback);
     final ExpectedMessage[] notReceivedMessages = adminBot.tryReceiveMessages(new StateLatch(), roomStateChanged, expectedFeedback);
 
     //Assert
@@ -147,11 +147,14 @@ public class BaseSingleBotsTest {
 
   protected BareJID obtainRoomOpenState() throws JaxmppException {
     //Arrange
-    final String topicText = generateRandomString();
-    final double started = System.currentTimeMillis() / 1000.;
-    final Offer.Urgency urgency = Offer.Urgency.ASAP;
-    final Offer.Location location = new Offer.Location(59.98062295379115, 30.32538469883643);
-    final String imageUrl = generateRandomString();
+    final BareJID roomJID = BareJID.bareJIDInstance(clientBot.jid().getLocalpart() + "-room-" + (int) (System.currentTimeMillis() / 1000), "muc." + clientBot.jid().getDomain());
+    final Offer offer = new Offer(
+        JID.parse(clientBot.jid().toString()),
+        generateRandomString(),
+        Offer.Urgency.ASAP, new Offer.Location(59.98062295379115, 30.32538469883643),
+        System.currentTimeMillis() / 1000.);
+    final Image image = new Image(generateRandomString());
+    offer.attach(image);
 
     final ExpectedMessageBuilder roomRoleUpdateNone = new ExpectedMessageBuilder()
         .has(Operations.RoomRoleUpdate.class, rru -> Role.NONE.equals(rru.role()) && Affiliation.OWNER.equals(rru.affiliation()));
@@ -159,24 +162,24 @@ public class BaseSingleBotsTest {
         .has(Operations.RoomRoleUpdate.class, rru -> Role.MODERATOR.equals(rru.role()) && Affiliation.OWNER.equals(rru.affiliation()));
     final ExpectedMessageBuilder roomStateChanged = new ExpectedMessageBuilder()
         .has(Operations.RoomStateChanged.class, rsc -> RoomState.OPEN.equals(rsc.state()));
-    final ExpectedMessageBuilder offer = new ExpectedMessageBuilder()
+    final ExpectedMessageBuilder expectedOffer = new ExpectedMessageBuilder()
         .has(Offer.class, o -> o.location() != null
-            && location.longitude() == o.location().longitude()
-            && location.latitude() == o.location().latitude()
-            && Arrays.stream(o.attachments()).anyMatch(a -> a instanceof Image && imageUrl.equals(((Image) a).url()))
-            && topicText.equals(o.topic())
+            && offer.location().longitude() == o.location().longitude()
+            && offer.location().latitude() == o.location().latitude()
+            && Arrays.stream(o.attachments()).anyMatch(a -> a instanceof Image && image.url().equals(((Image) a).url()))
+            && offer.topic().equals(o.topic())
             && Offer.Urgency.ASAP.equals(o.urgency())
-            && Double.compare(started, o.started()) == 0
+            && Double.compare(offer.started(), o.started()) == 0
         )
         .has(Operations.OfferChange.class);
 
     //Act
-    final BareJID roomJID = clientBot.startRoom(topicText, started, urgency, location, imageUrl);
+    clientBot.send(roomJID, offer);
     final ExpectedMessage[] notReceivedMessages = adminBot.tryReceiveMessages(new StateLatch(),
         roomRoleUpdateNone.from(groupChatJID(roomJID)).build(),
         roomRoleUpdateModer.from(groupChatJID(roomJID)).build(),
         roomStateChanged.from(groupChatJID(roomJID)).build(),
-        offer.from(groupChatJID(roomJID)).build());
+        expectedOffer.from(groupChatJID(roomJID)).build());
 
     //Assert
     assertAllExpectedMessagesAreReceived(notReceivedMessages);
@@ -188,10 +191,11 @@ public class BaseSingleBotsTest {
     final BareJID roomJID = obtainRoomOpenState();
     { //obtain work state
       //Arrange
+      final Offer offer = new Offer(JID.parse(roomJID.toString()));
       final ExpectedMessage offerCheck = new ExpectedMessageBuilder().from(domainJID()).has(Offer.class).has(Operations.Check.class).build();
 
       //Act
-      adminBot.startWorkState(roomJID);
+      adminBot.send(roomJID, offer);
       final ExpectedMessage[] notReceivedMessages = expertBot.tryReceiveMessages(new StateLatch(), offerCheck);
 
       //Assert
@@ -208,10 +212,10 @@ public class BaseSingleBotsTest {
       final ExpectedMessage startAndExpert = new ExpectedMessageBuilder().from(roomJID).has(Operations.Start.class).has(ExpertsProfile.class).build();
 
       //Act
-      expertBot.sendToGroupChat(roomJID, new Operations.Ok());
+      expertBot.sendGroupchat(roomJID, new Operations.Ok());
       final ExpectedMessage[] notReceivedByExpert = expertBot.tryReceiveMessages(new StateLatch(), invite);
 
-      expertBot.sendToGroupChat(roomJID, new Operations.Start());
+      expertBot.sendGroupchat(roomJID, new Operations.Start());
       final ExpectedMessage[] notReceivedByClient = clientBot.tryReceiveMessages(new StateLatch(), startAndExpert);
 
       //Assert

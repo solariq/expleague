@@ -32,10 +32,6 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Time: 16:17
  */
 public class Bot {
-  public static final String TBTS_XMLNS = "http://expleague.com/scheme";
-  private static final long DEFAULT_TIMEOUT_IN_NANOS = 60L * 1000L * 1000L * 1000L;
-  private static final long LOGIN_SLEEP_TIMEOUT_IN_MILLIS = 5L * 1000L;
-
   private final String passwd;
   private final String resource;
   private final String email;
@@ -91,16 +87,25 @@ public class Bot {
           }
         });
 
-    try {
-      jaxmpp.login();
-    } catch (JaxmppException je) {
+    final long loginSleepTimeoutInMillis = 100L;
+    final int maxTriesNumber = 10;
+    boolean login = false;
+    int triesNumber = 0;
+    while (!login && triesNumber < maxTriesNumber) {
       try {
-        Thread.sleep(LOGIN_SLEEP_TIMEOUT_IN_MILLIS);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      } finally {
         jaxmpp.login();
+        login = true;
+      } catch (JaxmppException je) {
+        try {
+          Thread.sleep(loginSleepTimeoutInMillis);
+        } catch (InterruptedException ignored) {
+        }
+      } finally {
+        triesNumber++;
       }
+    }
+    if (!login) {
+      throw new RuntimeException("Cannot start server");
     }
 
     latch.state(2, 1);
@@ -177,18 +182,29 @@ public class Bot {
     System.out.println("Sent offline presence");
   }
 
-  public void sendToGroupChat(BareJID to, Item... items) throws JaxmppException {
+  public void sendGroupchat(BareJID to, Item... items) throws JaxmppException {
+    send(to, StanzaType.groupchat, items);
+  }
+
+  public void send(BareJID to, Item... items) throws JaxmppException {
+    send(to, null, items);
+  }
+
+  public void send(BareJID to, StanzaType type, Item... items) throws JaxmppException {
     final Message message = Message.create();
     for (Item item : items) {
       message.addChild(ItemToTigaseElementParser.parse(item));
     }
-    message.setType(StanzaType.groupchat);
+    if (type != null) {
+      message.setType(type);
+    }
     message.setTo(JID.jidInstance(to));
     jaxmpp.send(message);
   }
 
   public ExpectedMessage[] tryReceiveMessages(StateLatch stateLatch, ExpectedMessage... messages) {
-    return tryReceiveMessages(stateLatch, DEFAULT_TIMEOUT_IN_NANOS, messages);
+    final long defaultTimeoutInNanos = 30L * 1000L * 1000L * 1000L;
+    return tryReceiveMessages(stateLatch, defaultTimeoutInNanos, messages);
   }
 
   public ExpectedMessage[] tryReceiveMessages(StateLatch stateLatch, long timeoutInNanos, ExpectedMessage... expectedMessages) {
@@ -196,9 +212,8 @@ public class Bot {
     final int finalState = initState << expectedMessages.length;
     final Thread messagesConsumer = new Thread(() -> {
       while (!Thread.currentThread().isInterrupted()) {
-        final Message message;
         try {
-          message = messagesQueue.take();
+          final Message message = messagesQueue.take();
           final com.expleague.xmpp.stanza.Message anyHolder = Item.create(message.getAsString());
           for (ExpectedMessage expectedMessage : expectedMessages) {
             if (!expectedMessage.received() && expectedMessage.tryReceive(anyHolder)) {

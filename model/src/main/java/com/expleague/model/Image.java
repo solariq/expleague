@@ -18,6 +18,10 @@ public class Image extends Attachment {
   public Image() {
   }
 
+  public Image(String src) {
+    this.src = src;
+  }
+
   public Image(String src, JID from) {
     this.src = storageByJid(from) + src;
   }
