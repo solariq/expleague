@@ -147,7 +147,7 @@ public class BaseSingleBotsTest {
 
   protected BareJID obtainRoomOpenState() throws JaxmppException {
     //Arrange
-    final BareJID roomJID = BareJID.bareJIDInstance(clientBot.jid().getLocalpart() + "-room-" + (int) (System.currentTimeMillis() / 1000), "muc." + clientBot.jid().getDomain());
+    final BareJID roomJID = BareJID.bareJIDInstance(clientBot.jid().getLocalpart() + "-room-" + (int) (System.nanoTime() / 1000), "muc." + clientBot.jid().getDomain());
     final Offer offer = new Offer(
         JID.parse(clientBot.jid().toString()),
         generateRandomString(),
@@ -214,12 +214,13 @@ public class BaseSingleBotsTest {
       //Act
       expertBot.sendGroupchat(roomJID, new Operations.Ok());
       final ExpectedMessage[] notReceivedByExpert = expertBot.tryReceiveMessages(new StateLatch(), invite);
-
-      expertBot.sendGroupchat(roomJID, new Operations.Start());
-      final ExpectedMessage[] notReceivedByClient = clientBot.tryReceiveMessages(new StateLatch(), startAndExpert);
-
       //Assert
       assertAllExpectedMessagesAreReceived(notReceivedByExpert);
+
+      //Act
+      expertBot.sendGroupchat(roomJID, new Operations.Start());
+      final ExpectedMessage[] notReceivedByClient = clientBot.tryReceiveMessages(new StateLatch(), startAndExpert);
+      //Assert
       assertAllExpectedMessagesAreReceived(notReceivedByClient);
     }
     return roomJID;

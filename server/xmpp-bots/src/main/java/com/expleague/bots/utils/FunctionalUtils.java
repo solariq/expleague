@@ -1,5 +1,6 @@
 package com.expleague.bots.utils;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -13,6 +14,11 @@ public class FunctionalUtils {
     T get() throws Exception;
   }
 
+  @FunctionalInterface
+  public interface ThrowableConsumer<T> {
+    void accept(T t) throws Exception;
+  }
+
   public static <T> Supplier<T> throwableSupplier(ThrowableSupplier<T> supplier) {
     return () -> {
       try {
@@ -20,6 +26,16 @@ public class FunctionalUtils {
       } catch (Exception exception) {
         throwAsUnchecked(exception);
         return null;
+      }
+    };
+  }
+
+  public static <T> Consumer<T> throwableConsumer(ThrowableConsumer<T> consumer) {
+    return t -> {
+      try {
+        consumer.accept(t);
+      } catch (Exception exception) {
+        throwAsUnchecked(exception);
       }
     };
   }
