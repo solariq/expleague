@@ -203,7 +203,7 @@ public class Bot {
   }
 
   public ExpectedMessage[] tryReceiveMessages(StateLatch stateLatch, ExpectedMessage... messages) {
-    final long defaultTimeoutInNanos = 30L * 1000L * 1000L * 1000L;
+    final long defaultTimeoutInNanos = 60L * 1000L * 1000L * 1000L;
     return tryReceiveMessages(stateLatch, defaultTimeoutInNanos, messages);
   }
 
