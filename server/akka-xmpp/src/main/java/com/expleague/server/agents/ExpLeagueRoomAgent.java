@@ -1,6 +1,7 @@
 package com.expleague.server.agents;
 
 import akka.actor.PoisonPill;
+import akka.actor.ReceiveTimeout;
 import akka.persistence.DeleteMessagesSuccess;
 import com.expleague.model.*;
 import com.expleague.model.Operations.*;
@@ -63,7 +64,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   @ActorMethod
-  public void inactivityShutDown() {
+  public void inactivityShutDown(ReceiveTimeout timeout) {
     self().tell(PoisonPill.getInstance(), self());
   }
 
@@ -163,7 +164,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       }
       else if (affiliation == Affiliation.ADMIN) {
         final XMPPDevice[] devices = Roster.instance().devices(owner.local());
-        if (Stream.of(devices).anyMatch(device -> device.build() > 60)) {
+        if (Stream.of(devices).anyMatch(device -> device.build() > 70)) {
           state(OFFER, mode);
         }
         else {
