@@ -226,4 +226,20 @@ public class BaseSingleBotsTest {
     return roomJID;
   }
 
+  protected BareJID obtainRoomFeedbackState() throws JaxmppException {
+    final BareJID roomJID = obtainRoomDeliverState();
+    { //obtain feedback state
+      //Arrange
+      final Answer answer = new Answer(generateRandomString());
+      final ExpectedMessage expectedAnswer = new ExpectedMessageBuilder().from(botRoomJID(roomJID, expertBot)).has(Answer.class, a -> answer.value().equals(a.value())).build();
+
+      //Act
+      expertBot.sendGroupchat(roomJID, answer);
+      final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedAnswer);
+
+      //Assert
+      assertAllExpectedMessagesAreReceived(notReceivedMessages);
+    }
+    return roomJID;
+  }
 }

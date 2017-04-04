@@ -1,12 +1,7 @@
 package integration_tests.tests;
 
-import com.expleague.bots.utils.ExpectedMessage;
-import com.expleague.bots.utils.ExpectedMessageBuilder;
-import com.expleague.model.Answer;
-import com.spbsu.commons.util.sync.StateLatch;
 import integration_tests.BaseSingleBotsTest;
 import org.junit.Test;
-import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 
 /**
@@ -18,18 +13,8 @@ public class ClientExpertTest extends BaseSingleBotsTest {
 
   @Test
   public void testExpertAnswers() throws JaxmppException {
-    //Arrange
-    final Answer answer = new Answer(generateRandomString());
-    final BareJID roomJID = obtainRoomDeliverState();
-    final ExpectedMessage expectedAnswer = new ExpectedMessageBuilder().from(botRoomJID(roomJID, expertBot)).has(Answer.class, a -> answer.value().equals(a.value())).build();
-
-    //Act
-    expertBot.sendGroupchat(roomJID, answer);
-    final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedAnswer);
-    roomCloseStateByClientCancel(roomJID);
-
-    //Assert
-    assertAllExpectedMessagesAreReceived(notReceivedMessages);
+    //Act/Assert
+    obtainRoomFeedbackState();
   }
 
   /*@Test
@@ -41,7 +26,7 @@ public class ClientExpertTest extends BaseSingleBotsTest {
     //Act
     expertBot.sendGroupchat(roomJID, new Operations.Cancel());
     final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedCancel);
-    roomCloseStateByClientCancel(roomJID);
+    roomCloseStateByClientCancel(roomJID); //TODO:remove
 
     //Assert
     assertAllExpectedMessagesAreReceived(notReceivedMessages);
