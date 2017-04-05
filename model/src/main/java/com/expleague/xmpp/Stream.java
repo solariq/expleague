@@ -1,5 +1,6 @@
 package com.expleague.xmpp;
 
+import com.expleague.xmpp.stanza.Stanza;
 import com.spbsu.commons.system.RuntimeUtils;
 import com.expleague.model.Operations;
 
@@ -31,11 +32,7 @@ public class Stream {
   @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
   private String lang;
   @XmlAnyElement(lax = true)
-  private List<? extends Item> contents = new ArrayList<>();
-
-  public List<? extends Item> contents() {
-    return contents;
-  }
+  private List<Stanza> contents = new ArrayList<>();
 
   public String version() {
     return version;
@@ -43,6 +40,10 @@ public class Stream {
 
   public String lang() {
     return lang;
+  }
+
+  public void append(Stanza stanza) {
+    contents.add(stanza);
   }
 
   private static final JAXBContext context;

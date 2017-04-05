@@ -241,6 +241,14 @@ public class Offer extends Item {
     return result;
   }
 
+  public Tag[] tags() {
+    return tags.toArray(new Tag[tags.size()]);
+  }
+
+  public Pattern[] patterns() {
+    return patterns.toArray(new Pattern[patterns.size()]);
+  }
+
   @XmlEnum
   public enum Urgency {
     @XmlEnumValue("asap") ASAP(TimeUnit.HOURS.toMillis(1)),

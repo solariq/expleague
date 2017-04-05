@@ -299,8 +299,9 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
     when(State.SUSPENDED,
       matchEvent(Timeout.class,
         (to, task) -> {
-          explain("Suspend delay expired. Looking for expert");
-          return lookForExpert(task);
+          explain("Suspend delay expired. Resume task.");
+          task.experts().filter(e -> task.role(e) == ACTIVE).forEach(e -> Experts.tellTo(e, task.offer(), self(), context()));
+          return goTo(State.STARVING);
         }
       )
       .event(Cancel.class, // cancel from the room

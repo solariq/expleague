@@ -22,6 +22,7 @@ import com.expleague.server.admin.series.TimeSeriesDto;
 import com.expleague.server.agents.*;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
+import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Stanza;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -165,6 +166,16 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
             final List<Stanza> result = (List<Stanza>)Await.result(ask, timeout.duration());
             final List<DumpItemDto> messages = result.stream().map(DumpItemDto::new).collect(Collectors.toList());
             response = getJsonResponse("messages", messages);
+          }
+          else if (path.startsWith("/xml-dump/")) {
+            final Timeout timeout = new Timeout(Duration.create(Long.parseLong(request.getUri().query().get("timeout").getOrElse("2")), TimeUnit.SECONDS));
+            final JID jid = JID.parse(path.substring("/xml-dump/".length()));
+            final Future<Object> ask = Patterns.ask(XMPP.register(jid, context()), new RoomAgent.DumpRequest(), timeout);
+            //noinspection unchecked
+            final List<Stanza> result = (List<Stanza>)Await.result(ask, timeout.duration());
+            final StringBuilder builder = new StringBuilder();
+            result.stream().map(stanza -> stanza.xmlString() + "\n").forEach(builder::append);
+            response = HttpResponse.create().withStatus(200).withEntity(Item.XMPP_START + "\n" + builder.toString() + Item.XMPP_END);
           }
           else if (path.startsWith("/rebuild-archive")) {
             final List<JID> failed = new ArrayList<>();

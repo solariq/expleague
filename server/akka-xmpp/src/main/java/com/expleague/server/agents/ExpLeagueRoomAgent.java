@@ -33,6 +33,7 @@ import static com.expleague.server.agents.ExpLeagueOrder.Role.ACTIVE;
 public class ExpLeagueRoomAgent extends RoomAgent {
   private static final Logger log = Logger.getLogger(ExpLeagueRoomAgent.class.getName());
   private List<ExpLeagueOrder> orders = new ArrayList<>();
+  private List<ExpLeagueOrder> finished = new ArrayList<>();
   private RoomState state;
 
   public ExpLeagueRoomAgent(JID jid) {
@@ -171,9 +172,20 @@ public class ExpLeagueRoomAgent extends RoomAgent {
           state(WORK, mode);
           if (mode != ProcessMode.RECOVER) {
             orders.addAll(Arrays.asList(LaborExchange.board().register(offer)));
+            finished.clear();
           }
-          if (mode == ProcessMode.NORMAL)
-            orders.forEach(o -> LaborExchange.tell(context(), o, self()));
+          if (mode == ProcessMode.NORMAL) {
+            orders.forEach(o -> {
+              final Offer orderOffer = o.offer();
+              for (final Tag tag : orderOffer.tags()) {
+                invoke(new Message(from, jid(), new Progress(o.id(), new Progress.MetaChange(tag.name(), Progress.MetaChange.Operation.ADD, Progress.MetaChange.Target.TAGS))));
+              }
+              for (final Pattern pattern : orderOffer.patterns()) {
+                invoke(new Message(from, jid(), new Progress(o.id(), new Progress.MetaChange(pattern.name(), Progress.MetaChange.Operation.ADD, Progress.MetaChange.Target.TAGS))));
+              }
+              LaborExchange.tell(context(), o, self());
+            });
+          }
         }
         if (mode != ProcessMode.RECOVER)
           GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, true), context());
@@ -247,6 +259,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         if (mode == ProcessMode.NORMAL) {
           orders.stream().map(ExpLeagueOrder::broker).filter(Objects::nonNull).forEach(b -> b.tell(new Cancel(), self()));
           orders.clear();
+          finished.clear();
         }
 
         state(CLOSED, mode);
@@ -261,13 +274,13 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     else if (msg.has(Feedback.class) && (state == FEEDBACK || state == DELIVERY)) {
       if (mode == ProcessMode.NORMAL) {
         final Feedback feedback = msg.get(Feedback.class);
-        if (!orders.isEmpty())
-          orders.get(0).feedback(feedback.stars(), feedback.payment());
+        finished.forEach(order -> order.feedback(feedback.stars(), feedback.payment()));
         GlobalChatAgent.tell(jid(), feedback, context());
       }
       state(CLOSED, mode);
     }
     else if (msg.has(Done.class)) {
+      orders.stream().filter(next -> next.state() == OrderState.DONE).forEach(finished::add);
       orders.removeIf(next -> next.state() == OrderState.DONE);
     }
     else {
@@ -287,6 +300,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   private void cancelOrders() {
     orders.stream().filter(o -> o.state() != OrderState.DONE).map(ExpLeagueOrder::broker).filter(Objects::nonNull).forEach(b -> b.tell(new Cancel(), self()));
     orders.clear();
+    finished.clear();
   }
 
   @Override
