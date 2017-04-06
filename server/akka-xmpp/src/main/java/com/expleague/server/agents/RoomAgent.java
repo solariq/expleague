@@ -130,7 +130,7 @@ public class RoomAgent extends PersistentActorAdapter {
     final JID jid = XMPP.jid(req.from());
     sender().tell(
         archive().stream()
-            .filter(stanza -> checkDst(stanza, jid, true) && (stanza.to().hasResource() || relevant(stanza, jid)))
+            .filter(stanza -> checkDst(stanza, jid, true) && ((stanza.to() != null && stanza.to().hasResource()) || relevant(stanza, jid)))
             .collect(Collectors.toList()),
         self());
   }
@@ -339,7 +339,8 @@ public class RoomAgent extends PersistentActorAdapter {
     if (xData.has(MucHistory.class) && presence.available()) {
       final MucHistory history = xData.get(MucHistory.class);
       archive(history).forEach(stanza -> {
-        if (stanza instanceof Message && checkDst(stanza, from, true) && (stanza.to().hasResource() || relevant(stanza, from))) {
+        final JID to = stanza.to();
+        if (stanza instanceof Message && checkDst(stanza, from, true) && ((to != null && to.hasResource()) || relevant(stanza, from))) {
           XMPP.send(participantCopy(stanza, from), context());
         }
       });
@@ -405,7 +406,7 @@ public class RoomAgent extends PersistentActorAdapter {
     if (!started)
       return;
     participants.forEach((jid, status) -> {
-      if (checkDst(stanza, jid, false) && (stanza.to().hasResource() || relevant(stanza, jid)))
+      if (checkDst(stanza, jid, false) && ((stanza.to() != null && stanza.to().hasResource()) || relevant(stanza, jid)))
         XMPP.send(participantCopy(stanza, jid), context());
     });
   }
