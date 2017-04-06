@@ -12,7 +12,6 @@ import com.expleague.xmpp.muc.MucHistory;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Message.MessageType;
 import com.expleague.xmpp.stanza.Stanza;
-import gnu.trove.map.hash.TObjectIntHashMap;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -129,7 +128,8 @@ public class GlobalChatAgent extends RoomAgent {
     XMPP.send(new Message(from, XMPP.jid(ID), MessageType.GROUP_CHAT, item), context);
   }
 
-  public static void tell(JID from, Stanza item, ActorContext context) {
+  public static void tell(Stanza item, ActorContext context) {
+    item.to(XMPP.jid(ID));
     XMPP.send(item, context);
   }
 

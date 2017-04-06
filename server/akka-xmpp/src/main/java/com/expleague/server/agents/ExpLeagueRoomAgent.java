@@ -189,7 +189,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
           GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, true), context());
       }
       if (mode == ProcessMode.NORMAL) {
-        GlobalChatAgent.tell(jid(), new Message(jid(), XMPP.jid(GlobalChatAgent.ID), Message.MessageType.GROUP_CHAT, offer, new OfferChange(from.bare())), context());
+        GlobalChatAgent.tell(new Message(jid(), XMPP.jid(GlobalChatAgent.ID), Message.MessageType.GROUP_CHAT, offer, new OfferChange(from.bare())), context());
         GlobalChatAgent.tell(jid(), new RoomMessageReceived(from, true), context());
       }
     }
@@ -218,14 +218,12 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       }
     }
     else if (msg.has(Start.class)) {
-      msg.has(Start.class, s -> s.order() != null);
-
       if (mode == ProcessMode.NORMAL) {
-        final ExpertsProfile profile = Roster.instance().profile(from.local());
-        invoke(new Message(jid(), roomAlias(owner()), msg.get(Start.class), profile));
-        GlobalChatAgent.tell(jid(), new Message(jid(), roomAlias(owner()), msg.get(Start.class), profile.shorten()), context());
         final Offer offer = offer();
         assert offer != null;
+        final ExpertsProfile profile = Roster.instance().profile(from.local());
+        invoke(new Message(jid(), roomAlias(owner()), msg.get(Start.class), profile));
+        GlobalChatAgent.tell(new Message(jid(), XMPP.jid(GlobalChatAgent.ID), msg.get(Start.class), profile.shorten()), context());
         offer.filter().prefer(from);
         self().tell(new Message(jid(), jid(), offer), self());
       }
