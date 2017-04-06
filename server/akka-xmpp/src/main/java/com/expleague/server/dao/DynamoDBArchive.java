@@ -256,7 +256,12 @@ public class DynamoDBArchive implements Archive {
         }
       }
       else {
-        mapper.save(this);
+        try {
+          mapper.save(this);
+        }
+        catch (AmazonClientException ace) {
+          log.log(Level.WARNING, "Unable to commit messages to dynamodb", ace);
+        }
       }
     }
 
