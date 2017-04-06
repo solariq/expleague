@@ -1,9 +1,6 @@
 package integration_tests;
 
-import com.expleague.bots.AdminBot;
-import com.expleague.bots.Bot;
-import com.expleague.bots.ClientBot;
-import com.expleague.bots.ExpertBot;
+import com.expleague.bots.*;
 import com.expleague.bots.utils.ExpectedMessage;
 import com.expleague.bots.utils.ExpectedMessageBuilder;
 import com.expleague.model.*;
@@ -27,55 +24,16 @@ import java.util.concurrent.ThreadLocalRandom;
  * Time: 15:05
  */
 public class BaseSingleBotsTest {
-  protected ClientBot clientBot;
-  protected AdminBot adminBot;
-  protected ExpertBot expertBot;
+  protected BotsManager botsManager;
 
   @Before
   public void setUp() throws JaxmppException {
-    setUpAdmin();
-    setUpExpert();
-    setUpClient();
+    botsManager = new BotsManager();
   }
 
   @After
   public void tearDown() throws JaxmppException {
-    tearDownAdmin();
-    tearDownExpert();
-    tearDownClient();
-  }
-
-  private void setUpClient() throws JaxmppException {
-    clientBot = new ClientBot(BareJID.bareJIDInstance("client-bot-1", "localhost"), "poassord");
-    clientBot.start();
-    clientBot.online();
-  }
-
-  private void setUpAdmin() throws JaxmppException {
-    adminBot = new AdminBot(BareJID.bareJIDInstance("admin-bot-1", "localhost"), "poassord");
-    adminBot.start();
-    adminBot.online();
-  }
-
-  private void setUpExpert() throws JaxmppException {
-    expertBot = new ExpertBot(BareJID.bareJIDInstance("expert-bot-1", "localhost"), "poassord");
-    expertBot.start();
-    expertBot.online();
-  }
-
-  private void tearDownClient() throws JaxmppException {
-    clientBot.offline();
-    clientBot.stop();
-  }
-
-  private void tearDownAdmin() throws JaxmppException {
-    adminBot.offline();
-    adminBot.stop();
-  }
-
-  private void tearDownExpert() throws JaxmppException {
-    expertBot.offline();
-    expertBot.stop();
+    botsManager.stopAll();
   }
 
   protected String generateRandomString() {
@@ -112,7 +70,7 @@ public class BaseSingleBotsTest {
     return new JID(roomJID.getLocalpart(), roomJID.getDomain(), bot.jid().getLocalpart());
   }
 
-  protected void roomCloseStateByClientCancel(BareJID roomJID) throws JaxmppException {
+  protected void roomCloseStateByClientCancel(BareJID roomJID, ClientBot clientBot, AdminBot adminBot) throws JaxmppException {
     //Arrange
     final ExpectedMessage cancel = new ExpectedMessageBuilder().from(botRoomJID(roomJID, clientBot)).has(Operations.Cancel.class).build();
     final ExpectedMessage roomStateChanged = new ExpectedMessageBuilder()
@@ -128,7 +86,7 @@ public class BaseSingleBotsTest {
     assertAllExpectedMessagesAreReceived(notReceivedMessages);
   }
 
-  protected void roomCloseStateByClientFeedback(BareJID roomJID) throws JaxmppException {
+  protected void roomCloseStateByClientFeedback(BareJID roomJID, ClientBot clientBot, AdminBot adminBot) throws JaxmppException {
     //Arrange
     final Operations.Feedback feedback = new Operations.Feedback(generateRandomInt(1, 5));
     final ExpectedMessage roomStateChanged = new ExpectedMessageBuilder()
@@ -145,7 +103,7 @@ public class BaseSingleBotsTest {
     assertAllExpectedMessagesAreReceived(notReceivedMessages);
   }
 
-  protected BareJID obtainRoomOpenState() throws JaxmppException {
+  protected BareJID obtainRoomOpenState(ClientBot clientBot, AdminBot adminBot) throws JaxmppException {
     //Arrange
     final BareJID roomJID = BareJID.bareJIDInstance(clientBot.jid().getLocalpart() + "-room-" + (int) (System.nanoTime() / 1000), "muc." + clientBot.jid().getDomain());
     final Offer offer = new Offer(
@@ -187,8 +145,8 @@ public class BaseSingleBotsTest {
     return roomJID;
   }
 
-  protected BareJID obtainRoomWorkState() throws JaxmppException {
-    final BareJID roomJID = obtainRoomOpenState();
+  protected BareJID obtainRoomWorkState(ClientBot clientBot, AdminBot adminBot, ExpertBot expertBot) throws JaxmppException {
+    final BareJID roomJID = obtainRoomOpenState(clientBot, adminBot);
     { //obtain work state
       //Arrange
       final Offer offer = new Offer(JID.parse(roomJID.toString()));
@@ -204,8 +162,8 @@ public class BaseSingleBotsTest {
     return roomJID;
   }
 
-  protected BareJID obtainRoomDeliverState() throws JaxmppException {
-    final BareJID roomJID = obtainRoomWorkState();
+  protected BareJID obtainRoomDeliverState(ClientBot clientBot, AdminBot adminBot, ExpertBot expertBot) throws JaxmppException {
+    final BareJID roomJID = obtainRoomWorkState(clientBot, adminBot, expertBot);
     { //obtain deliver state
       //Arrange
       final ExpectedMessage invite = new ExpectedMessageBuilder().from(roomJID).has(Offer.class).has(Operations.Invite.class).build();
@@ -226,8 +184,8 @@ public class BaseSingleBotsTest {
     return roomJID;
   }
 
-  protected BareJID obtainRoomFeedbackState() throws JaxmppException {
-    final BareJID roomJID = obtainRoomDeliverState();
+  protected BareJID obtainRoomFeedbackState(ClientBot clientBot, AdminBot adminBot, ExpertBot expertBot) throws JaxmppException {
+    final BareJID roomJID = obtainRoomDeliverState(clientBot, adminBot, expertBot);
     { //obtain feedback state
       //Arrange
       final Answer answer = new Answer(generateRandomString());

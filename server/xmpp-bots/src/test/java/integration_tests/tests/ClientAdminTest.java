@@ -1,5 +1,8 @@
 package integration_tests.tests;
 
+import com.expleague.bots.AdminBot;
+import com.expleague.bots.ClientBot;
+import com.expleague.bots.ExpertBot;
 import com.expleague.bots.utils.ExpectedMessage;
 import com.expleague.bots.utils.ExpectedMessageBuilder;
 import com.expleague.model.Answer;
@@ -31,8 +34,13 @@ public class ClientAdminTest extends BaseSingleBotsTest {
   @Test
   public void testAdminHandlesMultipleRooms() throws JaxmppException {
     //Arrange
+    botsManager.addBots(1, 1, 0);
+    botsManager.startAll();
+    final ClientBot clientBot = botsManager.defaultClientBot();
+    final AdminBot adminBot = botsManager.defaultAdminBot();
+
     final int roomCount = 3;
-    final List<BareJID> rooms = Stream.generate(throwableSupplier(this::obtainRoomOpenState)).limit(roomCount).collect(Collectors.toList());
+    final List<BareJID> rooms = Stream.generate(throwableSupplier(() -> obtainRoomOpenState(clientBot, adminBot))).limit(roomCount).collect(Collectors.toList());
     final Operations.Progress.MetaChange.Target[] targets = Operations.Progress.MetaChange.Target.values();
 
     final List<Pair<BareJID, Operations.Progress>> progresses = rooms.stream().flatMap(roomJID -> Arrays.stream(targets).map(target -> new Pair<>(roomJID,
@@ -82,13 +90,18 @@ public class ClientAdminTest extends BaseSingleBotsTest {
     assertAllExpectedMessagesAreReceived(notReceivedAnswers);
 
     //Act/Assert
-    rooms.forEach(throwableConsumer(this::roomCloseStateByClientFeedback));
+    rooms.forEach(throwableConsumer(roomJID -> roomCloseStateByClientFeedback(roomJID, clientBot, adminBot)));
   }
 
   @Test
   public void testAdminClosesRoom() throws JaxmppException {
     //Arrange
-    final BareJID roomJID = obtainRoomOpenState();
+    botsManager.addBots(1, 1, 0);
+    botsManager.startAll();
+    final ClientBot clientBot = botsManager.defaultClientBot();
+    final AdminBot adminBot = botsManager.defaultAdminBot();
+
+    final BareJID roomJID = obtainRoomOpenState(clientBot, adminBot);
     final Answer answer = new Answer(generateRandomString());
     final ExpectedMessage expectedAnswer = new ExpectedMessageBuilder()
         .from(botRoomJID(roomJID, adminBot))
@@ -97,7 +110,7 @@ public class ClientAdminTest extends BaseSingleBotsTest {
     //Act
     adminBot.sendGroupchat(roomJID, answer);
     final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedAnswer);
-    roomCloseStateByClientFeedback(roomJID);
+    roomCloseStateByClientFeedback(roomJID, clientBot, adminBot);
 
     //Assert
     assertAllExpectedMessagesAreReceived(notReceivedMessages);
@@ -105,24 +118,47 @@ public class ClientAdminTest extends BaseSingleBotsTest {
 
   @Test
   public void testClientReceivesMessageInOpenRoomState() throws JaxmppException {
-    testClientReceivesMessage(throwableSupplier(this::obtainRoomOpenState), true);
+    //Arrange
+    botsManager.addBots(1, 1, 0);
+    botsManager.startAll();
+    final ClientBot clientBot = botsManager.defaultClientBot();
+    final AdminBot adminBot = botsManager.defaultAdminBot();
+
+    //Act/Assert
+    testClientReceivesMessage(throwableSupplier(() -> obtainRoomOpenState(clientBot, adminBot)), true, adminBot, clientBot);
   }
 
   @Test
   public void testClientReceivesMessageInWorkRoomState() throws JaxmppException {
-    testClientReceivesMessage(throwableSupplier(this::obtainRoomWorkState), true);
+    //Arrange
+    botsManager.addBots(1, 1, 1);
+    botsManager.startAll();
+    final ClientBot clientBot = botsManager.defaultClientBot();
+    final AdminBot adminBot = botsManager.defaultAdminBot();
+    final ExpertBot expertBot = botsManager.defaultExpertBot();
+
+    //Act/Assert
+    testClientReceivesMessage(throwableSupplier(() -> obtainRoomWorkState(clientBot, adminBot, expertBot)), true, adminBot, clientBot);
   }
 
   @Test
   public void testClientReceivesMessageInCloseRoomState() throws JaxmppException {
+    //Arrange
+    botsManager.addBots(1, 1, 1);
+    botsManager.startAll();
+    final ClientBot clientBot = botsManager.defaultClientBot();
+    final AdminBot adminBot = botsManager.defaultAdminBot();
+    final ExpertBot expertBot = botsManager.defaultExpertBot();
+
+    //Act/Assert
     testClientReceivesMessage(throwableSupplier(() -> {
-      final BareJID roomJID = obtainRoomWorkState();
-      roomCloseStateByClientCancel(roomJID);
+      final BareJID roomJID = obtainRoomWorkState(clientBot, adminBot, expertBot);
+      roomCloseStateByClientCancel(roomJID, clientBot, adminBot);
       return roomJID;
-    }), false);
+    }), false, adminBot, clientBot);
   }
 
-  private void testClientReceivesMessage(Supplier<BareJID> obtainState, boolean closeRoom) throws JaxmppException {
+  private void testClientReceivesMessage(Supplier<BareJID> obtainState, boolean closeRoom, AdminBot adminBot, ClientBot clientBot) throws JaxmppException {
     //Arrange
     final BareJID roomJID = obtainState.get();
     final Message.Body body = new Message.Body(generateRandomString());
@@ -134,7 +170,7 @@ public class ClientAdminTest extends BaseSingleBotsTest {
     adminBot.sendGroupchat(roomJID, body);
     final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedMessageFromAdmin);
     if (closeRoom) {
-      roomCloseStateByClientCancel(roomJID);
+      roomCloseStateByClientCancel(roomJID, clientBot, adminBot);
     }
 
     //Assert

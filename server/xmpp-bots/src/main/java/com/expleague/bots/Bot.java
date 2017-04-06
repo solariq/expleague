@@ -148,9 +148,22 @@ public class Bot {
     jaxmpp.login();
     latch.state(2, 1);
     System.out.println("Logged in");
+
+    { //Online
+      final Presence stanza = Presence.create();
+      jaxmpp.send(stanza);
+      System.out.println("Online presence sent");
+    }
   }
 
   public void stop() throws JaxmppException {
+    { //Offline
+      final Presence presence = Presence.create();
+      presence.setShow(Presence.Show.xa);
+      jaxmpp.send(presence);
+      System.out.println("Sent offline presence");
+    }
+
     final IQ iq = IQ.create();
     iq.setType(StanzaType.set);
     iq.setTo(JID.jidInstance((String) jaxmpp.getSessionObject().getProperty("domainName")));
@@ -167,19 +180,6 @@ public class Bot {
 
   public BareJID jid() {
     return jid;
-  }
-
-  public void online() throws JaxmppException {
-    final Presence stanza = Presence.create();
-    jaxmpp.send(stanza);
-    System.out.println("Online presence sent");
-  }
-
-  public void offline() throws JaxmppException {
-    final Presence presence = Presence.create();
-    presence.setShow(Presence.Show.xa);
-    jaxmpp.send(presence);
-    System.out.println("Sent offline presence");
   }
 
   public void sendGroupchat(BareJID to, Item... items) throws JaxmppException {

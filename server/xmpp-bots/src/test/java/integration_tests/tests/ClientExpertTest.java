@@ -13,8 +13,12 @@ public class ClientExpertTest extends BaseSingleBotsTest {
 
   @Test
   public void testExpertAnswers() throws JaxmppException {
+    //Arrange
+    botsManager.addBots(1, 1, 1);
+    botsManager.startAll();
+
     //Act/Assert
-    obtainRoomFeedbackState();
+    obtainRoomFeedbackState(botsManager.defaultClientBot(), botsManager.defaultAdminBot(), botsManager.defaultExpertBot());
   }
 
   /*@Test

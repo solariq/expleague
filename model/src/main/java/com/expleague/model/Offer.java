@@ -242,11 +242,11 @@ public class Offer extends Item {
   }
 
   public Tag[] tags() {
-    return tags.toArray(new Tag[tags.size()]);
+    return tags != null ? tags.toArray(new Tag[tags.size()]) : new Tag[0];
   }
 
   public Pattern[] patterns() {
-    return patterns.toArray(new Pattern[patterns.size()]);
+    return patterns != null ? patterns.toArray(new Pattern[patterns.size()]) : new Pattern[0];
   }
 
   @XmlEnum
