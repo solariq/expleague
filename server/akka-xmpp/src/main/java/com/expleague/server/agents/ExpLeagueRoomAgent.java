@@ -103,8 +103,6 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       if (msg instanceof Message) {
         final Message message = (Message) msg;
         return (message.type() == Message.MessageType.GROUP_CHAT && !message.body().isEmpty()) ||
-            message.has(Start.class) ||
-            message.has(ExpertsProfile.class) ||
             message.has(Answer.class) && message.has(Verified.class) ||
             message.has(Progress.class) && message.get(Progress.class).meta() != null;
       }
@@ -148,7 +146,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       if (offer.client() == null)
         offer.client(owner);
       if (state == WORK) { // order update during the work
-        if (mode != ProcessMode.RECOVER && affiliation == Affiliation.ADMIN) {
+        if (mode != ProcessMode.RECOVER && authority == ExpertsProfile.Authority.ADMIN) {
           final List<JID> activeExperts = orders.stream().flatMap(o -> o.of(ACTIVE)).collect(Collectors.toList());
           cancelOrders();
           if (activeExperts != null)
@@ -224,7 +222,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
       if (mode == ProcessMode.NORMAL) {
         final ExpertsProfile profile = Roster.instance().profile(from.local());
-        invoke(new Message(jid(), roomAlias(owner()), profile));
+        invoke(new Message(jid(), roomAlias(owner()), msg.get(Start.class), profile));
         GlobalChatAgent.tell(jid(), new Message(jid(), roomAlias(owner()), msg.get(Start.class), profile.shorten()), context());
         final Offer offer = offer();
         assert offer != null;
