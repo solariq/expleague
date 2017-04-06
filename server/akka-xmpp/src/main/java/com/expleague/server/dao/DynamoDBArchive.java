@@ -136,7 +136,7 @@ public class DynamoDBArchive implements Archive {
     return new UpdateItemRequest()
         .withTableName(ExpLeagueServer.config().dynamoDB())
         .withKey(InternalUtils.toAttributeValueMap(new PrimaryKey("id", roomId)))
-        .withUpdateExpression("set #m = list_append(#m, :i)")
+        .withUpdateExpression("set #m = list_append(if_not_exists(#m, :empty_list), :i)")
         .withExpressionAttributeNames(new HashMap<String, String>() {{
           put("#m", "messages");
         }})
@@ -144,6 +144,10 @@ public class DynamoDBArchive implements Archive {
           final AttributeValue itemsList = new AttributeValue();
           itemsList.setL(changesToApply.stream().map(Message::asMap).collect(Collectors.toList()));
           put(":i", itemsList);
+
+          final AttributeValue emptyList = new AttributeValue();
+          emptyList.setL(Collections.emptyList());
+          put(":empty_list", emptyList);
         }});
   }
 
@@ -179,7 +183,7 @@ public class DynamoDBArchive implements Archive {
       RoomArchive archive = mapper.load(getRoomArchiveClass(), id);
       if (archive == null)
         archive = new RoomArchive(id);
-      archive.handlers(roomAccumulatedChangesQueue, fullRooms, mapper);
+      archive.handlers(roomAccumulatedChangesQueue, fullRooms);
       return archive;
     });
   }
@@ -187,7 +191,7 @@ public class DynamoDBArchive implements Archive {
   @Override
   public synchronized Dump register(String room, String owner) {
     final RoomArchive archive = new RoomArchive(room);
-    archive.handlers(roomAccumulatedChangesQueue, fullRooms, mapper);
+    archive.handlers(roomAccumulatedChangesQueue, fullRooms);
     dumpsCache.put(room, archive);
     return archive;
   }
@@ -250,18 +254,8 @@ public class DynamoDBArchive implements Archive {
       if (accumulatedChange.isEmpty())
         return;
 
-      if (accumulatedChange.size() < messages.size()) {
-        if (!fullRooms.contains(id)) {
-          roomAccumulatedChangesQueue.addAll(accumulatedChange);
-        }
-      }
-      else {
-        try {
-          mapper.save(this);
-        }
-        catch (AmazonClientException ace) {
-          log.log(Level.WARNING, "Unable to commit messages to dynamodb", ace);
-        }
+      if (!fullRooms.contains(id)) {
+        roomAccumulatedChangesQueue.addAll(accumulatedChange);
       }
     }
 
@@ -284,14 +278,12 @@ public class DynamoDBArchive implements Archive {
       return null;
     }
 
-    private DynamoDBMapper mapper;
     private BlockingQueue<Message> roomAccumulatedChangesQueue;
     private Set<String> fullRooms;
 
-    public void handlers(BlockingQueue<Message> roomAccumulatedChangesQueue, Set<String> fullRooms, DynamoDBMapper mapper) {
+    public void handlers(BlockingQueue<Message> roomAccumulatedChangesQueue, Set<String> fullRooms) {
       this.roomAccumulatedChangesQueue = roomAccumulatedChangesQueue;
       this.fullRooms = fullRooms;
-      this.mapper = mapper;
     }
   }
 
