@@ -81,7 +81,7 @@ public class DynamoDBArchive implements Archive {
               history.remove(0, 1);
             }
             if (history.size() >= readWriteCapacity) {
-              final long waitTimeInNanos = intervalInNanos - (timeInNanos - first) + 1000L;
+              final long waitTimeInNanos = intervalInNanos - (timeInNanos - first) + 10L * 1000L * 1000L;
               Thread.sleep(waitTimeInNanos / (1000L * 1000L), (int) (waitTimeInNanos % (1000L * 1000L)));
             }
             history.add(System.nanoTime());
@@ -118,6 +118,7 @@ public class DynamoDBArchive implements Archive {
                 roomAccumulatedChangesQueue.addAll(changesToApply);
               }
               log.log(Level.WARNING, "Unable to deliver message to DynamoDB: " + ace.getMessage());
+              log.log(Level.WARNING, "Failed update: " + currentUpdate.toString());
             }
           }
         } catch (InterruptedException ie) {
