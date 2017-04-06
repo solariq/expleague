@@ -295,6 +295,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
   private void cancelOrders() {
     orders.stream().filter(o -> o.state() != OrderState.DONE).map(ExpLeagueOrder::broker).filter(Objects::nonNull).forEach(b -> b.tell(new Cancel(), self()));
+    orders.forEach(o -> o.state(OrderState.DONE));
     orders.clear();
     finished.clear();
   }
