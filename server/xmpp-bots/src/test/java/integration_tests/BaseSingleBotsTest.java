@@ -7,7 +7,9 @@ import com.expleague.model.*;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.GlobalChatAgent;
 import com.expleague.xmpp.JID;
+import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.util.sync.StateLatch;
+import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -103,9 +105,28 @@ public class BaseSingleBotsTest {
     assertAllExpectedMessagesAreReceived(notReceivedMessages);
   }
 
+  protected BareJID obtainRoomOpenState(ClientBot clientBot) throws JaxmppException {
+    //Arrange
+    final BareJID roomJID = generateRoomJID(clientBot);
+    final Offer offer = new Offer(
+        JID.parse(clientBot.jid().toString()),
+        generateRandomString(),
+        Offer.Urgency.ASAP, new Offer.Location(59.98062295379115, 30.32538469883643),
+        System.currentTimeMillis() / 1000.);
+    final Message.Body message = new Message.Body(generateRandomString());
+    final ExpectedMessage expectedMessage = new ExpectedMessageBuilder().has(Message.Body.class, body -> message.value().equals(body.value())).build();
+
+    //Act
+    clientBot.send(roomJID, offer);
+    clientBot.sendGroupchat(clientBot.jid(), message);
+    clientBot.tryReceiveMessages(new StateLatch(), expectedMessage);
+
+    return roomJID;
+  }
+
   protected BareJID obtainRoomOpenState(ClientBot clientBot, AdminBot adminBot) throws JaxmppException {
     //Arrange
-    final BareJID roomJID = BareJID.bareJIDInstance(clientBot.jid().getLocalpart() + "-room-" + (int) (System.nanoTime() / 1000), "muc." + clientBot.jid().getDomain());
+    final BareJID roomJID = generateRoomJID(clientBot);
     final Offer offer = new Offer(
         JID.parse(clientBot.jid().toString()),
         generateRandomString(),
@@ -143,6 +164,11 @@ public class BaseSingleBotsTest {
     assertAllExpectedMessagesAreReceived(notReceivedMessages);
 
     return roomJID;
+  }
+
+  @NotNull
+  private BareJID generateRoomJID(ClientBot clientBot) {
+    return BareJID.bareJIDInstance(clientBot.jid().getLocalpart() + "-room-" + (int) (System.nanoTime() / 1000), "muc." + clientBot.jid().getDomain());
   }
 
   protected BareJID obtainRoomWorkState(ClientBot clientBot, AdminBot adminBot, ExpertBot expertBot) throws JaxmppException {

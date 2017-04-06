@@ -6,6 +6,7 @@ import com.expleague.bots.ExpertBot;
 import com.expleague.bots.utils.ExpectedMessage;
 import com.expleague.bots.utils.ExpectedMessageBuilder;
 import com.expleague.model.Answer;
+import com.expleague.model.Offer;
 import com.expleague.model.Operations;
 import com.expleague.model.RoomState;
 import com.expleague.xmpp.stanza.Message;
@@ -23,7 +24,31 @@ import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 public class ClientCancelTest extends BaseSingleBotsTest {
 
   @Test
-  public void testClientCancelsAfterOrder() throws JaxmppException {
+  public void testClientCancelsAfterOrderAdminOff() throws JaxmppException {
+    //Arrange
+    botsManager.addBots(1, 1, 0);
+    final AdminBot adminBot = botsManager.defaultAdminBot();
+    final ClientBot clientBot = botsManager.defaultClientBot();
+    clientBot.start();
+
+    final BareJID roomJID = obtainRoomOpenState(clientBot);
+    clientBot.sendGroupchat(roomJID, new Operations.Cancel());
+    final ExpectedMessage roomInfo = new ExpectedMessageBuilder()
+        .from(groupChatJID(roomJID))
+        .has(Offer.class)
+        .has(Operations.RoomStateChanged.class, rsc -> RoomState.CLOSED == rsc.state())
+        .build();
+
+    //Act
+    adminBot.start();
+    final ExpectedMessage[] notReceivedMessages = adminBot.tryReceiveMessages(new StateLatch(), roomInfo);
+
+    //Assert
+    assertAllExpectedMessagesAreReceived(notReceivedMessages);
+  }
+
+  @Test
+  public void testClientCancelsAfterOrderAdminOn() throws JaxmppException {
     //Arrange
     botsManager.addBots(1, 1, 0);
     botsManager.startAll();

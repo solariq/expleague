@@ -39,9 +39,6 @@ public class ExpectedMessageBuilder {
   }
 
   public ExpectedMessage build() {
-    if (from == null) {
-      throw new IllegalStateException("from is not specified");
-    }
     return new ExpectedMessage(from, filters);
   }
 }

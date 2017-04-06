@@ -23,7 +23,7 @@ public class ExpectedMessage {
   }
 
   public boolean tryReceive(Message message) {
-    if (from != null && !message.from().equals(from)) {
+    if (from != null && !from.equals(message.from())) {
       return false;
     }
 
