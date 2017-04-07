@@ -179,7 +179,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
                 invoke(new Message(from, jid(), new Progress(o.id(), new Progress.MetaChange(tag.name(), Progress.MetaChange.Operation.ADD, Progress.MetaChange.Target.TAGS))));
               }
               for (final Pattern pattern : orderOffer.patterns()) {
-                invoke(new Message(from, jid(), new Progress(o.id(), new Progress.MetaChange(pattern.name(), Progress.MetaChange.Operation.ADD, Progress.MetaChange.Target.TAGS))));
+                invoke(new Message(from, jid(), new Progress(o.id(), new Progress.MetaChange(pattern.name(), Progress.MetaChange.Operation.ADD, Progress.MetaChange.Target.PATTERNS))));
               }
               LaborExchange.tell(context(), o, self());
             });
