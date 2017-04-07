@@ -94,7 +94,7 @@ public class RoomAgent extends PersistentActorAdapter {
           jid,
           message.from(),
           MessageType.ERROR,
-          "Сообщение от " + message.from() + " не доставленно. Вы не являетесь участником комнаты!"
+          "Сообщение " + message.xmlString() + " не доставленно. Вы не являетесь участником комнаты!"
       );
       XMPP.send(error, context());
       return;
