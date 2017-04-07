@@ -390,7 +390,7 @@ public class RoomAgent extends PersistentActorAdapter {
   private int msgIndex = 0;
   protected void process(Message msg, ProcessMode mode) {
     final JID from = msg.from();
-    if (role(from) == Role.NONE)
+    if (role(from) == Role.NONE && mode == ProcessMode.NORMAL)
       update(from, suggestRole(from, affiliation(from)), null, mode);
 
     if (mode == ProcessMode.NORMAL && ++msgIndex % 10 == 0)
@@ -406,7 +406,11 @@ public class RoomAgent extends PersistentActorAdapter {
     if (!started)
       return;
     participants.forEach((jid, status) -> {
-      if (checkDst(stanza, jid, false) && ((stanza.to() != null && stanza.to().hasResource()) || relevant(stanza, jid)))
+      if (status.role == Role.NONE && status.affiliation != Affiliation.OWNER)
+        return;
+      if (!checkDst(stanza, jid, false))
+        return;
+      if ((stanza.to() != null && stanza.to().hasResource()) || relevant(stanza, jid))
         XMPP.send(participantCopy(stanza, jid), context());
     });
   }

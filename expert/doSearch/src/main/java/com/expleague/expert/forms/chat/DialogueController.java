@@ -111,9 +111,11 @@ public class DialogueController implements Action<ExpertEvent> {
     }
     final ObservableList<Node> children = messagesView.getChildren();
     try {
-      final ExpertsProfile worker = task.offer().workers().filter(
-          profile -> profile.jid().local().equals(from.resource())
+      final JID expertJid = task.offer().workers().filter(
+          jid -> jid.local().equals(from.resource())
       ).findAny().orElse(null);
+      // todo: fix
+      final ExpertsProfile worker = null;
       javafx.scene.image.Image ava = null;
       if (worker != null) {
         ava = new javafx.scene.image.Image(worker.avatar());

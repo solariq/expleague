@@ -45,9 +45,6 @@ public class OfferDto {
   @JsonProperty
   private long expiresMs;
 
-  @JsonProperty
-  private List<ExpertsProfileDto> workers;
-
   public OfferDto(final Offer offer) {
     this.room = new JIDDto(offer.room());
     this.client = new JIDDto(offer.client());
@@ -69,10 +66,6 @@ public class OfferDto {
 
     this.startedMs = (long) offer.started() * 1000;
     this.expiresMs = this.startedMs + this.urgency.time();
-    this.workers = offer.workers()
-      .filter(expertsProfile -> expertsProfile.jid() != null)
-      .map(ExpertsProfileDto::new)
-      .collect(Collectors.toList());
   }
 
   public long getStartedMs() {

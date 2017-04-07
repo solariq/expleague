@@ -58,10 +58,6 @@ public class Offer extends Item {
   @XmlAttribute
   private Double started;
 
-  @XmlElementWrapper(namespace = Operations.NS)
-  @XmlAnyElement(lax = true)
-  private List<ExpertsProfile> workers;
-
   @XmlElements(value = {
       @XmlElement(name="tag", namespace = Operations.NS, type = Tag.class),
   })
@@ -202,14 +198,8 @@ public class Offer extends Item {
   private void recoverFilter() {
   }
 
-  public void addWorker(ExpertsProfile profile) {
-    if (workers == null)
-      workers = new ArrayList<>();
-    workers.add(profile);
-  }
-
-  public Stream<ExpertsProfile> workers() {
-    return workers != null ? workers.stream() : Stream.empty();
+  public Stream<JID> workers() {
+    return Stream.concat(filter().accepted(), filter().preferred());
   }
 
   public void client(JID owner) {
