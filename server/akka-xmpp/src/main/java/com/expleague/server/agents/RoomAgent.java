@@ -124,15 +124,23 @@ public class RoomAgent extends PersistentActorAdapter {
   public void dump(DumpRequest req) {
     if (req.fromId == null) {
       sender().tell(archive(), self());
-      return;
     }
-
-    final JID jid = XMPP.jid(req.from());
-    sender().tell(
-        archive().stream()
-            .filter(stanza -> checkDst(stanza, jid, true) && ((stanza.to() != null && stanza.to().hasResource()) || relevant(stanza, jid)))
-            .collect(Collectors.toList()),
-        self());
+    else if (req.fromId.equals("owner")) {
+      final JID jid = owner();
+      sender().tell(
+          archive().stream()
+              .filter(stanza -> checkDst(stanza, jid, true) && ((stanza.to() != null && stanza.to().hasResource()) || relevant(stanza, jid)))
+              .collect(Collectors.toList()),
+          self());
+    }
+    else {
+      final JID jid = XMPP.jid(req.from());
+      sender().tell(
+          archive().stream()
+              .filter(stanza -> checkDst(stanza, jid, true) && ((stanza.to() != null && stanza.to().hasResource()) || relevant(stanza, jid)))
+              .collect(Collectors.toList()),
+          self());
+    }
   }
 
   public static class Awake {}

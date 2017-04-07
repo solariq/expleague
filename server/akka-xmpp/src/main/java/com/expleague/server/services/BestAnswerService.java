@@ -66,12 +66,12 @@ public class BestAnswerService extends ActorAdapter<UntypedActor> {
             offer.room(JID.parse(roomId + "-copy-" + requester.local() + "@muc." + ExpLeagueServer.config().domain()));
             offerHolder.setValue(offer);
           }
-          else if (!copy.has(Operations.Command.class)){
+          else {
             copy.from(requester);
             content.add(copy);
           }
         }
-        else if (message.to().bareEq(owner) || message.type() == Message.MessageType.GROUP_CHAT) {
+        else {
           final Stanza copy = message.copy();
           copy.to(requester);
           content.add(copy);
