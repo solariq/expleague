@@ -48,4 +48,8 @@ public class ExpectedMessage {
     });
     return stringBuilder.toString();
   }
+
+  public ExpectedMessage copy() {
+    return new ExpectedMessage(from, filters);
+  }
 }

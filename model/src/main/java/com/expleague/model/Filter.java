@@ -26,6 +26,15 @@ public class Filter extends Attachment {
   @XmlElement(namespace = Operations.NS)
   private List<JID> prefer;
 
+  public Filter() {
+  }
+
+  public Filter(List<JID> accept, List<JID> reject, List<JID> prefer) {
+    this.accept = accept;
+    this.reject = reject;
+    this.prefer = prefer;
+  }
+
   public boolean fit(JID who) {
     if (accept != null)
       return accept.contains(who);

@@ -9,7 +9,6 @@ import com.expleague.server.agents.GlobalChatAgent;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.util.sync.StateLatch;
-import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,17 +24,22 @@ import java.util.concurrent.ThreadLocalRandom;
  * Date: 28.02.2017
  * Time: 15:05
  */
-public class BaseSingleBotsTest {
+public class BaseRoomTest {
   protected BotsManager botsManager;
 
   @Before
-  public void setUp() throws JaxmppException {
+  public void setUp() {
     botsManager = new BotsManager();
   }
 
   @After
-  public void tearDown() throws JaxmppException {
+  public void tearDown() {
     botsManager.stopAll();
+  }
+
+  protected String testName() {
+    final StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+    return ste[2].getMethodName();
   }
 
   protected String generateRandomString() {
@@ -46,11 +50,11 @@ public class BaseSingleBotsTest {
     return ThreadLocalRandom.current().nextInt(min, max + 1);
   }
 
-  protected void assertAllExpectedMessagesAreReceived(ExpectedMessage[] notReceivedMessages) {
-    if (notReceivedMessages.length > 0) {
+  protected void assertAllExpectedMessagesAreReceived(ExpectedMessage[] failedMessages) {
+    if (failedMessages.length > 0) {
       final StringBuilder stringBuilder = new StringBuilder();
-      for (ExpectedMessage expectedMessage : notReceivedMessages) {
-        stringBuilder.append(String.format("\n%s was/were not received from %s (or had incorrect attributes)\n", expectedMessage, expectedMessage.from()));
+      for (ExpectedMessage expectedMessage : failedMessages) {
+        stringBuilder.append(String.format("\n%s was/were NOT received from %s (or had incorrect attributes)\n", expectedMessage, expectedMessage.from()));
       }
       Assert.fail(stringBuilder.toString());
     }
@@ -105,9 +109,9 @@ public class BaseSingleBotsTest {
     assertAllExpectedMessagesAreReceived(notReceivedMessages);
   }
 
-  protected BareJID obtainRoomOpenState(ClientBot clientBot) throws JaxmppException {
+  protected BareJID obtainRoomOpenState(String testName, ClientBot clientBot) throws JaxmppException {
     //Arrange
-    final BareJID roomJID = generateRoomJID(clientBot);
+    final BareJID roomJID = generateRoomJID(testName, clientBot);
     final Offer offer = new Offer(
         JID.parse(clientBot.jid().toString()),
         generateRandomString(),
@@ -124,9 +128,9 @@ public class BaseSingleBotsTest {
     return roomJID;
   }
 
-  protected BareJID obtainRoomOpenState(ClientBot clientBot, AdminBot adminBot) throws JaxmppException {
+  protected BareJID obtainRoomOpenState(String testName, ClientBot clientBot, AdminBot adminBot) throws JaxmppException {
     //Arrange
-    final BareJID roomJID = generateRoomJID(clientBot);
+    final BareJID roomJID = generateRoomJID(testName, clientBot);
     final Offer offer = new Offer(
         JID.parse(clientBot.jid().toString()),
         generateRandomString(),
@@ -166,30 +170,36 @@ public class BaseSingleBotsTest {
     return roomJID;
   }
 
-  @NotNull
-  private BareJID generateRoomJID(ClientBot clientBot) {
-    return BareJID.bareJIDInstance(clientBot.jid().getLocalpart() + "-room-" + (int) (System.nanoTime() / 1000), "muc." + clientBot.jid().getDomain());
+  private BareJID generateRoomJID(String testName, ClientBot clientBot) {
+    return BareJID.bareJIDInstance(testName + "-" + (int) (System.nanoTime() / 1000), "muc." + clientBot.jid().getDomain());
   }
 
-  protected BareJID obtainRoomWorkState(ClientBot clientBot, AdminBot adminBot, ExpertBot expertBot) throws JaxmppException {
-    final BareJID roomJID = obtainRoomOpenState(clientBot, adminBot);
+  protected BareJID obtainRoomWorkState(String testName, ClientBot clientBot, AdminBot adminBot, ExpertBot... expertBots) throws JaxmppException {
+    final BareJID roomJID = obtainRoomOpenState(testName, clientBot, adminBot);
     { //obtain work state
       //Arrange
       final Offer offer = new Offer(JID.parse(roomJID.toString()));
       final ExpectedMessage offerCheck = new ExpectedMessageBuilder().from(domainJID()).has(Offer.class).has(Operations.Check.class).build();
+      final ExpectedMessage roomWorkState = new ExpectedMessageBuilder().from(groupChatJID(roomJID)).has(Operations.RoomStateChanged.class, rsc -> RoomState.WORK == rsc.state()).build();
 
       //Act
       adminBot.send(roomJID, offer);
-      final ExpectedMessage[] notReceivedMessages = expertBot.tryReceiveMessages(new StateLatch(), offerCheck);
-
+      final ExpectedMessage[] notReceivedMessages = adminBot.tryReceiveMessages(new StateLatch(), roomWorkState);
       //Assert
       assertAllExpectedMessagesAreReceived(notReceivedMessages);
+
+      for (ExpertBot expertBot : expertBots) {
+        //Act
+        final ExpectedMessage[] notReceivedOfferCheck = expertBot.tryReceiveMessages(new StateLatch(), offerCheck.copy());
+        //Assert
+        assertAllExpectedMessagesAreReceived(notReceivedOfferCheck);
+      }
     }
     return roomJID;
   }
 
-  protected BareJID obtainRoomDeliverState(ClientBot clientBot, AdminBot adminBot, ExpertBot expertBot) throws JaxmppException {
-    final BareJID roomJID = obtainRoomWorkState(clientBot, adminBot, expertBot);
+  protected BareJID obtainRoomDeliverState(String testName, ClientBot clientBot, AdminBot adminBot, ExpertBot expertBot) throws JaxmppException {
+    final BareJID roomJID = obtainRoomWorkState(testName, clientBot, adminBot, expertBot);
     { //obtain deliver state
       //Arrange
       final ExpectedMessage invite = new ExpectedMessageBuilder().from(roomJID).has(Offer.class).has(Operations.Invite.class).build();
@@ -197,21 +207,21 @@ public class BaseSingleBotsTest {
 
       //Act
       expertBot.sendGroupchat(roomJID, new Operations.Ok());
-      final ExpectedMessage[] notReceivedByExpert = expertBot.tryReceiveMessages(new StateLatch(), invite);
+      final ExpectedMessage[] notReceivedInvite = expertBot.tryReceiveMessages(new StateLatch(), invite);
       //Assert
-      assertAllExpectedMessagesAreReceived(notReceivedByExpert);
+      assertAllExpectedMessagesAreReceived(notReceivedInvite);
 
       //Act
       expertBot.sendGroupchat(roomJID, new Operations.Start());
-      final ExpectedMessage[] notReceivedByClient = clientBot.tryReceiveMessages(new StateLatch(), startAndExpert);
+      final ExpectedMessage[] notReceivedStart = clientBot.tryReceiveMessages(new StateLatch(), startAndExpert);
       //Assert
-      assertAllExpectedMessagesAreReceived(notReceivedByClient);
+      assertAllExpectedMessagesAreReceived(notReceivedStart);
     }
     return roomJID;
   }
 
-  protected BareJID obtainRoomFeedbackState(ClientBot clientBot, AdminBot adminBot, ExpertBot expertBot) throws JaxmppException {
-    final BareJID roomJID = obtainRoomDeliverState(clientBot, adminBot, expertBot);
+  protected BareJID obtainRoomFeedbackState(String testName, ClientBot clientBot, AdminBot adminBot, ExpertBot expertBot) throws JaxmppException {
+    final BareJID roomJID = obtainRoomDeliverState(testName, clientBot, adminBot, expertBot);
     { //obtain feedback state
       //Arrange
       final Answer answer = new Answer(generateRandomString());

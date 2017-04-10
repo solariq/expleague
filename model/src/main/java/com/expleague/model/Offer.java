@@ -8,10 +8,8 @@ import com.spbsu.commons.seq.CharSeqTools;
 
 import javax.xml.bind.annotation.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.sql.Array;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -79,8 +77,9 @@ public class Offer extends Item {
     this.started = started;
   }
 
-  public Offer(JID room) {
+  public Offer(JID room, Attachment... attachments) {
     this.room = room;
+    this.attachments = Arrays.asList(attachments);
   }
 
   public static Offer create(JID room, JID client, Message description) {

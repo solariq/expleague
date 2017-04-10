@@ -1,7 +1,11 @@
 package integration_tests.tests;
 
-import integration_tests.BaseSingleBotsTest;
+import com.expleague.bots.AdminBot;
+import com.expleague.bots.ClientBot;
+import com.expleague.bots.ExpertBot;
+import integration_tests.BaseRoomTest;
 import org.junit.Test;
+import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 
 /**
@@ -9,16 +13,18 @@ import tigase.jaxmpp.core.client.exceptions.JaxmppException;
  * Date: 28.02.2017
  * Time: 14:55
  */
-public class ClientExpertTest extends BaseSingleBotsTest {
+public class ClientExpertTest extends BaseRoomTest {
 
   @Test
   public void testExpertAnswers() throws JaxmppException {
     //Arrange
-    botsManager.addBots(1, 1, 1);
-    botsManager.startAll();
+    final AdminBot adminBot = botsManager.startNewAdmin();
+    final ClientBot clientBot = botsManager.startNewClient();
+    final ExpertBot expertBot = botsManager.startNewExpert();
 
     //Act/Assert
-    obtainRoomFeedbackState(botsManager.defaultClientBot(), botsManager.defaultAdminBot(), botsManager.defaultExpertBot());
+    final BareJID roomJID = obtainRoomFeedbackState(testName(), clientBot, adminBot, expertBot);
+    roomCloseStateByClientCancel(roomJID, clientBot, adminBot);
   }
 
   /*@Test
