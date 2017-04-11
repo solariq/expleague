@@ -23,7 +23,9 @@
 # hdiutil create -volname doSearch -srcfolder ./temp/ -ov -format UDZO doSearch.dmg
 VERSION = 0.8.5
 
-QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine xml xmlpatterns multimedia webenginecore
+#CONFIG += test
+
+QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine xml xmlpatterns multimedia webenginecore testlib
 QT_PRIVATE += quick-private webengine-private
 qml.path += resources/qml
 target.path += ../../bin
@@ -46,7 +48,6 @@ else:win32: CONFIG += static console
 unix: QMAKE_CXXFLAGS+=-g
 
 SOURCES += \
-    c++/main.cpp \
     c++/protocol.cpp \
     c++/profile.cpp \
     c++/league.cpp \
@@ -68,7 +69,9 @@ SOURCES += \
     c++/model/pages/globalchat.cpp \
     c++/util/region.cpp \
     c++/task.cpp \
-    c++/imagestore.cpp
+    c++/imagestore.cpp \
+    c++/util/leveldb.cpp \
+    test/util/pholder_test.cpp
 
 
 HEADERS += \
@@ -97,7 +100,16 @@ HEADERS += \
     c++/util/pholder.h \
     c++/model/pages/admins.h \
     c++/model/pages/globalchat.h \
-    c++/util/region.h
+    c++/util/region.h \
+    c++/util/leveldb.h \
+
+
+test{
+    SOURCES += test/main_test.cpp
+    HEADERS += test/util/pholder_test.h
+}else{
+    SOURCES += c++/main.cpp
+}
 
 macx: OBJECTIVE_SOURCES += \
     objc/ExpLeagueNotification.mm

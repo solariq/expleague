@@ -1,12 +1,14 @@
 #include "pholder.h"
 
 #include "../util/filethrottle.h"
+#include "leveldb/db.h"
+
 
 #include <QHash>
 #include <QStack>
 #include <QUrl>
 #include <QFile>
-
+#include <QDebug>
 #include <QVariant>
 
 #include <QXmlStreamWriter>
@@ -18,157 +20,133 @@
 
 #include <QDebug>
 
-QVariantHash buildVariantByXml(QXmlStreamReader& reader);
-void writeXml(const QString& local, const QString& ns, const QVariant& variant, QXmlStreamWriter* writer, bool attribute = false, bool enforceTag = false);
+const char devideListChar = '\\';
+const char devideHashChar = '>';
 
-QVariant* PersistentPropertyHolder::resolve(const QStringList& path, bool create) {
-    QVariant* current = &m_properties;
-    int index = 0;
-    while (index < path.size() - 1) {
-        const QString key = path[index];
-        QVariantHash& hash = *reinterpret_cast<QVariantHash*>(current->data());
-        QVariant* next = &hash[key];
-        if (!next->canConvert(QVariant::Hash)) {
-            if (!create) {
-//                qDebug() << "Unresolved context: " + path.mid(0, index + 1).join(".") << " current: " << *next;
-                return 0;
-            }
-            if (!next->isNull())
-                qWarning() << "Expected composite element but found " << next->type() << " at [" << path.mid(0, index + 1).join(".") << "]. Rewriting with composite, previous value: " << next;
+QString toString(const QVariant& var);
+QVariant fromString(const QString& s);
 
-            next->setValue(QVariantHash());
-        }
-        current = next;
-        index++;
+LevelDBContainer& PersistentPropertyHolder::getLevelDBCotainer(){
+    static LevelDBContainer container("pages");
+    return container;
+}
+
+
+QVariant PersistentPropertyHolder::value(const QString& key) const {
+    leveldb::DB* db = getLevelDBCotainer().get();
+    leveldb::ReadOptions options;
+    std::string value;
+    QByteArray fullKey = (m_page + "." + key).toUtf8();
+
+    leveldb::Status status = db->Get(options, leveldb::Slice(fullKey.data(), fullKey.length()), &value);
+    if(status.ok()){
+        return fromString(QString::fromStdString(value));
     }
-    return current;
+    return QVariant();
 }
 
-QVariant PersistentPropertyHolder::value(const QString& fullKey) const {
-    QStringList path = fullKey.split(".");
-    QVariant* context = const_cast<PersistentPropertyHolder*>(this)->resolve(path);
-    if (!context)
-        return QVariant();
-    return context->toHash().value(path.last());
-}
+void PersistentPropertyHolder::store(const QString& key, const QVariant& value) {
+    QByteArray fullKey = (m_page + "." + key).toUtf8();
 
-void PersistentPropertyHolder::store(const QString& fullKey, const QVariant& value) {
-    QStringList path = fullKey.split(".");
-//    qDebug() << "Store: " << fullKey << " value: " << value << " last: " << path.last();
-    QVariant* context = resolve(path, true);
-    QVariantHash& hash = *reinterpret_cast<QVariantHash*>(context->data());
-
-//    qDebug() << " context: : " << *context;
+    leveldb::Slice addr(fullKey.data(), fullKey.length());
     if (!value.isNull()) {
-        QVariant& current = hash[path.last()];
-        if (current == value) {
-//            qDebug() << " Found the same value";
-            return;
-        }
-        current.setValue(value);
+        batch.Put(addr, toString(value).toStdString());
     }
     else {
-        if (!hash.contains(path.last())) {
-//            qDebug() << " Already clear key";
-            return;
-        }
-        hash.remove(path.last());
+        batch.Delete(addr);
     }
-//    qDebug() << " Successfully set to " << context->toHash()[path.last()];
     m_changes++;
 }
 
-void PersistentPropertyHolder::visitKeys(const QString& fullKey, std::function<void (const QVariant& value)> visitor) const {
-    QVariant value = this->value(fullKey);
+void PersistentPropertyHolder::visitKeys(const QString& key, std::function<void (const QVariant& value)> visitor) const {
+    QVariant value = this->value(key);
     if (value.canConvert(QVariant::List)) {
-        foreach(const QVariant& value, value.toList()) {
-            visitor(value);
+        foreach(const QVariant& val, value.toList()) {
+            //qDebug() << val << " visited";
+            visitor(val);
         }
+        //qDebug() << "end of visit";
     }
     else if (!value.isNull()) {
         visitor(value);
     }
 }
 
-void PersistentPropertyHolder::append(const QString& fullKey, const QVariant& value) {
-    QStringList path = fullKey.split(".");
-    QVariant* context = resolve(path, true);
-    QVariantHash& hash = *reinterpret_cast<QVariantHash*>(context->data());
-    QVariant& current = hash[path.last()];
-    if (current.type() == QVariant::List) { // replace existing list
-        QVariantList lst = current.toList();
-        lst += value;
-        current.setValue(lst);
+void PersistentPropertyHolder::append(const QString& key, const QVariant& value) {
+    leveldb::DB* db = getLevelDBCotainer().get();
+    QByteArray fullKey = (m_page + "." + key).toUtf8();
+    leveldb::Slice addr(fullKey.data(), fullKey.length());
+
+    std::string prev;
+    leveldb::Status status = db->Get(leveldb::ReadOptions(), addr, &prev);
+    if(prev.length() != 0){
+        prev += devideListChar;
     }
-    else if (!current.isNull()) { // convert current value to the list
-        QVariantList lst;
-        lst += current;
-        lst += value;
-        current.setValue(lst);
-    }
-    else { // fill new key
-        current.setValue(value);
-    }
+    prev.append(toString(value).toStdString());
+    batch.Put(addr, prev);
     m_changes++;
 }
 
 void PersistentPropertyHolder::remove(const QString& key) {
-    QStringList path = key.split(".");
-    QVariant* context = resolve(path, true);
-    QVariantHash& hash = *reinterpret_cast<QVariantHash*>(context->data());
-    hash.remove(path.last());
+    QByteArray fullKey = (m_page + "." + key).toUtf8();
+    leveldb::Slice addr(fullKey.data(), fullKey.length());
+    batch.Delete(addr);
     m_changes++;
 }
 
 void PersistentPropertyHolder::remove(const QString& key, std::function<bool (const QVariant& value)> filter) {
-    QStringList path = key.split(".");
-    QVariant* context = resolve(path, true);
-    QVariantHash& hash = *reinterpret_cast<QVariantHash*>(context->data());
-    QVariant val = hash.value(path.last());
+    leveldb::DB* db = getLevelDBCotainer().get();
+    QByteArray fullKey = (m_page + "." + key).toUtf8();
+    leveldb::Slice addr(fullKey.data(), fullKey.length());
+    std::string value;
+    db->Get(leveldb::ReadOptions(), leveldb::Slice(fullKey.data(), fullKey.length()), &value);
+    QVariant val = fromString(QString::fromStdString(value));
+
     if (filter(val))
-        hash.remove(path.last());
+        batch.Delete(addr);
     else if (val.type() == QVariant::List) {
         QVariantList lst = val.toList();
         for (auto it = lst.begin(); it < lst.end(); it++) {
             if (filter(*it))
                 it = lst.erase(it);
         }
-        if (lst.size() > 1)
-            hash[path.last()] = lst;
-        else
-            hash[path.last()] = lst[0];
+        if (lst.size() > 1){
+            batch.Put(addr, toString(QVariant(lst)).toStdString());
+        }else if(lst.size() == 1){
+            batch.Put(addr, toString(QVariant(lst.first())).toStdString());
+        }else{
+            batch.Delete(addr);
+        }
     }
     m_changes++;
 }
 
-void PersistentPropertyHolder::replaceOrAppend(const QString& fullKey, const QVariant& value, std::function<bool (const QVariant& lhs, const QVariant& rhs)> equals) {
-    QStringList path = fullKey.split(".");
-    QVariant* context = resolve(path, true);
-    QVariantHash& hash = *reinterpret_cast<QVariantHash*>(context->data());
-    QVariant& current = hash[path.last()];
+void PersistentPropertyHolder::replaceOrAppend(const QString& fullKey, const QVariant& val, std::function<bool (const QVariant& lhs, const QVariant& rhs)> equals) {
+    QVariant current = value(fullKey);
     if (current.type() == QVariant::List) { // replace existing list
         QVariantList lst = current.toList();
         int index = 0;
         while (index < lst.size()) {
-            if (equals(lst[index], value)) {
-                lst.replace(index, value);
+            if (equals(lst[index], val)) {
+                lst.replace(index, val);
                 break;
             }
             index++;
         }
         if (index >= lst.size())
-            lst += value;
+            lst += val;
         current.setValue(lst);
     }
-    else if (!current.isNull() && !equals(current, value)) { // convert current value to the list
+    else if (!current.isNull() && !equals(current, val)) { // convert current value to the list
         QVariantList lst;
         lst += current;
-        lst += value;
+        lst += val;
         current.setValue(lst);
     }
     else { // fill new key
-        current.setValue(value);
+        current.setValue(val);
     }
+    store(fullKey, current);
     m_changes++;
 }
 
@@ -187,96 +165,15 @@ int PersistentPropertyHolder::count(const QString& fullKey) const {
 }
 
 void PersistentPropertyHolder::save() const {
-    if (m_saved_changes == m_changes)
-        return;
-    QByteArray buffer;
-    QXmlStreamWriter writer(&buffer);
-    writer.writeStartDocument();
-    QVariant copy = m_properties;
-    m_saved_changes = m_changes;
-    writeXml("page", "http://expleague.com/expert/page", copy, &writer);
-    writer.writeEndDocument();
-//    qDebug() << buffer;
-    FileWriteThrottle::enqueue(m_file, buffer);
+    leveldb::DB* db = getLevelDBCotainer().get();
+    db->Write(leveldb::WriteOptions(), &batch);
+    batch.Clear();
 }
 
-PersistentPropertyHolder::PersistentPropertyHolder(const QString& fname):
-    m_file(fname)
-{
-    QFile file(fname);
-    if (!file.exists())
-        return;
-    if (!file.open(QFile::ReadOnly)) {
-        qWarning() << "Unable to read page properties: " << fname;
-        return;
-    }
-    QXmlStreamReader reader(&file);
-    m_properties = buildVariantByXml(reader)["page"];
-    m_saved_changes = m_changes;
+PersistentPropertyHolder::PersistentPropertyHolder(const QString& pname):
+    m_page(pname), batch(){
 }
 
-bool attributeString(const QString& str) {
-    return str.length() < 50 && !str.contains('\n');
-}
-
-void writeXml(const QString& local, const QString& ns, const QVariant& variant, QXmlStreamWriter* writer, bool attribute, bool enforceTag) {
-    if (attribute) {
-        switch(variant.type()) {
-        case QVariant::Type::Double:
-            writer->writeAttribute(local, QString::number(variant.toDouble()));
-            break;
-        case QVariant::Type::Time:
-        case QVariant::Type::LongLong:
-        case QVariant::Type::Int:
-            writer->writeAttribute(local, QString::number(variant.toLongLong()));
-            break;
-        case QVariant::Type::Url:
-        case QVariant::Type::String:
-            if (local != "type" && local != "name" && attributeString(variant.toString()))
-                writer->writeAttribute(local, variant.toString());
-            break;
-        }
-    }
-    else if (variant.canConvert(QVariant::Hash)) {
-        static QRegExp illegalChars("[<>\\\\/\\.\\?&\\+!]");
-        if (local.length() > 10 || local.contains(illegalChars)) {
-            writer->writeStartElement("item");
-            writer->writeAttribute("name", local);
-        }
-        else
-            writer->writeStartElement(local);
-        if (!ns.isEmpty())
-            writer->writeDefaultNamespace(ns);
-        QHash<QString, QVariant> hash = variant.toHash();
-        {
-            QHash<QString, QVariant>::iterator iter = hash.begin();
-            while (iter != hash.end()) {
-                writeXml(iter.key(), "", iter.value(), writer, true, false);
-                iter++;
-            }
-        }
-        {
-            QHash<QString, QVariant>::iterator iter = hash.begin();
-            while (iter != hash.end()) {
-                writeXml(iter.key(), "", iter.value(), writer, false, false);
-                iter++;
-            }
-        }
-        writer->writeEndElement();
-    }
-    else if (variant.canConvert(QVariant::List)) {
-        QVariantList lst = variant.toList();
-        foreach (const QVariant& var, lst) {
-            writeXml(local, ns, var, writer, false, true);
-        }
-    }
-    else if (local == "type" || local == "name" || (variant.canConvert(QVariant::String) && (enforceTag || !attributeString(variant.toString())))) {
-        writer->writeStartElement(local);
-        writer->writeAttribute("type", "text");
-        writer->writeCharacters(variant.toString());
-        writer->writeEndElement();
-    }
-}
 
 template <typename T>
 void appendVariant(QVariant& to, const T& value) {
@@ -293,55 +190,68 @@ void appendVariant(QVariant& to, const T& value) {
     else to.setValue(value);
 }
 
-QVariantHash buildVariantByXml(QXmlStreamReader& reader) {
-    QString key;
-    QString type;
-    QVariantHash result;
-
-//    qDebug() << "XML reader enter ";
-    while (!reader.atEnd() && !reader.hasError()) {
-        reader.readNext();
-        if (reader.isStartElement()) {
-            key = reader.name().toString();
-            QVariantHash fold;
-            QXmlStreamAttributes attrs = reader.attributes();
-            if (attrs.hasAttribute("name"))
-                key = attrs.value("name").toString();
-            if (!attrs.hasAttribute("type")) {
-//                qDebug() << "Start element: " << reader.name();
-
-                type = "hash";
-                for (int i = 0; i < attrs.size(); i++) {
-                    const QXmlStreamAttribute& attr = attrs[i];
-                    QString local = attr.name().toString();
-                    if (local == "name")
-                        continue;
-                    bool ok;
-                    QVariant value = attr.value().toInt(&ok);
-                    if (!ok)
-                        value = attr.value().toDouble(&ok);
-                    if (!ok)
-                        value = attr.value().toString();
-                    fold[local] = value;
-                }
-                if (!reader.isEndElement())
-                    fold.unite(buildVariantByXml(reader));
-                if (!reader.isEndElement())
-                    qWarning() << "Invalid xml";
-                appendVariant<QVariantHash>(result[key], fold);
-            }
-            else type = attrs.value("type").toString();
+QString toString(const QVariant& var){
+    QString s;
+    if(var.canConvert(QVariant::String)){
+        return var.toString();
+    }else if(var.canConvert(QVariant::StringList)){
+        QStringList list = var.toStringList();
+        for(int i = 0; i < list.size() - 1; i++){
+            s.append(list[i]);
+            s.append(devideListChar);
         }
-        else if (reader.isCharacters() && type == "text") {
-            appendVariant<QString>(result[key], reader.text().toString());
-            reader.readNext();
-        }
-        else if (reader.isEndElement()) {
-//            qDebug() << "End element: " << reader.name();
-            break;
-        }
+        s.append(list.last());
+        return s;
     }
-//    qDebug() << "XML reader exit";
+    QVariantHash hash = var.toHash();
+    auto i = hash.begin();
+    QString key = i.key();
+    QVariant val = i.value();
+    assert(val.canConvert(QVariant::String));
+    s += key + devideHashChar + toString(val);
+    ++i;
+    for(; i !=hash.end(); ++i){
+        QString key = i.key();
+        QVariant val = i.value();
+        assert(val.canConvert(QVariant::String));
+        s += devideHashChar + key + devideHashChar + toString(val);
+    }
+    return s;
+}
 
-    return result;
+QVariant convert(const QString& s){
+    bool ok = false;
+    QVariant value;
+    value = s.toInt(&ok);
+    if(!ok){
+        value = s.toDouble(&ok);
+    }
+    if(!ok){
+        value = s;
+    }
+    return value;
+}
+
+QVariant convertHash(const QString& s){
+    QStringList strlist = s.split(devideHashChar);
+    if(strlist.size() == 1){
+        return convert(strlist.at(0));
+    }
+    QVariantHash hash;
+    for(int i = 0; i < strlist.size(); i+=2){
+        hash.insert(strlist.at(i), convert(strlist.at(i + 1)));
+    }
+    return hash;
+}
+
+QVariant fromString(const QString& s){
+    QStringList strlist = s.split(devideListChar);
+    if(strlist.size() == 1){
+        return convertHash(strlist.at(0));
+    }
+    QVariantList varlist;
+    for(auto i: strlist){
+        varlist.append(convertHash(i));
+    }
+    return varlist;
 }

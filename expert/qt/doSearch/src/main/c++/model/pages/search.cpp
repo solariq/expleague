@@ -25,7 +25,7 @@ void SERPage::interconnect() {
     connect(request(), SIGNAL(sessionChanged()), SLOT(onSessionChanged()));
 }
 
-SearchRequest SearchRequest::EMPTY("");
+//SearchRequest SearchRequest::EMPTY("");
 
 QString YandexSERPage::parseQuery(const QUrl& request) {
     QString path = request.path();

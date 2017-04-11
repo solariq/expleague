@@ -1,6 +1,9 @@
 #ifndef PHOLDER_H
 #define PHOLDER_H
 
+#include "leveldb.h"
+#include <leveldb/write_batch.h>
+
 #include <functional>
 
 #include <QHash>
@@ -24,10 +27,12 @@ public:
 
 private:
     QVariant* resolve(const QStringList& path, bool create = false);
-
 private:
-    QString m_file;
+
+    QString m_page;
     QVariant m_properties = QVariant(QHash<QString, QVariant>());
+    static LevelDBContainer& getLevelDBCotainer();
+    mutable leveldb::WriteBatch batch;
 
     mutable volatile int m_changes = 0;
     mutable volatile int m_saved_changes = 0;
