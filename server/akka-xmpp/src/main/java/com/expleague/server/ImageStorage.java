@@ -108,8 +108,9 @@ public class ImageStorage extends ActorAdapter<UntypedActor> {
         try {
           image = s3Client.getObject(BUCKET_NAME, id);
         }
-        catch(AmazonS3Exception e) {
+        catch(Exception e) {
           image = null;
+          log.log(Level.INFO, "Unable to get image from S3", e);
         }
         if (image != null) {
           final String contentType = image.getObjectMetadata().getContentType();

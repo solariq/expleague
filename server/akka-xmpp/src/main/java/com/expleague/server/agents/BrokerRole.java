@@ -319,7 +319,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
         }
     ).event(ExpLeagueOrder.class,
         (offer, task) -> {
-          explain("Already working on " + task.order().room() + ".");
+          explain("Already working on " + (task != null && task.order() != null ? task.order().room() : " ya x3 nad chem") + ".");
           return stay().replying(new Cancel());
         }
     ));
