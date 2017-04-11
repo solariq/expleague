@@ -34,8 +34,8 @@ public class ClientAdminTest extends BaseRoomTest {
   @Test
   public void testAdminHandlesMultipleRooms() throws JaxmppException {
     //Arrange
-    final AdminBot adminBot = botsManager.startNewAdmin();
-    final ClientBot clientBot = botsManager.startNewClient();
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ClientBot clientBot = botsManager.nextClient();
 
     final int roomCount = 3;
     final List<BareJID> rooms = Stream.generate(throwableSupplier(() -> obtainRoomOpenState(testName(), clientBot, adminBot))).limit(roomCount).collect(Collectors.toList());
@@ -94,8 +94,8 @@ public class ClientAdminTest extends BaseRoomTest {
   @Test
   public void testAdminClosesRoom() throws JaxmppException {
     //Arrange
-    final AdminBot adminBot = botsManager.startNewAdmin();
-    final ClientBot clientBot = botsManager.startNewClient();
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ClientBot clientBot = botsManager.nextClient();
 
     final BareJID roomJID = obtainRoomOpenState(testName(), clientBot, adminBot);
     final Answer answer = new Answer(generateRandomString());
@@ -115,8 +115,8 @@ public class ClientAdminTest extends BaseRoomTest {
   @Test
   public void testClientReceivesMessageInOpenRoomState() throws JaxmppException {
     //Arrange
-    final AdminBot adminBot = botsManager.startNewAdmin();
-    final ClientBot clientBot = botsManager.startNewClient();
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ClientBot clientBot = botsManager.nextClient();
 
     //Act/Assert
     testClientReceivesMessage(throwableSupplier(() -> obtainRoomOpenState(testName(), clientBot, adminBot)), true, adminBot, clientBot);
@@ -125,9 +125,9 @@ public class ClientAdminTest extends BaseRoomTest {
   @Test
   public void testClientReceivesMessageInWorkRoomState() throws JaxmppException {
     //Arrange
-    final AdminBot adminBot = botsManager.startNewAdmin();
-    final ExpertBot expertBot = botsManager.startNewExpert();
-    final ClientBot clientBot = botsManager.startNewClient();
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ExpertBot expertBot = botsManager.nextExpert();
+    final ClientBot clientBot = botsManager.nextClient();
 
     //Act/Assert
     testClientReceivesMessage(throwableSupplier(() -> obtainRoomWorkState(testName(), clientBot, adminBot, expertBot)), true, adminBot, clientBot);
@@ -136,9 +136,9 @@ public class ClientAdminTest extends BaseRoomTest {
   @Test
   public void testClientReceivesMessageInCloseRoomState() throws JaxmppException {
     //Arrange
-    final AdminBot adminBot = botsManager.startNewAdmin();
-    final ExpertBot expertBot = botsManager.startNewExpert();
-    final ClientBot clientBot = botsManager.startNewClient();
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ExpertBot expertBot = botsManager.nextExpert();
+    final ClientBot clientBot = botsManager.nextClient();
 
     //Act/Assert
     testClientReceivesMessage(throwableSupplier(() -> {

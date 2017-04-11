@@ -4,7 +4,9 @@ import akka.actor.ActorContext;
 import com.expleague.model.*;
 import com.expleague.model.Operations.*;
 import com.expleague.model.RoomState;
+import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
+import com.expleague.server.XMPPUser;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
@@ -34,12 +36,12 @@ public class GlobalChatAgent extends RoomAgent {
   }
 
   public static boolean isTrusted(JID from) {
-    final XMPPDevice device = XMPPDevice.fromJid(from);
-    return device != null && device.role() == XMPPDevice.Role.ADMIN;
+    final XMPPUser user = Roster.instance().user(from.local());
+    return user.authority() == ExpertsProfile.Authority.ADMIN;
   }
 
   @ActorMethod
-  public void dump(DumpRequest dump) {
+  public void onDump(DumpRequest dump) {
     final List<Message> rooms = this.rooms.values().stream()
         .filter(room -> room.affiliation(dump.from()) == Affiliation.OWNER)
         .map(RoomStatus::message)
@@ -58,16 +60,9 @@ public class GlobalChatAgent extends RoomAgent {
   }
 
   @Override
-  public Role role(JID jid) {
-    if (isRoom(jid) || isTrusted(jid))
-      return Role.PARTICIPANT;
-    return super.role(jid);
-  }
-
-  @Override
-  protected void process(Message msg, ProcessMode mode) {
+  protected void process(Message msg) {
     if (!isRoom(msg.from())) {
-      super.process(msg, mode);
+      super.process(msg);
       return;
     }
     final RoomStatus status = rooms.compute(msg.from().local(), (local, s) -> s != null ? s : new RoomStatus(local));
@@ -98,7 +93,7 @@ public class GlobalChatAgent extends RoomAgent {
       status.start(start.order(), profile.jid(), ts);
     }
     if (changes < status.changes())
-      super.process(msg, mode);
+      super.process(msg);
   }
 
   @Override

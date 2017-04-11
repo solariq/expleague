@@ -1,15 +1,12 @@
 package com.expleague.util.akka;
 
-import akka.actor.Actor;
-import akka.actor.ActorContext;
-import akka.actor.ActorRef;
-import akka.actor.Props;
+import akka.actor.*;
 import com.spbsu.commons.func.Action;
 
 /**
  * @author vpdelta
  */
-public abstract class ActorAdapter<A extends Actor> {
+public abstract class ActorAdapter<A extends UntypedActor> {
   private static boolean unitTestEnabled = false;
   
   protected A actor;
@@ -47,6 +44,18 @@ public abstract class ActorAdapter<A extends Actor> {
   protected void postStop() {
   }
 
+  protected void stash() {
+    if (actor instanceof UntypedActorWithStash) {
+      ((UntypedActorWithStash)actor).stash();
+    }
+  }
+
+  protected void unstashAll() {
+    if (actor instanceof UntypedActorWithStash) {
+      ((UntypedActorWithStash) actor).stash();
+    }
+  }
+
   // todo: in future we can have complete delegation here
   public ActorRef self() {
     return getActor().self();
@@ -63,8 +72,8 @@ public abstract class ActorAdapter<A extends Actor> {
     return getActor().sender();
   }
 
-  public ActorContext context() {
-    return getActor().context();
+  public UntypedActorContext context() {
+    return getActor().getContext();
   }
 
   public void unhandled(Object message) {

@@ -1,9 +1,19 @@
 package integration_tests.tests;
 
+import akka.actor.ActorSystem;
 import com.expleague.bots.AdminBot;
 import com.expleague.bots.ClientBot;
 import com.expleague.bots.ExpertBot;
+import com.expleague.server.ExpLeagueServer;
+import com.expleague.server.XMPPServer;
+import com.expleague.server.agents.LaborExchange;
+import com.expleague.server.agents.XMPP;
+import com.expleague.server.services.XMPPServices;
+import com.expleague.util.akka.ActorAdapter;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import integration_tests.BaseRoomTest;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
@@ -14,13 +24,12 @@ import tigase.jaxmpp.core.client.exceptions.JaxmppException;
  * Time: 14:55
  */
 public class ClientExpertTest extends BaseRoomTest {
-
   @Test
   public void testExpertAnswers() throws JaxmppException {
     //Arrange
-    final AdminBot adminBot = botsManager.startNewAdmin();
-    final ClientBot clientBot = botsManager.startNewClient();
-    final ExpertBot expertBot = botsManager.startNewExpert();
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ClientBot clientBot = botsManager.nextClient();
+    final ExpertBot expertBot = botsManager.nextExpert();
 
     //Act/Assert
     final BareJID roomJID = obtainRoomFeedbackState(testName(), clientBot, adminBot, expertBot);

@@ -24,5 +24,7 @@ public interface Archive {
     void commit();
     Stream<Stanza> stream();
     JID owner();
+
+    int size();
   }
 }

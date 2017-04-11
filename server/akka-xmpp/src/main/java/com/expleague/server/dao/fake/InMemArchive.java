@@ -57,5 +57,10 @@ public class InMemArchive implements Archive {
     public JID owner() {
       return JID.parse(owner);
     }
+
+    @Override
+    public int size() {
+      return snapshot.size();
+    }
   }
 }

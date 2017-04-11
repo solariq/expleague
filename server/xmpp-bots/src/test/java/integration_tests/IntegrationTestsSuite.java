@@ -25,16 +25,4 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({ClientAdminTest.class, ClientExpertTest.class, ClientCancelTest.class, ExpertCancelsTest.class})
 public class IntegrationTestsSuite {
-
-  @BeforeClass
-  public static void setUpServer() throws Exception {
-    final Config load = ConfigFactory.load();
-    ExpLeagueServer.setConfig(new ExpLeagueServer.ServerCfg(load));
-
-    final ActorSystem system = ActorSystem.create("ExpLeague", load);
-    system.actorOf(ActorAdapter.props(XMPP.class), "xmpp");
-    system.actorOf(ActorAdapter.props(LaborExchange.class), "labor-exchange");
-    system.actorOf(ActorAdapter.props(XMPPServices.class), "services");
-    system.actorOf(ActorAdapter.props(XMPPServer.class), "comm");
-  }
 }

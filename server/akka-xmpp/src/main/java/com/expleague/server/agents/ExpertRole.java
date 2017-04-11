@@ -71,6 +71,8 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     when(State.READY,
         matchEvent(Presence.class,
             (presence, task) -> presence.available() || presence.to() != null ? stay() : goTo1(State.OFFLINE)
+        ).event(ActorRef.class, // broker
+            (offer, task) -> stay().replying(self())
         ).event(Offer.class,
             (offer, task) -> {
               explain("Offer received appending as variant");
@@ -107,7 +109,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
             task.removeVariant(sender());
             return stay();
           }
-        )
+        ).event(Message.class, (message, task) -> stay())
     );
     when(State.CHECK,
         matchEvent(Presence.class,
@@ -354,12 +356,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     }
 
     public Variants removeVariant(ActorRef broker) {
-      final Iterator<TaskOption> iterator = taskOptions.iterator();
-      while (iterator.hasNext()) {
-        if (iterator.next().getBroker().equals(broker)) {
-          iterator.remove();
-        }
-      }
+      taskOptions.removeIf(taskOption -> taskOption.getBroker().equals(broker));
       return this;
     }
 

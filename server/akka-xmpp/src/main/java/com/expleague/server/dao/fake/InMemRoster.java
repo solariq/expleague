@@ -51,7 +51,12 @@ public class InMemRoster implements Roster {
       }
     }
     if (associated == null) {
-      associated = new XMPPUser(query.username(), query.country(), query.city(), query.name(), 0, 0, new Date(), query.avatar(), query.trusted() ? ExpertsProfile.Authority.ADMIN : ExpertsProfile.Authority.EXPERT);
+      final ExpertsProfile.Authority authority;
+      if (query.expert())
+        if (query.trusted()) authority = ExpertsProfile.Authority.ADMIN;
+        else authority = ExpertsProfile.Authority.EXPERT;
+      else authority = ExpertsProfile.Authority.NONE;
+      associated = new XMPPUser(query.username(), query.country(), query.city(), query.name(), 0, 0, new Date(), query.avatar(), authority);
       users.put(associated.id(), associated);
       log.log(Level.INFO, "Created new user " + associated.name());
     }

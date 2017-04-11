@@ -39,6 +39,8 @@ public class Bot {
 
   protected final Jaxmpp jaxmpp = new Jaxmpp(new J2SESessionObject());
   private final BlockingQueue<Message> messagesQueue = new LinkedBlockingQueue<>();
+  private boolean registered = false;
+  final StateLatch latch = new StateLatch();
 
   public Bot(final BareJID jid, final String passwd, String resource) {
     this(jid, passwd, resource, null);
@@ -62,7 +64,6 @@ public class Bot {
   public void start() throws JaxmppException {
     jaxmpp.getModulesManager().register(new InBandRegistrationModule());
     jaxmpp.getSessionObject().setProperty(InBandRegistrationModule.IN_BAND_REGISTRATION_MODE_KEY, Boolean.TRUE);
-    final StateLatch latch = new StateLatch();
     latch.state(1);
     jaxmpp.getEventBus().addHandler(
         InBandRegistrationModule.ReceivedRequestedFieldsHandler.ReceivedRequestedFieldsEvent.class,
@@ -145,24 +146,29 @@ public class Bot {
     jaxmpp.getEventBus().addHandler(PresenceModule.ContactAvailableHandler.ContactAvailableEvent.class,
         (sessionObject, presence, jid, show, s, integer) -> System.out.println(jid + " available with message " + presence.getStatus()));
 
-    jaxmpp.login();
-    latch.state(2, 1);
     System.out.println("Logged in");
 
-    { //Online
+    registered = true;
+    online();
+  }
+
+  public void online() throws JaxmppException {
+    if (jaxmpp.isConnected())
+      return;
+    if (!registered) {
+      start();
+    }
+    else {
       final Presence stanza = Presence.create();
+      jaxmpp.login();
+      latch.state(2, 1);
       jaxmpp.send(stanza);
       System.out.println("Online presence sent");
     }
   }
 
   public void stop() throws JaxmppException {
-    { //Offline
-      final Presence presence = Presence.create();
-      presence.setShow(Presence.Show.xa);
-      jaxmpp.send(presence);
-      System.out.println("Sent offline presence");
-    }
+    offline();
 
     final IQ iq = IQ.create();
     iq.setType(StanzaType.set);
@@ -175,7 +181,15 @@ public class Bot {
     jaxmpp.getEventBus().addHandler(JaxmppCore.DisconnectedHandler.DisconnectedEvent.class, sessionObject -> latch.advance());
     jaxmpp.send(iq);
     jaxmpp.disconnect();
+    registered = false;
     latch.state(2, 1);
+  }
+
+  public void offline() throws JaxmppException {
+    if (jaxmpp.isConnected()) {
+      jaxmpp.disconnect();
+      System.out.println("Sent offline presence");
+    }
   }
 
   public BareJID jid() {

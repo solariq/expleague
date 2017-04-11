@@ -90,9 +90,9 @@ public class UserAgent extends PersistentActorAdapter {
     else {
       if (option.isDefined())
         context().stop(option.get());
-      if (connected.size() == 1)
-        invoke(new Presence(deviceJid, false));
       connected.remove(resource);
+      if (connected.isEmpty())
+        invoke(new Presence(jid(), false));
     }
   }
 
@@ -247,7 +247,7 @@ public class UserAgent extends PersistentActorAdapter {
       final String id = delivered.id();
       if (confirmationAwaitingStanzas.remove(id)) {
         final Stanza remove = inFlight.remove(id);
-        XMPP.whisper(remove.from(), new Delivered(id), context());
+        XMPP.whisper(remove.from(), delivered, context());
         nextChunk();
         context().parent().forward(delivered, context());
         NotificationsManager.delivered(id, connectedDevice, context());

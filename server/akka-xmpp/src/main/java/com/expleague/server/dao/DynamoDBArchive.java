@@ -177,6 +177,11 @@ public class DynamoDBArchive implements Archive {
         public JID owner() {
           return XMPP.jid();
         }
+
+        @Override
+        public int size() {
+          return stanzas.size();
+        }
       };
     }
     return dumpsCache.get(local, id -> {
@@ -276,6 +281,11 @@ public class DynamoDBArchive implements Archive {
           return this.jid = jid;
       }
       return null;
+    }
+
+    @Override
+    public int size() {
+      return messages.size();
     }
 
     private BlockingQueue<Message> roomAccumulatedChangesQueue;

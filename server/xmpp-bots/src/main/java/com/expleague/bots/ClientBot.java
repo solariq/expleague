@@ -14,7 +14,7 @@ import tigase.jaxmpp.core.client.xmpp.stanzas.Message;
  * Time: 21:10
  */
 public class ClientBot extends Bot {
-  public ClientBot(final BareJID jid, final String passwd) throws JaxmppException {
+  public ClientBot(final BareJID jid, final String passwd) {
     super(jid, passwd, "client");
   }
 }

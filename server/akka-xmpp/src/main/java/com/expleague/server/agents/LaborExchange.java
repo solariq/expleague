@@ -142,12 +142,12 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
     }
 
     @ActorMethod
-    public void invoke(Offer offer) {
-      log.fine("Experts department received offer " + offer.room().local());
+    public void invoke(ActorRef actor) {
+      log.fine("Experts department received request from broker");
       JavaConversions.asJavaCollection(context().children()).forEach(
           expert -> {
             log.finest("Forwarding offer to " + Experts.jid(expert));
-            expert.forward(offer, context());
+            expert.forward(actor, context());
           }
       );
     }

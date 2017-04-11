@@ -182,7 +182,6 @@ public class ConnectedPhase extends XMPPPhase {
   @ActorMethod
   public void invoke(Close close) throws Exception {
     if (agent != null) {
-      agent.tell(new Presence(jid, false), self());
       agent.tell(new UserAgent.ConnStatus(false, jid.resource(), device), self());
     }
   }

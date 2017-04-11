@@ -46,7 +46,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
     when(State.UNEMPLOYED,
         matchEvent(ExpLeagueOrder.class,
             (order, zero) -> {
-              explain("Received new order: " + order + ".");
+              explain("Received new order: " + order.id() + ".");
               sender().tell(new Ok(), self());
               order.broker(self());
 
@@ -366,7 +366,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
   }
 
   private FSM.State<State, ExpLeagueOrder.Status> cancelTask(ExpLeagueOrder.Status orderStatus) {
-    explain("The order was canceled by client. Sending all experts cancel.");
+    explain("The order was canceled by client. Sending cancel to " + orderStatus.experts().count() + " expert(s).");
     orderStatus.experts().forEach(jid -> Experts.tellTo(jid, new Cancel(), self(), context()));
     orderStatus.cancel();
     return goTo(State.UNEMPLOYED).using(null);
@@ -384,7 +384,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
       jid -> Experts.tellTo(jid, new Cancel(), self(), context())
     );
     orderStatus.nextRound();
-    experts(context()).tell(orderStatus.order().offer(), self());
+    experts(context()).tell(self(), self());
     return stateName() != State.STARVING ? goTo(State.STARVING) : stay();
   }
 

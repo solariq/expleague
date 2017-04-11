@@ -1,6 +1,7 @@
 package com.expleague.util.akka;
 
 import akka.actor.Actor;
+import akka.actor.UntypedActor;
 import com.spbsu.commons.func.Action;
 import com.spbsu.commons.system.RuntimeUtils;
 
@@ -16,11 +17,11 @@ import java.util.List;
 public class ActorInvokeDispatcher<A extends ActorAdapter> {
   private final List<Dispatcher> dispatchSequence = new ArrayList<>();
 
-  public ActorInvokeDispatcher(final Actor actor, final AdapterProps[] props, final Action<Object> unhandledCallback) {
+  public ActorInvokeDispatcher(final UntypedActor actor, final AdapterProps[] props, final Action<Object> unhandledCallback) {
     this(actor, props, unhandledCallback, ActorMethod.class);
   }
 
-  public ActorInvokeDispatcher(final Actor actor, final AdapterProps[] props, Action<Object> unhandledCallback, Class<? extends Annotation> annotation) {
+  public ActorInvokeDispatcher(final UntypedActor actor, final AdapterProps[] props, Action<Object> unhandledCallback, Class<? extends Annotation> annotation) {
     Action<Object> currentUnhandledCallback = unhandledCallback;
     for (AdapterProps p : props) {
       try {
