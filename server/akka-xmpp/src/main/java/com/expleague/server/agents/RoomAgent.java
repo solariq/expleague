@@ -102,7 +102,7 @@ public class RoomAgent extends PersistentActorAdapter {
 
     persist(message, msg -> {
       archive(msg);
-      if (msg.to().resource().isEmpty()) // process only messages
+      if (msg.to() != null && msg.to().resource().isEmpty()) // process only messages
         process(msg, ProcessMode.NORMAL);
       broadcast(msg);
     });

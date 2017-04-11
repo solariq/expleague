@@ -125,7 +125,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     if (msg.has(Start.class)) {
       update(msg.from(), Role.PARTICIPANT, Affiliation.MEMBER, ProcessMode.NORMAL);
     }
-    return super.filter(msg);
+    return msg.has(Cancel.class) || super.filter(msg);
   }
 
   public void process(Message msg, ProcessMode mode) {
