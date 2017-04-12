@@ -5,6 +5,8 @@
 
 import Foundation
 import UIKit
+import FBSDKCoreKit
+import unSearchCore
 
 class OrderDetailsView: UIView {
     let scrollView = UIScrollView()
@@ -65,39 +67,19 @@ class OrderDetailsView: UIView {
         self.navigationItem.rightBarButtonItem = nil
     }
     
+    let renderer = BNHtmlPdfKit(pageSize: BNPageSizeA4)!
     func shareAnswer() {
-        let fmt = UIMarkupTextPrintFormatter(markupText: self.controller.answerText)
-        
-        // 2. Assign print formatter to UIPrintPageRenderer
-        
-        let render = UIPrintPageRenderer()
-        render.addPrintFormatter(fmt, startingAtPageAt: 0)
-        
-        // 3. Assign paperRect and printableRect
-        
-        let page = CGRect(x: 0, y: 0, width: 595.2, height: 841.8) // A4, 72 dpi
-        let printable = page.insetBy(dx: 0, dy: 0)
-        
-        render.setValue(NSValue(cgRect: page), forKey: "paperRect")
-        render.setValue(NSValue(cgRect: printable), forKey: "printableRect")
-        
-        // 4. Create PDF context and draw
-        
-        let pdfData = NSMutableData()
-        UIGraphicsBeginPDFContextToData(pdfData, CGRect.zero, nil)
-        
-        for i in 1...render.numberOfPages {
-            
-            UIGraphicsBeginPDFPage();
-            let bounds = UIGraphicsGetPDFContextBounds()
-            render.drawPage(at: i - 1, in: bounds)
-        }
-        
-        UIGraphicsEndPDFContext();
-        
-        let objectsToShare = [pdfData]
-        let activityVC = UIActivityViewController(activityItems: objectsToShare, applicationActivities: nil)
-        controller.present(activityVC, animated: true, completion: nil)
+        let path = Bundle.main.bundlePath
+        let baseURL = URL(fileURLWithPath: path);
+        let html = "<html><head>\n"
+            + "<link rel=\"stylesheet\" href=\"markdownpad-github-pdf.css\"></head>"
+            + "<body>\(controller.answerText)</body></html>"
+        let temp = URL(fileURLWithPath: NSTemporaryDirectory())
+        let pdfUrl = URL(string: "unSearch-answer-" + controller.data.order.id + ".pdf", relativeTo: temp)
+        renderer.delegate = self
+        renderer.baseUrl = baseURL
+        renderer.saveHtml(asPdf: html, toFile: pdfUrl!.path)
+        FBSDKAppEvents.logEvent("Share answer", parameters: ["user": ExpLeagueProfile.active.jid.user, "room": controller.data.order.id])
     }
     
     func adjustScroll() {
@@ -138,6 +120,7 @@ class OrderDetailsView: UIView {
         separator.translatesAutoresizingMaskIntoConstraints = false
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         answerView.translatesAutoresizingMaskIntoConstraints = false
+        answerView.dataDetectorTypes = [.all]
         messagesView.translatesAutoresizingMaskIntoConstraints = false
         bottomView.translatesAutoresizingMaskIntoConstraints = false
         let pullGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
@@ -187,6 +170,14 @@ class OrderDetailsView: UIView {
 
     var gestureBegin: CGFloat = 0
     var gestureBeginOffset: CGFloat = 0
+}
+
+extension OrderDetailsView: BNHtmlPdfKitDelegate {
+    func htmlPdfKit(_ htmlPdfKit: BNHtmlPdfKit!, didSavePdfFile file: String!) {
+        let objectsToShare = [URL(fileURLWithPath: file)]
+        let activityVC = UIActivityViewController(activityItems: objectsToShare, applicationActivities: nil)
+        controller.present(activityVC, animated: true, completion: nil)
+    }
 }
 
 extension OrderDetailsView: UIGestureRecognizerDelegate {

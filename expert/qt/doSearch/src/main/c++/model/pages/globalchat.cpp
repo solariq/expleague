@@ -6,11 +6,19 @@ namespace expleague {
 
 QString GlobalChat::ID = "league/global-chat";
 
-void GlobalChat::enter(RoomStatus* room) const {
+void GlobalChat::enter(RoomStatus* room) {
+    if (m_focus) {
+        Task* task = m_focus->task();
+        m_owner->removeDocument(task->answer());
+        task->exit();
+    }
+    m_focus = room;
     if (!room)
         return;
-    room->enter();
-    m_owner->setActiveDocument(room->task()->answer());
+    Task* task = room->task();
+    task->enter();
+    m_owner->appendDocument(task->answer());
+    m_owner->setActiveDocument(task->answer());
 }
 
 int GlobalChat::openCount() {
@@ -61,6 +69,7 @@ void GlobalChat::interconnect() {
 void GlobalChat::onConnectionChanged() {
     QList<RoomStatus*> rooms = m_rooms;
     m_rooms.clear();
+    m_focus = 0;
     //    QTimer::singleShot(100, this, [rooms](){
     foreach (RoomStatus* state, rooms) {
         state->clearMembers();
@@ -240,10 +249,6 @@ void RoomStatus::clearMembers() {
 
 QString RoomStatus::roomId() const {
     return xmpp::user(jid());
-}
-
-void RoomStatus::enter() {
-    task()->enter();
 }
 
 GlobalChat* RoomStatus::parent() const {

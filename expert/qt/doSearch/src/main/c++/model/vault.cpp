@@ -153,7 +153,7 @@ GroupKnugget::GroupKnugget(const QString &id, Context* source, doSearch *parent)
     QVariant name = value("knugget.name");
     m_name = name.isNull() ? tr("Новая группа") : value("knugget.name").toString();
 
-    visitKeys("knugget.element", [this, parent](const QVariant& value) {
+    visitValues("knugget.element", [this, parent](const QVariant& value) {
         m_items.append(qobject_cast<Knugget*>(parent->page(value.toString())));
     });
     QVariant parentGroup = value("knugget.parent");
@@ -166,7 +166,7 @@ GroupKnugget::GroupKnugget(const QString &id, doSearch *parent):
     QVariant name = value("knugget.name");
     m_name = name.isNull() ? tr("Новая группа") : value("knugget.name").toString();
 
-    visitKeys("knugget.element", [this, parent](const QVariant& value) {
+    visitValues("knugget.element", [this, parent](const QVariant& value) {
         m_items.append(qobject_cast<Knugget*>(parent->page(value.toString())));
     });
     QVariant parentGroup = value("knugget.parent");

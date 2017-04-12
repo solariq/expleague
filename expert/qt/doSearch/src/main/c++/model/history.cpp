@@ -80,7 +80,7 @@ Page* History::current() const {
 
 void History::interconnect() {
     Page::interconnect();
-    visitKeys("history", [this](const QVariant& val) {
+    visitValues("history", [this](const QVariant& val) {
         m_story.append(PageVisit::fromVariant(val, this));
     });
     m_cursor = m_story.size() - 1;

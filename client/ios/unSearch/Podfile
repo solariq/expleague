@@ -2,8 +2,14 @@ platform :ios, '8.0'
 
 use_frameworks!
 
-target 'unSearch' do
+def commonPods
+  pod 'XMPPFramework', :git => "https://github.com/robbiehanson/XMPPFramework.git", :branch => 'master'
   pod 'ReachabilitySwift'
+end
+
+target 'unSearch' do
+  commonPods
+  pod 'BNHtmlPdfKit', :git => 'https://github.com/brentnycum/BNHtmlPdfKit'
   pod 'GoogleMaps'
   pod 'GooglePlacePicker'
   pod 'FBSDKCoreKit'
@@ -12,20 +18,19 @@ target 'unSearch' do
 end
 
 target 'unSearchCore' do
-  pod 'ReachabilitySwift'
-  pod 'XMPPFramework', :git => "https://github.com/robbiehanson/XMPPFramework.git", :branch => 'master'
+  commonPods
   pod 'MMMarkdown'
 end
 
 target 'SiriOrderHandler' do
-   pod 'XMPPFramework', :git => "https://github.com/robbiehanson/XMPPFramework.git", :branch => 'master'
+  commonPods
 end
 
-post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      config.build_settings['ENABLE_BITCODE'] = 'NO'
-    end
-  end
-end
+#post_install do |installer|
+#  installer.pods_project.targets.each do |target|
+#    target.build_configurations.each do |config|
+#      config.build_settings['ENABLE_BITCODE'] = 'NO'
+#    end
+#  end
+#end
 

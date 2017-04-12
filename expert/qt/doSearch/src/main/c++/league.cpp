@@ -48,7 +48,7 @@ void League::connect() {
     QObject::connect(m_connection, SIGNAL(cancel(const Offer&)), SLOT(onCancel(const Offer&)));
     QObject::connect(m_connection, SIGNAL(tag(TaskTag*)), SLOT(onTag(TaskTag*)));
     QObject::connect(m_connection, SIGNAL(pattern(AnswerPattern*)), SLOT(onPattern(AnswerPattern*)));
-    QObject::connect(m_connection, SIGNAL(chatTemplate(QString,QString)), SLOT(onChatTemplate(QString,QString)));
+    QObject::connect(m_connection, SIGNAL(chatTemplate(QString,QString,QString)), SLOT(onChatTemplate(QString,QString,QString)));
     QObject::connect(m_connection, SIGNAL(message(QString,QString,QString,QString)), SLOT(onMessage(QString,QString,QString,QString)));
     QObject::connect(m_connection, SIGNAL(image(QString,QString,QString,QUrl)), SLOT(onImage(QString,QString,QString,QUrl)));
     QObject::connect(m_connection, SIGNAL(answer(QString,QString,QString,QString)), SLOT(onAnswer(QString,QString,QString,QString)));
@@ -156,9 +156,9 @@ Offer* League::registerOffer(const Offer& offer) {
         return m_offers[roomId];
     Offer* const result = new Offer(offer.toXml(), this);
     if (m_offers.contains(roomId)) {
-        Task* const task = m_tasks[roomId];
-        if (task)
-            task->setOffer(result);
+        auto task = m_tasks.find(roomId);
+        if (task != m_tasks.end())
+            (*task)->setOffer(result);
     }
     m_offers[roomId] = result;
     result->start();
@@ -190,6 +190,10 @@ void League::onDisconnected() {
         offer->deleteLater();
     }
     m_offers.clear();
+    m_patterns.clear();
+    m_tags.clear();
+    m_chat_templates.clear();
+    m_chat_template_contents.clear();
     connection->deleteLater();
     if (m_reconnect)
         QTimer::singleShot(500, this, &League::connect);
@@ -333,10 +337,11 @@ void League::onPattern(AnswerPattern* pattern) {
     emit patternsChanged();
 }
 
-void League::onChatTemplate(const QString& type, const QString& pattern) {
-    if (m_chat_templates[type].contains(pattern))
+void League::onChatTemplate(const QString& type, const QString& name, const QString& pattern) {
+    if (m_chat_templates[type].contains(name))
         return;
-    m_chat_templates[type].append(pattern);
+    m_chat_templates[type].append(name);
+    m_chat_template_contents[name] = pattern;
     emit chatPatternsChanged();
 }
 
@@ -358,13 +363,17 @@ Task* League::task(const QString& roomId) {
     auto existing = m_tasks.find(room);
     if (existing != m_tasks.end())
         return existing.value();
+    if (!m_connection)
+        return 0;
 //    qDebug() << "Creating task for room: " << room;
     Task* const newOne = new Task(room + "@muc." + xmpp::domain(m_connection->jid()), this);
     auto offerPtr = m_offers.find(roomId);
     if (offerPtr != m_offers.end())
         newOne->setOffer(*offerPtr);
-//    QObject::connect(m_connection, SIGNAL(roomStatus(QString,int)), newOne, SLOT(onStatusChanged(QString,int)));
     m_tasks[room] = newOne;
+    QObject::connect(newOne, &Task::destroyed, [this, room]() {
+        m_tasks.remove(room);
+    });
     emit tasksChanged();
     return newOne;
 }
@@ -397,12 +406,6 @@ QStringList League::experts() const {
             result.append(name);
     }
     return result;
-}
-
-void League::setAdminFocus(const QString& room) {
-    if (!m_admin_focus.isEmpty() && m_connection)
-        m_connection->sendPresence(m_admin_focus, false);
-    m_admin_focus = room;
 }
 
 void Member::append(RoomStatus* room) {

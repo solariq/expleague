@@ -27,7 +27,7 @@ QString toString(const QVariant& var);
 QVariant fromString(const QString& s);
 
 LevelDBContainer& PersistentPropertyHolder::getLevelDBCotainer(){
-    static LevelDBContainer container("pages");
+    static LevelDBContainer container("pages/db");
     return container;
 }
 
@@ -58,7 +58,7 @@ void PersistentPropertyHolder::store(const QString& key, const QVariant& value) 
     m_changes++;
 }
 
-void PersistentPropertyHolder::visitKeys(const QString& key, std::function<void (const QVariant& value)> visitor) const {
+void PersistentPropertyHolder::visitValues(const QString& key, std::function<void (const QVariant& value)> visitor) const {
     QVariant value = this->value(key);
     if (value.canConvert(QVariant::List)) {
         foreach(const QVariant& val, value.toList()) {
@@ -70,6 +70,9 @@ void PersistentPropertyHolder::visitKeys(const QString& key, std::function<void 
     else if (!value.isNull()) {
         visitor(value);
     }
+}
+
+void PersistentPropertyHolder::visitKeys(const QString& /*key*/, std::function<void (const QString& value)> /*visitor*/) const {
 }
 
 void PersistentPropertyHolder::append(const QString& key, const QVariant& value) {
@@ -171,7 +174,7 @@ void PersistentPropertyHolder::save() const {
 }
 
 PersistentPropertyHolder::PersistentPropertyHolder(const QString& pname):
-    m_page(pname), batch(){
+    m_page(pname) {
 }
 
 

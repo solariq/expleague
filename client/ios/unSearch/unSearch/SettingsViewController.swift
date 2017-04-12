@@ -22,6 +22,8 @@ class AboutViewController: UIViewController {
     @IBOutlet weak var inviteButton: UIButton!
 
     @IBAction func invite(_ sender: AnyObject) {
+        FBSDKAppEvents.logEvent("Invite", parameters: ["user": ExpLeagueProfile.active.jid.user])
+
         let alert = UIAlertController(title: "Оставьте заявку", message: "С целью сохранения высокого качества работы экспертов и отсутствия очередей, доступ к приложению в данный момент ограничен. Оставьте e-mail вашего друга, и мы свяжемся с ним как только появится возможность.", preferredStyle: .alert)
         alert.addTextField { (text: UITextField) -> Void in
             text.placeholder = "Введите адрес"

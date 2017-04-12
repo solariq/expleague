@@ -137,8 +137,8 @@ ApplicationWindow {
         id: inviteDialog
         objectName: "invite"
         visible: false
-        x: (self.width / 2) - (width / 2)
-        y: 20
+        x: (Qt.platform.os == "windows" ? self.x : 0) + (self.width - width) / 2
+        y: (Qt.platform.os == "windows" ? self.y : 0) + (self.y + dosearch.main.height - height) / 4
 
         onAccepted: root.league.acceptInvitation(inviteDialog.offer)
         onRejected: root.league.rejectInvitation(inviteDialog.offer)
@@ -147,8 +147,8 @@ ApplicationWindow {
     TagsDialog {
         id: tagsDialog
         visible: false
-        x: (self.width / 2) - (width / 2)
-        y: 20
+        x: (Qt.platform.os == "windows" ? self.x : 0) + (self.width - width) / 2
+        y: (Qt.platform.os == "windows" ? self.y : 0) + (self.y + dosearch.main.height - height) / 4
 
         league: root.league
     }
@@ -157,15 +157,15 @@ ApplicationWindow {
         id: selectProfile
         visible: false
         objectName: "selectProfile"
-        x: self.width / 2 - width / 2
-        y: 20
+        x: (Qt.platform.os == "windows" ? self.x : 0) + (self.width - width) / 2
+        y: (Qt.platform.os == "windows" ? self.y : 0) + (self.y + dosearch.main.height - height) / 4
     }
 
     SuggestDialog {
         id: suggestDialog
         visible: false
-        x: self.width / 2 - width / 2
-        y: 20
+        x: (Qt.platform.os == "windows" ? self.x : 0) + (self.width - width) / 2
+        y: (Qt.platform.os == "windows" ? self.y : 0) + (self.y + dosearch.main.height - height) / 4
         page: dosearch.navigation.activePage
         suggest: dosearch.navigation.context
     }
@@ -196,8 +196,8 @@ ApplicationWindow {
     ProfileWizard {
         id: createProfile
         visible: false
-        x: self.width / 2 - width / 2
-        y: 20
+        x: (Qt.platform.os == "windows" ? self.x : 0) + (self.width - width) / 2
+        y: (Qt.platform.os == "windows" ? self.y : 0) + (self.y + dosearch.main.height - height) / 4
     }
 
     Action {
@@ -577,13 +577,13 @@ ApplicationWindow {
 
         DropShadow {
             visible: !!activeDialog && !!activeDialog["forceActiveFocus"]
-            anchors.fill: activeDialog
+            anchors.fill: !!activeDialog && !!activeDialog["forceActiveFocus"] ? activeDialog : null
             cached: true
             radius: 8.0
             samples: 16
             spread: 0.4
             color: "#80000000"
-            source: activeDialog
+            source: !!activeDialog && !!activeDialog["forceActiveFocus"] ? activeDialog : null
         }
 
         Vault {

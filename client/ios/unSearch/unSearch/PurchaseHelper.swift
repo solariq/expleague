@@ -34,7 +34,7 @@ class PurchaseHelper: NSObject {
                 if queue[id] == nil {
                     queue[id] = []
                 }
-                queue[id]?.append(callback)
+                queue[id]!.append(callback)
                 SKPaymentQueue.default().add(SKPayment(product: product))
             }
             else {
@@ -106,18 +106,26 @@ extension PurchaseHelper: SKPaymentTransactionObserver {
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         print("\(transactions.count) payment transactions finished")
         for transaction in transactions {
-            print("\t\(transaction.payment.productIdentifier) -> \(transaction.transactionState)")
+            print("\t\(transaction.payment.productIdentifier) -> \(transaction.transactionState.rawValue)")
             switch transaction.transactionState {
             case .purchased, .restored:
-                let callback = self.queue[transaction.payment.productIdentifier]?.removeFirstOrNone()
-                callback?(.accepted, transaction.transactionIdentifier)
+                if let callback = self.queue[transaction.payment.productIdentifier]?.removeFirstOrNone() {
+                    callback(.accepted, transaction.transactionIdentifier)
+                }
+                else {
+                    print("Unable to find callback for payment!")
+                }
                 SKPaymentQueue.default().finishTransaction(transaction)
             case .failed:
-                let callback = self.queue[transaction.payment.productIdentifier]?.removeFirstOrNone()
-                callback?(.rejected, nil)
+                if let callback = self.queue[transaction.payment.productIdentifier]?.removeFirstOrNone() {
+                    callback(.accepted, transaction.transactionIdentifier)
+                }
+                else {
+                    print("Unable to find callback for payment!")
+                }
                 SKPaymentQueue.default().finishTransaction(transaction)
-            default:
-                break;
+            case .deferred, .purchasing:
+                break
             }
         }
     }

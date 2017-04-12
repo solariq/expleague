@@ -27,7 +27,7 @@ class ChatCell: UITableViewCell {
 }
 
 class SimpleChatCell: ChatCell {
-    @IBOutlet weak var separator: UIView!
+    @IBOutlet weak var separator: UIView?
     var action: (() -> Void)?
     @IBAction func fire(_ sender: UIButton) {
         action?()
@@ -43,13 +43,13 @@ class SimpleChatCell: ChatCell {
     var actionHighlighted = false {
         didSet {
             if (actionHighlighted) {
-                separator.isHidden = true
+                separator?.isHidden = true
                 button.backgroundColor = controlColor
                 button.setTitleColor(UIColor.white, for: UIControlState())
                 button.setTitleColor(UIColor.white, for: .selected)
             }
             else {
-                separator.isHidden = false
+                separator?.isHidden = false
                 button.backgroundColor = UIColor.white
                 button.setTitleColor(controlColor, for: UIControlState())
                 button.setTitleColor(controlColor, for: .selected)
@@ -172,11 +172,13 @@ class AttachmentCell: UICollectionViewCell {
 
 
 class MessageChatCell: ChatCell {
-    //    @IBOutlet weak var avatar: UIImageView!
-    @IBOutlet var content: UIView!
+    @IBOutlet weak var avatar: AvatarView? = nil
+    @IBOutlet weak var content: UIView!
+    @IBOutlet weak var widthConstraint: NSLayoutConstraint!
+    @IBOutlet weak var avatarWidth: NSLayoutConstraint?
     
     var maxWidth: CGFloat {
-        return frame.width - 48
+        return avatar?.isHidden ?? false ? frame.width - 48 : frame.width - 48 - (avatar?.frame.width ?? 0)
     }
     
     override func awakeFromNib() {
@@ -256,6 +258,20 @@ class LookingForExpertCell: SimpleChatCell {
         LookingForExpertCell.heightFromNib = frame.height
     }
 }
+
+class ReopenRoomCell: SimpleChatCell {
+    static var heightFromNib: CGFloat = 35;
+    override class var height: CGFloat {
+        return ReopenRoomCell.heightFromNib;
+    }
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        controlColor = Palette.CONTROL
+        ReopenRoomCell.heightFromNib = frame.height
+    }
+}
+
 
 class AnswerReceivedCell: TaskInProgressCell {
     @IBOutlet var stars: [UIImageView]!

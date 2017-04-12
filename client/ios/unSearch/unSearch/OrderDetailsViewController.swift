@@ -11,6 +11,7 @@ import UIKit
 import StoreKit
 import XMPPFramework
 import FBSDKCoreKit
+import QuickLook
 
 import unSearchCore
 
@@ -70,7 +71,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         automaticallyAdjustsScrollViewInsets = false
         addChildViewController(input)
         input.didMove(toParentViewController: self)
-        answerDelegate = AnswerDelegate(parent: self)
+        answerDelegate = AnswerDelegate(parent: self, view: answer)
         answer.delegate = answerDelegate
         input.delegate = self;
     }
@@ -140,22 +141,27 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
     fileprivate var shown = false
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        data.controller = self
-        data.sync(true)
         detailsView?.keyboardTracker.start()
-        enforceScroll = true
-        FBSDKAppEvents.logEvent("Task view", parameters: [
-            "order": data.order.id
-        ])
+        if (!shown) {
+            data.controller = self
+            data.sync(true)
+            enforceScroll = true
+            FBSDKAppEvents.logEvent("Task view", parameters: [
+                "order": data.order.id
+            ])
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        ExpLeagueProfile.active.selectedOrder = nil
+        if !(navigationController?.childViewControllers.contains(self) ?? false) {
+            ExpLeagueProfile.active.selectedOrder = nil
+            data.markAsRead()
+            data.controller = nil
+            
+            shown = false
+        }
         detailsView?.keyboardTracker.stop()
-        data.markAsRead()
-        data.controller = nil
-        shown = false
     }
 
     override func viewDidLayoutSubviews() {
@@ -177,7 +183,7 @@ class OrderDetailsViewController: UIViewController, ChatInputDelegate, ImageSend
         super.viewDidAppear(animated)
         
         tabBarController?.tabBar.isHidden = true
-        if (data.order.unreadCount == 0 && state == .ask) {
+        if (data.order.unread == 0 && state == .ask && !shown) {
             DispatchQueue.main.async {
                 let alert = UIAlertController(title: "unSearch", message: "Не забудьте оценить ответ эксперта!", preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
@@ -406,9 +412,8 @@ class FeedbackViewController: UIViewController {
     }
 }
 
-class AnswerDelegate: NSObject, UIWebViewDelegate {
+class AnswerDelegate: NSObject, UIWebViewDelegate, UIGestureRecognizerDelegate, QLPreviewControllerDataSource {
     func webView(_ webView: UIWebView, shouldStartLoadWith request: URLRequest, navigationType: UIWebViewNavigationType) -> Bool {
-        
         if let url = request.url , url.scheme == "unsearch" {
             if (url.path == "/chat-messages") {
                 if let indexStr = url.fragment, let index = Int(indexStr) {
@@ -426,8 +431,52 @@ class AnswerDelegate: NSObject, UIWebViewDelegate {
         return true
     }
     
+    var isImage: Bool = false
+    var imageUrl: URL? = nil
+    
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
+    }
+    
+    func gestureRecognizer(sender: UITapGestureRecognizer) {
+        guard sender.state == .ended else {
+            return
+        }
+        let touchPoint = sender.location(in: view)
+        let imageSRC = String(format: "document.elementFromPoint(%f, %f).src", touchPoint.x, touchPoint.y)
+        let src = view.stringByEvaluatingJavaScript(from: imageSRC)!.replacingOccurrences(of: "&amp;", with: "&")
+        if !src.isEmpty {
+            self.imageUrl = URL(string: src)
+            if (imageUrl != nil && imageUrl!.scheme != nil && imageUrl!.host != nil) {
+                isImage = true
+                let preview = QLPreviewController()
+                preview.dataSource = self
+                //parent.modalPresentationStyle = .fullScreen
+                //parent.present(preview, animated: false, completion: nil)
+                parent.navigationController?.show(preview, sender: self)
+            }
+            print("src: \(src)")
+        }
+    }
+    
+    func previewController(_ controller: QLPreviewController, previewItemAt index: Int) -> QLPreviewItem {
+        let cache = EVURLCache.storagePath(url: imageUrl!)
+        return cache != nil ? NSURL(fileURLWithPath: cache!) : imageUrl! as NSURL
+    }
+    
+    func numberOfPreviewItems(in controller: QLPreviewController) -> Int {
+        return imageUrl != nil ? 1 : 0
+    }
+    
     let parent: OrderDetailsViewController
-    init(parent: OrderDetailsViewController) {
+    let view: UIWebView
+    var gr: UITapGestureRecognizer!
+    init(parent: OrderDetailsViewController, view: UIWebView) {
         self.parent = parent
+        self.view = view
+        super.init()
+        gr = UITapGestureRecognizer(target: self, action: #selector(self.gestureRecognizer(sender:)))
+        gr.delegate = self
+        view.addGestureRecognizer(gr)
     }
 }

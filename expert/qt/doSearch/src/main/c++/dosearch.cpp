@@ -273,9 +273,9 @@ void doSearch::remove(Context* context, bool erase) {
         m_navigation->activate(next);
     }
     m_contexts.removeOne(context);
-    m_pages.remove(context->id());
     emit contextsChanged();
     if (erase) {
+        m_pages.remove(context->id());
         QDir contextDir(pageResource(context->id()));
         contextDir.removeRecursively();
     }

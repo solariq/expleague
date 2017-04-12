@@ -205,6 +205,13 @@ public:
     Q_INVOKABLE QUrl imageUrl(const QString& normalizeImageUrlForUI) const;
     Q_INVOKABLE QUrl normalizeImageUrlForUI(const QUrl& imageUrl) const;
 
+    Q_INVOKABLE QString templateContent(const QString& templateName) {
+        auto ptr = m_chat_template_contents.find(templateName);
+        if (ptr != m_chat_template_contents.end())
+            return *ptr;
+        return QString();
+    }
+
     Q_INVOKABLE Member* findMember(const QString& id) const;
     Q_INVOKABLE Member* findMemberByName(const QString& name) const;
     Q_INVOKABLE TaskTag* findTag(const QString& id) const;
@@ -232,9 +239,6 @@ public:
 
     GlobalChat* chat() const;
     Task* task(const QString& roomId);
-
-    QString adminFocus() const { return m_admin_focus; }
-    void setAdminFocus(const QString& room);
 
     void notifyIfNeeded(const QString& from, const QString& message, bool broadcast = false);
 
@@ -267,7 +271,7 @@ private slots:
 
     void onTag(TaskTag* tag);
     void onPattern(AnswerPattern* pattern);
-    void onChatTemplate(const QString& type, const QString& pattern);
+    void onChatTemplate(const QString& type, const QString& name, const QString& pattern);
     void onMessage(const QString& room, const QString& id, const QString& from, const QString& text);
     void onImage(const QString& room, const QString& id, const QString& from, const QUrl&);
     void onAnswer(const QString& room, const QString& id, const QString& from, const QString&);
@@ -305,6 +309,7 @@ private:
     QSet<QString> m_known_ids;
     QString m_admin_focus;
     QHash<QString, QStringList> m_chat_templates;
+    QHash<QString, QString> m_chat_template_contents;
 };
 
 class ImagesStoreResponse: public QQuickImageResponse {

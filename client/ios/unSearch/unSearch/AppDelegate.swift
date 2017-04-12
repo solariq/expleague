@@ -71,6 +71,41 @@ class AppDelegate: UIResponder {
             }
         }
     }
+    
+    func start() {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        tabs = storyboard.instantiateViewController(withIdentifier: "tabs") as! TabsViewController
+        self.window?.rootViewController = tabs
+        GMSServices.provideAPIKey(AppDelegate.GOOGLE_API_KEY)
+        GMSPlacesClient.provideAPIKey(AppDelegate.GOOGLE_API_KEY)
+        
+        if #available(iOS 10.0, *) {
+            INPreferences.requestSiriAuthorization() { (status: INSiriAuthorizationStatus) -> Void in
+                print(status)
+            }
+            INVocabulary.shared().setVocabularyStrings(["эксперт", "экспертов", "эксперта", "экспертам", "эксперту"], of: .contactGroupName)
+        }
+        let application = UIApplication.shared
+        application.registerForRemoteNotifications()
+        let settings = UIUserNotificationSettings(types: [.alert, .sound, .badge], categories: [])
+        application.registerUserNotificationSettings(settings)
+        application.isIdleTimerDisabled = false
+        DataController.shared().start()
+    }
+    
+    func onProfileChanged() {
+        let application = UIApplication.shared
+        application.applicationIconBadgeNumber = Int(ExpLeagueProfile.active.unread)
+        tabs.viewControllers?[1].tabBarItem.badgeValue = ExpLeagueProfile.active.unread > 0 ? "\(ExpLeagueProfile.active.unread)" : nil;
+        QObject.track(ExpLeagueProfile.active, #selector(ExpLeagueProfile.unreadChanged), tracker: {
+            let unread = Int(ExpLeagueProfile.active.unread)
+            DispatchQueue.main.async() {
+                application.applicationIconBadgeNumber = unread
+                self.tabs.viewControllers?[1].tabBarItem.badgeValue = unread > 0 ? "\(unread)" : nil;
+            }
+            return true
+        })
+    }
 }
 
 extension AppDelegate: UIApplicationDelegate {
@@ -82,31 +117,51 @@ extension AppDelegate: UIApplicationDelegate {
         EVURLCache.FORCE_LOWERCASE = true // is already the default. You also have to put all files int he PreCache using lowercase names
         EVURLCache.activate()
         
-        GMSServices.provideAPIKey(AppDelegate.GOOGLE_API_KEY)
-        GMSPlacesClient.provideAPIKey(AppDelegate.GOOGLE_API_KEY)
-        
-        DataController.shared().version = "unSearch \(AppDelegate.versionName()) @iOS \(ProcessInfo.processInfo.operatingSystemVersionString)"
+        let controller = DataController.shared()
+        controller.version = "unSearch \(AppDelegate.versionName()) @iOS \(ProcessInfo.processInfo.operatingSystemVersionString)"
+        QObject.connect(controller, signal: #selector(DataController.profileChanged), receiver: self, slot: #selector(self.onProfileChanged))
         NSSetUncaughtExceptionHandler({(e: NSException) -> () in
-            print("Starck trace: \(e.callStackSymbols)")
+            print("Stack trace: \(e.callStackSymbols)")
         })
-        if #available(iOS 10.0, *) {
-            INPreferences.requestSiriAuthorization() { (status: INSiriAuthorizationStatus) -> Void in
-                print(status)
-            }
-            INVocabulary.shared().setVocabularyStrings(["эксперт", "экспертов", "эксперта", "экспертам", "эксперту"], of: .contactGroupName)
-        }
-        
         window = UIWindow(frame: UIScreen.main.bounds)
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        DataController.shared().setupDefaultProfiles(UIDevice.current.identifierForVendor!.uuidString.hashValue)
-//        window?.rootViewController = DataController.shared().activeProfile != nil ? storyboard.instantiateViewController(withIdentifier: "tabs") : storyboard.instantiateInitialViewController()
-        window?.rootViewController = storyboard.instantiateViewController(withIdentifier: "tabs")
+        let onboard = UIStoryboard(name: "Onboard", bundle: nil)
+        if (!controller.initialized()) {
+            let pageControl = UIPageControl.appearance()
+            pageControl.pageIndicatorTintColor = Palette.CONTROL_BACKGROUND
+            pageControl.backgroundColor = UIColor.white
+            pageControl.currentPageIndicatorTintColor = Palette.CONTROL
+            let page1 = (onboard.instantiateViewController(withIdentifier: "onboardPage") as! OnboardPageViewController)
+                .build(text: "Нет времени на поиск? Необходимо разобраться в сложной теме? Оперативно решить проблему?", image: UIImage(named: "onBoarding_img1")!)
+            let page2 = (onboard.instantiateViewController(withIdentifier: "onboardPage") as! OnboardPageViewController)
+                .build(text: "Не тратьте время и нервы — для этого есть unSearch! Просто поручите поиск нам!", image: UIImage(named: "onBoarding_img2")!)
+            let page3 = (onboard.instantiateViewController(withIdentifier: "onboardPage") as! OnboardPageViewController)
+                .build(text: "Изучим сложный вопрос, обзвоним кого нужно, сравним и выберем лучшее, проверим наличие.", image: UIImage(named: "onBoarding_img3")!)
+            let page4 = (onboard.instantiateViewController(withIdentifier: "onboardPage") as! OnboardPageViewController)
+                .build(text: "Получите готовое решение: пошаговая инструкция, проверенная информация, отзывы и рейтинги.", image: UIImage(named: "onBoarding_img4")!)
+            let lastPage = (onboard.instantiateViewController(withIdentifier: "onboardPage") as! OnboardPageViewController)
+                        .build(text: "Мы помогли вам?\nУгостите эксперта чашечкой кофе!", image: UIImage(named: "onBoarding_img5")!) {
+                            controller.setupDefaultProfiles(UIDevice.current.identifierForVendor!.uuidString.hashValue)
+                            self.start()
+                        }
+    
+            let pages = [page1, page2, page3, page4, lastPage]
+            let onboardingVC = OnboardViewController(pages: pages)
+            for i in 0...pages.count - 1 {
+                let page = pages[i]
+                if (page.callback == nil) {
+                    page.callback = {
+                        onboardingVC.index = i + 1
+                        onboardingVC.setViewControllers([pages[i+1]], direction: .forward, animated: true, completion: nil)
+                    }
+                }
+            }
+            window?.rootViewController = onboardingVC
+        }
+        else {
+            start()
+        }
         window?.makeKeyAndVisible()
         
-        application.registerForRemoteNotifications()
-        let settings = UIUserNotificationSettings(types: [.alert, .sound], categories: [])
-        application.registerUserNotificationSettings(settings)
-        application.isIdleTimerDisabled = false
         return true
     }
     
@@ -141,6 +196,7 @@ extension AppDelegate: UIApplicationDelegate {
                 }
                 self.prepareBackground(application)
                 ExpLeagueProfile.active.suspend()
+                usleep(10000000) // let notifications pass
                 DispatchQueue.main.async {
                     completionHandler(.newData)
                 }
@@ -190,6 +246,7 @@ extension AppDelegate: UIApplicationDelegate {
             token += String(format: "%02.2hhx", arguments: [chars[i]])
         }
         DataController.shared().token = token
+        print(token)
     }
 }
 

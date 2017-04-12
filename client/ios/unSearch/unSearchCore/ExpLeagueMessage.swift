@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreData
+import CoreGraphics
 import XMPPFramework
 import MMMarkdown
 
@@ -36,18 +37,21 @@ public class ExpLeagueMessage: NSManagedObject {
     public var isSystem: Bool {
         return type == .system || type == .expertAssignment || type == .expertProgress
     }
-
+    
     public var read: Bool {
         get {
-            return properties["read"] as? String == "true"
+            return readInner?.boolValue ?? true
         }
         set (v) {
             guard v != read else {
                 return
             }
-            self.setProperty("read", value: NSString(string: v ? "true" : "false"))
-            self.parent.messagesChanged()
-            self.parent.notify()
+            updateSync {
+                self.readInner = NSNumber(value: v)
+                if (v) {
+                    self.parent.onMessageRead(message: self)
+                }
+            }
         }
     }
 
@@ -77,9 +81,17 @@ public class ExpLeagueMessage: NSManagedObject {
             }
             else {
                 let xml = try! DDXMLElement(xmlString: body!)
-                return parent.parent.expert(login: xml.attributeStringValue(forName: "login"), factory: {context in
-                    return ExpLeagueMember(xml: xml, context: context)
-                })
+                if (xml.attribute(forName: "login") != nil) {
+                    return parent.parent.expert(login: xml.attributeStringValue(forName: "login"), factory: {context in
+                        return ExpLeagueMember(xml: xml, context: context)
+                    })
+                }
+                else if (xml.attribute(forName: "jid") != nil){
+                    let jid = XMPPJID(string: xml.attributeStringValue(forName: "jid"))!
+                    return parent.parent.expert(login: jid.user, factory: {context in
+                        return ExpLeagueMember(xml: xml, context: context)
+                    })
+                }
             }
         }
         return parent.parent.expert(login: from)
@@ -108,10 +120,14 @@ public class ExpLeagueMessage: NSManagedObject {
         return nil
     }
     
+    fileprivate dynamic var _html: String?
     public var html: String {
-        return body!
+        if _html == nil {
+            _html = md2html(md: body!)
+        }
+        return _html!
     }
-    
+        
     public func setProperty(_ name: String, value: AnyObject) {
         let properties = NSMutableDictionary()
         properties.addEntries(from: self.properties)
@@ -122,16 +138,24 @@ public class ExpLeagueMessage: NSManagedObject {
         archiver.finishEncoding()
         updateSync {
             self.propertiesRaw = data.xmpp_base64Encoded()
+            _properties = nil
         }
     }
     
+    fileprivate var _properties: [String: AnyObject]? = nil
     public var properties: [String: AnyObject] {
+        guard _properties == nil else {
+            return _properties!
+        }
         if (self.propertiesRaw != nil) {
             let data = Data(base64Encoded: self.propertiesRaw!, options: [])
             let archiver = NSKeyedUnarchiver(forReadingWith: data!)
-            return archiver.decodeObject() as! [String: AnyObject]
+            _properties = (archiver.decodeObject() as! [String: AnyObject])
         }
-        return [:];
+        else {
+            _properties = [:]
+        }
+        return _properties!
     }
     
     public func visitParts(_ visitor: ExpLeagueMessageVisitor) {
@@ -161,6 +185,51 @@ public class ExpLeagueMessage: NSManagedObject {
         return properties["id"] as? String
     }
     
+    fileprivate func md2html(md: String) -> String {
+        if (!(body ?? "").hasPrefix("<answer")) {
+            return body!
+        }
+        do {
+            let answer = try! DDXMLElement(xmlString: body!)
+            var answerText = answer.stringValue ?? ""
+            if let firstLineEnd = answerText.range(of: "\n")?.lowerBound {
+                answerText = answerText.substring(from: firstLineEnd)
+            }
+            let re = try! NSRegularExpression(pattern: "\\+\\[([^\\]]+)\\]([^-]*(?:-[^\\[][^-]*)*)-\\[\\1\\]", options: [])
+            let matches = re.matches(in: answerText, options: [], range: NSRange(location: 0, length: (answerText.characters.count)))
+            
+            var finalMD = ""
+            var lastMatchIndex = answerText.startIndex
+            var index = 0
+            for match in matches as [NSTextCheckingResult] {
+                let whole = match.rangeAt(0)
+                let id = "cut-\(self.id!)-\(index)"
+                let id_1 = "cuts-\(self.id!)-1-\(index)"
+                finalMD += answerText.substring(with: lastMatchIndex..<answerText.index(answerText.startIndex, offsetBy: whole.location))
+                finalMD += "<a class=\"cut\" id=\"" + id_1 + "\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">" +
+                    (answerText as NSString).substring(with: match.rangeAt(1)) +
+                    "</a>" +
+                    "<div class=\"cut\" id=\"" + id + "\">" + (answerText as NSString).substring(with: match.rangeAt(2)) +
+                    "\n<a class=\"hide\" href=\"#\(id_1)\" onclick=\"javascript:showHide('" + id + "','" + id_1 + "')\">скрыть</a>" +
+                "</div>";
+                lastMatchIndex = answerText.index(answerText.startIndex, offsetBy: whole.location + whole.length)
+                index += 1
+            }
+            finalMD += answerText.substring(with: lastMatchIndex..<answerText.endIndex)
+            return try MMMarkdown.htmlString(withMarkdown: finalMD, extensions: [
+                .autolinkedURLs,
+                .fencedCodeBlocks,
+                .tables,
+                .underscoresInWords,
+                .strikethroughs,
+                .gitHubFlavored
+                ])
+        }
+        catch {
+            parent.parent.log("\(error)")
+        }
+        return ""
+    }
     
     init(msg: XMPPMessage, parent: ExpLeagueOrder, context: NSManagedObjectContext) {
         super.init(entity: NSEntityDescription.entity(forEntityName: "Message", in: context)!, insertInto: context)
@@ -231,46 +300,11 @@ public class ExpLeagueMessage: NSManagedObject {
             type = .expertProgress
         }
         else if let answer = msg.forName("answer", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME) {
-            do {
-                var answerText = answer.stringValue ?? ""
-                if let firstLineEnd = answerText.range(of: "\n")?.lowerBound {
-                    let shortAnswer = answerText.substring(to: firstLineEnd)
-                    answerText = answerText.substring(from: firstLineEnd)
-                    properties["short"] = shortAnswer
-                }
-//                answerText = answerText.stringByReplacingOccurrencesOfString("\t", withString: " ")
-                let re = try! NSRegularExpression(pattern: "\\+\\[([^\\]]+)\\]([^-]*(?:-[^\\[][^-]*)*)-\\[\\1\\]", options: [])
-                let matches = re.matches(in: answerText, options: [], range: NSRange(location: 0, length: (answerText.characters.count)))
-                
-                var finalMD = ""
-                var lastMatchIndex = answerText.startIndex
-                var index = 0
-                for match in matches as [NSTextCheckingResult] {
-                    let whole = match.rangeAt(0)
-                    let id = "cut-\(msg.attributeStringValue(forName: "id")!)-\(index)"
-                    let id_1 = "cuts-\(msg.attributeStringValue(forName: "id")!)-1-\(index)"
-                    finalMD += answerText.substring(with: lastMatchIndex..<answerText.index(answerText.startIndex, offsetBy: whole.location))
-                    finalMD += "<a class=\"cut\" id=\"" + id_1 + "\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">" +
-                                    (answerText as NSString).substring(with: match.rangeAt(1)) +
-                                "</a>" +
-                                "<div class=\"cut\" id=\"" + id + "\">" + (answerText as NSString).substring(with: match.rangeAt(2)) +
-                                    "\n<a class=\"hide\" href=\"#\(id_1)\" onclick=\"javascript:showHide('" + id + "','" + id_1 + "')\">скрыть</a>" +
-                                "</div>";
-                    lastMatchIndex = answerText.index(answerText.startIndex, offsetBy: whole.location + whole.length)
-                    index += 1
-                }
-                finalMD += answerText.substring(with: lastMatchIndex..<answerText.endIndex)
-                self.body = try MMMarkdown.htmlString(withMarkdown: finalMD, extensions: [
-                        .autolinkedURLs,
-                        .fencedCodeBlocks,
-                        .tables,
-                        .underscoresInWords,
-                        .strikethroughs,
-                        .gitHubFlavored
-                    ])
-            }
-            catch {
-                parent.parent.log("\(error)")
+            body = answer.xmlString
+            let answerText = answer.stringValue ?? ""
+            if let firstLineEnd = answerText.range(of: "\n")?.lowerBound {
+                let shortAnswer = answerText.substring(to: firstLineEnd)
+                properties["short"] = shortAnswer
             }
             type = .answer
         }

@@ -23,7 +23,6 @@ class RegionResolver: public QObject
 public:
     static void resolve(const QGeoCoordinate& coord, std::function<void (const QString&)> callback);
 
-
 public slots:
     void onFinished(QNetworkReply* request);
 

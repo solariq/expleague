@@ -4,7 +4,6 @@ TARGET = discount
 
 CONFIG += staticlib
 
-#CONFIG -= qt
 
 SOURCES = \
      mkdio.c markdown.c dumptree.c generate.c \

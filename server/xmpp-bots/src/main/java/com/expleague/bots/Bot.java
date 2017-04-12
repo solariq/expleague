@@ -3,6 +3,7 @@ package com.expleague.bots;
 import com.expleague.bots.utils.ItemToTigaseElementParser;
 import com.expleague.bots.utils.ReceivingMessage;
 import com.expleague.bots.utils.ReceivingMessageBuilder;
+import com.expleague.model.Offer;
 import com.expleague.model.Operations;
 import com.expleague.xmpp.Item;
 import com.spbsu.commons.util.sync.StateLatch;
@@ -43,7 +44,9 @@ public class Bot {
   protected final Jaxmpp jaxmpp = new Jaxmpp(new J2SESessionObject());
   private final BlockingQueue<com.expleague.xmpp.stanza.Message> messagesQueue = new LinkedBlockingQueue<>();
   private final StateLatch latch = new StateLatch();
+
   private boolean registered = false;
+  private boolean offerCheckReceived = false;
 
   public Bot(final BareJID jid, final String passwd, String resource) {
     this(jid, passwd, resource, null);
@@ -262,8 +265,17 @@ public class Bot {
     }
     final com.expleague.xmpp.stanza.Message stanza = Item.create(message.getAsString());
     if (stanza != null) {
+      if (stanza.has(Offer.class) && stanza.has(Operations.Check.class)) {
+        offerCheckReceived = true;
+      }
       messagesQueue.offer(stanza);
     }
+  }
+
+  public boolean isOfferCheckReceived() {
+    final boolean result = offerCheckReceived;
+    offerCheckReceived = false;
+    return result;
   }
 
   public static class PrinterAsyncCallback implements AsyncCallback {

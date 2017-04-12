@@ -183,7 +183,7 @@ internal class ExpLeagueCommunicator: NSObject {
         stream?.myJID = XMPPJID(string: profile.login + "@" + profile.domain + "/unSearch")
         stream?.startTLSPolicy = XMPPStreamStartTLSPolicy.required
         stream?.keepAliveInterval = 30
-//        stream.enableBackgroundingOnSocket = true
+        stream?.enableBackgroundingOnSocket = true
         super.init()
         stream?.addDelegate(self, delegateQueue: thread)
         state = ExpLeagueCommunicatorState(self, mode: .background, status: .idle)
@@ -393,8 +393,8 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
                 return false
             }
             let offer = ExpLeagueOffer(xml: offerXml)
-            let order = ExpLeagueOrder(offer.room, offer: offer, context: profile.managedObjectContext!)
-            profile.add(aow: order)
+            var order = ExpLeagueOrder(offer.room, offer: offer, context: profile.managedObjectContext!)
+            order = profile.add(aow: order)
             let content = query.forName("content", xmlns: "http://expleague.com/scheme/best-answer")
             for item in (content?.elements(forName: "message"))! {
                 let message = XMPPMessage(from: item)!
@@ -403,8 +403,8 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         }
         else if let query = iq.forName("query", xmlns: "http://expleague.com/scheme/dump-room") {
             let offer = ExpLeagueOffer(xml: query.forName("offer", xmlns: "http://expleague.com/scheme")!)
-            let order = ExpLeagueOrder(offer.room, offer: offer, context: profile.managedObjectContext!)
-            profile.add(order: order)
+            var order = ExpLeagueOrder(offer.room, offer: offer, context: profile.managedObjectContext!)
+            order = profile.add(order: order)
             let content = query.forName("content", xmlns: "http://expleague.com/scheme/dump-room")
             for item in (content?.elements(forName: "message"))! {
                 let message = XMPPMessage(from: item)!

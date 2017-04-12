@@ -33,6 +33,7 @@ public class QObject {
     
     public static func connect(_ sender: AnyObject, signal: Selector, receiver: AnyObject, slot: Selector) {
 //        print("Connecting \(receiver):\(slot) to \(sender):\(signal)")
+        NotificationCenter.default.removeObserver(receiver, name: NSNotification.Name(rawValue: signal.description), object: sender)
         NotificationCenter.default.addObserver(receiver, selector: slot, name: NSNotification.Name(rawValue: signal.description), object: sender)
     }
     
@@ -45,5 +46,9 @@ public class QObject {
     public static func disconnect(_ object: AnyObject) {
 //        print("Disconnecting \(object)")
         NotificationCenter.default.removeObserver(object)
+    }
+    public static func disconnect(_ object: AnyObject, sender: AnyObject, signal: Selector) {
+        //        print("Disconnecting \(object)")
+        NotificationCenter.default.removeObserver(object, name: Notification.Name(rawValue: signal.description), object: sender)
     }
 }

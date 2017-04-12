@@ -43,7 +43,7 @@ open class EVURLCache : URLCache {
     open static var CACHE_FOLDER = "Cache" // The folder in the Documents folder where cached files will be saved
     open static var MAX_FILE_SIZE = 24 // The maximum file size that will be cached (2^24 = 16MB)
     open static var MAX_CACHE_SIZE = 31 // The maximum file size that will be cached (2^30 = 256MB)
-    open static var LOGGING = false // Set this to true to see all caching action in the output log
+    open static var LOGGING = true // Set this to true to see all caching action in the output log
     open static var FORCE_LOWERCASE = true // Set this to false if you want to use case insensitive filename compare
     open static var _cacheDirectory: String!
     open static var _preCacheDirectory: String!
@@ -72,12 +72,14 @@ open class EVURLCache : URLCache {
     }
     
     // Will be called by a NSURLConnection when it's wants to know if there is something in the cache.
-    open override func cachedResponse(for request: URLRequest) -> CachedURLResponse? {
-        guard let url = request.url else {
+    open override func cachedResponse(for req: URLRequest) -> CachedURLResponse? {
+        guard req.url != nil else {
             EVURLCache.debugLog("CACHE not allowed for nil URLs");
             return nil
         }
-        
+
+        let request = URLRequest(url: URL(string: (req.url!.absoluteString.replacingOccurrences(of: "&amp;", with: "&")))!, cachePolicy: req.cachePolicy, timeoutInterval: req.timeoutInterval)
+        let url = request.url!
         if url.absoluteString.isEmpty {
             EVURLCache.debugLog("CACHE not allowed for empty URLs");
             return nil;
@@ -120,17 +122,24 @@ open class EVURLCache : URLCache {
         }
         
         // Read object from file
-        if let response = NSKeyedUnarchiver.unarchiveObject(withFile: storagePath) as? CachedURLResponse {
+        if let response = NSKeyedUnarchiver.unarchiveObject(withFile: storagePath + ".answer") as? URLResponse {
             EVURLCache.debugLog("Returning cached data from \(storagePath)");
             
-            // I have to find out the difrence. For now I will let the developer checkt which version to use
-            if EVURLCache.RECREATE_CACHE_RESPONSE {
-                // This works for most sites, but aperently not for the game as in the alternate url you see in ViewController
-                let r = URLResponse(url: response.response.url!, mimeType: response.response.mimeType, expectedContentLength: response.data.count, textEncodingName: response.response.textEncodingName)
-                return CachedURLResponse(response: r, data: response.data, userInfo: response.userInfo, storagePolicy: .allowed)
+            let data = try! Data(contentsOf: URL(fileURLWithPath: storagePath))
+            let userInfo: [AnyHashable : Any]? = FileManager.default.fileExists(atPath: storagePath + ".user") ?
+                NSKeyedUnarchiver.unarchiveObject(withFile: storagePath + ".user") as? [AnyHashable : Any] :
+                nil
+            let r = URLResponse(url: response.url!, mimeType: response.mimeType, expectedContentLength: data.count, textEncodingName: response.textEncodingName)
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 301, let location = httpResponse.allHeaderFields["Location"] as? String {
+                    return cachedResponse(for: URLRequest(url: URL(string: location)!, cachePolicy: req.cachePolicy, timeoutInterval: req.timeoutInterval))
+                }
+                else if (httpResponse.statusCode != 200) {
+                    return nil
+                }
+                
             }
-            // This works for the game, but not for my site.
-            return response
+            return CachedURLResponse(response: r, data: data, userInfo: userInfo, storagePolicy: .allowed)
         } else {
             EVURLCache.debugLog("The file is probably not put in the local path using NSKeyedArchiver \(storagePath)");
         }
@@ -142,7 +151,14 @@ open class EVURLCache : URLCache {
     }
     
     // Will be called by NSURLConnection when a request is complete.
-    open static func storeCachedResponse(_ cachedResponse: CachedURLResponse, forRequest request: URLRequest) {
+    open static func storeCachedResponse(_ cachedResponse: CachedURLResponse, forRequest req: URLRequest) {
+        guard req.url != nil else {
+            EVURLCache.debugLog("CACHE not allowed for nil URLs");
+            return
+        }
+        
+        let request = URLRequest(url: URL(string: (req.url!.absoluteString.replacingOccurrences(of: "&amp;", with: "&")))!, cachePolicy: req.cachePolicy, timeoutInterval: req.timeoutInterval)
+
         if let httpResponse = cachedResponse.response as? HTTPURLResponse {
             if httpResponse.statusCode >= 400 {
                 EVURLCache.debugLog("CACHE Do not cache error \(httpResponse.statusCode) page for : \(request.url) \(httpResponse.debugDescription)");
@@ -177,28 +193,36 @@ open class EVURLCache : URLCache {
         
         // save file
         EVURLCache.debugLog("Writing data to \(storagePath)");
-        if !NSKeyedArchiver.archiveRootObject(cachedResponse, toFile: storagePath) {
-            EVURLCache.debugLog("Could not write file to cache");
-        } else {
-            EVURLCache.debugLog("CACHE save file to Cache  : \(storagePath)");
+        do {
+            try cachedResponse.data.write(to: URL(fileURLWithPath: storagePath))
+            if !NSKeyedArchiver.archiveRootObject(cachedResponse.response, toFile: storagePath + ".answer") {
+                throw NSError()
+            }
+            if (cachedResponse.userInfo != nil && !NSKeyedArchiver.archiveRootObject(cachedResponse.userInfo!, toFile: storagePath + ".user")) {
+                throw NSError()
+            }
+        }
+        catch let error as NSError {
+            EVURLCache.debugLog("Error \(error.debugDescription)");
             // prevent iCloud backup
             if !EVURLCache.addSkipBackupAttributeToItemAtURL(URL(fileURLWithPath: storagePath)) {
-                EVURLCache.debugLog("Could not set the do not backup attribute");
+                EVURLCache.debugLog("Write cached result");
             }
         }
     }
     
     
+    open static func storagePath(url: URL) -> String? {
+        return storagePathForRequest(URLRequest(url: url, cachePolicy: .returnCacheDataDontLoad, timeoutInterval: 10))
+    }
+    
     // return the path if the file for the request is in the PreCache or Cache.
     open static func storagePathForRequest(_ request: URLRequest) -> String? {
-        var storagePath: String? = EVURLCache.storagePathForRequest(request, rootPath: EVURLCache._cacheDirectory)
-        if !FileManager.default.fileExists(atPath: storagePath ?? "") {
+        var storagePath = EVURLCache.storagePathForRequest(request, rootPath: EVURLCache._cacheDirectory)
+        if !FileManager.default.fileExists(atPath: storagePath) {
             storagePath = EVURLCache.storagePathForRequest(request, rootPath: EVURLCache._preCacheDirectory)
         }
-        if !FileManager.default.fileExists(atPath: storagePath ?? "") {
-            storagePath = nil
-        }
-        return storagePath;
+        return FileManager.default.fileExists(atPath: storagePath) ? storagePath : nil;
     }
     
     static func md5(string: String) -> String {
@@ -223,13 +247,13 @@ open class EVURLCache : URLCache {
         // The filename could be forced by the remote server. This could be used to force multiple url's to the same cache file
         localUrl = "\(host)/\(md5(string: request.url?.absoluteString ?? ""))"
         // Without an extension it's treated as a folder and the file will be called index.html
-        if let storageFile: String = request.url?.absoluteString.components(separatedBy: "/").last, storageFile.contains(".")  {
+        if let storageFile: String = request.url?.absoluteString.components(separatedBy: "/").last?.components(separatedBy: "?").first, storageFile.contains(".")  {
             if let fileExtension = storageFile.components(separatedBy: ".").last {
-                localUrl = "\(localUrl).\(fileExtension)"
+                localUrl = "\(localUrl!).\(fileExtension)"
             }
         }
         
-        localUrl = "\(rootPath)/\(localUrl)"
+        localUrl = "\(rootPath)/\(localUrl!)"
         
         // Cleanup
         if localUrl.hasPrefix("file:") {
@@ -237,8 +261,8 @@ open class EVURLCache : URLCache {
         }
         localUrl = localUrl.replacingOccurrences(of: "//", with: "/")
         localUrl = localUrl.replacingOccurrences(of: "//", with: "/")
-//        print("storing \(request.URL!) as  \(localUrl)")
-        return localUrl
+        // print("storing \(request.url!) as  \(localUrl!)")
+        return localUrl!
     }
     
     open static func addSkipBackupAttributeToItemAtURL(_ url: URL) -> Bool {

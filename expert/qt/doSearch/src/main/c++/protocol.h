@@ -198,7 +198,7 @@ signals:
     void user(const Member&);
     void tag(TaskTag* tag);
     void pattern(AnswerPattern* pattern);
-    void chatTemplate(const QString& type, const QString& pattern);
+    void chatTemplate(const QString& type, const QString& name, const QString& pattern);
 
     void presenceChanged(const QString& user, bool available);
 
@@ -210,16 +210,20 @@ signals:
 
 public slots:
     void onError(QXmppClient::Error err);
+    void onError(const QString& str) { emit xmppError(str); }
+
     void onPresence(const QXmppPresence& presence);
     void onIQ(const QXmppIq& iq);
     void onMessage(const QXmppMessage& msg, const QString& id = QString());
     void onDisconnected() {
         disconnect();
+        m_last_id.clear();
     }
+
     void onConnected();
 
 private slots:
-    void onRegistered() {
+    void onRegistered(const QString& /*jid*/) {
         connect();
     }
 
