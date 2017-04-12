@@ -12,14 +12,17 @@ import java.util.List;
  * Date: 17.03.2017
  * Time: 14:59
  */
-public class ExpectedMessage {
+public class ReceivingMessage {
   private final List<Pair<Class, Filter>> filters;
   private final JID from;
+  private final boolean expected;
   private boolean received = false;
 
-  public ExpectedMessage(JID from, List<Pair<Class, Filter>> filters) {
+
+  public ReceivingMessage(JID from, List<Pair<Class, Filter>> filters, boolean expected) {
     this.from = from;
     this.filters = filters;
+    this.expected = expected;
   }
 
   public boolean tryReceive(Message message) {
@@ -30,6 +33,10 @@ public class ExpectedMessage {
     //noinspection unchecked
     received = filters.stream().allMatch(pair -> pair.second != null ? message.has(pair.first, pair.second) : message.has(pair.first));
     return received;
+  }
+
+  public boolean expected() {
+    return expected;
   }
 
   public boolean received() {
@@ -49,7 +56,7 @@ public class ExpectedMessage {
     return stringBuilder.toString();
   }
 
-  public ExpectedMessage copy() {
-    return new ExpectedMessage(from, filters);
+  public ReceivingMessage copy() {
+    return new ReceivingMessage(from, filters, expected);
   }
 }

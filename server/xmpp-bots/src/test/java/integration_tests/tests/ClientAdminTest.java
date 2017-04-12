@@ -3,8 +3,8 @@ package integration_tests.tests;
 import com.expleague.bots.AdminBot;
 import com.expleague.bots.ClientBot;
 import com.expleague.bots.ExpertBot;
-import com.expleague.bots.utils.ExpectedMessage;
-import com.expleague.bots.utils.ExpectedMessageBuilder;
+import com.expleague.bots.utils.ReceivingMessage;
+import com.expleague.bots.utils.ReceivingMessageBuilder;
 import com.expleague.model.Answer;
 import com.expleague.model.Operations;
 import com.expleague.xmpp.stanza.Message;
@@ -48,47 +48,44 @@ public class ClientAdminTest extends BaseRoomTest {
                 Operations.Progress.MetaChange.Operation.ADD,
                 target)))))
         .collect(Collectors.toList());
-    final ExpectedMessage[] expectedProgresses = progresses.stream().map(roomProgress -> new ExpectedMessageBuilder()
+    final ReceivingMessage[] expectedProgresses = progresses.stream().map(roomProgress -> new ReceivingMessageBuilder()
         .from(roomProgress.first)
         .has(Operations.Progress.class,
             p -> roomProgress.second.meta().name().equals(p.meta().name()) &&
                 roomProgress.second.meta().operation() == p.meta().operation() &&
                 roomProgress.second.meta().target() == p.meta().target() &&
                 roomProgress.second.order().equals(p.order()))
-        .build()).toArray(ExpectedMessage[]::new);
+        .build()).toArray(ReceivingMessage[]::new);
 
     final List<Pair<BareJID, Message.Body>> messages = rooms.stream().map(roomJID -> new Pair<>(roomJID, new Message.Body(generateRandomString()))).collect(Collectors.toList());
-    final ExpectedMessage[] expectedMessages = messages.stream().map(roomBody -> new ExpectedMessageBuilder()
+    final ReceivingMessage[] receivingMessages = messages.stream().map(roomBody -> new ReceivingMessageBuilder()
         .from(botRoomJID(roomBody.first, adminBot))
         .has(Message.Body.class, body -> roomBody.second.value().equals(body.value()))
-        .build()).toArray(ExpectedMessage[]::new);
+        .build()).toArray(ReceivingMessage[]::new);
 
     final List<Pair<BareJID, Answer>> answers = rooms.stream().map(roomJID -> new Pair<>(roomJID, new Answer(generateRandomString()))).collect(Collectors.toList());
-    final ExpectedMessage[] expectedAnswers = answers.stream().map(roomAnswer -> new ExpectedMessageBuilder()
+    final ReceivingMessage[] expectedAnswers = answers.stream().map(roomAnswer -> new ReceivingMessageBuilder()
         .from(botRoomJID(roomAnswer.first, adminBot))
         .has(Answer.class, answer -> roomAnswer.second.value().equals(answer.value()))
-        .build()).toArray(ExpectedMessage[]::new);
+        .build()).toArray(ReceivingMessage[]::new);
 
     //Act
     progresses.forEach(throwableConsumer(roomProgress -> adminBot.sendGroupchat(roomProgress.first, roomProgress.second)));
-    final ExpectedMessage[] notReceivedProgress = clientBot.tryReceiveMessages(new StateLatch(), expectedProgresses);
+    final ReceivingMessage[] notReceivedProgress = clientBot.tryReceiveMessages(new StateLatch(), expectedProgresses);
     //Assert
-    assertAllExpectedMessagesAreReceived(notReceivedProgress);
+    assertThereAreNoFailedMessages(notReceivedProgress);
 
     //Act
     messages.forEach(throwableConsumer(roomMessage -> adminBot.sendGroupchat(roomMessage.first, roomMessage.second)));
-    final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedMessages);
+    final ReceivingMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), receivingMessages);
     //Assert
-    assertAllExpectedMessagesAreReceived(notReceivedMessages);
+    assertThereAreNoFailedMessages(notReceivedMessages);
 
     //Act
     answers.forEach(throwableConsumer(roomAnswer -> adminBot.sendGroupchat(roomAnswer.first, roomAnswer.second)));
-    final ExpectedMessage[] notReceivedAnswers = clientBot.tryReceiveMessages(new StateLatch(), expectedAnswers);
+    final ReceivingMessage[] notReceivedAnswers = clientBot.tryReceiveMessages(new StateLatch(), expectedAnswers);
     //Assert
-    assertAllExpectedMessagesAreReceived(notReceivedAnswers);
-
-    //Act/Assert
-    rooms.forEach(throwableConsumer(roomJID -> roomCloseStateByClientFeedback(roomJID, clientBot, adminBot)));
+    assertThereAreNoFailedMessages(notReceivedAnswers);
   }
 
   @Test
@@ -99,17 +96,17 @@ public class ClientAdminTest extends BaseRoomTest {
 
     final BareJID roomJID = obtainRoomOpenState(testName(), clientBot, adminBot);
     final Answer answer = new Answer(generateRandomString());
-    final ExpectedMessage expectedAnswer = new ExpectedMessageBuilder()
+    final ReceivingMessage expectedAnswer = new ReceivingMessageBuilder()
         .from(botRoomJID(roomJID, adminBot))
         .has(Answer.class, a -> answer.value().equals(a.value())).build();
 
     //Act
     adminBot.sendGroupchat(roomJID, answer);
-    final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedAnswer);
+    final ReceivingMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedAnswer);
     roomCloseStateByClientFeedback(roomJID, clientBot, adminBot);
 
     //Assert
-    assertAllExpectedMessagesAreReceived(notReceivedMessages);
+    assertThereAreNoFailedMessages(notReceivedMessages);
   }
 
   @Test
@@ -152,18 +149,18 @@ public class ClientAdminTest extends BaseRoomTest {
     //Arrange
     final BareJID roomJID = obtainState.get();
     final Message.Body body = new Message.Body(generateRandomString());
-    final ExpectedMessage expectedMessageFromAdmin = new ExpectedMessageBuilder()
+    final ReceivingMessage receivingMessageFromAdmin = new ReceivingMessageBuilder()
         .from(botRoomJID(roomJID, adminBot))
         .has(Message.Body.class, b -> body.value().equals(b.value())).build();
 
     //Act
     adminBot.sendGroupchat(roomJID, body);
-    final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedMessageFromAdmin);
+    final ReceivingMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), receivingMessageFromAdmin);
     if (closeRoom) {
       roomCloseStateByClientCancel(roomJID, clientBot, adminBot);
     }
 
     //Assert
-    assertAllExpectedMessagesAreReceived(notReceivedMessages);
+    assertThereAreNoFailedMessages(notReceivedMessages);
   }
 }

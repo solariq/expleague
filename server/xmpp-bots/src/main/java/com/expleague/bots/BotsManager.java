@@ -13,9 +13,7 @@ import com.typesafe.config.ConfigFactory;
 import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.expleague.bots.utils.FunctionalUtils.throwableConsumer;

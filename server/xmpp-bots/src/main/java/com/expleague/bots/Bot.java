@@ -1,9 +1,12 @@
 package com.expleague.bots;
 
-import com.expleague.bots.utils.ExpectedMessage;
 import com.expleague.bots.utils.ItemToTigaseElementParser;
+import com.expleague.bots.utils.ReceivingMessage;
+import com.expleague.bots.utils.ReceivingMessageBuilder;
+import com.expleague.model.Operations;
 import com.expleague.xmpp.Item;
 import com.spbsu.commons.util.sync.StateLatch;
+import org.apache.commons.lang3.ArrayUtils;
 import tigase.jaxmpp.core.client.*;
 import tigase.jaxmpp.core.client.criteria.Criteria;
 import tigase.jaxmpp.core.client.criteria.ElementCriteria;
@@ -38,9 +41,9 @@ public class Bot {
   private final BareJID jid;
 
   protected final Jaxmpp jaxmpp = new Jaxmpp(new J2SESessionObject());
-  private final BlockingQueue<Message> messagesQueue = new LinkedBlockingQueue<>();
+  private final BlockingQueue<com.expleague.xmpp.stanza.Message> messagesQueue = new LinkedBlockingQueue<>();
+  private final StateLatch latch = new StateLatch();
   private boolean registered = false;
-  final StateLatch latch = new StateLatch();
 
   public Bot(final BareJID jid, final String passwd, String resource) {
     this(jid, passwd, resource, null);
@@ -167,27 +170,13 @@ public class Bot {
     }
   }
 
-  public void stop() throws JaxmppException {
-    offline();
-
-    final IQ iq = IQ.create();
-    iq.setType(StanzaType.set);
-    iq.setTo(JID.jidInstance((String) jaxmpp.getSessionObject().getProperty("domainName")));
-    final Element q = ElementFactory.create("query", null, "jabber:iq:register");
-    iq.addChild(q);
-    q.addChild(ElementFactory.create("remove"));
-    final StateLatch latch = new StateLatch();
-
-    jaxmpp.getEventBus().addHandler(JaxmppCore.DisconnectedHandler.DisconnectedEvent.class, sessionObject -> latch.advance());
-    jaxmpp.send(iq);
-    jaxmpp.disconnect();
-    registered = false;
-    latch.state(2, 1);
-  }
-
   public void offline() throws JaxmppException {
     if (jaxmpp.isConnected()) {
+      final JaxmppCore.DisconnectedHandler disconnectedHandler = sessionObject -> latch.advance();
+      jaxmpp.getEventBus().addHandler(JaxmppCore.DisconnectedHandler.DisconnectedEvent.class, disconnectedHandler);
       jaxmpp.disconnect();
+      latch.state(2, 1);
+      jaxmpp.getEventBus().remove(disconnectedHandler);
       System.out.println("Sent offline presence");
     }
   }
@@ -216,21 +205,24 @@ public class Bot {
     jaxmpp.send(message);
   }
 
-  public ExpectedMessage[] tryReceiveMessages(StateLatch stateLatch, ExpectedMessage... messages) {
-    final long defaultTimeoutInNanos = 60L * 1000L * 1000L * 1000L;
+  public ReceivingMessage[] tryReceiveMessages(StateLatch stateLatch, ReceivingMessage... messages) throws JaxmppException {
+    final long defaultTimeoutInNanos = 30L * 1000L * 1000L * 1000L;
     return tryReceiveMessages(stateLatch, defaultTimeoutInNanos, messages);
   }
 
-  public ExpectedMessage[] tryReceiveMessages(StateLatch stateLatch, long timeoutInNanos, ExpectedMessage... expectedMessages) {
+  public ReceivingMessage[] tryReceiveMessages(StateLatch stateLatch, long timeoutInNanos, ReceivingMessage... messages) throws JaxmppException {
+    final ReceivingMessage syncPill = new ReceivingMessageBuilder().has(Operations.Sync.class).build();
+    send(jid(), new Operations.Sync()); //send sync to ensure that we receive unexpected messages if they exist
+    final ReceivingMessage[] messagesWithSync = ArrayUtils.add(messages, syncPill);
+
     final int initState = stateLatch.state();
-    final int finalState = initState << expectedMessages.length;
+    final int finalState = initState << Arrays.stream(messagesWithSync).filter(ReceivingMessage::expected).count();
     final Thread messagesConsumer = new Thread(() -> {
       while (!Thread.currentThread().isInterrupted()) {
         try {
-          final Message message = messagesQueue.take();
-          final com.expleague.xmpp.stanza.Message anyHolder = Item.create(message.getAsString());
-          for (ExpectedMessage expectedMessage : expectedMessages) {
-            if (!expectedMessage.received() && expectedMessage.tryReceive(anyHolder)) {
+          final com.expleague.xmpp.stanza.Message message = messagesQueue.take();
+          for (ReceivingMessage receivingMessage : messagesWithSync) {
+            if (!receivingMessage.received() && receivingMessage.tryReceive(message) && receivingMessage.expected()) {
               stateLatch.advance();
               if (stateLatch.state() == initState) {
                 return;
@@ -238,10 +230,9 @@ public class Bot {
               break;
             }
           }
-        } catch (InterruptedException ignored) {
+        } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
           return;
-        } catch (JaxmppException ignored) {
         }
       }
     });
@@ -252,7 +243,7 @@ public class Bot {
     if (stateLatch.state() != initState) {
       stateLatch.state(initState);
     }
-    return Arrays.stream(expectedMessages).filter(em -> !em.received()).toArray(ExpectedMessage[]::new);
+    return Arrays.stream(messagesWithSync).filter(em -> em.received() ^ em.expected()).toArray(ReceivingMessage[]::new);
   }
 
   private synchronized void onMessage(Message message) throws JaxmppException {
@@ -269,7 +260,10 @@ public class Bot {
         jaxmpp.send(receivedMessage);
       }
     }
-    messagesQueue.offer(message);
+    final com.expleague.xmpp.stanza.Message stanza = Item.create(message.getAsString());
+    if (stanza != null) {
+      messagesQueue.offer(stanza);
+    }
   }
 
   public static class PrinterAsyncCallback implements AsyncCallback {
