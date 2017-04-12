@@ -41,7 +41,7 @@ void PersistentPropertyHolderTest::visitKeys(){
     PersistentPropertyHolder h("some");
     h.store("place", QVariant(1));
     h.save();
-    h.visitKeys("place", &visit);
+    h.visitValues("place", &visit);
     QCOMPARE(true, checkVisit);
 }
 

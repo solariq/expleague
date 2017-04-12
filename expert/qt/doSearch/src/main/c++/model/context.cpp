@@ -198,7 +198,7 @@ PagesGroup* Context::suggest(Page* root) const {
 int depth(PagesGroup* group) {
     PagesGroup* parent = group->parentGroup();
     int depth = 0;
-    while (parent) {
+    while (parent && depth < 100) {
         group = parent;
         parent = group->parentGroup();
         depth++;
@@ -248,10 +248,10 @@ void Context::removeDocument(MarkdownEditorPage* document) {
 
 void Context::setActiveDocument(MarkdownEditorPage* active) {
     const int index = m_documents.indexOf(active);
-    if (index >= 0) {
-        store("context.active", active->id());
-        save();
-    }
+    if (index < 0)
+        return;
+    store("context.active", active->id());
+    save();
     m_active_document = active;
     emit activeDocumentChanged();
 }
@@ -349,14 +349,10 @@ void Context::interconnect() {
     connect(this, SIGNAL(partRemoved(ContentPage*)), this, SLOT(onPartRemoved(ContentPage*)));
 
     {
-        QDir storage = this->storage();
-        storage.cd("groups");
-        foreach(QFileInfo info, storage.entryInfoList()) {
-            if (info.isDir() && !info.fileName().startsWith(".") && QFile(info.absoluteFilePath() + "/group.xml").exists()) {
-                PagesGroup* group = new PagesGroup(info.fileName(), this);
-                m_associations[group->root()->id()] = group;
-            }
-        }
+        visitKeys("group", [this](const QString& sub) {
+            PagesGroup* group = new PagesGroup(sub, this);
+            m_associations[group->root()->id()] = group;
+        });
     }
 }
 

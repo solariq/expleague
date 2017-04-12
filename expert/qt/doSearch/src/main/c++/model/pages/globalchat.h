@@ -37,9 +37,7 @@ public:
     Task* task() const;
     Task::Status status() const { return m_state; }
 
-    Q_INVOKABLE void enter();
     QString roomId() const;
-
     QString jid() const { return m_jid; }
 
 public:
@@ -104,8 +102,9 @@ public:
     QQmlListProperty<RoomStatus> rooms() const { return QQmlListProperty<RoomStatus>(const_cast<GlobalChat*>(this), const_cast<QList<RoomStatus*>&>(m_rooms)); }
 
     QString title() const { return tr("Админка Лиги"); }
+    AdminContext* owner() const { return m_owner; }
 
-    Q_INVOKABLE void enter(RoomStatus* room) const;
+    Q_INVOKABLE void enter(RoomStatus* room);
     RoomStatus* state(const QString& id) const;
     RoomStatus* registerRoom(Offer* offer);
     int openCount();
@@ -130,6 +129,7 @@ protected:
 private:
     AdminContext* m_owner = 0;
     QList<RoomStatus*> m_rooms;
+    RoomStatus* m_focus = 0;
     int m_open = 0;
 };
 }

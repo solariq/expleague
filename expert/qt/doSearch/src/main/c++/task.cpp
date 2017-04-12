@@ -76,6 +76,8 @@ void Task::answerReceived(const QString &from, const QString& text) {
     bubble->append(new ChatMessage([answerPage, dosearch]() -> void {
         doSearch::instance()->navigation()->open(answerPage);
     }, "Ответ", this));
+//    if (!active())
+//        m_answer->re
     emit chatChanged();
 }
 
@@ -225,7 +227,10 @@ void Task::tag(TaskTag* tag) {
         if (parent()->connection())
             parent()->connection()->sendProgress(offer()->roomJid(), {"", xmpp::Progress::PO_ADD, xmpp::Progress::PO_TAG, tag->name(), xmpp::Progress::OS_NONE});
     }
-    else m_tags.append(tag);
+    else {
+        m_tags.append(tag);
+        emit tagsChanged();
+    }
 }
 
 void Task::pattern(AnswerPattern* pattern) {
@@ -233,7 +238,10 @@ void Task::pattern(AnswerPattern* pattern) {
         if (parent()->connection())
             parent()->connection()->sendProgress(offer()->roomJid(), {"", xmpp::Progress::PO_ADD, xmpp::Progress::PO_PATTERN, pattern->name(), xmpp::Progress::OS_NONE});
     }
-    else m_patterns.append(pattern);
+    else {
+        m_patterns.append(pattern);
+        emit patternsChanged();
+    }
 }
 
 void Task::phone(const QString& phone) {
@@ -263,9 +271,13 @@ void Task::stop() {
 }
 
 void Task::enter() const {
-    parent()->setAdminFocus(m_room);
     if (parent()->connection())
         parent()->connection()->sendPresence(m_room, true);
+}
+
+void Task::exit() const {
+    if (parent()->connection())
+        parent()->connection()->sendPresence(m_room, false);
 }
 
 void Task::verify() const {

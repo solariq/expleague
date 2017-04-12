@@ -73,8 +73,8 @@ void ExpLeagueConnection::onError(QXmppClient::Error error) {
         qWarning() << "XMPP stream error: " << m_client->xmppStreamError();
         if (m_client->xmppStreamError() == QXmppStanza::Error::NotAuthorized) { // trying to register
             Registrator* reg = new Registrator(profile(), this);
-            QObject::connect(reg, SIGNAL(onRegistered(QString)), this, SLOT(onRegistered()));
-            QObject::connect(reg, SIGNAL(error(QString)), this, SLOT(error(QString)));
+            QObject::connect(reg, SIGNAL(registered(QString)), this, SLOT(onRegistered(QString)));
+            QObject::connect(reg, SIGNAL(error(QString)), this, SLOT(onError(QString)));
             reg->start();
         }
     }
@@ -149,7 +149,7 @@ void ExpLeagueConnection::onIQ(const QXmppIq& iq) {
                         emit pattern(new AnswerPattern(element.attribute("name"), icon.count() > 0 ? icon.at(0).toElement().text() : "qrc:/unknown_pattern.png", element.elementsByTagName("body").at(0).toElement().text()));
                     }
                     else {
-                        emit chatTemplate(type, element.elementsByTagName("body").at(0).toElement().text());
+                        emit chatTemplate(type, element.attribute("name"), element.elementsByTagName("body").at(0).toElement().text());
                     }
                 }
             }
@@ -315,7 +315,7 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg, const QString& idOr
         m_client->sendPacket(receipt);
     }
 
-    if (xmpp::isRoom(msg.from())) {
+    if (xmpp::isRoom(msg.from()) && idOrig.isNull()) {
         m_last_id[xmpp::user(msg.from())] = msg.id();
     }
 }
@@ -325,6 +325,7 @@ void ExpLeagueConnection::onConnected() {
 //    qDebug() << "Connected as " << m_client->configuration().jid();
 
     m_jid = m_client->configuration().jid();
+    m_last_id.clear();
     { // restore configuration for reconnect purposes
         m_client->configuration().setJid(profile()->deviceJid());
         m_client->configuration().setResource("doSearchQt-" + QApplication::applicationVersion() + "/expert");

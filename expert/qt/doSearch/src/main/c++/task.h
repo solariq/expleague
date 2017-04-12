@@ -237,6 +237,8 @@ public:
 
 public:
     Q_INVOKABLE void enter() const;
+    Q_INVOKABLE void exit() const;
+
     Q_INVOKABLE void verify() const;
     Q_INVOKABLE void close(const QString& shortAnswer);
     Q_INVOKABLE void sendMessage(const QString& str) const;

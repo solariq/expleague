@@ -47,6 +47,8 @@ Item {
     SendDialog {
         id: sendDialog
         visible: false
+        x: (Qt.platform.os == "windows" ? dosearch.main.x : 0) + (dosearch.main.width - width) / 2
+        y: (Qt.platform.os == "windows" ? dosearch.main.y : 0) + (dosearch.main.height - height) / 4
 
         questions: true
         task: self.task
@@ -55,6 +57,9 @@ Item {
     OfferDialog {
         id: offerDialog
         visible: false
+        x: (Qt.platform.os == "windows" ? dosearch.main.x : 0) + (dosearch.main.width - width) / 2
+        y: (Qt.platform.os == "windows" ? dosearch.main.y : 0) + (dosearch.main.height - height) / 4
+
         text: topic.text
         comment: comment.text
 
@@ -64,6 +69,8 @@ Item {
     TagsDialog {
         id: tagsDialog
         visible: false
+        x: (Qt.platform.os == "windows" ? dosearch.main.x : 0) + (dosearch.main.width - width) / 2
+        y: (Qt.platform.os == "windows" ? dosearch.main.y : 0) + (dosearch.main.height - height) / 4
 
         league: root.league
         task: self.task
@@ -76,6 +83,8 @@ Item {
     PatternsDialog {
         id: patternsDialog
         visible: false
+        x: (Qt.platform.os == "windows" ? dosearch.main.x : 0) + (dosearch.main.width - width) / 2
+        y: (Qt.platform.os == "windows" ? dosearch.main.y : 0) + (dosearch.main.height - height) / 4
 
         league: root.league
         onAppendPattern: {
@@ -93,6 +102,8 @@ Item {
     FilterDialog {
         id: filterDialog
         visible: false
+        x: (Qt.platform.os == "windows" ? dosearch.main.x : 0) + (dosearch.main.width - width) / 2
+        y: (Qt.platform.os == "windows" ? dosearch.main.y : 0) + (dosearch.main.height - height) / 4
 
         experts: self.task ? self.task.experts : []
         roles: self.task ? self.task.roles : []
@@ -102,6 +113,8 @@ Item {
     CallDialog {
         id: callDialog
         visible: false
+        x: (Qt.platform.os == "windows" ? dosearch.main.x : 0) + (dosearch.main.width - width) / 2
+        y: (Qt.platform.os == "windows" ? dosearch.main.y : 0) + (dosearch.main.height - height) / 4
 
         onAppendCall: task.phone(phone)
     }
@@ -109,6 +122,8 @@ Item {
     SuspendDialog {
         id: suspendDialog
         visible: false
+        x: (Qt.platform.os == "windows" ? dosearch.main.x : 0) + (dosearch.main.width - width) / 2
+        y: (Qt.platform.os == "windows" ? dosearch.main.y : 0) + (dosearch.main.height - height) / 4
 
         onSuspend: {
             self.task.suspend(time)

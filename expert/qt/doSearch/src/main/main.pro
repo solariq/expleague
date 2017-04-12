@@ -21,7 +21,7 @@
 # mkdir temp
 # mv ./doSearch.app/ ./temp/
 # hdiutil create -volname doSearch -srcfolder ./temp/ -ov -format UDZO doSearch.dmg
-VERSION = 0.8.5
+VERSION = 0.8.6
 
 #CONFIG += test
 
@@ -46,6 +46,10 @@ else:win32: CONFIG += static console
 
 #breakpad app need debug info inside binaries
 unix: QMAKE_CXXFLAGS+=-g
+else:win32: {
+    QMAKE_CXXFLAGS += /Zi
+    QMAKE_LFLAGS_RELEASE += /DEBUG
+}
 
 SOURCES += \
     c++/protocol.cpp \
@@ -70,6 +74,7 @@ SOURCES += \
     c++/util/region.cpp \
     c++/task.cpp \
     c++/imagestore.cpp \
+    c++/util/crashhandler.cpp \
     c++/util/leveldb.cpp \
     test/util/pholder_test.cpp
 
@@ -101,13 +106,14 @@ HEADERS += \
     c++/model/pages/admins.h \
     c++/model/pages/globalchat.h \
     c++/util/region.h \
-    c++/util/leveldb.h \
+    c++/util/crashhandler.h \
+    c++/util/leveldb.h
 
-
-test{
+test {
     SOURCES += test/main_test.cpp
     HEADERS += test/util/pholder_test.h
-}else{
+}
+else {
     SOURCES += c++/main.cpp
 }
 
@@ -135,28 +141,28 @@ win32:CONFIG(release, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/discount/release/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/release/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/release/ -lcutemarked \
-#    -L$$OUT_PWD/../libs/breakpad/release -lbreakpad \
+    -L$$OUT_PWD/../libs/breakpad/release -lbreakpad \
     -L$$OUT_PWD/../libs/leveldb-win/release/ -lleveldb
 else:win32:CONFIG(debug, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d \
     -L$$OUT_PWD/../libs/discount/debug/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/debug/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/debug/ -lcutemarked \
-#    -L$$OUT_PWD/../libs/breakpad/debug -lbreakpad \
+    -L$$OUT_PWD/../libs/breakpad/debug -lbreakpad \
     -L$$OUT_PWD/../libs/leveldb-win/debug/ -lleveldb
 else:unix:CONFIG(debug, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d \
     -L$$OUT_PWD/../libs/discount/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/ -lcutemarked \
-#    -L$$OUT_PWD/../libs/breakpad/ -lbreakpad \
+    -L$$OUT_PWD/../libs/breakpad/ -lbreakpad \
     -L$$OUT_PWD/../libs/leveldb/ -lleveldb
 else:unix:CONFIG(release, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp \
     -L$$OUT_PWD/../libs/discount/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/ -lcutemarked \
-#    -L$$OUT_PWD/../libs/breakpad/ -lbreakpad \
+    -L$$OUT_PWD/../libs/breakpad/ -lbreakpad \
     -L$$OUT_PWD/../libs/leveldb/ -lleveldb
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../libs/peg-markdown-highlight/release/ -lpmh
