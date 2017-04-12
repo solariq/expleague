@@ -15,6 +15,7 @@ import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Stanza;
 import scala.concurrent.duration.Duration;
 
+import javax.xml.bind.annotation.XmlEnumValue;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -53,7 +54,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   protected void onStart() {
     super.onStart();
     if (state == WORK) {
-      orders(OrderState.IN_PROGRESS, OrderState.OPEN, OrderState.SUSPENDED)
+      inflightOrders()
           .forEach(order -> LaborExchange.tell(context(), order, self()));
     }
     context().setReceiveTimeout(Duration.apply(1, TimeUnit.HOURS));
@@ -125,6 +126,8 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
   @Override
   protected boolean filter(Message msg) {
+    if (owner() == null)
+      update(msg.from(), null, Affiliation.OWNER);
     if (msg.has(Start.class))
       affiliation(msg.from(), Affiliation.MEMBER);
     else if (msg.has(Cancel.class))
@@ -134,8 +137,6 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
   private Offer offer = null;
   public void process(Message msg) {
-    if (owner() == null)
-      update(msg.from(), null, Affiliation.OWNER);
     super.process(msg);
 
     final JID from = msg.from();
@@ -150,7 +151,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       final Progress progress = msg.get(Progress.class);
       final Progress.MetaChange metaChange = progress.meta();
       if (metaChange != null) {
-        orders(OrderState.OPEN).filter(order -> order.id().equals(progress.order()) || progress.order() == null).forEach(order -> {
+        inflightOrders().filter(order -> order.id().equals(progress.order()) || progress.order() == null).forEach(order -> {
           switch (metaChange.target()) {
             case PATTERNS:
               break;
@@ -218,7 +219,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         offer.client(owner);
       if (state == WORK) { // order update during the work
         if (authority == ExpertsProfile.Authority.ADMIN) {
-          final List<JID> activeExperts = orders(OrderState.OPEN).flatMap(o -> o.of(ACTIVE)).collect(Collectors.toList());
+          final List<JID> activeExperts = inflightOrders().flatMap(o -> o.of(ACTIVE)).collect(Collectors.toList());
           cancelOrders();
           if (activeExperts != null)
             offer.filter().prefer(activeExperts.toArray(new JID[activeExperts.size()]));
@@ -262,6 +263,10 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     }
   }
 
+  private Stream<ExpLeagueOrder> inflightOrders() {
+    return orders(OrderState.IN_PROGRESS, OrderState.OPEN, OrderState.SUSPENDED);
+  }
+
   private Stream<ExpLeagueOrder> orders(OrderState state0, OrderState... states) {
     if (mode() != ProcessMode.RECOVER)
       return orders.stream().filter(order -> EnumSet.of(state0, states).contains(order.state()));
@@ -286,8 +291,10 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   private void cancelOrders() {
-    orders(OrderState.OPEN).filter(o -> o.state() != OrderState.DONE).map(ExpLeagueOrder::broker).filter(Objects::nonNull).forEach(b -> b.tell(new Cancel(), self()));
-    orders(OrderState.OPEN).forEach(o -> o.state(OrderState.DONE));
+    inflightOrders().filter(o -> o.state() != OrderState.DONE).map(order -> {
+      order.state(OrderState.DONE);
+      return order.broker();
+    }).filter(Objects::nonNull).forEach(b -> b.tell(new Cancel(), self()));
   }
 
   @Override
@@ -307,23 +314,6 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     cancelOrders();
     LaborExchange.board().removeAllOrders(jid().local());
     super.replay();
-  }
-
-  private ExpLeagueOrder order(String id) {
-    return orders.size() > 0 ? orders.get(0) : null;
-  }
-
-  private Offer offer() {
-    final List<Stanza> archive = archive();
-    for (int i = archive.size() - 1; i >= 0; i--) {
-      final Stanza stanza =  archive.get(i);
-      if (stanza instanceof Message) {
-        final Message message = (Message) stanza;
-        if (message.has(Offer.class))
-          return message.get(Offer.class);
-      }
-    }
-    return null;
   }
 
   @Override

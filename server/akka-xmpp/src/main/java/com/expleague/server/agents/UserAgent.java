@@ -202,6 +202,7 @@ public class UserAgent extends PersistentActorAdapter {
       log.warning("Unable to clear out user mailbox: " + deviceJid);
     }
 
+    private final Set<String> delivered = new HashSet<>();
     @Override
     public void onReceiveRecover(Object o) throws Exception {
       if (o instanceof Stanza) {
@@ -210,15 +211,11 @@ public class UserAgent extends PersistentActorAdapter {
         deliveryQueue.add(stanza);
       }
       else if (o instanceof Delivered) {
-        final Iterator<Stanza> riter = deliveryQueue.descendingIterator();
-        while (riter.hasNext()) {
-          if (riter.next().id().equals(((Delivered)o).id())) {
-            riter.remove();
-            break;
-          }
-        }
+        delivered.add(((Delivered)o).id());
       }
       else if (o instanceof RecoveryCompleted) {
+        deliveryQueue.removeIf(stanza -> delivered.contains(stanza.id()));
+        delivered.clear();
         if (totalMessages > 100 && deliveryQueue.size() < 50) {
           // TODO: snapshot
           deleteMessages(); // clear the mailbox

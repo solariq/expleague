@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 public class RoomAgent extends PersistentActorAdapter {
   private static final Logger log = Logger.getLogger(RoomAgent.class.getName());
   private final JID jid;
-  private List<Stanza> archive = new ArrayList<>();
+  private final List<Stanza> archive;
   private Map<JID, MucUserStatus> participants = new HashMap<>();
   private Archive.Dump dump;
 
@@ -50,6 +50,8 @@ public class RoomAgent extends PersistentActorAdapter {
     this.jid = jid;
     if (archive)
       this.archive = new ArrayList<>();
+    else
+      this.archive = null;
   }
 
   public JID jid() {
@@ -83,6 +85,8 @@ public class RoomAgent extends PersistentActorAdapter {
   public <T> void persist(final T event, final Consumer<? super T> handler) {
     if (mode != ProcessMode.RECOVER)
       super.persist(event, handler);
+    else
+      handler.accept(event);
   }
 
   @ActorMethod
@@ -94,8 +98,6 @@ public class RoomAgent extends PersistentActorAdapter {
 
   @ActorMethod
   public final void onMessage(Message message) {
-    if (mode() != ProcessMode.NORMAL)
-      return;
     if (!filter(message)) {
       final Message error = new Message(
           jid,
@@ -450,30 +452,18 @@ public class RoomAgent extends PersistentActorAdapter {
 
   @Override
   public void onReceiveRecover(Object o) throws Exception {
-    if (o instanceof Stanza) {
-      final Stanza stanza = (Stanza) o;
-      if (o instanceof Iq)
-        process((Iq) o);
-      else if (o instanceof Message) {
-        final Message message = (Message) o;
-        if (message.to().resource().isEmpty())
-          process(message);
-      }
-      if (archive != null)
-        archive.add(stanza);
-    }
-    else if (o instanceof DeliveryReceit) {
+    if (o instanceof Iq)
+      onIq((Iq) o);
+    else if (o instanceof Message)
+      onMessage((Message) o);
+    else if (o instanceof DeliveryReceit)
       delivered(((DeliveryReceit) o).id());
-    }
     else if (o instanceof RecoveryCompleted) {
       if (archive != null) {
-        if (dump.size() > archive.size()) { // restore
+        if (dump.size() > archive.size())
           replay();
-        }
-        else {
-          archive().forEach(dump::accept);
+        else
           commit();
-        }
       }
       onStart();
     }
@@ -484,14 +474,13 @@ public class RoomAgent extends PersistentActorAdapter {
     context().become(o -> {
       final boolean success;
       if (o instanceof DeleteMessagesSuccess) {
+        participants.clear();
+        archive.clear();
         dump.stream().forEach(stanza -> {
-          if (stanza instanceof Message) {
-            if (stanza.to().resource().isEmpty())
-              process((Message)stanza);
-          }
-          else if (stanza instanceof Iq) {
-            process((Iq)stanza);
-          }
+          if (stanza instanceof Message)
+            onMessage((Message)stanza);
+          else if (stanza instanceof Iq)
+            onIq((Iq)stanza);
         });
         success = true;
       }
@@ -509,6 +498,7 @@ public class RoomAgent extends PersistentActorAdapter {
       if (replayRequester != null)
         replayRequester.tell(new Replay(success), self());
     });
+    deleteMessages();
   }
 
   @Override
