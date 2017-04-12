@@ -77,8 +77,8 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   @Override
-  public boolean update(JID from, Role role, Affiliation affiliation, ProcessMode mode) throws MembershipChangeRefusedException{
-    if (!super.update(from, role, affiliation, mode))
+  public boolean update(JID from, Role role, Affiliation affiliation, ProcessMode mode) throws MembershipChangeRefusedException {
+    if (from.isRoom() || !super.update(from, role, affiliation, mode))
       return false;
     tellGlobal(new RoomRoleUpdate(from.bare(), role(from), affiliation(from)));
     return true;

@@ -77,7 +77,6 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         cells.removeAll()
         lastAnswer = nil
         lastKnownMessage = 0
-        answer = ""
         syncInner()
     }
     
@@ -95,14 +94,19 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         var model = cells.last!
         var modelChangeCount = 0
         
-        var expertModel = cells.filter({$0 is ExpertModel}).last as? ExpertModel
-        expertModel = expertModel != nil ? (expertModel!.status != .canceled ? expertModel : nil) : nil
+        var expertModel: [ExpertModel] = []
+        for cell in cells {
+            if let em = cell as? ExpertModel, em.status != .canceled {
+                expertModel.append(em)
+            }
+        }
 
         if (model is LookingForExpertModel || model is TaskInProgressModel) {
             cells.removeLast();
             model = cells.last!
         }
         let messages = order.messages
+        var answer  = ""
         while (lastKnownMessage < messages.count) {
             if (modelChangeCount > 2) {
                 ExpLeagueProfile.active.log("Loop found in the chat model! Enforcing next message.")
@@ -118,26 +122,30 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 var newModel : ChatCellModel? = nil
                 if (msg.type == .expertAssignment) {
                     let expert = msg.expert!
-                    if (expertModel == nil || expertModel!.expert.login != expert.login) {
-                        expertModel = ExpertModel(expert: expert)
-                        newModel = expertModel
+                    if let em = expertModel.filter({$0.expert.login == expert.login}).first {
+                        em.status = .onTask
                     }
                     else {
-                        expertModel?.status = .onTask
+                        expertModel.append(ExpertModel(expert: expert))
+                        newModel = expertModel.last
                     }
                     if progressModel is LookingForExpertModel {
                         progressModel = TaskInProgressModel(order: order)
                     }
                 }
                 else if (msg.type == .expertCancel) {
-                    expertModel?.status = .canceled
-                    expertModel = nil
+                    if let index = expertModel.index(where: {$0.expert.login == msg.from}) {
+                        expertModel[index].status = .canceled
+                        expertModel.remove(at: index)
+                    }
                 }
                 else if (msg.type == .expertProgress) {
                     _ = progressModel?.accept(msg)
                 }
                 else if (msg.type == .answer) {
-                    expertModel?.status = .finished
+                    for em in expertModel {
+                        em.status = .finished
+                    }
                     let id = "message-\(msg.hashValue)"
                     answer += "\n<div id=\"\(id)\"/>\n"
                     answer += msg.html;
@@ -148,16 +156,26 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                     progressModel = nil
                 }
                 else if (msg.type == .expertMessage) {
-                    newModel = ChatMessageModel(incoming: true, author: msg.from)
+                    newModel = ChatMessageModel(incoming: true, author: msg.from, active: msg.from == expertModel.last?.expert.login)
                 }
                 else if (msg.type == .clientMessage) {
-                    newModel = ChatMessageModel(incoming: false, author: "me")
+                    newModel = ChatMessageModel(incoming: false, author: "me", active: true)
                     if (progressModel == nil) {
                         progressModel = LookingForExpertModel(order: order)
                     }
                 }
                 else if (msg.type == .clientCancel) {
-                    expertModel?.status = .finished
+                    for em in expertModel {
+                        em.status = .finished
+                    }
+                    expertModel.removeAll()
+                    progressModel = nil
+                    if (model is ChatMessageModel) {
+                        (model as! ChatMessageModel).close()
+                    }
+                }
+                else if (msg.type == .feedback) {
+                    _ = cells.filter({$0 is AnswerReceivedModel}).last?.accept(msg)
                 }
                 
                 if (newModel != nil) {
@@ -181,10 +199,9 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                 cells.append(progressModel!)
             }
         }
-        
+        self.answer = answer
         updateGroups()
         controller?.messages.reloadData()
-        controller?.answerText = answer
         finished = true
         self.controller?.scrollToLastMessage()
     }

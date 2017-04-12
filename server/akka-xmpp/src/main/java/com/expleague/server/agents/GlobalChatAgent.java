@@ -60,6 +60,11 @@ public class GlobalChatAgent extends RoomAgent {
   }
 
   @Override
+  protected boolean update(JID from, Role role, Affiliation affiliation, ProcessMode mode) throws MembershipChangeRefusedException {
+    return !from.isRoom() && super.update(from, role, affiliation, mode);
+  }
+
+  @Override
   protected void process(Message msg) {
     if (!msg.from().isRoom()) {
       super.process(msg);
@@ -126,11 +131,6 @@ public class GlobalChatAgent extends RoomAgent {
   public static void tell(Stanza item, ActorContext context) {
     item.to(XMPP.jid(ID));
     XMPP.send(item, context);
-  }
-
-  @Override
-  protected boolean relevant(Stanza msg, JID to) {
-    return !to.isRoom() && super.relevant(msg, to); // rooms must not see what happens at global chat
   }
 
   private static class RoomStatus {

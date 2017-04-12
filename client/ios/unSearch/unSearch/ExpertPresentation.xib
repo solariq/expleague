@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11201" systemVersion="16A323" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -13,28 +16,31 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Имя Эксперта" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ksA-Kh-7sw">
+                    <rect key="frame" x="110" y="24" width="101.5" height="18"/>
                     <fontDescription key="fontDescription" type="system" pointSize="15"/>
                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Ваш эксперт" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qt3-Vk-xZk">
-                    <fontDescription key="fontDescription" type="system" pointSize="13"/>
-                    <color key="textColor" red="0.2470588235" green="0.3294117647" blue="0.50980392159999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                    <nil key="highlightedColor"/>
-                </label>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Yiw-UH-idT" customClass="AvatarView" customModule="unSearch" customModuleProvider="target">
+                    <rect key="frame" x="8" y="7.5" width="35" height="35"/>
                     <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="35" id="CKr-Sx-ONN"/>
                         <constraint firstAttribute="height" constant="35" id="CvJ-E0-wUP"/>
                     </constraints>
                 </view>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Ваш эксперт" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qt3-Vk-xZk">
+                    <rect key="frame" x="120" y="7" width="80.5" height="16"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                    <color key="textColor" red="0.2470588235" green="0.3294117647" blue="0.50980392159999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
             </subviews>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
-                <constraint firstItem="ksA-Kh-7sw" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="P2r-iU-aR2"/>
-                <constraint firstItem="Qt3-Vk-xZk" firstAttribute="top" secondItem="ksA-Kh-7sw" secondAttribute="bottom" id="Zdq-4A-eDC"/>
+                <constraint firstItem="ksA-Kh-7sw" firstAttribute="top" secondItem="Qt3-Vk-xZk" secondAttribute="bottom" constant="1" id="aud-gr-TXL"/>
                 <constraint firstItem="ksA-Kh-7sw" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="b1e-V7-YxH"/>
+                <constraint firstItem="Qt3-Vk-xZk" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="7" id="hxC-QV-M4D"/>
                 <constraint firstItem="Qt3-Vk-xZk" firstAttribute="centerX" secondItem="ksA-Kh-7sw" secondAttribute="centerX" id="jCe-Ls-0gK"/>
                 <constraint firstItem="Yiw-UH-idT" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="xeu-qj-0eq"/>
                 <constraint firstItem="Yiw-UH-idT" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="8" id="zMl-6w-uDK"/>

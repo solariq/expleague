@@ -44,7 +44,7 @@ public class RoomAgent extends PersistentActorAdapter {
   private Archive.Dump dump;
 
   private Subscription subscription;
-  private ProcessMode mode = ProcessMode.REPLAY;
+  private ProcessMode mode;
 
   public RoomAgent(JID jid, boolean archive) {
     this.jid = jid;
@@ -520,6 +520,7 @@ public class RoomAgent extends PersistentActorAdapter {
       archive.clear();
     XMPP.subscribe(subscription, context());
     dump = Archive.instance().dump(jid.local());
+    mode = ProcessMode.RECOVER;
   }
 
   @Override

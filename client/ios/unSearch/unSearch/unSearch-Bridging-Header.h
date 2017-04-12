@@ -11,3 +11,5 @@
 #import <GoogleMaps/GoogleMaps.h>
 #import <GooglePlacePicker/GooglePlacePicker.h>
 #import <FBSDKCoreKit/FBSDKAppEvents.h>
+
+#import "BNHtmlPdfKit/BNHtmlPdfKit.h"

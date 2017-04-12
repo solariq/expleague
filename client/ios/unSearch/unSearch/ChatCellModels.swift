@@ -63,6 +63,7 @@ class CompositeCellModel: ChatCellModel {
     fileprivate var parts:[AnyObject] = []
     fileprivate var timeStamps: [Date] = []
     var textAlignment: NSTextAlignment = .left
+    var effectiveWidth: CGFloat = 0
 
     func append(text: String, time: Date) {
         parts.append(text as AnyObject)
@@ -101,10 +102,10 @@ class CompositeCellModel: ChatCellModel {
     func height(maxWidth width: CGFloat) -> CGFloat {
         var height: CGFloat = 0
         for i in 0 ..< parts.count {
-            let blockSize = self.blockSize(width: width - 12, index: i)
+            let blockSize = self.blockSize(width: width - 8, index: i)
             height += blockSize.height
         }
-        return ceil(height + 10)
+        return ceil(height + 8)
     }
 
     func form(chatCell cell: UIView) throws {
@@ -125,8 +126,7 @@ class CompositeCellModel: ChatCellModel {
         var prev: UIView?
 
         for i in 0 ..< parts.count {
-            var blockSize = self.blockSize(width: cell.maxWidth - 12, index: i)
-            blockSize.width += 12
+            let blockSize = self.blockSize(width: cell.maxWidth - 8, index: i)
             var block: UIView?
             if let text = parts[i] as? String {
                 let label = UITextView()
@@ -216,9 +216,10 @@ class CompositeCellModel: ChatCellModel {
             }
         }
 
-        cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .height, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: ceil(height)))
-        cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .width, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: ceil(width + 12)))
-//        print("Cell: \(cell.dynamicType), content size: (\(width), \(height)), cell size: \(cell.frame.size)")
+//        cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .height, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: ceil(height)))
+        effectiveWidth = width + 12
+        //cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .width, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: ceil(width + 12)))
+  //      print("Cell: \(cell.dynamicType), content size: (\(width), \(height)), cell size: \(cell.frame.size)")
     }
 
     fileprivate func blockSize(width: CGFloat, index: Int) -> CGSize {
@@ -256,21 +257,24 @@ class CompositeCellModel: ChatCellModel {
         else {
             blockSize = CGSize(width: 0, height: 0)
         }
-        return CGSize(width: blockSize.width, height: blockSize.height)
+        return CGSize(width: ceil(blockSize.width), height: ceil(blockSize.height))
     }
 }
 
 class ChatMessageModel: CompositeCellModel {
     let author: String
     let incoming: Bool
+    let active: Bool
+    var closed: Bool = false
 
     override var type: CellType {
         return incoming ? .incoming : .outgoing
     }
 
-    init(incoming: Bool, author: String) {
+    init(incoming: Bool, author: String, active: Bool) {
         self.author = author
         self.incoming = incoming
+        self.active = active
     }
 
     override func height(maxWidth width: CGFloat) -> CGFloat {
@@ -279,15 +283,21 @@ class ChatMessageModel: CompositeCellModel {
     
     override func form(messageViewCell cell: MessageChatCell) {
         super.form(messageViewCell: cell)
-//        if (incoming) {
-//            (cell as! MessageChatCell).avatar.image = AppDelegate.instance.activeProfile!.avatar(author, url: nil)
-//            (cell as! MessageChatCell).avatar.layer.cornerRadius = (cell as! MessageChatCell).avatar.frame.size.width / 2;
-//            (cell as! MessageChatCell).avatar.clipsToBounds = true;
-//        }
+        cell.widthConstraint.constant = effectiveWidth
+        guard let avatar = (cell as MessageChatCell).avatar, let expert = ExpLeagueProfile.active.expert(login: author) else {
+            return
+        }
+        avatar.isHidden = active
+        avatar.expert = expert
+        cell.avatarWidth?.constant = active ? CGFloat(0) : CGFloat(25)
+    }
+    
+    func close() {
+        closed = true
     }
     
     override func accept(_ message: ExpLeagueMessage) -> Bool {
-        if (message.from != author || (message.type != .expertMessage && message.type != .clientMessage)) {
+        if (closed || message.from != author || (message.type != .expertMessage && message.type != .clientMessage)) {
             return false
         }
 
@@ -463,20 +473,19 @@ class ExpertModel: ChatCellModel {
         }
         
         eipCell.name.text = expert.name
-        eipCell.avatar.image = expert.avatar
-        eipCell.avatar.online = expert.available
+        eipCell.avatar.expert = expert
         
         switch (status) {
         case .onTask:
-            eipCell.status.text = "Работает над вашим заказом"
+            eipCell.status.text = "Над вашим заказом работает"
             eipCell.status.textColor = Palette.COMMENT
             break
         case .canceled:
-            eipCell.status.text = "Отказался от задания"
+            eipCell.status.text = "Эксперт отказался от задания"
             eipCell.status.textColor = Palette.ERROR
             break
         case .finished:
-            eipCell.status.text = "Работал для вас"
+            eipCell.status.text = "Для вас работал эксперт"
             eipCell.status.textColor = Palette.COMMENT
             break
         }
@@ -629,7 +638,7 @@ class LookingForExpertModel: ChatCellModel {
         }
         else if (ExpLeagueProfile.active.onlineExperts.count == 0) {
             self.cell?.progress.startAnimating()
-            self.cell?.expertsOnline.text = "c 22 по 10 (Мск) эксперты отдыхают"
+            self.cell?.expertsOnline.text = "c 22 до 10 (Мск) эксперты отдыхают"
         }
         else {
             let count: Int
@@ -663,6 +672,39 @@ class LookingForExpertModel: ChatCellModel {
         self.order = order
         QObject.connect(ExpLeagueProfile.active, signal: #selector(ExpLeagueProfile.expertsChanged), receiver: self, slot: #selector(self.onExpertsChanged))
         QObject.connect(ExpLeagueProfile.active, signal: #selector(ExpLeagueProfile.connectedChanged), receiver: self, slot: #selector(self.onExpertsChanged))
+    }
+}
+
+class ReopenRoomModel: ChatCellModel {
+    weak var cell: ReopenRoomCell?
+    var active = true
+    
+    var type: CellType {
+        return .lookingForExpert
+    }
+    
+    func height(maxWidth width: CGFloat) -> CGFloat {
+        return LookingForExpertCell.height
+    }
+    
+    func form(chatCell cell: UIView) throws {
+        guard let reopenCell = cell as? ReopenRoomCell else {
+            throw ModelErrors.wrongCellType
+        }
+        self.cell = reopenCell
+        reopenCell.action = {
+            self.order.cancel(reopenCell.controller!)
+        }
+        self.cell!.layoutIfNeeded()
+    }
+    
+    func accept(_ message: ExpLeagueMessage) -> Bool {
+        return false
+    }
+
+    let order: ExpLeagueOrder
+    init (order: ExpLeagueOrder){
+        self.order = order
     }
 }
 

@@ -47,7 +47,18 @@ public class ExpLeagueProfile: NSManagedObject {
     }
     
     public func busyChanged() { QObject.notify(#selector(self.busyChanged), self) }
-    
+    public func adjustUnread(_ increment: Int) {
+        update {
+            self.unread += increment
+            if (self.unread < 0) {
+                self.unread = 0
+            }
+            
+            self.unreadChanged()
+        }
+    }
+    public func unreadChanged() { QObject.notify(#selector(self.unreadChanged), self) }
+
     public func disconnect() {
         communicator?.state.mode = .background
         communicator = nil
@@ -117,8 +128,16 @@ public class ExpLeagueProfile: NSManagedObject {
     
     public func listOrders() -> [ExpLeagueOrder] {
         var result: [ExpLeagueOrder] = []
-        for order in self.orders {
-            result.append(order as! ExpLeagueOrder)
+        var unread: Int32 = 0
+        for o in self.orders {
+            let order = o as! ExpLeagueOrder
+            result.append(order)
+            if (order.status != .archived) {
+                unread += order.unread
+            }
+        }
+        if (self.unread != unread) {
+            adjustUnread(unread - self.unread)
         }
         return result
     }
@@ -306,25 +325,25 @@ public class ExpLeagueProfile: NSManagedObject {
             msg.addChild(offer.xml)
             self.send(msg)
         
-            self.orderSelected = NSNumber(value: self.orders.count as Int)
-            self.add(order: order)
-            self.selectedOrder = order
+            self.orderSelected = NSNumber(value: self.orders.count as Int)            
+            self.selectedOrder = self.add(order: order)
         }
                
     }
     
-    func add(order: ExpLeagueOrder) {
+    func add(order: ExpLeagueOrder) -> ExpLeagueOrder {
         guard orders.filter({($0 as AnyObject).id == order.id}).isEmpty else {
-            return
+            return orders.filter({($0 as! ExpLeagueOrder).id == order.id}).first! as! ExpLeagueOrder
         }
         let mutableItems = orders.mutableCopy() as! NSMutableOrderedSet
         mutableItems.add(order)
         self.orders = mutableItems.copy() as! NSOrderedSet
         save()
         self.ordersChanged()
+        return order
     }
 
-    func add(aow order: ExpLeagueOrder) {
+    func add(aow order: ExpLeagueOrder) -> ExpLeagueOrder {
         order.emulate()
         for o in orders {
             let current = o as! ExpLeagueOrder
@@ -338,10 +357,10 @@ public class ExpLeagueProfile: NSManagedObject {
         receiveAnswerOfTheWeek = false
         aowId = order.id
         busyChanged()
-        add(order: order)
         if (aowTitle != nil) {
             Notifications.notifyBestAnswer(order, title: aowTitle!)
         }
+        return add(order: order)
     }
     
     var outgoing: Int {
