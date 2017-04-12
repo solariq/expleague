@@ -25,15 +25,17 @@ import static com.expleague.bots.utils.FunctionalUtils.throwableConsumer;
  */
 public class BotsManager {
   private final Map<String, Bot> bots = new HashMap<>();
+  private final String domain;
   private int clientNum = 0;
   private int adminNum = 0;
   private int expertNum = 0;
 
-
   public BotsManager() {
     final Config load = ConfigFactory.load();
     try {
-      ExpLeagueServer.setConfig(new ExpLeagueServer.ServerCfg(load));
+      final ExpLeagueServer.ServerCfg serverCfg = new ExpLeagueServer.ServerCfg(load);
+      domain = serverCfg.domain();
+      ExpLeagueServer.setConfig(serverCfg);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -47,19 +49,19 @@ public class BotsManager {
   }
 
   public ClientBot nextClient() throws JaxmppException {
-    final ClientBot clientBot = (ClientBot)bots.compute(String.format("client-bot-%d", ++clientNum), (id, bot) -> bot != null ? bot : new ClientBot(BareJID.bareJIDInstance(id, "localhost"), "poassord"));
+    final ClientBot clientBot = (ClientBot) bots.compute(String.format("client-bot-%d", ++clientNum), (id, bot) -> bot != null ? bot : new ClientBot(BareJID.bareJIDInstance(id, domain), "poassord"));
     clientBot.online();
     return clientBot;
   }
 
   public AdminBot nextAdmin() throws JaxmppException {
-    final AdminBot adminBot = (AdminBot) bots.compute(String.format("admin-bot-%d", ++adminNum), (id, bot) -> bot != null ? bot : new AdminBot(BareJID.bareJIDInstance(id, "localhost"), "poassord"));
+    final AdminBot adminBot = (AdminBot) bots.compute(String.format("admin-bot-%d", ++adminNum), (id, bot) -> bot != null ? bot : new AdminBot(BareJID.bareJIDInstance(id, domain), "poassord"));
     adminBot.online();
     return adminBot;
   }
 
   public ExpertBot nextExpert() throws JaxmppException {
-    final ExpertBot expertBot = (ExpertBot) bots.compute(String.format("expert-bot-%d", ++expertNum), (id, bot) -> bot != null ? bot : new ExpertBot(BareJID.bareJIDInstance(id, "localhost"), "poassord"));
+    final ExpertBot expertBot = (ExpertBot) bots.compute(String.format("expert-bot-%d", ++expertNum), (id, bot) -> bot != null ? bot : new ExpertBot(BareJID.bareJIDInstance(id, domain), "poassord"));
     expertBot.online();
     return expertBot;
   }
