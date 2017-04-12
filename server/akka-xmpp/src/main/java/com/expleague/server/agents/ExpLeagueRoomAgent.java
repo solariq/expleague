@@ -41,12 +41,10 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   private void state(RoomState newState) {
-    if (mode() == ProcessMode.NORMAL) {
-      GlobalChatAgent.tell(jid(), new RoomStateChanged(newState), context());
+    tellGlobal(new RoomStateChanged(newState));
+    commit();
+    if (mode() == ProcessMode.NORMAL)
       log.fine("Room " + jid().local() + " state change: " + state + " -> " + newState);
-      if (EnumSet.of(DELIVERY, WORK, FEEDBACK).contains(newState))
-        commit();
-    }
     state = newState;
   }
 
@@ -127,10 +125,10 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   @Override
   protected boolean filter(Message msg) {
     if (owner() == null)
-      update(msg.from(), null, Affiliation.OWNER);
+      affiliation(msg.from(), Affiliation.OWNER);
     if (msg.has(Start.class))
       affiliation(msg.from(), Affiliation.MEMBER);
-    else if (msg.has(Cancel.class))
+    else if (msg.has(Cancel.class) && affiliation(msg.from()) != Affiliation.OWNER)
       affiliation(msg.from(), Affiliation.NONE);
     return super.filter(msg);
   }

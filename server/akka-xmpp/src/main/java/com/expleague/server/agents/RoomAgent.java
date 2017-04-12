@@ -413,7 +413,8 @@ public class RoomAgent extends PersistentActorAdapter {
   }
 
   protected void commit() {
-    dump.commit();
+    if (mode() == ProcessMode.NORMAL)
+      dump.commit();
   }
 
   @NotNull

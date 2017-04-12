@@ -52,7 +52,7 @@ public class GlobalChatAgent extends RoomAgent {
 
   @Override
   protected Role suggestRole(JID who, Affiliation affiliation) {
-    if (isRoom(who))
+    if (who.isRoom())
       return Role.PARTICIPANT;
     else if (isTrusted(who))
       return Role.MODERATOR;
@@ -61,7 +61,7 @@ public class GlobalChatAgent extends RoomAgent {
 
   @Override
   protected void process(Message msg) {
-    if (!isRoom(msg.from())) {
+    if (!msg.from().isRoom()) {
       super.process(msg);
       return;
     }
@@ -130,11 +130,7 @@ public class GlobalChatAgent extends RoomAgent {
 
   @Override
   protected boolean relevant(Stanza msg, JID to) {
-    return !isRoom(to) && super.relevant(msg, to); // rooms must not see what happens at global chat
-  }
-
-  private boolean isRoom(JID from) {
-    return from.domain().startsWith("muc.");
+    return !to.isRoom() && super.relevant(msg, to); // rooms must not see what happens at global chat
   }
 
   private static class RoomStatus {

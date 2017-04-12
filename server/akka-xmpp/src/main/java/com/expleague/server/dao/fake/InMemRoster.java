@@ -36,7 +36,7 @@ public class InMemRoster implements Roster {
   @Override
   public synchronized XMPPDevice register(RegisterQuery query) throws Exception {
     final XMPPDevice device = device(query.username());
-    if (device != null) {
+    if (device != XMPPDevice.NO_SUCH_DEVICE) {
       if (device.passwd().equals(query.passwd()))
         return device;
       throw new AuthenticationException("User known with different password");
@@ -73,7 +73,8 @@ public class InMemRoster implements Roster {
 
   @Override
   public synchronized XMPPDevice device(String name) {
-    return devices.get(name);
+    final XMPPDevice xmppDevice = devices.get(name);
+    return xmppDevice != null ? xmppDevice : XMPPDevice.NO_SUCH_DEVICE;
   }
 
   @Override
