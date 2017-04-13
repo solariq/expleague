@@ -16,6 +16,10 @@ void PersistentPropertyHolderTest::readWrite_data(){
     QTest::newRow("mixedlist") << "some" << "page" << QVariant(QList<QVariant>({1, "two", 3.0}));
     QVariant v = QVariantHash({{"one",1},{"two",2}});
     QTest::newRow("hash") << "some" << "page" << v;
+    v = QVariantList({QVariantHash({{"one",1},{"two",2}}),QVariantHash({{"one",1},{"two",2}})});
+    QTest::newRow("list of hashes") << "some" << "page" << v;
+    v = QVariantList({QVariantList({"first", "second", "third"}),QVariantList({"first", "second", "third"})});
+    QTest::newRow("list of lists") << "some" << "page" << v;
 }
 
 void PersistentPropertyHolderTest::readWrite(){
@@ -65,10 +69,8 @@ void PersistentPropertyHolderTest::visitValues(){
 
 void PersistentPropertyHolderTest::append(){
     PersistentPropertyHolder h("other");
-    h.remove("place.1");
-    h.remove("place.2");
+    h.remove("place");
     h.store("place.1", QVariantList({"data1", "data2"}));
-    h.store("place.2", QVariant());
     h.save();
     h.append("place.1", QVariant(QVariantList{"data3", "data4"}));
     h.append("place.2", "data");
