@@ -1,6 +1,7 @@
 #include <QString>
 #include <QSystemTrayIcon>
 #include <QtTest>
+#include <QDebug>
 #include <QQmlApplicationEngine>
 
 #include "util/pholder_test.h"

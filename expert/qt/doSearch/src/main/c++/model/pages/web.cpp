@@ -310,7 +310,7 @@ void WebSite::interconnect() {
 
     m_root = parent()->webPage(value("site.root").toString());
     QObject::connect(m_root, SIGNAL(urlChanged(QUrl)), this, SLOT(onRootUrlChanged(QUrl)));
-    visitKeys("web.site.mirrors", [this](const QVariant& var) {
+    visitValues("web.site.mirrors", [this](const QVariant& var) {
         WebSite* mirror = qobject_cast<WebSite*>(parent()->page(var.toString()));
         if (mirror) {
             m_mirrors += mirror;

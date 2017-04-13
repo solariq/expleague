@@ -250,7 +250,7 @@ QDir Page::storage() const {
     return QDir(parent()->pageResource(id()));
 }
 
-Page::Page(const QString& id, const QString& ui, doSearch* parent): QObject(parent), PersistentPropertyHolder(parent->pageResource(id) + "/page.xml"),
+Page::Page(const QString& id, const QString& ui, doSearch* parent): QObject(parent), PersistentPropertyHolder(parent->pageResource(id)),
     m_id(id), m_ui_url(ui), m_in_total(0), m_out_total(0)
 {
     m_last_visit_ts = value("ts").toInt();
@@ -259,13 +259,13 @@ Page::Page(const QString& id, const QString& ui, doSearch* parent): QObject(pare
 }
 
 void Page::interconnect() {
-    visitKeys("incoming", [this](const QVariant& value) {
+    visitValues("incoming", [this](const QVariant& value) {
         PageModel model(PageModel::fromVariant(value));
         QString pageId = value.toHash().value("id").toString();
         m_incoming[parent()->page(pageId)] = model;
         m_in_total += model.freq;
     });
-    visitKeys("outgoing", [this](const QVariant& value) {
+    visitValues("outgoing", [this](const QVariant& value) {
         PageModel model(PageModel::fromVariant(value));
         QString pageId = value.toHash().value("id").toString();
         m_outgoing[parent()->page(pageId)] = model;
@@ -384,7 +384,7 @@ CompositeContentPage::CompositeContentPage(const QString& id, const QString& uiQ
 {}
 
 void CompositeContentPage::interconnect() {
-    visitKeys("content.part", [this](const QVariant& var){
+    visitValues("content.part", [this](const QVariant& var){
         ContentPage* part = qobject_cast<ContentPage*>(parent()->page(var.toString()));
         if (m_parts.contains(part))
             return;

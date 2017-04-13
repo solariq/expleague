@@ -64,7 +64,7 @@ void doSearch::restoreState() {
 
 QString doSearch::pageResource(const QString &id) const {
 //    qDebug() << "page " << id << " location " << QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/pages/" + id;
-    return QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/pages/" + id;
+    return "pages." + id;
 }
 
 class EmptyPage: public Page {

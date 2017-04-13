@@ -13,7 +13,8 @@ class PersistentPropertyHolder {
 public:
     QVariant value(const QString& key) const;
     void store(const QString& key, const QVariant& value);
-    void visitKeys(const QString& key, std::function<void (const QVariant&)> visitor) const;
+    void visitKeys(const QString& key, std::function<void (const QString&)> visitor) const;
+    void visitValues(const QString& key, std::function<void (const QVariant&)> visitor) const;
     int count(const QString& key) const;
     void append(const QString& key, const QVariant& value);
     void remove(const QString& key);
@@ -26,7 +27,9 @@ public:
     PersistentPropertyHolder(const QString& file);
 
 private:
-    QVariant* resolve(const QStringList& path, bool create = false);
+    void put(const QString& key, const QVariant& val);
+    QVariant get(const QString& key) const;
+    void ap(const QString& key, const QVariant& value);
 private:
 
     QString m_page;
