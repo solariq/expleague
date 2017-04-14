@@ -20,7 +20,6 @@ import com.expleague.xmpp.control.receipts.Received;
 import com.expleague.xmpp.control.receipts.Request;
 import com.expleague.xmpp.stanza.Iq;
 import com.expleague.xmpp.stanza.Message;
-import com.expleague.xmpp.stanza.Presence;
 import com.expleague.xmpp.stanza.Stanza;
 import com.relayrides.pushy.apns.util.TokenUtil;
 

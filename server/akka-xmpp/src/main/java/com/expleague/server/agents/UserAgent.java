@@ -230,7 +230,7 @@ public class UserAgent extends PersistentActorAdapter {
           presence.append(new MucXData(history));
           XMPP.send(presence, context());
         }
-        invoke(new Presence(deviceJid, true));
+        XMPP.send(new Presence(deviceJid, true), context());
       }
     }
 

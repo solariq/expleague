@@ -190,7 +190,7 @@ public class XMPP extends ActorAdapter<UntypedActor> {
     private final Map<JID, Presence> status = new HashMap<>();
 
     public boolean updatePresence(final Presence presence) {
-      final JID from = presence.from();
+      final JID from = presence.from().bare();
       return !presence.equals(status.put(from, presence));
     }
 

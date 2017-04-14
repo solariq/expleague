@@ -206,8 +206,12 @@ public class RoomAgent extends PersistentActorAdapter {
     return false;
   }
 
+  Set<String> knownIds = new HashSet<>();
   private void archive(Stanza iq) {
     if (archive != null) {
+      if (knownIds.contains(iq.id()) || knownIds.contains(iq.strippedVitalikId()))
+        return;
+      knownIds.add(iq.id());
       archive.add(iq);
       dump.accept(iq);
     }

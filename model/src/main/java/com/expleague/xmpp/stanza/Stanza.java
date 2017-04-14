@@ -118,6 +118,13 @@ public class Stanza extends Item {
     return id;
   }
 
+  public String strippedVitalikId() {
+    final int beginIndex = id.lastIndexOf('-');
+    if (beginIndex > 0)
+      return id.substring(0, beginIndex);
+    return id;
+  }
+
   @Override
   public int hashCode() {
     return id.hashCode();
