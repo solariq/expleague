@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -170,13 +171,13 @@ public class NotificationsManager extends ActorAdapter<UntypedActor> {
       return;
     try {
       Future<PushNotificationResponse<SimpleApnsPushNotification>> future = client.sendNotification(notification);
-      final PushNotificationResponse<SimpleApnsPushNotification> now = future.get();
+      final PushNotificationResponse<SimpleApnsPushNotification> now = future.get(10, TimeUnit.SECONDS);
       if (now.isAccepted())
         log.fine("Successfully have sent push notification to " + notification.getToken() + ". Text: " + notification.getPayload());
       else
         log.warning("Failed to sent push notification to " + notification.getToken() + " with reason: " + now.getRejectionReason() + " token used: " + notification.getToken());
     }
-    catch (InterruptedException | ExecutionException e) {
+    catch (InterruptedException | ExecutionException | TimeoutException e) {
       log.log(Level.WARNING, "Exception during push notification send.", e);
     }
   }
