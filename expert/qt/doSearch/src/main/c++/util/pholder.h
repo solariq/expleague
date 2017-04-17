@@ -20,11 +20,12 @@ public:
     void remove(const QString& key);
     void remove(const QString& key, std::function<bool (const QVariant& value)> filter);
     void replaceOrAppend(const QString& key, const QVariant& value, std::function<bool (const QVariant& lhs, const QVariant& rhs)> equals);
-
     void save() const;
-
-public:
+    bool containsKey(const QString& s) const;
+    PersistentPropertyHolder cd(const QString& s);
     PersistentPropertyHolder(const QString& file);
+
+    static void debugPrintAll();
 
 private:
     void put(const QString& key, const QVariant& val);

@@ -106,7 +106,7 @@ QUrl yandexUrl(const QString& q) {
 
 void SearchRequest::setSession(SearchSession* session) {
     m_session = session;
-    store("search.session", session ? session->id() : QVariant());
+    store("search/session", session ? session->id() : QVariant());
     save();
     emit sessionChanged();
 }
@@ -142,7 +142,7 @@ SearchRequest::SearchRequest(const QString& id, doSearch* parent): CompositeCont
 
 void SearchRequest::interconnect() {
     CompositeContentPage::interconnect();
-    QVariant sessionVar = value("search.session");
+    QVariant sessionVar = value("search/session");
 
     if (sessionVar.isValid())
         setSession(static_cast<SearchSession*>(parent()->page(sessionVar.toString())));

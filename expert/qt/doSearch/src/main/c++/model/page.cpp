@@ -247,14 +247,13 @@ void Page::visitChildren(const QString& fullKey, std::function<void (Page* value
 }
 
 QDir Page::storage() const {
-    return QDir(parent()->pageResource(id()));
+    return parent()->pageStorage(id());
 }
 
 Page::Page(const QString& id, const QString& ui, doSearch* parent): QObject(parent), PersistentPropertyHolder(parent->pageResource(id)),
     m_id(id), m_ui_url(ui), m_in_total(0), m_out_total(0)
 {
     m_last_visit_ts = value("ts").toInt();
-
 //    qDebug() << id << " restored: " << m_properties;
 }
 

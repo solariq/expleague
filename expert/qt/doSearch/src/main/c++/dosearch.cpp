@@ -2,6 +2,7 @@
 
 #include "ir/dictionary.h"
 #include "util/mmath.h"
+#include "util/pholder.h"
 
 #include "model/pages/admins.h"
 
@@ -44,14 +45,13 @@ doSearch* doSearch::instance() {
 }
 
 void doSearch::restoreState() {
-    QDir contextsDir(pageResource("context"));
-    foreach(QString contextFileName, contextsDir.entryList()) {
-        if (contextFileName.startsWith("."))
-            continue;
-        Context* ctxt = qobject_cast<Context*>(page("context/" + contextFileName));
+    PersistentPropertyHolder contextHolder(pageResource("context"));
+    contextHolder.visitKeys("", [this](const QString& contextName){
+        Context* ctxt = qobject_cast<Context*>(page("context." + contextName));
         if (!ctxt->hasTask())
             m_contexts.append(ctxt);
-    }
+    });
+
     if (m_contexts.empty())
         createContext("Новый контекст");
 
@@ -62,8 +62,11 @@ void doSearch::restoreState() {
     m_saver->restoreState(this);
 }
 
+QDir doSearch::pageStorage(const QString &id) const {
+    return QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/pages/" + id;
+}
+
 QString doSearch::pageResource(const QString &id) const {
-//    qDebug() << "page " << id << " location " << QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/pages/" + id;
     return "pages." + id;
 }
 
@@ -128,13 +131,12 @@ WebPage* doSearch::webPage(const QUrl& url) const {
 
 QString doSearch::nextId(const QString& prefix) const {
     QString id;
-
+    PersistentPropertyHolder root(prefix);
     do {
-        id = prefix;
-        id += (prefix.endsWith('/') ? "" : "/") + randString(10);
+        id = randString(10);
     }
-    while (QFile(pageResource(id)).exists());
-    return id;
+    while (root.containsKey(id));
+    return prefix + "." + id;
 }
 
 SearchSession* doSearch::session(SearchRequest* seed) const {
@@ -172,7 +174,7 @@ MarkdownEditorPage* doSearch::document(const QString& title, Member* author, boo
 }
 
 Context* doSearch::createContext(const QString& name) {
-    Context* instance = context(nextId("context/"), name);
+    Context* instance = context(nextId("context"), name);
     append(instance);
     emit contextsChanged();
     return instance;
@@ -182,7 +184,7 @@ Page* doSearch::page(const QString &id) const {
     if (id.isEmpty())
         return 0;
     return page(id, [this](const QString& id, doSearch* parent) -> Page* {
-        if (id.startsWith("context/"))
+        if (id.startsWith("context."))
             return new Context(id, parent);
         else if (id == AdminContext::ID)
             return new AdminContext(parent);
@@ -276,8 +278,9 @@ void doSearch::remove(Context* context, bool erase) {
     m_pages.remove(context->id());
     emit contextsChanged();
     if (erase) {
-        QDir contextDir(pageResource(context->id()));
+        QDir contextDir = pageStorage(context->id());
         contextDir.removeRecursively();
+        context->remove("");
     }
 }
 

@@ -26,6 +26,7 @@ class MarkdownHighlighter;
 namespace expleague {
 class StateSaver;
 class CollectionDictionary;
+
 class doSearch: public QObject {
     Q_OBJECT
 
@@ -88,6 +89,7 @@ private slots:
 private:
     friend class StateSaver;
     friend class Page;
+    QDir pageStorage(const QString& id) const;
     QString pageResource(const QString& id) const;
     Page* page(const QString& id, std::function<Page* (const QString& id, doSearch*)> factory) const;
 

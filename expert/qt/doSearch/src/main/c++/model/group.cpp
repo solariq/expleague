@@ -127,7 +127,7 @@ void PagesGroup::close(Page* page) {
 
 PagesGroup::PagesGroup(Page* root, Type type, Context* owner):
     QObject(owner),
-    PersistentPropertyHolder(owner->storage().filePath("groups." + md5(root->id())) + (type == SUGGEST ? ".suggest" : ".group")),
+    PersistentPropertyHolder(owner->cd( (type == SUGGEST ? "suggest." : "group.") + md5(root->id()) )),
     m_owner(owner), m_root(root), m_parent(0), m_type(type), m_closed_start(0)
 {
     if (type != SUGGEST) {
@@ -139,13 +139,13 @@ PagesGroup::PagesGroup(Page* root, Type type, Context* owner):
 
 PagesGroup::PagesGroup(const QString& groupId, Context* owner):
     QObject(owner),
-    PersistentPropertyHolder(owner->storage().filePath("groups." + groupId +".group")),
+    PersistentPropertyHolder(owner->cd("group." + groupId)),
     m_owner(owner), m_parent(0)
 {
     m_root = owner->parent()->page(value("root").toString());
     m_type = qobject_cast<Context*>(m_root) ? CONTEXT : NORMAL;
-    visitKeys("page", [this, owner](const QString& pageId){
-        m_pages.append(owner->parent()->page(pageId));
+    visitValues("page", [this, owner](const QVariant& pageId){
+        m_pages.append(owner->parent()->page(pageId.toString()));
     });
     m_pages.removeAll(0);
     m_closed_start = value("closed-pages-start").isNull() ? m_pages.size() : value("closed-pages-start").toInt();

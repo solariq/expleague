@@ -349,14 +349,10 @@ void Context::interconnect() {
     connect(this, SIGNAL(partRemoved(ContentPage*)), this, SLOT(onPartRemoved(ContentPage*)));
 
     {
-        QDir storage = this->storage();
-        storage.cd("groups");
-        foreach(QFileInfo info, storage.entryInfoList()) {
-            if (info.isDir() && !info.fileName().startsWith(".") && QFile(info.absoluteFilePath() + "/group.xml").exists()) {
-                PagesGroup* group = new PagesGroup(info.fileName(), this);
-                m_associations[group->root()->id()] = group;
-            }
-        }
+        visitKeys("group", [this](const QString& sub) {
+            PagesGroup* group = new PagesGroup(sub, this);
+            m_associations[group->root()->id()] = group;
+        });
     }
 }
 

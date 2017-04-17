@@ -21,6 +21,8 @@
 
 #include <QDebug>
 
+const char devide = '.';
+
 QString toString(const QVariant& var);
 QVariant fromString(const QString& s);
 int commonPrefixSize(const QStringList &a, const QStringList& b);
@@ -39,8 +41,12 @@ QVariant convert(const QString& s){
 }
 
 LevelDBContainer& PersistentPropertyHolder::getLevelDBCotainer(){
-    static LevelDBContainer container("pages");
+    static LevelDBContainer container("pages/db");
     return container;
+}
+
+PersistentPropertyHolder PersistentPropertyHolder::cd(const QString& key){
+    return PersistentPropertyHolder(m_page + (key.isEmpty()?"":(devide + key)));
 }
 
 void PersistentPropertyHolder::put(const QString& key, const QVariant& val){
@@ -53,12 +59,12 @@ void PersistentPropertyHolder::put(const QString& key, const QVariant& val){
     }else if(val.canConvert(QVariant::List)){
         QVariantList list = val.toList();
         for(int i = 0; i < list.size(); i++){
-            put(key + "." + QString::number(i), list[i]);
+            put(key + devide + QString::number(i), list[i]);
         }
     }else if(val.canConvert(QVariant::Hash)){
         QVariantHash hash = val.toHash();
         for(auto i = hash.begin(); i != hash.end(); ++i){
-            put(key + "." + i.key(), i.value());
+            put(key + devide + i.key(), i.value());
         }
     }else{
         qDebug() << "Warning unknown type in leveldb";
@@ -84,7 +90,7 @@ QVariant makeComplexVariant(const QStringList& path, int start, const QVariant& 
 QString nextKey(const QString& root, const QString& fullKey){
     int left = root.size();
     int right = left + 1;
-    for(;right < fullKey.length() && fullKey[right] != '.'; right++);
+    for(;right < fullKey.length() && fullKey[right] != devide; right++);
     return fullKey.mid(left + 1, right - left - 1);
 }
 
@@ -103,7 +109,7 @@ QVariant PersistentPropertyHolder::get(const QString& key) const {
         if(spath.size() == 0){
             return convert(data);
         }
-        QStringList path = spath.split(".");
+        QStringList path = spath.split(devide);
         int prefixSize = commonPrefixSize(path, prevPath);
         for(int i = 0; i <= path.length(); i++){
             if(current->isNull()){
@@ -131,20 +137,29 @@ QVariant PersistentPropertyHolder::get(const QString& key) const {
 }
 
 QVariant PersistentPropertyHolder::value(const QString& key) const {
-    return get(m_page + "." + key);
+    return get(m_page + (key.isEmpty()?"":(devide + key)));
 }
 
 void PersistentPropertyHolder::store(const QString& key, const QVariant& value) {
     if (!value.isNull()) {
-        put(m_page + "." + key, value);
+        put(m_page + (key.isEmpty()?"":(devide + key)), value);
     }
     m_changes++;
 }
 
+bool PersistentPropertyHolder::containsKey(const QString &key) const{
+    bool contains = false;
+    visitKeys(key, [&](const QString& str){
+        if(str.startsWith(key)){
+            contains = true;
+        }
+    });
+    return contains;
+}
 
 void PersistentPropertyHolder::visitKeys(const QString& key, std::function<void (const QString& str)> visitor) const {
     leveldb::DB* db = getLevelDBCotainer().get();
-    QByteArray fullKey = (m_page + "." + key).toUtf8();
+    QByteArray fullKey = (m_page + (key.isEmpty()?"":(devide + key))).toUtf8();
     leveldb::Slice addr(fullKey.data(), fullKey.length());
     QString prev;
     std::unique_ptr<leveldb::Iterator> iter(db->NewIterator(leveldb::ReadOptions()));
@@ -160,7 +175,7 @@ void PersistentPropertyHolder::visitKeys(const QString& key, std::function<void 
 
 void PersistentPropertyHolder::visitValues(const QString& key, std::function<void (const QVariant& val)> visitor) const {
     leveldb::DB* db = getLevelDBCotainer().get();
-    QByteArray fullKey = (m_page + "." + key).toUtf8();
+    QByteArray fullKey = (m_page + devide + key).toUtf8();
     leveldb::Slice addr(fullKey.data(), fullKey.length());
     QString prev;
     std::unique_ptr<leveldb::Iterator> iter(db->NewIterator(leveldb::ReadOptions()));
@@ -168,7 +183,7 @@ void PersistentPropertyHolder::visitValues(const QString& key, std::function<voi
         QString str = QString::fromUtf8(QByteArray(iter->key().data(), iter->key().size()));
         QString sub = nextKey(fullKey, str);
         if(sub != prev){
-            visitor(get(fullKey + "." + sub));
+            visitor(get(fullKey + devide + sub));
         }
         prev = std::move(sub);
     }
@@ -184,20 +199,20 @@ void PersistentPropertyHolder::ap(const QString& key, const QVariant& value) {
         bool ok = false;
         QString str = QString::fromUtf8(QByteArray(iter->key().data(), iter->key().size()));
         QString sub = nextKey(fullKey, str);
-        last = sub.toInt(&ok);
+        last = qMax(sub.toInt(&ok), last);
         assert(ok || sub == ""); //Several types
     }
-    put(fullKey + "." + QString::number(last + 1), value);
+    put(fullKey + devide + QString::number(last + 1), value);
 }
 
 void PersistentPropertyHolder::append(const QString& key, const QVariant& value) {
-    ap(m_page + "." + key, value);
+    ap(m_page + devide + key, value);
     m_changes++;
 }
 
 void PersistentPropertyHolder::remove(const QString& key) {
     leveldb::DB* db = getLevelDBCotainer().get();
-    QByteArray fullKey = (m_page + "." + key).toUtf8();
+    QByteArray fullKey = (m_page + devide + key).toUtf8();
     leveldb::Slice addr(fullKey.data(), fullKey.length());
     std::unique_ptr<leveldb::Iterator> iter(db->NewIterator(leveldb::ReadOptions()));
     for(iter->Seek(addr); iter->Valid() && iter->key().starts_with(addr); iter->Next()){
@@ -209,7 +224,7 @@ void PersistentPropertyHolder::remove(const QString& key) {
 
 void PersistentPropertyHolder::remove(const QString& key, std::function<bool (const QVariant& value)> filter) {
     leveldb::DB* db = getLevelDBCotainer().get();
-    QByteArray fullKey = (m_page + "." + key).toUtf8();
+    QByteArray fullKey = (m_page + devide + key).toUtf8();
     leveldb::Slice addr(fullKey.data(), fullKey.length());
     std::unique_ptr<leveldb::Iterator> iter(db->NewIterator(leveldb::ReadOptions()));
     for(iter->Seek(addr); iter->Valid() && iter->key().starts_with(addr); iter->Next()){
@@ -223,7 +238,7 @@ void PersistentPropertyHolder::remove(const QString& key, std::function<bool (co
 
 void PersistentPropertyHolder::replaceOrAppend(const QString& key, const QVariant& val, std::function<bool (const QVariant& lhs, const QVariant& rhs)> equals) {
     leveldb::DB* db = getLevelDBCotainer().get();
-    QByteArray fullKey = (m_page + "." + key).toUtf8();
+    QByteArray fullKey = (m_page + devide + key).toUtf8();
     leveldb::Slice addr(fullKey.data(), fullKey.length());
 
     std::unique_ptr<leveldb::Iterator> iter(db->NewIterator(leveldb::ReadOptions()));
@@ -270,20 +285,14 @@ PersistentPropertyHolder::PersistentPropertyHolder(const QString& pname):
     m_page(pname){
 }
 
-
-template <typename T>
-void appendVariant(QVariant& to, const T& value) {
-    if (to.canConvert(QVariant::Type::List)) {
-        QVariantList& lst = *reinterpret_cast<QVariantList*>(to.data());
-        lst.append(value);
+void PersistentPropertyHolder::debugPrintAll(){
+    leveldb::DB* db = getLevelDBCotainer().get();
+    std::unique_ptr<leveldb::Iterator> iter(db->NewIterator(leveldb::ReadOptions()));
+    for(iter->SeekToFirst(); iter->Valid(); iter->Next()){
+        QString key = QString::fromUtf8(QByteArray(iter->key().data(), iter->key().size()));
+        QString val = QString::fromUtf8(QByteArray(iter->value().data(), iter->value().size()));
+        qDebug() << key << "  " << val;
     }
-    else if (!to.isNull()) {
-        QVariantList lst;
-        lst += to;
-        lst += value;
-        to.setValue(lst);
-    }
-    else to.setValue(value);
 }
 
 int commonPrefixSize(const QStringList &a, const QStringList& b){
