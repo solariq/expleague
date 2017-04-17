@@ -91,6 +91,7 @@ QQuickItem* Page::ui(bool cache) const {
             foreach(QQmlError error, component->errors()) {
                 qWarning() << error;
             }
+            exit(-1);
         }
         componentsCache[m_ui_url] = component;
     }
@@ -110,11 +111,17 @@ QQuickItem* Page::ui(bool cache) const {
 bool Page::transferUI(Page* other) const {
     if (!m_ui || !m_context || other->m_ui) // have no ui or other have alreagy got one
         return false;
+    QObject::disconnect(m_ui, 0, this, 0);
+    QQuickItem* scopeItem = m_ui->parentItem();
+    while (scopeItem && !scopeItem->isFocusScope() && scopeItem->parentItem())
+        scopeItem = scopeItem->parentItem();
+
+    if (!scopeItem) // the ui item is broken (no scope)
+        return false;
     other->m_context = m_context;
     other->m_ui = m_ui;
-    QObject::disconnect(m_ui, 0, this, 0);
     m_ui->setParentItem(0);
-//    m_ui->setParent(other);
+    //    m_ui->setParent(other);
     m_context->setContextProperty("owner", other);
     connect(m_ui, &QQuickItem::destroyed, [other](){
         other->m_ui = 0;
@@ -213,7 +220,8 @@ void Page::incomingTransition(Page* page, TransitionType type) {
 
 double Page::titleWidth() const {
     QString title = this->title();
-    return title.isEmpty() ? 200 : titleFontMetrics.boundingRect(title).width();
+    QRect rect = titleFontMetrics.boundingRect(title);
+    return title.isEmpty() ? 200 : rect.width();
 }
 
 doSearch* Page::parent() const {

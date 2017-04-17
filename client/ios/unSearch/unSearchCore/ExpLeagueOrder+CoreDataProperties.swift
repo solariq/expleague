@@ -17,6 +17,7 @@ extension ExpLeagueOrder {
     @NSManaged public var started: TimeInterval
     @NSManaged public var topic: String
     @NSManaged public var parent: ExpLeagueProfile
+    @NSManaged public var unread: Int32
 
     @NSManaged var flags: Int16
     @NSManaged var messagesRaw: NSOrderedSet

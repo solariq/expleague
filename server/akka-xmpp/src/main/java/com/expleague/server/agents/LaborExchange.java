@@ -41,6 +41,8 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
     final Collection<ActorRef> children = JavaConversions.asJavaCollection(context().children());
     ActorRef responsible = null;
     for (final ActorRef ref : children) {
+      if (order.state() == OrderState.DONE)
+        return;
       if (isBrokerActorRef(ref)) {
         if (AkkaTools.ask(ref, order) instanceof Operations.Ok) {
           responsible = ref;
@@ -48,11 +50,11 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
         }
       }
     }
-    if (responsible == null) {
+    if (responsible == null && order.state() != OrderState.DONE) {
       responsible = context().actorOf(Props.create(BrokerRole.class, self()));
       final Object answer = AkkaTools.ask(responsible, order);
       if (!(answer instanceof Operations.Ok))
-        throw new RuntimeException("Unable to create alive broker! Received: " + answer);
+        log.warning("Unable to create alive broker! Received: " + answer);
     }
   }
 
@@ -142,12 +144,12 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
     }
 
     @ActorMethod
-    public void invoke(Offer offer) {
-      log.fine("Experts department received offer " + offer.room().local());
+    public void invoke(ActorRef actor) {
+      log.fine("Experts department received request from broker");
       JavaConversions.asJavaCollection(context().children()).forEach(
           expert -> {
             log.finest("Forwarding offer to " + Experts.jid(expert));
-            expert.forward(offer, context());
+            expert.forward(actor, context());
           }
       );
     }

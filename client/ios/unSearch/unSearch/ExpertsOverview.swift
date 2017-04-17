@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import FBSDKCoreKit
 
 import unSearchCore
 
@@ -52,6 +53,7 @@ class ExpertsOverviewController: UITableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        FBSDKAppEvents.logEvent("Experts list open", parameters: ["user": ExpLeagueProfile.active.jid.user])
 
         table.isEditing = false
         if (navigationController != nil) {

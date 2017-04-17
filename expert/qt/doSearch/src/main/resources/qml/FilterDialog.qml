@@ -33,7 +33,9 @@ Window {
 
 
     width: 400
-    height: 150 + expertsInner.length * 30
+    height: Math.max(150 + expertsInner.length * 30, 300)
+    x: (dosearch.main.x + dosearch.main.width - width) / 2
+    y: (dosearch.main.y + dosearch.main.height - height) / 2
     minimumHeight: height
     maximumHeight: height
     minimumWidth: width

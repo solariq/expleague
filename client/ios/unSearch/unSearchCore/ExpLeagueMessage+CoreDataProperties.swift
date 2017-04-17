@@ -18,6 +18,7 @@ extension ExpLeagueMessage {
     
     @NSManaged var parentRaw: NSManagedObject
     @NSManaged var typeRaw: Int16
+    @NSManaged var readInner: NSNumber?
     @NSManaged var body: String?
     @NSManaged var propertiesRaw: String?
 }

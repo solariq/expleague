@@ -19,35 +19,47 @@
                 <rect key="frame" x="0.0" y="0.0" width="367" height="303"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chat_expert_tail" translatesAutoresizingMaskIntoConstraints="NO" id="Ccx-0y-Ber">
-                        <rect key="frame" x="12" y="284" width="14" height="12"/>
+                    <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Fh2-3v-lGU" customClass="AvatarView" customModule="unSearch" customModuleProvider="target">
+                        <rect key="frame" x="4" y="277" width="26" height="26"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="25" id="0L2-QI-ho2"/>
+                            <constraint firstAttribute="width" constant="25" id="1EI-jy-q2o"/>
+                        </constraints>
+                    </view>
+                    <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Cbx-yh-ZRR">
+                        <rect key="frame" x="44" y="9" width="285" height="294"/>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="285" id="0BN-Kv-NSB"/>
+                        </constraints>
+                        <edgeInsets key="layoutMargins" top="6" left="6" bottom="4" right="6"/>
+                    </view>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="chat_expert_tail" translatesAutoresizingMaskIntoConstraints="NO" id="Ccx-0y-Ber">
+                        <rect key="frame" x="30" y="284" width="14" height="12"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="14" id="eot-DQ-dE6"/>
                             <constraint firstAttribute="height" constant="12" id="rjr-uU-I3V"/>
                         </constraints>
                     </imageView>
-                    <view contentMode="scaleToFill" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Cbx-yh-ZRR">
-                        <rect key="frame" x="24" y="8" width="327" height="293.5"/>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                        <constraints>
-                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="25" id="0BN-Kv-NSB"/>
-                        </constraints>
-                        <edgeInsets key="layoutMargins" top="6" left="6" bottom="4" right="6"/>
-                    </view>
                 </subviews>
                 <color key="backgroundColor" red="0.2470588235" green="0.3294117647" blue="0.50980392159999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                 <constraints>
-                    <constraint firstItem="Ccx-0y-Ber" firstAttribute="leading" secondItem="Nb7-0I-srg" secondAttribute="leadingMargin" constant="-8" id="09p-Jq-YGc"/>
-                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="leading" secondItem="Nb7-0I-srg" secondAttribute="leadingMargin" constant="4" id="CZQ-Xw-nbL"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="Ccx-0y-Ber" secondAttribute="bottom" id="TCc-rz-PdH"/>
-                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="bottom" secondItem="Nb7-0I-srg" secondAttribute="bottomMargin" constant="8" id="Wyr-X8-x9j"/>
-                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="top" secondItem="Nb7-0I-srg" secondAttribute="topMargin" constant="-2" id="nzB-3A-1pP"/>
-                    <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="Cbx-yh-ZRR" secondAttribute="trailing" constant="8" id="p3X-yL-zPY"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="Fh2-3v-lGU" secondAttribute="bottom" constant="-8" id="4br-EL-Xgk"/>
+                    <constraint firstItem="Ccx-0y-Ber" firstAttribute="centerY" secondItem="Fh2-3v-lGU" secondAttribute="centerY" id="DoR-md-UBD"/>
+                    <constraint firstItem="Ccx-0y-Ber" firstAttribute="leading" secondItem="Fh2-3v-lGU" secondAttribute="trailing" id="PmC-o2-qg8"/>
+                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="bottom" secondItem="Nb7-0I-srg" secondAttribute="bottomMargin" constant="7.5" id="Wyr-X8-x9j"/>
+                    <constraint firstItem="Fh2-3v-lGU" firstAttribute="leading" secondItem="Nb7-0I-srg" secondAttribute="leadingMargin" constant="-12" id="YwT-dP-2hH"/>
+                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="top" secondItem="Nb7-0I-srg" secondAttribute="topMargin" constant="1" id="nzB-3A-1pP"/>
+                    <constraint firstItem="Cbx-yh-ZRR" firstAttribute="leading" secondItem="Ccx-0y-Ber" secondAttribute="trailing" id="o8d-YJ-rxs"/>
                 </constraints>
                 <edgeInsets key="layoutMargins" top="8" left="20" bottom="8" right="8"/>
             </tableViewCellContentView>
             <connections>
+                <outlet property="avatar" destination="Fh2-3v-lGU" id="llm-sY-8dC"/>
+                <outlet property="avatarWidth" destination="1EI-jy-q2o" id="pPc-02-XSo"/>
                 <outlet property="content" destination="Cbx-yh-ZRR" id="DCu-FH-Af5"/>
+                <outlet property="widthConstraint" destination="0BN-Kv-NSB" id="2NY-jh-oJ2"/>
             </connections>
             <point key="canvasLocation" x="353.5" y="548"/>
         </tableViewCell>

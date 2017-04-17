@@ -64,13 +64,23 @@ public class ExpLeagueOrder: NSManagedObject {
         }
         let result: [ExpLeagueMessage] = self.messagesRaw.array as! [ExpLeagueMessage]
         self._messages = result
+        var unread = 0
+        for msg in result {
+            unread += !msg.read ? 1 : 0
+        }
+        if (Int(self.unread) != unread) {
+            updateSync {
+                parent.adjustUnread(unread - Int(self.unread))
+                self.unread = Int32(unread)
+                unreadChanged()
+            }
+        }
         return result
     }
     
     public func messagesChanged() {
-        _unreadCount = nil
-        _messages = nil
         _experts = nil
+        _icon = nil
         QObject.notify(#selector(messagesChanged), self)
     }
 
@@ -84,8 +94,9 @@ public class ExpLeagueOrder: NSManagedObject {
     
     fileprivate dynamic var _icon: UIImage?
     public var typeIcon: UIImage {
-        guard _icon == nil else {
-            return _icon!
+        let icon = _icon
+        guard icon == nil else {
+            return icon!
         }
         var tags: [String] = []
         for message in messages {
@@ -109,14 +120,20 @@ public class ExpLeagueOrder: NSManagedObject {
     }
     
     internal func message(message msg: XMPPMessage, notify: Bool) {
+        guard messagesRaw.filter({($0 as! ExpLeagueMessage).id == msg.elementID()}).isEmpty else {
+            return
+        }
         let message = ExpLeagueMessage(msg: msg, parent: self, context: self.managedObjectContext!)
-        messagesRaw = messagesRaw.append(message)
+        if (_messages != nil) {
+            _messages?.append(message)
+        }
+
         if (message.type == .answer) {
             flags = flags | ExpLeagueOrderFlags.deciding.rawValue
         }
-        messagesChanged()
-        save()
+        
         if (notify) {
+            var unread = 1
             if (message.type == .answer) {
                 Notifications.notifyAnswerReceived(self, answer: message)
             }
@@ -126,28 +143,29 @@ public class ExpLeagueOrder: NSManagedObject {
             else if (message.type == .expertMessage) {
                 Notifications.notifyMessageReceived(self, message: message)
             }
-        }
-        else {
-            DispatchQueue.main.async {
-                message.read = true
+            else {
+                unread = 0
+            }
+            if (unread > 0) {
+                self.unread += unread
+                message.read = false
+                self.parent.adjustUnread(1)
+                unreadChanged()
             }
         }
         if (message.type == .clientDone) {
-            update {
-                self.flags = self.flags | ExpLeagueOrderFlags.closed.rawValue
-                DispatchQueue.main.async {
-                    self.messagesChanged()
-                }
-            }
+            self.flags = self.flags | ExpLeagueOrderFlags.closed.rawValue
         }
         else if (message.type == .clientCancel) {
-            update {
+            if (self.messages.filter({msg in msg.type == .answer}).isEmpty) { // No answer yet
                 self.flags = self.flags | ExpLeagueOrderFlags.canceled.rawValue
-                DispatchQueue.main.async {
-                    self.messagesChanged()
-                }
+            }
+            else {
+                self.flags = self.flags | ExpLeagueOrderFlags.deciding.rawValue
             }
         }
+        self.messagesChanged()
+        save()
     }
     
     public func send(text: String) {
@@ -223,6 +241,7 @@ public class ExpLeagueOrder: NSManagedObject {
     }
     
     public func archive() {
+        parent.adjustUnread(-(Int)(self.unread))
         if (isActive) {
             cancel()
         }
@@ -280,16 +299,17 @@ public class ExpLeagueOrder: NSManagedObject {
         return result!
     }
     
-    internal dynamic var _unreadCount: NSNumber?
-    public var unreadCount: Int {
-        guard _unreadCount == nil else {
-            return _unreadCount!.intValue
+    public func onMessageRead(message: ExpLeagueMessage) {
+        update {
+            if (self.unread > 0) {
+                self.unread -= 1
+                self.parent.adjustUnread(-1)
+                self.unreadChanged()
+            }
         }
-        let result = messages.filter({$0.type == .expertMessage || $0.type == .answer}).filter({!$0.read}).count
-        _unreadCount = result as NSNumber?
-        return result
     }
-    
+    public func unreadChanged() { QObject.notify(#selector(self.unreadChanged), self) }
+
     override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?) {
         super.init(entity: entity, insertInto: context)
     }

@@ -27,18 +27,16 @@
                         </constraints>
                     </imageView>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0tF-CD-ELP">
-                        <rect key="frame" x="248" y="6" width="50" height="47.5"/>
+                        <rect key="frame" x="248" y="6" width="50" height="47"/>
                         <color key="backgroundColor" red="0.63529411764705879" green="0.86274509803921573" blue="0.95686274509803915" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstAttribute="width" constant="50" placeholder="YES" id="e6W-aj-OEU"/>
-                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="25" id="fhH-Qj-jg0"/>
+                            <constraint firstAttribute="width" constant="50" id="e6W-aj-OEU"/>
                         </constraints>
                         <edgeInsets key="layoutMargins" top="6" left="6" bottom="4" right="6"/>
                     </view>
                 </subviews>
                 <constraints>
                     <constraint firstItem="0tF-CD-ELP" firstAttribute="bottom" secondItem="pTU-4Q-ZpM" secondAttribute="bottomMargin" constant="8" id="BPd-y7-Ykk"/>
-                    <constraint firstItem="0tF-CD-ELP" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="pTU-4Q-ZpM" secondAttribute="leadingMargin" constant="8" id="D0j-ic-agB"/>
                     <constraint firstItem="0tF-CD-ELP" firstAttribute="top" secondItem="pTU-4Q-ZpM" secondAttribute="topMargin" constant="-2" id="WnA-zX-j5G"/>
                     <constraint firstAttribute="bottomMargin" secondItem="tfT-gx-YHJ" secondAttribute="bottom" id="XfY-F2-ndA"/>
                     <constraint firstAttribute="trailingMargin" secondItem="0tF-CD-ELP" secondAttribute="trailing" constant="4" id="et5-Ed-G9I"/>
@@ -48,6 +46,7 @@
             </tableViewCellContentView>
             <connections>
                 <outlet property="content" destination="0tF-CD-ELP" id="IEY-r7-DMs"/>
+                <outlet property="widthConstraint" destination="e6W-aj-OEU" id="QYl-cA-HQG"/>
             </connections>
             <point key="canvasLocation" x="197" y="58"/>
         </tableViewCell>

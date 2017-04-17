@@ -85,7 +85,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       TIntHashSet removed = new TIntHashSet();
       orders.forEachEntry((id, orderRef) -> {
         final MySQLOrder order = orderRef.get();
-        if (order.room().local().equals(roomId))
+        if (order != null && order.room().local().equals(roomId))
           removed.add(id);
         return true;
       });

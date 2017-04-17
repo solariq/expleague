@@ -13,7 +13,7 @@ import tigase.jaxmpp.core.client.xmpp.stanzas.Message;
  * Time: 16:27
  */
 public class AdminBot extends ExpertBot {
-  public AdminBot(final BareJID jid, final String passwd) throws JaxmppException {
+  public AdminBot(final BareJID jid, final String passwd) {
     super(jid, passwd, "expert", "/admin/expert");
   }
 }

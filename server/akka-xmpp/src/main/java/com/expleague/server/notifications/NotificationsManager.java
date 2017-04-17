@@ -50,6 +50,11 @@ public class NotificationsManager extends ActorAdapter<UntypedActor> {
   private final ApnsClient<SimpleApnsPushNotification> client;
 
   public NotificationsManager(String pathToCert, String certPasswd) {
+    if (pathToCert == null || certPasswd == null) {
+      this.client = null;
+      return;
+    }
+
     ApnsClient<SimpleApnsPushNotification> client;
     try {
       client = new ApnsClient<>(new File(pathToCert), certPasswd);
@@ -161,7 +166,7 @@ public class NotificationsManager extends ActorAdapter<UntypedActor> {
   }
 
   private void sendPush(SimpleApnsPushNotification notification) {
-    if (notification == null)
+    if (notification == null || client == null)
       return;
     try {
       Future<PushNotificationResponse<SimpleApnsPushNotification>> future = client.sendNotification(notification);

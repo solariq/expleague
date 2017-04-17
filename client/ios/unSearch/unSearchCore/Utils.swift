@@ -101,8 +101,8 @@ extension NSManagedObject {
     }
     
     func updateSync(_ todo: () -> ()) {
-        ExpLeagueCommunicator.xmppQueue.sync {
-            todo()
+        todo()
+        ExpLeagueCommunicator.xmppQueue.async {
             self.save()
         }
     }

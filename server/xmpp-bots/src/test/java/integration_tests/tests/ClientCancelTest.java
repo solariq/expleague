@@ -3,8 +3,8 @@ package integration_tests.tests;
 import com.expleague.bots.AdminBot;
 import com.expleague.bots.ClientBot;
 import com.expleague.bots.ExpertBot;
-import com.expleague.bots.utils.ExpectedMessage;
-import com.expleague.bots.utils.ExpectedMessageBuilder;
+import com.expleague.bots.utils.ReceivingMessage;
+import com.expleague.bots.utils.ReceivingMessageBuilder;
 import com.expleague.model.Answer;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
@@ -26,28 +26,28 @@ public class ClientCancelTest extends BaseRoomTest {
   @Test
   public void testClientCancelsAfterOrderAdminOff() throws JaxmppException {
     //Arrange
-    final ClientBot clientBot = botsManager.startNewClient();
+    final ClientBot clientBot = botsManager.nextClient();
     final BareJID roomJID = obtainRoomOpenState(testName(), clientBot);
     clientBot.sendGroupchat(roomJID, new Operations.Cancel());
-    final ExpectedMessage roomInfo = new ExpectedMessageBuilder()
+    final ReceivingMessage roomInfo = new ReceivingMessageBuilder()
         .from(groupChatJID(roomJID))
         .has(Offer.class)
         .has(Operations.RoomStateChanged.class, rsc -> RoomState.CLOSED == rsc.state())
         .build();
 
     //Act
-    final AdminBot adminBot = botsManager.startNewAdmin();
-    final ExpectedMessage[] notReceivedMessages = adminBot.tryReceiveMessages(new StateLatch(), roomInfo);
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ReceivingMessage[] notReceivedMessages = adminBot.tryReceiveMessages(new StateLatch(), roomInfo);
 
     //Assert
-    assertAllExpectedMessagesAreReceived(notReceivedMessages);
+    assertThereAreNoFailedMessages(notReceivedMessages);
   }
 
   @Test
   public void testClientCancelsAfterOrderAdminOn() throws JaxmppException {
     //Arrange
-    final AdminBot adminBot = botsManager.startNewAdmin();
-    final ClientBot clientBot = botsManager.startNewClient();
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ClientBot clientBot = botsManager.nextClient();
     final BareJID roomJID = obtainRoomOpenState(testName(), clientBot, adminBot);
 
     //Act/Assert
@@ -57,18 +57,18 @@ public class ClientCancelTest extends BaseRoomTest {
   @Test
   public void testClientCancelsAfterAdminMessage() throws JaxmppException {
     //Arrange
-    final AdminBot adminBot = botsManager.startNewAdmin();
-    final ClientBot clientBot = botsManager.startNewClient();
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ClientBot clientBot = botsManager.nextClient();
 
     final BareJID roomJID = obtainRoomOpenState(testName(), clientBot, adminBot);
     final Message.Body body = new Message.Body(generateRandomString());
-    final ExpectedMessage message = new ExpectedMessageBuilder().from(botRoomJID(roomJID, adminBot)).has(Message.Body.class, b -> body.value().equals(b.value())).build();
+    final ReceivingMessage message = new ReceivingMessageBuilder().from(botRoomJID(roomJID, adminBot)).has(Message.Body.class, b -> body.value().equals(b.value())).build();
 
     //Act
     adminBot.sendGroupchat(roomJID, body);
-    final ExpectedMessage[] notReceivedMessagesByClient = clientBot.tryReceiveMessages(new StateLatch(), message);
+    final ReceivingMessage[] notReceivedMessagesByClient = clientBot.tryReceiveMessages(new StateLatch(), message);
     //Assert
-    assertAllExpectedMessagesAreReceived(notReceivedMessagesByClient);
+    assertThereAreNoFailedMessages(notReceivedMessagesByClient);
 
     //Act/Assert
     checkAdminHandlesCancel(roomJID, clientBot, adminBot);
@@ -77,18 +77,18 @@ public class ClientCancelTest extends BaseRoomTest {
   @Test
   public void testClientCancelsAfterShortAnswer() throws JaxmppException {
     //Arrange
-    final AdminBot adminBot = botsManager.startNewAdmin();
-    final ClientBot clientBot = botsManager.startNewClient();
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ClientBot clientBot = botsManager.nextClient();
 
     final BareJID roomJID = obtainRoomOpenState(testName(), clientBot, adminBot);
     final Answer answer = new Answer(generateRandomString());
-    final ExpectedMessage expectedAnswer = new ExpectedMessageBuilder().from(botRoomJID(roomJID, adminBot)).has(Answer.class, a -> answer.value().equals(a.value())).build();
+    final ReceivingMessage expectedAnswer = new ReceivingMessageBuilder().from(botRoomJID(roomJID, adminBot)).has(Answer.class, a -> answer.value().equals(a.value())).build();
 
     //Act
     adminBot.sendGroupchat(roomJID, answer);
-    final ExpectedMessage[] notReceivedMessagesByClient = clientBot.tryReceiveMessages(new StateLatch(), expectedAnswer);
+    final ReceivingMessage[] notReceivedMessagesByClient = clientBot.tryReceiveMessages(new StateLatch(), expectedAnswer);
     //Assert
-    assertAllExpectedMessagesAreReceived(notReceivedMessagesByClient);
+    assertThereAreNoFailedMessages(notReceivedMessagesByClient);
 
     //Act/Assert
     checkAdminHandlesCancel(roomJID, clientBot, adminBot);
@@ -97,9 +97,9 @@ public class ClientCancelTest extends BaseRoomTest {
   @Test
   public void testClientCancelsInWorkState() throws JaxmppException {
     //Arrange
-    final AdminBot adminBot = botsManager.startNewAdmin();
-    final ExpertBot expertBot = botsManager.startNewExpert();
-    final ClientBot clientBot = botsManager.startNewClient();
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ExpertBot expertBot = botsManager.nextExpert();
+    final ClientBot clientBot = botsManager.nextClient();
     final BareJID roomJID = obtainRoomWorkState(testName(), clientBot, adminBot, expertBot);
 
     //Act/Assert
@@ -109,9 +109,9 @@ public class ClientCancelTest extends BaseRoomTest {
   @Test
   public void testClientCancelsInDeliverState() throws JaxmppException {
     //Arrange
-    final AdminBot adminBot = botsManager.startNewAdmin();
-    final ExpertBot expertBot = botsManager.startNewExpert();
-    final ClientBot clientBot = botsManager.startNewClient();
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ExpertBot expertBot = botsManager.nextExpert();
+    final ClientBot clientBot = botsManager.nextClient();
     final BareJID roomJID = obtainRoomDeliverState(testName(), clientBot, adminBot, expertBot);
 
     //Act/Assert
@@ -121,9 +121,9 @@ public class ClientCancelTest extends BaseRoomTest {
   @Test
   public void testClientCancelsAfterAnswer() throws JaxmppException {
     //Arrange
-    final AdminBot adminBot = botsManager.startNewAdmin();
-    final ExpertBot expertBot = botsManager.startNewExpert();
-    final ClientBot clientBot = botsManager.startNewClient();
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ExpertBot expertBot = botsManager.nextExpert();
+    final ClientBot clientBot = botsManager.nextClient();
     final BareJID roomJID = obtainRoomFeedbackState(testName(), clientBot, adminBot, expertBot);
 
     //Act/Assert
@@ -132,28 +132,28 @@ public class ClientCancelTest extends BaseRoomTest {
 
   private void checkAdminAndExpertHandleCancel(BareJID roomJID, ClientBot clientBot, AdminBot adminBot, ExpertBot expertBot) throws JaxmppException {
     //Arrange
-    final ExpectedMessage roomStateChanged = new ExpectedMessageBuilder().from(groupChatJID(roomJID)).has(Operations.RoomStateChanged.class, rsc -> RoomState.CLOSED == rsc.state()).build();
-    final ExpectedMessage cancel = new ExpectedMessageBuilder().from(botRoomJID(roomJID, clientBot)).has(Operations.Cancel.class).build();
+    final ReceivingMessage roomStateChanged = new ReceivingMessageBuilder().from(groupChatJID(roomJID)).has(Operations.RoomStateChanged.class, rsc -> RoomState.CLOSED == rsc.state()).build();
+    final ReceivingMessage cancel = new ReceivingMessageBuilder().from(botRoomJID(roomJID, clientBot)).has(Operations.Cancel.class).build();
 
     //Act
     clientBot.sendGroupchat(roomJID, new Operations.Cancel());
-    final ExpectedMessage[] notReceivedMessagesByAdmin = adminBot.tryReceiveMessages(new StateLatch(), roomStateChanged);
-    final ExpectedMessage[] notReceivedMessagesByExpert = expertBot.tryReceiveMessages(new StateLatch(), cancel);
+    final ReceivingMessage[] notReceivedMessagesByAdmin = adminBot.tryReceiveMessages(new StateLatch(), roomStateChanged);
+    final ReceivingMessage[] notReceivedMessagesByExpert = expertBot.tryReceiveMessages(new StateLatch(), cancel);
 
     //Assert
-    assertAllExpectedMessagesAreReceived(notReceivedMessagesByAdmin);
-    assertAllExpectedMessagesAreReceived(notReceivedMessagesByExpert);
+    assertThereAreNoFailedMessages(notReceivedMessagesByAdmin);
+    assertThereAreNoFailedMessages(notReceivedMessagesByExpert);
   }
 
   private void checkAdminHandlesCancel(BareJID roomJID, ClientBot clientBot, AdminBot adminBot) throws JaxmppException {
     //Arrange
-    final ExpectedMessage roomStateChanged = new ExpectedMessageBuilder().from(groupChatJID(roomJID)).has(Operations.RoomStateChanged.class, rsc -> RoomState.CLOSED == rsc.state()).build();
+    final ReceivingMessage roomStateChanged = new ReceivingMessageBuilder().from(groupChatJID(roomJID)).has(Operations.RoomStateChanged.class, rsc -> RoomState.CLOSED == rsc.state()).build();
 
     //Act
     clientBot.sendGroupchat(roomJID, new Operations.Cancel());
-    final ExpectedMessage[] notReceivedMessages = adminBot.tryReceiveMessages(new StateLatch(), roomStateChanged);
+    final ReceivingMessage[] notReceivedMessages = adminBot.tryReceiveMessages(new StateLatch(), roomStateChanged);
 
     //Assert
-    assertAllExpectedMessagesAreReceived(notReceivedMessages);
+    assertThereAreNoFailedMessages(notReceivedMessages);
   }
 }

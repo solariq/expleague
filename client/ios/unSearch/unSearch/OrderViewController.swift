@@ -43,7 +43,7 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
             return
         }
         
-        FBSDKAppEvents.logEvent("Issue order", parameters: ["user": ExpLeagueProfile.active.jid.user])
+        FBSDKAppEvents.logEvent("Issue order", parameters: ["user": ExpLeagueProfile.active.jid.user, "topic": controller.orderText.text])
         ExpLeagueProfile.active.placeOrder(
             topic: controller.orderText.text,
             urgency: controller.urgency.isOn ? "asap" : "day",
@@ -254,6 +254,7 @@ class OrderDescriptionViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if ((indexPath as NSIndexPath).item == 4) {
+            FBSDKAppEvents.logEvent("Order attach", parameters: ["user": ExpLeagueProfile.active.jid.user])
             if (orderAttachmentsModel.attachmentsArray.isEmpty) {
                 showAlertMenu(AddAttachmentAlertController(filter: orderAttachmentsModel.attachmentsArray.map({$0.imageId})) { imageId in
                     self.orderAttachmentsModel.addAttachment(imageId)
@@ -271,13 +272,14 @@ class OrderDescriptionViewController: UITableViewController {
             }
         }
         else if ((indexPath as NSIndexPath).item == 3) {
+            FBSDKAppEvents.logEvent("Order experts filter", parameters: ["user": ExpLeagueProfile.active.jid.user])
             parent!.navigationController!.pushViewController(
                 ChooseExpertViewController(owner: self),
                 animated: true
             )
         }
         else if ((indexPath as NSIndexPath).item == 2) {
-            
+            FBSDKAppEvents.logEvent("Order location", parameters: ["user": ExpLeagueProfile.active.jid.user])
             UINavigationBar.appearance().setBackgroundImage(UIImage(named: "experts_background"), for: .default)
             UINavigationBar.appearance().titleTextAttributes = [NSForegroundColorAttributeName : UIColor.white]
             UINavigationBar.appearance().tintColor = UIColor.white
@@ -407,12 +409,7 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
     }
     
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-        guard text == "\n" else {
-            return true
-        }
-        textView.endEditing(true)
-        (parent.parent as! OrderViewController).fire(textView)
-        return false
+        return true
     }
     
     func textViewDidEndEditing(_ textView: UITextView) {

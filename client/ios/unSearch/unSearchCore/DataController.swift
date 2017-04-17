@@ -33,7 +33,6 @@ public class DataController: NSObject {
         let userName = Utils.randString(8, seed: code)
         let login = userName + "-" + randString.substring(to: randString.characters.index(randString.startIndex, offsetBy: 8))
         let passwd = UUID().uuidString
-        
         if (profiles.count == 0) {
             profiles.append(ExpLeagueProfile("Production", domain: "expleague.com", login: login, passwd: passwd, port: 5222, context: managedObjectContext))
         }
@@ -52,6 +51,12 @@ public class DataController: NSObject {
         }
         catch {
             activeProfile!.log("\(error)")
+        }
+    }
+    
+    public func start() {
+        if (profiles.count > 0) {
+            activate(profiles.filter({$0.active.boolValue}).first ?? profiles[0])
         }
     }
 
@@ -78,6 +83,10 @@ public class DataController: NSObject {
     public func resume() {
         locationProvider?.startTracking()
         activeProfile?.resume()
+    }
+    
+    public func initialized() -> Bool {
+        return self.profiles.count > 0
     }
 
     override init() {
@@ -135,9 +144,6 @@ public class DataController: NSObject {
             profiles = try self.managedObjectContext.fetch(profilesFetch)
             if (profiles.count > 3) {
                 self.profiles = Array(profiles[0..<3])
-            }
-            if (profiles.count > 0) {
-                activate(profiles.filter({$0.active.boolValue}).first ?? profiles[0])
             }
         } catch {
             fatalError("Failed to fetch employees: \(error)")

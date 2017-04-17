@@ -285,19 +285,20 @@ class HistoryViewController: UITableViewController {
                 order = ongoing[(indexPath as NSIndexPath).row]
                 empty = ongoing.count == 1
                 let alertView: UIAlertController
-                if (order.messages.last?.type == .answer) {
+                if (order.messages.filter({$0.type == .answer}).isEmpty) {
                     alertView = UIAlertController(title: "unSearch", message: "Вы уверены, что хотите отменить задание?", preferredStyle: .alert)
+                    alertView.addAction(UIAlertAction(title: "Да", style: .default, handler: {(x: UIAlertAction) -> Void in
+                        _ = self.ongoing.remove(at: (indexPath as NSIndexPath).row)
+                        self.delete(indexPath, sections: sections, empty: empty)
+                        order.archive()
+                    }))
+                    alertView.addAction(UIAlertAction(title: "Нет", style: .cancel, handler: nil))
                 }
                 else {
-                    alertView = UIAlertController(title: "unSearch", message: "Вы не поставили оценку. Действительно оставить эксперта без оценки?", preferredStyle: .alert)
+                    alertView = UIAlertController(title: "unSearch", message: "Сначала оцените задание", preferredStyle: .alert)
+                    alertView.addAction(UIAlertAction(title: "Хорошо", style: .default, handler: nil))
                 }
                 
-                alertView.addAction(UIAlertAction(title: "Да", style: .default, handler: {(x: UIAlertAction) -> Void in
-                    _ = self.ongoing.remove(at: (indexPath as NSIndexPath).row)
-                    self.delete(indexPath, sections: sections, empty: empty)
-                    order.archive()
-                }))
-                alertView.addAction(UIAlertAction(title: "Нет", style: .cancel, handler: nil))
                 present(alertView, animated: true, completion: nil)
                 return
             case .finished:
@@ -344,6 +345,7 @@ class OrderBadge: UITableViewCell {
     func setup(order o: ExpLeagueOrder) {
         QObject.disconnect(self)
         QObject.connect(o, signal: #selector(ExpLeagueOrder.messagesChanged), receiver: self, slot: #selector(OrderBadge.invalidate(_:)))
+        QObject.connect(o, signal: #selector(ExpLeagueOrder.unreadChanged), receiver: self, slot: #selector(OrderBadge.invalidate(_:)))
         update(order: o)
     }
 
@@ -356,10 +358,9 @@ class OrderBadge: UITableViewCell {
     }
     
     func update(order o: ExpLeagueOrder) {
-        
         contentTypeIcon.image = o.typeIcon
         title.text = o.text
-        let unread = o.unreadCount
+        let unread = o.unread
         if (unread > 0) {
             unreadBadge.isHidden = false
             unreadBadge.text = "\(unread)"

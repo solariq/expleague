@@ -21,6 +21,7 @@ extension ExpLeagueProfile {
     @NSManaged public var name: String
     @NSManaged public var passwd: String
     @NSManaged public var port: NSNumber
+    @NSManaged public var unread: Int32
 
     @NSManaged var orderSelected: NSNumber
     @NSManaged var receiveAnswerOfTheWeek: NSNumber?
@@ -31,5 +32,4 @@ extension ExpLeagueProfile {
     @NSManaged var pendingStr: String?
     @NSManaged var expertsSet: NSSet?
     @NSManaged var tagsSet: NSSet?
-
 }

@@ -19,10 +19,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.expleague.model.OrderState.OPEN;
+import static com.expleague.model.OrderState.*;
 import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
-import static com.expleague.model.OrderState.IN_PROGRESS;
-import static com.expleague.model.OrderState.SUSPENDED;
 import static com.expleague.server.agents.LaborExchange.Experts;
 import static com.expleague.server.agents.LaborExchange.experts;
 
@@ -46,7 +44,11 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
     when(State.UNEMPLOYED,
         matchEvent(ExpLeagueOrder.class,
             (order, zero) -> {
-              explain("Received new order: " + order + ".");
+              explain("Received new order: " + order.id() + ".");
+              if (order.state() == DONE) {
+                explain("The order is closed!");
+                return stay().replying(new Cancel());
+              }
               sender().tell(new Ok(), self());
               order.broker(self());
 
@@ -231,7 +233,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
                   Experts.tellTo(expert, new Invite(), self(), context());
                   XMPP.send(new Message(expert, XMPP.jid(), new Invite()), context());
                 }
-                else if (task.role(expert) == NONE)
+                else if (task.role(expert) == ExpLeagueOrder.Role.NONE)
                   Experts.tellTo(expert, new Cancel(), self(), context());
                 return stay();
               }
@@ -355,7 +357,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
       final State from = stateName();
       super.processEvent(event, source);
       final State to = stateName();
-      log.fine("Broker " + (stateData() != null ? "on task " + stateData().order().room().local() + " " : "")
+      log.fine("Broker " + self() + " " + (stateData() != null ? "on task " + stateData().order().room().local() + "(" + stateData().order().id() + ") " : "")
           + from + " -> " + to
           + ". " + explanation);
       explanation = "";
@@ -366,7 +368,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
   }
 
   private FSM.State<State, ExpLeagueOrder.Status> cancelTask(ExpLeagueOrder.Status orderStatus) {
-    explain("The order was canceled by client. Sending all experts cancel.");
+    explain("The order was canceled by client. Sending cancel to " + orderStatus.experts().count() + " expert(s).");
     orderStatus.experts().forEach(jid -> Experts.tellTo(jid, new Cancel(), self(), context()));
     orderStatus.cancel();
     return goTo(State.UNEMPLOYED).using(null);
@@ -384,7 +386,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
       jid -> Experts.tellTo(jid, new Cancel(), self(), context())
     );
     orderStatus.nextRound();
-    experts(context()).tell(orderStatus.order().offer(), self());
+    experts(context()).tell(self(), self());
     return stateName() != State.STARVING ? goTo(State.STARVING) : stay();
   }
 

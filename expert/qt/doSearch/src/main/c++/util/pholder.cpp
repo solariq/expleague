@@ -147,6 +147,7 @@ void PersistentPropertyHolder::store(const QString& key, const QVariant& value) 
     m_changes++;
 }
 
+
 bool PersistentPropertyHolder::containsKey(const QString &key) const{
     bool contains = false;
     visitKeys(key, [&](const QString& str){

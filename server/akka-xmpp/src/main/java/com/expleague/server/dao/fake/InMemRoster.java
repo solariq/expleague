@@ -36,7 +36,7 @@ public class InMemRoster implements Roster {
   @Override
   public synchronized XMPPDevice register(RegisterQuery query) throws Exception {
     final XMPPDevice device = device(query.username());
-    if (device != null) {
+    if (device != XMPPDevice.NO_SUCH_DEVICE) {
       if (device.passwd().equals(query.passwd()))
         return device;
       throw new AuthenticationException("User known with different password");
@@ -51,7 +51,12 @@ public class InMemRoster implements Roster {
       }
     }
     if (associated == null) {
-      associated = new XMPPUser(query.username(), query.country(), query.city(), query.name(), 0, 0, new Date(), query.avatar(), query.trusted() ? ExpertsProfile.Authority.ADMIN : ExpertsProfile.Authority.EXPERT);
+      final ExpertsProfile.Authority authority;
+      if (query.expert())
+        if (query.trusted()) authority = ExpertsProfile.Authority.ADMIN;
+        else authority = ExpertsProfile.Authority.EXPERT;
+      else authority = ExpertsProfile.Authority.NONE;
+      associated = new XMPPUser(query.username(), query.country(), query.city(), query.name(), 0, 0, new Date(), query.avatar(), authority);
       users.put(associated.id(), associated);
       log.log(Level.INFO, "Created new user " + associated.name());
     }
@@ -68,7 +73,8 @@ public class InMemRoster implements Roster {
 
   @Override
   public synchronized XMPPDevice device(String name) {
-    return devices.get(name);
+    final XMPPDevice xmppDevice = devices.get(name);
+    return xmppDevice != null ? xmppDevice : XMPPDevice.NO_SUCH_DEVICE;
   }
 
   @Override

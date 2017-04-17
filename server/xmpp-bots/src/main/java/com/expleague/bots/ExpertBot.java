@@ -10,7 +10,7 @@ import tigase.jaxmpp.core.client.exceptions.JaxmppException;
  */
 public class ExpertBot extends Bot {
 
-  public ExpertBot(final BareJID jid, final String passwd) throws JaxmppException {
+  public ExpertBot(final BareJID jid, final String passwd) {
     super(jid, passwd, "expert", "/expert");
   }
 

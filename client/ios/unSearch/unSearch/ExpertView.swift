@@ -88,12 +88,11 @@ class ExpertViewController: UIViewController {
         text.append(NSAttributedString(string: tags.joined(separator: ", "), attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 15)]))
         text.append(NSAttributedString(string: "\nОбразование: ", attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 15)]))
         text.append(NSAttributedString(string: "высшее", attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 15)]))
-        text.append(NSAttributedString(string: "\nВыполнено заказов: ", attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 15)]))
-        text.append(NSAttributedString(string: "\(expert.tasks)", attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 15)]))
+        text.append(NSAttributedString(string: "\nВыполнено \(expert.tasks) заказ\(Lang.rusNumEnding(expert.tasks, variants: ["", "а", "ов"])). ", attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 15)]))
         descriptionText.attributedText = text
         descriptionText.textColor = Palette.COMMENT
-        score.text = String(format: "%.1f баллов %d оценок", expert.rating, expert.based)
-        orders.text = "\(expert.myTasks) заказов выполнено"
+        score.text = String(format: "%.1f балл\(Lang.rusNumEnding(Int(expert.rating.rounded(.down)), variants: ["", "а", "ов"])) %d оцен\(Lang.rusNumEnding(expert.based, variants: ["ка", "и", "ок"]))", expert.rating, expert.based)
+        orders.text = "\(expert.myTasks) ваш\(Lang.rusNumEnding(expert.myTasks, variants: ["", "их", "их"])) заказ\(Lang.rusNumEnding(expert.myTasks, variants: ["", "а", "ов"])) выполне\(expert.myTasks > 1 ? "н" : "но")"
         view.layoutIfNeeded()
     }
     
@@ -125,6 +124,8 @@ class AvatarView: UIView {
         addSubview(_imageView)
         _imageView.layer.borderColor = Palette.BORDER.cgColor
         _imageView.layer.borderWidth = 1
+        _imageView.backgroundColor = UIColor.clear
+        self.backgroundColor = UIColor.clear
     }
     
     override func layoutSubviews() {
@@ -145,6 +146,31 @@ class AvatarView: UIView {
         }
         set (image) {
             _imageView.image = image
+        }
+    }
+    
+    func onExpertChanged() {
+        image = self.expert?.avatar
+        online = self.expert?.available ?? false
+    }
+    
+    var expert: ExpLeagueMember? {
+        willSet (newExpert) {
+            guard newExpert != expert else {
+                return
+            }
+            image = nil
+            if (expert != nil) {
+                QObject.disconnect(self, sender: self.expert!, signal: #selector(ExpLeagueMember.changed))
+            }
+            if (newExpert != nil) {
+                QObject.connect(newExpert!, signal: #selector(ExpLeagueMember.changed), receiver: self, slot: #selector(self.onExpertChanged))
+            }
+        }
+        didSet {
+            if (image == nil) {
+                onExpertChanged()
+            }
         }
     }
     

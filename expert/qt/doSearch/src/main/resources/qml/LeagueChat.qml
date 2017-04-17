@@ -303,7 +303,35 @@ Rectangle {
             ListView {
                 id: helloLst
                 model: dosearch.league.helloPatterns
-                delegate: chatPattern
+                delegate: Rectangle {
+                    implicitHeight: text.implicitHeight + 8
+                    height: implicitHeight
+                    width: parent.width - 8
+                    color: "white"
+                    radius: Palette.radius
+                    TextEdit {
+                        id: text
+                        anchors.centerIn: parent
+                        width: parent.width - 8
+                        height: parent.height - 8
+                        readOnly: true
+                        selectByMouse: true
+                        textFormat: TextEdit.RichText
+                        wrapMode: TextEdit.WrapAnywhere
+                        text: dosearch.league.templateContent(modelData).replace(/TODO/g, "<b>TODO</b>").replace(/\n/g, "<br/>")
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            send.text = dosearch.league.templateContent(modelData)
+                            send.cursorPosition = modelData.length
+                            column.activeDialog.visible = false
+                            send.forceActiveFocus()
+                        }
+                    }
+                }
+
                 spacing: 4
                 rightMargin: 4
                 leftMargin: 4
@@ -326,7 +354,6 @@ Rectangle {
             ListView {
                 id: patternsLst
                 model: dosearch.league.chatPatterns
-                delegate: chatPattern
                 spacing: 4
                 rightMargin: 4
                 leftMargin: 4
@@ -334,6 +361,34 @@ Rectangle {
                 bottomMargin: 4
                 anchors.fill: parent
                 implicitHeight: contentHeight
+                delegate: Rectangle {
+                    implicitHeight: name.implicitHeight + 8
+                    height: implicitHeight
+                    width: parent.width - 8
+                    color: "white"
+                    radius: Palette.radius
+                    TextEdit {
+                        id: name
+                        anchors.centerIn: parent
+                        width: parent.width - 8
+                        height: parent.height - 8
+                        readOnly: true
+                        selectByMouse: true
+                        textFormat: TextEdit.RichText
+                        wrapMode: TextEdit.WrapAnywhere
+                        text: modelData
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            send.text = dosearch.league.templateContent(modelData)
+                            send.cursorPosition = modelData.length
+                            column.activeDialog.visible = false
+                            send.forceActiveFocus()
+                        }
+                    }
+                }
             }
 
             visible: false

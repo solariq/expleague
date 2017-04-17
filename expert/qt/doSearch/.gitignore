@@ -66,6 +66,7 @@ debug/
 *.opt
 *.db
 *.htm
+*.opendb
 
 # MinGW generated files
 *.Debug

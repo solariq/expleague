@@ -5,7 +5,6 @@ import com.expleague.bots.ClientBot;
 import com.expleague.bots.ExpertBot;
 import integration_tests.BaseRoomTest;
 import org.junit.Test;
-import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 
 /**
@@ -14,31 +13,29 @@ import tigase.jaxmpp.core.client.exceptions.JaxmppException;
  * Time: 14:55
  */
 public class ClientExpertTest extends BaseRoomTest {
-
   @Test
   public void testExpertAnswers() throws JaxmppException {
     //Arrange
-    final AdminBot adminBot = botsManager.startNewAdmin();
-    final ClientBot clientBot = botsManager.startNewClient();
-    final ExpertBot expertBot = botsManager.startNewExpert();
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ClientBot clientBot = botsManager.nextClient();
+    final ExpertBot expertBot = botsManager.nextExpert();
 
     //Act/Assert
-    final BareJID roomJID = obtainRoomFeedbackState(testName(), clientBot, adminBot, expertBot);
-    roomCloseStateByClientCancel(roomJID, clientBot, adminBot);
+    obtainRoomFeedbackState(testName(), clientBot, adminBot, expertBot);
   }
 
   /*@Test
   public void testExpertCancels() throws JaxmppException {
     //Arrange
     final BareJID roomJID = obtainRoomDeliverState();
-    final ExpectedMessage expectedCancel = new ExpectedMessageBuilder().from(botRoomJID(roomJID, expertBot)).has(Operations.Cancel.class).build();
+    final ReceivingMessage expectedCancel = new ReceivingMessageBuilder().from(botRoomJID(roomJID, expertBot)).has(Operations.Cancel.class).build();
 
     //Act
     expertBot.sendGroupchat(roomJID, new Operations.Cancel());
-    final ExpectedMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedCancel);
+    final ReceivingMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedCancel);
     roomCloseStateByClientCancel(roomJID); //TODO:remove
 
     //Assert
-    assertAllExpectedMessagesAreReceived(notReceivedMessages);
+    assertThereAreNoFailedMessages(notReceivedMessages);
   }*/
 }

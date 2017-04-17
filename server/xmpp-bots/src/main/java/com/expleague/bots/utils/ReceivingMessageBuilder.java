@@ -14,31 +14,37 @@ import java.util.List;
  * Date: 10.03.2017
  * Time: 16:17
  */
-public class ExpectedMessageBuilder {
+public class ReceivingMessageBuilder {
   private final List<Pair<Class, Filter>> filters = new ArrayList<>();
   private JID from = null;
+  private boolean expected = true;
 
-  public <T extends Item> ExpectedMessageBuilder has(Class<T> clazz) {
+  public <T extends Item> ReceivingMessageBuilder has(Class<T> clazz) {
     filters.add(new Pair<>(clazz, null));
     return this;
   }
 
-  public <T extends Item> ExpectedMessageBuilder has(Class<T> clazz, Filter<T> filter) {
+  public <T extends Item> ReceivingMessageBuilder has(Class<T> clazz, Filter<T> filter) {
     filters.add(new Pair<>(clazz, filter));
     return this;
   }
 
-  public ExpectedMessageBuilder from(BareJID from) {
+  public ReceivingMessageBuilder from(BareJID from) {
     this.from = JID.parse(from.toString());
     return this;
   }
 
-  public ExpectedMessageBuilder from(JID from) {
+  public ReceivingMessageBuilder from(JID from) {
     this.from = from;
     return this;
   }
 
-  public ExpectedMessage build() {
-    return new ExpectedMessage(from, filters);
+  public ReceivingMessageBuilder expected(boolean expected) {
+    this.expected = expected;
+    return this;
+  }
+
+  public ReceivingMessage build() {
+    return new ReceivingMessage(from, filters, expected);
   }
 }
