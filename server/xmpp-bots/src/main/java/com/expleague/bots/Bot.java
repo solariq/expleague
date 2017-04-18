@@ -273,6 +273,20 @@ public class Bot {
     return result;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Bot bot = (Bot) o;
+    return jid.equals(bot.jid);
+  }
+
+  @Override
+  public int hashCode() {
+    return jid.hashCode();
+  }
+
   public static class PrinterAsyncCallback implements AsyncCallback {
     private final String name;
 
