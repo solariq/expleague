@@ -1,6 +1,10 @@
 package integration_tests;
 
-import integration_tests.tests.*;
+import integration_tests.tests.ClientAdminTest;
+import integration_tests.tests.ClientCancelTest;
+import integration_tests.tests.ClientExpertTest;
+import integration_tests.tests.ExpertCancelsTest;
+import integration_tests.tests.ExpertsAssignmentTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
