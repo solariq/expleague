@@ -31,7 +31,7 @@ public class ExpertCancelsTest extends BaseRoomTest {
     final ClientBot clientBot = botsManager.nextClient();
     final BareJID roomJID = obtainRoomWorkState(testName(), clientBot, adminBot, firstExpertBot, secondExpertBot);
 
-    final ReceivingMessage invite = new ReceivingMessageBuilder().from(roomJID).has(Offer.class).has(Operations.Invite.class).build();
+    final ReceivingMessageBuilder invite = new ReceivingMessageBuilder().from(roomJID).has(Offer.class).has(Operations.Invite.class);
     final ReceivingMessage cancel = new ReceivingMessageBuilder().from(botRoomJID(roomJID, firstExpertBot)).has(Operations.Cancel.class).build();
     final ReceivingMessage startAndExpert = new ReceivingMessageBuilder().from(roomJID).has(Operations.Start.class).has(ExpertsProfile.class).build();
 
@@ -45,8 +45,8 @@ public class ExpertCancelsTest extends BaseRoomTest {
     firstExpertBot.sendGroupchat(roomJID, new Operations.Ok());
     secondExpertBot.sendGroupchat(roomJID, new Operations.Ok());
     //Assert
-    assertThereAreNoFailedMessages(firstExpertBot.tryReceiveMessages(new StateLatch(), invite));
-    assertThereAreNoFailedMessages(secondExpertBot.tryReceiveMessages(new StateLatch(), invite.copy()));
+    assertThereAreNoFailedMessages(firstExpertBot.tryReceiveMessages(new StateLatch(), invite.build()));
+    assertThereAreNoFailedMessages(secondExpertBot.tryReceiveMessages(new StateLatch(), invite.build()));
 
     //Act
     firstExpertBot.sendGroupchat(roomJID, new Operations.Cancel());
@@ -114,40 +114,35 @@ public class ExpertCancelsTest extends BaseRoomTest {
     final Filter expertFilter = new Filter(Collections.singletonList(JID.parse(firstExpertBot.jid().toString())), null, null);
     final Offer offer = new Offer(JID.parse(roomJID.toString()), expertFilter);
 
-    final ReceivingMessage offerCheck = new ReceivingMessageBuilder().from(domainJID()).has(Offer.class).has(Operations.Check.class).build();
+    final ReceivingMessageBuilder offerCheck = new ReceivingMessageBuilder().from(domainJID()).has(Offer.class).has(Operations.Check.class);
     final ReceivingMessage invite = new ReceivingMessageBuilder().from(roomJID).has(Offer.class).has(Operations.Invite.class).build();
-    final ReceivingMessage unexpectedInvite = new ReceivingMessageBuilder().expected(false).from(roomJID).has(Offer.class).has(Operations.Invite.class).build();
+    final ReceivingMessageBuilder sync = new ReceivingMessageBuilder().has(Operations.Sync.class);
     final ReceivingMessage cancelByFirstExpert = new ReceivingMessageBuilder().from(botRoomJID(roomJID, firstExpertBot)).has(Operations.Cancel.class).build();
+    final ReceivingMessage offerChange = new ReceivingMessageBuilder().from(groupChatJID(roomJID)).has(Operations.OfferChange.class).build();
 
     //Act
     adminBot.send(roomJID, offer);
     //Assert
-    assertThereAreNoFailedMessages(firstExpertBot.tryReceiveMessages(new StateLatch(), offerCheck));
-    assertThereAreNoFailedMessages(secondExpertBot.tryReceiveMessages(new StateLatch()));
+    assertThereAreNoFailedMessages(firstExpertBot.tryReceiveMessages(new StateLatch(), offerCheck.build()));
+
+    //Act
+    adminBot.send(secondExpertBot.jid(), new Operations.Sync());
+    //Assert
+    secondExpertBot.tryReceiveMessages(new StateLatch(), offerCheck.expected(false).build(), sync.build());
 
     //Act
     firstExpertBot.sendGroupchat(roomJID, new Operations.Ok());
     //Assert
     assertThereAreNoFailedMessages(firstExpertBot.tryReceiveMessages(new StateLatch(), invite));
 
-    if (secondExpertBot.isOfferCheckReceived()) {
-      //Act
-      secondExpertBot.sendGroupchat(roomJID, new Operations.Ok());
-      //Assert
-      secondExpertBot.tryReceiveMessages(new StateLatch(), unexpectedInvite);
-    }
-
     //Act
     firstExpertBot.sendGroupchat(roomJID, new Operations.Cancel());
     //Assert
-    assertThereAreNoFailedMessages(adminBot.tryReceiveMessages(new StateLatch(), cancelByFirstExpert));
-    assertThereAreNoFailedMessages(secondExpertBot.tryReceiveMessages(new StateLatch()));
+    assertThereAreNoFailedMessages(adminBot.tryReceiveMessages(new StateLatch(), cancelByFirstExpert, offerChange));
 
-    if (secondExpertBot.isOfferCheckReceived()) {
-      //Act
-      secondExpertBot.sendGroupchat(roomJID, new Operations.Ok());
-      //Assert
-      secondExpertBot.tryReceiveMessages(new StateLatch(), unexpectedInvite);
-    }
+    //Act
+    adminBot.send(secondExpertBot.jid(), new Operations.Sync());
+    //Assert
+    secondExpertBot.tryReceiveMessages(new StateLatch(), offerCheck.expected(false).build(), sync.build());
   }
 }
