@@ -64,7 +64,7 @@ public class ExpertCancelsTest extends BaseRoomTest {
     assertThereAreNoFailedMessages(clientBot.tryReceiveMessages(new StateLatch(), answerModel));
   }
 
-  /*@Test
+  @Test
   public void testOneExpertCancelsInDeliverStateAnotherAnswers() throws JaxmppException {
     //Arrange
     final AdminBot adminBot = botsManager.nextAdmin();
@@ -73,12 +73,13 @@ public class ExpertCancelsTest extends BaseRoomTest {
     final ClientBot clientBot = botsManager.nextClient();
     final BareJID roomJID = obtainRoomWorkState(testName(), clientBot, adminBot, firstExpertBot, secondExpertBot);
 
-    final ReceivingMessage invite = new ReceivingMessageBuilder().from(roomJID).has(Offer.class).has(Operations.Invite.class).build();
+    final ReceivingMessageBuilder invite = new ReceivingMessageBuilder().from(roomJID).has(Offer.class).has(Operations.Invite.class);
     final ReceivingMessage cancel = new ReceivingMessageBuilder().from(botRoomJID(roomJID, firstExpertBot)).has(Operations.Cancel.class).build();
-    final ReceivingMessage startAndExpert = new ReceivingMessageBuilder().from(roomJID).has(Operations.Start.class).has(ExpertsProfile.class).build();
+    final ReceivingMessageBuilder startAndExpert = new ReceivingMessageBuilder().from(roomJID).has(Operations.Start.class).has(ExpertsProfile.class);
+    final ReceivingMessage offerCheck = new ReceivingMessageBuilder().from(domainJID()).has(Offer.class).has(Operations.Check.class).build();
 
     final Answer answer = new Answer(generateRandomString());
-    final ReceivingMessage answerModel = new ReceivingMessageBuilder()
+    final ReceivingMessage receivingAnswer = new ReceivingMessageBuilder()
         .from(botRoomJID(roomJID, secondExpertBot))
         .has(Answer.class, a -> answer.value().equals(a.value()))
         .build();
@@ -86,21 +87,34 @@ public class ExpertCancelsTest extends BaseRoomTest {
     //Act
     firstExpertBot.sendGroupchat(roomJID, new Operations.Ok());
     //Assert
-    assertThereAreNoFailedMessages(firstExpertBot.tryReceiveMessages(new StateLatch(), invite));
+    assertThereAreNoFailedMessages(firstExpertBot.tryReceiveMessages(new StateLatch(), invite.build()));
 
     //Act
     firstExpertBot.sendGroupchat(roomJID, new Operations.Start());
     //Assert
-    assertThereAreNoFailedMessages(clientBot.tryReceiveMessages(new StateLatch(), startAndExpert));
+    assertThereAreNoFailedMessages(clientBot.tryReceiveMessages(new StateLatch(), startAndExpert.build()));
 
     //Act
     firstExpertBot.sendGroupchat(roomJID, new Operations.Cancel());
     //Assert
     assertThereAreNoFailedMessages(clientBot.tryReceiveMessages(new StateLatch(), cancel));
+    assertThereAreNoFailedMessages(secondExpertBot.tryReceiveMessages(new StateLatch(), offerCheck));
 
-    //Act/Assert
-    roomCloseStateByClientFeedback(roomJID, clientBot, adminBot);
-  }*/
+    //Act
+    secondExpertBot.sendGroupchat(roomJID, new Operations.Ok());
+    //Assert
+    assertThereAreNoFailedMessages(secondExpertBot.tryReceiveMessages(new StateLatch(), invite.build()));
+
+    //Act
+    secondExpertBot.sendGroupchat(roomJID, new Operations.Start());
+    //Assert
+    assertThereAreNoFailedMessages(clientBot.tryReceiveMessages(new StateLatch(), startAndExpert.build()));
+
+    //Act
+    secondExpertBot.sendGroupchat(roomJID, answer);
+    //Assert
+    assertThereAreNoFailedMessages(clientBot.tryReceiveMessages(new StateLatch(), receivingAnswer));
+  }
 
   @Test
   public void testChosenExpertCancels() throws JaxmppException {

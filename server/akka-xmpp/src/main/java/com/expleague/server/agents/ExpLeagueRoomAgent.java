@@ -195,6 +195,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
           state(CLOSED);
         }
         else if (offer != null) {
+          message(new Message(from, roomAlias(owner()), msg.get(Cancel.class)));
           offer.filter().reject(from);
           message(new Message(jid(), jid(), offer));
         }
