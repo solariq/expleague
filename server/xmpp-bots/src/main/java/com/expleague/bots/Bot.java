@@ -2,6 +2,8 @@ package com.expleague.bots;
 
 import com.expleague.bots.utils.ItemToTigaseElementParser;
 import com.expleague.bots.utils.ReceivingMessage;
+import com.expleague.model.Offer;
+import com.expleague.model.Operations;
 import com.expleague.xmpp.Item;
 import com.spbsu.commons.util.sync.StateLatch;
 import tigase.jaxmpp.core.client.*;
@@ -42,6 +44,7 @@ public class Bot {
   private final StateLatch latch = new StateLatch();
 
   private boolean registered = false;
+  private boolean offerCheckReceived = false;
 
   public Bot(final BareJID jid, final String passwd, String resource) {
     this(jid, passwd, resource, null);
@@ -169,6 +172,7 @@ public class Bot {
   }
 
   public void offline() throws JaxmppException {
+    offerCheckReceived = false;
     if (jaxmpp.isConnected()) {
       final JaxmppCore.DisconnectedHandler disconnectedHandler = sessionObject -> latch.advance();
       jaxmpp.getEventBus().addHandler(JaxmppCore.DisconnectedHandler.DisconnectedEvent.class, disconnectedHandler);
@@ -256,8 +260,17 @@ public class Bot {
     }
     final com.expleague.xmpp.stanza.Message stanza = Item.create(message.getAsString());
     if (stanza != null) {
+      if (stanza.has(Offer.class) && stanza.has(Operations.Check.class)) {
+        offerCheckReceived = true;
+      }
       messagesQueue.offer(stanza);
     }
+  }
+
+  public boolean offerCheckReceivedAndReset() {
+    final boolean result = offerCheckReceived;
+    offerCheckReceived = false;
+    return result;
   }
 
   public static class PrinterAsyncCallback implements AsyncCallback {
