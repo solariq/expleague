@@ -16,6 +16,7 @@ import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import akka.util.Timeout;
 import com.expleague.model.*;
+import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.XMPP;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
@@ -24,6 +25,7 @@ import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.io.StreamTools;
 import com.spbsu.commons.math.MathTools;
 import org.apache.jackrabbit.commons.JcrUtils;
+import org.jetbrains.annotations.Nullable;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
@@ -42,7 +44,9 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
   public static final String ID = "repository";
   private Materializer materializer;
   private Repository repository;
+  @Nullable
   private Session writeSession;
+  @Nullable
   private Session readSession;
 
   private RepositoryService() {
@@ -60,14 +64,18 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
 
     final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("0.0.0.0", 8033, materializer);
     serverSource.to(Sink.actorRef(self(), PoisonPill.getInstance())).run(materializer);
-    writeSession = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
-    readSession = repository.login();
+    if (!ExpLeagueServer.config().unitTest()) {
+      writeSession = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
+      readSession = repository.login();
+    }
   }
 
   @Override
   protected void postStop() {
-    readSession.logout();
-    writeSession.logout();
+    if (readSession != null)
+      readSession.logout();
+    if (writeSession != null)
+      writeSession.logout();
     super.postStop();
   }
 
@@ -75,6 +83,8 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
   public void onConnection(IncomingConnection connection) {
     log.fine("Accepted new connection from " + connection.remoteAddress());
     connection.handleWithAsyncHandler((Function<HttpRequest, Future<HttpResponse>>) httpRequest -> {
+      if (readSession == null)
+        return Futures.successful(HttpResponse.create().withStatus(404));
       final Uri uri = httpRequest.getUri();
       final ActorRef handler;
       if (uri.path().endsWith("/search")) {
@@ -99,7 +109,7 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
 
   @ActorMethod
   public void onMessage(Message msg) {
-    if (!msg.has(Offer.class)) // won't index incomplete message
+    if (writeSession == null || !msg.has(Offer.class)) // won't index incomplete message
       return;
     final Offer offer = msg.get(Offer.class);
     try {
@@ -160,6 +170,7 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
   }
 
   private Node findOffer(Offer offer) throws RepositoryException {
+    assert writeSession != null;
     final Node rootNode = writeSession.getRootNode();
     final Node roomsNode;
     if (!rootNode.hasNode("rooms"))
