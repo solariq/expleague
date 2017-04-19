@@ -20,7 +20,7 @@ public interface Archive {
   Dump register(String room, String owner);
 
   interface Dump {
-    void accept(Stanza stanza);
+    <T extends Stanza> void accept(T stanza);
     void commit();
     Stream<Stanza> stream();
     JID owner();

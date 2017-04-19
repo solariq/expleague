@@ -55,8 +55,4 @@ public class ReceivingMessage {
     });
     return stringBuilder.toString();
   }
-
-  public ReceivingMessage copy() {
-    return new ReceivingMessage(from, filters, expected);
-  }
 }

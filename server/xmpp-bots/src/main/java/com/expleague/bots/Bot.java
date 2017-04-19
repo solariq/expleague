@@ -2,12 +2,10 @@ package com.expleague.bots;
 
 import com.expleague.bots.utils.ItemToTigaseElementParser;
 import com.expleague.bots.utils.ReceivingMessage;
-import com.expleague.bots.utils.ReceivingMessageBuilder;
 import com.expleague.model.Offer;
 import com.expleague.model.Operations;
 import com.expleague.xmpp.Item;
 import com.spbsu.commons.util.sync.StateLatch;
-import org.apache.commons.lang3.ArrayUtils;
 import tigase.jaxmpp.core.client.*;
 import tigase.jaxmpp.core.client.criteria.Criteria;
 import tigase.jaxmpp.core.client.criteria.ElementCriteria;
@@ -174,6 +172,7 @@ public class Bot {
   }
 
   public void offline() throws JaxmppException {
+    offerCheckReceived = false;
     if (jaxmpp.isConnected()) {
       final JaxmppCore.DisconnectedHandler disconnectedHandler = sessionObject -> latch.advance();
       jaxmpp.getEventBus().addHandler(JaxmppCore.DisconnectedHandler.DisconnectedEvent.class, disconnectedHandler);
@@ -214,17 +213,13 @@ public class Bot {
   }
 
   public ReceivingMessage[] tryReceiveMessages(StateLatch stateLatch, long timeoutInNanos, ReceivingMessage... messages) throws JaxmppException {
-    final ReceivingMessage syncPill = new ReceivingMessageBuilder().has(Operations.Sync.class).build();
-    send(jid(), new Operations.Sync()); //send sync to ensure that we receive unexpected messages if they exist
-    final ReceivingMessage[] messagesWithSync = ArrayUtils.add(messages, syncPill);
-
     final int initState = stateLatch.state();
-    final int finalState = initState << Arrays.stream(messagesWithSync).filter(ReceivingMessage::expected).count();
+    final int finalState = initState << Arrays.stream(messages).filter(ReceivingMessage::expected).count();
     final Thread messagesConsumer = new Thread(() -> {
       while (!Thread.currentThread().isInterrupted()) {
         try {
           final com.expleague.xmpp.stanza.Message message = messagesQueue.take();
-          for (ReceivingMessage receivingMessage : messagesWithSync) {
+          for (ReceivingMessage receivingMessage : messages) {
             if (!receivingMessage.received() && receivingMessage.tryReceive(message) && receivingMessage.expected()) {
               stateLatch.advance();
               if (stateLatch.state() == initState) {
@@ -246,7 +241,7 @@ public class Bot {
     if (stateLatch.state() != initState) {
       stateLatch.state(initState);
     }
-    return Arrays.stream(messagesWithSync).filter(em -> em.received() ^ em.expected()).toArray(ReceivingMessage[]::new);
+    return Arrays.stream(messages).filter(em -> em.received() ^ em.expected()).toArray(ReceivingMessage[]::new);
   }
 
   private synchronized void onMessage(Message message) throws JaxmppException {
@@ -272,10 +267,24 @@ public class Bot {
     }
   }
 
-  public boolean isOfferCheckReceived() {
+  public boolean offerCheckReceivedAndReset() {
     final boolean result = offerCheckReceived;
     offerCheckReceived = false;
     return result;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Bot bot = (Bot) o;
+    return jid.equals(bot.jid);
+  }
+
+  @Override
+  public int hashCode() {
+    return jid.hashCode();
   }
 
   public static class PrinterAsyncCallback implements AsyncCallback {

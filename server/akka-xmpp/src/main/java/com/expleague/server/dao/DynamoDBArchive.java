@@ -208,15 +208,14 @@ public class DynamoDBArchive implements Archive {
   @DynamoDBTable(tableName = "expleague-rooms")
   public static class RoomArchive implements Dump {
     String id;
-    Set<String> known = new HashSet<>();
-    List<Message> messages;
+    final Set<String> known = new HashSet<>();
+    final List<Message> messages = new ArrayList<>();
 
     public RoomArchive() {
     }
 
     public RoomArchive(String id) {
       this.id = id;
-      messages = new ArrayList<>();
     }
 
     @DynamoDBHashKey
@@ -233,20 +232,21 @@ public class DynamoDBArchive implements Archive {
       return messages;
     }
 
-    public void setMessages(List<Message> messages) {
-      this.messages = messages;
-      messages.forEach(m -> known.add(m.stanza().id()));
-    }
-
-    public void log(CharSequence message, String authorId) {
-      messages.add(new Message(authorId, message, System.currentTimeMillis()));
+    public synchronized void setMessages(List<Message> messages) {
+      for (Message message : messages) {
+        final Stanza stanza = message.stanza();
+        if (known.contains(stanza.id()) || known.contains(stanza.strippedVitalikId()))
+          continue;
+        known.add(stanza.id());
+        this.messages.add(message);
+      }
     }
 
     private final List<Message> accumulatedChange = new ArrayList<>();
 
     @Override
-    public void accept(Stanza stanza) {
-      if (known.contains(stanza.id()))
+    public synchronized void accept(Stanza stanza) {
+      if (known.contains(stanza.id()) || known.contains(stanza.strippedVitalikId()))
         return;
       final Message message = new Message(stanza.from().toString(), stanza.xmlString(), System.currentTimeMillis());
       known.add(stanza.id());
@@ -313,7 +313,7 @@ public class DynamoDBArchive implements Archive {
     }
 
     public Stanza stanza() {
-      return Stanza.create(text, ts / 1000);
+      return Stanza.create(text);
     }
 
     public String author() {

@@ -3,8 +3,13 @@ package integration_tests.tests;
 import com.expleague.bots.AdminBot;
 import com.expleague.bots.ClientBot;
 import com.expleague.bots.ExpertBot;
+import com.expleague.bots.utils.ReceivingMessage;
+import com.expleague.bots.utils.ReceivingMessageBuilder;
+import com.expleague.model.Operations;
+import com.spbsu.commons.util.sync.StateLatch;
 import integration_tests.BaseRoomTest;
 import org.junit.Test;
+import tigase.jaxmpp.core.client.BareJID;
 import tigase.jaxmpp.core.client.exceptions.JaxmppException;
 
 /**
@@ -24,18 +29,20 @@ public class ClientExpertTest extends BaseRoomTest {
     obtainRoomFeedbackState(testName(), clientBot, adminBot, expertBot);
   }
 
-  /*@Test
+  @Test
   public void testExpertCancels() throws JaxmppException {
     //Arrange
-    final BareJID roomJID = obtainRoomDeliverState();
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ClientBot clientBot = botsManager.nextClient();
+    final ExpertBot expertBot = botsManager.nextExpert();
+
+    final BareJID roomJID = obtainRoomDeliverState(testName(), clientBot, adminBot, expertBot);
     final ReceivingMessage expectedCancel = new ReceivingMessageBuilder().from(botRoomJID(roomJID, expertBot)).has(Operations.Cancel.class).build();
 
     //Act
     expertBot.sendGroupchat(roomJID, new Operations.Cancel());
-    final ReceivingMessage[] notReceivedMessages = clientBot.tryReceiveMessages(new StateLatch(), expectedCancel);
-    roomCloseStateByClientCancel(roomJID); //TODO:remove
 
     //Assert
-    assertThereAreNoFailedMessages(notReceivedMessages);
-  }*/
+    assertThereAreNoFailedMessages(clientBot.tryReceiveMessages(new StateLatch(), expectedCancel));
+  }
 }

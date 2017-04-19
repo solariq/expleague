@@ -202,7 +202,7 @@ public class BaseRoomTest extends TestCase {
     { //obtain work state
       //Arrange
       final Offer offer = new Offer(JID.parse(roomJID.toString()));
-      final ReceivingMessage offerCheck = new ReceivingMessageBuilder().from(domainJID()).has(Offer.class).has(Operations.Check.class).build();
+      final ReceivingMessageBuilder offerCheck = new ReceivingMessageBuilder().from(domainJID()).has(Offer.class).has(Operations.Check.class);
       final ReceivingMessage roomWorkState = new ReceivingMessageBuilder().from(groupChatJID(roomJID)).has(Operations.RoomStateChanged.class, rsc -> RoomState.WORK == rsc.state()).build();
 
       //Act
@@ -214,7 +214,7 @@ public class BaseRoomTest extends TestCase {
 
       for (ExpertBot expertBot : expertBots) {
         //Act
-        final ReceivingMessage[] notReceivedOfferCheck = expertBot.tryReceiveMessages(new StateLatch(), offerCheck.copy());
+        final ReceivingMessage[] notReceivedOfferCheck = expertBot.tryReceiveMessages(new StateLatch(), offerCheck.build());
         //Assert
         assertThereAreNoFailedMessages(notReceivedOfferCheck);
       }
