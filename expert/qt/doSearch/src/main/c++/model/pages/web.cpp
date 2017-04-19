@@ -205,6 +205,7 @@ void WebPage::rebuildRedirects() {
 }
 
 void WebPage::open(const QUrl& url, bool newTab, bool transferUI) {
+    qDebug() << url << "new tab " << newTab;
     parent()->navigation()->open(url, this, newTab, transferUI);
 }
 

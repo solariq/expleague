@@ -70,7 +70,7 @@ public:
     time_t lastVisitTs() const { return m_last_visit_ts; }
 
     QQuickItem* uiNoCache() const { return ui(false); }
-    QQuickItem* ui(bool useCache = true) const;
+    virtual QQuickItem* ui(bool useCache = true) const;
     bool compareUI(QQuickItem* item) const { return m_ui == item; }
 
     Q_INVOKABLE virtual double pOut(Page*) const;

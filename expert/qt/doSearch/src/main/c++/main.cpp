@@ -19,6 +19,10 @@
 #include "model/history.h"
 //#include "util/crashhandler.h"
 
+//#include "include/cef_app.h"
+//#include "include/cef_client.h"
+//#include "include/cef_render_process_handler.h"
+
 #include <cmath>
 
 using namespace expleague;
@@ -31,7 +35,18 @@ QQmlApplicationEngine* rootEngine;
 QSystemTrayIcon* trayIcon;
 #endif
 
+
 int main(int argc, char *argv[]) {
+//    CefMainArgs main_args(GetModuleHandle(NULL));
+//    CefRefPtr<CefApp> cefapp;
+//    CefSettings settings;
+//    CefString(&settings.browser_subprocess_path).FromASCII(
+//                "C:\\pr1\\expleague\\expert\\qt\\build-doSearch-Desktop_Qt_5_9_0_MSVC2015_32bit-Debug\\src\\CEF\\debug\\CEF.exe");
+//    CefInitialize(main_args, settings, cefapp, NULL);
+//    CefRunMessageLoop();
+//    CefShutdown();
+//    return 0;
+   //-------------------------
     PersistentPropertyHolder::debugPrintAll();
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));

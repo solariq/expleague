@@ -348,7 +348,7 @@ bool CompositeContentPage::appendPart(ContentPage* part) {
         return false;
     m_parts.append(part);
     setProfile(profile() + part->profile());
-    append("content.part", part->id());
+    append("content/part", part->id());
     connect(part, SIGNAL(textContentChanged()), SLOT(onPartContentsChanged()));
     connect(part, SIGNAL(changingProfile(BoW,BoW)), SLOT(onPartProfileChanged(BoW,BoW)));
     save();
@@ -360,7 +360,7 @@ void CompositeContentPage::removePart(ContentPage* part) {
     if (!m_parts.contains(part))
         return;
     m_parts.removeOne(part);
-    remove("content.part", [part](const QVariant& var){ return var.toString() == part->id(); });
+    remove("content/part", [part](const QVariant& var){ return var.toString() == part->id(); });
     part->forgetIncoming(this);
     part->disconnect(this);
     forgetOutgoing(part);
@@ -391,7 +391,7 @@ CompositeContentPage::CompositeContentPage(const QString& id, const QString& uiQ
 {}
 
 void CompositeContentPage::interconnect() {
-    visitValues("content.part", [this](const QVariant& var){
+    visitValues("content/part", [this](const QVariant& var){
         ContentPage* part = qobject_cast<ContentPage*>(parent()->page(var.toString()));
         if (m_parts.contains(part))
             return;

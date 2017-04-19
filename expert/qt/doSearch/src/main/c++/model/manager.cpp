@@ -529,10 +529,15 @@ void NavigationManager::onGroupsChanged() {
         foreach (Page* page, m_prev_known) { // cleanup
             if (known.contains(page))
                 continue;
-            qDebug() << "Destroying ui of: " << page->id();
+            QString id = page->id();
             QQuickItem* inactiveScreen = page->ui(true);
-            inactiveScreen->setParent(0);
-            inactiveScreen->deleteLater();
+            if (inactiveScreen) {
+                QObject::connect(inactiveScreen, &QObject::destroyed, [id]() {
+                    qDebug() << "Destroying ui of: " << id;
+                });
+                inactiveScreen->setParent(0);
+                inactiveScreen->deleteLater();
+            }
         }
         m_prev_known = known;
     }

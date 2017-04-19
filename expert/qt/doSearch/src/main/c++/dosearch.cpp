@@ -47,7 +47,7 @@ doSearch* doSearch::instance() {
 void doSearch::restoreState() {
     PersistentPropertyHolder contextHolder(pageResource("context"));
     contextHolder.visitKeys("", [this](const QString& contextName){
-        Context* ctxt = qobject_cast<Context*>(page("context." + contextName));
+        Context* ctxt = qobject_cast<Context*>(page("context/" + contextName));
         if (!ctxt->hasTask())
             m_contexts.append(ctxt);
     });
@@ -67,7 +67,7 @@ QDir doSearch::pageStorage(const QString &id) const {
 }
 
 QString doSearch::pageResource(const QString &id) const {
-    return "pages." + id;
+    return "pages/" + id;
 }
 
 class EmptyPage: public Page {
@@ -136,7 +136,7 @@ QString doSearch::nextId(const QString& prefix) const {
         id = randString(10);
     }
     while (root.containsKey(id));
-    return prefix + "." + id;
+    return prefix + "/" + id;
 }
 
 SearchSession* doSearch::session(SearchRequest* seed) const {
@@ -184,7 +184,7 @@ Page* doSearch::page(const QString &id) const {
     if (id.isEmpty())
         return 0;
     return page(id, [this](const QString& id, doSearch* parent) -> Page* {
-        if (id.startsWith("context."))
+        if (id.startsWith("context/"))
             return new Context(id, parent);
         else if (id == AdminContext::ID)
             return new AdminContext(parent);

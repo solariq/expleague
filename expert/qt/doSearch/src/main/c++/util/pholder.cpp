@@ -21,7 +21,7 @@
 
 #include <QDebug>
 
-const char devide = '.';
+const char devide = '/';
 
 QString toString(const QVariant& var);
 QVariant fromString(const QString& s);
@@ -143,6 +143,8 @@ QVariant PersistentPropertyHolder::value(const QString& key) const {
 void PersistentPropertyHolder::store(const QString& key, const QVariant& value) {
     if (!value.isNull()) {
         put(m_page + (key.isEmpty()?"":(devide + key)), value);
+    }else{
+        remove(key);
     }
     m_changes++;
 }
@@ -247,7 +249,7 @@ void PersistentPropertyHolder::replaceOrAppend(const QString& key, const QVarian
         QString str = QString::fromUtf8(QByteArray(iter->key().data(), iter->key().size()));
         QString sub = nextKey(fullKey, str);
         if(sub == ""){
-            put(fullKey + ".0", val);
+            put(fullKey + devide + "0", val);
             return;
         }
         if(equals(get(str), val)){
