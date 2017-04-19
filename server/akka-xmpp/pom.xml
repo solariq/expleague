@@ -237,6 +237,15 @@
                   <mainClass>com.expleague.server.ExpLeagueServer</mainClass>
                 </transformer>
               </transformers>
+              <filters>
+                <filter>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
             </configuration>
           </execution>
           <execution>
