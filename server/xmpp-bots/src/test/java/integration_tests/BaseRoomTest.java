@@ -135,6 +135,7 @@ public class BaseRoomTest extends TestCase {
     //Arrange
     final BareJID roomJID = generateRoomJID(testName, clientBot);
     final Offer offer = new Offer(
+        JID.parse(roomJID.toString()),
         JID.parse(clientBot.jid().toString()),
         generateRandomString(),
         Offer.Urgency.ASAP, new Offer.Location(59.98062295379115, 30.32538469883643),
@@ -155,6 +156,7 @@ public class BaseRoomTest extends TestCase {
     //Arrange
     final BareJID roomJID = generateRoomJID(testName, clientBot);
     final Offer offer = new Offer(
+        JID.parse(roomJID.toString()),
         JID.parse(clientBot.jid().toString()),
         generateRandomString(),
         Offer.Urgency.ASAP, new Offer.Location(59.98062295379115, 30.32538469883643),

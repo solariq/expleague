@@ -1,15 +1,13 @@
 package com.expleague.server.agents;
 
-import akka.actor.ActorContext;
-import akka.actor.ActorRef;
-import akka.actor.Props;
-import akka.actor.UntypedActor;
+import akka.actor.*;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 import com.expleague.model.Application;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
 import com.expleague.server.Subscription;
+import com.expleague.server.answers.RepositoryService;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.AkkaTools;
@@ -57,8 +55,11 @@ public class XMPP extends ActorAdapter<UntypedActor> {
     );
   }
 
-  public static void send(Stanza message, ActorContext context) {
-    context.actorSelection(XMPP_ACTOR_PATH).forward(message, context);
+  public static void send(Stanza message, ActorRefFactory context) {
+    if (context instanceof ActorContext)
+      context.actorSelection(XMPP_ACTOR_PATH).forward(message, (ActorContext)context);
+    else
+      context.actorSelection(XMPP_ACTOR_PATH).tell(message, ActorRef.noSender());
   }
 
   public static void subscribe(Subscription subscription, ActorContext context) {
@@ -172,6 +173,8 @@ public class XMPP extends ActorAdapter<UntypedActor> {
   protected Props newActorProps(final JID jid) {
     if (GlobalChatAgent.ID.equals(jid.local()))
       return props(GlobalChatAgent.class, jid.bare());
+    else if (RepositoryService.ID.equals(jid.local()))
+      return props(RepositoryService.class, jid.bare());
     else if (jid.domain().startsWith("muc."))
       return props(ExpLeagueRoomAgent.class, jid.bare());
     else

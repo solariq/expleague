@@ -12,6 +12,7 @@ import java.sql.Array;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -69,7 +70,8 @@ public class Offer extends Item {
   public Offer() {
   }
 
-  public Offer(JID client, String topic, Urgency urgency, Location location, double started) {
+  public Offer(JID room, JID client, String topic, Urgency urgency, Location location, double started) {
+    this.room = room;
     this.client = client;
     this.topic = topic;
     this.urgency = urgency;
@@ -236,6 +238,19 @@ public class Offer extends Item {
 
   public Pattern[] patterns() {
     return patterns != null ? patterns.toArray(new Pattern[patterns.size()]) : new Pattern[0];
+  }
+
+  public Offer strip() {
+    final Offer stripped = new Offer(room, client, topic, urgency, location, started);
+    if (patterns != null)
+      stripped.patterns = new ArrayList<>(patterns);
+    if (tags != null)
+      stripped.tags = new ArrayList<>(tags);
+    if (isLocal != null)
+      stripped.isLocal = isLocal;
+    if (attachments != null)
+      stripped.attachments = attachments.stream().filter(a -> !(a instanceof Filter)).collect(Collectors.toList());
+    return stripped;
   }
 
   @XmlEnum

@@ -317,9 +317,7 @@ public class RoomAgent extends PersistentActorAdapter {
           xData.role(role != Role.NONE ? role : suggestRole(from, affiliation));
         }
 
-        if (!update(from, xData.role(), xData.affiliation(), ProcessMode.NORMAL))
-          return false;
-
+        final boolean rc = update(from, xData.role(), xData.affiliation(), ProcessMode.NORMAL);
         enter(from);
 
         if (xData.has(MucHistory.class)) {
@@ -331,7 +329,7 @@ public class RoomAgent extends PersistentActorAdapter {
             }
           });
         }
-        return true;
+        return rc;
       }
       else
         return update(from, Role.NONE, null, ProcessMode.NORMAL);
@@ -423,6 +421,9 @@ public class RoomAgent extends PersistentActorAdapter {
 
   @NotNull
   protected JID roomAlias(JID from) {
+    if (from == null) {
+      System.out.println();
+    }
     final MucUserStatus status = participants.get(from);
     if (from.equals(jid()))
       return jid();

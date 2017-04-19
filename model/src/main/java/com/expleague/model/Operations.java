@@ -112,6 +112,10 @@ public class Operations {
     public Verified(JID authority) {
       this.authority = authority;
     }
+
+    public JID authority() {
+      return authority;
+    }
   }
 
   @XmlRootElement

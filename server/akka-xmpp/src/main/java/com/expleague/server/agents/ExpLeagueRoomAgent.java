@@ -7,6 +7,7 @@ import com.expleague.model.Operations.*;
 import com.expleague.model.RoomState;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
+import com.expleague.server.answers.RepositoryService;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
@@ -180,6 +181,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 //        cancelOrders();
       }
       else state(VERIFY);
+      message(new Message(jid(), RepositoryService.jid(), offer, answer));
       answer = msg;
       tellGlobal(new RoomMessageReceived(from, true));
     }
@@ -187,6 +189,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       if (state == VERIFY && authority.priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
         state(DELIVERY);
         message(new Message(answer.from(), roomAlias(owner()), answer.get(Answer.class), new Verified(from)));
+        message(new Message(jid(), RepositoryService.jid(), offer, msg.get(Verified.class)));
       }
     }
     else if (msg.has(Cancel.class)) {
@@ -204,6 +207,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         final Feedback feedback = msg.get(Feedback.class);
         orders(OrderState.DONE).forEach(order -> order.feedback(feedback.stars(), feedback.payment()));
         tellGlobal(feedback);
+        message(new Message(jid(), RepositoryService.jid(), offer, feedback));
         state(CLOSED);
       }
       else if (msg.has(Done.class)) {}
@@ -215,38 +219,37 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         final JID owner = owner();
         if (offer.client() == null)
           offer.client(owner);
-        if (state == WORK) { // order update during the work
-          if (authority == ExpertsProfile.Authority.ADMIN) {
-            affiliation(from, Affiliation.ADMIN);
-            final List<JID> activeExperts = inflightOrders().flatMap(o -> o.of(ACTIVE)).collect(Collectors.toList());
-            cancelOrders();
-            if (activeExperts != null)
-              offer.filter().prefer(activeExperts.toArray(new JID[activeExperts.size()]));
-            startOrders(offer);
-          }
-        }
-        else if (fromOwner) {
+        if (fromOwner) {
           state(OPEN);
         }
         else if (authority == ExpertsProfile.Authority.ADMIN) {
           affiliation(from, Affiliation.ADMIN);
-          final XMPPDevice[] devices = Roster.instance().devices(owner.local());
-          if (Stream.of(devices).anyMatch(device -> device.build() > 70)) {
-            state(OFFER);
+          if (state != WORK) {
+            final XMPPDevice[] devices = Roster.instance().devices(owner.local());
+            if (Stream.of(devices).anyMatch(device -> device.build() > 70)) {
+              state(OFFER);
+            }
+            else {
+              state(WORK);
+              startOrders(offer).forEach(order -> {
+                final Offer orderOffer = order.offer();
+                for (final Tag tag : orderOffer.tags()) {
+                  message(new Message(from, jid(), new Progress(order.id(), new Progress.MetaChange(tag.name(), Progress.MetaChange.Operation.ADD, Progress.MetaChange.Target.TAGS))));
+                }
+                for (final Pattern pattern : orderOffer.patterns()) {
+                  message(new Message(from, jid(), new Progress(order.id(), new Progress.MetaChange(pattern.name(), Progress.MetaChange.Operation.ADD, Progress.MetaChange.Target.PATTERNS))));
+                }
+              });
+            }
+            tellGlobal(new RoomMessageReceived(from, true));
           }
-          else {
-            state(WORK);
-            startOrders(offer).forEach(order -> {
-              final Offer orderOffer = order.offer();
-              for (final Tag tag : orderOffer.tags()) {
-                message(new Message(from, jid(), new Progress(order.id(), new Progress.MetaChange(tag.name(), Progress.MetaChange.Operation.ADD, Progress.MetaChange.Target.TAGS))));
-              }
-              for (final Pattern pattern : orderOffer.patterns()) {
-                message(new Message(from, jid(), new Progress(order.id(), new Progress.MetaChange(pattern.name(), Progress.MetaChange.Operation.ADD, Progress.MetaChange.Target.PATTERNS))));
-              }
-            });
+          else { // order update during the work
+              final List<JID> activeExperts = inflightOrders().flatMap(o -> o.of(ACTIVE)).collect(Collectors.toList());
+              cancelOrders();
+              if (activeExperts != null)
+                offer.filter().prefer(activeExperts.toArray(new JID[activeExperts.size()]));
+              startOrders(offer);
           }
-          tellGlobal(new RoomMessageReceived(from, true));
         }
         tellGlobal(offer, new OfferChange(from.bare()));
         tellGlobal(new RoomMessageReceived(from, true));
@@ -266,8 +269,13 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   private void message(Message message) {
-    if (mode() == ProcessMode.NORMAL)
-      onMessage(message);
+    if (message.to().bareEq(jid())) {
+      if (mode() == ProcessMode.NORMAL)
+        onMessage(message);
+    }
+    else if (mode() != ProcessMode.RECOVER) {
+      XMPP.send(message, context());
+    }
   }
 
   private Stream<ExpLeagueOrder> inflightOrders() {

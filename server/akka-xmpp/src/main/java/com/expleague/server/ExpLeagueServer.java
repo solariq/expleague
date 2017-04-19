@@ -1,15 +1,19 @@
 package com.expleague.server;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import com.expleague.model.Operations;
 import com.expleague.server.admin.ExpLeagueAdminService;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
+import com.expleague.server.answers.RepositoryService;
 import com.expleague.server.dao.Archive;
 import com.expleague.server.dao.PatternsRepository;
 import com.expleague.server.services.XMPPServices;
 import com.expleague.server.xmpp.XMPPClientConnection;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.server.notifications.NotificationsManager;
+import com.expleague.xmpp.stanza.Message;
 import com.google.common.annotations.VisibleForTesting;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -42,6 +46,7 @@ public class ExpLeagueServer {
     // singletons
     system.actorOf(ActorAdapter.props(XMPP.class), "xmpp");
     system.actorOf(ActorAdapter.props(LaborExchange.class), "labor-exchange");
+    XMPP.send(new Message(XMPP.jid(), RepositoryService.jid(), new Operations.Start()), system);
 
     // per node
     system.actorOf(ActorAdapter.props(NotificationsManager.class, config.iosPushCert(), config.iosPushPasswd()), "notifications");

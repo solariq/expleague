@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<properties>
+    <mimeTypeRepository resource="/org/apache/tika/mime/tika-mimetypes.xml"
+                        magic="false"/>
+    <parsers>
+        <parser name="parse-html" class="org.apache.tika.parser.html.HtmlParser">
+            <mime>text/html</mime>
+            <mime>application/xhtml+xml</mime>
+            <mime>application/x-asp</mime>
+        </parser>
+        <parser name="parse-plain" class="org.apache.tika.parser.txt.TXTParser">
+            <mime>text/markdown</mime>
+        </parser>
+    </parsers>
+</properties>

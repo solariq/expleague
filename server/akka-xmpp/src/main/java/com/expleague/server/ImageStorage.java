@@ -53,7 +53,7 @@ public class ImageStorage extends ActorAdapter<UntypedActor> {
     final BasicAWSCredentials credentials = new BasicAWSCredentials("AKIAJPLJBHVNFAWY3S4A", "UEnvfQ2ver5mlOu7IJsjxRH3G9uF3/f0WNLFZ9c6");
     System.setProperty("com.amazonaws.services.s3.disableGetObjectMD5Validation", "true");
     s3Client = new AmazonS3Client(credentials);
-    if (!s3Client.listBuckets().stream().anyMatch(bucket -> BUCKET_NAME.equals(bucket.getName()))) {
+    if (s3Client.listBuckets().stream().noneMatch(bucket -> BUCKET_NAME.equals(bucket.getName()))) {
       s3Client.createBucket(BUCKET_NAME);
     }
   }
