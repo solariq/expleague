@@ -225,8 +225,13 @@ Page* doSearch::page(const QString& id, std::function<Page* (const QString& id, 
     if (m_pages.contains(id))
         return m_pages[id];
     Page* page = factory(id, const_cast<doSearch*>(this));
-    m_pages[id] = page;
-    page->interconnect();
+    if (page) {
+        m_pages[id] = page;
+        page->interconnect();
+    }
+    else {
+        factory(id, const_cast<doSearch*>(this));
+    }
     return page;
 }
 
@@ -248,7 +253,7 @@ void doSearch::onRoleChanged(League::Role role) {
     default: {
         foreach (Context* ctxt, m_contexts) {
             if(qobject_cast<AdminContext*>(ctxt)) {
-                remove(ctxt);
+                remove(ctxt, false);
                 break;
             }
         }

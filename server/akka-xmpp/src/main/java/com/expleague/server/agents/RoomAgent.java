@@ -298,12 +298,23 @@ public class RoomAgent extends PersistentActorAdapter {
 
   protected void exit(JID from) {}
 
-  protected void enter(JID jid) {
+  protected void enter(JID jid, MucXData xData) {
+    if (mode() != ProcessMode.NORMAL)
+      return;
     participants.forEach((id, s) -> {
       if (id.bareEq(jid))
         return;
       XMPP.send(participantCopy(s.presence(), jid), context());
     });
+    if (xData.has(MucHistory.class)) {
+      final MucHistory history = xData.get(MucHistory.class);
+      archive(history).forEach(stanza -> {
+        final JID to = stanza.to();
+        if (stanza instanceof Message && checkDst(stanza, jid, true) && ((to != null && to.hasResource()) || relevant(stanza, jid))) {
+          XMPP.send(participantCopy(stanza, jid), context());
+        }
+      });
+    }
   }
 
   public boolean update(Presence presence) {
@@ -318,17 +329,7 @@ public class RoomAgent extends PersistentActorAdapter {
         }
 
         final boolean rc = update(from, xData.role(), xData.affiliation(), ProcessMode.NORMAL);
-        enter(from);
-
-        if (xData.has(MucHistory.class)) {
-          final MucHistory history = xData.get(MucHistory.class);
-          archive(history).forEach(stanza -> {
-            final JID to = stanza.to();
-            if (stanza instanceof Message && checkDst(stanza, from, true) && ((to != null && to.hasResource()) || relevant(stanza, from))) {
-              XMPP.send(participantCopy(stanza, from), context());
-            }
-          });
-        }
+        enter(from, xData);
         return rc;
       }
       else

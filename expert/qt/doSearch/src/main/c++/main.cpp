@@ -47,7 +47,6 @@ int main(int argc, char *argv[]) {
 //    CefShutdown();
 //    return 0;
    //-------------------------
-    PersistentPropertyHolder::debugPrintAll();
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
 //    QCoreApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);

@@ -125,15 +125,15 @@ void Task::progressReceived(const QString&, const xmpp::Progress& progress) {
     switch(progress.target) {
     case xmpp::Progress::PO_PATTERN:
         change<AnswerPattern*>(m_patterns, parent()->findPattern(progress.name), progress.operation);
-        patternsChanged();
+        emit patternsChanged();
         break;
     case xmpp::Progress::PO_TAG:
         change<TaskTag*>(m_tags, parent()->findTag(progress.name), progress.operation);
-        tagsChanged();
+        emit tagsChanged();
         break;
     case xmpp::Progress::PO_PHONE:
         change<QString>(m_phones, progress.name, progress.operation);
-        phonesChanged();
+        emit phonesChanged();
         break;
     case xmpp::Progress::PO_URL:
         break;

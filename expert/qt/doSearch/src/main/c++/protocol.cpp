@@ -460,10 +460,11 @@ void ExpLeagueConnection::sendAnswer(const QString& room, int difficulty, int su
     protocol.append(QXmppElement(answer));
     msg.setExtensions(protocol);
     m_client->sendPacket(msg);
+    msg.setTo(room);
     onMessage(msg, msg.id() +  "-" + xmpp::user(jid()));
 }
 
-void ExpLeagueConnection::sendProgress(const QString& /*to*/, const Progress& progress) {
+void ExpLeagueConnection::sendProgress(const QString& to, const Progress& progress) {
     QXmppMessage msg("", profile()->domain());
     msg.setId(xmpp::nextId());
 
@@ -474,6 +475,7 @@ void ExpLeagueConnection::sendProgress(const QString& /*to*/, const Progress& pr
     protocol.append(QXmppElement(progress.toXml()));
     msg.setExtensions(protocol);
     m_client->sendPacket(msg);
+    msg.setTo(to);
     onMessage(msg, msg.id() +  "-" + xmpp::user(jid()));
 }
 

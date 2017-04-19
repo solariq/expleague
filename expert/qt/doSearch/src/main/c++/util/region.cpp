@@ -43,6 +43,7 @@ void RegionResolver::resolve(const QGeoCoordinate& coord, std::function<void (co
 
 void RegionResolver::request(const QGeoCoordinate& coord, std::function<void (const QString&)> callback) {
     QNetworkRequest request("https://geocode-maps.yandex.ru/1.x/?geocode=" + QString::number(coord.longitude()) + "," + QString::number(coord.latitude()) + "&kind=locality");
+    qDebug() << "Resolving coords: " << "https://geocode-maps.yandex.ru/1.x/?geocode=" + QString::number(coord.longitude()) + "," + QString::number(coord.latitude()) + "&kind=locality";
     RegionQuery* query = new RegionQuery(callback, this);
     request.setOriginatingObject(query);
     m_nam->get(request);

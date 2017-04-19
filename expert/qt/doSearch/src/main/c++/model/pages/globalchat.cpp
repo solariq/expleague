@@ -15,6 +15,7 @@ void GlobalChat::enter(RoomStatus* room) {
     m_focus = room;
     if (!room)
         return;
+    room->clearUnread();
     Task* task = room->task();
     task->enter();
     m_owner->appendDocument(task->answer());

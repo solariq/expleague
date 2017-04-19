@@ -227,8 +227,8 @@ public:
     static League* instance();
 
     Q_INVOKABLE void acceptInvitation(Offer* offer) {
-        startTask(offer);
         m_connection->sendAccept(offer);
+        startTask(offer);
     }
 
     Q_INVOKABLE void rejectInvitation(Offer* offer) {
