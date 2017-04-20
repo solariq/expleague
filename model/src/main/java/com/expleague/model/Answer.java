@@ -2,6 +2,7 @@ package com.expleague.model;
 
 import com.expleague.xmpp.Item;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
 
@@ -14,6 +15,15 @@ public class Answer extends Item {
   @XmlValue
   private String value;
 
+  @XmlAttribute
+  private Double difficulty;
+
+  @XmlAttribute(name="extra-info")
+  private Integer needMoreInfo;
+
+  @XmlAttribute
+  private Integer success;
+
   public Answer() {}
 
   public Answer(String value) {
@@ -22,5 +32,17 @@ public class Answer extends Item {
 
   public String value() {
     return value;
+  }
+
+  public double difficulty() {
+    return difficulty != null ? difficulty : 0;
+  }
+
+  public boolean specifications() {
+    return needMoreInfo != null && needMoreInfo != 0;
+  }
+
+  public boolean success() {
+    return success == null || success != 0;
   }
 }

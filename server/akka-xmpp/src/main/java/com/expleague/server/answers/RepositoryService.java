@@ -128,7 +128,11 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
         final String fullAnswer = answerText.substring(firstLineEnd + 1);
         answerNode.setProperty("jcr:data", writeSession.getValueFactory().createBinary(new ByteArrayInputStream(fullAnswer.getBytes(StreamTools.UTF))));
         answerNode.setProperty("jcr:encoding", "UTF-8");
+
         offerNode.setProperty("short-answer", shortAnswer);
+        offerNode.setProperty("difficulty", answer.difficulty());
+        offerNode.setProperty("success", answer.success());
+        offerNode.setProperty("specifications", answer.specifications());
       }
       if (msg.has(Operations.Verified.class)) {
         offerNode.setProperty("verified", msg.get(Operations.Verified.class).authority().local());
