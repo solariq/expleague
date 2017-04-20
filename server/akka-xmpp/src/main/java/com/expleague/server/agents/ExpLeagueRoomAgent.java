@@ -142,6 +142,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   private Offer offer = null;
+  private HashSet<JID> knownToClient = new HashSet<>();
   public void process(Message msg) {
     super.process(msg);
 
@@ -177,8 +178,10 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       }
       enter(from, new MucXData(new MucHistory()));
       final ExpertsProfile profile = Roster.instance().profile(from.local());
-      if (offer.workers().noneMatch(jid -> jid.bareEq(from)))
+      if (!knownToClient.contains(from.bare())) {
+        knownToClient.add(from.bare());
         message(new Message(jid(), roomAlias(owner()), msg.get(Start.class), profile));
+      }
       offer = offer.copy();
       offer.filter().prefer(from);
       message(new Message(jid(), jid(), offer));
@@ -232,6 +235,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       if (offer.client() == null)
         offer.client(owner);
       if (fromOwner) {
+        knownToClient.clear();
         state(OPEN);
       }
       else if (authority == ExpertsProfile.Authority.ADMIN) {
