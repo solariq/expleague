@@ -53,10 +53,10 @@ public class SearchRequestHandler extends ActorAdapter<UntypedActor> {
       answer.append("<ol>");
       while (nodeIterator.hasNext()) {
         final Node node = nodeIterator.nextNode();
-        final Uri answerUri = Uri.create(uri.scheme() + "://" + uri.host() + "/get?id=" + node.getIdentifier());
+        final Uri answerUri = Uri.create(uri.scheme() + "://" + uri.host() + "/get?id=" + node.getIdentifier()).port(uri.port());
         answer.append("<li>");
         answer.append("<a href=\"").append(answerUri.toString()).append("\">")
-            .append(node.getParent().getProperty("topic").toString())
+            .append(node.getParent().getProperty("topic").getString())
             .append("</a>");
         answer.append("</li>");
       }

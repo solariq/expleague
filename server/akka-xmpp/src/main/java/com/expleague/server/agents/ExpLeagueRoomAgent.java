@@ -183,14 +183,15 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       tellGlobal(msg.get(Start.class), profile.shorten());
     }
     else if (msg.has(Answer.class)) {
+      final Answer answer = msg.get(Answer.class);
       if (authority.priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
         state(DELIVERY);
-        message(new Message(from, roomAlias(owner()), msg.get(Answer.class), new Verified(from)));
+        message(new Message(from, roomAlias(owner()), answer, new Verified(from)));
 //        cancelOrders();
       }
       else state(VERIFY);
       message(new Message(jid(), RepositoryService.jid(), offer, answer));
-      answer = msg;
+      this.answer = msg;
       tellGlobal(new RoomMessageReceived(from, true));
     }
     else if (msg.has(Verified.class)) {

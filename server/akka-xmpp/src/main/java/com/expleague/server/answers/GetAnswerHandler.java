@@ -46,7 +46,7 @@ public class GetAnswerHandler extends ActorAdapter {
       final String result = renderer.render(parser.parseReader(new InputStreamReader(binary.getStream(), StreamTools.UTF)));
       reply(HttpResponse.create().withStatus(200).withEntity(
           MediaTypes.TEXT_HTML.toContentType(HttpCharsets.UTF_8),
-          "<html><title>" + node.getParent().getProperty("topic") + "</title><body>\"" + result + "\"</body></html>"));
+          "<html><title>" + node.getParent().getProperty("topic") + "</title><body>" + result + "</body></html>"));
     } catch (RepositoryException | IOException e) {
       log.log(Level.WARNING, "Unable to login to jackrabbit repository", e);
 
