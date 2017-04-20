@@ -116,16 +116,16 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
       final Node offerNode = findOffer(offer);
       if (msg.has(Answer.class)) {
         final Answer answer = msg.get(Answer.class);
+        final String answerText = answer.value();
+        final int firstLineEnd = answerText.indexOf('\n');
+        final String shortAnswer = answerText.substring(0, firstLineEnd);
+        final String fullAnswer = answerText.substring(firstLineEnd + 1);
         final Node answerNode;
         if (!offerNode.hasNode("answer")) {
           answerNode = offerNode.addNode("answer", "nt:resource");
         }
         else answerNode = offerNode.getNode("answer");
         answerNode.setProperty("jcr:mimeType", "text/markdown");
-        final String answerText = answer.value();
-        final int firstLineEnd = answerText.indexOf('\n');
-        final String shortAnswer = answerText.substring(0, firstLineEnd);
-        final String fullAnswer = answerText.substring(firstLineEnd + 1);
         answerNode.setProperty("jcr:data", writeSession.getValueFactory().createBinary(new ByteArrayInputStream(fullAnswer.getBytes(StreamTools.UTF))));
         answerNode.setProperty("jcr:encoding", "UTF-8");
 

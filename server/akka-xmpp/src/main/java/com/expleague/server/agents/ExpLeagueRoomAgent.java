@@ -177,7 +177,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       }
       enter(from, new MucXData(new MucHistory()));
       final ExpertsProfile profile = Roster.instance().profile(from.local());
-      message(new Message(jid(), roomAlias(owner()), msg.get(Start.class), profile));
+      if (offer.workers().noneMatch(jid -> jid.bareEq(from)))
+        message(new Message(jid(), roomAlias(owner()), msg.get(Start.class), profile));
+      offer = offer.copy();
       offer.filter().prefer(from);
       message(new Message(jid(), jid(), offer));
       tellGlobal(msg.get(Start.class), profile.shorten());
@@ -187,7 +189,6 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       if (authority.priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
         state(DELIVERY);
         message(new Message(from, roomAlias(owner()), answer, new Verified(from)));
-//        cancelOrders();
       }
       else state(VERIFY);
       message(new Message(jid(), RepositoryService.jid(), offer, answer));
@@ -208,6 +209,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         }
         else if (offer != null) {
           message(new Message(from, roomAlias(owner()), msg.get(Cancel.class)));
+          offer = offer.copy();
           offer.filter().reject(from);
           message(new Message(jid(), jid(), offer));
         }
@@ -256,8 +258,10 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         else { // order update during the work
           final List<JID> activeExperts = inflightOrders().flatMap(o -> o.of(ACTIVE)).collect(Collectors.toList());
           cancelOrders();
-          if (activeExperts != null)
+          if (activeExperts != null) {
+            offer = offer.copy();
             offer.filter().prefer(activeExperts.toArray(new JID[activeExperts.size()]));
+          }
           startOrders(offer);
         }
       }

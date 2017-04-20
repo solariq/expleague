@@ -55,7 +55,6 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               order.broker(self());
 
               final ExpLeagueOrder.Status status = order.state(context());
-              final List<JID> preferred = order.offer().filter().preferred().collect(Collectors.toList());
               if (order.state() == IN_PROGRESS) {// server was shut down
                 status.suspend();
               }
@@ -76,18 +75,28 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
                   return goTo(State.STARVING).using(status);
                 }
               }
-              else if (!preferred.isEmpty()) {
-                //noinspection ConstantConditions
-                explain("Trying to get one of " + preferred.size() + " preferred workers back to the order.");
-                for (final JID jid : preferred) {
-                  Experts.tellTo(jid, self(), self(), context());
-                }
-                return goTo(State.STARVING).using(status);
-              }
               else {
                 status.state(OPEN);
-                explain("No active work on order found.");
-                return lookForExpert(status).using(status);
+                final List<JID> accepted = order.offer().filter().accepted().collect(Collectors.toList());
+                final List<JID> preferred = order.offer().filter().preferred().collect(Collectors.toList());
+                if (!accepted.isEmpty()) {
+                  explain("Trying to get one of " + accepted.size() + " accepted workers back to the order.");
+                  for (final JID jid : accepted) {
+                    Experts.tellTo(jid, self(), self(), context());
+                  }
+                  return goTo(State.STARVING).using(status);
+                }
+                else if (!preferred.isEmpty()) {
+                  explain("Trying to get one of " + preferred.size() + " preferred workers back to the order.");
+                  for (final JID jid : preferred) {
+                    Experts.tellTo(jid, self(), self(), context());
+                  }
+                  return goTo(State.STARVING).using(status);
+                }
+                else {
+                  explain("No active work on order found.");
+                  return lookForExpert(status).using(status);
+                }
               }
             }
         )

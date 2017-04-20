@@ -1,78 +1,90 @@
-﻿<content>
-    <message xmlns="jabber:client" type="groupchat" from="global-chat@172.21.211.153/room-5567a89c-e5901966-e480014a"
-             to="5567a89c@172.21.211.153" id="global-room-5567a89c-e5901966-e480014a-1492601463-5567a89c">
-        <offer xmlns="http://expleague.com/scheme" room="room-5567a89c-e5901966-e480014a@muc.172.21.211.153"
-               client="5567a89c@172.21.211.153" local="false" urgency="day" started="1.492601416E9">
-            <topic>И снова тест 1</topic>
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<stream:stream xmlns:stream="http://etherx.jabber.org/streams" version="1.0" xmlns="jabber:client" xml:lang="en"
+               xmlns:xml="http://www.w3.org/XML/1998/namespace">
+    <message xmlns="jabber:client" type="normal" from="0694d14d@testnode3.expleague.com/0694d14d-44155822/unsearch"
+             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="5F808BFD-9A7F-46BF-9EDE-B04BDD3710DD">
+        <offer xmlns="http://expleague.com/scheme" client="0694d14d@testnode3.expleague.com" local="false" urgency="day"
+               started="1.492697923628923E9">
+            <topic>Test ju 2</topic>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal"
+             from="vk-32904@testnode3.expleague.com/alomakina.test3/dosearchqt-5.8.0/admin"
+             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="jgxrUcF4mo-1492697967752">
+        <offer xmlns="http://expleague.com/scheme" room="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
+               client="0694d14d@testnode3.expleague.com" local="false" urgency="day" started="1.492697923E9">
+            <topic>Test ju 2</topic>
             <experts-filter>
-                <prefer>vk-414864@172.21.211.153</prefer>
+                <accept>vk-12520103tyblockin-2.local@testnode3.expleague.com</accept>
+                <prefer>vk-32904@testnode3.expleague.com</prefer>
             </experts-filter>
-            <location longitude="30.3258" latitude="59.9807"/>
         </offer>
-        <room-state-changed xmlns="http://expleague.com/scheme" state="7"/>
-        <room-message-received xmlns="http://expleague.com/scheme" count="0"/>
-        <room-role-update xmlns="http://expleague.com/scheme" expert="5567a89c@172.21.211.153" affiliation="owner"
-                          role="none"/>
-        <room-role-update xmlns="http://expleague.com/scheme" expert="vk-414864@172.21.211.153" affiliation="admin"
-                          role="none"/>
+        <offer-change xmlns="http://expleague.com/scheme"/>
     </message>
-    <message xmlns="jabber:client" type="groupchat" from="global-chat@172.21.211.153/room-5567a89c-e5901966-8c179271"
-             to="5567a89c@172.21.211.153" id="global-room-5567a89c-e5901966-8c179271-1492090109-5567a89c">
-        <offer xmlns="http://expleague.com/scheme" room="room-5567a89c-e5901966-8c179271@muc.172.21.211.153"
-               client="5567a89c@172.21.211.153" local="false" urgency="day" started="1.492013639E9">
-            <topic>Тест 3</topic>
+    <message xmlns="jabber:client" type="normal"
+             from="vk-32904@testnode3.expleague.com/alomakina.test3/dosearchqt-5.8.0/admin"
+             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="sNwFjWTOBZ-1492698046811">
+        <offer xmlns="http://expleague.com/scheme" room="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
+               client="0694d14d@testnode3.expleague.com" local="false" urgency="day" started="1.492697923E9">
+            <topic>Test ju 2</topic>
             <experts-filter>
-                <prefer>vk-414864@172.21.211.153</prefer>
+                <reject>vk-12520103tyblockin-2.local@testnode3.expleague.com</reject>
             </experts-filter>
-            <location longitude="30.3256" latitude="59.9807"/>
         </offer>
-        <room-state-changed xmlns="http://expleague.com/scheme" state="8"/>
-        <room-message-received xmlns="http://expleague.com/scheme" count="0"/>
-        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
-        <room-role-update xmlns="http://expleague.com/scheme" expert="5567a89c@172.21.211.153" affiliation="owner"
-                          role="none"/>
-        <room-role-update xmlns="http://expleague.com/scheme" expert="vk-414864@172.21.211.153" affiliation="member"
-                          role="none"/>
+        <offer-change xmlns="http://expleague.com/scheme"/>
     </message>
-    <message xmlns="jabber:client" type="groupchat" from="global-chat@172.21.211.153/room-5567a89c-e5901966-62d3812f"
-             to="5567a89c@172.21.211.153" id="global-room-5567a89c-e5901966-62d3812f-1492191626-5567a89c">
-        <offer xmlns="http://expleague.com/scheme" client="5567a89c@172.21.211.153" local="false" urgency="day"
-               started="1.492191623609487E9">
-            <topic>Fhhgf</topic>
-            <location longitude="30.32530574130856" latitude="59.98095496097578"/>
-        </offer>
-        <room-state-changed xmlns="http://expleague.com/scheme" state="0"/>
-        <room-message-received xmlns="http://expleague.com/scheme" count="0"/>
-        <room-role-update xmlns="http://expleague.com/scheme" expert="5567a89c@172.21.211.153" affiliation="owner"
-                          role="none"/>
+    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
+             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="pc7vh/c07A-1492698049">
+        <progress xmlns="http://expleague.com/scheme" order="1676">
+            <state>open</state>
+        </progress>
     </message>
-    <message xmlns="jabber:client" type="groupchat" from="global-chat@172.21.211.153/room-5567a89c-e5901966-efd8ac51"
-             to="5567a89c@172.21.211.153" id="global-room-5567a89c-e5901966-efd8ac51-1492193967-5567a89c">
-        <offer xmlns="http://expleague.com/scheme" client="5567a89c@172.21.211.153" local="false" urgency="day"
-               started="1.492157052322485E9">
-            <topic>Как победить в startup tour?</topic>
-            <location longitude="30.32579682910661" latitude="59.98066152101018"/>
-        </offer>
-        <room-state-changed xmlns="http://expleague.com/scheme" state="0"/>
-        <room-message-received xmlns="http://expleague.com/scheme" count="0"/>
-        <room-role-update xmlns="http://expleague.com/scheme" expert="5567a89c@172.21.211.153" affiliation="owner"
-                          role="none"/>
+    <message xmlns="jabber:client" from="vk-12520103tyblockin-2.local@testnode3.expleague.com"
+             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="3yVVH4xZor-1492698065">
+        <cancel xmlns="http://expleague.com/scheme"/>
     </message>
-    <message xmlns="jabber:client" type="groupchat" from="global-chat@172.21.211.153/room-5567a89c-e5901966-9b92ee4c"
-             to="5567a89c@172.21.211.153" id="global-room-5567a89c-e5901966-9b92ee4c-1492435146-5567a89c">
-        <offer xmlns="http://expleague.com/scheme" room="room-5567a89c-e5901966-9b92ee4c@muc.172.21.211.153"
-               client="5567a89c@172.21.211.153" local="false" urgency="day" started="1.492090203E9">
-            <topic>Тестик. 1</topic>
+    <message xmlns="jabber:client" from="vk-12520103tyblockin-2.local@testnode3.expleague.com"
+             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com/0694d14d" id="41j2cg7CPx-1492698065">
+        <cancel xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
+             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="CxPyecOTA5-1492698065">
+        <offer xmlns="http://expleague.com/scheme" room="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
+               client="0694d14d@testnode3.expleague.com" local="false" urgency="day" started="1.492697923E9">
+            <topic>Test ju 2</topic>
             <experts-filter>
-                <prefer>vk-414864@172.21.211.153</prefer>
+                <reject>vk-12520103tyblockin-2.local@testnode3.expleague.com</reject>
             </experts-filter>
-            <location longitude="30.3254" latitude="59.9809"/>
         </offer>
-        <room-state-changed xmlns="http://expleague.com/scheme" state="7"/>
-        <room-message-received xmlns="http://expleague.com/scheme" count="0"/>
-        <room-role-update xmlns="http://expleague.com/scheme" expert="5567a89c@172.21.211.153" affiliation="owner"
-                          role="none"/>
-        <room-role-update xmlns="http://expleague.com/scheme" expert="vk-414864@172.21.211.153" affiliation="admin"
-                          role="none"/>
     </message>
-</content></query></iq>
+    <message xmlns="jabber:client" type="normal"
+             from="vk-32904@testnode3.expleague.com/alomakina.test3/dosearchqt-5.8.0/admin"
+             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="28WA5Gc9Nz-1492698069519">
+        <offer xmlns="http://expleague.com/scheme" room="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
+               client="0694d14d@testnode3.expleague.com" local="false" urgency="day" started="1.492697923E9">
+            <topic>Test ju 2</topic>
+            <experts-filter>
+                <reject>vk-12520103tyblockin-2.local@testnode3.expleague.com</reject>
+            </experts-filter>
+        </offer>
+        <offer-change xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
+             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="SRL+QEXB4K-1492698072">
+        <progress xmlns="http://expleague.com/scheme" order="1676">
+            <state>done</state>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
+             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="HKRYn0xXTz-1492698074">
+        <progress xmlns="http://expleague.com/scheme" order="1677">
+            <state>open</state>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
+             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="9l0faLNhhv-1492698089">
+        <progress xmlns="http://expleague.com/scheme" order="1675">
+            <state>in-progress</state>
+        </progress>
+    </message>
+</stream:stream>

@@ -60,7 +60,7 @@ public class Filter extends Attachment {
     if (prefer == null)
       prefer = new ArrayList<>();
     for (int i = 0; i < worker.length; i++) {
-      if (prefer.contains(worker[i]))
+      if (prefer.contains(worker[i]) || accept.contains(worker[i]))
         continue;
       prefer.add(worker[i]);
     }
