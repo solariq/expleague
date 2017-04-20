@@ -15,9 +15,11 @@ import com.spbsu.commons.random.FastRandom;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static com.expleague.model.OrderState.*;
 import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
@@ -53,6 +55,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               order.broker(self());
 
               final ExpLeagueOrder.Status status = order.state(context());
+              final List<JID> preferred = order.offer().filter().preferred().collect(Collectors.toList());
               if (order.state() == IN_PROGRESS) {// server was shut down
                 status.suspend();
               }
@@ -72,6 +75,14 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
                   Experts.tellTo(expertOnTask, new Resume(order.offer()), self(), context());
                   return goTo(State.STARVING).using(status);
                 }
+              }
+              else if (!preferred.isEmpty()) {
+                //noinspection ConstantConditions
+                explain("Trying to get one of " + preferred.size() + " preferred workers back to the order.");
+                for (final JID jid : preferred) {
+                  Experts.tellTo(jid, self(), self(), context());
+                }
+                return goTo(State.STARVING).using(status);
               }
               else {
                 status.state(OPEN);
