@@ -112,6 +112,8 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
     if (writeSession == null || !msg.has(Offer.class)) // won't index incomplete message
       return;
     final Offer offer = msg.get(Offer.class);
+    if (offer.room() == null) //ignore old rooms
+      return;
     try {
       final Node offerNode = findOffer(offer);
       if (msg.has(Answer.class)) {

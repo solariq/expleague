@@ -1,6 +1,7 @@
 package com.expleague.server.dao.sql;
 
 import akka.actor.ActorContext;
+import akka.actor.ActorRef;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 import com.expleague.model.Offer;
@@ -9,6 +10,7 @@ import com.expleague.model.Tag;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.*;
 import com.expleague.server.dao.fake.InMemBoard;
+import com.expleague.util.akka.ActorAdapter;
 import com.expleague.xmpp.JID;
 import com.google.common.base.Joiner;
 import com.spbsu.commons.io.StreamTools;
@@ -18,6 +20,7 @@ import gnu.trove.set.hash.TIntHashSet;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
@@ -138,21 +141,18 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   }
 
   @Override
-  public synchronized int replay(String roomId, ActorContext context) {
-    clearRoomBeforeReplay(roomId);
+  public synchronized void replay(String roomId, ActorContext context) {
     log.fine("Replaying " + roomId);
-    final Stack<ExpLeagueOrder> result = new Stack<>();
-    final Timeout timeout = new Timeout(Duration.create(20, TimeUnit.SECONDS));
     final JID jid = new JID(roomId, "muc." + ExpLeagueServer.config().domain(), null);
-    final Future<Object> ask = Patterns.ask(XMPP.register(jid, context), new RoomAgent.DumpRequest(), timeout);
-    //noinspection unchecked
+    final ActorRef actorRef = context.actorOf(ActorAdapter.props(ExpLeagueRoomAgent.class, jid), roomId);
+
+    final Timeout timeout = new Timeout(Duration.create(60, TimeUnit.SECONDS));
+    final Future<Object> ask = Patterns.ask(actorRef, new RoomAgent.Replay(), timeout);
     try {
-      final ExpLeagueOrder[] replay;// = ExpLeagueRoomAgent.replay(this, ((List<Stanza>) Await.result(ask, timeout.duration())).stream());
-      return 0;
+      Await.result(ask, timeout.duration());
     } catch (Exception e) {
       log.log(Level.WARNING, "", e);
     }
-    return 0;
   }
 
   @Override

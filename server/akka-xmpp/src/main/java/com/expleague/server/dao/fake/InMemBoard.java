@@ -75,8 +75,7 @@ public class InMemBoard implements LaborExchange.Board {
   }
 
   @Override
-  public int replay(String roomId, ActorContext context) {
-    return 0;
+  public void replay(String roomId, ActorContext context) {
   }
 
   @Override
