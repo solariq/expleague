@@ -120,16 +120,18 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
         final Answer answer = msg.get(Answer.class);
         final String answerText = answer.value();
         final int firstLineEnd = answerText.indexOf('\n');
-        final String shortAnswer = answerText.substring(0, firstLineEnd);
-        final String fullAnswer = answerText.substring(firstLineEnd + 1);
-        final Node answerNode;
-        if (!offerNode.hasNode("answer")) {
-          answerNode = offerNode.addNode("answer", "nt:resource");
+        final String shortAnswer = firstLineEnd >= 0 ? answerText.substring(0, firstLineEnd) : answerText;
+        if (firstLineEnd >= 0) {
+          final String fullAnswer = answerText.substring(firstLineEnd + 1);
+          final Node answerNode;
+          if (!offerNode.hasNode("answer")) {
+            answerNode = offerNode.addNode("answer", "nt:resource");
+          }
+          else answerNode = offerNode.getNode("answer");
+          answerNode.setProperty("jcr:mimeType", "text/markdown");
+          answerNode.setProperty("jcr:data", writeSession.getValueFactory().createBinary(new ByteArrayInputStream(fullAnswer.getBytes(StreamTools.UTF))));
+          answerNode.setProperty("jcr:encoding", "UTF-8");
         }
-        else answerNode = offerNode.getNode("answer");
-        answerNode.setProperty("jcr:mimeType", "text/markdown");
-        answerNode.setProperty("jcr:data", writeSession.getValueFactory().createBinary(new ByteArrayInputStream(fullAnswer.getBytes(StreamTools.UTF))));
-        answerNode.setProperty("jcr:encoding", "UTF-8");
 
         offerNode.setProperty("short-answer", shortAnswer);
         offerNode.setProperty("difficulty", answer.difficulty());

@@ -239,7 +239,6 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       if (offer.client() == null)
         offer.client(owner);
       if (fromOwner) {
-        knownToClient.clear();
         state(OPEN);
       }
       else if (authority == ExpertsProfile.Authority.ADMIN) {
@@ -322,6 +321,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   private Stream<ExpLeagueOrder> startOrders(Offer offer) {
+    knownToClient.clear();
     if (mode() == ProcessMode.RECOVER)
       return Stream.empty();
 
