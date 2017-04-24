@@ -1,5 +1,6 @@
 package com.expleague.server.agents;
 
+import akka.actor.ActorRef;
 import akka.actor.PoisonPill;
 import akka.actor.ReceiveTimeout;
 import com.expleague.model.*;
@@ -176,6 +177,8 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         log.warning("Start while offer is empty!");
         return;
       }
+      if (orders(OrderState.OPEN, OrderState.IN_PROGRESS, OrderState.SUSPENDED).findAny().isPresent()) // backward compatibility
+        startOrders(offer);
       enter(from, new MucXData(new MucHistory()));
       final ExpertsProfile profile = Roster.instance().profile(from.local());
       if (!knownToClient.contains(from.bare())) {
@@ -330,11 +333,15 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   private void cancelOrders() {
-    inflightOrders().filter(o -> o.state() != OrderState.DONE).map(order -> {
+    inflightOrders().filter(o -> o.state() != OrderState.DONE).forEach(order -> {
       order.state(OrderState.DONE);
-      onMessage(new Message(jid(), jid(), new Operations.Progress(order.id(), OrderState.DONE)));
-      return order.broker();
-    }).filter(Objects::nonNull).forEach(b -> b.tell(new Cancel(), self()));
+      message(new Message(jid(), jid(), new Operations.Progress(order.id(), OrderState.DONE)));
+      final ActorRef broker = order.broker();
+      if (broker != null)
+        broker.tell(new Cancel(), self());
+      else
+        log.warning("Empty broker found for order " + order.id());
+    });
   }
 
   @Override
