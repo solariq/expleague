@@ -265,7 +265,9 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               explain("Received offer during improper state. Ignoring.");
               return stay().replying(new Ignore());
             }
-        )
+        ).
+        event(ActorRef.class, // broker
+            (broker, task) -> stay().replying(new Ignore()))
     );
 
     onTransition((from, to) -> {
