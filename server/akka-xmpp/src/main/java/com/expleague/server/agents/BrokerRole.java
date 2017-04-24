@@ -49,12 +49,14 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               explain("Received new order: " + order.id() + ".");
               if (order.state() == DONE) {
                 explain("The order is closed!");
-                return stay().replying(new Cancel()).using(null);
+                return stop().replying(new Cancel());
               }
-              order.broker(self());
+              final ExpLeagueOrder.Status status = order.state(self(), context());
+              if (status == null) {
+                explain("Order already has assigned broker");
+                return stop().replying(new Cancel());
+              }
               sender().tell(new Ok(), self());
-
-              final ExpLeagueOrder.Status status = order.state(context());
               if (order.state() == IN_PROGRESS) {// server was shut down
                 status.suspend();
               }
@@ -275,7 +277,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               final JID expert = Experts.jid(sender());
               task.close();
               XMPP.send(new Message(expert, task.jid(), done), context());
-              return goTo(State.UNEMPLOYED).using(null);
+              return stop();
             }
         ).event(Cancel.class, // cancel from expert
             (cancel, task) -> task.role(Experts.jid(sender())) == ACTIVE,
@@ -390,7 +392,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
     explain("The order was canceled by client. Sending cancel to " + orderStatus.experts().count() + " expert(s).");
     orderStatus.experts().forEach(jid -> Experts.tellTo(jid, new Cancel(), self(), context()));
     orderStatus.cancel();
-    return goTo(State.UNEMPLOYED).using(null);
+    return stop();
   }
 
   private void explain(String explanation) {

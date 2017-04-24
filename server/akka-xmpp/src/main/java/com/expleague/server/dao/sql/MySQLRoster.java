@@ -117,7 +117,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
           if (resultSet.next())
             return createUser(resultSet, 0);
         }
-        return null;
+        return XMPPUser.NO_SUCH_USER;
       }
       catch (SQLException e) {
         throw new RuntimeException(e);

@@ -37,22 +37,10 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
   @ActorMethod
   public void invoke(ExpLeagueOrder order) {
     final String roomName = order.room().local();
-    log.fine("Labor exchange received order " + roomName + " looking for broker");
-    final Collection<ActorRef> children = JavaConversions.asJavaCollection(context().children());
-    ActorRef responsible = null;
-    for (final ActorRef ref : children) {
-      if (order.state() == OrderState.DONE)
-        return;
-      if (isBrokerActorRef(ref)) {
-        if (AkkaTools.ask(ref, order) instanceof Operations.Ok) {
-          responsible = ref;
-          break;
-        }
-      }
-    }
-    if (responsible == null && order.state() != OrderState.DONE) {
-      responsible = context().actorOf(Props.create(BrokerRole.class, self()));
-      final Object answer = AkkaTools.ask(responsible, order);
+    log.fine("Labor exchange received order " + roomName + " creating broker");
+    if (order.state() != OrderState.DONE) {
+      final ActorRef broker = context().actorOf(Props.create(BrokerRole.class, self()));
+      final Object answer = AkkaTools.ask(broker, order);
       if (!(answer instanceof Operations.Ok))
         log.warning("Unable to create alive broker! Received: " + answer);
     }

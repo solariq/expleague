@@ -31,7 +31,7 @@ public abstract class ExpLeagueOrder {
   private final Offer offer;
 
   protected OrderState state = OrderState.NONE;
-  private ActorRef broker;
+  private volatile ActorRef broker;
 
   protected long snapshotTimestamp = NO_SNAPSHOT_TIMESTAMP;
 
@@ -43,7 +43,10 @@ public abstract class ExpLeagueOrder {
     return state;
   }
 
-  protected Status state(ActorContext context) {
+  @Nullable
+  protected Status state(ActorRef broker, ActorContext context) {
+    if (!broker(broker))
+      return null;
     return new Status(context);
   }
 
@@ -55,8 +58,13 @@ public abstract class ExpLeagueOrder {
     return broker;
   }
 
-  public void broker(ActorRef broker) {
+  public synchronized boolean broker(ActorRef broker) {
+    if (this.broker != null && this.broker != broker) {
+      log.warning("Broker " + broker + " assigned while another broker found: " + this.broker);
+      return false;
+    }
     this.broker = broker;
+    return true;
   }
 
   @NotNull
@@ -143,6 +151,7 @@ public abstract class ExpLeagueOrder {
     public Status cancel() {
       mapTempRoles(role -> role.permanent() ? role : Role.NONE);
       state(OrderState.DONE);
+      broker(null);
       return this;
     }
 
@@ -220,6 +229,7 @@ public abstract class ExpLeagueOrder {
 
     public void close() {
       state(OrderState.DONE);
+      broker(null);
     }
 
     public Stream<JID> experts() {
