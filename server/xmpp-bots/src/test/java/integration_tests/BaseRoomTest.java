@@ -224,6 +224,29 @@ public class BaseRoomTest extends TestCase {
     return roomJID;
   }
 
+  protected BareJID obtainRoomProgressState(String testName, ClientBot clientBot, AdminBot adminBot, ExpertBot expertBot) throws JaxmppException {
+    final BareJID roomJID = obtainRoomWorkState(testName, clientBot, adminBot, expertBot);
+    { //obtain deliver state
+      //Arrange
+      final ReceivingMessage invite = new ReceivingMessageBuilder().from(roomJID).has(Offer.class).has(Operations.Invite.class).build();
+      final ReceivingMessage startAndExpert = new ReceivingMessageBuilder().from(roomJID).has(Operations.Start.class).has(ExpertsProfile.class).build();
+
+      //Act
+      expertBot.sendGroupchat(roomJID, new Operations.Ok());
+      final ReceivingMessage[] notReceivedInvite = expertBot.tryReceiveMessages(new StateLatch(), invite);
+      //Assert
+      assertThereAreNoFailedMessages(notReceivedInvite);
+
+      //Act
+      expertBot.sendGroupchat(roomJID, new Operations.Start());
+      final ReceivingMessage[] notReceivedStart = clientBot.tryReceiveMessages(new StateLatch(), startAndExpert);
+      //Assert
+      assertThereAreNoFailedMessages(notReceivedStart);
+    }
+    return roomJID;
+  }
+
+
   protected BareJID obtainRoomDeliverState(String testName, ClientBot clientBot, AdminBot adminBot, ExpertBot expertBot) throws JaxmppException {
     final BareJID roomJID = obtainRoomWorkState(testName, clientBot, adminBot, expertBot);
     { //obtain deliver state

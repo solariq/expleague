@@ -106,17 +106,17 @@ public class ClientCancelTest extends BaseRoomTest {
     checkAdminHandlesCancel(roomJID, clientBot, adminBot);
   }
 
-  @Test
-  public void testClientCancelsInDeliverState() throws JaxmppException {
-    //Arrange
-    final AdminBot adminBot = botsManager.nextAdmin();
-    final ExpertBot expertBot = botsManager.nextExpert();
-    final ClientBot clientBot = botsManager.nextClient();
-    final BareJID roomJID = obtainRoomDeliverState(testName(), clientBot, adminBot, expertBot);
-
-    //Act/Assert
-    checkAdminAndExpertHandleCancel(roomJID, clientBot, adminBot, expertBot);
-  }
+//  @Test
+//  public void testClientCancelsInDeliverState() throws JaxmppException { // client in delivery state is not connected to the room
+//    //Arrange
+//    final AdminBot adminBot = botsManager.nextAdmin();
+//    final ExpertBot expertBot = botsManager.nextExpert();
+//    final ClientBot clientBot = botsManager.nextClient();
+//    final BareJID roomJID = obtainRoomDeliverState(testName(), clientBot, adminBot, expertBot);
+//
+//    //Act/Assert
+//    checkAdminAndExpertHandleCancel(roomJID, clientBot, adminBot, expertBot);
+//  }
 
   @Test
   public void testClientCancelsAfterAnswer() throws JaxmppException {

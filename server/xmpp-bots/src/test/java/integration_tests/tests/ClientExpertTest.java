@@ -30,13 +30,13 @@ public class ClientExpertTest extends BaseRoomTest {
   }
 
   @Test
-  public void testExpertCancels() throws JaxmppException {
+  public void testExpertCancels() throws JaxmppException { // expert is able to cancel in progress state only
     //Arrange
     final AdminBot adminBot = botsManager.nextAdmin();
     final ClientBot clientBot = botsManager.nextClient();
     final ExpertBot expertBot = botsManager.nextExpert();
 
-    final BareJID roomJID = obtainRoomDeliverState(testName(), clientBot, adminBot, expertBot);
+    final BareJID roomJID = obtainRoomProgressState(testName(), clientBot, adminBot, expertBot);
     final ReceivingMessage expectedCancel = new ReceivingMessageBuilder().from(botRoomJID(roomJID, expertBot)).has(Operations.Cancel.class).build();
 
     //Act
