@@ -217,7 +217,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
           message(new Message(jid(), jid(), offer));
         }
     }
-    else if (msg.has(Feedback.class) && (state == FEEDBACK || state == DELIVERY)) {
+    else if (msg.has(Feedback.class)) {
       final Feedback feedback = msg.get(Feedback.class);
       orders(OrderState.DONE).forEach(order -> order.feedback(feedback.stars(), feedback.payment()));
       tellGlobal(feedback);
@@ -332,7 +332,6 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     inflightOrders().filter(o -> o.state() != OrderState.DONE).map(order -> {
       order.state(OrderState.DONE);
       onMessage(new Message(jid(), jid(), new Operations.Progress(order.id(), OrderState.DONE)));
-
       return order.broker();
     }).filter(Objects::nonNull).forEach(b -> b.tell(new Cancel(), self()));
   }
