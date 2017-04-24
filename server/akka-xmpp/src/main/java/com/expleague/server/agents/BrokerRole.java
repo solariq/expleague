@@ -49,10 +49,10 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               explain("Received new order: " + order.id() + ".");
               if (order.state() == DONE) {
                 explain("The order is closed!");
-                return stay().replying(new Cancel());
+                return stay().replying(new Cancel()).using(null);
               }
-              sender().tell(new Ok(), self());
               order.broker(self());
+              sender().tell(new Ok(), self());
 
               final ExpLeagueOrder.Status status = order.state(context());
               if (order.state() == IN_PROGRESS) {// server was shut down
@@ -66,7 +66,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
                 final long suspendIntervalMs = activationTimestampMs - currentTimeMillis;
                 if (suspendIntervalMs > 0) {
                   AkkaTools.scheduleTimeout(context(), Duration.create(suspendIntervalMs, TimeUnit.MILLISECONDS), self());
-                  return goTo(State.SUSPENDED);
+                  return goTo(State.SUSPENDED).using(status);
                 }
                 else {
                   //noinspection ConstantConditions
@@ -273,7 +273,6 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
             (done, task) -> {
               explain("Expert has finished working on the " + task.order().room().local() + ". Sending notification to the room.");
               final JID expert = Experts.jid(sender());
-              task.order().broker(laborExchange);
               task.close();
               XMPP.send(new Message(expert, task.jid(), done), context());
               return goTo(State.UNEMPLOYED).using(null);
