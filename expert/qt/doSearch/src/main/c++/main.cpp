@@ -17,6 +17,7 @@
 
 #include "expleague.h"
 #include "model/history.h"
+#include "model/pages/cefpage.h"
 //#include "util/crashhandler.h"
 
 //#include "include/cef_app.h"
@@ -37,19 +38,17 @@ QSystemTrayIcon* trayIcon;
 
 
 int main(int argc, char *argv[]) {
-//    CefMainArgs main_args(GetModuleHandle(NULL));
-//    CefRefPtr<CefApp> cefapp;
-//    CefSettings settings;
-//    CefString(&settings.browser_subprocess_path).FromASCII(
-//                "C:\\pr1\\expleague\\expert\\qt\\build-doSearch-Desktop_Qt_5_9_0_MSVC2015_32bit-Debug\\src\\CEF\\debug\\CEF.exe");
-//    CefInitialize(main_args, settings, cefapp, NULL);
-//    CefRunMessageLoop();
-//    CefShutdown();
-//    return 0;
+    CefMainArgs main_args(GetModuleHandle(NULL));
+    CefRefPtr<CefApp> cefapp;
+    CefSettings settings;
+    CefString(&settings.browser_subprocess_path).FromASCII(
+                "C:\\pr1\\expleague\\expert\\qt\\build-doSearch-Desktop_Qt_5_9_0_MSVC2015_32bit-Debug\\src\\CEF\\debug\\CEF.exe");
+    CefInitialize(main_args, settings, cefapp, NULL);
    //-------------------------
+    //PersistentPropertyHolder::debugPrintAll();
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
-//    QCoreApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);
+//  QCoreApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);
 //    QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QCoreApplication::setOrganizationName("Experts League");
     QCoreApplication::setOrganizationDomain("expleague.com");
@@ -160,6 +159,7 @@ void declareTypes() {
     qRegisterMetaType<GroupKnugget*>("GroupKnugget*");
     qRegisterMetaType<RoomStatus*>("RoomState*");
     qRegisterMetaType<GlobalChat*>("GlobalChat*");
+    qRegisterMetaType<CefItem*>("CefItem*");
 
     qmlRegisterType<ProfileBuilder>("ExpLeague", 1, 0, "ProfilePreview");
     qmlRegisterType<SearchRequest>("ExpLeague", 1, 0, "SearchRequest");
@@ -176,6 +176,7 @@ void declareTypes() {
     qmlRegisterType<PagesGroup>("ExpLeague", 1, 0, "PagesGroup");
     qmlRegisterType<Page>("ExpLeague", 1, 0, "Page");
     qmlRegisterType<League>("ExpLeague", 1, 0, "League");
+    qmlRegisterType<CefItem>("ExpLeague", 1, 0, "CefItem");
 
     qmlRegisterUncreatableType<Profile>("ExpLeague", 1, 0, "Profile", "Profile requires registration and can be created only by appropriate builder class");
     qmlRegisterUncreatableType<doSearch>("ExpLeague", 1, 0, "doSearch", "This type is for root property only");

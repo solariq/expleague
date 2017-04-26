@@ -25,13 +25,15 @@ VERSION = 0.8.6
 
 #CONFIG += test
 
-QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine xml xmlpatterns multimedia webenginecore testlib
+QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine xml xmlpatterns multimedia webenginecore testlib opengl
 QT_PRIVATE += quick-private webengine-private
 qml.path += resources/qml
 target.path += ../../bin
 
 TARGET = doSearch
 TEMPLATE = app
+
+LIBS += -lopengl32 -lglu32
 
 macx:QMAKE_LFLAGS_RPATH=
 macx:QMAKE_LFLAGS += -rpath @loader_path/../Frameworks
@@ -76,7 +78,8 @@ SOURCES += \
     c++/imagestore.cpp \
 #    c++/util/crashhandler.cpp \
     c++/util/leveldb.cpp \
-    test/util/pholder_test.cpp
+    test/util/pholder_test.cpp \
+    c++/model/pages/cefpage.cpp
 
 
 HEADERS += \
@@ -107,7 +110,8 @@ HEADERS += \
     c++/model/pages/globalchat.h \
     c++/util/region.h \
 #    c++/util/crashhandler.h \
-    c++/util/leveldb.h
+    c++/util/leveldb.h \
+    c++/model/pages/cefpage.h
 
 test {
     SOURCES += test/main_test.cpp
@@ -142,14 +146,21 @@ win32:CONFIG(release, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/hunspell/release/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/release/ -lcutemarked \
     -L$$OUT_PWD/../libs/breakpad/release -lbreakpad \
-    -L$$OUT_PWD/../libs/leveldb-win/release/ -lleveldb
+    -L$$OUT_PWD/../libs/leveldb-win/release/ -lleveldb \
+    -L$$OUT_PWD/../libs/cef_win32/release -llibcef \
+#    -L$$OUT_PWD/../libs/cef_win32/release -lcef_sandbox \
+    -L$$OUT_PWD/../libs/cef_win32/release -llibcef_dll_wrapper
 else:win32:CONFIG(debug, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d \
     -L$$OUT_PWD/../libs/discount/debug/ -ldiscount \
     -L$$OUT_PWD/../libs/hunspell/debug/ -lhunspell \
     -L$$OUT_PWD/../libs/cutemarked/debug/ -lcutemarked \
     -L$$OUT_PWD/../libs/breakpad/debug -lbreakpad \
-    -L$$OUT_PWD/../libs/leveldb-win/debug/ -lleveldb
+    -L$$OUT_PWD/../libs/leveldb-win/debug/ -lleveldb \
+    -L$$OUT_PWD/../libs/cef_win32/debug -llibcef \
+#    -L$$OUT_PWD/../libs/cef_win32/debug -lcef_sandbox \
+    -L$$OUT_PWD/../libs/cef_win32/debug -llibcef_dll_wrapper
+
 else:unix:CONFIG(debug, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d \
     -L$$OUT_PWD/../libs/discount/ -ldiscount \
@@ -179,7 +190,8 @@ INCLUDEPATH += \
     $$PWD/../libs/cutemarked \
     $$PWD/../libs/breakpad \
     $$PWD/../libs/breakpad/src \
-    $$PWD/../libs/leveldb/include
+    $$PWD/../libs/leveldb/include \
+    $$PWD/../libs/cef_win32
 
 DEPENDPATH += \
     $$PWD/../libs/qxmpp/src \

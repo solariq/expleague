@@ -50,5 +50,6 @@
         <file>GlobalChat.qml</file>
         <file>OfferDialog.qml</file>
         <file>FilterDialog.qml</file>
+        <file>CefPage.qml</file>
     </qresource>
 </RCC>

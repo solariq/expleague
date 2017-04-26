@@ -58,7 +58,7 @@ typename T::size_type levenshtein_distance(const T& src, const T& dst) {
       above_cell = matrix[i - 1][j];
       left_cell = matrix[i][j - 1];
       diagonal_cell = matrix[i - 1][j - 1];
-      matrix[i][j] = std::min(std::min(above_cell + 1, left_cell + 1), diagonal_cell + cost);
+      matrix[i][j] = (std::min)((std::min)(above_cell + 1, left_cell + 1), diagonal_cell + cost);
     }
   }
 

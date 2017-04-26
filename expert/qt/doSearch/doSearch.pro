@@ -20,7 +20,8 @@ SUBDIRS = src/libs/qxmpp \
           src/libs/fontawesomeicon \
           src/libs/hunspell \
           src/libs/cutemarked \
-          src/libs/breakpad
+          src/libs/breakpad \
+          src/CEF
 win32: SUBDIRS += src/libs/leveldb-win
 else: SUBDIRS += src/libs/leveldb
 

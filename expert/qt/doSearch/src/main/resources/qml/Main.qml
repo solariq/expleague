@@ -355,11 +355,18 @@ ApplicationWindow {
         }
     }
 
+    CefItem {
+        z:20;
+        visible: true;
+        anchors.fill: parent;
+        focus: true
+    }
     Rectangle {
         id: screen
         color: Palette.backgroundColor("selected")
         z: parent.z + 10
-        anchors.fill: parent
+        //anchors.fill: parent
+
         clip: false
         ColumnLayout {
             anchors.fill:parent
@@ -490,7 +497,7 @@ ApplicationWindow {
             }
         }
 
-        ControlsNG.Button {
+       ControlsNG.Button {
             id: optionsButton
             x: tabs.x + 24 + 4 + 2 - width/2
             y: tabs.y + tabs.height - 8
@@ -727,7 +734,7 @@ ApplicationWindow {
         z: -1
         profile: webProfile
         enabled: false
-
+        visible: false
         url: "about:blank"
         function finish() {
             operation = "finish"

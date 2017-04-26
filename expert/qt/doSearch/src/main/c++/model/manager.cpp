@@ -2,7 +2,7 @@
 #include "../dosearch.h"
 #include "pages/admins.h"
 #include "pages/globalchat.h"
-
+#include "pages/cefpage.h"
 #include <assert.h>
 
 #include <limits>
@@ -315,7 +315,7 @@ double effectiveWidth(const QVector<QList<Page*>>& pages, const QVector<QList<Pa
         for (int j = 0; j < visibleCount[i]; j++) {
             Page* visiblePage = pages[i][visibleStart[i] + j];
             if (visiblePage)
-                result += std::min(228.0, visiblePage->titleWidth() + 28);
+                result += (std::min)(228.0, visiblePage->titleWidth() + 28);
             else
                 qWarning() << "Empty visible page!";
         }
@@ -362,7 +362,7 @@ void NavigationManager::rebalanceWidth() {
     for(int i = 0; i < m_groups.size() - 1; i++) {
         PagesGroup* const group = m_groups[i];
         Page* const selected = group->selectedPage();
-        visibleStart[i] = std::max(0, activePages[i].indexOf(selected));
+        visibleStart[i] = (std::max)(0, activePages[i].indexOf(selected));
         visibleLength[i] = selected ? 1 : 0;
     }
     visibleStart[m_groups.size() - 1] = 0;

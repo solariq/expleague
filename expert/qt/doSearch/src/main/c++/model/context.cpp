@@ -207,7 +207,7 @@ int depth(PagesGroup* group) {
 }
 
 Context::GroupMatchType Context::match(Page *page, PagesGroup **match) const {
-    int minDepth = std::numeric_limits<int>::max();
+    int minDepth = (std::numeric_limits<int>::max)();
     WebResource* const web = dynamic_cast<WebResource*>(page);
     GroupMatchType matchType = NONE;
     foreach(PagesGroup* currentGroup, m_associations.values()) {

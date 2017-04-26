@@ -380,8 +380,8 @@ Rectangle {
                     else {
                         actionTs = 0
                         dosearch.main.openLink(request, owner, request.destination === WebEngineView.NewViewInBackgroundTab)
-
-//                        owner.open(request, request.destination === WebEngineView.NewViewInBackgroundTab)
+  //                      dosearch.navigation.open(request.requestedUrl, owner, request.destination === WebEngineView.NewViewInBackgroundTab, false)
+//                        owner.open(request.requestedUrl, request.destination === WebEngineView.NewViewInBackgroundTab, false)
                     }
                 }
 

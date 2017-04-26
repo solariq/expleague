@@ -149,7 +149,7 @@ PagesGroup::PagesGroup(const QString& groupId, Context* owner):
     });
     m_pages.removeAll(0);
     m_closed_start = value("closed-pages-start").isNull() ? m_pages.size() : value("closed-pages-start").toInt();
-    m_closed_start = std::min(m_closed_start, m_pages.size());
+    m_closed_start = (std::min)(m_closed_start, m_pages.size());
     m_selected_page_index = value("selected").isNull() ? -1 : m_pages.indexOf(owner->parent()->page(value("selected").toString()));
     m_parent = m_owner->associated(owner->parent()->page(value("context").toString()));
 }

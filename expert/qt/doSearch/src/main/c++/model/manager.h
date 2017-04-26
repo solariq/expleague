@@ -2,6 +2,7 @@
 #define MANAGER_H
 
 #include "page.h"
+#include "pages/cefpage.h"
 #include "group.h"
 #include "context.h"
 #include "search.h"
@@ -60,7 +61,9 @@ public:
         return QQmlListProperty<expleague::Page>(const_cast<NavigationManager*>(this), const_cast<QList<Page*>&>(m_history));
     }
 
-    QQuickItem* activeScreen() const { return m_active_screen; }
+    QQuickItem* activeScreen() const {
+        return m_active_screen;
+    }
     Page* activePage() const { return m_selected; }
     Context* context() const { return m_active_context; }
 
