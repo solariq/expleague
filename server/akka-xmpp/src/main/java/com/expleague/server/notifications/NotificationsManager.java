@@ -39,11 +39,11 @@ public class NotificationsManager extends ActorAdapter<UntypedActor> {
   private static final String NOTIFICATIONS_ACTOR_PATH = "/user/notifications";
 
   public static void send(Message message, ActorContext context) {
-    context.actorSelection(NOTIFICATIONS_ACTOR_PATH).forward(message, context);
+//    context.actorSelection(NOTIFICATIONS_ACTOR_PATH).forward(message, context);
   }
 
   public static void delivered(String id, XMPPDevice device, ActorContext context) {
-    context.actorSelection(NOTIFICATIONS_ACTOR_PATH).forward(new Delivered(id, device), context);
+//    context.actorSelection(NOTIFICATIONS_ACTOR_PATH).forward(new Delivered(id, device), context);
   }
 
   private Map<String, List<ScheduledNotification>> undelivered = new HashMap<>();
