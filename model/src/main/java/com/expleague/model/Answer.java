@@ -1,6 +1,7 @@
 package com.expleague.model;
 
 import com.expleague.xmpp.Item;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -24,6 +25,9 @@ public class Answer extends Item {
   @XmlAttribute
   private Integer success;
 
+  @XmlAttribute
+  private String order;
+
   public Answer() {}
 
   public Answer(String value) {
@@ -44,5 +48,10 @@ public class Answer extends Item {
 
   public boolean success() {
     return success == null || success != 0;
+  }
+
+  @Nullable
+  public String order() {
+    return order;
   }
 }
