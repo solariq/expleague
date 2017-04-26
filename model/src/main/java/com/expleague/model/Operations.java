@@ -382,6 +382,8 @@ public class Operations {
 
     public Progress(String id, OrderState state) {
       this.order = id;
+      if (state == null)
+        throw new RuntimeException("Invalid state!");
       this.stateChange = new StateChange(state);
     }
 
