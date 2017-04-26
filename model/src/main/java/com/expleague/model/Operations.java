@@ -455,7 +455,9 @@ public class Operations {
       private OrderState state;
 
       @SuppressWarnings("unused")
-      public StateChange() {}
+      public StateChange() {
+        this.state = OrderState.NONE;
+      }
 
       public StateChange(OrderState state) {
         this.state = state;
