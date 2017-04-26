@@ -211,7 +211,8 @@ public class GlobalChatAgent extends RoomAgent {
       }
 
       orders.forEach((order, status) -> {
-        result.append(new Progress(order, status.state));
+        if (status.state != null)
+          result.append(new Progress(order, status.state));
         if (status.expert != null)
           result.append(new Start(order, status.expert));
       });
