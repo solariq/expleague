@@ -5,6 +5,7 @@ import com.expleague.xmpp.JID;
 
 import javax.xml.bind.annotation.*;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * User: solar
@@ -368,6 +369,10 @@ public class Operations {
 
     @XmlElement(name="state", namespace = NS)
     private StateChange stateChange;
+
+    @XmlElement(name = "tag", namespace = NS)
+    @XmlElementWrapper(name = "assigned", namespace = NS)
+    private List<Tag> assigned;
 
     @XmlAttribute
     private String order;
