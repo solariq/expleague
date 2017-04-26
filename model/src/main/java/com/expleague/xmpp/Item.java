@@ -183,7 +183,7 @@ public class Item implements Cloneable {
         writer.flush();
       }
       catch (JAXBException | XMLStreamException e) {
-        log.log(Level.SEVERE, "Unable to serialize stanza: " + item);
+        log.log(Level.SEVERE, "Unable to serialize stanza: " + item.getClass());
         return "";
       }
 
