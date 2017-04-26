@@ -39,6 +39,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   private static final Logger log = Logger.getLogger(ExpLeagueRoomAgent.class.getName());
   private List<ExpLeagueOrder> orders = new ArrayList<>();
   private RoomState state;
+  private Offer currentOffer = null;
+  private HashSet<JID> knownToClient = new HashSet<>();
+  private boolean oldFormat = false;
 
   public ExpLeagueRoomAgent(JID jid) {
     super(jid, true);
@@ -142,8 +145,6 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     return true;
   }
 
-  private Offer offer = null;
-  private HashSet<JID> knownToClient = new HashSet<>();
   public void process(Message msg) {
     super.process(msg);
 
@@ -173,33 +174,41 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       }
     }
     else if (msg.has(Start.class)) {
-      if (offer == null) {
+      if (currentOffer == null) {
         log.warning("Start while offer is empty!");
         return;
       }
-      if (!orders(OrderState.OPEN, OrderState.IN_PROGRESS, OrderState.SUSPENDED).findAny().isPresent()) { // backward compatibility
-        state(WORK);
-        startOrders(offer);
-      }
+//      if (!orders(OrderState.OPEN, OrderState.IN_PROGRESS, OrderState.SUSPENDED).findAny().isPresent()) { // backward compatibility
+//        oldFormat = true;
+//        state(WORK);
+//        startOrders(currentOffer).forEach(order -> {
+//          order.role(from, ACTIVE, msg.ts());
+//        });
+//      }
       enter(from, new MucXData(new MucHistory()));
       final ExpertsProfile profile = Roster.instance().profile(from.local());
       if (!knownToClient.contains(from.bare())) {
         knownToClient.add(from.bare());
         message(new Message(jid(), roomAlias(owner()), msg.get(Start.class), profile));
       }
-      offer = offer.copy();
-      offer.filter().prefer(from);
-      message(new Message(jid(), jid(), offer));
+      currentOffer = currentOffer.copy();
+      currentOffer.filter().prefer(from);
+      message(new Message(jid(), jid(), currentOffer));
       tellGlobal(msg.get(Start.class), profile.shorten());
     }
     else if (msg.has(Answer.class)) {
       final Answer answer = msg.get(Answer.class);
+//      orders(OrderState.OPEN, OrderState.IN_PROGRESS, OrderState.SUSPENDED).forEach(order->{
+//        if (order.id().equals(answer.order()) || answer.order() == null) {
+//          order.state(OrderState.DONE);
+//        }
+//      });
       if (authority.priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
         state(DELIVERY);
         message(new Message(from, roomAlias(owner()), answer, new Verified(from)));
       }
       else state(VERIFY);
-      message(new Message(jid(), RepositoryService.jid(), offer, answer));
+      message(new Message(jid(), RepositoryService.jid(), currentOffer, answer));
       this.answer = msg;
       tellGlobal(new RoomMessageReceived(from, true));
     }
@@ -207,7 +216,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       if (state == VERIFY && authority.priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
         state(DELIVERY);
         message(new Message(answer.from(), roomAlias(owner()), answer.get(Answer.class), new Verified(from)));
-        message(new Message(jid(), RepositoryService.jid(), offer, msg.get(Verified.class)));
+        message(new Message(jid(), RepositoryService.jid(), currentOffer, msg.get(Verified.class)));
       }
     }
     else if (msg.has(Cancel.class)) {
@@ -215,19 +224,19 @@ public class ExpLeagueRoomAgent extends RoomAgent {
           cancelOrders();
           state(CLOSED);
         }
-        else if (offer != null) {
+        else if (currentOffer != null) {
           if (knownToClient.contains(from))
             message(new Message(from, roomAlias(owner()), msg.get(Cancel.class)));
-          offer = offer.copy();
-          offer.filter().reject(from);
-          message(new Message(jid(), jid(), offer));
+          currentOffer = currentOffer.copy();
+          currentOffer.filter().reject(from);
+          message(new Message(jid(), jid(), currentOffer));
         }
     }
     else if (msg.has(Feedback.class)) {
       final Feedback feedback = msg.get(Feedback.class);
       orders(OrderState.DONE).forEach(order -> order.feedback(feedback.stars(), feedback.payment()));
       tellGlobal(feedback);
-      message(new Message(jid(), RepositoryService.jid(), offer, feedback));
+      message(new Message(jid(), RepositoryService.jid(), currentOffer, feedback));
       state(CLOSED);
     }
     else if (msg.has(Done.class)) {
@@ -236,10 +245,10 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       update(from, Role.NONE, null);
     }
     else if (msg.has(Offer.class)) { // offers handling
-      offer = msg.get(Offer.class);
+      currentOffer = msg.get(Offer.class);
       final JID owner = owner();
-      if (offer.client() == null)
-        offer.client(owner);
+      if (currentOffer.client() == null)
+        currentOffer.client(owner);
       if (fromOwner) {
         state(OPEN);
       }
@@ -252,7 +261,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
           }
           else {
             state(WORK);
-            startOrders(offer).forEach(order -> {
+            startOrders(currentOffer).forEach(order -> {
               final Offer orderOffer = order.offer();
               for (final Tag tag : orderOffer.tags()) {
                 message(new Message(from, jid(), new Progress(order.id(), new Progress.MetaChange(tag.name(), Progress.MetaChange.Operation.ADD, Progress.MetaChange.Target.TAGS))));
@@ -268,13 +277,13 @@ public class ExpLeagueRoomAgent extends RoomAgent {
           final List<JID> activeExperts = inflightOrders().flatMap(o -> o.of(ACTIVE)).collect(Collectors.toList());
           cancelOrders();
           if (activeExperts != null) {
-            offer = offer.copy();
-            offer.filter().prefer(activeExperts.toArray(new JID[activeExperts.size()]));
+            currentOffer = currentOffer.copy();
+            currentOffer.filter().prefer(activeExperts.toArray(new JID[activeExperts.size()]));
           }
-          startOrders(offer);
+          startOrders(currentOffer);
         }
       }
-      tellGlobal(offer, new OfferChange(from.bare()));
+      tellGlobal(currentOffer, new OfferChange(from.bare()));
       tellGlobal(new RoomMessageReceived(from, true));
     }
     else {
