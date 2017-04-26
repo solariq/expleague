@@ -149,9 +149,16 @@ public class Item implements Cloneable {
 
   private static class XmlOutputter {
     private final ByteArrayOutputStream output = new ByteArrayOutputStream();
-    private final XMLStreamWriter writer;
+    private boolean bosh;
+    private XMLStreamWriter writer;
 
     public XmlOutputter(boolean bosh) {
+      this.bosh = bosh;
+      writer = init(bosh);
+    }
+
+    private XMLStreamWriter init(boolean bosh) {
+      XMLStreamWriter writer;
       final OutputFactoryImpl factory = new OutputFactoryImpl();
       factory.configureForSpeed();
       factory.setProperty(XMLOutputFactory2.XSP_NAMESPACE_AWARE, true);
@@ -172,6 +179,7 @@ public class Item implements Cloneable {
       catch (XMLStreamException e) {
         throw new RuntimeException(e);
       }
+      return writer;
     }
 
     public String serialize(Item item) {
@@ -184,6 +192,7 @@ public class Item implements Cloneable {
       }
       catch (JAXBException | XMLStreamException e) {
         log.log(Level.SEVERE, "Unable to serialize stanza: " + item.getClass());
+        writer = init(bosh);
         return "";
       }
 
