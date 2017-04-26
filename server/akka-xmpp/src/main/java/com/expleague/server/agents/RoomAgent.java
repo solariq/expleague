@@ -174,6 +174,10 @@ public class RoomAgent extends PersistentActorAdapter {
   private ActorRef replayRequester;
   @ActorMethod
   public void onReplay(Replay replay) {
+    if (archive == null) { // unable to replay the room with disabled archive functionality
+      reply(new Replay(false));
+      return;
+    }
     replayRequester = sender();
     replay();
   }
@@ -422,9 +426,6 @@ public class RoomAgent extends PersistentActorAdapter {
 
   @NotNull
   protected JID roomAlias(JID from) {
-    if (from == null) {
-      System.out.println();
-    }
     final MucUserStatus status = participants.get(from);
     if (from.equals(jid()))
       return jid();
@@ -482,6 +483,7 @@ public class RoomAgent extends PersistentActorAdapter {
       final boolean success;
       if (o instanceof DeleteMessagesSuccess) {
         participants.clear();
+        assert archive != null;
         archive.clear();
         dump.stream().forEach(stanza -> {
           if (stanza instanceof Message)

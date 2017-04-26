@@ -5,7 +5,6 @@ import com.expleague.model.*;
 import com.expleague.model.Operations.*;
 import com.expleague.model.RoomState;
 import com.expleague.server.Roster;
-import com.expleague.server.XMPPDevice;
 import com.expleague.server.XMPPUser;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Item;

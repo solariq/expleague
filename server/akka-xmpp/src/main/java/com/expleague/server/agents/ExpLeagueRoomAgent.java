@@ -177,8 +177,10 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         log.warning("Start while offer is empty!");
         return;
       }
-      if (!orders(OrderState.OPEN, OrderState.IN_PROGRESS, OrderState.SUSPENDED).findAny().isPresent()) // backward compatibility
+      if (!orders(OrderState.OPEN, OrderState.IN_PROGRESS, OrderState.SUSPENDED).findAny().isPresent()) { // backward compatibility
+        state(WORK);
         startOrders(offer);
+      }
       enter(from, new MucXData(new MucHistory()));
       final ExpertsProfile profile = Roster.instance().profile(from.local());
       if (!knownToClient.contains(from.bare())) {
@@ -322,6 +324,8 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
   private Stream<ExpLeagueOrder> startOrders(Offer offer) {
     knownToClient.clear();
+    if (offer.room() == null) // backward compatibility
+      offer.room(jid());
     if (mode() == ProcessMode.RECOVER)
       return Stream.empty();
 
