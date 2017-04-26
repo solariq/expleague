@@ -72,7 +72,7 @@ public class MySQLOrderTest {
       client,
       new Message(client, room, new Message.Subject("offer"))
     ));
-    order[0].state(OrderState.DONE);
+    order[0].state(OrderState.DONE, System.currentTimeMillis());
     final ExpLeagueOrder expLeagueOrder = board.orders(new LaborExchange.OrderFilter(false, EnumSet.allOf(OrderState.class))).findFirst().orElse(null);
     assertEquals(OrderState.DONE, expLeagueOrder.state());
     final List<ExpLeagueOrder.StatusHistoryRecord> statusHistoryRecords = expLeagueOrder.statusHistoryRecords().collect(Collectors.toList());
@@ -91,9 +91,9 @@ public class MySQLOrderTest {
       client,
       new Message(client, room, new Message.Subject("offer"))
     ));
-    order[0].role(expert, ExpLeagueOrder.Role.CANDIDATE);
-    order[0].role(expert, ExpLeagueOrder.Role.INVITED);
-    order[0].role(expert, ExpLeagueOrder.Role.ACTIVE);
+    order[0].role(expert, ExpLeagueOrder.Role.CANDIDATE, System.currentTimeMillis());
+    order[0].role(expert, ExpLeagueOrder.Role.INVITED, System.currentTimeMillis());
+    order[0].role(expert, ExpLeagueOrder.Role.ACTIVE, System.currentTimeMillis());
     final List<ExpLeagueOrder> related = board.related(expert).collect(Collectors.toList());
     assertEquals(1, related.size());
     assertEquals(order[0].room(), related.get(0).room());

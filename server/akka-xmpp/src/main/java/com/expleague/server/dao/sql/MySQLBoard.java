@@ -68,7 +68,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
         generatedKeys.next();
         final int id = generatedKeys.getInt(1);
         final MySQLOrder order = new MySQLOrder(id, offer);
-        order.role(offer.client(), ExpLeagueOrder.Role.OWNER);
+        order.role(offer.client(), ExpLeagueOrder.Role.OWNER, (long)(offer.started() * 1000));
         orders.put(id, new WeakReference<>(order));
         result.add(order);
       }
@@ -315,7 +315,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       restoreRoles.setInt(1, id);
       try (final ResultSet rolesRS = restoreRoles.executeQuery()) {
         while (rolesRS.next()) {
-          super.role(XMPP.jid(rolesRS.getString(3)), Role.valueOf(rolesRS.getByte(4)));
+          super.role(XMPP.jid(rolesRS.getString(3)), Role.valueOf(rolesRS.getByte(4)), -1);
         }
       }
 
@@ -336,9 +336,9 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     }
 
     @Override
-    protected void state(OrderState status) {
+    protected void state(OrderState status, long ts) {
       try {
-        super.state(status);
+        super.state(status, ts);
         final PreparedStatement statusUpdate = createStatement("status-update", "UPDATE Orders SET status = ? WHERE id = ?");
         statusUpdate.setInt(2, id);
         statusUpdate.setInt(1, status.code());
@@ -347,7 +347,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
         final PreparedStatement statusHistoryInsert = createStatement("status-history-insert", "INSERT INTO OrderStatusHistory (`order`, status, timestamp) VALUES(?, ?, ?)");
         statusHistoryInsert.setInt(1, id);
         statusHistoryInsert.setByte(2, (byte) status.code());
-        statusHistoryInsert.setTimestamp(3, new Timestamp(currentTimestampMillis()));
+        statusHistoryInsert.setTimestamp(3, new Timestamp(ts));
         statusHistoryInsert.execute();
       }
       catch (SQLException e) {
@@ -403,15 +403,15 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     }
 
     @Override
-    protected void role(JID jid, Role role) {
-      super.role(jid, role);
+    protected void role(JID jid, Role role, long ts) {
+      super.role(jid, role, ts);
       if (role.permanent()) {
         try {
           final PreparedStatement changeRole = createStatement("change-role", "INSERT INTO Participants SET `order` = ?, partisipant = ?, role = ?, timestamp = ?");
           changeRole.setInt(1, id);
           changeRole.setString(2, jid.local());
           changeRole.setByte(3, (byte) role.index());
-          changeRole.setTimestamp(4, new Timestamp(currentTimestampMillis()));
+          changeRole.setTimestamp(4, new Timestamp(ts));
           changeRole.execute();
         } catch (SQLException e) {
           throw new RuntimeException(e);

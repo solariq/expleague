@@ -105,7 +105,8 @@ public class RoomAgent extends PersistentActorAdapter {
           MessageType.ERROR,
           "Сообщение " + message.xmlString() + " не доставленно. Вы не являетесь участником комнаты!"
       );
-      XMPP.send(error, context());
+      if (mode() == ProcessMode.NORMAL)
+        XMPP.send(error, context());
       return;
     }
 
@@ -222,7 +223,7 @@ public class RoomAgent extends PersistentActorAdapter {
   }
 
   public Role role(JID from) {
-    if (from.local().isEmpty() || from.equals(jid))
+    if (from.local().isEmpty() || from.local().equals(jid.local()))
       return Role.MODERATOR;
 
     final MucUserStatus status = participants.get(from.bare());

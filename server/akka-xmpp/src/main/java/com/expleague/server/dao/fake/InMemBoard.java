@@ -42,7 +42,7 @@ public class InMemBoard implements LaborExchange.Board {
     final MyOrder order = new MyOrder(offer);
     final ExpLeagueOrder[] set = {order};
     active.put(order.room().local(), set);
-    order.role(offer.client(), OWNER);
+    order.role(offer.client(), OWNER, (long)(offer.started() * 1000));
     history.add(order);
     return set;
   }
@@ -114,9 +114,9 @@ public class InMemBoard implements LaborExchange.Board {
     }
 
     @Override
-    protected void state(final OrderState status) {
-      super.state(status);
-      statusHistory.add(new StatusHistoryRecord(status, new Date(currentTimestampMillis())));
+    protected void state(final OrderState status, long ts) {
+      super.state(status, ts);
+      statusHistory.add(new StatusHistoryRecord(status, new Date(ts)));
     }
 
     @Override
@@ -137,7 +137,7 @@ public class InMemBoard implements LaborExchange.Board {
     }
 
     @Override
-    protected void role(JID bare, Role role) {
+    protected void role(JID bare, Role role, long ts) {
       roles.put(bare.bare(), role);
       if (role.permanent()) {
         Roster.instance().invalidateProfile(bare);

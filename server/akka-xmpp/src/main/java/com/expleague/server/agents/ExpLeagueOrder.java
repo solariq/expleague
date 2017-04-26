@@ -25,15 +25,12 @@ import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
  */
 public abstract class ExpLeagueOrder {
   private static final Logger log = Logger.getLogger(LaborExchange.class.getName());
-  public static final int NO_SNAPSHOT_TIMESTAMP = -1;
 
   public static int SIMULTANEOUSLY_INVITED = 3;
   private final Offer offer;
 
   protected OrderState state = OrderState.NONE;
   private volatile ActorRef broker;
-
-  protected long snapshotTimestamp = NO_SNAPSHOT_TIMESTAMP;
 
   public ExpLeagueOrder(Offer offer) {
     this.offer = offer;
@@ -85,24 +82,21 @@ public abstract class ExpLeagueOrder {
 
   // Write interface
   protected abstract void mapTempRoles(Function<Role, Role> map);
-  protected abstract void role(JID bare, Role checking);
+  protected abstract void role(JID bare, Role role, long ts);
   protected abstract void tag(String tag);
   protected abstract void untag(String tag);
   protected abstract void updateActivationTimestampMs(final long timestamp);
 
   protected void state(OrderState state) {
+    state(state, currentTimestampMillis());
+  }
+
+  protected void state(OrderState state, long ts) {
     this.state = state;
   }
 
   protected long currentTimestampMillis() {
-    if (snapshotTimestamp != -1) {
-      return snapshotTimestamp;
-    }
     return System.currentTimeMillis();
-  }
-
-  protected Snapshot snapshot(final long timestamp) {
-    return new Snapshot(timestamp);
   }
 
   public JID owner() {
@@ -224,7 +218,7 @@ public abstract class ExpLeagueOrder {
     }
 
     protected void role(JID bare, Role checking) {
-      ExpLeagueOrder.this.role(bare, checking);
+      ExpLeagueOrder.this.role(bare, checking, System.currentTimeMillis());
     }
 
     public void close() {
@@ -294,21 +288,6 @@ public abstract class ExpLeagueOrder {
 
     public Date getDate() {
       return date;
-    }
-  }
-
-  protected class Snapshot implements AutoCloseable {
-    public Snapshot(final long timestamp) {
-      snapshotTimestamp = timestamp;
-    }
-
-    public ExpLeagueOrder order() {
-      return ExpLeagueOrder.this;
-    }
-
-    @Override
-    public void close() {
-      snapshotTimestamp = NO_SNAPSHOT_TIMESTAMP;
     }
   }
 }
