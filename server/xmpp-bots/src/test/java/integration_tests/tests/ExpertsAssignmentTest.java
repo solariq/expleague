@@ -45,6 +45,45 @@ public class ExpertsAssignmentTest extends BaseRoomTest {
   }
 
   @Test
+  public void testClientReopenRoom() throws JaxmppException, InterruptedException {
+    //Arrange
+    final int expertsNum = 3;
+    final ExpertBot[] expertBots = Stream.generate(throwableSupplier(() -> botsManager.nextExpert())).limit(expertsNum).toArray(ExpertBot[]::new);
+    final ExpertBot defaultExpert = expertBots[0];
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ClientBot clientBot = botsManager.nextClient();
+
+    final BareJID roomJID = obtainRoomOpenState(testName(), clientBot, adminBot);
+    final Offer offer = new Offer(JID.parse(roomJID.toString()));
+    final Message.Body messageForReopen = new Message.Body(generateRandomString());
+    final ReceivingMessageBuilder expectedMessage = new ReceivingMessageBuilder().from(botRoomJID(roomJID, clientBot)).has(Message.Body.class, b -> messageForReopen.value().equals(b.value()));
+
+    //Act
+    adminBot.send(roomJID, offer);
+    //Assert
+    checkOtherExpertsAreNotReceivedInvite(roomJID, expertBots, new ExpertBot[0]);
+
+    //Act/Assert
+    checkDefaultExpertAnswersAndOthersDoNot(roomJID, defaultExpert, Stream.of(expertBots).filter(expertBot -> !defaultExpert.equals(expertBot)).toArray(ExpertBot[]::new), clientBot);
+    roomCloseStateByClientFeedback(roomJID, clientBot, adminBot);
+
+    //Act
+    clientBot.sendGroupchat(roomJID, messageForReopen);
+    //Assert
+    assertThereAreNoFailedMessages(adminBot.tryReceiveMessages(new StateLatch(), expectedMessage.build()));
+    assertThereAreNoFailedMessages(defaultExpert.tryReceiveMessages(new StateLatch(), expectedMessage.build()));
+
+    //Act
+    Stream.of(expertBots).forEach(Bot::offerCheckReceivedAndReset);
+    adminBot.send(roomJID, offer);
+    //Assert
+    checkOtherExpertsAreNotReceivedInvite(roomJID, expertBots, new ExpertBot[0]);
+
+    //Act/Assert
+    checkDefaultExpertAnswersAndOthersDoNot(roomJID, defaultExpert, Stream.of(expertBots).filter(expertBot -> !defaultExpert.equals(expertBot)).toArray(ExpertBot[]::new), clientBot);
+  }
+
+  @Test
   public void testTaskToSpecifiedExpert() throws JaxmppException, InterruptedException {
     checkTaskToSeveralSpecifiedExperts(1, 3);
   }
