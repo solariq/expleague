@@ -1,12 +1,14 @@
 package integration_tests.tests;
 
 import com.expleague.bots.AdminBot;
+import com.expleague.bots.Bot;
 import com.expleague.bots.ClientBot;
 import com.expleague.bots.ExpertBot;
 import com.expleague.bots.utils.ReceivingMessage;
 import com.expleague.bots.utils.ReceivingMessageBuilder;
 import com.expleague.model.*;
 import com.expleague.xmpp.JID;
+import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.util.sync.StateLatch;
 import integration_tests.BaseRoomTest;
 import org.junit.Test;
@@ -85,6 +87,74 @@ public class ExpertsAssignmentTest extends BaseRoomTest {
 
     //Act/Assert
     checkDefaultExpertAnswersAndOthersDoNot(roomJID, secondDefaultExpert, Stream.of(expertBots).filter(expertBot -> !defaultExpert.equals(expertBot) && !secondDefaultExpert.equals(expertBot)).toArray(ExpertBot[]::new), clientBot);*/
+  }
+
+  @Test
+  public void testTaskToBannedExpert() throws JaxmppException, InterruptedException {
+    //Arrange
+    final int expertsNum = 4;
+    final ExpertBot[] expertBots = Stream.generate(throwableSupplier(() -> botsManager.nextExpert())).limit(expertsNum / 2).toArray(ExpertBot[]::new);
+    final ExpertBot defaultExpert = expertBots[0];
+    final ExpertBot[] bannedExperts = Stream.generate(throwableSupplier(() -> botsManager.nextExpert())).limit(expertsNum / 2).toArray(ExpertBot[]::new);
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ClientBot clientBot = botsManager.nextClient();
+
+    final BareJID roomJID = obtainRoomOpenState(testName(), clientBot, adminBot);
+    final Filter expertFilter = new Filter(null, Stream.of(bannedExperts).map(expertBot -> JID.parse(expertBot.jid().toString())).collect(Collectors.toList()), null);
+    final Offer offer = new Offer(JID.parse(roomJID.toString()), expertFilter);
+
+    //Act
+    adminBot.send(roomJID, offer);
+    //Assert
+    checkOtherExpertsAreNotReceivedInvite(roomJID, expertBots, bannedExperts);
+
+    //Act/Assert
+    checkDefaultExpertAnswersAndOthersDoNot(roomJID, defaultExpert, Stream.of(expertBots).filter(expertBot -> !defaultExpert.equals(expertBot)).toArray(ExpertBot[]::new), clientBot);
+  }
+
+  @Test
+  public void testStatusChangedFromBanned() throws JaxmppException, InterruptedException {
+    //Arrange
+    final int expertsNum = 4;
+    final ExpertBot[] expertBots = Stream.generate(throwableSupplier(() -> botsManager.nextExpert())).limit(expertsNum / 2).toArray(ExpertBot[]::new);
+    final ExpertBot defaultExpert = expertBots[0];
+    final ExpertBot[] bannedExperts = Stream.generate(throwableSupplier(() -> botsManager.nextExpert())).limit(expertsNum / 2).toArray(ExpertBot[]::new);
+    final ExpertBot secondDefaultExpert = bannedExperts[0];
+    final AdminBot adminBot = botsManager.nextAdmin();
+    final ClientBot clientBot = botsManager.nextClient();
+
+    final BareJID roomJID = obtainRoomOpenState(testName(), clientBot, adminBot);
+    final Filter expertFilter = new Filter(null, Stream.of(bannedExperts).map(expertBot -> JID.parse(expertBot.jid().toString())).collect(Collectors.toList()), null);
+    final Offer offer = new Offer(JID.parse(roomJID.toString()), expertFilter);
+
+    final Filter newExpertFilter = new Filter(Stream.of(bannedExperts).map(expertBot -> JID.parse(expertBot.jid().toString())).collect(Collectors.toList()), null, null);
+    final Offer newOffer = new Offer(JID.parse(roomJID.toString()), newExpertFilter);
+
+    final Message.Body messageForReopen = new Message.Body(generateRandomString());
+    final ReceivingMessageBuilder expectedMessage = new ReceivingMessageBuilder().from(botRoomJID(roomJID, clientBot)).has(Message.Body.class, b -> messageForReopen.value().equals(b.value()));
+
+    //Act
+    adminBot.send(roomJID, offer);
+    //Assert
+    checkOtherExpertsAreNotReceivedInvite(roomJID, expertBots, bannedExperts);
+
+    //Act/Assert
+    checkDefaultExpertAnswersAndOthersDoNot(roomJID, defaultExpert, Stream.of(expertBots).filter(expertBot -> !defaultExpert.equals(expertBot)).toArray(ExpertBot[]::new), clientBot);
+
+    //Act
+    clientBot.sendGroupchat(roomJID, messageForReopen);
+    //Assert
+    assertThereAreNoFailedMessages(adminBot.tryReceiveMessages(new StateLatch(), expectedMessage.build()));
+    assertThereAreNoFailedMessages(defaultExpert.tryReceiveMessages(new StateLatch(), expectedMessage.build()));
+
+    //Act
+    Stream.of(expertBots).forEach(Bot::offerCheckReceivedAndReset);
+    adminBot.send(roomJID, newOffer);
+    //Assert
+    checkOtherExpertsAreNotReceivedInvite(roomJID, bannedExperts, expertBots);
+
+    //Act/Assert
+    checkDefaultExpertAnswersAndOthersDoNot(roomJID, secondDefaultExpert, Stream.of(bannedExperts).filter(expertBot -> !secondDefaultExpert.equals(expertBot)).toArray(ExpertBot[]::new), clientBot);
   }
 
   private void checkTaskToSeveralSpecifiedExperts(int acceptedExpertNum, int extraExpertsNum) throws JaxmppException, InterruptedException {
