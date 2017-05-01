@@ -3,6 +3,8 @@ package com.expleague.server.dao;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.expleague.xmpp.stanza.Stanza;
 
+import java.util.logging.Logger;
+
 /**
  * User: solar
  * Date: 21.10.15
@@ -10,6 +12,7 @@ import com.expleague.xmpp.stanza.Stanza;
  */
 @SuppressWarnings("unused")
 public class ReadOnlyDynamoDBArchive extends DynamoDBArchive {
+  private static final Logger log = Logger.getLogger(ReadOnlyDynamoDBArchive.class.getName());
   @Override
   protected Class<? extends RoomArchive> getRoomArchiveClass() {
     return ReadOnlyRoomArchive.class;
@@ -30,7 +33,9 @@ public class ReadOnlyDynamoDBArchive extends DynamoDBArchive {
 
     @Override
     public void accept(Stanza stanza) {
-      throw new UnsupportedOperationException();
+      if (!known.contains(stanza.id()))
+        log.fine("Read only archive skipped message: " + stanza.xmlString());
+//        throw new UnsupportedOperationException();
     }
   }
 }

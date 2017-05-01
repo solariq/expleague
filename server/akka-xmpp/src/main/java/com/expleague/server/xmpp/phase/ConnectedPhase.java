@@ -159,12 +159,10 @@ public class ConnectedPhase extends XMPPPhase {
     if (message.has(Received.class)) {
       final String messageId = message.get(Received.class).getId();
 //      log.finest("Client received: " + messageId);
-      if (courier != null) {
-        courier.tell(new Delivered(messageId, jid.resource()), self());
-      }
-      else {
+      if (courier != null)
+        courier.tell(new Delivered(messageId, jid.bare(), jid.resource()), self());
+      else
         log.warning("Can't process delivery ack to " + jid + ", courier is absent");
-      }
     }
     else if (message.has(Request.class)) {
       final Message ack = new Message(message.from(), new Received(message.id()));

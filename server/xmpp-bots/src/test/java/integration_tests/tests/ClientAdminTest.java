@@ -51,9 +51,7 @@ public class ClientAdminTest extends BaseRoomTest {
     final ReceivingMessage[] expectedProgresses = progresses.stream().map(roomProgress -> new ReceivingMessageBuilder()
         .from(roomProgress.first)
         .has(Operations.Progress.class,
-            p -> roomProgress.second.meta().name().equals(p.meta().name()) &&
-                roomProgress.second.meta().operation() == p.meta().operation() &&
-                roomProgress.second.meta().target() == p.meta().target() &&
+            p -> roomProgress.second.meta().findFirst().orElseGet(Operations.Progress.MetaChange::new).equals(p.meta().findFirst().orElse(null)) &&
                 roomProgress.second.order().equals(p.order()))
         .build()).toArray(ReceivingMessage[]::new);
 

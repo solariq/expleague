@@ -1,90 +1,1357 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <stream:stream xmlns:stream="http://etherx.jabber.org/streams" version="1.0" xmlns="jabber:client" xml:lang="en"
                xmlns:xml="http://www.w3.org/XML/1998/namespace">
-    <message xmlns="jabber:client" type="normal" from="0694d14d@testnode3.expleague.com/0694d14d-44155822/unsearch"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="5F808BFD-9A7F-46BF-9EDE-B04BDD3710DD">
-        <offer xmlns="http://expleague.com/scheme" client="0694d14d@testnode3.expleague.com" local="false" urgency="day"
-               started="1.492697923628923E9">
-            <topic>Test ju 2</topic>
+    <message xmlns="jabber:client" type="normal" from="b83c6fda@expleague.com/b83c6fda/unsearch"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="25F57A3D-C184-4C1E-BC06-9BC3DA608BA9">
+        <offer xmlns="http://expleague.com/scheme" client="b83c6fda@expleague.com" local="false" urgency="day"
+               started="1.492958033699097E9">
+            <topic>Рецепты смузи для домашнего приготовления</topic>
         </offer>
     </message>
     <message xmlns="jabber:client" type="normal"
-             from="vk-32904@testnode3.expleague.com/alomakina.test3/dosearchqt-5.8.0/admin"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="jgxrUcF4mo-1492697967752">
-        <offer xmlns="http://expleague.com/scheme" room="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-               client="0694d14d@testnode3.expleague.com" local="false" urgency="day" started="1.492697923E9">
-            <topic>Test ju 2</topic>
-            <experts-filter>
-                <accept>vk-12520103tyblockin-2.local@testnode3.expleague.com</accept>
-                <prefer>vk-32904@testnode3.expleague.com</prefer>
-            </experts-filter>
+             from="vk-272671728kkirby-nb@expleague.com/jaimeblack/dosearchqt-5.8.0/admin"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="bPSWwZkqFB-1492958070681">
+        <offer xmlns="http://expleague.com/scheme" room="room-b83c6fda-1c467b59@muc.expleague.com"
+               client="b83c6fda@expleague.com" local="false" urgency="day" started="1.492958033E9">
+            <topic>Рецепты смузи для домашнего приготовления</topic>
+            <draft>
+                Дальше_не_придумали_импровизируй!(с)
+            </draft>
+            <tag>Кулинария</tag>
+            <pattern name="Общая информация" type="answer"/>
         </offer>
         <offer-change xmlns="http://expleague.com/scheme"/>
     </message>
-    <message xmlns="jabber:client" type="normal"
-             from="vk-32904@testnode3.expleague.com/alomakina.test3/dosearchqt-5.8.0/admin"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="sNwFjWTOBZ-1492698046811">
-        <offer xmlns="http://expleague.com/scheme" room="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-               client="0694d14d@testnode3.expleague.com" local="false" urgency="day" started="1.492697923E9">
-            <topic>Test ju 2</topic>
-            <experts-filter>
-                <reject>vk-12520103tyblockin-2.local@testnode3.expleague.com</reject>
-            </experts-filter>
-        </offer>
-        <offer-change xmlns="http://expleague.com/scheme"/>
+    <message xmlns="jabber:client" from="vk-272671728kkirby-nb@expleague.com/jaimeblack/dosearchqt-5.8.0/admin"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="6giZMA2tW8-1492958074">
+        <progress xmlns="http://expleague.com/scheme" order="3592">
+            <change operation="add" target="tag">Кулинария</change>
+        </progress>
     </message>
-    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="pc7vh/c07A-1492698049">
-        <progress xmlns="http://expleague.com/scheme" order="1676">
+    <message xmlns="jabber:client" from="vk-272671728kkirby-nb@expleague.com/jaimeblack/dosearchqt-5.8.0/admin"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="ilPnsT5J33-1492958074">
+        <progress xmlns="http://expleague.com/scheme" order="3592">
+            <change operation="add" target="pattern">Общая информация</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="room-b83c6fda-1c467b59@muc.expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="oa7jmebeWE-1492958074">
+        <progress xmlns="http://expleague.com/scheme" order="3592">
             <state>open</state>
         </progress>
     </message>
-    <message xmlns="jabber:client" from="vk-12520103tyblockin-2.local@testnode3.expleague.com"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="3yVVH4xZor-1492698065">
+    <message xmlns="jabber:client" type="groupchat"
+             from="vk-272671728kkirby-nb@expleague.com/jaimeblack/dosearchqt-5.8.0/admin"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="l3eSqJKs1J-1492958394236">
+        <body>Спасибо за Ваш вопрос! Над ним начнет работу первый освободившийся эксперт!</body>
+    </message>
+    <message xmlns="jabber:client" from="vk-272671728kkirby-nb@expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="JGXTtkzhMq-1492962407">
         <cancel xmlns="http://expleague.com/scheme"/>
     </message>
-    <message xmlns="jabber:client" from="vk-12520103tyblockin-2.local@testnode3.expleague.com"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com/0694d14d" id="41j2cg7CPx-1492698065">
+    <message xmlns="jabber:client" from="vk-272671728kkirby-nb@expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com/b83c6fda" id="vayS8TwSE1-1492962412">
         <cancel xmlns="http://expleague.com/scheme"/>
     </message>
-    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="CxPyecOTA5-1492698065">
-        <offer xmlns="http://expleague.com/scheme" room="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-               client="0694d14d@testnode3.expleague.com" local="false" urgency="day" started="1.492697923E9">
-            <topic>Test ju 2</topic>
+    <message xmlns="jabber:client" from="room-b83c6fda-1c467b59@muc.expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="XTcmVeH7ew-1492962412">
+        <offer xmlns="http://expleague.com/scheme" room="room-b83c6fda-1c467b59@muc.expleague.com"
+               client="b83c6fda@expleague.com" local="false" urgency="day" started="1.492958033E9">
+            <topic>Рецепты смузи для домашнего приготовления</topic>
             <experts-filter>
-                <reject>vk-12520103tyblockin-2.local@testnode3.expleague.com</reject>
+                <reject>vk-272671728kkirby-nb@expleague.com</reject>
             </experts-filter>
+            <draft>
+                Дальше_не_придумали_импровизируй!(с)
+            </draft>
+            <tag>Кулинария</tag>
+            <pattern name="Общая информация" type="answer"/>
         </offer>
     </message>
     <message xmlns="jabber:client" type="normal"
-             from="vk-32904@testnode3.expleague.com/alomakina.test3/dosearchqt-5.8.0/admin"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="28WA5Gc9Nz-1492698069519">
-        <offer xmlns="http://expleague.com/scheme" room="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-               client="0694d14d@testnode3.expleague.com" local="false" urgency="day" started="1.492697923E9">
-            <topic>Test ju 2</topic>
+             from="vk-39563-vecitabook@expleague.com/89531752395/dosearchqt-5.8.0/admin"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="B2C6HVGZvk-1493018149469">
+        <offer xmlns="http://expleague.com/scheme" room="room-b83c6fda-1c467b59@muc.expleague.com"
+               client="b83c6fda@expleague.com" local="false" urgency="day" started="1.492958033E9">
+            <topic>Рецепты смузи для домашнего приготовления</topic>
             <experts-filter>
-                <reject>vk-12520103tyblockin-2.local@testnode3.expleague.com</reject>
+                <reject>vk-272671728kkirby-nb@expleague.com</reject>
+                <accept>nastyash@expleague.com</accept>
             </experts-filter>
+            <draft>
+                Дальше_не_придумали_импровизируй!(с)
+            </draft>
+            <tag>Кулинария</tag>
+            <pattern name="Общая информация" type="answer"/>
         </offer>
         <offer-change xmlns="http://expleague.com/scheme"/>
     </message>
-    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="SRL+QEXB4K-1492698072">
-        <progress xmlns="http://expleague.com/scheme" order="1676">
+    <message xmlns="jabber:client" from="room-b83c6fda-1c467b59@muc.expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="+SL8SUnMdJ-1493018169">
+        <progress xmlns="http://expleague.com/scheme" order="3592">
             <state>done</state>
         </progress>
     </message>
-    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="HKRYn0xXTz-1492698074">
-        <progress xmlns="http://expleague.com/scheme" order="1677">
+    <message xmlns="jabber:client" from="room-b83c6fda-1c467b59@muc.expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="FeJODVp8e7-1493018171">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
             <state>open</state>
         </progress>
     </message>
-    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="9l0faLNhhv-1492698089">
-        <progress xmlns="http://expleague.com/scheme" order="1675">
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="xE2iDD5QKo-1493018185">
+        <start xmlns="http://expleague.com/scheme" order="3599" expert="nastyash@expleague.com"/>
+    </message>
+    <message xmlns="jabber:client" from="room-b83c6fda-1c467b59@muc.expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com/b83c6fda" id="MX1RZMnLvE-1493018188">
+        <start xmlns="http://expleague.com/scheme" order="3599" expert="nastyash@expleague.com"/>
+        <expert xmlns="http://expleague.com/scheme" jid="nastyash@expleague.com" login="nastyash"
+                name="Анастасия Шаталина" tasks="5" education="high" authority="newbie" rating="4.0" basedOn="3">
+            <tags>
+                <tag score="0.07407407407407407">Досуг</tag>
+                <tag score="0.09090909090909091">Спорт</tag>
+            </tags>
+            <avatar>https://pp.userapi.com/c626919/v626919903/2df4c/4tRYPbquApM.jpg</avatar>
+        </expert>
+    </message>
+    <message xmlns="jabber:client" from="room-b83c6fda-1c467b59@muc.expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="/bdtRS49kX-1493018188">
+        <offer xmlns="http://expleague.com/scheme" room="room-b83c6fda-1c467b59@muc.expleague.com"
+               client="b83c6fda@expleague.com" local="false" urgency="day" started="1.492958033E9">
+            <topic>Рецепты смузи для домашнего приготовления</topic>
+            <experts-filter>
+                <reject>vk-272671728kkirby-nb@expleague.com</reject>
+                <reject>vk-39563-vecitabook@expleague.com</reject>
+                <accept>nastyash@expleague.com</accept>
+            </experts-filter>
+            <draft>
+                Дальше_не_придумали_импровизируй!(с)
+            </draft>
+            <tag>Кулинария</tag>
+            <pattern name="Общая информация" type="answer"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" from="room-b83c6fda-1c467b59@muc.expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="Gv/+7hpAok-1493018185">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
             <state>in-progress</state>
         </progress>
+    </message>
+    <message xmlns="jabber:client" type="groupchat" from="nastyash@expleague.com/nastyash/dosearchqt-5.8.0/expert"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="uwSUTgHpCZ-1493018230334">
+        <body>Добрый день! Работа над Вашим запросом начата</body>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="82VY4X53oO-1493018575">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="CypFjAl1cR-1493018593">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="GcrW/fmo9S-1493018593">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/banan/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="jE1YR0xX4y-1493018673">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/banan/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="kgeKJr5Jh8-1493019145">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/banan/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="UyJ83fy7oi-1493019204">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">
+                http://eda.ru/recepty/napitki/kofejno-bananovij-smuzi-ot-starbucks-24993?from=recipescatalog
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="5EIlelSXu9-1493019256">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">
+                http://eda.ru/recepty/napitki/kofejno-bananovij-smuzi-ot-starbucks-24993?from=recipescatalog
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="LQRpGJb0pr-1493019330">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">
+                http://eda.ru/recepty/napitki/kofejno-bananovij-smuzi-ot-starbucks-24993?from=recipescatalog
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="4xTKxqk6St-1493019346">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">
+                http://eda.ru/recepty/napitki/kofejno-bananovij-smuzi-ot-starbucks-24993?from=recipescatalog
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="m56iIKWTmH-1493019363">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">
+                http://eda.ru/recepty/napitki/kofejno-bananovij-smuzi-ot-starbucks-24993?from=recipescatalog
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="VX9tt8wPKJ-1493019377">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">
+                http://eda.ru/recepty/napitki/kofejno-bananovij-smuzi-ot-starbucks-24993?from=recipescatalog
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="+3iCVNbgie-1493019385">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">
+                http://eda.ru/recepty/napitki/kofejno-bananovij-smuzi-ot-starbucks-24993?from=recipescatalog
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="y5sjH92eMG-1493019423">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">
+                http://eda.ru/recepty/napitki/kofejno-bananovij-smuzi-ot-starbucks-24993?from=recipescatalog
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="2ZJXzg7MHG-1493019432">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">
+                http://eda.ru/recepty/napitki/kofejno-bananovij-smuzi-ot-starbucks-24993?from=recipescatalog
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="vd24K2TBmO-1493019476">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">
+                http://eda.ru/recepty/napitki/kofejno-bananovij-smuzi-ot-starbucks-24993?from=recipescatalog
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="q8YKZjnldt-1493019513">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://prostokvashino.ru/recipe/smuzi-s-bananom-i-molokom</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="mx42bGRafr-1493019599">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="hgQt9q6tkz-1493019610">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://www.calorizator.ru/recipe/7751</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="Fo9mCza4/6-1493019631">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="NEEVbKQOEK-1493019642">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="0nD2kPJllx-1493019642">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/kivi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="TeIL/vsq+B-1493019655">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/kivi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="T2pQWq9kG+-1493019672">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="BNRi5Ao7cT-1493019678">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://www.calorizator.ru/recipe/7751</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="DeO6JFVLXy-1493019701">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://www.calorizator.ru/recipe/7751</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="xPQctXBKep-1493019728">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://www.calorizator.ru/recipe/7751</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="7KdzZCvzb9-1493019778">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="+gNt/TTmgR-1493019784">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://salatshop.ru/post/7-smoothie</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="5dQio2CXSY-1493019837">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="geqkcgFIZV-1493019846">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="rLlwam9/Qp-1493019846">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="YE3yNnRUZb-1493019846">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi/ingredienty/13516</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="4CMO+O68zB-1493019853">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi/ingredienty/13516</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="kalh3nlag3-1493019853">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/vitaminnij-fruktovij-smuzi-34322
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="EY8Jx4YDKt-1493019896">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/vitaminnij-fruktovij-smuzi-34322
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="hnr3oSi/Gx-1493019967">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/vitaminnij-fruktovij-smuzi-34322
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="h5p75VpYIV-1493020044">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="k6Z1zvrY/m-1493020053">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="a6Yb7MKCB0-1493020053">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/apelsin/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="gzBx3cJA2J-1493020086">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="dyGCC/Yypo-1493020086">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="Cq9tH9bTOI-1493020086">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="II2ih8bDpU-1493020088">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/kivi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="K80dDxbplp-1493020090">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/banan/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="x0UxWv/FeR-1493020092">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/apelsin/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="RkMEvyjFKU-1493020094">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="2Ms35R0hbR-1493020101">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="Qh2wxQ/Klf-1493020101">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="orT7JqNKg4-1493020101">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="L6gUIMOOPb-1493020101">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/grusha/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="KPBaYmUNLM-1493020119">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="Sxz4mzcGpd-1493020119">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="Rf9DO42684-1493020119">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="isxGpoo5HR-1493020119">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="EWblfkLbfQ-1493020119">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="T0VnkGrOP4-1493020126">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="VtmxxhBjV2-1493020126">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="zGPYVaViEl-1493020126">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="mEBZFQWO6n-1493020126">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="b6t9AjZVpN-1493020126">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/JAbloko/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="NraeZLAw7X-1493020158">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="r0z009XxZY-1493020158">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="k+hUG9clMg-1493020158">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="k1zx7c2WgB-1493020158">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="1A9lp1WX1n-1493020158">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="C9QIb0P4MQ-1493020158">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="SQ++rM9QbO-1493020160">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://www.calorizator.ru/recipe/7751</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="2ctIDYrX+D-1493020162">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="sCymrB5xgO-1493020164">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="h7PigrI92o-1493020204">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="mVyP2d05UO-1493020204">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/smuzi-iz-suhofruktov-21856</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="P8X2TOVG+4-1493020218">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/vitaminnij-fruktovij-smuzi-34322
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="YU82l0SMWk-1493020221">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi/ingredienty/13516</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="Px+Fc8gDHz-1493020228">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="culGmBgxWZ-1493020309">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="Ik78+kzBHe-1493020309">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/ovoschnoj-smuzi-s-koriandrom-21192
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="36+H3HVlup-1493020312">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="BD7NDCtEAO-1493020367">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="7BqIuszPTw-1493020367">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="N5A/zkHmTB-1493020367">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/smuzi-so-vkusom-tarhuna-30136</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="OBrpoQUim8-1493020434">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/smuzi-so-vkusom-tarhuna-30136</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="EMSeY3DlgK-1493020465">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/smuzi-so-vkusom-tarhuna-30136</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="qbzPb5e7KA-1493020498">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/smuzi-so-vkusom-tarhuna-30136</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="1cSTr5Q5bx-1493020518">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/smuzi-so-vkusom-tarhuna-30136</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="UJwf2/QG2/-1493020632">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/smuzi-so-vkusom-tarhuna-30136</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="m/IsChoUzm-1493020670">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/smuzi-so-vkusom-tarhuna-30136</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="Kr9O3UvRyP-1493020721">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">
+                https://eda.ru/recepty/napitki/kofejno-bananovij-smuzi-ot-starbucks-24993
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="+7e24S+BTG-1493020777">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="zsSt5vvTIs-1493020805">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/vitaminnij-fruktovij-smuzi-34322
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="fl6hTWGcae-1493020874">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">
+                https://www.google.ru/imgres?imgurl=http://www.calorizator.ru/sites/default/files/imagecache/recipes_full/recipe/7751.jpg&amp;imgrefurl=http://www.calorizator.ru/recipe/7751&amp;h=330&amp;w=500&amp;tbnid=FAnzozRXueBrHM:&amp;tbnh=160&amp;tbnw=242&amp;usg=__ZsDtXe5rrc8_C4hojkr6nlk4rls=&amp;vet=10ahUKEwi-mrqS0LzTAhUDkiwKHUzlCNcQ9QEIJjAA..i&amp;docid=VWY2r4jscRGbNM&amp;sa=X&amp;ved=0ahUKEwi-mrqS0LzTAhUDkiwKHUzlCNcQ9QEIJjAA
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-39563-vecitabook@expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="g/ZvROHs8u-1493021312">
+        <cancel xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" from="vk-39563-vecitabook@expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com/b83c6fda" id="FoooEEo9YV-1493021317">
+        <cancel xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" from="room-b83c6fda-1c467b59@muc.expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="U2oEwvAUN9-1493021317">
+        <offer xmlns="http://expleague.com/scheme" room="room-b83c6fda-1c467b59@muc.expleague.com"
+               client="b83c6fda@expleague.com" local="false" urgency="day" started="1.492958033E9">
+            <topic>Рецепты смузи для домашнего приготовления</topic>
+            <experts-filter>
+                <reject>vk-272671728kkirby-nb@expleague.com</reject>
+                <reject>vk-39563-vecitabook@expleague.com</reject>
+                <reject>nastyash@expleague.com</reject>
+            </experts-filter>
+            <draft>
+                Дальше_не_придумали_импровизируй!(с)
+            </draft>
+            <tag>Кулинария</tag>
+            <pattern name="Общая информация" type="answer"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="xNU25PyDnk-1493021561">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">
+                https://www.google.ru/imgres?imgurl=http://www.calorizator.ru/sites/default/files/imagecache/recipes_full/recipe/7751.jpg&amp;imgrefurl=http://www.calorizator.ru/recipe/7751&amp;h=330&amp;w=500&amp;tbnid=FAnzozRXueBrHM:&amp;tbnh=160&amp;tbnw=242&amp;usg=__ZsDtXe5rrc8_C4hojkr6nlk4rls=&amp;vet=10ahUKEwi-mrqS0LzTAhUDkiwKHUzlCNcQ9QEIJjAA..i&amp;docid=VWY2r4jscRGbNM&amp;sa=X&amp;ved=0ahUKEwi-mrqS0LzTAhUDkiwKHUzlCNcQ9QEIJjAA
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="RenfCHzlP0-1493021563">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/vitaminnij-fruktovij-smuzi-34322
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="pD6BYKfmkO-1493021565">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="b5BCtx4ni5-1493021575">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/ovoschnoj-smuzi-s-koriandrom-21192
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="uI9B1xJXBJ-1493021576">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/smuzi-so-vkusom-tarhuna-30136</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="CWTMl2ANCl-1493021577">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/ovoschnoj-smuzi-s-koriandrom-21192
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="cogRzfzw95-1493021634">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/ovoschnoj-smuzi-s-koriandrom-21192
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="o7dy8KeS7K-1493021674">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/ovoschnoj-smuzi-s-koriandrom-21192
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="tllmj5ZHN5-1493021705">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/ovoschnoj-smuzi-s-koriandrom-21192
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="dqNbkSIZrF-1493021752">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/ovoschnoj-smuzi-s-koriandrom-21192
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="watXu4YheI-1493021778">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/napitki/ovoschnoj-smuzi-s-koriandrom-21192
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="P17kv4dXYL-1493021811">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="x0fpCWZHw8-1493021812">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="oiP0+p9/R8-1493021835">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://priroda-znaet.ru/ovoshhnyie-smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="XoBvngQLfH-1493022119">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://priroda-znaet.ru/ovoshhnyie-smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="AqrWxTtdwJ-1493022157">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://priroda-znaet.ru/ovoshhnyie-smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="aiRH8fX3HQ-1493022174">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://priroda-znaet.ru/ovoshhnyie-smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="a3qWulB03c-1493022214">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://priroda-znaet.ru/ovoshhnyie-smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="NjQqrFbXdD-1493022245">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://priroda-znaet.ru/ovoshhnyie-smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="YW+rPUI+PO-1493022297">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://priroda-znaet.ru/ovoshhnyie-smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="OWz8ZsYIQe-1493022391">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">http://smoothie.ru/recipes/fruktovie_smuzi/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="Rb8VnmRmvE-1493022446">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <change operation="visit" target="url">https://eda.ru/recepty/smuzi</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" type="chat" from="nastyash@expleague.com/nastyash/dosearchqt-5.8.0/expert"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="dDhj8KDAiX-1493022626143">
+        <answer xmlns="http://expleague.com/scheme" difficulty="3.0" extra-info="0" success="1">8 рецептов внутри
+            Добрый день! Мы нашли для Вас восемь рецептов вкусных и полезных **смузи** с наиболее доступными продуктами.
+            Для приготовления Вам понадобятся необходимые ингридиенты и блендер.
+
+
+            #### Смузи с фруктами
+
+            ##### Смузи с бананом и киви
+
+            ![Смузи с бананом и
+            киви](http://www.calorizator.ru/sites/default/files/imagecache/recipes_full/recipe/7751.jpg)
+
+            > Бананы оказывают противоязвеное действие, обладают антибактериальными свойствами. Повышают иммунитет и
+            снижают содержание холестерина в крови. Киви проявляет антиоксидантные, противораковые свойства и улучшает
+            работу пищеварительной системы.
+
+            +[Ингридиенты]
+
+            * Банан - 50 гр.
+            * Киви - 70 гр.
+            * Молоко - 150 мл.
+
+            -[Ингридиенты]
+
+            +[Рецепт]
+
+            * Очистить банан и нарезать на кусочки, закинуть в блендер.
+            * Очистить киви от кожицы, отрезать одно колесико и убрать в сторону.
+            * Остальное киви закинуть в блендер.
+            * Залить в блендер молоко и взбить все хорошенько.
+            * Вылить смузи из бленера в стакан. Украсить колесиком киви.
+
+            -[Рецепт]
+
+            ##### Витаминный фруктовый смузи
+
+            ![витаминный фруктовый
+            смузи](https://img03.rl0.ru/eda/c588x390i/s1.afisha-eda.ru/StaticContent/Photos/130907154434/140420160401/p_O.jpg)
+
+            > Апельсины оказывают укрепляющее действие на иммунитет, стимулируют аппетит и деятельность пищеварительной
+            системы, способствуют заживлению ран и нормализуют водный обмен. Груши улучшают пищеварение и обмен веществ,
+            оказывают стимулирующее действие на печень и почки. Груши обладают противомикробными свойствами и
+            благотворно влияют на состояние толстого кишечника. Яблоки оказывают тонизирующее действие, улучшают
+            пищеварение, обладают мочегонными и слабительными свойствами, а также проявляют функции нейтрализации ядов и
+            обеззараживания. Употребление яблок снижает уровень холестерина в крови, оказывает антиревматическое
+            действие и стимулирует функции печени.
+
+            +[Ингридиенты]
+
+            * Яблоко - 1 шт.
+            * Груша - 1 шт.
+            * Банан - 1 шт.
+            * Апельсин - 3 шт.
+
+            -[Ингридиенты]
+
+            +[Рецепт]
+
+            * Тщательно вымыть все фрукты.
+            * Из апельсинов с помощью соковыжималки сделать сок. Получится примерно 1 стакан сока.
+            * Нарезать банан, яблоко и грушу, убрав сердцевину. Положить все фрукты в блендер, залить все соком, чтобы
+            он слегка покрывал фрукты. Закрыть блендер крышкой и все хорошо перемешать.
+
+            -[Рецепт]
+
+            ----
+
+            #### Смузи с овощами
+
+            ##### Овощной смузи с кориандром
+
+            ![Овощной смузи с
+            кориандром](https://img09.rl0.ru/eda/c588x390i/s2.afisha-eda.ru/StaticContent/Photos/120131082151/120213184956/p_O.jpg)
+
+            > Если нужен вариант для поста, то можно с успехом вместо брынзы использовать либо соевое молоко,либо соевый
+            майонез. О продуктах: автор рецепта покупает смесь брокколи+морковь и что-то вроде замороженного «лечо».
+            Брынза - «Парижская Буренка».
+
+            +[Ингридиенты]
+
+            * замороженые овощи - 500 гр
+            * сыр брынза - 55 гр
+            * кориандр - по вкусу
+
+            -[Ингридиенты]
+
+            +[Рецепт]
+
+            * Овощи бросаем в кипящую воду и даем вариться, пока не станут мягкими (где-то минут 20).
+            * Половником отцеживаем бульон, овощи превращаем в пюре, добавляем брынзу и бульона столько, сколько
+            нравится.
+            * Посолить, поперчить.
+            * Кориандр прокалить слегка на сковороде и посыпать при сервировке (если она предстоит)
+
+            -[Рецепт]
+
+            ##### Смузи из моркови с сельдереем
+
+            ![Смузи из моркови](http://priroda-znaet.ru/wp-content/uploads/2015/03/morkovnyj_smuzi.jpg)
+
+            > Смузи из моркови прекрасно снимает усталость, следит за здоровьем вашей кожи и способствует укреплению
+            иммунной системы в осенне-зимний период. Этот напиток насыщает организм ценным витамином А, который
+            предотвращает риск возникновения сложнейшего заболевания – катаракты.
+
+            +[Ингридиенты]
+
+            * морковь - 2 шт.
+            * сельдерей - 2 стебля
+            * помидор - 1 шт.
+            * оливковое масло - пара капель
+            * соль и перец - по вкусу
+
+            -[Ингридиенты]
+
+            +[Рецепт]
+
+            * Морковь очистить и натереть на терке.
+            * Стебли сельдерея вымыть и просушить.
+            * Помидор очистить от кожицы и нарезать кубиками.
+            * Овощи сложить в чашу блендера, добавить пару капель оливкового масла, соль и перец.
+            * Все взбить.
+
+            -[Рецепт]
+
+            ----
+
+            #### Оригинальные смузи
+
+            ##### Кофейно-банановый смузи от Starbucks
+
+            ![бананово-кофейный
+            смузи](https://img03.rl0.ru/eda/c588x390i/s2.afisha-eda.ru/StaticContent/Photos/120213181135/120214131954/p_O.jpg)
+
+            > Этот смузи прекрасно подходит для завтрака - бодрит и заряжает энергией с самого утра!
+
+            +[Ингридиенты]
+
+            * бананы - 2 шт.
+            * молоко 1% - 1,5 ст.
+            * кофейный йогурт низкой жирности - 1 банка
+            * молотая корица - 1/4 ч.л.
+            * мускатный орех - на кончике ножа
+            * мята - по вкусу
+            -[Ингридиенты]
+
+            +[Рецепт]
+
+            * Бананы очистить, нарезать и охладить в морозилке.
+            * Взбейте в блендере бананы, молоко, йогурт, корицу и мускатный орех до образования однородной массы.
+            * Разлейте по стаканам и, по желанию, украсьте свежей мятой или кусочками банана.
+
+            -[Рецепт]
+
+            ##### Смузи со вкусом тархуна
+
+            ![Смузи
+            тархун](https://img05.rl0.ru/eda/c588x390i/s1.afisha-eda.ru/StaticContent/Photos/120214154946/120214155534/p_O.jpg)
+
+            > Оригинальный напиток из натуральных ингридиентов со вкусом лимонада Тархун
+
+            +[Ингридиенты]
+
+            * листья эстрагона - 1/2 пучка
+            * мята - 1/2 пучка
+            * сельдерей - 2 шт.
+            * персик - 1 шт.
+            * яблоко - 1 шт.
+            * банан - 1 шт.
+            * лимон - 1/2 шт.
+            * вода - 1,5 ст.
+
+            -[Ингридиенты]
+
+            +[Рецепт]
+
+            * Из половины лимона выжмите сок.
+            * Персик и яблоко очистите от кожицы и косточек.
+            * Смешайте все ингредиенты в блендере до однородного густого коктейля.
+            * Попробуйте и по желанию добавьте еще половинку банана или лимонного сока.
+
+            -[Рецепт]
+
+            ----
+
+            * Возможно, Вам будет интересна статья [7 правил идеального смузи](http://salatshop.ru/post/7-smoothie)
+            * Больше рецептов смузи на сайте [Еда.ру](https://eda.ru/recepty/smuzi)
+            * Описание свойств продуктов для смузи на сайте [Природа
+            знает](http://priroda-znaet.ru/wp-content/uploads/2015/03/morkovnyj_smuzi.jpg)
+
+
+            ----
+
+            *Спасибо за Ваш вопрос! Мы всегда рады Вам помочь! Приятного аппетита!*
+        </answer>
+    </message>
+    <message xmlns="jabber:client" from="room-b83c6fda-1c467b59@muc.expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="+QvImqEw/m-1493022618">
+        <progress xmlns="http://expleague.com/scheme" order="3599">
+            <state>done</state>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="PxadTV0YNL-1493022620">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal"
+             from="vk-39563-vecitabook@expleague.com/89531752395/dosearchqt-5.8.0/admin"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="XXBHXTQ48V-1493022648538">
+        <verified xmlns="http://expleague.com/scheme"
+                  authority="vk-39563-vecitabook@expleague.com/89531752395/dosearchqt-5.8.0/admin"/>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com/nastyash/dosearchqt-5.8.0/expert"
+             to="room-b83c6fda-1c467b59@muc.expleague.com/b83c6fda" id="PZbUAidkzs-1493022666">
+        <answer xmlns="http://expleague.com/scheme" difficulty="3.0" extra-info="0" success="1">8 рецептов внутри
+            Добрый день! Мы нашли для Вас восемь рецептов вкусных и полезных **смузи** с наиболее доступными продуктами.
+            Для приготовления Вам понадобятся необходимые ингридиенты и блендер.
+
+
+            #### Смузи с фруктами
+
+            ##### Смузи с бананом и киви
+
+            ![Смузи с бананом и
+            киви](http://www.calorizator.ru/sites/default/files/imagecache/recipes_full/recipe/7751.jpg)
+
+            > Бананы оказывают противоязвеное действие, обладают антибактериальными свойствами. Повышают иммунитет и
+            снижают содержание холестерина в крови. Киви проявляет антиоксидантные, противораковые свойства и улучшает
+            работу пищеварительной системы.
+
+            +[Ингридиенты]
+
+            * Банан - 50 гр.
+            * Киви - 70 гр.
+            * Молоко - 150 мл.
+
+            -[Ингридиенты]
+
+            +[Рецепт]
+
+            * Очистить банан и нарезать на кусочки, закинуть в блендер.
+            * Очистить киви от кожицы, отрезать одно колесико и убрать в сторону.
+            * Остальное киви закинуть в блендер.
+            * Залить в блендер молоко и взбить все хорошенько.
+            * Вылить смузи из бленера в стакан. Украсить колесиком киви.
+
+            -[Рецепт]
+
+            ##### Витаминный фруктовый смузи
+
+            ![витаминный фруктовый
+            смузи](https://img03.rl0.ru/eda/c588x390i/s1.afisha-eda.ru/StaticContent/Photos/130907154434/140420160401/p_O.jpg)
+
+            > Апельсины оказывают укрепляющее действие на иммунитет, стимулируют аппетит и деятельность пищеварительной
+            системы, способствуют заживлению ран и нормализуют водный обмен. Груши улучшают пищеварение и обмен веществ,
+            оказывают стимулирующее действие на печень и почки. Груши обладают противомикробными свойствами и
+            благотворно влияют на состояние толстого кишечника. Яблоки оказывают тонизирующее действие, улучшают
+            пищеварение, обладают мочегонными и слабительными свойствами, а также проявляют функции нейтрализации ядов и
+            обеззараживания. Употребление яблок снижает уровень холестерина в крови, оказывает антиревматическое
+            действие и стимулирует функции печени.
+
+            +[Ингридиенты]
+
+            * Яблоко - 1 шт.
+            * Груша - 1 шт.
+            * Банан - 1 шт.
+            * Апельсин - 3 шт.
+
+            -[Ингридиенты]
+
+            +[Рецепт]
+
+            * Тщательно вымыть все фрукты.
+            * Из апельсинов с помощью соковыжималки сделать сок. Получится примерно 1 стакан сока.
+            * Нарезать банан, яблоко и грушу, убрав сердцевину. Положить все фрукты в блендер, залить все соком, чтобы
+            он слегка покрывал фрукты. Закрыть блендер крышкой и все хорошо перемешать.
+
+            -[Рецепт]
+
+            ----
+
+            #### Смузи с овощами
+
+            ##### Овощной смузи с кориандром
+
+            ![Овощной смузи с
+            кориандром](https://img09.rl0.ru/eda/c588x390i/s2.afisha-eda.ru/StaticContent/Photos/120131082151/120213184956/p_O.jpg)
+
+            > Если нужен вариант для поста, то можно с успехом вместо брынзы использовать либо соевое молоко,либо соевый
+            майонез. О продуктах: автор рецепта покупает смесь брокколи+морковь и что-то вроде замороженного «лечо».
+            Брынза - «Парижская Буренка».
+
+            +[Ингридиенты]
+
+            * замороженые овощи - 500 гр
+            * сыр брынза - 55 гр
+            * кориандр - по вкусу
+
+            -[Ингридиенты]
+
+            +[Рецепт]
+
+            * Овощи бросаем в кипящую воду и даем вариться, пока не станут мягкими (где-то минут 20).
+            * Половником отцеживаем бульон, овощи превращаем в пюре, добавляем брынзу и бульона столько, сколько
+            нравится.
+            * Посолить, поперчить.
+            * Кориандр прокалить слегка на сковороде и посыпать при сервировке (если она предстоит)
+
+            -[Рецепт]
+
+            ##### Смузи из моркови с сельдереем
+
+            ![Смузи из моркови](http://priroda-znaet.ru/wp-content/uploads/2015/03/morkovnyj_smuzi.jpg)
+
+            > Смузи из моркови прекрасно снимает усталость, следит за здоровьем вашей кожи и способствует укреплению
+            иммунной системы в осенне-зимний период. Этот напиток насыщает организм ценным витамином А, который
+            предотвращает риск возникновения сложнейшего заболевания – катаракты.
+
+            +[Ингридиенты]
+
+            * морковь - 2 шт.
+            * сельдерей - 2 стебля
+            * помидор - 1 шт.
+            * оливковое масло - пара капель
+            * соль и перец - по вкусу
+
+            -[Ингридиенты]
+
+            +[Рецепт]
+
+            * Морковь очистить и натереть на терке.
+            * Стебли сельдерея вымыть и просушить.
+            * Помидор очистить от кожицы и нарезать кубиками.
+            * Овощи сложить в чашу блендера, добавить пару капель оливкового масла, соль и перец.
+            * Все взбить.
+
+            -[Рецепт]
+
+            ----
+
+            #### Оригинальные смузи
+
+            ##### Кофейно-банановый смузи от Starbucks
+
+            ![бананово-кофейный
+            смузи](https://img03.rl0.ru/eda/c588x390i/s2.afisha-eda.ru/StaticContent/Photos/120213181135/120214131954/p_O.jpg)
+
+            > Этот смузи прекрасно подходит для завтрака - бодрит и заряжает энергией с самого утра!
+
+            +[Ингридиенты]
+
+            * бананы - 2 шт.
+            * молоко 1% - 1,5 ст.
+            * кофейный йогурт низкой жирности - 1 банка
+            * молотая корица - 1/4 ч.л.
+            * мускатный орех - на кончике ножа
+            * мята - по вкусу
+            -[Ингридиенты]
+
+            +[Рецепт]
+
+            * Бананы очистить, нарезать и охладить в морозилке.
+            * Взбейте в блендере бананы, молоко, йогурт, корицу и мускатный орех до образования однородной массы.
+            * Разлейте по стаканам и, по желанию, украсьте свежей мятой или кусочками банана.
+
+            -[Рецепт]
+
+            ##### Смузи со вкусом тархуна
+
+            ![Смузи
+            тархун](https://img05.rl0.ru/eda/c588x390i/s1.afisha-eda.ru/StaticContent/Photos/120214154946/120214155534/p_O.jpg)
+
+            > Оригинальный напиток из натуральных ингридиентов со вкусом лимонада Тархун
+
+            +[Ингридиенты]
+
+            * листья эстрагона - 1/2 пучка
+            * мята - 1/2 пучка
+            * сельдерей - 2 шт.
+            * персик - 1 шт.
+            * яблоко - 1 шт.
+            * банан - 1 шт.
+            * лимон - 1/2 шт.
+            * вода - 1,5 ст.
+
+            -[Ингридиенты]
+
+            +[Рецепт]
+
+            * Из половины лимона выжмите сок.
+            * Персик и яблоко очистите от кожицы и косточек.
+            * Смешайте все ингредиенты в блендере до однородного густого коктейля.
+            * Попробуйте и по желанию добавьте еще половинку банана или лимонного сока.
+
+            -[Рецепт]
+
+            ----
+
+            * Возможно, Вам будет интересна статья [7 правил идеального смузи](http://salatshop.ru/post/7-smoothie)
+            * Больше рецептов смузи на сайте [Еда.ру](https://eda.ru/recepty/smuzi)
+            * Описание свойств продуктов для смузи на сайте [Природа
+            знает](http://priroda-znaet.ru/wp-content/uploads/2015/03/morkovnyj_smuzi.jpg)
+
+
+            ----
+
+            *Спасибо за Ваш вопрос! Мы всегда рады Вам помочь! Приятного аппетита!*
+        </answer>
+        <verified xmlns="http://expleague.com/scheme"
+                  authority="vk-39563-vecitabook@expleague.com/89531752395/dosearchqt-5.8.0/admin"/>
+    </message>
+    <message xmlns="jabber:client" from="room-b83c6fda-1c467b59@muc.expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="olekzef2BW-1493022723">
+        <progress xmlns="http://expleague.com/scheme" order="3592">
+            <state>in-progress</state>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="room-b83c6fda-1c467b59@muc.expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="yWHTGPJoWD-1493022838">
+        <progress xmlns="http://expleague.com/scheme" order="3592">
+            <state>open</state>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="QFOpbYCiP6-1493022844">
+        <cancel xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" from="nastyash@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com/b83c6fda"
+             id="nh3OHP7/uv-1493022846">
+        <cancel xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" from="room-b83c6fda-1c467b59@muc.expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="oUIuXqSDWc-1493022846">
+        <offer xmlns="http://expleague.com/scheme" room="room-b83c6fda-1c467b59@muc.expleague.com"
+               client="b83c6fda@expleague.com" local="false" urgency="day" started="1.492958033E9">
+            <topic>Рецепты смузи для домашнего приготовления</topic>
+            <experts-filter>
+                <reject>vk-272671728kkirby-nb@expleague.com</reject>
+                <reject>vk-39563-vecitabook@expleague.com</reject>
+                <reject>nastyash@expleague.com</reject>
+                <reject>pblcya@expleague.com</reject>
+            </experts-filter>
+            <draft>
+                Дальше_не_придумали_импровизируй!(с)
+            </draft>
+            <tag>Кулинария</tag>
+            <pattern name="Общая информация" type="answer"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" from="pblcya@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com"
+             id="4h7xtjUrzi-1493026857">
+        <cancel xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" from="pblcya@expleague.com" to="room-b83c6fda-1c467b59@muc.expleague.com/b83c6fda"
+             id="g7ZM8zGV1q-1493026859">
+        <cancel xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" from="room-b83c6fda-1c467b59@muc.expleague.com"
+             to="room-b83c6fda-1c467b59@muc.expleague.com" id="cqyLOWxqUL-1493026859">
+        <offer xmlns="http://expleague.com/scheme" room="room-b83c6fda-1c467b59@muc.expleague.com"
+               client="b83c6fda@expleague.com" local="false" urgency="day" started="1.492958033E9">
+            <topic>Рецепты смузи для домашнего приготовления</topic>
+            <experts-filter>
+                <reject>vk-272671728kkirby-nb@expleague.com</reject>
+                <reject>vk-39563-vecitabook@expleague.com</reject>
+                <reject>nastyash@expleague.com</reject>
+                <reject>pblcya@expleague.com</reject>
+            </experts-filter>
+            <draft>
+                Дальше_не_придумали_импровизируй!(с)
+            </draft>
+            <tag>Кулинария</tag>
+            <pattern name="Общая информация" type="answer"/>
+        </offer>
     </message>
 </stream:stream>

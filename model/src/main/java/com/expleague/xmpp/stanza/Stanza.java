@@ -91,7 +91,7 @@ public class Stanza extends Item {
     return to == null;
   }
 
-  private boolean isTimestampPresent() {
+  public boolean isTimestampPresent() {
     final int separator = id.lastIndexOf('-');
     if (separator != -1) {
       try {
@@ -107,7 +107,8 @@ public class Stanza extends Item {
 
   public long ts() {
     if (isTimestampPresent()) {
-      return Long.parseLong(id.substring(id.lastIndexOf('-') + 1)) * 1000;
+      final String ts = id.substring(id.lastIndexOf('-') + 1);
+      return Long.parseLong(ts) * (ts.length() > 10 ? 1 : 1000);
     }
     else {
       return System.currentTimeMillis();

@@ -69,7 +69,7 @@ public class UserAgentTest extends ActorSystemTestCase {
       assertEquals("Hello", message.body());
 
       // send delivery ack to jid1
-      userAgentRef1.tell(new Delivered(message.id(), "resource"), getRef());
+      userAgentRef1.tell(new Delivered(message.id(), message.to(), "resource"), getRef());
       expectNoMsg();
 
       // disconnect

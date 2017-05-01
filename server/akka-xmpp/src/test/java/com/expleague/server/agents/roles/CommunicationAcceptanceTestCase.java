@@ -493,7 +493,7 @@ public abstract class CommunicationAcceptanceTestCase extends ActorSystemTestCas
       assertTrue(isOnline);
       log.finest("SuspendOffer with " + jid);
       final long startMs = System.currentTimeMillis();
-      final Operations.Suspend suspend = new Operations.Suspend(
+      final Operations.Suspend suspend = new Operations.Suspend(null,
         startMs,
         startMs + suspendOffer.getDelayMs()
       );

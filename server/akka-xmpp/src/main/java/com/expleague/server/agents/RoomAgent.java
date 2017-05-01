@@ -43,8 +43,10 @@ public class RoomAgent extends PersistentActorAdapter {
   private Map<JID, MucUserStatus> participants = new HashMap<>();
   private Archive.Dump dump;
 
+  private Set<String> knownIds = new HashSet<>();
   private Subscription subscription;
   private ProcessMode mode;
+  private boolean inconsistent = false;
 
   public RoomAgent(JID jid, boolean archive) {
     this.jid = jid;
@@ -67,7 +69,7 @@ public class RoomAgent extends PersistentActorAdapter {
     return result.getValue();
   }
 
-  public final List<Stanza> archive() {
+  public final List<Message> archive() {
     return archive(new MucHistory());
   }
 
@@ -75,9 +77,9 @@ public class RoomAgent extends PersistentActorAdapter {
     return mode;
   }
 
-  public List<Stanza> archive(MucHistory history) {
+  public List<Message> archive(MucHistory history) {
     if (archive != null)
-      return history.filter(archive).collect(Collectors.toList());
+      return history.filter(archive).map(s -> (Message)(s instanceof Message ? s : null)).filter(Objects::nonNull).collect(Collectors.toList());
     else
       return Collections.emptyList();
   }
@@ -91,6 +93,8 @@ public class RoomAgent extends PersistentActorAdapter {
 
   @ActorMethod
   public final void onPresence(Presence presence) {
+    if (mode() != ProcessMode.NORMAL)
+      return;
     if (!filter(presence) || !update(presence))
       return;
     broadcast(presence);
@@ -110,6 +114,13 @@ public class RoomAgent extends PersistentActorAdapter {
       return;
     }
 
+    if (mode() == ProcessMode.RECOVER) {
+      if (archive != null)
+        archive.add(message);
+      if (message.to() != null && message.to().resource().isEmpty()) // process only messages
+        process(message);
+      return;
+    }
     persist(message, msg -> {
       archive(msg);
       if (msg.to() != null && msg.to().resource().isEmpty()) // process only messages
@@ -121,7 +132,11 @@ public class RoomAgent extends PersistentActorAdapter {
   @ActorMethod
   public final void onIq(Iq command) {
     if (process(command))
-      persist(command, this::archive);
+      if (mode != ProcessMode.RECOVER)
+        persist(command, this::archive);
+      else if (archive != null)
+        archive.add(command);
+
   }
 
   @ActorMethod
@@ -141,14 +156,14 @@ public class RoomAgent extends PersistentActorAdapter {
 
   @ActorMethod
   public void onDelivered(Delivered id) {
-    delivered(id.id());
   }
-
-  public void delivered(String id) {}
 
   public static class Awake {}
   @ActorMethod
-  public final void onAwake(Awake awake) {}
+  public final void onAwake(Awake awake) {
+    if (mode() != ProcessMode.NORMAL)
+      onStart();
+  }
 
   public static class DumpRequest {
     private String fromId;
@@ -205,14 +220,10 @@ public class RoomAgent extends PersistentActorAdapter {
         return mode != ProcessMode.RECOVER;
       }
     }
-    else if (iq.get() instanceof DeliveryReceit) {
-      delivered(((DeliveryReceit) iq.get()).id());
-    }
     return false;
   }
 
-  Set<String> knownIds = new HashSet<>();
-  private void archive(Stanza iq) {
+  protected final void archive(Stanza iq) {
     if (archive != null) {
       if (knownIds.contains(iq.id()) || knownIds.contains(iq.strippedVitalikId()))
         return;
@@ -311,11 +322,11 @@ public class RoomAgent extends PersistentActorAdapter {
         return;
       XMPP.send(participantCopy(s.presence(), jid), context());
     });
-    if (xData.has(MucHistory.class)) {
+    if (xData.has(MucHistory.class) ) {
       final MucHistory history = xData.get(MucHistory.class);
       archive(history).forEach(stanza -> {
         final JID to = stanza.to();
-        if (stanza instanceof Message && checkDst(stanza, jid, true) && ((to != null && to.hasResource()) || relevant(stanza, jid))) {
+        if (checkDst(stanza, jid, true) && (to != null && to.hasResource() || relevant(stanza, jid))) {
           XMPP.send(participantCopy(stanza, jid), context());
         }
       });
@@ -459,39 +470,50 @@ public class RoomAgent extends PersistentActorAdapter {
     return jid.local();
   }
 
+  public boolean check(List<Stanza> stanzas) {
+    return true;
+  }
+
   @Override
   public void onReceiveRecover(Object o) throws Exception {
-    if (o instanceof Iq)
-      onIq((Iq) o);
-    else if (o instanceof Message)
-      onMessage((Message) o);
-    else if (o instanceof DeliveryReceit)
-      delivered(((DeliveryReceit) o).id());
-    else if (o instanceof RecoveryCompleted) {
+    if (o instanceof RecoveryCompleted) {
       if (archive != null) {
-        if (dump.size() > archive.size())
+        inconsistent |= !check(archive);
+        if (dump.size() > archive.size() || inconsistent) {
           replay();
-        else
-          commit();
+          return;
+        }
+        else commit();
       }
       onStart();
+    }
+    if (inconsistent)
+      return;
+    if (o instanceof Stanza) {
+      final Stanza stanza = (Stanza) o;
+      if (!stanza.to().bareEq(jid())) {
+        inconsistent = true;
+        return;
+      }
+    }
+    if (o instanceof Iq)
+      onIq((Iq) o);
+    else if (o instanceof Message) {
+      final Message message = (Message) o;
+      if (message.has(DeliveryReceit.class)) {
+        final DeliveryReceit receit = message.get(DeliveryReceit.class);
+        onDelivered(new Delivered(receit.id(), message.from(), receit.resource()));
+      }
+      else onMessage(message);
     }
   }
 
   protected void replay() {
+    log.fine("Replaying room: " + jid());
     mode = ProcessMode.REPLAY;
     context().become(o -> {
       final boolean success;
       if (o instanceof DeleteMessagesSuccess) {
-        participants.clear();
-        assert archive != null;
-        archive.clear();
-        dump.stream().forEach(stanza -> {
-          if (stanza instanceof Message)
-            onMessage((Message)stanza);
-          else if (stanza instanceof Iq)
-            onIq((Iq)stanza);
-        });
         success = true;
       }
       else if (o instanceof DeleteMessagesFailure) {
@@ -503,8 +525,19 @@ public class RoomAgent extends PersistentActorAdapter {
         return;
       }
       context().unbecome();
+      if (success) {
+        participants.clear();
+        assert archive != null;
+        archive.clear();
+        dump.stream().forEach(stanza -> {
+          if (stanza instanceof Message)
+            onMessage((Message) stanza);
+          else if (stanza instanceof Iq)
+            onIq((Iq) stanza);
+        });
+      }
+      self().tell(new Awake(), self());
       unstashAll();
-      mode = ProcessMode.NORMAL;
       if (replayRequester != null)
         replayRequester.tell(new Replay(success), self());
     });

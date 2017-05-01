@@ -148,7 +148,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
               explain("Expert resumed his work. Sending notification to the room.");
               final JID expert = Experts.jid(sender());
               task.enter(expert);
-              XMPP.send(new Message(expert, task.jid(), new Resume()), context());
+              XMPP.send(new Message(expert, task.jid(), new Resume(task.order().id())), context());
               return goTo(State.WORK_TRACKING);
             }
         ).event(Cancel.class,
@@ -282,6 +282,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
         ).event(Cancel.class, // cancel from expert
             (cancel, task) -> task.role(Experts.jid(sender())) == ACTIVE,
             (cancel, task) -> {
+              cancel.order(task.order().id());
               explain("Expert canceled task. Looking for other worker.");
               final JID expert = Experts.jid(sender());
               task.refused(expert);
@@ -300,6 +301,7 @@ public class BrokerRole extends AbstractFSM<BrokerRole.State, ExpLeagueOrder.Sta
             }
         ).event(Suspend.class,
             (suspend, task) -> {
+              suspend.order(task.order().id());
               XMPP.send(new Message(Experts.jid(sender()), task.jid(), suspend), context());
               final long endTimestampMs = suspend.getEndTimestampMs();
               final long currentTimeMillis = System.currentTimeMillis();

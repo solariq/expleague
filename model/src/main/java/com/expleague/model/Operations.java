@@ -2,10 +2,13 @@ package com.expleague.model;
 
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.bind.annotation.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * User: solar
@@ -55,27 +58,55 @@ public class Operations {
   public static class Resume extends Command {
     @XmlElementRef
     private Offer offer;
-    public Resume() {
 
-    }
+    @XmlAttribute
+    private String order;
+    public Resume() {}
 
     public Resume(Offer offer) {
       this.offer = offer;
     }
 
+    public Resume(String order) {
+      this.order = order;
+    }
+
     public Offer offer() {
       return offer;
+    }
+
+    public String order() {
+      return order;
     }
   }
 
   @XmlRootElement
-  public static class Cancel extends Command {}
+  public static class Cancel extends Command {
+    @XmlAttribute
+    private String order;
+    public Cancel() {}
+
+    public Cancel(String order) {
+      this.order = order;
+    }
+
+    public String order() {
+      return order;
+    }
+
+    public void order(String order) {
+      this.order = order;
+    }
+  }
 
   @XmlRootElement
   public static class Ignore extends Command {}
 
   @XmlRootElement
   public static class Create extends Command {}
+
+  @XmlRootElement
+  public static class Clear extends Command {}
 
   @XmlRootElement
   public static class Start extends Command {
@@ -94,10 +125,27 @@ public class Operations {
     public String order() {
       return order;
     }
+
+    public void order(String order) {
+      this.order = order;
+    }
   }
 
   @XmlRootElement
-  public static class Done extends Command {}
+  public static class Done extends Command {
+    @XmlAttribute
+    private String order;
+
+    public Done() {}
+    public Done(String order) {
+      this.order = order;
+    }
+
+    @Nullable
+    public String order() {
+      return order;
+    }
+  }
 
   @XmlRootElement
   public static class Check extends Command {
@@ -109,13 +157,22 @@ public class Operations {
     @XmlAttribute
     private JID authority;
 
+    @XmlAttribute
+    private String order;
+
     public Verified() {}
-    public Verified(JID authority) {
+    public Verified(String order, JID authority) {
       this.authority = authority;
+      this.order = order;
     }
 
     public JID authority() {
       return authority;
+    }
+
+    @Nullable
+    public String order() {
+      return order;
     }
   }
 
@@ -130,10 +187,14 @@ public class Operations {
     @XmlAttribute(name="end")
     private double endTimestamp;
 
+    @XmlAttribute
+    private String order;
+
     public Suspend() {
     }
 
-    public Suspend(final long startTimestampMs, final long endTimestampMs) {
+    public Suspend(String order, final long startTimestampMs, final long endTimestampMs) {
+      this.order = order;
       this.startTimestamp = startTimestampMs / 1000.;
       this.endTimestamp = endTimestampMs / 1000.;
     }
@@ -144,6 +205,15 @@ public class Operations {
 
     public long getEndTimestampMs() {
       return (long)(endTimestamp * 1000);
+    }
+
+    @Nullable
+    public String order() {
+      return order;
+    }
+
+    public void order(String order) {
+      this.order = order;
     }
   }
 
@@ -392,8 +462,12 @@ public class Operations {
       this.stateChange = new StateChange(state);
     }
 
-    public MetaChange meta() {
-      return metaChange;
+    public Stream<MetaChange> meta() {
+      if (assigned != null) {
+        final List<MetaChange> oldFormat = new ArrayList<>();
+        return assigned.stream().map(tag -> new MetaChange(tag.name(), MetaChange.Operation.ADD, MetaChange.Target.TAGS));
+      }
+      else return Stream.of(metaChange);
     }
 
     public String order() {
@@ -453,6 +527,22 @@ public class Operations {
         @XmlEnumValue("tag") TAGS,
         @XmlEnumValue("phone") PHONE,
         @XmlEnumValue("url") URL,
+      }
+
+      @Override
+      public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        final MetaChange that = (MetaChange) o;
+        return operation == that.operation && target == that.target && name.equals(that.name);
+      }
+
+      @Override
+      public int hashCode() {
+        int result = operation.hashCode();
+        result = 31 * result + target.hashCode();
+        result = 31 * result + name.hashCode();
+        return result;
       }
     }
 

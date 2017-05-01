@@ -16,7 +16,6 @@ import com.google.common.collect.Lists;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -38,10 +37,6 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     return 5;
   }
 
-
-  public FSM.State<ExpertRole.State, ExpertRole.Variants> goTo1(ExpertRole.State state) {
-    return goTo(state);
-  }
 
   private String explanation = "";
 
@@ -70,7 +65,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     // todo: Ok can be received here and will be unhandled
     when(State.READY,
         matchEvent(Presence.class,
-            (presence, task) -> presence.available() || presence.to() != null ? stay() : goTo1(State.OFFLINE)
+            (presence, task) -> presence.available() || presence.to() != null ? stay() : goTo(State.OFFLINE)
         ).event(ActorRef.class, // broker
             (offer, task) -> stay().replying(self())
         ).event(Offer.class,
@@ -96,19 +91,19 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               if (sourceCommand instanceof Resume) {
                 explain("Resume command received from " + sender() + " sending resume command to the expert");
                 XMPP.send(new Message(XMPP.jid(), jid(), sourceCommand, taskOption.getOffer()), context());
-                return goTo1(State.INVITE);
+                return goTo(State.INVITE);
               }
               else {
                 explain("Sending offer " + task.offer().room().local() + " to expert.");
                 XMPP.send(new Message(XMPP.jid(), jid(), task.offer(), new Check()), context());
-                return goTo1(State.CHECK);
+                return goTo(State.CHECK);
               }
             }
         ).event(Cancel.class,
-          (cancel, task) -> {
-            task.removeVariant(sender());
-            return stay();
-          }
+            (cancel, task) -> {
+              task.removeVariant(sender());
+              return stay();
+            }
         ).event(Message.class, (message, task) -> stay())
     );
     when(State.CHECK,
@@ -118,14 +113,14 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 return stay();
               explain("Expert has gone offline. Cancelling the check.");
               task.broker().tell(new Ignore(), self());
-              return goTo1(State.OFFLINE).using(task.clean());
+              return goTo(State.OFFLINE).using(task.clean());
             }
         ).event(Message.class,  // expert accepted check
             (msg, task) -> msg.get(Ok.class) != null,
             (msg, task) -> {
               explain("Received Ok message from expert, forwarding it to broker");
               task.broker().tell(new Ok(), self());
-              return goTo1(State.INVITE).using(task);
+              return goTo(State.INVITE).using(task);
             }
         ).event(Message.class, // expert canceled check
             (msg, task) -> msg.get(Cancel.class) != null,
@@ -150,7 +145,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               if (!presence.available() && presence.to() == null) {
                 explain("Expert has gone offline during invitation. Sending ignore to broker.");
                 task.broker().tell(new Ignore(), self());
-                return goTo1(State.OFFLINE).using(task.clean());
+                return goTo(State.OFFLINE).using(task.clean());
               }
               return stay();
             }
@@ -165,8 +160,8 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               return stay();
             }
         ).event(Cancel.class,  // broker sent cancel
-          (cancel, task) -> task.broker().equals(sender()),
-          (cancel, task) -> {
+            (cancel, task) -> task.broker().equals(sender()),
+            (cancel, task) -> {
               explain("Cancel command received from broker, forwarding to expert and going to labor exchange.");
               final Message message = new Message(task.offer().room(), jid(), cancel, task.offer());
               XMPP.send(message, context());
@@ -184,13 +179,13 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 explain("Expert started working on " + task.offer().room().local());
                 stopTimer();
                 task.broker().tell(new Start(), self());
-                return goTo1(State.BUSY);
+                return goTo(State.BUSY);
               }
               if (message.has(Resume.class)) {
                 explain("Expert resumed working on " + task.offer().room().local());
                 stopTimer();
                 task.broker().tell(new Resume(), self());
-                return goTo1(State.BUSY);
+                return goTo(State.BUSY);
               }
               explain("Ignoring message: " + message);
               return stay();
@@ -210,7 +205,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               if (!presence.available() && presence.to() == null) {
                 explain("Expert has gone offline during task execution. Sending suspend to broker.");
                 task.broker().tell(new Suspend(), self());
-                return goTo1(State.OFFLINE);
+                return goTo(State.OFFLINE);
               }
               return stay();
             }
@@ -225,7 +220,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                 explain("Expert has suspended task execution. Sending suspend to broker.");
                 task.broker().tell(msg.get(Suspend.class), self());
                 task.removeVariant(task.broker());
-                return goTo1(State.READY);
+                return goTo(State.READY);
               }
               else if (msg.has(Progress.class)) {
                 if (msg.to() == null || msg.to().local().isEmpty())
@@ -255,7 +250,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
             }
         ).event(Offer.class, // continue the task
             (offer, task) -> offer.room().equals(task.offer().room()),
-            (offer, task) -> goTo1(State.INVITE).using(task.enforce(offer, sender())).replying(new Ok())
+            (offer, task) -> goTo(State.INVITE).using(task.enforce(offer, sender())).replying(new Ok())
         )
     );
 
@@ -266,8 +261,8 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               return stay().replying(new Ignore());
             }
         ).
-        event(ActorRef.class, // broker
-            (broker, task) -> stay().replying(new Ignore()))
+            event(ActorRef.class, // broker
+                (broker, task) -> stay().replying(new Ignore()))
     );
 
     onTransition((from, to) -> {
@@ -279,7 +274,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
         }
         if (to == State.READY)
           timer = AkkaTools.scheduleTimeout(context(), CHOICE_TIMEOUT, self());
-        }
+      }
     });
 
     onTermination(
@@ -320,15 +315,14 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
           (first != null ? " " + first.room().local() : "")
           + " " + explanation);
       explanation = "";
-    }
-    catch (Throwable th) {
+    } catch (Throwable th) {
       th.printStackTrace();
     }
   }
 
   private FSM.State<State, Variants> laborExchange(Variants task) {
     LaborExchange.tell(context(), self(), self());
-    return goTo1(State.READY).using(task.clean());
+    return goTo(State.READY).using(task.clean());
   }
 
   private void explain(String s) {

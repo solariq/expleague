@@ -41,10 +41,13 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   private RoomState state;
   private Offer currentOffer = null;
   private HashSet<JID> knownToClient = new HashSet<>();
+  private Map<String, Message> answers = new HashMap<>();
+
   private boolean oldFormat = false;
 
   public ExpLeagueRoomAgent(JID jid) {
     super(jid, true);
+    orders = LaborExchange.board().history(jid().local()).collect(Collectors.toList());
   }
 
   private void state(RoomState newState) {
@@ -58,7 +61,6 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   @Override
   protected void onStart() {
     super.onStart();
-    orders = LaborExchange.board().history(jid().local()).collect(Collectors.toList());
     if (state == WORK) {
       inflightOrders()
           .forEach(order -> LaborExchange.tell(context(), order, self()));
@@ -116,7 +118,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         final Message message = (Message) msg;
         return (message.type() == Message.MessageType.GROUP_CHAT && !message.body().isEmpty()) ||
             message.has(Answer.class) && message.has(Verified.class) ||
-            message.has(Progress.class) && message.get(Progress.class).meta() != null;
+            message.has(Progress.class) && message.get(Progress.class).meta().findAny().isPresent();
       }
     }
     else if (EnumSet.of(Role.MODERATOR, Role.PARTICIPANT).contains(role(to))) { // expert or admin
@@ -155,8 +157,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
     if (msg.has(Progress.class)) {
       final Progress progress = msg.get(Progress.class);
-      final Progress.MetaChange metaChange = progress.meta();
-      if (metaChange != null) {
+      progress.meta().forEach(metaChange -> {
         inflightOrders().filter(order -> order.id().equals(progress.order()) || progress.order() == null).forEach(order -> {
           switch (metaChange.target()) {
             case PATTERNS:
@@ -168,60 +169,66 @@ public class ExpLeagueRoomAgent extends RoomAgent {
                 order.untag(metaChange.name());
           }
         });
-      }
-      else if (progress.state() != null) {
+      });
+      if (progress.state() != null) {
         tellGlobal(progress);
       }
     }
     else if (msg.has(Start.class)) {
+      final Start start = msg.get(Start.class);
+      if (!start.order().startsWith("room")) /* old format*/
+        start.order(null);
+
       if (currentOffer == null) {
         log.warning("Start while offer is empty!");
         return;
       }
-//      if (!orders(OrderState.OPEN, OrderState.IN_PROGRESS, OrderState.SUSPENDED).findAny().isPresent()) { // backward compatibility
-//        oldFormat = true;
-//        state(WORK);
-//        startOrders(currentOffer).forEach(order -> {
-//          order.role(from, ACTIVE, msg.ts());
-//        });
-//      }
+      if (!inflightOrders().findAny().isPresent()) { // backward compatibility
+        oldFormat = true;
+        state(WORK);
+        startOrders(currentOffer).forEach(order -> {
+          order.role(from, ACTIVE, msg.ts());
+        });
+      }
+      orders(OrderState.NONE, OrderState.OPEN).filter(o -> o.id().equals(start.order()) || start.order() == null).forEach(o -> o.state(OrderState.IN_PROGRESS, msg.ts()));
+
       enter(from, new MucXData(new MucHistory()));
       final ExpertsProfile profile = Roster.instance().profile(from.local());
       if (!knownToClient.contains(from.bare())) {
         knownToClient.add(from.bare());
-        message(new Message(jid(), roomAlias(owner()), msg.get(Start.class), profile));
+        message(new Message(jid(), roomAlias(owner()), start, profile));
       }
       currentOffer = currentOffer.copy();
       currentOffer.filter().prefer(from);
       message(new Message(jid(), jid(), currentOffer));
-      tellGlobal(msg.get(Start.class), profile.shorten());
+      tellGlobal(start, profile.shorten());
     }
     else if (msg.has(Answer.class)) {
       final Answer answer = msg.get(Answer.class);
-//      orders(OrderState.OPEN, OrderState.IN_PROGRESS, OrderState.SUSPENDED).forEach(order->{
-//        if (order.id().equals(answer.order()) || answer.order() == null) {
-//          order.state(OrderState.DONE);
-//        }
-//      });
-      if (authority.priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
+      if (authority.priority() <= ExpertsProfile.Authority.EXPERT.priority() || oldFormat) {
         state(DELIVERY);
-        message(new Message(from, roomAlias(owner()), answer, new Verified(from)));
+        message(new Message(from, roomAlias(owner()), answer, new Verified(answer.order(), from)));
       }
       else state(VERIFY);
       message(new Message(jid(), RepositoryService.jid(), currentOffer, answer));
-      this.answer = msg;
+      final String order;
+      answer(msg);
       tellGlobal(new RoomMessageReceived(from, true));
     }
     else if (msg.has(Verified.class)) {
       if (state == VERIFY && authority.priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
         state(DELIVERY);
-        message(new Message(answer.from(), roomAlias(owner()), answer.get(Answer.class), new Verified(from)));
-        message(new Message(jid(), RepositoryService.jid(), currentOffer, msg.get(Verified.class)));
+        final Verified verified = msg.get(Verified.class);
+        final Message answer = this.answer(verified.order());
+        if (answer != null) {
+          message(new Message(answer.from(), roomAlias(owner()), answer.get(Answer.class), verified));
+          message(new Message(jid(), RepositoryService.jid(), currentOffer, verified));
+        }
       }
     }
     else if (msg.has(Cancel.class)) {
         if (fromOwner) {
-          cancelOrders();
+          cancelOrders(msg.ts());
           state(CLOSED);
         }
         else if (currentOffer != null) {
@@ -239,16 +246,37 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       message(new Message(jid(), RepositoryService.jid(), currentOffer, feedback));
       state(CLOSED);
     }
+    else if (msg.has(Resume.class)) {
+      final Resume resume = msg.get(Resume.class);
+      orders(OrderState.SUSPENDED).filter(o -> o.id().equals(resume.order()) || resume.order() == null).forEach(o -> o.state(OrderState.IN_PROGRESS, msg.ts()));
+    }
     else if (msg.has(Done.class)) {
+      final Done done = msg.get(Done.class);
+      inflightOrders().forEach(order->{
+        if (order.state() != OrderState.DONE && (order.id().equals(done.order()) || done.order() == null)) {
+          order.state(OrderState.DONE, msg.ts());
+        }
+      });
     }
     else if (msg.has(Suspend.class)) {
+      final Suspend suspend = msg.get(Suspend.class);
       update(from, Role.NONE, null);
+      orders(OrderState.IN_PROGRESS).forEach(order->{
+        if (order.state() != OrderState.SUSPENDED && (order.id().equals(suspend.order()) || suspend.order() == null)) {
+          order.state(OrderState.SUSPENDED, msg.ts());
+        }
+      });
     }
     else if (msg.has(Offer.class)) { // offers handling
       currentOffer = msg.get(Offer.class);
-      final JID owner = owner();
+      JID owner = owner();
       if (currentOffer.client() == null)
         currentOffer.client(owner);
+      else if (!owner.bareEq(currentOffer.client())) {
+        affiliation(owner, Affiliation.ADMIN);
+        affiliation(currentOffer.client(), Affiliation.OWNER);
+      }
+
       if (fromOwner) {
         state(OPEN);
       }
@@ -275,7 +303,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         }
         else { // order update during the work
           final List<JID> activeExperts = inflightOrders().flatMap(o -> o.of(ACTIVE)).collect(Collectors.toList());
-          cancelOrders();
+          cancelOrders(msg.ts());
           if (activeExperts != null) {
             currentOffer = currentOffer.copy();
             currentOffer.filter().prefer(activeExperts.toArray(new JID[activeExperts.size()]));
@@ -300,6 +328,20 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     }
   }
 
+  private void answer(Message answerMsg) {
+    final Answer answer = answerMsg.get(Answer.class);
+    String order;
+    if (answer.order() == null)
+      order = orders.isEmpty() ? "last" : orders.get(orders.size() - 1).id();
+    else
+      order = answer.order();
+    answers.put(order, answerMsg);
+  }
+
+  private Message answer(String order) {
+    return order != null ? answers.get(order) : answers.get("last");
+  }
+
   private void message(Message message) {
     if (message.to().bareEq(jid())) {
       if (mode() == ProcessMode.NORMAL)
@@ -311,7 +353,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   private Stream<ExpLeagueOrder> inflightOrders() {
-    return orders(OrderState.IN_PROGRESS, OrderState.OPEN, OrderState.SUSPENDED);
+    return orders(OrderState.NONE, OrderState.IN_PROGRESS, OrderState.OPEN, OrderState.SUSPENDED);
   }
 
   private Stream<ExpLeagueOrder> orders(OrderState state0, OrderState... states) {
@@ -338,21 +380,21 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     if (mode() == ProcessMode.RECOVER)
       return Stream.empty();
 
-    final List<ExpLeagueOrder> registered = Arrays.asList(LaborExchange.board().register(offer));
+    final List<ExpLeagueOrder> registered = Arrays.asList(LaborExchange.board().register(offer, orders.size()));
     orders.addAll(registered);
     if (mode() == ProcessMode.NORMAL)
       registered.forEach(o -> LaborExchange.tell(context(), o, self()));
     return registered.stream();
   }
 
-  private void cancelOrders() {
+  private void cancelOrders(long ts) {
     inflightOrders().filter(o -> o.state() != OrderState.DONE).forEach(order -> {
-      order.state(OrderState.DONE);
+      order.state(OrderState.DONE, ts);
       message(new Message(jid(), jid(), new Operations.Progress(order.id(), OrderState.DONE)));
       final ActorRef broker = order.broker();
       if (broker != null)
         broker.tell(new Cancel(), self());
-      else
+      else if (mode() == ProcessMode.NORMAL)
         log.warning("Empty broker found for order " + order.id());
     });
   }
@@ -371,32 +413,23 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   protected void replay() {
-    cancelOrders();
+    cancelOrders(System.currentTimeMillis());
     LaborExchange.board().removeAllOrders(jid().local());
+    GlobalChatAgent.tell(new Message(jid(), XMPP.jid(GlobalChatAgent.ID), Message.MessageType.GROUP_CHAT, new Clear()), context());
+
+    orders.clear();
     super.replay();
   }
 
   @Override
-  public void delivered(String id) {
-    super.delivered(id);
-    final Stanza answer = answer();
-    if (state == DELIVERY && answer != null) {
-      this.answer = null;
+  public void onDelivered(Delivered delivered) {
+    super.onDelivered(delivered);
+    if (state == DELIVERY) {
       state(FEEDBACK);
     }
-    persist(new DeliveryReceit(id, null), delivered -> {});
-  }
-
-  Message answer = null;
-  private Stanza answer() {
-    if (answer != null)
-      return answer;
-    final List<Stanza> archive = archive();
-    for (int i = archive.size() - 1; i >= 0; i--) {
-      final Stanza stanza = archive.get(i);
-      if (stanza instanceof Message && ((Message)stanza).has(Answer.class))
-        return answer = (Message)stanza;
-    }
-    return null;
+    final Message message = new Message(delivered.user(), jid(), new DeliveryReceit(delivered.id(), delivered.resource()));
+    persist(delivered, d -> {
+      archive(message);
+    });
   }
 }

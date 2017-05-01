@@ -50,6 +50,10 @@ public class Answer extends Item {
     return success == null || success != 0;
   }
 
+  public void order(String order) {
+    this.order = order;
+  }
+
   @Nullable
   public String order() {
     return order;
