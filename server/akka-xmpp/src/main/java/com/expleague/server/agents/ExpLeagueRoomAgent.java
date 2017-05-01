@@ -176,7 +176,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     }
     else if (msg.has(Start.class)) {
       final Start start = msg.get(Start.class);
-      if (!start.order().startsWith("room")) /* old format*/
+      if (start.order() != null && !start.order().startsWith("room")) /* old format*/
         start.order(null);
 
       if (currentOffer == null) {
@@ -211,9 +211,13 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       }
       else state(VERIFY);
       message(new Message(jid(), RepositoryService.jid(), currentOffer, answer));
-      final String order;
       answer(msg);
       tellGlobal(new RoomMessageReceived(from, true));
+      inflightOrders().forEach(order->{
+        if (order.state() != OrderState.DONE && (order.id().equals(answer.order()) || answer.order() == null)) {
+          order.state(OrderState.DONE, msg.ts());
+        }
+      });
     }
     else if (msg.has(Verified.class)) {
       if (state == VERIFY && authority.priority() <= ExpertsProfile.Authority.EXPERT.priority()) {

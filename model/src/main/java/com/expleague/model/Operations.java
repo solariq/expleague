@@ -467,7 +467,10 @@ public class Operations {
         final List<MetaChange> oldFormat = new ArrayList<>();
         return assigned.stream().map(tag -> new MetaChange(tag.name(), MetaChange.Operation.ADD, MetaChange.Target.TAGS));
       }
-      else return Stream.of(metaChange);
+      else if (metaChange != null)
+        return Stream.of(metaChange);
+      else
+        return Stream.empty();
     }
 
     public String order() {
