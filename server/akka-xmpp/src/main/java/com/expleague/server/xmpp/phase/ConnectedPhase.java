@@ -38,6 +38,7 @@ public class ConnectedPhase extends XMPPPhase {
   private ActorRef agent;
   private ActorRef courier;
   private XMPPDevice device;
+  private long clientTsDiff = 0;
 
   public ConnectedPhase(ActorRef connection, String authId) {
     super(connection);
@@ -135,6 +136,12 @@ public class ConnectedPhase extends XMPPPhase {
     if (message.has(Operations.Token.class)) {
       final Operations.Token token = message.get(Operations.Token.class);
       device.updateDevice(TokenUtil.sanitizeTokenString(token.value()), token.client());
+      clientTsDiff = System.currentTimeMillis() - message.ts();
+    } else {
+      final Message.Timestamp ts = message.get(Message.Timestamp.class);
+      if (ts != null) {
+        ts.setTs(ts.ts() + clientTsDiff);
+      }
     }
   }
 
