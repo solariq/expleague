@@ -61,6 +61,10 @@ public class ConnectedPhase extends XMPPPhase {
       case SET : {
         final Object payload = iq.get();
         if (payload instanceof Bind) {
+          { //ts diff between client and server
+            clientTsDiff = System.currentTimeMillis() - iq.ts();
+          }
+
           bound = true;
           device = Roster.instance().device(jid.local());
           String resource = device.name();
@@ -122,6 +126,14 @@ public class ConnectedPhase extends XMPPPhase {
       answer(msg);
     }
     else { // outgoing
+      { //append synchronized ts
+        if (msg instanceof Message) {
+          final Message message = (Message) msg;
+          final Message.Timestamp ts = new Message.Timestamp(message.ts() + clientTsDiff);
+          message.append(ts);
+        }
+      }
+
       tryProcessMessageReceipt(msg);
       if (!isDeliveryReceipt(msg)) {
         msg.from(jid);
@@ -136,12 +148,6 @@ public class ConnectedPhase extends XMPPPhase {
     if (message.has(Operations.Token.class)) {
       final Operations.Token token = message.get(Operations.Token.class);
       device.updateDevice(TokenUtil.sanitizeTokenString(token.value()), token.client());
-      clientTsDiff = System.currentTimeMillis() - message.ts();
-    } else {
-      final Message.Timestamp ts = message.get(Message.Timestamp.class);
-      if (ts != null) {
-        ts.setTs(ts.ts() + clientTsDiff);
-      }
     }
   }
 
@@ -164,7 +170,7 @@ public class ConnectedPhase extends XMPPPhase {
 
     final Message message = (Message) msg;
     if (message.has(Received.class)) {
-      final String messageId = message.get(Received.class).getId();
+      final String messageId = message.get(Received.class).id();
 //      log.finest("Client received: " + messageId);
       if (courier != null)
         courier.tell(new Delivered(messageId, jid.bare(), jid.resource()), self());

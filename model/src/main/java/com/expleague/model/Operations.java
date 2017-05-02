@@ -2,7 +2,6 @@ package com.expleague.model;
 
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
-import com.spbsu.commons.func.converters.ArrayConverters;
 import org.jetbrains.annotations.Nullable;
 
 import javax.xml.bind.annotation.*;

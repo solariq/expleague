@@ -207,7 +207,6 @@ public class Bot {
     for (Item item : items) {
       message.addChild(ItemToTigaseElementParser.parse(item));
     }
-    message.addChild(ItemToTigaseElementParser.parse(new com.expleague.xmpp.stanza.Message.Timestamp(System.currentTimeMillis())));
     if (type != null) {
       message.setType(type);
     }
