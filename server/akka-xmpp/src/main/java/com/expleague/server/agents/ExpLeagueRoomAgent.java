@@ -12,7 +12,7 @@ import com.expleague.server.answers.RepositoryService;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
-import com.expleague.xmpp.control.DeliveryReceit;
+import com.expleague.xmpp.control.receipts.Received;
 import com.expleague.xmpp.muc.MucHistory;
 import com.expleague.xmpp.muc.MucXData;
 import com.expleague.xmpp.stanza.Message;
@@ -426,12 +426,15 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   @Override
+  @ActorMethod
   public void onDelivered(Delivered delivered) {
     super.onDelivered(delivered);
     if (state == DELIVERY) {
-      state(FEEDBACK);
+      final boolean answerDelivered = answers.values().stream().anyMatch(a -> a.id().equals(delivered.id()));
+      if (answerDelivered)
+        state(FEEDBACK);
     }
-    final Message message = new Message(delivered.user(), jid(), new DeliveryReceit(delivered.id(), delivered.resource()));
+    final Message message = new Message(delivered.user().resource(delivered.resource()), jid(), new Received(delivered.id()));
     persist(delivered, d -> {
       archive(message);
     });

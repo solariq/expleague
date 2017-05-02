@@ -164,7 +164,7 @@ public class ConnectedPhase extends XMPPPhase {
 
     final Message message = (Message) msg;
     if (message.has(Received.class)) {
-      final String messageId = message.get(Received.class).getId();
+      final String messageId = message.get(Received.class).id();
 //      log.finest("Client received: " + messageId);
       if (courier != null)
         courier.tell(new Delivered(messageId, jid.bare(), jid.resource()), self());
