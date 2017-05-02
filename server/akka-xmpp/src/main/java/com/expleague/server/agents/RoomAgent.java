@@ -12,7 +12,7 @@ import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.util.akka.PersistentActorAdapter;
 import com.expleague.xmpp.JID;
-import com.expleague.xmpp.control.DeliveryReceit;
+import com.expleague.xmpp.control.receipts.Received;
 import com.expleague.xmpp.muc.MucAdminQuery;
 import com.expleague.xmpp.muc.MucHistory;
 import com.expleague.xmpp.muc.MucXData;
@@ -491,7 +491,7 @@ public class RoomAgent extends PersistentActorAdapter {
       return;
     if (o instanceof Stanza) {
       final Stanza stanza = (Stanza) o;
-      if (!stanza.to().bareEq(jid())) {
+      if (!stanza.to().local().equals(jid().local())) {
         inconsistent = true;
         return;
       }
@@ -500,9 +500,11 @@ public class RoomAgent extends PersistentActorAdapter {
       onIq((Iq) o);
     else if (o instanceof Message) {
       final Message message = (Message) o;
-      if (message.has(DeliveryReceit.class)) {
-        final DeliveryReceit receit = message.get(DeliveryReceit.class);
-        onDelivered(new Delivered(receit.id(), message.from(), receit.resource()));
+      if (message.has(Received.class)) {
+        final Received receit = message.get(Received.class);
+        if (archive != null)
+          archive.add(message);
+        onDelivered(new Delivered(receit.id(), message.from().bare(), message.from().resource()));
       }
       else onMessage(message);
     }
