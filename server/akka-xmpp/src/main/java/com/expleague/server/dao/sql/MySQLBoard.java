@@ -129,17 +129,8 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
 
   @Override
   public synchronized void replay(String roomId, ActorContext context) {
-    log.fine("Replaying " + roomId);
     final JID jid = new JID(roomId, "muc." + ExpLeagueServer.config().domain(), null);
-    final ActorRef actorRef = context.actorOf(ActorAdapter.props(ExpLeagueRoomAgent.class, jid), roomId);
-
-    final Timeout timeout = new Timeout(Duration.create(60, TimeUnit.SECONDS));
-    final Future<Object> ask = Patterns.ask(actorRef, new RoomAgent.Replay(), timeout);
-    try {
-      Await.result(ask, timeout.duration());
-    } catch (Exception e) {
-      log.log(Level.WARNING, "Unable to replay room: " + jid, e);
-    }
+    XMPP.whisper(jid, new RoomAgent.Replay(), context);
   }
 
   @Override

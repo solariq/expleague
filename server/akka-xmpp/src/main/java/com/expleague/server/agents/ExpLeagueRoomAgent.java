@@ -198,16 +198,22 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         knownToClient.add(from.bare());
         message(new Message(jid(), roomAlias(owner()), start, profile));
       }
-      currentOffer = currentOffer.copy();
-      currentOffer.filter().prefer(from);
-      message(new Message(jid(), jid(), currentOffer));
+      final Offer newOffer = currentOffer.copy();
+      newOffer.filter().prefer(from);
+      if (!newOffer.equals(currentOffer)) {
+        currentOffer = newOffer;
+        message(new Message(jid(), jid(), currentOffer));
+      }
       tellGlobal(start, profile.shorten());
     }
     else if (msg.has(Answer.class)) {
       final Answer answer = msg.get(Answer.class);
       if (authority.priority() <= ExpertsProfile.Authority.EXPERT.priority() || oldFormat) {
         state(DELIVERY);
-        message(new Message(from, roomAlias(owner()), answer, new Verified(answer.order(), from)));
+        final Message answerCopy = msg.copy(owner().local());
+        answerCopy.to(roomAlias(owner()));
+        answerCopy.append(new Verified(answer.order(), from));
+        message(answerCopy);
       }
       else state(VERIFY);
       message(new Message(jid(), RepositoryService.jid(), currentOffer, answer));
@@ -225,7 +231,10 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         final Verified verified = msg.get(Verified.class);
         final Message answer = this.answer(verified.order());
         if (answer != null) {
-          message(new Message(answer.from(), roomAlias(owner()), answer.get(Answer.class), verified));
+          final Message answerCopy = answer.copy(owner().local());
+          answerCopy.to(roomAlias(owner()));
+          answerCopy.append(verified);
+          message(answerCopy);
           message(new Message(jid(), RepositoryService.jid(), currentOffer, verified));
         }
       }
@@ -368,7 +377,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   private void tellGlobal(Item... progress) {
-    if (mode() == ProcessMode.NORMAL)
+    if (mode() != ProcessMode.RECOVER)
       GlobalChatAgent.tell(new Message(jid(), XMPP.jid(GlobalChatAgent.ID), Message.MessageType.GROUP_CHAT, progress), context());
   }
 
@@ -430,13 +439,16 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   public void onDelivered(Delivered delivered) {
     super.onDelivered(delivered);
     if (state == DELIVERY) {
-      final boolean answerDelivered = answers.values().stream().anyMatch(a -> a.id().equals(delivered.id()));
-      if (answerDelivered)
+      final boolean answerDelivered = answers.values().stream().anyMatch(a -> delivered.id().startsWith(a.id()));
+      if (answerDelivered) {
         state(FEEDBACK);
+        if (mode() == ProcessMode.NORMAL) {
+          final Message message = new Message(delivered.user().resource(delivered.resource()), jid(), new Received(delivered.id()));
+          persist(delivered, d -> {
+            archive(message);
+          });
+        }
+      }
     }
-    final Message message = new Message(delivered.user().resource(delivered.resource()), jid(), new Received(delivered.id()));
-    persist(delivered, d -> {
-      archive(message);
-    });
   }
 }

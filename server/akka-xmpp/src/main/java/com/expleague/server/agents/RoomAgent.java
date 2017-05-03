@@ -102,6 +102,15 @@ public class RoomAgent extends PersistentActorAdapter {
 
   @ActorMethod
   public final void onMessage(Message message) {
+    if (message.has(Received.class)) {
+      persist(message, msg -> {
+        archive(msg);
+        final Received receit = message.get(Received.class);
+        onDelivered(new Delivered(receit.id(), message.from().bare(), message.from().resource()));
+      });
+      return;
+    }
+
     if (!filter(message)) {
       final Message error = new Message(
           jid,
@@ -114,13 +123,6 @@ public class RoomAgent extends PersistentActorAdapter {
       return;
     }
 
-    if (mode() == ProcessMode.RECOVER) {
-      if (archive != null)
-        archive.add(message);
-      if (message.to() != null && message.to().resource().isEmpty()) // process only messages
-        process(message);
-      return;
-    }
     persist(message, msg -> {
       archive(msg);
       if (msg.to() != null && msg.to().resource().isEmpty()) // process only messages
@@ -229,7 +231,8 @@ public class RoomAgent extends PersistentActorAdapter {
         return;
       knownIds.add(iq.id());
       archive.add(iq);
-      dump.accept(iq);
+      if (mode == ProcessMode.NORMAL)
+        dump.accept(iq);
     }
   }
 
@@ -498,16 +501,8 @@ public class RoomAgent extends PersistentActorAdapter {
     }
     if (o instanceof Iq)
       onIq((Iq) o);
-    else if (o instanceof Message) {
-      final Message message = (Message) o;
-      if (message.has(Received.class)) {
-        final Received receit = message.get(Received.class);
-        if (archive != null)
-          archive.add(message);
-        onDelivered(new Delivered(receit.id(), message.from().bare(), message.from().resource()));
-      }
-      else onMessage(message);
-    }
+    else if (o instanceof Message)
+      onMessage((Message) o);
   }
 
   protected void replay() {
@@ -531,15 +526,16 @@ public class RoomAgent extends PersistentActorAdapter {
         participants.clear();
         assert archive != null;
         archive.clear();
+        knownIds.clear();
         dump.stream().forEach(stanza -> {
-          if (stanza instanceof Message)
-            onMessage((Message) stanza);
-          else if (stanza instanceof Iq)
+          if (stanza instanceof Iq)
             onIq((Iq) stanza);
+          else if (stanza instanceof Message)
+            onMessage((Message) stanza);
         });
       }
-      self().tell(new Awake(), self());
       unstashAll();
+      self().tell(new Awake(), self());
       if (replayRequester != null)
         replayRequester.tell(new Replay(success), self());
     });
