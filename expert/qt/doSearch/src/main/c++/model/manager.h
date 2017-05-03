@@ -2,7 +2,7 @@
 #define MANAGER_H
 
 #include "page.h"
-#include "pages/cefpage.h"
+//#include "pages/cefpage.h"
 #include "group.h"
 #include "context.h"
 #include "search.h"

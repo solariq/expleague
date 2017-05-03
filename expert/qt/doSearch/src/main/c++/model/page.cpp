@@ -75,64 +75,7 @@ void Page::forgetOutgoing(Page* page) {
 
 QHash<QUrl, QQmlComponent*> componentsCache;
 
-QQuickItem* Page::ui(bool cache) const {
-    if (cache && m_ui)
-        return m_ui;
-    if (!m_context) {
-        m_context = new QQmlContext(rootEngine, (QObject*)this);
-        m_context->setContextProperty("owner", const_cast<Page*>(this));
-    }
 
-    QQmlComponent* component = componentsCache[m_ui_url];
-    if (!component) {
-        component = new QQmlComponent(rootEngine, QUrl(m_ui_url));
-        if (component->isError()) {
-            qWarning() << "Error on component load. Context: " << rootEngine->rootContext() << ". doSearch: " << rootEngine->rootContext()->contextProperty("dosearch");
-            foreach(QQmlError error, component->errors()) {
-                qWarning() << error;
-            }
-            exit(-1);
-        }
-        componentsCache[m_ui_url] = component;
-    }
-    QQuickItem* result = (QQuickItem*)component->create(m_context);
-    if (cache) {
-        m_ui = result;
-        //    m_ui->setParent(const_cast<Page*>(this));
-        connect(m_ui, &QQuickItem::destroyed, [this](){
-            m_ui = 0;
-            emit uiChanged();
-        });
-        initUI(result);
-    }
-    return result;
-}
-
-bool Page::transferUI(Page* other) const {
-    if (!m_ui || !m_context || other->m_ui) // have no ui or other have alreagy got one
-        return false;
-    QObject::disconnect(m_ui, 0, this, 0);
-    QQuickItem* scopeItem = m_ui->parentItem();
-    while (scopeItem && !scopeItem->isFocusScope() && scopeItem->parentItem())
-        scopeItem = scopeItem->parentItem();
-
-    if (!scopeItem) // the ui item is broken (no scope)
-        return false;
-    other->m_context = m_context;
-    other->m_ui = m_ui;
-    m_ui->setParentItem(0);
-    //    m_ui->setParent(other);
-    m_context->setContextProperty("owner", other);
-    connect(m_ui, &QQuickItem::destroyed, [other](){
-        other->m_ui = 0;
-        emit other->uiChanged();
-    });
-    m_ui = 0;
-    m_context = 0;
-    emit other->uiChanged();
-    emit uiChanged();
-    return true;
-}
 
 double Page::pOut(Page* page) const {
     QHash<Page*, PageModel>::const_iterator ptr = m_outgoing.find(page);
@@ -258,8 +201,8 @@ QDir Page::storage() const {
     return parent()->pageStorage(id());
 }
 
-Page::Page(const QString& id, const QString& ui, doSearch* parent): QObject(parent), PersistentPropertyHolder(parent->pageResource(id)),
-    m_id(id), m_ui_url(ui), m_in_total(0), m_out_total(0)
+Page::Page(const QString& id, const QString& ui, doSearch* parent): PersistentPropertyHolder(parent->pageResource(id)),
+    m_id(id), UIOwner(ui, parent), m_in_total(0), m_out_total(0)
 {
     m_last_visit_ts = value("ts").toInt();
 //    qDebug() << id << " restored: " << m_properties;

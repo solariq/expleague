@@ -116,7 +116,7 @@ private slots:
     void onSelectedSEChanged();
 
 protected:
-    void initUI(QQuickItem* ui) const { CompositeContentPage::initUI(ui); emit queriesChanged(); }
+    void initUI(QQuickItem* ui) { CompositeContentPage::initUI(ui); emit queriesChanged(); }
     SearchRequest* current() const { return query(m_index); }
 
 public:

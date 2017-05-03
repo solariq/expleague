@@ -190,15 +190,10 @@ Page* doSearch::page(const QString &id) const {
             return new AdminContext(parent);
         else if (id == GlobalChat::ID)
             return new GlobalChat(parent);//DOTO fix
-//        else if (id.startsWith("web/") && id.endsWith("site"))
-//            return new WebSite(id, parent);
-//        else if (id.startsWith("web/"))
-//            return new WebPage(id, parent);
-//        else if (id.startsWith("search/session"))
         else if (id.startsWith("web/") && id.endsWith("site"))
-            return new Page(id, "qrc:/CefPage.qml", parent);
+            return new WebSite(id, parent);
         else if (id.startsWith("web/"))
-            return new Page(id, "qrc:/CefPage.qml", parent);
+            return new WebPage(id, parent);
         else if (id.startsWith("search/session"))
             return new SearchSession(id, parent);
         else if (id.startsWith("search/") && id.endsWith("/google"))

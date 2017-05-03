@@ -24,6 +24,10 @@
 VERSION = 0.8.6
 
 #CONFIG += test
+#CONFIG += cef
+cef{
+    DEFINES += CEF
+}
 
 QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine xml xmlpatterns multimedia webenginecore testlib opengl
 QT_PRIVATE += quick-private webengine-private
@@ -79,7 +83,7 @@ SOURCES += \
 #    c++/util/crashhandler.cpp \
     c++/util/leveldb.cpp \
     test/util/pholder_test.cpp \
-    c++/model/pages/cefpage.cpp
+    c++/model/uiowner.cpp
 
 
 HEADERS += \
@@ -111,7 +115,12 @@ HEADERS += \
     c++/util/region.h \
 #    c++/util/crashhandler.h \
     c++/util/leveldb.h \
-    c++/model/pages/cefpage.h
+    c++/model/uiowner.h
+
+cef{
+    SOURCES += c++/model/pages/cefpage.cpp
+    HEADERS += c++/model/pages/cefpage.h
+}
 
 test {
     SOURCES += test/main_test.cpp
@@ -148,7 +157,6 @@ win32:CONFIG(release, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/breakpad/release -lbreakpad \
     -L$$OUT_PWD/../libs/leveldb-win/release/ -lleveldb \
     -L$$OUT_PWD/../libs/cef_win32/release -llibcef \
-#    -L$$OUT_PWD/../libs/cef_win32/release -lcef_sandbox \
     -L$$OUT_PWD/../libs/cef_win32/release -llibcef_dll_wrapper
 else:win32:CONFIG(debug, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d \
@@ -157,9 +165,6 @@ else:win32:CONFIG(debug, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/cutemarked/debug/ -lcutemarked \
     -L$$OUT_PWD/../libs/breakpad/debug -lbreakpad \
     -L$$OUT_PWD/../libs/leveldb-win/debug/ -lleveldb \
-    -L$$OUT_PWD/../libs/cef_win32/debug -llibcef \
-#    -L$$OUT_PWD/../libs/cef_win32/debug -lcef_sandbox \
-    -L$$OUT_PWD/../libs/cef_win32/debug -llibcef_dll_wrapper
 
 else:unix:CONFIG(debug, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp_d \
@@ -176,6 +181,15 @@ else:unix:CONFIG(release, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/breakpad/ -lbreakpad \
     -L$$OUT_PWD/../libs/leveldb/ -lleveldb
 
+cef{
+win32:CONFIG(release, debug|release): LIBS += \
+    -L$$OUT_PWD/../libs/cef_win32/release -llibcef \
+    -L$$OUT_PWD/../libs/cef_win32/release -llibcef_dll_wrapper
+else:win32:CONFIG(debug, debug|release): LIBS += \
+    -L$$OUT_PWD/../libs/cef_win32/debug -llibcef \
+    -L$$OUT_PWD/../libs/cef_win32/debug -llibcef_dll_wrapper
+}
+
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../libs/peg-markdown-highlight/release/ -lpmh
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../libs/peg-markdown-highlight/debug/ -lpmh
 else:unix: LIBS += -L$$OUT_PWD/../libs/peg-markdown-highlight/ -lpmh
@@ -191,7 +205,11 @@ INCLUDEPATH += \
     $$PWD/../libs/breakpad \
     $$PWD/../libs/breakpad/src \
     $$PWD/../libs/leveldb/include \
-    $$PWD/../libs/cef_win32
+
+
+cef{
+    INCLUDEPATH += $$PWD/../libs/cef_win32
+}
 
 DEPENDPATH += \
     $$PWD/../libs/qxmpp/src \
@@ -200,6 +218,7 @@ DEPENDPATH += \
     $$PWD/../libs/peg-markdown-highlight \
     $$PWD/../libs/breakpad \
     $$PWD/../libs/cutemarked
+
 
 unix:PRE_TARGETDEPS += $$OUT_PWD/../libs/cutemarked/libcutemarked.a
 else:win32:CONFIG(debug, debug|release) PRE_TARGETDEPS += $$OUT_PWD/../libs/cutemarked/debug/cutemarked.lib

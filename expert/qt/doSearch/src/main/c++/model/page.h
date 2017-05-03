@@ -11,6 +11,7 @@
 
 #include "../ir/bow.h"
 #include "../util/pholder.h"
+#include "uiowner.h"
 
 class QQuickItem;
 class QQmlContext;
@@ -30,15 +31,13 @@ struct PageModel {
 };
 
 
-class Page: public QObject, protected PersistentPropertyHolder {
+class Page: public UIOwner, protected PersistentPropertyHolder {
     Q_OBJECT
 
     Q_PROPERTY(QString id READ id CONSTANT)
     Q_PROPERTY(QString icon READ icon NOTIFY iconChanged)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
 
-    Q_PROPERTY(QQuickItem* ui READ ui NOTIFY uiChanged)
-    Q_PROPERTY(QQuickItem* uiNoCache READ uiNoCache NOTIFY uiChanged)
 
     Q_PROPERTY(Page* container READ container NOTIFY containerChanged)
 
@@ -69,10 +68,6 @@ public:
     Page* lastVisited() const { return m_last_visited; }
     time_t lastVisitTs() const { return m_last_visit_ts; }
 
-    QQuickItem* uiNoCache() const { return ui(false); }
-    virtual QQuickItem* ui(bool useCache = true) const;
-    bool compareUI(QQuickItem* item) const { return m_ui == item; }
-
     Q_INVOKABLE virtual double pOut(Page*) const;
     Q_INVOKABLE virtual double pIn(Page*) const;
 
@@ -91,7 +86,6 @@ signals:
     void iconChanged(const QString& icon);
     void titleChanged(const QString& title);
     void containerChanged();
-    void uiChanged() const;
 
 public:
     Page(): Page("undefined", "", 0) {} // never ever use this constructor, it exists for compartibility purposes only!
@@ -103,20 +97,14 @@ protected:
     explicit Page(const QString& id, const QString& uiQml, doSearch* parent);
 
     virtual void interconnect();
-    virtual void initUI(QQuickItem*) const {}
 
     QDir storage() const;
     void visitChildren(const QString& prefix, std::function<void (Page*)> visitor) const;
 
     virtual void incomingTransition(Page* from, TransitionType type);
-    virtual bool transferUI(Page* other) const;
 
 private:
     QString m_id;
-    QUrl m_ui_url;
-
-    mutable QQmlContext* m_context = 0;
-    mutable QQuickItem* m_ui = 0;
 
     Page* m_last_visited = 0;
     int m_in_total = 0;

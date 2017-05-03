@@ -355,17 +355,17 @@ ApplicationWindow {
         }
     }
 
-    CefItem {
-        z:20;
-        visible: true;
-        anchors.fill: parent;
-        focus: true
-    }
+//    CefItem {
+//        z:20;
+//        visible: true;
+//        anchors.fill: parent;
+//        focus: true
+//    }
     Rectangle {
         id: screen
         color: Palette.backgroundColor("selected")
         z: parent.z + 10
-        //anchors.fill: parent
+        anchors.fill: parent
 
         clip: false
         ColumnLayout {

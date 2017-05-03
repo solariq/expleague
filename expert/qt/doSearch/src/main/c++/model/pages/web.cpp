@@ -71,11 +71,11 @@ Page* WebPage::container() const {
     return isRoot() ? static_cast<Page*>(site()) : static_cast<Page*>(const_cast<WebPage*>(this));
 }
 
-bool WebPage::transferUI(Page* other) const {
+bool WebPage::transferUI(UIOwner* other){
     WebPage* wp = qobject_cast<WebPage*>(other);
     if (!wp)
         return false;
-    Page::transferUI(wp);
+    UIOwner::transferUI(wp);
     wp->containerChanged();
     return true;
 }
@@ -195,7 +195,7 @@ void WebPage::rebuildRedirects() {
     while (current) {
         if (m_redirects.contains(current)) {
             foreach(WebPage* page, m_redirects) {
-                page->setRedirect(0);
+                page->setRedirect(NULL);
             }
             break;
         }
@@ -220,14 +220,22 @@ void WebPage::open(QObject* request, bool /*newTab*/) {
 }
 
 WebPage::WebPage(const QString& id, const QUrl& url, doSearch* parent):
+#ifdef CEF
+    ContentPage(id, "qrc:/CefPage.qml", parent), m_url(url)
+#else
     ContentPage(id, "qrc:/WebPageView.qml", parent), m_url(url)
+#endif
 {
     store("web.url", m_url.toString());
     save();
 }
 
 WebPage::WebPage(const QString& id, doSearch* parent):
+#ifdef CEF
+    ContentPage(id, "qrc:/CefPage.qml", parent), m_url(value("web.url").toString())
+  #else
     ContentPage(id, "qrc:/WebPageView.qml", parent), m_url(value("web.url").toString())
+  #endif
 {}
 
 void WebPage::interconnect() {

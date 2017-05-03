@@ -80,7 +80,7 @@ public: // overloads
 
     WebSite* site() const;
     WebPage* page() const { return const_cast<WebPage*>(this); }
-    bool transferUI(Page* other) const;
+    bool transferUI(UIOwner* other);
 
 signals:
     void redirectChanged(WebPage* target);

@@ -11,7 +11,7 @@ import "."
 Item {
     id: self
     property Item selectedSerp: owner.serps[owner.selected].ui
-    property WebEngineView webView: owner.serps[owner.selected].ui.webView
+    //property WebEngineView webView: owner.serps[owner.selected].ui.webView
     anchors.fill: parent
 
     RowLayout {

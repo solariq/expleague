@@ -340,7 +340,7 @@ Item {
                         selectByMouse: true
                         readOnly: !self.editable
                         onTextChanged: {
-                            task.comment = text
+                            //task.comment = text
                         }
                     }
                 }

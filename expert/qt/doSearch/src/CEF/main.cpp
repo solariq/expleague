@@ -6,9 +6,9 @@
 #include "include/cef_render_process_handler.h"
 
 
-class myApp: public CefApp{
+class MyApp: public CefApp{
     virtual void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) {
-        command_line.get()->AppendSwitch("--disable-gpu");
+        //command_line.get()->AppendSwitch("--disable-gpu");
         std::vector<CefString> argv;
         command_line.get()->GetArgv(argv);
         std::ofstream log;
@@ -20,13 +20,13 @@ class myApp: public CefApp{
         log << "handle: " << GetModuleHandle(NULL);
         log.close();
     }
-    IMPLEMENT_REFCOUNTING(myApp)
+    IMPLEMENT_REFCOUNTING(MyApp)
 };
 
 int main(int argc, char *argv[]) {
   CefMainArgs main_args(GetModuleHandle(NULL));
   // Optional implementation of the CefApp interface.
-  CefRefPtr<myApp> app(new myApp);
+  CefRefPtr<MyApp> app(new MyApp);
 
   // Execute the sub-process logic. This will block until the sub-process should exit.
   return CefExecuteProcess(main_args, app.get(), NULL);

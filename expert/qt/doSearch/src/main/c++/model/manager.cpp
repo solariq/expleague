@@ -2,7 +2,6 @@
 #include "../dosearch.h"
 #include "pages/admins.h"
 #include "pages/globalchat.h"
-#include "pages/cefpage.h"
 #include <assert.h>
 
 #include <limits>
@@ -32,7 +31,7 @@ void NavigationManager::onDnsRequestFinished() {
     QString text = m_lookup->objectName();
     Page* page;
     if (m_lookup->error() == QDnsLookup::NoError) // seems to be domain!
-        page = parent()->web(QUrl("http://" + text));
+        page = parent()->web(QUrl("http://" + text + "/"));
     else {
         WebResource* web = dynamic_cast<WebResource*>(m_selected);
         if (web)
@@ -536,6 +535,7 @@ void NavigationManager::onGroupsChanged() {
                     qDebug() << "Destroying ui of: " << id;
                 });
                 inactiveScreen->setParent(0);
+                page->clear();
                 inactiveScreen->deleteLater();
             }
         }
