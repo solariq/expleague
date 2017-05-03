@@ -9,6 +9,7 @@
 package com.expleague.xmpp.control.register;
 
 import com.expleague.xmpp.stanza.data.X;
+import com.spbsu.commons.random.FastRandom;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -128,7 +129,14 @@ public class RegisterQuery {
     protected String remove;
     protected X x;
 
-    public boolean isEmpty() {
+  public RegisterQuery() {}
+  public RegisterQuery(String local, boolean expert) {
+    username = local;
+    password = new FastRandom(local.hashCode()).nextBase64String(10);
+    email = expert ? "fake/expert" : "fake";
+  }
+
+  public boolean isEmpty() {
         return registered == null
             && instructions == null
             && username == null

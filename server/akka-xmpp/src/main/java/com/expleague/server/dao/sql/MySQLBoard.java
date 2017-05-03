@@ -8,10 +8,13 @@ import com.expleague.model.Offer;
 import com.expleague.model.OrderState;
 import com.expleague.model.Tag;
 import com.expleague.server.ExpLeagueServer;
+import com.expleague.server.Roster;
+import com.expleague.server.XMPPUser;
 import com.expleague.server.agents.*;
 import com.expleague.server.dao.fake.InMemBoard;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.xmpp.JID;
+import com.expleague.xmpp.control.register.RegisterQuery;
 import com.google.common.base.Joiner;
 import com.spbsu.commons.io.StreamTools;
 import gnu.trove.map.hash.TObjectIntHashMap;
@@ -203,18 +206,19 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @NotNull
   protected Function<ResultSet, ExpLeagueOrder> createOrderView() {
     return rs -> {
-      try {
-        final String id = rs.getString(1);
-        final WeakReference<MySQLOrder> cached = orders.get(id);
-        MySQLOrder result;
-        if (cached != null && (result = cached.get()) != null)
+      synchronized (MySQLBoard.this) {
+        try {
+          final String id = rs.getString(1);
+          final WeakReference<MySQLOrder> cached = orders.get(id);
+          MySQLOrder result;
+          if (cached != null && (result = cached.get()) != null)
+            return result;
+          result = new MySQLOrder(rs);
+          orders.put(id, new WeakReference<>(result));
           return result;
-        result = new MySQLOrder(rs);
-        orders.put(id, new WeakReference<>(result));
-        return result;
-      }
-      catch (SQLException | IOException e) {
-        throw new RuntimeException(e);
+        } catch (SQLException | IOException e) {
+          throw new RuntimeException(e);
+        }
       }
     };
   }
@@ -388,13 +392,16 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       super.role(jid, role, ts);
       if (role.permanent()) {
         try {
+          final XMPPUser user = Roster.instance().user(jid.local());
+          if (user == XMPPUser.NO_SUCH_USER)
+            Roster.instance().register(new RegisterQuery(jid.local(), true));
           final PreparedStatement changeRole = createStatement("change-role", "INSERT INTO Participants SET `order` = ?, partisipant = ?, role = ?, timestamp = ?");
           changeRole.setString(1, id);
           changeRole.setString(2, jid.local());
           changeRole.setByte(3, (byte) role.index());
           changeRole.setTimestamp(4, new Timestamp(ts));
           changeRole.execute();
-        } catch (SQLException e) {
+        } catch (Exception e) {
           throw new RuntimeException(e);
         }
       }

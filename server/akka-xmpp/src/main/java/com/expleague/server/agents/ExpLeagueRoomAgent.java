@@ -107,6 +107,8 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   private ExpertsProfile.Authority authority(JID from) {
+    if (from.isRoom() || from.local().isEmpty())
+      return ExpertsProfile.Authority.NONE;
     final ExpertsProfile profile = Roster.instance().profile(from.local());
     return profile != null ? profile.authority() : ExpertsProfile.Authority.NONE;
   }

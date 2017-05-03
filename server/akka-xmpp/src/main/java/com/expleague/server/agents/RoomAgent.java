@@ -494,6 +494,8 @@ public class RoomAgent extends PersistentActorAdapter {
       return;
     if (o instanceof Stanza) {
       final Stanza stanza = (Stanza) o;
+      if (stanza.to() == null)
+        return;
       if (!stanza.to().local().equals(jid().local())) {
         inconsistent = true;
         return;
