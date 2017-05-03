@@ -42,6 +42,9 @@ public class DeliveryReceit extends Item {
     @XmlAttribute(name = "resource", namespace = NS)
     private String resource;
 
+    @XmlAttribute(name = "user", namespace = NS)
+    private String user;
+
     public Item() {}
 
     public Item(String id, String resource) {

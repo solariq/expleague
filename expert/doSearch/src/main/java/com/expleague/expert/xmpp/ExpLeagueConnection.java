@@ -376,7 +376,7 @@ public class ExpLeagueConnection extends WeakListenerHolderImpl<ExpLeagueConnect
     if (stanza instanceof Message) {
       final Message message = (Message) stanza;
       if (message.has(Received.class)) {
-        final String messageId = message.get(Received.class).getId();
+        final String messageId = message.get(Received.class).id();
         log.info("Server received: " + messageId);
         // todo: mark as received
       }

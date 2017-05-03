@@ -114,11 +114,20 @@ public class Item implements Cloneable {
   }
 
   public String xmlString() {
-    return tlWriter.get().serialize(this);
+    return xmlString(false);
   }
 
   public String xmlString(boolean bosh) {
-    return bosh ? tlWriterBosh.get() .serialize(this) : tlWriter.get().serialize(this);
+    try {
+      return bosh ? tlWriterBosh.get().serialize(this) : tlWriter.get().serialize(this);
+    }
+    catch (RuntimeException re) { // exclude further serialization mess: writer has its state
+      if (bosh)
+        tlWriterBosh.set(new XmlOutputter(true));
+      else
+        tlWriter.set(new XmlOutputter(false));
+      throw re;
+    }
   }
 
   @Override
@@ -149,16 +158,9 @@ public class Item implements Cloneable {
 
   private static class XmlOutputter {
     private final ByteArrayOutputStream output = new ByteArrayOutputStream();
-    private boolean bosh;
-    private XMLStreamWriter writer;
+    private final XMLStreamWriter writer;
 
     public XmlOutputter(boolean bosh) {
-      this.bosh = bosh;
-      writer = init(bosh);
-    }
-
-    private XMLStreamWriter init(boolean bosh) {
-      XMLStreamWriter writer;
       final OutputFactoryImpl factory = new OutputFactoryImpl();
       factory.configureForSpeed();
       factory.setProperty(XMLOutputFactory2.XSP_NAMESPACE_AWARE, true);
@@ -179,7 +181,6 @@ public class Item implements Cloneable {
       catch (XMLStreamException e) {
         throw new RuntimeException(e);
       }
-      return writer;
     }
 
     public String serialize(Item item) {
@@ -191,9 +192,6 @@ public class Item implements Cloneable {
         writer.flush();
       }
       catch (JAXBException | XMLStreamException e) {
-        log.log(Level.SEVERE, "Unable to serialize stanza: " + item.getClass(), e);
-        writer = init(bosh);
-        output.reset();
         throw new RuntimeException(e);
       }
 

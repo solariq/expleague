@@ -122,9 +122,8 @@ public class ExpertTask {
     else if (command instanceof Progress) {
       final Progress progress = (Progress) command;
 
-      final MetaChange change = progress.meta();
-      if (change != null) {
-        switch(change.target()) {
+      progress.meta().forEach(change -> {
+        switch (change.target()) {
           case PATTERNS: // already in answer
             break;
           case TAGS:
@@ -145,7 +144,7 @@ public class ExpertTask {
             eventsReceiver.accept(new TaskCallEvent(progress, this));
             break;
         }
-      }
+      });
     }
     else if (command instanceof Operations.Resume) {
       state(State.BUSY);
@@ -192,7 +191,7 @@ public class ExpertTask {
     if (state != State.BUSY)
       return;
     final long currentTimeMillis = System.currentTimeMillis();
-    final Operations.Suspend suspend = new Operations.Suspend(currentTimeMillis, currentTimeMillis + intervalMs);
+    final Operations.Suspend suspend = new Operations.Suspend(null, currentTimeMillis, currentTimeMillis + intervalMs);
     state(State.SUSPEND);
     eventsReceiver.accept(new TaskSuspendedEvent(suspend, this));
     log(suspend);

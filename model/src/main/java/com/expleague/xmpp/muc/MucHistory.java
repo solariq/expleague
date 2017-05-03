@@ -28,6 +28,7 @@ public class MucHistory extends com.expleague.xmpp.Item {
   public MucHistory() {
   }
 
+  // TODO: exclude internal messages from the archive
   public Stream<Stanza> filter(List<Stanza> archive) {
     if (maxstanzas != null)
       return archive.subList(archive.size() - maxstanzas, archive.size()).stream();
@@ -36,11 +37,6 @@ public class MucHistory extends com.expleague.xmpp.Item {
         if (lastId.startsWith(archive.get(i).id()))
           return archive.subList(i + 1, archive.size()).stream();
       }
-    }
-    else if (recent != null && recent) {
-      final List<Stanza> result = new ArrayList<>();
-
-      return result.stream();
     }
     return archive.stream();
   }

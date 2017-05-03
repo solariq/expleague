@@ -29,6 +29,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * Time: 15:05
  */
 public class BaseRoomTest extends TestCase {
+  protected static final long SYNC_WAIT_TIMEOUT_IN_MILLIS = 1000L;
   protected static BotsManager botsManager = new BotsManager();
   private List<Pair<BareJID, ClientBot>> openRooms = new ArrayList<>();
 

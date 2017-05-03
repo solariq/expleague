@@ -1,6 +1,7 @@
 package com.expleague.model;
 
 import com.expleague.xmpp.Item;
+import com.expleague.xmpp.JID;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -13,6 +14,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Delivered extends Item {
   @XmlAttribute
   private String id;
+
+  @XmlAttribute
+  private JID user;
+
   @XmlAttribute
   private String resource;
 
@@ -20,8 +25,9 @@ public class Delivered extends Item {
   @SuppressWarnings("unused")
   public Delivered() {}
 
-  public Delivered(String id, String resource) {
+  public Delivered(String id, JID user, String resource) {
     this.id = id;
+    this.user = user;
     this.resource = resource;
   }
 
@@ -35,5 +41,9 @@ public class Delivered extends Item {
 
   public String resource() {
     return resource;
+  }
+
+  public JID user() {
+    return user;
   }
 }

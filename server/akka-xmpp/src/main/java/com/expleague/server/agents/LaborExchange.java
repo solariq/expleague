@@ -170,7 +170,7 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
 
   public interface Board {
     ExpLeagueOrder[] active(String roomId);
-    ExpLeagueOrder[] register(Offer offer);
+    ExpLeagueOrder[] register(Offer offer, int startNo);
     void removeAllOrders(String roomId);
 
     Stream<ExpLeagueOrder> history(String roomId);

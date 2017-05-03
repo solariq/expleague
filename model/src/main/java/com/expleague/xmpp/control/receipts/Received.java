@@ -23,7 +23,7 @@ public class Received extends Item {
     this.id = id;
   }
 
-  public String getId() {
+  public String id() {
     return id;
   }
 }

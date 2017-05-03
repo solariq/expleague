@@ -38,6 +38,7 @@ public class ConnectedPhase extends XMPPPhase {
   private ActorRef agent;
   private ActorRef courier;
   private XMPPDevice device;
+  private long clientTsDiff = 0;
 
   public ConnectedPhase(ActorRef connection, String authId) {
     super(connection);
@@ -60,6 +61,10 @@ public class ConnectedPhase extends XMPPPhase {
       case SET : {
         final Object payload = iq.get();
         if (payload instanceof Bind) {
+          { //ts diff between client and server
+            clientTsDiff = System.currentTimeMillis() - iq.ts();
+          }
+
           bound = true;
           device = Roster.instance().device(jid.local());
           String resource = device.name();
@@ -121,6 +126,14 @@ public class ConnectedPhase extends XMPPPhase {
       answer(msg);
     }
     else { // outgoing
+      { //append synchronized ts
+        if (msg instanceof Message) {
+          final Message message = (Message) msg;
+          final Message.Timestamp ts = new Message.Timestamp(message.ts() + clientTsDiff);
+          message.append(ts);
+        }
+      }
+
       tryProcessMessageReceipt(msg);
       if (!isDeliveryReceipt(msg)) {
         msg.from(jid);
@@ -157,14 +170,12 @@ public class ConnectedPhase extends XMPPPhase {
 
     final Message message = (Message) msg;
     if (message.has(Received.class)) {
-      final String messageId = message.get(Received.class).getId();
+      final String messageId = message.get(Received.class).id();
 //      log.finest("Client received: " + messageId);
-      if (courier != null) {
-        courier.tell(new Delivered(messageId, jid.resource()), self());
-      }
-      else {
+      if (courier != null)
+        courier.tell(new Delivered(messageId, jid.bare(), jid.resource()), self());
+      else
         log.warning("Can't process delivery ack to " + jid + ", courier is absent");
-      }
     }
     else if (message.has(Request.class)) {
       final Message ack = new Message(message.from(), new Received(message.id()));

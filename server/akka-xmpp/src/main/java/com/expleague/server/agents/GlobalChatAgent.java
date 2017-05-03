@@ -96,16 +96,21 @@ public class GlobalChatAgent extends RoomAgent {
       final ExpertsProfile profile = msg.get(ExpertsProfile.class);
       status.start(start.order(), profile.jid(), ts);
     }
-    if (changes < status.changes())
+
+    if (msg.has(Clear.class)) {
+      rooms.remove(msg.from().local());
+      super.process(msg);
+    }
+    else if (changes < status.changes())
       super.process(msg);
   }
 
   @Override
-  public List<Stanza> archive(MucHistory history) {
-    final List<Stanza> result = new ArrayList<>();
+  public List<Message> archive(MucHistory history) {
+    final List<Message> result = new ArrayList<>();
     if (history.recent()) {
       rooms.forEach((id, status) -> {
-        if (status.currentOffer != null && (!EnumSet.of(CLOSED, FEEDBACK).contains(status.state) || status.lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)))
+        if (status.currentOffer != null && (!EnumSet.of(CLOSED, FEEDBACK).contains(status.state) || status.lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(10)))
           result.add(status.message());
       });
     }

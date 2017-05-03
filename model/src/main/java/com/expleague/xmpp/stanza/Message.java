@@ -158,6 +158,12 @@ public class Message extends Stanza implements AnyHolder {
     return any;
   }
 
+  @Override
+  public long ts() {
+    final Timestamp ts = get(Timestamp.class);
+    return ts != null ? ts.ts() : super.ts();
+  }
+
   /**
    * <p>Java class for anonymous complex type.
    *
@@ -195,6 +201,33 @@ public class Message extends Stanza implements AnyHolder {
 
     public String value() {
       return value;
+    }
+  }
+
+  @XmlAccessorType(XmlAccessType.FIELD)
+  @XmlRootElement(name = "ts")
+  public static class Timestamp extends Item {
+
+    @XmlValue
+    protected long ts;
+    @XmlAttribute(name = "lang", namespace = "http://www.w3.org/XML/1998/namespace")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    @XmlSchemaType(name = "language")
+    protected String lang;
+
+    @SuppressWarnings("unused")
+    public Timestamp() {}
+
+    public Timestamp(long ts) {
+      this.ts = ts;
+    }
+
+    public long ts() {
+      return ts;
+    }
+
+    public void setTs(long ts) {
+      this.ts = ts;
     }
   }
 

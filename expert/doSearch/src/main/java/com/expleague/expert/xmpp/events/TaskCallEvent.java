@@ -13,7 +13,7 @@ public class TaskCallEvent extends ExpertTaskEvent {
   }
 
   public String phone() {
-    return source().meta().name();
+    return source().meta().findAny().orElse(new Operations.Progress.MetaChange()).name();
   }
 
   @Override

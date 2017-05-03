@@ -25,6 +25,7 @@ import tigase.jaxmpp.j2se.Jaxmpp;
 import tigase.jaxmpp.j2se.connectors.socket.SocketConnector;
 
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -169,6 +170,8 @@ public class Bot {
       jaxmpp.send(stanza);
       System.out.println("Online presence sent");
     }
+    final Operations.Token token = new Operations.Token("60", UUID.randomUUID().toString());
+    send(token);
   }
 
   public void offline() throws JaxmppException {
@@ -191,6 +194,10 @@ public class Bot {
     send(to, StanzaType.groupchat, items);
   }
 
+  public void send(Item... items) throws JaxmppException {
+    send(null, null, items);
+  }
+
   public void send(BareJID to, Item... items) throws JaxmppException {
     send(to, null, items);
   }
@@ -203,7 +210,9 @@ public class Bot {
     if (type != null) {
       message.setType(type);
     }
-    message.setTo(JID.jidInstance(to));
+    if (to != null) {
+      message.setTo(JID.jidInstance(to));
+    }
     jaxmpp.send(message);
   }
 

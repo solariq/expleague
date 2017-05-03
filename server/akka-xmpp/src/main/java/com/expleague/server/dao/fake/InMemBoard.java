@@ -38,7 +38,7 @@ public class InMemBoard implements LaborExchange.Board {
   }
 
   @Override
-  public ExpLeagueOrder[] register(Offer offer) {
+  public ExpLeagueOrder[] register(Offer offer, int startNo) {
     final MyOrder order = new MyOrder(offer);
     final ExpLeagueOrder[] set = {order};
     active.put(order.room().local(), set);
@@ -115,6 +115,8 @@ public class InMemBoard implements LaborExchange.Board {
 
     @Override
     protected void state(final OrderState status, long ts) {
+      if (status == this.state)
+        return;
       super.state(status, ts);
       statusHistory.add(new StatusHistoryRecord(status, new Date(ts)));
     }
@@ -146,7 +148,8 @@ public class InMemBoard implements LaborExchange.Board {
 
     @Override
     protected void tag(String tag) {
-      tags.add(new Tag(tag));
+      if (tags.stream().map(Tag::name).noneMatch(tag::equals))
+        tags.add(new Tag(tag));
     }
 
     @Override

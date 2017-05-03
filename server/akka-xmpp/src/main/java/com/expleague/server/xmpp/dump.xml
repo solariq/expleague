@@ -1,90 +1,1839 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <stream:stream xmlns:stream="http://etherx.jabber.org/streams" version="1.0" xmlns="jabber:client" xml:lang="en"
                xmlns:xml="http://www.w3.org/XML/1998/namespace">
-    <message xmlns="jabber:client" type="normal" from="0694d14d@testnode3.expleague.com/0694d14d-44155822/unsearch"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="5F808BFD-9A7F-46BF-9EDE-B04BDD3710DD">
-        <offer xmlns="http://expleague.com/scheme" client="0694d14d@testnode3.expleague.com" local="false" urgency="day"
-               started="1.492697923628923E9">
-            <topic>Test ju 2</topic>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="cielFT54G8-1493677741">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
         </offer>
     </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="cAHd+sEfMz-1493678982">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="groupchat"
+             from="vk-12520103imac-julia@expleague.com/julier/dosearchqt-5.8.0/admin"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ppEqCpgHj0-1493708305670">
+        <body>Спасибо за Ваш вопрос! Над ним начнет работу первый освободившийся эксперт!</body>
+    </message>
     <message xmlns="jabber:client" type="normal"
-             from="vk-32904@testnode3.expleague.com/alomakina.test3/dosearchqt-5.8.0/admin"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="jgxrUcF4mo-1492697967752">
-        <offer xmlns="http://expleague.com/scheme" room="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-               client="0694d14d@testnode3.expleague.com" local="false" urgency="day" started="1.492697923E9">
-            <topic>Test ju 2</topic>
+             from="vk-12520103imac-julia@expleague.com/julier/dosearchqt-5.8.0/admin"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="P4646echR6-1493708354701">
+        <offer xmlns="http://expleague.com/scheme" room="room-941f9739-11a1f13b-a0f42901@muc.expleague.com"
+               client="941f9739@expleague.com" local="false" urgency="day" started="1.493677741E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>941f9739--7097810688021521826.jpeg</image>
             <experts-filter>
-                <accept>vk-12520103tyblockin-2.local@testnode3.expleague.com</accept>
-                <prefer>vk-32904@testnode3.expleague.com</prefer>
+                <reject>vk-32904@expleague.com</reject>
+                <prefer>vk-12520103imac-julia@expleague.com</prefer>
             </experts-filter>
+            <location longitude="30.2795" latitude="60.0161"/>
+            <draft>
+                Изучив информацию по Вашему запросу, мы можем предположить, что Вы имели в виду следующий документ
+
+                ### Название документа
+
+                +[Описание документа]
+
+                -[Описание документа]
+
+                - **Шаблон** на [сайте](текст_ссылки)
+                - **Образец заполнения** на [сайте](текст_ссылки)
+                &lt;br>&lt;br>
+                - **Скачать** в формате [doc](текст_ссылки)
+                - **Скачать** в формате [pdf](текст_ссылки)
+
+                ---
+            </draft>
+            <tag>Литература</tag>
+            <pattern name="Поиск медиа-объекта - документ" type="answer"/>
         </offer>
         <offer-change xmlns="http://expleague.com/scheme"/>
     </message>
-    <message xmlns="jabber:client" type="normal"
-             from="vk-32904@testnode3.expleague.com/alomakina.test3/dosearchqt-5.8.0/admin"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="sNwFjWTOBZ-1492698046811">
-        <offer xmlns="http://expleague.com/scheme" room="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-               client="0694d14d@testnode3.expleague.com" local="false" urgency="day" started="1.492697923E9">
-            <topic>Test ju 2</topic>
-            <experts-filter>
-                <reject>vk-12520103tyblockin-2.local@testnode3.expleague.com</reject>
-            </experts-filter>
-        </offer>
-        <offer-change xmlns="http://expleague.com/scheme"/>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com/julier/dosearchqt-5.8.0/admin"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="I/8/mQP9k3-1493708358">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="add" target="tag">Литература</change>
+        </progress>
     </message>
-    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="pc7vh/c07A-1492698049">
-        <progress xmlns="http://expleague.com/scheme" order="1676">
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com/julier/dosearchqt-5.8.0/admin"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="9tfyxoAWiL-1493708358">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="add" target="pattern">Поиск медиа-объекта - документ</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="room-941f9739-11a1f13b-a0f42901@muc.expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="/p0RlqkTy8-1493708358">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
             <state>open</state>
         </progress>
     </message>
-    <message xmlns="jabber:client" from="vk-12520103tyblockin-2.local@testnode3.expleague.com"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="3yVVH4xZor-1492698065">
-        <cancel xmlns="http://expleague.com/scheme"/>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="w277ZmF0zG-1493708683">
+        <start xmlns="http://expleague.com/scheme" order="3726" expert="vk-12520103imac-julia@expleague.com"/>
     </message>
-    <message xmlns="jabber:client" from="vk-12520103tyblockin-2.local@testnode3.expleague.com"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com/0694d14d" id="41j2cg7CPx-1492698065">
-        <cancel xmlns="http://expleague.com/scheme"/>
+    <message xmlns="jabber:client" from="room-941f9739-11a1f13b-a0f42901@muc.expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com/941f9739" id="yLT66wOkTy-1493708689">
+        <start xmlns="http://expleague.com/scheme" order="3726" expert="vk-12520103imac-julia@expleague.com"/>
+        <expert xmlns="http://expleague.com/scheme" jid="vk-12520103imac-julia@expleague.com"
+                login="vk-12520103imac-julia" name="Julia Rejju" tasks="17" education="high" authority="admin"
+                rating="3.3333333333333335" basedOn="3">
+            <tags>
+                <tag score="0.6666666666666666">Музыка</tag>
+                <tag score="0.6666666666666666">Кино</tag>
+                <tag score="0.05660377358490566">Работа</tag>
+                <tag score="0.6666666666666666">Поиск в интернете</tag>
+                <tag score="0.6666666666666666">Литература</tag>
+                <tag score="0.6666666666666666">Юриспруденция</tag>
+                <tag score="0.05660377358490566">Техника</tag>
+                <tag score="0.07407407407407407">Кулинария</tag>
+            </tags>
+            <avatar>http://cs425325.vk.me/v425325103/ae4f/WZSpbYUS5FE.jpg</avatar>
+        </expert>
     </message>
-    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="CxPyecOTA5-1492698065">
-        <offer xmlns="http://expleague.com/scheme" room="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-               client="0694d14d@testnode3.expleague.com" local="false" urgency="day" started="1.492697923E9">
-            <topic>Test ju 2</topic>
+    <message xmlns="jabber:client" from="room-941f9739-11a1f13b-a0f42901@muc.expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="yLXwkwNv9U-1493708689">
+        <offer xmlns="http://expleague.com/scheme" room="room-941f9739-11a1f13b-a0f42901@muc.expleague.com"
+               client="941f9739@expleague.com" local="false" urgency="day" started="1.493677741E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>941f9739--7097810688021521826.jpeg</image>
             <experts-filter>
-                <reject>vk-12520103tyblockin-2.local@testnode3.expleague.com</reject>
+                <reject>vk-32904@expleague.com</reject>
+                <prefer>vk-12520103imac-julia@expleague.com</prefer>
             </experts-filter>
+            <location longitude="30.2795" latitude="60.0161"/>
+            <draft>
+                Изучив информацию по Вашему запросу, мы можем предположить, что Вы имели в виду следующий документ
+
+                ### Название документа
+
+                +[Описание документа]
+
+                -[Описание документа]
+
+                - **Шаблон** на [сайте](текст_ссылки)
+                - **Образец заполнения** на [сайте](текст_ссылки)
+                &lt;br>&lt;br>
+                - **Скачать** в формате [doc](текст_ссылки)
+                - **Скачать** в формате [pdf](текст_ссылки)
+
+                ---
+            </draft>
+            <tag>Литература</tag>
+            <pattern name="Поиск медиа-объекта - документ" type="answer"/>
         </offer>
     </message>
-    <message xmlns="jabber:client" type="normal"
-             from="vk-32904@testnode3.expleague.com/alomakina.test3/dosearchqt-5.8.0/admin"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="28WA5Gc9Nz-1492698069519">
-        <offer xmlns="http://expleague.com/scheme" room="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-               client="0694d14d@testnode3.expleague.com" local="false" urgency="day" started="1.492697923E9">
-            <topic>Test ju 2</topic>
-            <experts-filter>
-                <reject>vk-12520103tyblockin-2.local@testnode3.expleague.com</reject>
-            </experts-filter>
-        </offer>
-        <offer-change xmlns="http://expleague.com/scheme"/>
+    <message xmlns="jabber:client" from="room-941f9739-11a1f13b-a0f42901@muc.expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="TFy8I7lDc7-1493708683">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <state>in-progress</state>
+        </progress>
     </message>
-    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="SRL+QEXB4K-1492698072">
-        <progress xmlns="http://expleague.com/scheme" order="1676">
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="5tVm7oIfCQ-1493708726">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://he.kendallhunt.com/product/speaking-without-freaking-out-50-techniques-confident-and-compelling-presenting
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="42fXJzoAse-1493708752">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">https://docviewer.yandex.ru/?lang=en&amp;name=speaking_up_without_freaking_out.pdf&amp;tm=1493708713&amp;tld=ru&amp;text=speaking
+                up without freaking out&amp;url=http%3A%2F%2Fwww.deanza.edu%2Fgov%2Fclassifiedsenate%2Fstaffdevcommittee%2Fpdf%2Fspeaking_up_without_freaking_out.pdf&amp;lr=2&amp;mime=pdf&amp;l10n=ru&amp;sign=60bed0d756ffc9bc512c91235b36791c&amp;keyno=0
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="2xFaUDe8Zf-1493712489">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://docviewer.yandex.ru/view/0/?*=fVz1uWSjASbKYYl6PvxbJoE8erN7InVybCI6Imh0dHA6Ly93d3cuZGVhbnphLmVkdS9nb3YvY2xhc3NpZmllZHNlbmF0ZS9zdGFmZmRldmNvbW1pdHRlZS9wZGYvc3BlYWtpbmdfdXBfd2l0aG91dF9mcmVha2luZ19vdXQucGRmIiwidGl0bGUiOiJzcGVha2luZ191cF93aXRob3V0X2ZyZWFraW5nX291dC5wZGYiLCJ1aWQiOiIwIiwieXUiOiIxODg4MzMzNDQxNDkxOTgwNzU5Iiwibm9pZnJhbWUiOnRydWUsInRzIjoxNDkzNzA4NzUyNzk1fQ%3D%3D&amp;page=2&amp;lang=en
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="UX9rOqilVP-1493712498">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://docviewer.yandex.ru/view/0/?*=fVz1uWSjASbKYYl6PvxbJoE8erN7InVybCI6Imh0dHA6Ly93d3cuZGVhbnphLmVkdS9nb3YvY2xhc3NpZmllZHNlbmF0ZS9zdGFmZmRldmNvbW1pdHRlZS9wZGYvc3BlYWtpbmdfdXBfd2l0aG91dF9mcmVha2luZ19vdXQucGRmIiwidGl0bGUiOiJzcGVha2luZ191cF93aXRob3V0X2ZyZWFraW5nX291dC5wZGYiLCJ1aWQiOiIwIiwieXUiOiIxODg4MzMzNDQxNDkxOTgwNzU5Iiwibm9pZnJhbWUiOnRydWUsInRzIjoxNDkzNzA4NzUyNzk1fQ%3D%3D&amp;page=2&amp;lang=en
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="quxYAcpRPv-1493712598">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                http://utubebd.com/video/download/Speaking-Up-without-Freaking-Out-Techniques-for-confident-presenting/WCi5_lGMSGo
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="nKY6nTK4n2-1493712617">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://docviewer.yandex.ru/view/0/?*=fVz1uWSjASbKYYl6PvxbJoE8erN7InVybCI6Imh0dHA6Ly93d3cuZGVhbnphLmVkdS9nb3YvY2xhc3NpZmllZHNlbmF0ZS9zdGFmZmRldmNvbW1pdHRlZS9wZGYvc3BlYWtpbmdfdXBfd2l0aG91dF9mcmVha2luZ19vdXQucGRmIiwidGl0bGUiOiJzcGVha2luZ191cF93aXRob3V0X2ZyZWFraW5nX291dC5wZGYiLCJ1aWQiOiIwIiwieXUiOiIxODg4MzMzNDQxNDkxOTgwNzU5Iiwibm9pZnJhbWUiOnRydWUsInRzIjoxNDkzNzA4NzUyNzk1fQ%3D%3D&amp;page=2&amp;lang=en
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="niMoVRXeMR-1493712619">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                http://utubebd.com/video/download/Speaking-Up-without-Freaking-Out-Techniques-for-confident-presenting/WCi5_lGMSGo
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="4Z8gp1qbfM-1493712640">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                http://smarttalksuccess.com/matt-abrahams-speaking-without-freaking-out/
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="CbNmuJnBCN-1493712646">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://www.goodreads.com/book/show/9206976-speaking-up-without-freaking-out
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="AGCHIWkWPs-1493712659">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://www.goodreads.com/book/show/9206976-speaking-up-without-freaking-out
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="rJUZDTFpIc-1493712659">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">https://www.goodreads.com/book/9206976/get_a_copy</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="JQ8LeW/F9p-1493712665">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">https://www.amazon.com/s/ref=x_gr_w_bb?tag=httpwwwgoodco-20&amp;creative=374001&amp;campaign=211041&amp;adid=082VK13VJJCZTQYGWWCZ&amp;index=books&amp;keyword=Speaking+Up+Without+Freaking+Out</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="SS8prQADME-1493712670">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">https://www.goodreads.com/book/9206976/get_a_copy</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="bQC1u+weY6-1493712678">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://www.bookdepository.com/search?searchTerm=Speaking+Up+Without+Freaking+Out&amp;search=Find+book&amp;a_aid=goodreads
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="lvQojImA26-1493712685">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">https://www.amazon.com/s/ref=x_gr_w_bb?tag=httpwwwgoodco-20&amp;creative=374001&amp;campaign=211041&amp;adid=082VK13VJJCZTQYGWWCZ&amp;index=books&amp;keyword=Speaking+Up+Without+Freaking+Out</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ZEaDWQfFqH-1493712686">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">https://www.goodreads.com/book/9206976/get_a_copy</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="/dhJYJU44o-1493712691">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">https://www.abebooks.com/servlet/SearchResults?tn=Speaking Up Without
+                Freaking Out&amp;clickid=TT41nQXHJVbqTGDU8NXn-QawUkhU5Qz3eSZlUc0&amp;cm_mmc=aff-_-ir-_-64613-_-77416&amp;ref=imprad64613&amp;afn_sr=impact
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="/xBAk142WI-1493712718">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">http://www.nofreakingspeaking.com/thebook/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="wL0yRH3Uin-1493712738">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                http://utubebd.com/video/download/Speaking-Up-without-Freaking-Out-Techniques-for-confident-presenting/WCi5_lGMSGo
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="+eSCV4saQJ-1493712751">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">http://www.dailymotion.com/video/x3y75pv</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="SIj9o0gp9y-1493712791">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">http://podbay.fm/show/popout.php?id=515064768&amp;e=1458025200
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="hIf0MTWz+Y-1493712804">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">https://ru-ru.facebook.com/SpeakingUpwithoutFreakingOut/</change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="WxgauK764L-1493712950">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://docviewer.yandex.ru/view/0/?*=fVz1uWSjASbKYYl6PvxbJoE8erN7InVybCI6Imh0dHA6Ly93d3cuZGVhbnphLmVkdS9nb3YvY2xhc3NpZmllZHNlbmF0ZS9zdGFmZmRldmNvbW1pdHRlZS9wZGYvc3BlYWtpbmdfdXBfd2l0aG91dF9mcmVha2luZ19vdXQucGRmIiwidGl0bGUiOiJzcGVha2luZ191cF93aXRob3V0X2ZyZWFraW5nX291dC5wZGYiLCJ1aWQiOiIwIiwieXUiOiIxODg4MzMzNDQxNDkxOTgwNzU5Iiwibm9pZnJhbWUiOnRydWUsInRzIjoxNDkzNzA4NzUyNzk1fQ%3D%3D&amp;page=2&amp;lang=en
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="s9lDiLR68G-1493712958">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://www.bookdepository.com/Speaking-Up-Without-Freaking-Out-50-Techniques-for-Confident-Calm-Competent-Presenting-Matthew-Abrahams/9781465290472
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="vmPtA+cBMe-1493713151">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://www.amazon.com/Speaking-without-Freaking-Out-Techniques/dp/1465290478
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="6plO1rEmhv-1493713169">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://www.amazon.com/Speaking-without-Freaking-Out-Techniques/dp/1465290478
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="GUYKWT8jyr-1493713169">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://www.amazon.com/gp/offer-listing/1465290478/ref=dp_olp_all_mbc?ie=UTF8&amp;condition=all
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="tUJxhpwJVp-1493713208">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://www.amazon.com/gp/offer-listing/1465290478/ref=dp_olp_all_mbc?ie=UTF8&amp;condition=all
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="sNqc70hYez-1493713208">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://www.amazon.com/dp/1465290478/ref=olp_product_details?_encoding=UTF8&amp;me=
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="KI4eRNyKPs-1493713247">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://www.gsb.stanford.edu/faculty-research/books/speaking-without-freaking-out-50-techniques-confident-calm-competent
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="y2mqA4VWqZ-1493713271">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://books.google.ru/books/about/Speaking_Up_Without_Freaking_Out_50_Tech.html?id=7-WzjgEACAAJ&amp;redir_esc=y
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="UPVNQGgjy4-1493713290">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://books.google.ru/books/about/Speaking_Up_Without_Freaking_Out_50_Tech.html?id=7-WzjgEACAAJ&amp;redir_esc=y
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Pw3SYjdbU2-1493713290">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">https://www.books.ru/search.php?s[go]=1&amp;s[query]=9781465290786
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="EmOyc9wOMj-1493713298">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
+            <change operation="visit" target="url">
+                https://www.bookdepository.com/Speaking-Up-Without-Freaking-Out-50-Techniques-for-Confident-Calm-Competent-Presenting-eBook-Matthew-Abrahams/9781465290786
+            </change>
+        </progress>
+    </message>
+    <message xmlns="jabber:client" type="chat" from="vk-12520103imac-julia@expleague.com/julier/dosearchqt-5.8.0/admin"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="MSh15rMzVU-1493713394453">
+        <answer xmlns="http://expleague.com/scheme" difficulty="1.0" extra-info="0" success="3">Не доступна в эл.
+            формате
+            Мы изучили информацию по вашему вопросу, изучили крупнейшие онлайн-библиотеки, проверили русскоязычные и
+            англоязычные торрент-трекеры, а также прочие ресурсы, предоставляющие возможность скачивать/читать книги,
+            однако, данная книга не была нами обнаружена.
+
+            К сожалению, электронная версия для покупки также отсутствует.
+
+            -----
+
+            *Если Вас интересует, где можно приобрести эту книгу в бумажном варианте, мы с радостью найдем для Вас эту
+            информацию.*
+        </answer>
+    </message>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com/julier/dosearchqt-5.8.0/admin"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com/941f9739" id="izcRCFkcd8-1493713395">
+        <answer xmlns="http://expleague.com/scheme" difficulty="1.0" extra-info="0" success="3">Не доступна в эл.
+            формате
+            Мы изучили информацию по вашему вопросу, изучили крупнейшие онлайн-библиотеки, проверили русскоязычные и
+            англоязычные торрент-трекеры, а также прочие ресурсы, предоставляющие возможность скачивать/читать книги,
+            однако, данная книга не была нами обнаружена.
+
+            К сожалению, электронная версия для покупки также отсутствует.
+
+            -----
+
+            *Если Вас интересует, где можно приобрести эту книгу в бумажном варианте, мы с радостью найдем для Вас эту
+            информацию.*
+        </answer>
+        <verified xmlns="http://expleague.com/scheme"
+                  authority="vk-12520103imac-julia@expleague.com/julier/dosearchqt-5.8.0/admin"/>
+    </message>
+    <message xmlns="jabber:client" from="room-941f9739-11a1f13b-a0f42901@muc.expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="82gTp75xsP-1493713395">
+        <progress xmlns="http://expleague.com/scheme" order="3726">
             <state>done</state>
         </progress>
     </message>
-    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="HKRYn0xXTz-1492698074">
-        <progress xmlns="http://expleague.com/scheme" order="1677">
-            <state>open</state>
-        </progress>
+    <message xmlns="jabber:client" from="vk-12520103imac-julia@expleague.com"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="lzk0JuQIUI-1493713395">
+        <done xmlns="http://expleague.com/scheme"/>
     </message>
-    <message xmlns="jabber:client" from="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com"
-             to="room-0694d14d-44155822-7d3e7c61@muc.testnode3.expleague.com" id="9l0faLNhhv-1492698089">
-        <progress xmlns="http://expleague.com/scheme" order="1675">
-            <state>in-progress</state>
-        </progress>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="R1a9X+Myv0-1493714246">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="X2B6lfFDmQ-1493714515">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ydJ5/6ijyC-1493714515">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="8NySdnSVKg-1493714528">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="DPRaghL3J9-1493714529">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="aATtnXhoOK-1493714542">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="i0QkIVvqj5-1493714542">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="J1yMO34AxD-1493714542">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="JUBXhenUs9-1493714542">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="xdGOsAF8kk-1493714542">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="3bqvIErMum-1493714543">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="aLcjAzJJvR-1493714543">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="lcfvvBiYlC-1493714555">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="b21xLpzaPt-1493714555">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="HmU9Q0w3nk-1493714561">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ejnD9Vq+F/-1493714562">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="R70r+U4Hat-1493714628">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="7DoVOG+Z+6-1493714628">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="f0fI4egko4-1493714638">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="pjO34qa67Q-1493714638">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Jw0SCgptDd-1493715420">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="aISIuHSmGN-1493715420">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Q5UgLJ668Z-1493715420">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="3VdVUqF35b-1493715420">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="SKRNpPWd4e-1493715420">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="s8QUn6aDDI-1493715420">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="QMtd+lKjZ9-1493715420">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="S+GGksPpxI-1493715420">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="i7Q1LYSUag-1493715420">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Zkz5L+8uwk-1493715420">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="pNXGlRSaaD-1493715420">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="tmaocSKHfC-1493715420">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="RV5ilZDqf0-1493715420">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="085fl3Z4cU-1493715420">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Zp3+XWU6mx-1493715420">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="imK8itqQ7c-1493715988">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="G2lmkSr/WI-1493715988">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="HM+cvrDqda-1493715988">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Kbm2aHKA8E-1493715988">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="7G13hgRCsY-1493715988">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="PE7WwaeLLE-1493715988">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="VEhP6C6IYD-1493715988">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="XDnrGUzqcX-1493715988">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="XyILbok3UN-1493715988">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="fPD4fQAlLH-1493715988">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="TtPgDOW/VU-1493715988">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="224g+pAY1q-1493715988">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Jr/wqmJtBw-1493715988">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="+lCCgprnSW-1493715988">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="GwrRPcrraX-1493715988">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="z/N5yatn/Q-1493717278">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="wJ0su0qkhq-1493717278">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Blk7R+b5Mp-1493717278">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="5F6cjBfxxn-1493717278">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="2GNQUAX28o-1493717278">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="EjH1c4cJNp-1493717278">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="BZHbu+UKGE-1493717278">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="3dv1XBiYzL-1493717278">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="8hT4FfsLBU-1493717278">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="W9C96z+nn3-1493717278">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="7lxXZyX3SP-1493717278">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="uTrbhrnBfY-1493717278">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="gQsIFjNXFH-1493717278">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="1DpWBhSVrI-1493717278">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ciZv19wxrW-1493717278">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="k0aLjcICMc-1493717283">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="OvXHGHn0EW-1493717283">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="KrUEVEd4qC-1493717336">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="lbsUeUnehT-1493717337">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="qumNRWONQ/-1493717339">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="wrAoQsrcKP-1493717339">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="obUqSr6H2c-1493717847">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="/Sb5/0Q4T1-1493717847">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="7WltlF1VnU-1493717847">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="F/ZUVP2yFn-1493717847">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="5Q1pttygUI-1493717847">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="yTYiqdMJ1P-1493717847">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="RHpUJUDeYM-1493717847">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="1A2bAMMFNO-1493717847">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="gs3ZdSJUb4-1493717847">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="pvqJsrA8BZ-1493717847">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Kh1ZYz530O-1493717847">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="slTfkfeHgA-1493717847">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="SwOTjPYIDE-1493717847">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="1fTeNwdQ1D-1493717847">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Pvq+2ZAVO+-1493717847">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="d4MNNXycq2-1493717847">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="NVUcUPWoT9-1493717847">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="u5gjCWP9Mh-1493717847">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="6rmo3WyN+O-1493717847">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="RozGHVKtKN-1493717847">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="9zYJuwA9EN-1493717847">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ZjOTvRlI4m-1493718711">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="e/XalMp9fD-1493718711">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="XXWvcbb73O-1493718711">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="uTCr5GNWcv-1493718711">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="jQrdr2csEi-1493718711">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="axr6yTwSGo-1493718711">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="+aq0g9gbot-1493718711">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="uZYGeKc9dV-1493718711">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="7WA45NpWeD-1493718711">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="2CxOm4DVlg-1493718711">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="QHUpcuG4tn-1493718711">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ED6nd6JYvB-1493718711">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="j4EQp9m+Bs-1493718711">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="UOLbrn49jG-1493718711">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="pitV3hzimz-1493718711">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="vP6i1gMAjh-1493718711">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Xn6yuW4/tY-1493718711">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="WphWn73yvi-1493718711">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="LKy1RzBrU9-1493718711">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Mk2vZppETz-1493718711">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="l3uSD8rSwN-1493718711">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="mB5aXTn9S7-1493718826">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="UD7LwdnWzH-1493718826">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="XgrjiCCYsP-1493718826">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="6b8RJOU14h-1493718826">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="K8tn86TGqz-1493718826">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="R3aoFryQdq-1493718826">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Qza0e5kuPH-1493718826">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ZqCDN/2Ch7-1493718826">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="lQqD+mUf8W-1493718826">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="P5dDWYs/5N-1493718826">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="yOAHVzscs2-1493718826">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="c8Ltcr7Y3A-1493718826">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="pUBgABJFcp-1493718826">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="bFa7u29mPu-1493718826">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="BAAlfLbyaF-1493718826">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="NGyLCsftj1-1493718826">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="9/5VwV7U6v-1493718826">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="qMuU1wJAX5-1493718826">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="x8430H32qB-1493718826">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="IlVR4fRNpO-1493718826">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Yj0Wiu8gRY-1493718826">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="NUInfy0ohR-1493718887">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="mSf6AG8fHR-1493718887">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="KtKo1Giz3U-1493718887">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="XADnOIgtkk-1493718887">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ypblA7DYdV-1493718887">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="KWniFA6PQA-1493718887">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="eD+iVZvVsy-1493718887">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Wz9/EMDSbd-1493718887">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="rRZkE0fe0H-1493718887">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="smtO9LhWzb-1493718887">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="hAfn4yPdb7-1493718887">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="7ZsBSlfyiF-1493718887">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Jeof2G03/C-1493718887">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="7S6Or4AP+K-1493718887">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="85If5KoT45-1493718887">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="RqgMKEyVGr-1493718887">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="DSdWCPfWrb-1493718887">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="p3nc63WwCh-1493718887">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="v2+OYNKfiz-1493718887">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="lP56xfxynJ-1493718887">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="vgi+V3Y9Wk-1493718887">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="tUjProbuXJ-1493719758">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="xWKh9GA2JT-1493719758">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Xiu7rPwHu/-1493719758">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="zKg9JxRPwT-1493719758">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="t+gME0SWm6-1493719758">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="mnIoB6fr5L-1493719758">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="NTT6myr2sZ-1493719758">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="XCh8I++eN+-1493719758">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="g9ZOFqY1Y9-1493719758">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="FbdDmxIcce-1493719758">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="E7hDXS7hCy-1493719758">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="bB63Ac0VAy-1493719758">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Y+5z22H3WN-1493719758">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="f4vS2Tx0y+-1493719758">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="wtw5djGNtI-1493719758">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="tAqHoVMx2l-1493719758">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="GJuuw0SSFz-1493719758">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="UUFMmGfCGG-1493719758">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="nK0xQbPp1W-1493719758">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="6qvPhTeAWs-1493719758">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="pj5hDwUbA5-1493719758">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="MbHK/rijS+-1493720352">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="AwRoopMIvX-1493720352">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="+GKLF74I2P-1493720352">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="NgEIx+ynEg-1493720352">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="hZUqB0HxHg-1493720352">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Eror0nEnvv-1493720352">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="6cGJ+c+CTM-1493720352">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ily4lE1pMI-1493720352">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="z9kAbuajtL-1493720352">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="0QfV7erzW6-1493720352">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="aaYJwLmwzR-1493720352">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="cuLo3NjwnT-1493720352">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="TQIOE5/uqJ-1493720352">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="JxMtPZPy7k-1493720352">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="J5/U8OQOW5-1493720352">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="fdaKJ4KtFa-1493720352">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="SwAtUVO1hL-1493720352">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="rGX0ieWSlo-1493720352">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="UECpn4r9EM-1493720352">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="M4735P/yDD-1493720352">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="LuZgjcLDAt-1493720352">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="IlYT8uQVpc-1493721372">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="1PGH0I/GxE-1493721372">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="mNs7IYeETN-1493721372">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="nMyGfaHDys-1493721372">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Qc7s39J2Kw-1493721372">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="TdTDPLA0Xk-1493721372">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="TdX6BVYPA0-1493721372">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="V4Q1MUWQOz-1493721372">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="v7Cgzt0eAn-1493721372">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="x2G91kp1zS-1493721372">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ZCoa5sJwps-1493721372">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="L6tSsj+zFw-1493721372">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="YPIzpLg8LM-1493721372">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="plGdhaaqzc-1493721372">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="pGb1nODXLW-1493721372">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="uSdSQIrQeV-1493721372">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Lpf1kipcVr-1493721372">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="+ZsUXYePWn-1493721372">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="jxDo7/UQwZ-1493721372">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="8isNKDC9Na-1493721372">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="e5iIHI4wIr-1493721372">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="4ORUqxsQOL-1493722228">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ZuG5MBCIOv-1493722228">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="2pM7s+hjUd-1493722228">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="bb/mjHRZqC-1493722228">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="q6FdKHTXW6-1493722228">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="pxC7GLrxs6-1493722228">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="pih9F5QF1Y-1493722228">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="obh+rCxMe+-1493722228">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="/dTPh3DTcs-1493722228">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="xrEpdxDcbg-1493722228">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="qEbV7Hh09M-1493722228">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="XkymC2EO0C-1493722228">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ZD9gPnniKX-1493722228">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="f9O0Kx1Qn4-1493722228">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="4oKJSPTPj0-1493722228">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="fUilwZ2fqy-1493722228">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="UGWwprQJrh-1493722228">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="6/EmhKjA8V-1493722228">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="CNsFJehmh6-1493722228">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="UPhZgfH+yM-1493722228">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="wwEPZfLuEy-1493722228">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ZaraGTfImo-1493723175">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="MHvzqR8vkk-1493723175">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="lX/dOSg7qj-1493723175">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Ri32HlfttJ-1493723175">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="O9SXGvYDmO-1493723175">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="F3BvG5P6On-1493723175">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="gSCknaAI/1-1493723175">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="94mNq8uIN1-1493723175">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="gQBsE3xmA2-1493723175">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="UzLUrA4FEP-1493723175">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="OS/+1MDAOJ-1493723175">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="5D412XnT1I-1493723175">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="myGgeCD1CH-1493723175">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="wPD86uiMvn-1493723175">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="4WUgaPXwjy-1493723175">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="N3MOezidID-1493723175">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="sLwxfEV5ug-1493723175">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="XOL8zNI4Aq-1493723175">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="qYdtKTcWpj-1493723175">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="G1zrlHe1px-1493723175">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="gYhcifrVgZ-1493723175">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="pjxTpz/qrH-1493723517">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="GyBaMlLoz3-1493723517">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="k1x9iUd+ua-1493723517">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="OsvQ9cTYud-1493723517">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="dpKUPvPvxw-1493723517">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="HFHIINvbcH-1493723517">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="KSnQGF8j8I-1493723517">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="kHUg05gHZk-1493723517">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="gZa3DZrzLO-1493723517">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="XGf3O5aqTJ-1493723517">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="pAlxsUqcXf-1493723517">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="V2myhhlAsd-1493723517">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="0DEk5uayZ+-1493723517">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="unme9jIpER-1493723517">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Ics4PEjCEv-1493723517">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="OFyTdFXRCx-1493723517">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="FzE9om/9HW-1493723517">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="G2zlZIn0f3-1493723517">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="RCU+se0yGu-1493723517">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="M4JwJzeaVU-1493723517">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="KhW0jKGQvt-1493723517">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="jL+f5XaJlm-1493723589">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="AG7UcOAqxw-1493723589">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="2nziazv4Ik-1493724064">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="B0YTgYwxiL-1493724064">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="ZKltFPpbY/-1493724064">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="KaSZayzRS4-1493724064">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="5fdEeZMGNY-1493724064">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="cJcrOLepIQ-1493724064">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="b9Qb+JyyNV-1493724064">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="aVgRd9vHeE-1493724064">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="PxPFNJ0ybH-1493724064">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="vgGRETq854-1493724064">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="oFHXi31865-1493724064">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="6c7HytwFMn-1493724064">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="zBSBGgQ4+9-1493724064">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="lsQPcoiqH/-1493724064">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="+0eUm5kVsb-1493724064">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="dotPwnKDnF-1493724064">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="nX7c8Uh7h6-1493724064">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="w0BSHW6Lxa-1493724064">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="pJn51oCk5O-1493724064">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="9Eg35uKkyc-1493724064">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="QZFfPCbux4-1493724064">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="WsiYQZSDvM-1493724064">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="eE9ENt36Iy-1493724064">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="9gMeGo16RY-1493725257">
+        <offer xmlns="http://expleague.com/scheme" client="941f9739@expleague.com" local="false" urgency="day"
+               started="1.49367774162674E9">
+            <topic>Где бы скачать/почитать эту книжку?</topic>
+            <image>https://img.expleague.com/OSYpRdXPNGZgRvsY/941f9739--7097810688021521826.jpeg</image>
+            <location longitude="30.27953602098748" latitude="60.01605575372604"/>
+        </offer>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="wOSTQEh4D4-1493725257">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="jZZKGun39M-1493725257">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="O2EIrInOfK-1493725257">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="JkFKPHq0BC-1493725257">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="6CaJjk7XhI-1493725257">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="inwOZ7+sPw-1493725257">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="prKvjuQAYT-1493725257">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="buXhvzkQg9-1493725257">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Rk81JXq63Q-1493725257">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="fm+atSKMha-1493725257">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="5jY5Qm6D96-1493725257">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="xvzy3HvdcB-1493725257">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="KTntqH7HDo-1493725257">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="zVeng8WFEn-1493725257">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="hvQk6xRCpw-1493725257">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="fPKpSWyj0N-1493725257">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Hhs7WpHwMv-1493725257">
+        <feedback xmlns="http://expleague.com/scheme" stars="3"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="f2pS8qfCsC-1493725257">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Ge/rNZZCXa-1493725257">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="2IYVZVlWI3-1493725257">
+        <done xmlns="http://expleague.com/scheme"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="Rz13wc8EYh-1493725257">
+        <feedback xmlns="http://expleague.com/scheme" stars="2"/>
+    </message>
+    <message xmlns="jabber:client" type="normal" from="941f9739@expleague.com/941f9739-11a1f13b/unsearch"
+             to="room-941f9739-11a1f13b-a0f42901@muc.expleague.com" id="3M1hMFO24t-1493725257">
+        <done xmlns="http://expleague.com/scheme"/>
     </message>
 </stream:stream>
