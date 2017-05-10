@@ -436,6 +436,20 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
         throw new RuntimeException(e);
       }
     }
+
+    @Override
+    public void offer(Offer offer) {
+      super.offer(offer);
+      try {
+        final PreparedStatement offerChange = createStatement("change-offer", "UPDATE Orders SET offer = ? WHERE id = ?");
+        offerChange.setString(2, id);
+        offerChange.setCharacterStream(1, new StringReader(offer.xmlString()));
+        offerChange.execute();
+      }
+      catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   protected OrderQuery createQuery(final LaborExchange.OrderFilter filter) {

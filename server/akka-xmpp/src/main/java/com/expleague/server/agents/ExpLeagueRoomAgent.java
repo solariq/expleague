@@ -264,9 +264,13 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         else if (currentOffer != null) {
           if (knownToClient.contains(from))
             message(new Message(from, roomAlias(owner()), msg.get(Cancel.class)));
+          final Offer oldOffer = currentOffer;
           currentOffer = currentOffer.copy();
           currentOffer.filter().reject(from);
-          message(new Message(jid(), jid(), currentOffer));
+          if (!currentOffer.equals(oldOffer)) {
+            inflightOrders().filter(order -> order.offer().equals(oldOffer)).forEach(order -> order.offer(currentOffer));
+            message(new Message(jid(), jid(), currentOffer));
+          }
         }
     }
     else if (msg.has(Feedback.class)) {

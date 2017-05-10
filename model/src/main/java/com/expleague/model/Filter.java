@@ -48,9 +48,13 @@ public class Filter extends Attachment {
       reject = new ArrayList<>();
     if (accept != null) {
       accept.remove(slacker);
+      if (accept.isEmpty())
+        accept = null;
     }
     if (prefer != null) {
       prefer.remove(slacker);
+      if (prefer.isEmpty())
+        prefer = null;
     }
     if (!reject.contains(slacker))
       reject.add(slacker);
@@ -82,5 +86,25 @@ public class Filter extends Attachment {
 
   public Stream<JID> preferred() {
     return prefer != null ? prefer.stream() : Stream.empty();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Filter filter = (Filter) o;
+
+    if (reject != null ? !reject.equals(filter.reject) : filter.reject != null) return false;
+    if (accept != null ? !accept.equals(filter.accept) : filter.accept != null) return false;
+    return prefer != null ? prefer.equals(filter.prefer) : filter.prefer == null;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = reject != null ? reject.hashCode() : 0;
+    result = 31 * result + (accept != null ? accept.hashCode() : 0);
+    result = 31 * result + (prefer != null ? prefer.hashCode() : 0);
+    return result;
   }
 }

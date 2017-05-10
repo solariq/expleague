@@ -147,13 +147,7 @@ public class Item implements Cloneable {
   }
 
   public <T extends Item> T copy() {
-    try {
-      //noinspection unchecked
-      return (T)clone();
-    }
-    catch (CloneNotSupportedException e) {
-      throw new RuntimeException(e);
-    }
+    return Item.create(xmlString());
   }
 
   private static class XmlOutputter {
