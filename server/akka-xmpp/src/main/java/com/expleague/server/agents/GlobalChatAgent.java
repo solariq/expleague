@@ -4,6 +4,7 @@ import akka.actor.ActorContext;
 import akka.persistence.RecoveryCompleted;
 import com.expleague.model.*;
 import com.expleague.model.Operations.*;
+import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPUser;
 import com.expleague.util.akka.ActorMethod;
@@ -149,6 +150,7 @@ public class GlobalChatAgent extends RoomAgent {
       if (mode() == ProcessMode.RECOVER) {
         movingAlreadyPersistedToJsr = true;
       }
+
       final Message message = (Message) event;
       final String room = message.from().local();
       try {
@@ -162,8 +164,6 @@ public class GlobalChatAgent extends RoomAgent {
         messageNode.setProperty(Property.JCR_MIMETYPE, "text/markdown");
         messageNode.setProperty(Property.JCR_DATA, jcrSession.getValueFactory().createBinary(new ByteArrayInputStream(message.toString().getBytes(StreamTools.UTF))));
         messageNode.setProperty(Property.JCR_ENCODING, "UTF-8");
-
-        System.out.println("SAVE: " + message.toString()); //TODO: remove
 
         jcrSession.save();
         handler.accept(event);
@@ -180,16 +180,16 @@ public class GlobalChatAgent extends RoomAgent {
 
   @Override
   protected void preStart() throws Exception {
-    //if (!ExpLeagueServer.config().unitTest()) {
-    jcrSession = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
-    assert jcrSession != null;
+    if (!ExpLeagueServer.config().unitTest()) {
+      jcrSession = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
+      assert jcrSession != null;
 
-    final Node rootNode = jcrSession.getRootNode();
-    if (!rootNode.hasNode("globalchat"))
-      globalChatNode = rootNode.addNode("globalchat");
-    else
-      globalChatNode = rootNode.getNode("globalchat");
-    //}
+      final Node rootNode = jcrSession.getRootNode();
+      if (!rootNode.hasNode("globalchat"))
+        globalChatNode = rootNode.addNode("globalchat");
+      else
+        globalChatNode = rootNode.getNode("globalchat");
+    }
     super.preStart();
   }
 
@@ -206,31 +206,29 @@ public class GlobalChatAgent extends RoomAgent {
   @Override
   public void onReceiveRecover(Object o) throws Exception {
     if (o instanceof RecoveryCompleted) {
-      //if (!ExpLeagueServer.config().unitTest()) {
-      if (!movingAlreadyPersistedToJsr) {
-        recoveringFromJcr = true;
-        final NodeIterator rooms = globalChatNode.getNodes();
-        while (rooms.hasNext()) {
-          final Node roomNode = rooms.nextNode();
-          final NodeIterator items = roomNode.getNodes();
-          while (items.hasNext()) {
-            final Node next = items.nextNode();
-            final Property property = next.getProperty(Property.JCR_DATA);
-            final Binary binary = property.getBinary();
-            final String data = CharStreams.toString(new InputStreamReader(binary.getStream(), StreamTools.UTF));
-            final Message message = Item.create(data);
-            process(message);
-
-            System.out.println("PAV: " + message); //TODO: remove
+      if (!ExpLeagueServer.config().unitTest()) {
+        if (!movingAlreadyPersistedToJsr) {
+          recoveringFromJcr = true;
+          final NodeIterator rooms = globalChatNode.getNodes();
+          while (rooms.hasNext()) {
+            final Node roomNode = rooms.nextNode();
+            final NodeIterator items = roomNode.getNodes();
+            while (items.hasNext()) {
+              final Node next = items.nextNode();
+              final Property property = next.getProperty(Property.JCR_DATA);
+              final Binary binary = property.getBinary();
+              final String data = CharStreams.toString(new InputStreamReader(binary.getStream(), StreamTools.UTF));
+              final Message message = Item.create(data);
+              process(message);
+            }
           }
+          recoveringFromJcr = false;
         }
-        recoveringFromJcr = false;
+        else {
+          movingAlreadyPersistedToJsr = false;
+          deleteMessages();
+        }
       }
-      else {
-        movingAlreadyPersistedToJsr = false;
-        deleteMessages();
-      }
-      //}
     }
     super.onReceiveRecover(o);
   }

@@ -44,6 +44,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   private Map<String, Message> answers = new HashMap<>();
 
   private boolean oldFormat = false;
+  private long currentTime;
 
   public ExpLeagueRoomAgent(JID jid) {
     super(jid, true);
@@ -136,8 +137,21 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     return false;
   }
 
+  protected boolean filter(Presence pres) {
+    currentTime = System.currentTimeMillis();
+    return super.filter(pres);
+  }
+
+  @Override
+  public boolean update(Presence presence) {
+    currentTime = System.currentTimeMillis();
+    return super.update(presence);
+  }
+
   @Override
   protected boolean filter(Message msg) {
+    currentTime = msg.ts();
+
     if (owner() == null)
       affiliation(msg.from(), Affiliation.OWNER);
     if (msg.has(Start.class))
@@ -150,6 +164,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   public void process(Message msg) {
+    currentTime = msg.ts();
     super.process(msg);
 
     final JID from = msg.from();
@@ -249,9 +264,13 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         else if (currentOffer != null) {
           if (knownToClient.contains(from))
             message(new Message(from, roomAlias(owner()), msg.get(Cancel.class)));
+          final Offer oldOffer = currentOffer;
           currentOffer = currentOffer.copy();
           currentOffer.filter().reject(from);
-          message(new Message(jid(), jid(), currentOffer));
+          if (!currentOffer.equals(oldOffer)) {
+            inflightOrders().filter(order -> order.offer().equals(oldOffer)).forEach(order -> order.offer(currentOffer));
+            message(new Message(jid(), jid(), currentOffer));
+          }
         }
     }
     else if (msg.has(Feedback.class)) {
@@ -379,8 +398,11 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   private void tellGlobal(Item... progress) {
-    if (mode() != ProcessMode.RECOVER)
-      GlobalChatAgent.tell(new Message(jid(), XMPP.jid(GlobalChatAgent.ID), Message.MessageType.GROUP_CHAT, progress), context());
+    if (mode() != ProcessMode.RECOVER) {
+      final Message message = new Message(jid(), XMPP.jid(GlobalChatAgent.ID), Message.MessageType.GROUP_CHAT, progress);
+      message.append(new Message.Timestamp(currentTime));
+      GlobalChatAgent.tell(message, context());
+    }
   }
 
   private void tellGlobal(Stanza stanza) {

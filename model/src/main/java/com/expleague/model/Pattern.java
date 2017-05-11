@@ -62,6 +62,22 @@ public class Pattern extends Item {
     return new Pattern(name, icon);
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    final Pattern pattern = (Pattern) o;
+    return name.equals(pattern.name) && type == pattern.type;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = name.hashCode();
+    result = 31 * result + type.hashCode();
+    return result;
+  }
+
   @XmlEnum
   public enum Type {
     @XmlEnumValue("answer") ANSWER(0),
