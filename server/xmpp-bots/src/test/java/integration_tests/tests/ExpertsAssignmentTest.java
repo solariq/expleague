@@ -71,7 +71,6 @@ public class ExpertsAssignmentTest extends BaseRoomTest {
     clientBot.sendGroupchat(roomJID, messageForReopen);
     //Assert
     assertThereAreNoFailedMessages(adminBot.tryReceiveMessages(new StateLatch(), expectedMessage.build()));
-    assertThereAreNoFailedMessages(defaultExpert.tryReceiveMessages(new StateLatch(), expectedMessage.build()));
 
     //Act
     Stream.of(expertBots).forEach(Bot::offerCheckReceivedAndReset);
@@ -184,7 +183,6 @@ public class ExpertsAssignmentTest extends BaseRoomTest {
     clientBot.sendGroupchat(roomJID, messageForReopen);
     //Assert
     assertThereAreNoFailedMessages(adminBot.tryReceiveMessages(new StateLatch(), expectedMessage.build()));
-    assertThereAreNoFailedMessages(defaultExpert.tryReceiveMessages(new StateLatch(), expectedMessage.build()));
 
     //Act
     Stream.of(expertBots).forEach(Bot::offerCheckReceivedAndReset);
