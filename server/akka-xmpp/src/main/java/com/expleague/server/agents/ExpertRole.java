@@ -227,7 +227,6 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
                   task.broker().tell(msg.get(Progress.class), self());
                 return stay();
               }
-
               else if (msg.has(Done.class) || msg.has(Answer.class)) { // hack for answer
                 explain("Expert has finished task execution. Notifying broker and going to labor exchange.");
                 task.broker().tell(new Done(), self());

@@ -6,6 +6,7 @@ import akka.persistence.DeleteMessagesSuccess;
 import akka.persistence.RecoveryCompleted;
 import com.expleague.model.Affiliation;
 import com.expleague.model.Delivered;
+import com.expleague.model.Operations;
 import com.expleague.model.Role;
 import com.expleague.server.Subscription;
 import com.expleague.server.dao.Archive;
@@ -288,16 +289,16 @@ public class RoomAgent extends PersistentActorAdapter {
     final MucUserStatus status = participants.compute(from.bare(), (jid, s) -> s != null ? s : new MucUserStatus(jid, jid.local(), Affiliation.NONE));
 
     try {
+      boolean changed = false;
       if (mode == ProcessMode.NORMAL) { // need to check if the update is valid
         if (!checkAffiliation(from, affiliation))
           throw new MembershipChangeRefusedException();
         if (!checkRole(from, affiliation, role))
           throw new MembershipChangeRefusedException();
-      }
-      boolean changed = false;
-      if (role != null && role != status.role) {
-        changed = true;
-        status.role = role;
+        if (role != null && role != status.role) {
+          changed = true;
+          status.role = role;
+        }
       }
       if (affiliation != null && affiliation != status.affiliation) {
         changed = true;

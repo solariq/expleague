@@ -153,12 +153,8 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
     if (owner() == null)
       affiliation(msg.from(), Affiliation.OWNER);
-    if (msg.has(Start.class)) {
-      if (mode() == ProcessMode.NORMAL)
-        update(msg.from(), Role.PARTICIPANT, Affiliation.MEMBER);
-      else
-        affiliation(msg.from(), Affiliation.MEMBER);
-    }
+    if (msg.has(Start.class))
+      affiliation(msg.from(), Affiliation.MEMBER);
     else if (msg.has(Cancel.class) && affiliation(msg.from()) != Affiliation.OWNER)
       affiliation(msg.from(), Affiliation.NONE);
     else
@@ -194,6 +190,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     }
     else if (msg.has(Start.class)) {
       final Start start = msg.get(Start.class);
+      update(from, Role.PARTICIPANT, null);
       if (start.order() != null && !start.order().startsWith("room")) /* old format*/
         start.order(null);
 
@@ -288,10 +285,13 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     }
     else if (msg.has(Resume.class)) {
       final Resume resume = msg.get(Resume.class);
+      update(from, Role.PARTICIPANT, null);
+      enter(from, new MucXData(new MucHistory()));
       orders(OrderState.SUSPENDED).filter(o -> o.id().equals(resume.order()) || resume.order() == null).forEach(o -> o.state(OrderState.IN_PROGRESS, currentTime));
     }
     else if (msg.has(Done.class)) {
       final Done done = msg.get(Done.class);
+      update(from, Role.NONE, null);
       inflightOrders().forEach(order->{
         if (order.state() != OrderState.DONE && (order.id().equals(done.order()) || done.order() == null)) {
           order.state(OrderState.DONE, currentTime);
