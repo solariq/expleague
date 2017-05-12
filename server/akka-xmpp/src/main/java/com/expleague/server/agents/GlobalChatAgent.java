@@ -1,10 +1,9 @@
 package com.expleague.server.agents;
 
 import akka.actor.ActorContext;
-import akka.persistence.RecoveryCompleted;
 import com.expleague.model.*;
 import com.expleague.model.Operations.*;
-import com.expleague.server.ExpLeagueServer;
+import com.expleague.model.RoomState;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPUser;
 import com.expleague.util.akka.ActorMethod;
@@ -14,21 +13,9 @@ import com.expleague.xmpp.muc.MucHistory;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Message.MessageType;
 import com.expleague.xmpp.stanza.Stanza;
-import com.google.common.io.CharStreams;
-import com.spbsu.commons.io.StreamTools;
-import org.apache.jackrabbit.commons.JcrUtils;
-import org.jetbrains.annotations.Nullable;
 
-import javax.jcr.*;
-import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.expleague.model.RoomState.*;
@@ -40,24 +27,11 @@ import static com.expleague.model.RoomState.*;
  */
 @SuppressWarnings("UnusedParameters")
 public class GlobalChatAgent extends RoomAgent {
-  private static final Logger log = Logger.getLogger(GlobalChatAgent.class.getName());
   public static final String ID = "global-chat";
   public Map<String, RoomStatus> rooms = new HashMap<>();
 
-  private Repository repository;
-  private Node globalChatNode;
-  @Nullable
-  private Session jcrSession;
-  private boolean recoveringFromJcr = false;
-  private boolean movingAlreadyPersistedToJsr = false;
-
   public GlobalChatAgent(JID jid) {
     super(jid, false);
-    try {
-      repository = JcrUtils.getRepository();
-    } catch (RepositoryException e) {
-      log.warning("Unable to start jackrabbit repository");
-    }
   }
 
   public static boolean isTrusted(JID from) {
@@ -145,55 +119,6 @@ public class GlobalChatAgent extends RoomAgent {
   }
 
   @Override
-  public <T> void persist(final T event, final Consumer<? super T> handler) {
-    if (!recoveringFromJcr && jcrSession != null) {
-      if (mode() == ProcessMode.RECOVER) {
-        movingAlreadyPersistedToJsr = true;
-      }
-
-      final Message message = (Message) event;
-      final String room = message.from().local();
-      try {
-        final Node roomNode;
-        if (globalChatNode.hasNode(room))
-          roomNode = globalChatNode.getNode(room);
-        else
-          roomNode = globalChatNode.addNode(room);
-
-        final Node messageNode = roomNode.addNode(URLEncoder.encode(message.id(), "UTF-8"), "nt:resource");
-        messageNode.setProperty(Property.JCR_MIMETYPE, "text/markdown");
-        messageNode.setProperty(Property.JCR_DATA, jcrSession.getValueFactory().createBinary(new ByteArrayInputStream(message.toString().getBytes(StreamTools.UTF))));
-        messageNode.setProperty(Property.JCR_ENCODING, "UTF-8");
-
-        jcrSession.save();
-        handler.accept(event);
-      } catch (RepositoryException re) {
-        log.log(Level.WARNING, "JCR exception during persist", re);
-      } catch (UnsupportedEncodingException uee) {
-        log.log(Level.WARNING, "Unsupported encoding", uee);
-      }
-    }
-    else {
-      handler.accept(event);
-    }
-  }
-
-  @Override
-  protected void preStart() throws Exception {
-    if (!ExpLeagueServer.config().unitTest()) {
-      jcrSession = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
-      assert jcrSession != null;
-
-      final Node rootNode = jcrSession.getRootNode();
-      if (!rootNode.hasNode("globalchat"))
-        globalChatNode = rootNode.addNode("globalchat");
-      else
-        globalChatNode = rootNode.getNode("globalchat");
-    }
-    super.preStart();
-  }
-
-  @Override
   protected void onStart() {
     rooms.forEach((room, state) -> {
       if (state.currentOffer != null && EnumSet.of(OPEN, CHAT, RESPONSE, WORK).contains(state.state)) {
@@ -201,36 +126,6 @@ public class GlobalChatAgent extends RoomAgent {
       }
     });
     super.onStart();
-  }
-
-  @Override
-  public void onReceiveRecover(Object o) throws Exception {
-    if (o instanceof RecoveryCompleted) {
-      if (!ExpLeagueServer.config().unitTest()) {
-        if (!movingAlreadyPersistedToJsr) {
-          recoveringFromJcr = true;
-          final NodeIterator rooms = globalChatNode.getNodes();
-          while (rooms.hasNext()) {
-            final Node roomNode = rooms.nextNode();
-            final NodeIterator items = roomNode.getNodes();
-            while (items.hasNext()) {
-              final Node next = items.nextNode();
-              final Property property = next.getProperty(Property.JCR_DATA);
-              final Binary binary = property.getBinary();
-              final String data = CharStreams.toString(new InputStreamReader(binary.getStream(), StreamTools.UTF));
-              final Message message = Item.create(data);
-              process(message);
-            }
-          }
-          recoveringFromJcr = false;
-        }
-        else {
-          movingAlreadyPersistedToJsr = false;
-          deleteMessages();
-        }
-      }
-    }
-    super.onReceiveRecover(o);
   }
 
   public static void tell(JID from, Item item, ActorContext context) {
@@ -302,7 +197,7 @@ public class GlobalChatAgent extends RoomAgent {
     }
 
     public Message message() {
-      final Message result = new Message("global-" + id + "-" + (modificationTs / 1000));
+      final Message result = new Message("global-" + id + "-" + (modificationTs/1000));
       result.type(MessageType.GROUP_CHAT);
       result.append(currentOffer);
       result.append(new RoomStateChanged(state));
@@ -313,7 +208,7 @@ public class GlobalChatAgent extends RoomAgent {
 
       final Set<String> ids = new HashSet<>(roles.keySet());
       ids.addAll(affiliations.keySet());
-      for (final String nick : ids) {
+      for (final String nick: ids) {
         final Role role = roles.getOrDefault(nick, Role.NONE);
         final Affiliation affiliation = affiliations.getOrDefault(nick, Affiliation.NONE);
         final RoomRoleUpdate update = new RoomRoleUpdate(XMPP.jid(nick), role, affiliation);
