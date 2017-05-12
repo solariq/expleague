@@ -153,8 +153,12 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
     if (owner() == null)
       affiliation(msg.from(), Affiliation.OWNER);
-    if (msg.has(Start.class))
-      affiliation(msg.from(), Affiliation.MEMBER);
+    if (msg.has(Start.class)) {
+      if (mode() == ProcessMode.NORMAL)
+        update(msg.from(), Role.PARTICIPANT, Affiliation.MEMBER);
+      else
+        affiliation(msg.from(), Affiliation.MEMBER);
+    }
     else if (msg.has(Cancel.class) && affiliation(msg.from()) != Affiliation.OWNER)
       affiliation(msg.from(), Affiliation.NONE);
     else
@@ -204,11 +208,10 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         state(WORK);
         startOrders(currentOffer);
       }
-      orders(OrderState.NONE, OrderState.OPEN).filter(o -> o.id().equals(start.order()) || start.order() == null).forEach(o -> {
+      orders(OrderState.NONE, OrderState.OPEN).filter(o -> o.broker() == null && (o.id().equals(start.order()) || start.order() == null)).forEach(o -> {
         o.state(OrderState.IN_PROGRESS, currentTime);
         o.role(from, ACTIVE, currentTime);
       });
-
       enter(from, new MucXData(new MucHistory()));
       final ExpertsProfile profile = Roster.instance().profile(from.local());
       if (!knownToClient.contains(from.bare())) {
