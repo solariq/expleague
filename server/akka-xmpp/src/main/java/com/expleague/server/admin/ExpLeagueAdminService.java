@@ -365,7 +365,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           entry.getValue()
         ));
       }
-      Collections.sort(result, (o1, o2) -> {
+      result.sort((o1, o2) -> {
         final DateTime d2 = DateTime.parse(o2.getGroupName(), formatter);
         final DateTime d1 = DateTime.parse(o1.getGroupName(), formatter);
         return d2.compareTo(d1);

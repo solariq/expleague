@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.expleague.model.RoomState.*;
-import static com.expleague.server.agents.ExpLeagueOrder.Role.ACTIVE;
+import static com.expleague.server.agents.ExpLeagueOrder.Role.*;
 
 /**
  * User: solar
@@ -119,8 +119,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     if (affiliation(to) == Affiliation.OWNER) { // client
       if (msg instanceof Message) {
         final Message message = (Message) msg;
-        return (message.type() == Message.MessageType.GROUP_CHAT && !message.body().isEmpty()) ||
-            message.has(Answer.class) && message.has(Verified.class) ||
+        return (message.type() == Message.MessageType.GROUP_CHAT && !message.body().trim().isEmpty()) ||
             message.has(Progress.class) && message.get(Progress.class).meta().findAny().isPresent();
       }
     }
@@ -203,11 +202,12 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       if (!inflightOrders().findAny().isPresent()) { // backward compatibility
         oldFormat = true;
         state(WORK);
-        startOrders(currentOffer).forEach(order -> {
-          order.role(from, ACTIVE, msg.ts());
-        });
+        startOrders(currentOffer);
       }
-      orders(OrderState.NONE, OrderState.OPEN).filter(o -> o.id().equals(start.order()) || start.order() == null).forEach(o -> o.state(OrderState.IN_PROGRESS, msg.ts()));
+      orders(OrderState.NONE, OrderState.OPEN).filter(o -> o.id().equals(start.order()) || start.order() == null).forEach(o -> {
+        o.state(OrderState.IN_PROGRESS, currentTime);
+        o.role(from, ACTIVE, currentTime);
+      });
 
       enter(from, new MucXData(new MucHistory()));
       final ExpertsProfile profile = Roster.instance().profile(from.local());
@@ -219,7 +219,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       newOffer.filter().prefer(from);
       if (!newOffer.equals(currentOffer)) {
         currentOffer = newOffer;
-        message(new Message(jid(), jid(), currentOffer));
+        tellGlobal(currentOffer, new OfferChange(from.bare()));
       }
       tellGlobal(start, profile.shorten());
     }
@@ -238,7 +238,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       tellGlobal(new RoomMessageReceived(from, true));
       inflightOrders().forEach(order->{
         if (order.state() != OrderState.DONE && (order.id().equals(answer.order()) || answer.order() == null)) {
-          order.state(OrderState.DONE, msg.ts());
+          order.state(OrderState.DONE, currentTime);
         }
       });
     }
@@ -258,18 +258,23 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     }
     else if (msg.has(Cancel.class)) {
         if (fromOwner) {
-          cancelOrders(msg.ts());
+          cancelOrders(currentTime);
           state(CLOSED);
         }
         else if (currentOffer != null) {
+          final Cancel cancel = msg.get(Cancel.class);
           if (knownToClient.contains(from))
-            message(new Message(from, roomAlias(owner()), msg.get(Cancel.class)));
+            message(new Message(from, roomAlias(owner()), cancel));
           final Offer oldOffer = currentOffer;
           currentOffer = currentOffer.copy();
           currentOffer.filter().reject(from);
           if (!currentOffer.equals(oldOffer)) {
-            inflightOrders().filter(order -> order.offer().equals(oldOffer)).forEach(order -> order.offer(currentOffer));
-            message(new Message(jid(), jid(), currentOffer));
+            inflightOrders().filter(order -> order.offer().equals(oldOffer)).forEach(order -> {
+              order.offer(currentOffer);
+              if (cancel.order() == null || cancel.order().equals(order.id()))
+                order.role(from, order.state == OrderState.IN_PROGRESS ? SLACKER : DENIER, currentTime);
+            });
+            tellGlobal(currentOffer, new OfferChange(from.bare()));
           }
         }
     }
@@ -282,13 +287,13 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     }
     else if (msg.has(Resume.class)) {
       final Resume resume = msg.get(Resume.class);
-      orders(OrderState.SUSPENDED).filter(o -> o.id().equals(resume.order()) || resume.order() == null).forEach(o -> o.state(OrderState.IN_PROGRESS, msg.ts()));
+      orders(OrderState.SUSPENDED).filter(o -> o.id().equals(resume.order()) || resume.order() == null).forEach(o -> o.state(OrderState.IN_PROGRESS, currentTime));
     }
     else if (msg.has(Done.class)) {
       final Done done = msg.get(Done.class);
       inflightOrders().forEach(order->{
         if (order.state() != OrderState.DONE && (order.id().equals(done.order()) || done.order() == null)) {
-          order.state(OrderState.DONE, msg.ts());
+          order.state(OrderState.DONE, currentTime);
         }
       });
     }
@@ -297,7 +302,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       update(from, Role.NONE, null);
       orders(OrderState.IN_PROGRESS).forEach(order->{
         if (order.state() != OrderState.SUSPENDED && (order.id().equals(suspend.order()) || suspend.order() == null)) {
-          order.state(OrderState.SUSPENDED, msg.ts());
+          order.state(OrderState.SUSPENDED, currentTime);
         }
       });
     }
@@ -337,7 +342,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         }
         else { // order update during the work
           final List<JID> activeExperts = inflightOrders().flatMap(o -> o.of(ACTIVE)).collect(Collectors.toList());
-          cancelOrders(msg.ts());
+          cancelOrders(currentTime);
           if (activeExperts != null) {
             currentOffer = currentOffer.copy();
             currentOffer.filter().prefer(activeExperts.toArray(new JID[activeExperts.size()]));
@@ -364,12 +369,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
   private void answer(Message answerMsg) {
     final Answer answer = answerMsg.get(Answer.class);
-    String order;
-    if (answer.order() == null)
-      order = orders.isEmpty() ? "last" : orders.get(orders.size() - 1).id();
-    else
-      order = answer.order();
-    answers.put(order, answerMsg);
+    if (answer.order() != null)
+      answers.put(answer.order(), answerMsg);
+    answers.put("last", answerMsg);
   }
 
   private Message answer(String order) {
@@ -463,7 +465,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   public void onDelivered(Delivered delivered) {
     super.onDelivered(delivered);
     if (state == DELIVERY) {
-      final boolean answerDelivered = answers.values().stream().anyMatch(a -> delivered.id().startsWith(a.id()));
+      final boolean answerDelivered = answers.values().stream().anyMatch(a -> delivered.id().startsWith(a.id()) && delivered.user().bareEq(owner()));
       if (answerDelivered) {
         state(FEEDBACK);
         if (mode() == ProcessMode.NORMAL) {
