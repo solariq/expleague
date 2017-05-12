@@ -177,19 +177,17 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
     if (msg.has(Progress.class)) {
       final Progress progress = msg.get(Progress.class);
-      progress.meta().forEach(metaChange -> {
-        inflightOrders().filter(order -> order.id().equals(progress.order()) || progress.order() == null).forEach(order -> {
-          switch (metaChange.target()) {
-            case PATTERNS:
-              break;
-            case TAGS:
-              if (metaChange.operation() == Progress.MetaChange.Operation.ADD)
-                order.tag(metaChange.name());
-              else
-                order.untag(metaChange.name());
-          }
-        });
-      });
+      progress.meta().forEach(metaChange -> inflightOrders().filter(order -> order.id().equals(progress.order()) || progress.order() == null).forEach(order -> {
+        switch (metaChange.target()) {
+          case PATTERNS:
+            break;
+          case TAGS:
+            if (metaChange.operation() == Progress.MetaChange.Operation.ADD)
+              order.tag(metaChange.name());
+            else
+              order.untag(metaChange.name());
+        }
+      }));
       if (progress.state() != null) {
         tellGlobal(progress);
       }
@@ -274,7 +272,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
           if (!currentOffer.equals(oldOffer)) {
             inflightOrders().filter(order -> order.offer().equals(oldOffer)).forEach(order -> {
               order.offer(currentOffer);
-              if (cancel.order() == null || cancel.order().equals(order.id()))
+              if (order.broker() == null && (cancel.order() == null || cancel.order().equals(order.id())))
                 order.role(from, order.state == OrderState.IN_PROGRESS ? SLACKER : DENIER, currentTime);
             });
             tellGlobal(currentOffer, new OfferChange(from.bare()));
@@ -473,9 +471,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         state(FEEDBACK);
         if (mode() == ProcessMode.NORMAL) {
           final Message message = new Message(delivered.user().resource(delivered.resource()), jid(), new Received(delivered.id()));
-          persist(delivered, d -> {
-            archive(message);
-          });
+          persist(delivered, d -> archive(message));
         }
       }
     }
