@@ -27,7 +27,7 @@ public class Stanza extends Item {
 
   public static Stanza create(final CharSequence str, final long timestampSec) {
     final Stanza stanza = Item.create(str);
-    if (!stanza.isTimestampPresent()) {
+    if (!stanza.hasTs()) {
       stanza.id = stanza.id + "-" + timestampSec;
     }
     return stanza;
@@ -91,7 +91,7 @@ public class Stanza extends Item {
     return to == null;
   }
 
-  public boolean isTimestampPresent() {
+  public boolean hasTs() {
     final int separator = id.lastIndexOf('-');
     if (separator != -1) {
       try {
@@ -106,7 +106,7 @@ public class Stanza extends Item {
   }
 
   public long ts() {
-    if (isTimestampPresent()) {
+    if (hasTs()) {
       final String ts = id.substring(id.lastIndexOf('-') + 1);
       return Long.parseLong(ts) * (ts.length() > 10 ? 1 : 1000);
     }
