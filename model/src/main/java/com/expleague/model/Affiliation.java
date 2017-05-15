@@ -22,4 +22,13 @@ public enum Affiliation {
   }
 
   public int priority() { return priority; }
+
+  public static Affiliation fromPriority(int priority) {
+    for (Affiliation type : Affiliation.values()) {
+      if (type.priority() == priority) {
+        return type;
+      }
+    }
+    return null;
+  }
 }

@@ -14,13 +14,24 @@ public enum RoomState {
   DELIVERY(6),
   FEEDBACK(7),
   CLOSED(8),
-  VERIFY(9),
-  ;
+  VERIFY(9),;
 
   private int code;
+
   RoomState(int code) {
     this.code = code;
   }
 
-  public int code() { return code; }
+  public int code() {
+    return code;
+  }
+
+  public static RoomState fromCode(int code) {
+    for (RoomState type : RoomState.values()) {
+      if (type.code() == code) {
+        return type;
+      }
+    }
+    return null;
+  }
 }

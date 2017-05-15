@@ -10,11 +10,11 @@ import java.util.stream.Stream;
  */
 @XmlEnum
 public enum OrderState {
-  @XmlEnumValue("none") NONE(-1),
-  @XmlEnumValue("open") OPEN(0),
-  @XmlEnumValue("in-progress") IN_PROGRESS(1),
-  @XmlEnumValue("suspended") SUSPENDED(2),
-  @XmlEnumValue("done") DONE(3),;
+  @XmlEnumValue("none")NONE(-1),
+  @XmlEnumValue("open")OPEN(0),
+  @XmlEnumValue("in-progress")IN_PROGRESS(1),
+  @XmlEnumValue("suspended")SUSPENDED(2),
+  @XmlEnumValue("done")DONE(3),;
 
   int index;
 
@@ -28,5 +28,14 @@ public enum OrderState {
 
   public static OrderState valueOf(int index) {
     return Stream.of(OrderState.values()).filter(s -> s.index == index).findAny().orElse(null);
+  }
+
+  public static OrderState fromCode(int code) {
+    for (OrderState type : OrderState.values()) {
+      if (type.code() == code) {
+        return type;
+      }
+    }
+    return null;
   }
 }
