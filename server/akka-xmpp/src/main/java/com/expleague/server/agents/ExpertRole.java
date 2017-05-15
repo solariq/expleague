@@ -13,10 +13,12 @@ import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Presence;
 import com.google.common.collect.Lists;
+import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static com.expleague.model.Operations.*;
@@ -29,6 +31,7 @@ import static com.expleague.model.Operations.*;
 public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.Variants> {
   private static final Logger log = Logger.getLogger(ExpertRole.class.getName());
   public static final FiniteDuration CHOICE_TIMEOUT = ExpLeagueServer.config().timeout("expert-role.choice-timeout");
+  public static final FiniteDuration CHECK_TIMEOUT = Duration.create(5, TimeUnit.SECONDS);
   public static final FiniteDuration INVITE_TIMEOUT = ExpLeagueServer.config().timeout("expert-role.invite-timeout");
   private Cancellable timer;
 
@@ -135,6 +138,12 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               explain("Broker canceled check. Canceling check and going to labor exchange.");
               XMPP.send(new Message(XMPP.jid(), jid(), cancel), context());
               return laborExchange(task);
+            }
+        ).event(Timeout.class,
+            (to, task) -> {
+              explain("doSearch timed out checking. Sending broker ignore.");
+              task.broker().tell(new Ignore(), self());
+              return goTo(State.READY).using(task.clean());
             }
         )
     );
@@ -259,8 +268,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               explain("Received offer during improper state. Ignoring.");
               return stay().replying(new Ignore());
             }
-        ).
-            event(ActorRef.class, // broker
+        ).event(ActorRef.class, // broker
                 (broker, task) -> stay().replying(new Ignore()))
     );
 
@@ -273,6 +281,8 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
         }
         if (to == State.READY)
           timer = AkkaTools.scheduleTimeout(context(), CHOICE_TIMEOUT, self());
+        else if (to == State.CHECK)
+          timer = AkkaTools.scheduleTimeout(context(), CHECK_TIMEOUT, self());
       }
     });
 
@@ -297,7 +307,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
   @Override
   public void postStop() {
     super.postStop();
-    log.fine("Expert " + jid() + "exited");
+    log.fine("Expert " + jid() + " exited");
   }
 
   @Override
