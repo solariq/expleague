@@ -7,6 +7,7 @@ import com.expleague.server.admin.ExpLeagueAdminService;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
 import com.expleague.server.answers.RepositoryService;
+import com.expleague.server.answers.SearchRequestHandler;
 import com.expleague.server.dao.Archive;
 import com.expleague.server.dao.PatternsRepository;
 import com.expleague.server.services.XMPPServices;
@@ -79,6 +80,7 @@ public class ExpLeagueServer {
     config = cfg;
     ActorAdapter.setUnitTestEnabled(cfg.unitTest());
     XMPPClientConnection.setUnitTestEnabled(cfg.unitTest());
+    SearchRequestHandler.setConfig(cfg.config().hasPath("search") ? cfg.config().getConfig("search") : null);
     users = config.roster().newInstance();
     leBoard = config.board().newInstance();
     archive = config.archive().newInstance();

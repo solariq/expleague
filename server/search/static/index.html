@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html itemscope itemtype="http://schema.org/WebPage" id=search-service>
+<head>
+    <title>ExpLeague - Search</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/search.css" media="screen"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/simplePagination.css" media="screen"/>
+    <script type="text/javascript" src="/static/js/libs/jquery-2.2.2.min.js"></script>
+    <script type="text/javascript" src="/static/js/libs/jquery.simplePagination.js"></script>
+    <script type="text/javascript" src="/static/js/libs/underscore-min.js"></script>
+    <script type="text/javascript" src="/static/js/libs/knockout.min.js"></script>
+    <script type="text/javascript" src="/static/js/libs/moment.min.js"></script>
+    <script type="text/javascript" src="/static/js/search.js"></script>
+</head>
+<body>
+<div id="viewport">
+    <div id="search_controls">
+        <img src="/static/img/about_owl.png" id="small_logo" class="inline">
+        <!--suppress HtmlFormInputWithoutLabel -->
+        <input id="search_input" class="inline" type="text"
+               data-bind="value:searchInput, valueUpdate: 'afterkeydown', event: { 'keyup': searchInputKeyUp }"/>
+        <div id="delete" class="inline"><span id="x" data-bind="click:xButtonClick">x</span></div>
+        <input id="submit" name="submit" type="button" value="Поиск" data-bind="click:searchButtonClick"/>
+    </div>
+    <div id="loader" class="loader" style="display: none;"></div>
+    <div id="search_result">
+        <div data-bind="foreach: searchResult">
+            <div class="result_item">
+                <b><a target="_blank" data-bind="attr: { href: link}, text: title"></a></b>
+                <br/><span data-bind="text:description"></span>
+            </div>
+        </div>
+    </div>
+    <div id="pagination"></div>
+</div>
+<script type="application/javascript">
+    Search.init();
+</script>
+</body>
+</html>

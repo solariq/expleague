@@ -2,10 +2,14 @@ package com.expleague.server.answers;
 
 import akka.actor.UntypedActor;
 import akka.http.javadsl.model.*;
-import akka.japi.Option;
+import com.expleague.server.admin.ExpLeagueAdminService;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spbsu.commons.io.StreamTools;
+import com.typesafe.config.Config;
+import org.jetbrains.annotations.Nullable;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -15,6 +19,10 @@ import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,7 +32,10 @@ import java.util.logging.Logger;
  */
 public class SearchRequestHandler extends ActorAdapter<UntypedActor> {
   private static final Logger log = Logger.getLogger(SearchRequestHandler.class.getName());
+  private final static ObjectMapper mapper = new ExpLeagueAdminService.DefaultJsonMapper();
   private final Session session;
+  @Nullable
+  private static Config config;
 
   public SearchRequestHandler(Session session) {
     this.session = session;
@@ -32,7 +43,7 @@ public class SearchRequestHandler extends ActorAdapter<UntypedActor> {
 
   @ActorMethod
   public void onRequest(final HttpRequest request) throws Exception {
-    Uri uri = request.getUri();
+    final Uri uri = request.getUri();
 
     final String text = uri.query().get("text").getOrElse("");
     if (text.isEmpty()) {
@@ -42,29 +53,27 @@ public class SearchRequestHandler extends ActorAdapter<UntypedActor> {
       return;
     }
 
+    final int offset = Integer.parseInt(uri.query().get("startIndex").getOrElse("0"));
+    final int limit = config != null ? config.getInt("results-per-page") : 10;
     try {
       final QueryManager manager = session.getWorkspace().getQueryManager();
       final javax.jcr.query.Query query = manager.createQuery("//element(*, nt:resource)[jcr:contains(., '" + text + "')]", javax.jcr.query.Query.XPATH);
+      query.setOffset(offset);
+      query.setLimit(limit);
       final QueryResult result = query.execute();
       final NodeIterator nodeIterator = result.getNodes();
-      final StringBuilder answer = new StringBuilder();
-      answer.append("<html><title>По [").append(text).append("] нашлось ").append(nodeIterator.getSize()).append(" ответов</title>");
-      answer.append("<body>");
-      answer.append("<ol>");
+
+      final Map<String, Object> map = new HashMap<>();
+      map.put("resultsPerPage", limit);
+      final List<SearchItemDto> searchItems = new ArrayList<>();
       while (nodeIterator.hasNext()) {
         final Node node = nodeIterator.nextNode();
         final Uri answerUri = Uri.create(uri.scheme() + "://" + uri.host() + "/get?id=" + node.getIdentifier()).port(uri.port());
-        answer.append("<li>");
-        answer.append("<a href=\"").append(answerUri.toString()).append("\">")
-            .append(node.getParent().getProperty("topic").getString())
-            .append("</a>");
-        answer.append("</li>");
+        final String topic = node.getParent().getProperty("topic").getString();
+        searchItems.add(new SearchItemDto(topic, answerUri.toString()));
       }
-      answer.append("</ol>");
-      answer.append("</body></html>");
-      reply(HttpResponse.create().withStatus(200).withEntity(
-          MediaTypes.TEXT_HTML.toContentType(HttpCharsets.UTF_8), answer.toString()
-      ));
+      map.put("items", searchItems);
+      reply(HttpResponse.create().withStatus(200).withEntity(ContentTypes.APPLICATION_JSON, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(map)));
     } catch (RepositoryException e) {
       log.log(Level.WARNING, "Unable to login to jackrabbit repository", e);
       final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -75,6 +84,23 @@ public class SearchRequestHandler extends ActorAdapter<UntypedActor> {
           MediaTypes.TEXT_HTML.toContentType(HttpCharsets.UTF_8),
           "<html><body>Exception while request processing: <br/>" + trace + "</body></html>"));
 
+    }
+  }
+
+  public static void setConfig(Config value) {
+    config = value;
+  }
+
+  @SuppressWarnings("unused")
+  private static class SearchItemDto {
+    @JsonProperty
+    private final String link;
+    @JsonProperty
+    private final String topic;
+
+    public SearchItemDto(String topic, String link) {
+      this.topic = topic;
+      this.link = link;
     }
   }
 }
