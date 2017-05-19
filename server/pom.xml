@@ -14,6 +14,7 @@
     <module>../model</module>
     <module>akka-xmpp</module>
     <module>admin</module>
+    <module>search</module>
   </modules>
 
   <properties>
