@@ -44,7 +44,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   private Map<String, Message> answers = new HashMap<>();
 
   private boolean oldFormat = false;
-  private long currentTime;
+  private long currentTime = 0;
 
   public ExpLeagueRoomAgent(JID jid) {
     super(jid, true);
@@ -149,7 +149,10 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
   @Override
   protected boolean filter(Message msg) {
-    currentTime = msg.ts();
+    if (mode() == ProcessMode.REPLAY)
+      currentTime = msg.hasTs() ? msg.ts() : currentTime + 1;
+    else
+      currentTime = msg.ts();
 
     if (owner() == null)
       affiliation(msg.from(), Affiliation.OWNER);
@@ -157,13 +160,14 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       affiliation(msg.from(), Affiliation.MEMBER);
     else if (msg.has(Cancel.class) && affiliation(msg.from()) != Affiliation.OWNER)
       affiliation(msg.from(), Affiliation.NONE);
+    else if (msg.has(Offer.class) && !msg.hasTs() && currentTime < 1000L * 1000L * 1000L) //9 September 2001
+      currentTime = (long) msg.get(Offer.class).started() * 1000;
     else
       return super.filter(msg);
     return true;
   }
 
   public void process(Message msg) {
-    currentTime = msg.ts();
     super.process(msg);
 
     final JID from = msg.from();
@@ -189,11 +193,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       }
     }
     else if (msg.has(Start.class)) {
-      final Start start = msg.get(Start.class);
       update(from, Role.PARTICIPANT, null);
-      if (start.order() != null && !start.order().startsWith("room")) /* old format*/
-        start.order(null);
-
       if (currentOffer == null) {
         log.warning("Start while offer is empty!");
         return;
@@ -203,6 +203,14 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         state(WORK);
         startOrders(currentOffer);
       }
+
+      final Start start = msg.get(Start.class);
+      if (start.order() != null && !start.order().startsWith("room")) /* old format*/
+        if (orders.size() > 0)
+          start.order(orders.get(orders.size() - 1).id());
+        else
+          start.order(null);
+
       orders(OrderState.NONE, OrderState.OPEN).filter(o -> o.broker() == null && (o.id().equals(start.order()) || start.order() == null)).forEach(o -> {
         o.state(OrderState.IN_PROGRESS, currentTime);
         o.role(from, ACTIVE, currentTime);
@@ -224,7 +232,11 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     else if (msg.has(Answer.class)) {
       final Answer answer = msg.get(Answer.class);
       if (authority.priority() <= ExpertsProfile.Authority.EXPERT.priority() || oldFormat) {
-        state(DELIVERY);
+        if (authority == ExpertsProfile.Authority.ADMIN || oldFormat)
+          state(FEEDBACK);
+        else
+          state(DELIVERY);
+
         final Message answerCopy = msg.copy(owner().local());
         answerCopy.to(roomAlias(owner()));
         answerCopy.append(new Verified(answer.order(), from));
@@ -242,7 +254,11 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     }
     else if (msg.has(Verified.class)) {
       if (state == VERIFY && authority.priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
-        state(DELIVERY);
+        if (oldFormat)
+          state(FEEDBACK);
+        else
+          state(DELIVERY);
+
         final Verified verified = msg.get(Verified.class);
         final Message answer = this.answer(verified.order());
         if (answer != null) {
@@ -453,6 +469,12 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   protected void replay() {
+    if (mode() == ProcessMode.REPLAY) {
+      log.fine("Replay has been already started");
+      return;
+    }
+
+    currentTime = 0;
     cancelOrders(System.currentTimeMillis());
     LaborExchange.board().removeAllOrders(jid().local());
     GlobalChatAgent.tell(new Message(jid(), XMPP.jid(GlobalChatAgent.ID), Message.MessageType.GROUP_CHAT, new Clear()), context());

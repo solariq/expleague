@@ -115,6 +115,7 @@ public class GlobalChatAgent extends RoomAgent {
     }
 
     if (msg.has(Clear.class)) {
+      rooms.get(msg.from().local()).clear();
       rooms.remove(msg.from().local());
       super.process(msg);
     }
@@ -205,44 +206,38 @@ public class GlobalChatAgent extends RoomAgent {
     public RoomStatus(String id, Node roomStatusesNode, @Nullable Session jcrSession) {
       this.id = id;
       this.jcrSession = jcrSession;
-      if (jcrSession != null) {
-        try {
-          roomNode = JcrUtils.getOrAddNode(roomStatusesNode, id);
-          affiliationsNode = JcrUtils.getOrAddNode(roomNode, "affiliations");
-          final Iterable<Node> affiliationsChildNodes = JcrUtils.getChildNodes(affiliationsNode);
-          for (Node node : affiliationsChildNodes) {
-            final Affiliation affiliation = Affiliation.fromPriority((int) node.getProperty("priority").getLong());
-            affiliations.put(node.getName(), affiliation);
-          }
-
-          rolesNode = JcrUtils.getOrAddNode(roomNode, "roles");
-          final Iterable<Node> rolesChildNodes = JcrUtils.getChildNodes(rolesNode);
-          for (Node node : rolesChildNodes) {
-            final Role role = Role.fromPriority((int) node.getProperty("priority").getLong());
-            roles.put(node.getName(), role);
-          }
-
-          ordersNode = JcrUtils.getOrAddNode(roomNode, "orders");
-          final Iterable<Node> ordersChildNodes = JcrUtils.getChildNodes(ordersNode);
-          for (Node node : ordersChildNodes) {
-            final OrderState orderState = node.hasProperty("code") ? OrderState.fromCode((int) node.getProperty("code").getLong()) : null;
-            final JID expert = node.hasProperty("expert") ? JID.parse(node.getProperty("expert").getString()) : null;
-            final OrderStatus orderStatus = new OrderStatus(orderState, expert);
-            orders.put(node.getName(), orderStatus);
-          }
-
-          modificationTs = JcrUtils.getLongProperty(roomNode, "modificationTs", modificationTs);
-          changes = (int) JcrUtils.getLongProperty(roomNode, "changes", changes);
-          unread = (int) JcrUtils.getLongProperty(roomNode, "unread", unread);
-          feedback = (int) JcrUtils.getLongProperty(roomNode, "feedback", feedback);
-          currentOffer = roomNode.hasProperty("offer") ? Offer.create(roomNode.getProperty("offer").getString()) : currentOffer;
-          state = roomNode.hasProperty("state") ? RoomState.fromCode((int) roomNode.getProperty("state").getLong()) : state;
-
-          jcrSession.save();
-        } catch (RepositoryException re) {
-          log.warning("Unable to load room status node: " + re);
+      applyJcrChanges(() -> {
+        roomNode = JcrUtils.getOrAddNode(roomStatusesNode, id);
+        affiliationsNode = JcrUtils.getOrAddNode(roomNode, "affiliations");
+        final Iterable<Node> affiliationsChildNodes = JcrUtils.getChildNodes(affiliationsNode);
+        for (Node node : affiliationsChildNodes) {
+          final Affiliation affiliation = Affiliation.fromPriority((int) node.getProperty("priority").getLong());
+          affiliations.put(node.getName(), affiliation);
         }
-      }
+
+        rolesNode = JcrUtils.getOrAddNode(roomNode, "roles");
+        final Iterable<Node> rolesChildNodes = JcrUtils.getChildNodes(rolesNode);
+        for (Node node : rolesChildNodes) {
+          final Role role = Role.fromPriority((int) node.getProperty("priority").getLong());
+          roles.put(node.getName(), role);
+        }
+
+        ordersNode = JcrUtils.getOrAddNode(roomNode, "orders");
+        final Iterable<Node> ordersChildNodes = JcrUtils.getChildNodes(ordersNode);
+        for (Node node : ordersChildNodes) {
+          final OrderState orderState = node.hasProperty("code") ? OrderState.fromCode((int) node.getProperty("code").getLong()) : null;
+          final JID expert = node.hasProperty("expert") ? JID.parse(node.getProperty("expert").getString()) : null;
+          final OrderStatus orderStatus = new OrderStatus(orderState, expert);
+          orders.put(node.getName(), orderStatus);
+        }
+
+        modificationTs = JcrUtils.getLongProperty(roomNode, "modificationTs", modificationTs);
+        changes = (int) JcrUtils.getLongProperty(roomNode, "changes", changes);
+        unread = (int) JcrUtils.getLongProperty(roomNode, "unread", unread);
+        feedback = (int) JcrUtils.getLongProperty(roomNode, "feedback", feedback);
+        currentOffer = roomNode.hasProperty("offer") ? Offer.create(roomNode.getProperty("offer").getString()) : currentOffer;
+        state = roomNode.hasProperty("state") ? RoomState.fromCode((int) roomNode.getProperty("state").getLong()) : state;
+      });
     }
 
     public void affiliation(String id, Affiliation affiliation) {
@@ -375,6 +370,9 @@ public class GlobalChatAgent extends RoomAgent {
     }
 
     public void order(String order, OrderState state, long ts) {
+      if (order == null)
+        return;
+
       orders.compute(order, (o, v) -> v != null ? v : new OrderStatus()).state = state;
       modificationTs = ts(ts);
 
@@ -386,6 +384,9 @@ public class GlobalChatAgent extends RoomAgent {
     }
 
     public void start(String order, JID jid, long ts) {
+      if (order == null)
+        return;
+
       orders.compute(order, (o, v) -> v != null ? v : new OrderStatus()).expert = jid;
       modificationTs = ts(ts);
 
@@ -400,13 +401,17 @@ public class GlobalChatAgent extends RoomAgent {
       return modificationTs;
     }
 
+    public void clear() {
+      applyJcrChanges(() -> roomNode.remove());
+    }
+
     private void applyJcrChanges(JcrUpdate jcrUpdate) {
       if (jcrSession != null) {
         try {
           jcrUpdate.apply();
           jcrSession.save();
         } catch (RepositoryException re) {
-          log.warning("Unable to save into jackrabbit repository: " + re);
+          log.warning("Jackrabbit repository failed: " + re);
         }
       }
     }
