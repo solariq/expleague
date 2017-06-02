@@ -198,7 +198,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         log.warning("Start while offer is empty!");
         return;
       }
-      if (!inflightOrders().findAny().isPresent()) { // backward compatibility
+      if (!inflightOrders(true).findAny().isPresent()) { // backward compatibility
         oldFormat = true;
         state(WORK);
         startOrders(currentOffer);
@@ -230,6 +230,11 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       tellGlobal(start, profile.shorten());
     }
     else if (msg.has(Answer.class)) {
+      if (currentOffer == null) {
+        log.warning("Answer while offer is empty!");
+        return;
+      }
+
       final Answer answer = msg.get(Answer.class);
       if (authority.priority() <= ExpertsProfile.Authority.EXPERT.priority() || oldFormat) {
         if (authority == ExpertsProfile.Authority.ADMIN || oldFormat)
@@ -254,11 +259,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     }
     else if (msg.has(Verified.class)) {
       if (state == VERIFY && authority.priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
-        if (oldFormat)
-          state(FEEDBACK);
-        else
-          state(DELIVERY);
-
+        state(DELIVERY);
         final Verified verified = msg.get(Verified.class);
         final Message answer = this.answer(verified.order());
         if (answer != null) {
@@ -274,6 +275,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         if (fromOwner) {
           cancelOrders(currentTime);
           state(CLOSED);
+          currentOffer = null;
         }
         else if (currentOffer != null) {
           final Cancel cancel = msg.get(Cancel.class);
@@ -406,11 +408,19 @@ public class ExpLeagueRoomAgent extends RoomAgent {
   }
 
   private Stream<ExpLeagueOrder> inflightOrders() {
-    return orders(OrderState.NONE, OrderState.IN_PROGRESS, OrderState.OPEN, OrderState.SUSPENDED);
+    return inflightOrders(false);
+  }
+
+  private Stream<ExpLeagueOrder> inflightOrders(boolean ignoreRecover) {
+    return orders(ignoreRecover, OrderState.NONE, OrderState.IN_PROGRESS, OrderState.OPEN, OrderState.SUSPENDED);
   }
 
   private Stream<ExpLeagueOrder> orders(OrderState state0, OrderState... states) {
-    if (mode() != ProcessMode.RECOVER)
+    return orders(false, state0, states);
+  }
+
+    private Stream<ExpLeagueOrder> orders(boolean ignoreRecover, OrderState state0, OrderState... states) {
+    if (mode() != ProcessMode.RECOVER || ignoreRecover)
       return orders.stream().filter(order -> EnumSet.of(state0, states).contains(order.state()));
     else
       return Stream.empty();
