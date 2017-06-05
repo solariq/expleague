@@ -138,6 +138,7 @@ public class ExpLeagueOrder: NSManagedObject {
                 Notifications.notifyAnswerReceived(self, answer: message)
             }
             else if (message.type == .expertAssignment) {
+                _expertActive = true
                 Notifications.notifyExpertFound(self)
             }
             else if (message.type == .expertMessage) {
@@ -291,8 +292,10 @@ public class ExpLeagueOrder: NSManagedObject {
         }
         
         var result: String? = nil
-        if let answer = messages.filter({msg in msg.type == .answer}).last {
-            result = answer.properties["short"] as? String
+        for answer in messages.filter({msg in msg.type == .answer}) {
+            if let shortAnswer = answer.properties["short"] as? String {
+                result = shortAnswer
+            }
         }
         result = result ?? "Нет простого ответа"
         _shortAnswer = result!

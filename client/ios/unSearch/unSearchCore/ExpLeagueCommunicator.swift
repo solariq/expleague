@@ -20,6 +20,12 @@ public enum ExpLeagueCommunicatorStatus: Int {
     case acquiring = 16
 }
 
+public class MyXMPPStream: XMPPStream {
+    public override func generateUUID() -> String! {
+        return "\(Utils.randString(10))-\(UInt64(floor(Date().timeIntervalSince1970)))"
+    }
+}
+
 public class ExpLeagueCommunicatorState {
     let owner: ExpLeagueCommunicator?
     public var mode: ExpLeagueCommunicatorMode {
@@ -81,9 +87,8 @@ internal class ExpLeagueCommunicator: NSObject {
     
     func send(_ msg: XMPPMessage) {
         let receiptRequest = DDXMLElement(name: "request", xmlns: "urn:xmpp:receipts")
-        let msgId = stream?.generateUUID()
-        msg.addAttribute(withName: "id", stringValue: msgId!)
         msg.addChild(receiptRequest!)
+        msg.addAttribute(withName: "id", stringValue: stream!.generateUUID())
         
         thread.async {
             self.profile.enqueue(msg)
@@ -111,7 +116,7 @@ internal class ExpLeagueCommunicator: NSObject {
     // MARK: - *** Private stuff ***
     fileprivate var listeners: NSMutableArray = []
     fileprivate let profile: ExpLeagueProfile
-    fileprivate let stream = XMPPStream()
+    fileprivate let stream = MyXMPPStream()
     fileprivate var thread: DispatchQueue {
         return ExpLeagueCommunicator.xmppQueue
     }
@@ -194,7 +199,7 @@ internal class ExpLeagueCommunicator: NSObject {
         }
         QObject.connect(self, signal: #selector(self.stateChanged), receiver: self, slot: #selector(self.tick))
     }
-
+    
     fileprivate func notify(_ proc: @escaping (XMPPTracker)->()) {
         for listenerRef in listeners.copy() as! NSArray {
             if let listener = (listenerRef as! Weak<XMPPTracker>).value {
@@ -254,7 +259,7 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
                     let system = Bundle.main.infoDictionary!
                     props.append(DDXMLElement(name: "username", stringValue: profile.jid.user))
                     props.append(DDXMLElement(name: "password", stringValue: profile.passwd))
-                    props.append(DDXMLElement(name: "email", stringValue: "\(ProcessInfo.processInfo.operatingSystemVersionString)/\(system["CFBundleIdentifier"]!)/\(system["CFBundleVersion"])"))
+                    props.append(DDXMLElement(name: "email", stringValue: "\(ProcessInfo.processInfo.operatingSystemVersionString)/\(system["CFBundleIdentifier"]!)/\(system["CFBundleVersion"]!))"))
                     
                     try sender.register(withPassword: profile.passwd)
                 }
@@ -293,8 +298,10 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         }
 
         // sending not confirmed messages
-        for item in queue  {
-            sender.send(item)
+        for item in queue {
+            if (item.attribute(forName: "id") != nil) {
+                sender.send(item)
+            }
         }
         
         // getting latest experts

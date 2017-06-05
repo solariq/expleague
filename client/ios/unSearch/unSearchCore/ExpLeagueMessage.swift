@@ -173,7 +173,7 @@ public class ExpLeagueMessage: NSManagedObject {
                 }
             }
             catch {
-                ExpLeagueProfile.active.log("Unable to load image \(properties["image"]): \(error)");
+                ExpLeagueProfile.active.log("Unable to load image \(properties["image"] ?? "none" as AnyObject): \(error)");
             }
         }
         if (body != nil) {

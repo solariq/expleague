@@ -63,7 +63,7 @@ class ExpertsOverviewController: UITableViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        AppDelegate.instance.tabs.tabBar.isHidden = false
+        AppDelegate.instance.tabs?.tabBar.isHidden = false
     }
     
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -163,7 +163,7 @@ class ExpertsOverviewController: UITableViewController {
         default:
             return
         }
-        AppDelegate.instance.tabs.tabBar.isHidden = true;
+        AppDelegate.instance.tabs?.tabBar.isHidden = true;
         let expertView = ExpertViewController(expert: exp)
         splitViewController!.showDetailViewController(expertView, sender: nil)
     }
@@ -182,7 +182,7 @@ class ExpertsOverviewController: UITableViewController {
 
 extension ExpertsOverviewController: UISplitViewControllerDelegate {
     func primaryViewController(forCollapsing splitViewController: UISplitViewController) -> UIViewController? {
-        AppDelegate.instance.tabs.tabBar.isHidden = false
+        AppDelegate.instance.tabs?.tabBar.isHidden = false
         return navigationController ?? self
     }
     
@@ -192,7 +192,7 @@ extension ExpertsOverviewController: UISplitViewControllerDelegate {
     
     func splitViewController(_ svc: UISplitViewController, willChangeTo displayMode: UISplitViewControllerDisplayMode) {
         if (displayMode != .allVisible) {
-            AppDelegate.instance.tabs.tabBar.isHidden = false
+            AppDelegate.instance.tabs?.tabBar.isHidden = false
         }
     }
 }
@@ -230,6 +230,7 @@ class ChooseExpertViewController: UITableViewController {
         let exp = experts[(indexPath as NSIndexPath).row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "ExpertCell", for: indexPath) as! ExpertCell
         cell.update(exp)
+        cell.accessoryType = owner.experts.contains(exp) ? .checkmark : .none
         return cell
     }
     
@@ -251,18 +252,21 @@ class ChooseExpertViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let expert = experts[(indexPath as NSIndexPath).item]
+        let cell = tableView.cellForRow(at: indexPath)
         if (!owner.experts.contains(expert)) {
             owner.experts.append(expert)
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+            cell?.accessoryType = .checkmark
         }
         else {
             owner.experts.remove(at: owner.experts.index(of: expert)!)
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
+            cell?.accessoryType = .none
+        }
+        DispatchQueue.main.async {
+            cell?.isHighlighted = false
         }
     }
     
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        cell.isHighlighted = owner.experts.contains(experts[(indexPath as NSIndexPath).item])
     }
     
     override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {

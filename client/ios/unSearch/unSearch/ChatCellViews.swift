@@ -178,19 +178,17 @@ class MessageChatCell: ChatCell {
     @IBOutlet weak var avatarWidth: NSLayoutConstraint?
     
     var maxWidth: CGFloat {
-        return avatar?.isHidden ?? false ? frame.width - 48 : frame.width - 48 - (avatar?.frame.width ?? 0)
+        return floor(avatar?.isHidden ?? true ? frame.width - 48 : frame.width - 48 - 25)
     }
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        content.autoresizesSubviews = false
+        content.autoresizingMask = UIViewAutoresizing()
         content.layer.cornerRadius = Palette.CORNER_RADIUS
         content.clipsToBounds = true
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-    }
-
     class func height(contentHeight height: CGFloat) -> CGFloat {
         return height + 8;
     }

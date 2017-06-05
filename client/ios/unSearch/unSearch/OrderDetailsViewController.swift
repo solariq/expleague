@@ -12,6 +12,7 @@ import StoreKit
 import XMPPFramework
 import FBSDKCoreKit
 import QuickLook
+import MobileCoreServices
 
 import unSearchCore
 
@@ -412,6 +413,29 @@ class FeedbackViewController: UIViewController {
     }
 }
 
+
+class PreviewItem: NSObject, QLPreviewItem {
+    var previewItemTitle: String? {
+        return ""
+    }
+    
+    var previewItemURL: URL? {
+        return url
+    }
+    
+    var previewItemContentType: String? {
+        return (kUTTypeImage as NSString) as String
+    }
+    
+    let url: URL
+    let contentType: String?
+    
+    init(url: URL, contentType: String?) {
+        self.url = url
+        self.contentType = contentType
+    }
+}
+
 class AnswerDelegate: NSObject, UIWebViewDelegate, UIGestureRecognizerDelegate, QLPreviewControllerDataSource {
     func webView(_ webView: UIWebView, shouldStartLoadWith request: URLRequest, navigationType: UIWebViewNavigationType) -> Bool {
         if let url = request.url , url.scheme == "unsearch" {
@@ -455,13 +479,36 @@ class AnswerDelegate: NSObject, UIWebViewDelegate, UIGestureRecognizerDelegate, 
                 //parent.present(preview, animated: false, completion: nil)
                 parent.navigationController?.show(preview, sender: self)
             }
-            print("src: \(src)")
+//            print("src: \(src)")
         }
     }
     
     func previewController(_ controller: QLPreviewController, previewItemAt index: Int) -> QLPreviewItem {
-        let cache = EVURLCache.storagePath(url: imageUrl!)
-        return cache != nil ? NSURL(fileURLWithPath: cache!) : imageUrl! as NSURL
+        guard let cache = EVURLCache.storagePath(url: imageUrl!) else {
+            return imageUrl! as NSURL
+        }
+//        var contentType: String? = nil
+//        let slashIndex = cache.lastIndexOf("/") ?? cache.startIndex
+//        let dotIndex = cache.lastIndexOf(".") ?? cache.startIndex
+//        if (slashIndex >= dotIndex) { // has no extension, trying to guess it by
+//            if let data = FileManager.default.contents(atPath: cache), let firstByte = data.first {
+//                switch (firstByte) {
+//                case 0xFF:
+//                    contentType = kUTTypeJPEG as String
+//                case 0x89:
+//                    contentType = kUTTypePNG as String
+//                case 0x47:
+//                    contentType = kUTTypeGIF as String
+//                case 0x49, 0x4D:
+//                    contentType = kUTTypeTIFF as String
+//                default:
+//                    break
+//                }
+//            }
+//        }
+
+//        return PreviewItem(url: URL(fileURLWithPath: cache), contentType: contentType)
+        return PreviewItem(url: URL(fileURLWithPath: cache), contentType: nil)
     }
     
     func numberOfPreviewItems(in controller: QLPreviewController) -> Int {

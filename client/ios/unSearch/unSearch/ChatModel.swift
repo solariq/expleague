@@ -106,7 +106,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             model = cells.last!
         }
         let messages = order.messages
-        var answer  = ""
+        var answer = lastKnownMessage > 0 ? self.answer : ""
         while (lastKnownMessage < messages.count) {
             if (modelChangeCount > 2) {
                 ExpLeagueProfile.active.log("Loop found in the chat model! Enforcing next message.")

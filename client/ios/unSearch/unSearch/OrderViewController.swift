@@ -55,8 +55,8 @@ class OrderViewController: UIViewController, CLLocationManagerDelegate {
         controller.clear()
         controller.orderAttachmentsModel.clear()
 
-        AppDelegate.instance.tabs.tabBar.isHidden = true
-        AppDelegate.instance.tabs.selectedIndex = 1
+        AppDelegate.instance.tabs?.tabBar.isHidden = true
+        AppDelegate.instance.tabs?.selectedIndex = 1
     }
 
     override func viewDidLoad() {

@@ -29,6 +29,7 @@ class OnboardPageViewController: UIViewController {
             self.image?.image = img
         }
     }
+    fileprivate var final: Bool = false
     
     var callback: (()->Void)? {
         didSet {
@@ -36,10 +37,11 @@ class OnboardPageViewController: UIViewController {
         }
     }
     
-    func build(text: String, image: UIImage, callback: (()->Void)? = nil) -> OnboardPageViewController {
+    func build(text: String, image: UIImage, final: Bool = false, callback: (()->Void)? = nil) -> OnboardPageViewController {
         self.txt = text
         self.img = image
         self.callback = callback
+        self.final = final
         return self
     }
     
@@ -48,13 +50,21 @@ class OnboardPageViewController: UIViewController {
         topSpacing.constant = max(diff / 4, 0)
         midSpacing.constant = max(diff / 4, 0)
         button!.layer.cornerRadius = button!.frame.height / 2
-        button!.layer.borderColor = Palette.CONTROL.cgColor
-        button!.layer.borderWidth = 2
+        if (final) {
+            button!.layer.backgroundColor = Palette.CONTROL.cgColor
+            button!.setTitle("Начать", for: .normal)
+            button!.setTitleColor(UIColor.white, for: .normal)
+        }
+        else {
+            button!.layer.borderColor = Palette.CONTROL.cgColor
+            button!.layer.borderWidth = 2
+            button!.setTitleColor(Palette.CONTROL, for: .normal)
+        }
         button!.clipsToBounds = true
         button!.isHidden = callback == nil
+        
         image!.image = img
         text!.text = txt
-        
     }
 }
 
