@@ -60,6 +60,8 @@ public class GlobalChatAgent extends RoomAgent {
   public void onDump(DumpRequest dump) {
     final List<Message> rooms = this.rooms.values().stream()
         .filter(room -> room.affiliation(dump.from()) == Affiliation.OWNER)
+        .sorted((a, b) -> Long.compare(b.modificationTs, a.modificationTs))
+        .limit(100)
         .map(RoomStatus::message)
         .map(message -> participantCopy(message, XMPP.jid(dump.from())))
         .collect(Collectors.toList());
