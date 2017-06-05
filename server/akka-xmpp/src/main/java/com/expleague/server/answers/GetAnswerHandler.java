@@ -38,15 +38,34 @@ public class GetAnswerHandler extends ActorAdapter {
     }
     final String id = optId.get();
     try {
+      final String result;
+      final String title;
       final Node node = session.getNodeByIdentifier(id); // answer node
-      final Property property = node.getProperty(Property.JCR_DATA);
-      final Binary binary = property.getBinary();
-      final HtmlRenderer renderer = HtmlRenderer.builder().build();
-      final Parser parser = Parser.builder().build();
-      final String result = renderer.render(parser.parseReader(new InputStreamReader(binary.getStream(), StreamTools.UTF)));
+      if (!"answer".equals(node.getName())) {
+        final NodeIterator nodeIterator = node.getParent().getNodes();
+        final StringBuilder stringBuilder = new StringBuilder();
+        int answerNum = 0;
+        while (nodeIterator.hasNext()) {
+          final Node answerNode = nodeIterator.nextNode();
+          final String answerMd = extractAnswer(answerNode);
+          if (answerNum > 0)
+            stringBuilder.append("<br/>");
+
+          stringBuilder.append("<p><h2>");
+          stringBuilder.append("Ответ №");
+          stringBuilder.append(++answerNum);
+          stringBuilder.append("</h2></p>");
+          stringBuilder.append(answerMd);
+        }
+        result = stringBuilder.toString();
+        title = node.getParent().getParent().getProperty("topic").getString();
+      } else {
+        result = extractAnswer(node);
+        title = node.getParent().getProperty("topic").getString();
+      }
       reply(HttpResponse.create().withStatus(200).withEntity(
           MediaTypes.TEXT_HTML.toContentType(HttpCharsets.UTF_8),
-          "<html><title>" + node.getParent().getProperty("topic") + "</title><body>" + result + "</body></html>"));
+          "<html><title>" + title + "</title><body>" + result + "</body></html>"));
     } catch (RepositoryException | IOException e) {
       log.log(Level.WARNING, "Unable to login to jackrabbit repository", e);
 
@@ -58,5 +77,13 @@ public class GetAnswerHandler extends ActorAdapter {
           MediaTypes.TEXT_HTML.toContentType(HttpCharsets.UTF_8),
           "<html><body>Exception while request processing: <br/>" + trace + "</body></html>"));
     }
+  }
+
+  private String extractAnswer(Node node) throws RepositoryException, IOException {
+    final Property property = node.getProperty(Property.JCR_DATA);
+    final Binary binary = property.getBinary();
+    final HtmlRenderer renderer = HtmlRenderer.builder().build();
+    final Parser parser = Parser.builder().build();
+    return renderer.render(parser.parseReader(new InputStreamReader(binary.getStream(), StreamTools.UTF)));
   }
 }

@@ -198,7 +198,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         log.warning("Start while offer is empty!");
         return;
       }
-      if (!inflightOrders(true).findAny().isPresent()) { // backward compatibility
+      if (state != WORK && !inflightOrders(true).findAny().isPresent()) { // backward compatibility
         oldFormat = true;
         state(WORK);
         startOrders(currentOffer);
@@ -248,14 +248,18 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         message(answerCopy);
       }
       else state(VERIFY);
-      message(new Message(jid(), RepositoryService.jid(), currentOffer, answer));
       answer(msg);
       tellGlobal(new RoomMessageReceived(from, true));
+
+      final String[] currentOrder = new String[1];
       inflightOrders().forEach(order->{
         if (order.state() != OrderState.DONE && (order.id().equals(answer.order()) || answer.order() == null)) {
           order.state(OrderState.DONE, currentTime);
+          currentOrder[0] = order.id();
         }
       });
+      answer.order(currentOrder[0]);
+      message(new Message(jid(), RepositoryService.jid(), currentOffer, answer));
     }
     else if (msg.has(Verified.class)) {
       if (state == VERIFY && authority.priority() <= ExpertsProfile.Authority.EXPERT.priority()) {

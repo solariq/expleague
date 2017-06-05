@@ -69,7 +69,12 @@ public class SearchRequestHandler extends ActorAdapter<UntypedActor> {
       while (nodeIterator.hasNext()) {
         final Node node = nodeIterator.nextNode();
         final Uri answerUri = Uri.create(uri.scheme() + "://" + uri.host() + "/get?id=" + node.getIdentifier()).port(uri.port());
-        final String topic = node.getParent().getProperty("topic").getString();
+        final String topic;
+        if ("answer".equals(node.getName()))
+          topic = node.getParent().getProperty("topic").getString();
+        else
+          topic = node.getParent().getParent().getProperty("topic").getString();
+
         searchItems.add(new SearchItemDto(topic, answerUri.toString()));
       }
       map.put("items", searchItems);
