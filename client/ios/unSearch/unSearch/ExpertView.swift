@@ -27,7 +27,7 @@ class ExpertViewController: UIViewController {
     
     @IBAction func fire(_ sender: UIButton) {
         AppDelegate.instance.orderView!.descriptionController.append(expert: expert)
-        AppDelegate.instance.tabs.selectedIndex = 0
+        AppDelegate.instance.tabs?.selectedIndex = 0
     }
     
     override func viewDidLoad() {
@@ -58,14 +58,14 @@ class ExpertViewController: UIViewController {
         navigationBar?.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
         navigationBar?.shadowImage = UIImage()
         navigationBar?.isTranslucent = true
-        AppDelegate.instance.tabs.tabBar.isHidden = true
+        AppDelegate.instance.tabs?.tabBar.isHidden = true
         topAvaDistance.constant = max(UIScreen.main.bounds.height * 0.6 / 4, 64)
         update()
         super.viewWillAppear(animated)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        AppDelegate.instance.tabs.tabBar.isHidden = false
+        AppDelegate.instance.tabs?.tabBar.isHidden = false
         super.viewWillDisappear(animated)
     }
     
@@ -132,7 +132,7 @@ class AvatarView: UIView {
         super.layoutSubviews()
         _imageView.layer.cornerRadius = frame.width / 2;
         _imageView.frame = CGRect(x: 0, y: 0, width: frame.width, height: frame.height)
-        let size = frame.width/5
+        let size = floor(frame.width/5)
         
         if (_onlineTag != nil) {
             _onlineTag!.frame = CGRect(x: frame.width - size - 1, y: frame.height - size, width: size, height: size)

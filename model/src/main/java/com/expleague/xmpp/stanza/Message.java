@@ -164,6 +164,11 @@ public class Message extends Stanza implements AnyHolder {
     return ts != null ? ts.ts() : super.ts();
   }
 
+  @Override
+  public boolean hasTs() {
+    return has(Timestamp.class) || super.hasTs();
+  }
+
   /**
    * <p>Java class for anonymous complex type.
    *

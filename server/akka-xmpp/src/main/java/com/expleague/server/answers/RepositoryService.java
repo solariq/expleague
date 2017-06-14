@@ -25,12 +25,14 @@ import com.expleague.xmpp.stanza.Message;
 import com.spbsu.commons.io.StreamTools;
 import com.spbsu.commons.math.MathTools;
 import org.apache.jackrabbit.commons.JcrUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
 import javax.jcr.*;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -93,10 +95,18 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
       else if (uri.path().endsWith("/get")) {
         handler = context().actorOf(props(GetAnswerHandler.class, readSession));
       }
+      else if (uri.path().startsWith("/static")) {
+        final File file = new File("search/static", uri.path().substring(uri.path().indexOf("static") + 7));
+        if (file.isFile()) {
+          return Futures.successful(HttpResponse.create().withStatus(200).withEntity(HttpEntities.create(getContentType(file), file)));
+        }
+        else {
+          return Futures.successful(HttpResponse.create().withStatus(404).withEntity("File not found"));
+        }
+      }
       else if (uri.path().equals("/")) {
-        return Futures.successful(HttpResponse.create().withEntity(
-            MediaTypes.TEXT_HTML.toContentType(HttpCharsets.UTF_8),
-            "<html><body><form enctype=\"multipart/form-data\" action=\".\" method=\"post\" type=><input name=\"id\" type=\"text\"><input name=\"image\" accept=\"image/jpeg\" type=\"file\" alt=\"Submit\"><input type=\"submit\"></form></body></html>"));
+        final File file = new File("search/static/index.html");
+        return Futures.successful(HttpResponse.create().withStatus(200).withEntity(HttpEntities.create(ContentTypes.TEXT_HTML_UTF8, file)));
       }
       else return Futures.successful(HttpResponse.create().withStatus(404));
 
@@ -123,14 +133,22 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
         final String shortAnswer = firstLineEnd >= 0 ? answerText.substring(0, firstLineEnd) : answerText;
         if (firstLineEnd >= 0) {
           final String fullAnswer = answerText.substring(firstLineEnd + 1);
-          final Node answerNode;
-          if (!offerNode.hasNode("answer")) {
-            answerNode = offerNode.addNode("answer", "nt:resource");
+          final Node answersNode;
+          if (!offerNode.hasNode("answers")) {
+            answersNode = offerNode.addNode("answers");
           }
-          else answerNode = offerNode.getNode("answer");
-          answerNode.setProperty("jcr:mimeType", "text/markdown");
-          answerNode.setProperty("jcr:data", writeSession.getValueFactory().createBinary(new ByteArrayInputStream(fullAnswer.getBytes(StreamTools.UTF))));
-          answerNode.setProperty("jcr:encoding", "UTF-8");
+          else answersNode = offerNode.getNode("answers");
+
+          final String order = answer.order();
+          final Node answerForOrder;
+          if (answersNode.hasNode(order))
+            answerForOrder = answersNode.getNode(order);
+          else
+            answerForOrder = answersNode.addNode(order, "nt:resource");
+
+          answerForOrder.setProperty("jcr:mimeType", "text/markdown");
+          answerForOrder.setProperty("jcr:data", writeSession.getValueFactory().createBinary(new ByteArrayInputStream(fullAnswer.getBytes(StreamTools.UTF))));
+          answerForOrder.setProperty("jcr:encoding", "UTF-8");
         }
 
         offerNode.setProperty("short-answer", shortAnswer);
@@ -145,8 +163,7 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
         offerNode.setProperty("feedback", msg.get(Operations.Feedback.class).stars());
       }
       writeSession.save();
-    }
-    catch (RepositoryException re) {
+    } catch (RepositoryException re) {
       log.log(Level.WARNING, "JCR exception onMessage", re);
     }
   }
@@ -172,12 +189,12 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
       }
     }
     { // tags
-      for (final Tag tag: offer.tags())
+      for (final Tag tag : offer.tags())
         partNode.addNode("tag").setProperty("name", tag.name());
     }
 
     { // patterns
-      for (final Pattern pattern: offer.patterns())
+      for (final Pattern pattern : offer.patterns())
         partNode.addNode("pattern").setProperty("name", pattern.name());
     }
   }
@@ -211,6 +228,18 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
 
     setupOffer(partNode, offer);
     return partNode;
+  }
+
+  @NotNull
+  protected ContentType getContentType(final File file) {
+    final String fileName = file.getName();
+    return fileName.endsWith(".js")
+        ? ContentTypes.create(MediaTypes.APPLICATION_JSON)
+        : fileName.endsWith(".css")
+        ? ContentTypes.create(MediaTypes.TEXT_CSS, HttpCharsets.UTF_8)
+        : fileName.endsWith(".png")
+        ? ContentTypes.create(MediaTypes.IMAGE_PNG)
+        : ContentTypes.create(MediaTypes.APPLICATION_OCTET_STREAM);
   }
 
   public static JID jid() {

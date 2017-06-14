@@ -85,7 +85,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
       final IncomingConnection connection = (IncomingConnection) o;
       log.fine("Accepted new connection from " + connection.remoteAddress());
       connection.handleWithAsyncHandler((Function<HttpRequest, Future<HttpResponse>>) httpRequest -> {
-        final Future ask = (Future) Patterns.ask(context().actorOf(props(Handler.class)), httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
+        final Future ask = Patterns.ask(context().actorOf(props(Handler.class)), httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
         //noinspection unchecked
         return (Future<HttpResponse>)ask;
       }, materializer);
@@ -365,7 +365,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           entry.getValue()
         ));
       }
-      Collections.sort(result, (o1, o2) -> {
+      result.sort((o1, o2) -> {
         final DateTime d2 = DateTime.parse(o2.getGroupName(), formatter);
         final DateTime d1 = DateTime.parse(o1.getGroupName(), formatter);
         return d2.compareTo(d1);

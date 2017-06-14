@@ -146,6 +146,7 @@ public class ExpLeagueMember: NSManagedObject {
     
     init(xml: DDXMLElement, group: ExpLeagueMemberGroup, context: NSManagedObjectContext) {
         super.init(entity: NSEntityDescription.entity(forEntityName: "Expert", in: context)!, insertInto: context)
+        self.profile = ExpLeagueProfile.active
         self.xmlStr = xml.xmlString
         self.groupInt = NSNumber(value: group.rawValue as Int16)
         save()

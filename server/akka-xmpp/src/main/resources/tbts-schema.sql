@@ -51,7 +51,6 @@ CREATE TABLE IF NOT EXISTS Orders (
   id VARCHAR(64),
   room VARCHAR(64) NOT NULL,
   offer MEDIUMTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  offerId VARCHAR(128) DEFAULT NULL,
   eta TIMESTAMP NOT NULL,
   status INTEGER(8),
   score FLOAT(16) DEFAULT -1.0,
@@ -116,11 +115,11 @@ CREATE TABLE IF NOT EXISTS AnswersOfTheWeek (
   PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS Patterns {
+CREATE TABLE IF NOT EXISTS Patterns (
     name VARCHAR(30) NOT NULL,
     body MEDIUMTEXT NOT NULL,
     icon VARCHAR(128),
     type int(8) DEFAULT 0,
 
-    PRIMARY KEY name
-}
+    PRIMARY KEY (name)
+);

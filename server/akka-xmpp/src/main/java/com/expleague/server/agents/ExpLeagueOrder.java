@@ -27,7 +27,7 @@ public abstract class ExpLeagueOrder {
   private static final Logger log = Logger.getLogger(LaborExchange.class.getName());
 
   public static int SIMULTANEOUSLY_INVITED = 3;
-  private final Offer offer;
+  private Offer offer;
 
   protected OrderState state = OrderState.NONE;
   private volatile ActorRef broker;
@@ -51,12 +51,16 @@ public abstract class ExpLeagueOrder {
     return offer;
   }
 
+  public void offer(Offer offer) {
+    this.offer = offer;
+  }
+
   public ActorRef broker() {
     return broker;
   }
 
   public synchronized boolean broker(ActorRef broker) {
-    if (this.broker != null && this.broker != broker) {
+    if (broker != null && this.broker != null && this.broker != broker) {
       log.warning("Broker " + broker + " assigned while another broker found: " + this.broker);
       return false;
     }

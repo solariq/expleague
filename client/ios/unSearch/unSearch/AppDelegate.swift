@@ -42,10 +42,10 @@ class AppDelegate: UIResponder {
     
     var window: UIWindow?
     
-    var tabs: TabsViewController!
+    var tabs: TabsViewController?
 
     var split: UISplitViewController {
-        return tabs.viewControllers![1] as! UISplitViewController
+        return tabs!.viewControllers![1] as! UISplitViewController
     }
     
     fileprivate var navigation: UINavigationController {
@@ -74,7 +74,7 @@ class AppDelegate: UIResponder {
     
     func start() {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        tabs = storyboard.instantiateViewController(withIdentifier: "tabs") as! TabsViewController
+        tabs = storyboard.instantiateViewController(withIdentifier: "tabs") as? TabsViewController
         self.window?.rootViewController = tabs
         GMSServices.provideAPIKey(AppDelegate.GOOGLE_API_KEY)
         GMSPlacesClient.provideAPIKey(AppDelegate.GOOGLE_API_KEY)
@@ -96,12 +96,12 @@ class AppDelegate: UIResponder {
     func onProfileChanged() {
         let application = UIApplication.shared
         application.applicationIconBadgeNumber = Int(ExpLeagueProfile.active.unread)
-        tabs.viewControllers?[1].tabBarItem.badgeValue = ExpLeagueProfile.active.unread > 0 ? "\(ExpLeagueProfile.active.unread)" : nil;
+        tabs?.viewControllers?[1].tabBarItem.badgeValue = ExpLeagueProfile.active.unread > 0 ? "\(ExpLeagueProfile.active.unread)" : nil;
         QObject.track(ExpLeagueProfile.active, #selector(ExpLeagueProfile.unreadChanged), tracker: {
             let unread = Int(ExpLeagueProfile.active.unread)
             DispatchQueue.main.async() {
                 application.applicationIconBadgeNumber = unread
-                self.tabs.viewControllers?[1].tabBarItem.badgeValue = unread > 0 ? "\(unread)" : nil;
+                self.tabs?.viewControllers?[1].tabBarItem.badgeValue = unread > 0 ? "\(unread)" : nil;
             }
             return true
         })
@@ -127,7 +127,7 @@ extension AppDelegate: UIApplicationDelegate {
         let onboard = UIStoryboard(name: "Onboard", bundle: nil)
         if (!controller.initialized()) {
             let pageControl = UIPageControl.appearance()
-            pageControl.pageIndicatorTintColor = Palette.CONTROL_BACKGROUND
+            pageControl.pageIndicatorTintColor = Palette.CHAT_BACKGROUND
             pageControl.backgroundColor = UIColor.white
             pageControl.currentPageIndicatorTintColor = Palette.CONTROL
             let page1 = (onboard.instantiateViewController(withIdentifier: "onboardPage") as! OnboardPageViewController)
@@ -139,10 +139,10 @@ extension AppDelegate: UIApplicationDelegate {
             let page4 = (onboard.instantiateViewController(withIdentifier: "onboardPage") as! OnboardPageViewController)
                 .build(text: "Получите готовое решение: пошаговая инструкция, проверенная информация, отзывы и рейтинги.", image: UIImage(named: "onBoarding_img4")!)
             let lastPage = (onboard.instantiateViewController(withIdentifier: "onboardPage") as! OnboardPageViewController)
-                        .build(text: "Мы помогли вам?\nУгостите эксперта чашечкой кофе!", image: UIImage(named: "onBoarding_img5")!) {
-                            controller.setupDefaultProfiles(UIDevice.current.identifierForVendor!.uuidString.hashValue)
-                            self.start()
-                        }
+                .build(text: "Мы помогли вам?\nУгостите эксперта чашечкой кофе!", image: UIImage(named: "onBoarding_img5")!, final: true) {
+                    controller.setupDefaultProfiles(UIDevice.current.identifierForVendor!.uuidString.hashValue)
+                    self.start()
+                }
     
             let pages = [page1, page2, page3, page4, lastPage]
             let onboardingVC = OnboardViewController(pages: pages)
@@ -230,7 +230,7 @@ extension AppDelegate: UIApplicationDelegate {
     func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
         if let orderId = notification.userInfo?["order"] as? String, let order = ExpLeagueProfile.active.order(name: orderId) {
             ExpLeagueProfile.active.selectedOrder = order
-            tabs.selectedIndex = 1
+            tabs?.selectedIndex = 1
         }
     }
     

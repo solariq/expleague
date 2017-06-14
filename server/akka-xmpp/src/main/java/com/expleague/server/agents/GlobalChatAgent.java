@@ -1,9 +1,10 @@
 package com.expleague.server.agents;
 
 import akka.actor.ActorContext;
+import akka.persistence.RecoveryCompleted;
 import com.expleague.model.*;
 import com.expleague.model.Operations.*;
-import com.expleague.model.RoomState;
+import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPUser;
 import com.expleague.util.akka.ActorMethod;
@@ -13,9 +14,14 @@ import com.expleague.xmpp.muc.MucHistory;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Message.MessageType;
 import com.expleague.xmpp.stanza.Stanza;
+import org.apache.jackrabbit.commons.JcrUtils;
+import org.jetbrains.annotations.Nullable;
 
+import javax.jcr.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.expleague.model.RoomState.*;
@@ -27,11 +33,22 @@ import static com.expleague.model.RoomState.*;
  */
 @SuppressWarnings("UnusedParameters")
 public class GlobalChatAgent extends RoomAgent {
+  private static final Logger log = Logger.getLogger(GlobalChatAgent.class.getName());
   public static final String ID = "global-chat";
   public Map<String, RoomStatus> rooms = new HashMap<>();
 
+  private Repository repository;
+  private Node roomStatusesNode;
+  @Nullable
+  private Session jcrSession;
+
   public GlobalChatAgent(JID jid) {
     super(jid, false);
+    try {
+      repository = JcrUtils.getRepository();
+    } catch (RepositoryException e) {
+      log.warning("Unable to start jackrabbit repository");
+    }
   }
 
   public static boolean isTrusted(JID from) {
@@ -43,6 +60,8 @@ public class GlobalChatAgent extends RoomAgent {
   public void onDump(DumpRequest dump) {
     final List<Message> rooms = this.rooms.values().stream()
         .filter(room -> room.affiliation(dump.from()) == Affiliation.OWNER)
+        .sorted((a, b) -> Long.compare(b.modificationTs, a.modificationTs))
+        .limit(100)
         .map(RoomStatus::message)
         .map(message -> participantCopy(message, XMPP.jid(dump.from())))
         .collect(Collectors.toList());
@@ -69,7 +88,7 @@ public class GlobalChatAgent extends RoomAgent {
       super.process(msg);
       return;
     }
-    final RoomStatus status = rooms.compute(msg.from().local(), (local, s) -> s != null ? s : new RoomStatus(local));
+    final RoomStatus status = rooms.compute(msg.from().local(), (local, s) -> s != null ? s : new RoomStatus(local, roomStatusesNode, jcrSession));
     final long ts = msg.ts();
     final int changes = status.changes();
     if (msg.has(OfferChange.class))
@@ -98,6 +117,7 @@ public class GlobalChatAgent extends RoomAgent {
     }
 
     if (msg.has(Clear.class)) {
+      rooms.get(msg.from().local()).clear();
       rooms.remove(msg.from().local());
       super.process(msg);
     }
@@ -119,6 +139,25 @@ public class GlobalChatAgent extends RoomAgent {
   }
 
   @Override
+  public <T> void persist(final T event, final Consumer<? super T> handler) {
+    handler.accept(event);
+  }
+
+  @Override
+  protected void preStart() throws Exception {
+    if (!ExpLeagueServer.config().unitTest()) {
+      jcrSession = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
+      final Node rootNode = jcrSession.getRootNode();
+      roomStatusesNode = JcrUtils.getOrAddNode(rootNode, "roomstatuses");
+      final Iterable<Node> roomNodes = JcrUtils.getChildNodes(roomStatusesNode);
+      for (Node node : roomNodes) {
+        rooms.put(node.getName(), new RoomStatus(node.getName(), roomStatusesNode, jcrSession));
+      }
+    }
+    super.preStart();
+  }
+
+  @Override
   protected void onStart() {
     rooms.forEach((room, state) -> {
       if (state.currentOffer != null && EnumSet.of(OPEN, CHAT, RESPONSE, WORK).contains(state.state)) {
@@ -126,6 +165,16 @@ public class GlobalChatAgent extends RoomAgent {
       }
     });
     super.onStart();
+  }
+
+  @Override
+  public void onReceiveRecover(Object o) throws Exception {
+    if (!ExpLeagueServer.config().unitTest()) {
+      if (o instanceof RecoveryCompleted) {
+        deleteMessages();
+      }
+    }
+    super.onReceiveRecover(o);
   }
 
   public static void tell(JID from, Item item, ActorContext context) {
@@ -149,8 +198,48 @@ public class GlobalChatAgent extends RoomAgent {
     private int unread = 0;
     private int feedback = 0;
 
-    public RoomStatus(String id) {
+    private Node roomNode;
+    private Node affiliationsNode;
+    private Node rolesNode;
+    private Node ordersNode;
+    @Nullable
+    private final Session jcrSession;
+
+    public RoomStatus(String id, Node roomStatusesNode, @Nullable Session jcrSession) {
       this.id = id;
+      this.jcrSession = jcrSession;
+      applyJcrChanges(() -> {
+        roomNode = JcrUtils.getOrAddNode(roomStatusesNode, id);
+        affiliationsNode = JcrUtils.getOrAddNode(roomNode, "affiliations");
+        final Iterable<Node> affiliationsChildNodes = JcrUtils.getChildNodes(affiliationsNode);
+        for (Node node : affiliationsChildNodes) {
+          final Affiliation affiliation = Affiliation.fromPriority((int) node.getProperty("priority").getLong());
+          affiliations.put(node.getName(), affiliation);
+        }
+
+        rolesNode = JcrUtils.getOrAddNode(roomNode, "roles");
+        final Iterable<Node> rolesChildNodes = JcrUtils.getChildNodes(rolesNode);
+        for (Node node : rolesChildNodes) {
+          final Role role = Role.fromPriority((int) node.getProperty("priority").getLong());
+          roles.put(node.getName(), role);
+        }
+
+        ordersNode = JcrUtils.getOrAddNode(roomNode, "orders");
+        final Iterable<Node> ordersChildNodes = JcrUtils.getChildNodes(ordersNode);
+        for (Node node : ordersChildNodes) {
+          final OrderState orderState = node.hasProperty("code") ? OrderState.fromCode((int) node.getProperty("code").getLong()) : null;
+          final JID expert = node.hasProperty("expert") ? JID.parse(node.getProperty("expert").getString()) : null;
+          final OrderStatus orderStatus = new OrderStatus(orderState, expert);
+          orders.put(node.getName(), orderStatus);
+        }
+
+        modificationTs = JcrUtils.getLongProperty(roomNode, "modificationTs", modificationTs);
+        changes = (int) JcrUtils.getLongProperty(roomNode, "changes", changes);
+        unread = (int) JcrUtils.getLongProperty(roomNode, "unread", unread);
+        feedback = (int) JcrUtils.getLongProperty(roomNode, "feedback", feedback);
+        currentOffer = roomNode.hasProperty("offer") ? Offer.create(roomNode.getProperty("offer").getString()) : currentOffer;
+        state = roomNode.hasProperty("state") ? RoomState.fromCode((int) roomNode.getProperty("state").getLong()) : state;
+      });
     }
 
     public void affiliation(String id, Affiliation affiliation) {
@@ -158,16 +247,28 @@ public class GlobalChatAgent extends RoomAgent {
       if (affiliation != null && affiliation.priority() < a.priority()) {
         affiliations.put(id, affiliation);
         changes++;
+
+        applyJcrChanges(() -> {
+          roomNode.setProperty("changes", changes);
+          final Node affiliationNode = JcrUtils.getOrAddNode(affiliationsNode, id);
+          affiliationNode.setProperty("priority", affiliation.priority());
+        });
       }
     }
 
     public void role(String id, Role role) {
       roles.put(id, role);
       changes++;
+
+      applyJcrChanges(() -> {
+        roomNode.setProperty("changes", changes);
+        final Node roleNode = JcrUtils.getOrAddNode(rolesNode, id);
+        roleNode.setProperty("priority", role.priority());
+      });
     }
 
-    private void ts(long ts) {
-      modificationTs = Math.max(ts, modificationTs);
+    private long ts(long ts) {
+      return Math.max(ts, modificationTs);
     }
 
     public int changes() {
@@ -177,27 +278,59 @@ public class GlobalChatAgent extends RoomAgent {
     public void offer(Offer offer, JID by, long ts) {
       currentOffer = offer;
       changes++;
-      ts(ts);
+      modificationTs = ts(ts);
+
+      applyJcrChanges(() -> {
+        roomNode.setProperty("offer", offer.toString());
+        roomNode.setProperty("changes", changes);
+        roomNode.setProperty("modificationTs", modificationTs);
+      });
     }
 
     public void state(RoomState state, long ts) {
       this.state = state;
       if (state == CLOSED)
         unread = 0;
-      if (state != WORK && state != VERIFY)
+
+      final boolean ordersCleared;
+      if (state != WORK && state != VERIFY && !orders.isEmpty()) {
+        ordersCleared = true;
         orders.clear();
+      }
+      else {
+        ordersCleared = false;
+      }
       changes++;
-      ts(ts);
+      modificationTs = ts(ts);
+
+      applyJcrChanges(() -> {
+        if (ordersCleared) {
+          final Iterable<Node> ordersIterable = JcrUtils.getChildNodes(ordersNode);
+          for (Node node : ordersIterable) {
+            node.remove();
+          }
+        }
+        roomNode.setProperty("state", state.code());
+        roomNode.setProperty("unread", unread);
+        roomNode.setProperty("changes", changes);
+        roomNode.setProperty("modificationTs", modificationTs);
+      });
     }
 
     public void message(boolean expert, int count, long ts) {
       this.unread = expert ? 0 : this.unread + count;
       changes++;
-      ts(ts);
+      modificationTs = ts(ts);
+
+      applyJcrChanges(() -> {
+        roomNode.setProperty("unread", unread);
+        roomNode.setProperty("changes", changes);
+        roomNode.setProperty("modificationTs", modificationTs);
+      });
     }
 
     public Message message() {
-      final Message result = new Message("global-" + id + "-" + (modificationTs/1000));
+      final Message result = new Message("global-" + id + "-" + (modificationTs / 1000));
       result.type(MessageType.GROUP_CHAT);
       result.append(currentOffer);
       result.append(new RoomStateChanged(state));
@@ -208,7 +341,7 @@ public class GlobalChatAgent extends RoomAgent {
 
       final Set<String> ids = new HashSet<>(roles.keySet());
       ids.addAll(affiliations.keySet());
-      for (final String nick: ids) {
+      for (final String nick : ids) {
         final Role role = roles.getOrDefault(nick, Role.NONE);
         final Affiliation affiliation = affiliations.getOrDefault(nick, Affiliation.NONE);
         final RoomRoleUpdate update = new RoomRoleUpdate(XMPP.jid(nick), role, affiliation);
@@ -226,7 +359,12 @@ public class GlobalChatAgent extends RoomAgent {
 
     public void feedback(int stars, long ts) {
       this.feedback = stars;
-      ts(ts);
+      modificationTs = ts(ts);
+
+      applyJcrChanges(() -> {
+        roomNode.setProperty("feedback", feedback);
+        roomNode.setProperty("modificationTs", modificationTs);
+      });
     }
 
     public Affiliation affiliation(String fromId) {
@@ -234,22 +372,68 @@ public class GlobalChatAgent extends RoomAgent {
     }
 
     public void order(String order, OrderState state, long ts) {
+      if (order == null)
+        return;
+
       orders.compute(order, (o, v) -> v != null ? v : new OrderStatus()).state = state;
-      ts(ts);
+      modificationTs = ts(ts);
+
+      applyJcrChanges(() -> {
+        roomNode.setProperty("modificationTs", modificationTs);
+        final Node orderNode = JcrUtils.getOrAddNode(ordersNode, order);
+        orderNode.setProperty("code", state.code());
+      });
     }
 
     public void start(String order, JID jid, long ts) {
+      if (order == null)
+        return;
+
       orders.compute(order, (o, v) -> v != null ? v : new OrderStatus()).expert = jid;
-      ts(ts);
+      modificationTs = ts(ts);
+
+      applyJcrChanges(() -> {
+        roomNode.setProperty("modificationTs", modificationTs);
+        final Node orderNode = JcrUtils.getOrAddNode(ordersNode, order);
+        orderNode.setProperty("expert", jid.toString());
+      });
     }
 
     public long lastModified() {
       return modificationTs;
+    }
+
+    public void clear() {
+      applyJcrChanges(() -> roomNode.remove());
+    }
+
+    private void applyJcrChanges(JcrUpdate jcrUpdate) {
+      if (jcrSession != null) {
+        try {
+          jcrUpdate.apply();
+          jcrSession.save();
+        } catch (RepositoryException re) {
+          log.warning("Jackrabbit repository failed: " + re);
+        }
+      }
+    }
+
+    @FunctionalInterface
+    private interface JcrUpdate {
+      void apply() throws RepositoryException;
     }
   }
 
   public static class OrderStatus {
     public OrderState state;
     public JID expert;
+
+    public OrderStatus() {
+    }
+
+    public OrderStatus(OrderState state, JID expert) {
+      this.state = state;
+      this.expert = expert;
+    }
   }
 }

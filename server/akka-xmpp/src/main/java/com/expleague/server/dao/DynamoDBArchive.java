@@ -13,15 +13,14 @@ import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.agents.XMPP;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Stanza;
+import com.google.common.collect.Lists;
 import com.spbsu.commons.text.charset.TextDecoderTools;
 import com.spbsu.commons.util.cache.CacheStrategy;
 import com.spbsu.commons.util.cache.impl.FixedSizeCache;
 import gnu.trove.list.array.TLongArrayList;
 
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -35,7 +34,7 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public class DynamoDBArchive implements Archive {
   private static final Logger log = Logger.getLogger(DynamoDBArchive.class.getName());
-  private final BlockingQueue<Message> roomAccumulatedChangesQueue = new LinkedBlockingQueue<>();
+  private final BlockingDeque<Message> roomAccumulatedChangesDeque = new LinkedBlockingDeque<>();
   private final Set<String> fullRooms = Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final DynamoDBMapper mapper;
   private final AmazonDynamoDBAsyncClient client;
@@ -67,7 +66,7 @@ public class DynamoDBArchive implements Archive {
         try {
           //noinspection InfiniteLoopStatement
           while (true) {
-            final Message message = roomAccumulatedChangesQueue.take();
+            final Message message = roomAccumulatedChangesDeque.take();
             final String roomId = message.stanza().to().local();
             if (fullRooms.contains(roomId))
               continue;
@@ -88,7 +87,7 @@ public class DynamoDBArchive implements Archive {
 
             final List<Message> changesToApply = new ArrayList<>(Collections.singletonList(message));
             UpdateItemRequest currentUpdate = updateRequest(roomId, changesToApply);
-            final Iterator<Message> queueIterator = roomAccumulatedChangesQueue.iterator();
+            final Iterator<Message> queueIterator = roomAccumulatedChangesDeque.iterator();
             while (queueIterator.hasNext()) {
               final Message next = queueIterator.next();
               if (!roomId.equals(next.stanza().to().local()))
@@ -115,7 +114,7 @@ public class DynamoDBArchive implements Archive {
                 fullRooms.add(roomId);
               }
               else {
-                roomAccumulatedChangesQueue.addAll(changesToApply);
+                Lists.reverse(changesToApply).forEach(roomAccumulatedChangesDeque::addFirst);
               }
               log.log(Level.WARNING, "Unable to deliver message to DynamoDB: " + ace.getMessage());
               log.log(Level.WARNING, "Failed update: " + currentUpdate.toString());
@@ -188,7 +187,7 @@ public class DynamoDBArchive implements Archive {
       RoomArchive archive = mapper.load(getRoomArchiveClass(), id);
       if (archive == null)
         archive = new RoomArchive(id);
-      archive.handlers(roomAccumulatedChangesQueue, fullRooms);
+      archive.handlers(roomAccumulatedChangesDeque, fullRooms);
       return archive;
     });
   }
@@ -196,7 +195,7 @@ public class DynamoDBArchive implements Archive {
   @Override
   public synchronized Dump register(String room, String owner) {
     final RoomArchive archive = new RoomArchive(room);
-    archive.handlers(roomAccumulatedChangesQueue, fullRooms);
+    archive.handlers(roomAccumulatedChangesDeque, fullRooms);
     dumpsCache.put(room, archive);
     return archive;
   }
@@ -260,7 +259,7 @@ public class DynamoDBArchive implements Archive {
         return;
 
       if (!fullRooms.contains(id)) {
-        roomAccumulatedChangesQueue.addAll(accumulatedChange);
+        roomAccumulatedChangesDeque.addAll(accumulatedChange);
       }
     }
 
@@ -288,11 +287,11 @@ public class DynamoDBArchive implements Archive {
       return messages.size();
     }
 
-    private BlockingQueue<Message> roomAccumulatedChangesQueue;
+    private BlockingDeque<Message> roomAccumulatedChangesDeque;
     private Set<String> fullRooms;
 
-    public void handlers(BlockingQueue<Message> roomAccumulatedChangesQueue, Set<String> fullRooms) {
-      this.roomAccumulatedChangesQueue = roomAccumulatedChangesQueue;
+    public void handlers(BlockingDeque<Message> roomAccumulatedChangesQueue, Set<String> fullRooms) {
+      this.roomAccumulatedChangesDeque = roomAccumulatedChangesQueue;
       this.fullRooms = fullRooms;
     }
   }

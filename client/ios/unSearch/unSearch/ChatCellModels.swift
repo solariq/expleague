@@ -105,7 +105,7 @@ class CompositeCellModel: ChatCellModel {
             let blockSize = self.blockSize(width: width - 8, index: i)
             height += blockSize.height
         }
-        return ceil(height + 8)
+        return ceil(height)
     }
 
     func form(chatCell cell: UIView) throws {
@@ -119,8 +119,6 @@ class CompositeCellModel: ChatCellModel {
         for view in cell.content.subviews { // cleanup
             view.removeFromSuperview()
         }
-        cell.content.autoresizesSubviews = false
-        cell.content.autoresizingMask = UIViewAutoresizing()
         var height: CGFloat = 0.0
         var width: CGFloat = 0.0
         var prev: UIView?
@@ -197,17 +195,17 @@ class CompositeCellModel: ChatCellModel {
                     cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .top, relatedBy: .equal, toItem: prev!, attribute: .bottom, multiplier: 1, constant: 0))
                 }
                 else {
-                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .top, relatedBy: .equal, toItem: cell.content, attribute: .topMargin, multiplier: 1, constant: 0))
+                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .top, relatedBy: .equal, toItem: cell.content, attribute: .top, multiplier: 1, constant: 4))
                 }
                 switch(self.textAlignment) {
                 case .left:
-                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .leading, relatedBy: .equal, toItem: cell.content, attribute: .leadingMargin, multiplier: 1, constant: 0))
+                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .leading, relatedBy: .equal, toItem: cell.content, attribute: .leading, multiplier: 1, constant: 4))
                     break
                 case .center:
                     cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .centerX, relatedBy: .equal, toItem: cell.content, attribute: .centerX, multiplier: 1, constant: 0))
                     break
                 default:
-                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .trailing, relatedBy: .equal, toItem: cell.content, attribute: .trailingMargin, multiplier: 1, constant: 0))
+                    cell.content.addConstraint(NSLayoutConstraint(item: block!, attribute: .trailing, relatedBy: .equal, toItem: cell.content, attribute: .trailing, multiplier: 1, constant: 4))
                     break
 
                 }
@@ -217,22 +215,25 @@ class CompositeCellModel: ChatCellModel {
         }
 
 //        cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .height, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: ceil(height)))
-        effectiveWidth = width + 12
+        effectiveWidth = width + 8
         //cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .width, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: ceil(width + 12)))
-  //      print("Cell: \(cell.dynamicType), content size: (\(width), \(height)), cell size: \(cell.frame.size)")
+        print("Cell: \(cell) for model \(self). Content size: (\(width), \(height)), cell size: \(cell.frame.size), maxWidth: \(cell.maxWidth)")
+//        print("avatar frame \(cell.avatar?.frame ?? CGRect.zero). effective width: \(effectiveWidth)")
     }
 
     fileprivate func blockSize(width: CGFloat, index: Int) -> CGSize {
         var blockSize: CGSize
         if let text = parts[index] as? String {
             blockSize = text.boundingRect(
-                    with: CGSize(width: width, height: CGFloat(MAXFLOAT)),
+                    with: CGSize(width: floor(width), height: CGFloat(MAXFLOAT)),
                     options: NSStringDrawingOptions.usesLineFragmentOrigin,
                     attributes: [
                             NSFontAttributeName : ChatCell.defaultFont
                     ],
                     context: nil
                 ).size
+//            blockSize.width += 1
+//            blockSize.height += 1
         }
         else if let richText = parts[index] as? NSAttributedString {
             blockSize = richText.boundingRect(
@@ -282,14 +283,13 @@ class ChatMessageModel: CompositeCellModel {
     }
     
     override func form(messageViewCell cell: MessageChatCell) {
+        if let avatar = (cell as MessageChatCell).avatar, let expert = ExpLeagueProfile.active.expert(login: author) {
+            avatar.isHidden = active
+            avatar.expert = expert
+            cell.avatarWidth?.constant = active ? CGFloat(0) : CGFloat(25)
+        }
         super.form(messageViewCell: cell)
         cell.widthConstraint.constant = effectiveWidth
-        guard let avatar = (cell as MessageChatCell).avatar, let expert = ExpLeagueProfile.active.expert(login: author) else {
-            return
-        }
-        avatar.isHidden = active
-        avatar.expert = expert
-        cell.avatarWidth?.constant = active ? CGFloat(0) : CGFloat(25)
     }
     
     func close() {

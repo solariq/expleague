@@ -25,6 +25,7 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
   private static final Logger log = Logger.getLogger(LaborExchange.class.getName());
 
   public static final String EXPERTS_ACTOR_NAME = "experts";
+  private Map<String, ActorRef> activeOrders = new HashMap<>();
 
   @Override
   public void preStart() throws Exception {
@@ -37,9 +38,14 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
   @ActorMethod
   public void invoke(ExpLeagueOrder order) {
     final String roomName = order.room().local();
-    log.fine("Labor exchange received order " + roomName + " creating broker");
-    if (order.state() != OrderState.DONE) {
+    log.fine("Labor exchange received order " + roomName);
+    if (activeOrders.containsKey(order.id())) {
+      log.fine("Broker " + activeOrders.get(order.id()) + " is already working on it.");
+    }
+    else if (order.state() != OrderState.DONE) {
+      log.fine("Creating new broker for task: " + activeOrders.get(order.id()) + ".");
       final ActorRef broker = context().actorOf(Props.create(BrokerRole.class, self()));
+      activeOrders.put(order.id(), broker);
       final Object answer = AkkaTools.ask(broker, order);
       if (!(answer instanceof Operations.Ok))
         log.warning("Unable to create alive broker! Received: " + answer);
@@ -51,6 +57,12 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
     JavaConversions.asJavaCollection(context().children()).stream()
       .filter(LaborExchange::isBrokerActorRef)
       .forEach(ref -> ref.forward(expertAgent, context()));
+  }
+
+  @ActorMethod
+  public void onTerminated(Terminated terminated) {
+    log.fine("Broker " + terminated.actor() + " has died.");
+    activeOrders.replaceAll((orderId, broker) -> broker == terminated.actor() ? null : broker);
   }
 
   @ActorMethod

@@ -38,6 +38,7 @@ public class ConnectedPhase extends XMPPPhase {
   private ActorRef agent;
   private ActorRef courier;
   private XMPPDevice device;
+  private boolean synched = false;
   private long clientTsDiff = 0;
 
   public ConnectedPhase(ActorRef connection, String authId) {
@@ -61,9 +62,11 @@ public class ConnectedPhase extends XMPPPhase {
       case SET : {
         final Object payload = iq.get();
         if (payload instanceof Bind) {
-          { //ts diff between client and server
+          if (iq.hasTs()){ //ts diff between client and server
             clientTsDiff = System.currentTimeMillis() - iq.ts();
+            synched = true;
           }
+          else synched = false;
 
           bound = true;
           device = Roster.instance().device(jid.local());
@@ -129,7 +132,7 @@ public class ConnectedPhase extends XMPPPhase {
       { //append synchronized ts
         if (msg instanceof Message) {
           final Message message = (Message) msg;
-          final Message.Timestamp ts = new Message.Timestamp(message.ts() + clientTsDiff);
+          final Message.Timestamp ts = new Message.Timestamp(synched ? message.ts() + clientTsDiff : System.currentTimeMillis());
           message.append(ts);
         }
       }

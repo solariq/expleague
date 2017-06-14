@@ -221,14 +221,27 @@ public class Offer extends Item {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    final Offer offer = (Offer) o;
-    return room.equals(offer.room) && started.equals(offer.started);
+
+    Offer offer = (Offer) o;
+
+    if (!room.equals(offer.room)) return false;
+    if (attachments != null ? !attachments.equals(offer.attachments) : offer.attachments != null) return false;
+    if (location != null ? !location.equals(offer.location) : offer.location != null) return false;
+    if (comment != null ? !comment.equals(offer.comment) : offer.comment != null) return false;
+    if (draft != null ? !draft.equals(offer.draft) : offer.draft != null) return false;
+    if (tags != null ? !tags.equals(offer.tags) : offer.tags != null) return false;
+    return patterns != null ? patterns.equals(offer.patterns) : offer.patterns == null;
   }
 
   @Override
   public int hashCode() {
     int result = room.hashCode();
-    result = 31 * result + started.hashCode();
+    result = 31 * result + (attachments != null ? attachments.hashCode() : 0);
+    result = 31 * result + (location != null ? location.hashCode() : 0);
+    result = 31 * result + (comment != null ? comment.hashCode() : 0);
+    result = 31 * result + (draft != null ? draft.hashCode() : 0);
+    result = 31 * result + (tags != null ? tags.hashCode() : 0);
+    result = 31 * result + (patterns != null ? patterns.hashCode() : 0);
     return result;
   }
 

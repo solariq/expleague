@@ -225,13 +225,9 @@ public class ExpLeagueProfile: NSManagedObject {
     public func expertsChanged() { QObject.notify(#selector(expertsChanged), self) }
     
     internal func register(expert: ExpLeagueMember) -> ExpLeagueMember {
-        let experts = expertsSet?.mutableCopy() ?? NSMutableSet()
-        (experts as AnyObject).add(expert)
-        expertsSet = ((experts as AnyObject).copy(with: nil) as! NSSet)
         if (self._experts != nil) {
             self._experts?.append(expert)
         }
-        save()
         expertsChanged()
         return expert
     }
@@ -267,9 +263,6 @@ public class ExpLeagueProfile: NSManagedObject {
     }
     
     internal func register(tag: ExpLeagueTag) -> ExpLeagueTag {
-        let tags = tagsSet?.mutableCopy() ?? NSMutableSet()
-        (tags as AnyObject).add(tag)
-        tagsSet = ((tags as AnyObject).copy(with: nil) as! NSSet)
         if (_tags != nil) {
             _tags?.append(tag)
         }

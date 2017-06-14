@@ -125,7 +125,7 @@ class HistoryViewController: UITableViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         FBSDKAppEvents.logEvent("History tab active")
-        AppDelegate.instance.tabs.tabBar.isHidden = false
+        AppDelegate.instance.tabs?.tabBar.isHidden = false
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -246,7 +246,7 @@ class HistoryViewController: UITableViewController {
         case .finished:
             o = finished[(indexPath as NSIndexPath).row]
         }
-        AppDelegate.instance.tabs.tabBar.isHidden = true;
+        AppDelegate.instance.tabs?.tabBar.isHidden = true;
         let messagesView = OrderDetailsViewController(data: model(o))
         if (splitViewController!.isCollapsed) {
             navigationController!.popToRootViewController(animated: true);
