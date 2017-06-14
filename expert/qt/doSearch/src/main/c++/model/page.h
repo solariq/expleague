@@ -59,8 +59,8 @@ public:
     virtual QString icon() const { return "qrc:/avatar.png"; }
     virtual QString title() const { return id(); }
 
-    QList<Page*> outgoing() const;
     QList<Page*> incoming() const;
+    QList<Page*> outgoing() const;
 
     void forgetIncoming(Page* page);
     void forgetOutgoing(Page* page);

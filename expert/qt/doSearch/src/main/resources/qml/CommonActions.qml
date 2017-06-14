@@ -1,7 +1,7 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
 
-import QtWebEngine 1.2
+//import QtWebEngine 1.2
 
 import ExpLeague 1.0
 
@@ -26,7 +26,7 @@ Item {
     property Action zoomIn: zoomInAction
     property Action zoomOut: zoomOutAction
     property Action showHistory: showHistoryAction
-    property Action exitFullScreen: exitFullScreenAction
+    //property Action exitFullScreen: exitFullScreenAction
     property Action showEditor: showEditorAction
     property Action showVault: showVaultAction
     property Action gotoAdmin: gotoAdminAction
@@ -39,7 +39,7 @@ Item {
         return root.navigation.activePage
     }
 
-    property WebEngineView webView: {
+    property CefItem webView: {
         if (!screen || !screen.webView)
             return null
         return screen.webView
@@ -90,7 +90,7 @@ Item {
             var focusedWeb = focusWebView()
             var focusedEditor = focusEditor()
             if (focusedWeb) {
-                focusedWeb.triggerWebAction(WebEngineView.Copy)
+                focusedWeb.copy()
             }
             else if (focusedEditor) {
                 focusedEditor.copy()
@@ -99,7 +99,7 @@ Item {
                 editor.copy()
             }
             else if (webView) {
-                webView.triggerWebAction(WebEngineView.Copy)
+                webView.copy()
             }
         }
     }
@@ -122,7 +122,7 @@ Item {
                 editor.copy()
             }
             else if (webView) {
-                webView.triggerWebAction(WebEngineView.Copy)
+                webView.copy()
             }
             var document
             if (!!dosearch.navigation.context.task)
@@ -146,7 +146,7 @@ Item {
                 return
             }
             else if (webView) {
-                webView.triggerWebAction(WebEngineView.Cut)
+                webView.cut()
             }
             else if (editor) {
                 editor.cut()
@@ -165,7 +165,7 @@ Item {
             }
             else*/
             if (!!webView) {
-                webView.triggerWebAction(WebEngineView.Paste)
+                webView.paste()
             }
             else if (!!editor) {
                 if (!!editor['pasteMD'])
@@ -186,7 +186,7 @@ Item {
                 return
             }
             else if (!!webView) {
-                webView.triggerWebAction(WebEngineView.SelectAll)
+                webView.selectAll()
             }
             else if (editor) {
                 editor.selectAll()
@@ -204,7 +204,7 @@ Item {
                 return
             }
             else if (!!webView) {
-                webView.triggerWebAction(WebEngineView.Undo)
+                webView.undo()
             }
             else if (editor && editor.canUndo) {
                 editor.undo()
@@ -222,7 +222,7 @@ Item {
                 return
             }
             else if (!!webView) {
-                webView.triggerWebAction(WebEngineView.Redo)
+                webView.redo()
             }
             else if (editor && editor.canRedo) {
                 editor.redo()
@@ -259,7 +259,7 @@ Item {
         enabled: webView
         onTriggered: {
             if (webView) {
-                webView.reloadAndBypassCache()
+                webView.reload()
             }
         }
     }
@@ -342,7 +342,7 @@ Item {
         enabled: !!webView
         text: qsTr("Сохранить в хранилище")
         onTriggered: {
-            webView.triggerWebAction(WebEngineView.Copy)
+            webView.copy()
             dosearch.navigation.context.vault.clearClipboard();
             dosearch.main.delay(500, function() {
                 if (!dosearch.navigation.context.vault.paste(dosearch.navigation.activePage)) {
@@ -392,13 +392,13 @@ Item {
         }
     }
 
-    Action {
-        id: exitFullScreenAction
-        shortcut: "Escape"
-        enabled: dosearch.main.screenRef.state === "FullScreen"
-        text: qsTr("Выйти из полноэкранного режима")
-        onTriggered: {
-            webView.triggerWebAction(WebEngineView.ExitFullScreen)
-        }
-    }
+//    Action {
+//        id: exitFullScreenAction
+//        shortcut: "Escape"
+//        enabled: dosearch.main.screenRef.state === "FullScreen"
+//        text: qsTr("Выйти из полноэкранного режима")
+//        onTriggered: {
+//            webView.triggerWebAction(WebEngineView.ExitFullScreen)
+//        }
+//    }
 }

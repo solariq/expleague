@@ -139,9 +139,10 @@ Item {
                     event.accepted = true
                 }
                 else if (event.key === Qt.Key_Escape) {
-                    self.visible = false
-                    if (completion)
-                        completion.visible = false
+//                    self.visible = false
+//                    if (completion)
+//                        completion.visible = false
+                    navigation.activeScreen.forceActiveFocus()
                     event.accepted = true
                 }
             }

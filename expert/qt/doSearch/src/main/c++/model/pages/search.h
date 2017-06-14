@@ -136,6 +136,7 @@ class YandexSERPage: public SERPage {
 
 public:
     static QString parseQuery(const QUrl& url);
+    static bool isSearchUrl(const QUrl& url);
     bool accept(const QUrl &url) const { return parseQuery(url) == query(); }
 
     QString icon() const { return "qrc:/tools/yandex.png"; }
@@ -151,6 +152,7 @@ class GoogleSERPage: public SERPage {
 
 public:
     static QString parseQuery(const QUrl& url);
+    static bool isSearchUrl(const QUrl& url);
     bool accept(const QUrl &url) const { return parseQuery(url) == query(); }
 
     QString icon() const { return "qrc:/tools/google.png"; }

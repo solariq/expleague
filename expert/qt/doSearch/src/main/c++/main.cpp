@@ -13,19 +13,16 @@
 #include <QTextCodec>
 #include <QQuickWindow>
 
-#include <QtWebEngine>
+//#include <QtWebEngine>
 
 #include "expleague.h"
 #include "model/history.h"
 #ifdef CEF
+#include "cef.h"
 #include "model/pages/cefpage.h"
 #endif
 #include "model/uiowner.h"
 //#include "util/crashhandler.h"
-
-//#include "include/cef_app.h"
-//#include "include/cef_client.h"
-//#include "include/cef_render_process_handler.h"
 
 #include <cmath>
 
@@ -42,12 +39,7 @@ QSystemTrayIcon* trayIcon;
 
 int main(int argc, char *argv[]) {
 #ifdef CEF
-    CefMainArgs main_args(GetModuleHandle(NULL));
-    CefRefPtr<CefApp> cefapp;
-    CefSettings settings;
-    CefString(&settings.browser_subprocess_path).FromASCII(
-                "C:\\pr\\expleague\\expert\\qt\\build-doSearch-Desktop_Qt_5_8_0_MSVC2015_32bit-Debug\\src\\CEF\\debug\\CEF.exe");
-    CefInitialize(main_args, settings, cefapp, NULL);
+    initCef();
 #endif
     //PersistentPropertyHolder::debugPrintAll();
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
@@ -82,7 +74,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     QQmlApplicationEngine engine;
-    QtWebEngine::initialize();
+    //QtWebEngine::initialize();
     rootEngine = &engine;
 
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
@@ -101,8 +93,9 @@ int main(int argc, char *argv[]) {
     engine.load(QUrl(QStringLiteral("qrc:/Main.qml")));
     if (engine.rootObjects().isEmpty())
         return -1;
-
-    return app.exec();
+    int ret = app.exec();
+    shutDownCef();
+    return ret;
 }
 
 void setupScreenDefaults() {

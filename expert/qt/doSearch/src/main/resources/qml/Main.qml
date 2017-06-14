@@ -6,7 +6,7 @@ import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.1
 import QtQuick.Controls.Styles 1.4
 import Qt.labs.settings 1.0
-import QtWebEngine 1.3
+//import QtWebEngine 1.3
 
 import ExpLeague 1.0
 
@@ -14,19 +14,26 @@ import "."
 
 ApplicationWindow {
     id: self
+    //onActiveFocusItemChanged: console.log("active focus changed on", activeFocusItem)
+
     property QtObject activeDialog
     property alias omnibox: omnibox
-    property alias webProfileRef: webProfile
+    //property alias webProfileRef: webProfile
     property alias commonActionsRef: commonActions
     property alias editorActionsRef: editorActions
     property alias screenRef: screen
     property alias sidebarRef: sidebar
+    property alias vault: vault
     property bool options: !!dosearch.navigation.context.task ? true : false
     property real rightMargin: 0
     property real leftMargin: 0
     property string dragType: ""
     property var drag
 
+    property alias activeScreenHolder: activeScreenHolder
+    property alias screensHolder: screensHolder
+
+    property int someInt: 100
 //    flags: {
 //        if (Qt.platform.os === "osx")
 //            return Qt.FramelessWindowHint | Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint
@@ -69,19 +76,46 @@ ApplicationWindow {
         request.openIn(linkReceiver)
     }
 
-    function screenshot(url, size, callback) {
-        if (linkReceiver.operation != "") {
-            console.log("Link receiver is busy, putting screenshot operation to the queue")
-            linkReceiver.queue.push(function () {
+//    function screenshot(url, size, callback) {
+//        if (linkReceiver.operation != "") {
+//            console.log("Link receiver is busy, putting screenshot operation to the queue")
+//            linkReceiver.queue.push(function () {
+//                screenshot(url, size, callback)
+//            })
+//            return
+//        }
+//        console.log("Requesting screenshot for url " + url)
+//        linkReceiver.operation = "screenshot"
+//        linkReceiver.context = callback
+//        linkReceiver.size = size
+//        linkReceiver.url = url
+//    }
+
+//    function saveScreenshot(url, size, owner) {
+//        var qurl = url.toString()
+//        qurl.trim()
+//        if (qurl === "")
+//            return
+//        screenshot(url, size, function (result) {
+//            console.log("Saving screenshot " + owner.screenshotTarget())
+//            result.saveToFile(owner.screenshotTarget())
+//            owner.screenshotChanged()
+//        })
+//    }
+
+    function screenshot(url, size, file, callback) {
+        if (screenshotMaker.busy) {
+            console.log("screenshotMaker is busy, putting screenshot operation to the queue")
+            screenshotMaker.queue.push(function () {
                 screenshot(url, size, callback)
             })
             return
         }
         console.log("Requesting screenshot for url " + url)
-        linkReceiver.operation = "screenshot"
-        linkReceiver.context = callback
-        linkReceiver.size = size
-        linkReceiver.url = url
+        screenshotMaker.callback = callback
+        screenshotMaker.size = size
+        screenshotMaker.file = file
+        screenshotMaker.url = url
     }
 
     function saveScreenshot(url, size, owner) {
@@ -89,12 +123,12 @@ ApplicationWindow {
         qurl.trim()
         if (qurl === "")
             return
-        screenshot(url, size, function (result) {
+        screenshot(url, size, owner.screenshotTarget(), function () {
             console.log("Saving screenshot " + owner.screenshotTarget())
-            result.saveToFile(owner.screenshotTarget())
             owner.screenshotChanged()
         })
     }
+
 
     function invite(offer) {
         inviteDialog.offer = offer
@@ -178,21 +212,6 @@ ApplicationWindow {
         }
     }
 
-    WebEngineProfile {
-        id: webProfile
-        storageName: dosearch.league.profile ? dosearch.league.profile.deviceJid : "default"
-        httpUserAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36"
-        persistentCookiesPolicy: WebEngineProfile.ForcePersistentCookies
-
-        onDownloadRequested: {
-            console.log("Download requested: " + download.path)
-            var contextUI = dosearch.navigation.context.ui
-            contextUI.downloads.append(download)
-            download.accept()
-            dosearch.navigation.select(0, dosearch.navigation.context)
-        }
-    }
-
     ProfileWizard {
         id: createProfile
         visible: false
@@ -249,9 +268,9 @@ ApplicationWindow {
             MenuItem {
                 action: commonActions.showHistory
             }
-            MenuItem {
-                action: commonActions.exitFullScreen
-            }
+//            MenuItem {
+//                action: commonActions.exitFullScreen
+//            }
 
             MenuSeparator{}
             MenuItem {
@@ -355,12 +374,7 @@ ApplicationWindow {
         }
     }
 
-//    CefItem {
-//        z:20;
-//        visible: true;
-//        anchors.fill: parent;
-//        focus: true
-//    }
+
     Rectangle {
         id: screen
         color: Palette.backgroundColor("selected")
@@ -461,8 +475,9 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Item {
-                            anchors.fill: parent
-                            children: root.navigation.screens
+                            id: screensHolder
+                            objectName: "screensHolder"
+                            anchors.fill: parent                          
                         }
                         Rectangle {
                             color: "white"
@@ -472,9 +487,11 @@ ApplicationWindow {
                             }
                         }
                         Item {
+                            id: activeScreenHolder
+                            objectName: "activeScreenHolder"
                             anchors.fill: parent
                             z: 5
-                            children: [root.navigation.activeScreen]
+
                         }
                         Rectangle {
                             anchors.fill: parent
@@ -721,96 +738,134 @@ ApplicationWindow {
         ]
     }
 
-    WebEngineView {
-        id: linkReceiver
-        property string operation: ""
-        property bool focusOpened: false
-        property var context
-        property bool jsredir: false
+    CefItem{
+        id: screenshotMaker
+        property bool busy: false
+        property string file
         property size size
+        property var callback
         property var queue: []
-        width: 400
-        height: 400
-        z: -1
-        profile: webProfile
-        enabled: false
-        visible: false
-        url: "about:blank"
-        function finish() {
-            operation = "finish"
-            if (url.toString() != "about:blank") {
-                console.log("Back from: " + url + " history length: " + navigationHistory.items.rowCount())
-                if (navigationHistory.items.rowCount() > 1) {
-                    goBack()
-                    return
-                }
-                url = "about:blank"
-            }
-            console.log("Link operation finished. Url: " + url)
-            operation = ""
-            if (queue.length > 0) {
-                var callback = queue.shift()
-                console.log("Next from queue " + callback)
-                callback()
-            }
-        }
-        property bool delayedPP: false
+
+
+        visible: true
+        height: 1280
+        width: 1024
+
+        z: parent.z - 10
 
         onUrlChanged: {
-//            console.log("url changed to " + url.toString())
-            if (operation == "finish") {
-                finish()
-                return
+            if(url != ""){
+                busy = true
             }
-            if (operation != "resolve")
-                return
-
-            var surl = url.toString()
-            surl.trim()
-            if (!delayedPP) {
-                delayedPP = true
-                self.delay(200, function() {
-                    delayedPP = false
-                    if (!loading && linkReceiver.url.toString() == surl)
-                        finish()
-                })
-            }
-            if (surl == "" || surl == "about:blank" || surl.search(/google\.\w+\/url/) !== -1 || surl.search(/yandex\.\w+\/clck\/jsredir/) !== -1) {
-                return
-            }
-
-            dosearch.navigation.open(url, context, focusOpened, false)
-            finish()
         }
 
-        onLoadingChanged: {
-            var surl = url.toString()
+        onLoadEnd: {
+            if(busy){
+                saveScreenshot(file, 0, 0, size.width, size.height)
+            }
+        }
 
-            if (operation == "resolve" && !loading) {
-                if (!delayedPP) {
-                    delayedPP = true
-                    self.delay(200, function() {
-                        delayedPP = false
-                        if (!loading && linkReceiver.url.toString() == surl)
-                            finish()
-                    })
-                }
-            }
-
-            if (operation != "screenshot") {
-                return
-            }
-            if (surl == "" || surl == "about:blank" || surl.search(/google\.\w+\/url/) !== -1 || surl.search(/yandex\.\w+\/clck\/jsredir/) !== -1) {
-                return
-            }
-            console.log("Screenshot progress: " + surl + " " + loading + " progress: " + loadProgress)
-            if (!loading && surl != "about:blank") {
-                linkReceiver.grabToImage(context, size)
-                finish()
+        onScreenShotSaved: {
+            busy = false
+            //url = "about:blank"
+            callback()
+            if(queue.length > 0){
+                call = queue.shift()
+                call()
             }
         }
     }
-    MouseArea {
-        anchors.fill: linkReceiver
-    }
+
+//    WebEngineView {
+//        id: linkReceiver
+//        property string operation: ""
+//        property bool focusOpened: false
+//        property var context
+//        property bool jsredir: false
+//        property size size
+//        property var queue: []
+//        width: 400
+//        height: 400
+//        z: -1
+//        profile: webProfile
+//        enabled: false
+//        visible: false
+//        url: "about:blank"
+//        function finish() {
+//            operation = "finish"
+//            if (url.toString() != "about:blank") {
+//                console.log("Back from: " + url + " history length: " + navigationHistory.items.rowCount())
+//                if (navigationHistory.items.rowCount() > 1) {
+//                    goBack()
+//                    return
+//                }
+//                url = "about:blank"
+//            }
+//            console.log("Link operation finished. Url: " + url)
+//            operation = ""
+//            if (queue.length > 0) {
+//                var callback = queue.shift()
+//                console.log("Next from queue " + callback)
+//                callback()
+//            }
+//        }
+//        property bool delayedPP: false
+
+//        onUrlChanged: {
+////            console.log("url changed to " + url.toString())
+//            if (operation == "finish") {
+//                finish()
+//                return
+//            }
+//            if (operation != "resolve")
+//                return
+
+//            var surl = url.toString()
+//            surl.trim()
+//            if (!delayedPP) {
+//                delayedPP = true
+//                self.delay(200, function() {
+//                    delayedPP = false
+//                    if (!loading && linkReceiver.url.toString() == surl)
+//                        finish()
+//                })
+//            }
+//            if (surl == "" || surl == "about:blank" || surl.search(/google\.\w+\/url/) !== -1 || surl.search(/yandex\.\w+\/clck\/jsredir/) !== -1) {
+//                return
+//            }
+
+//            dosearch.navigation.open(url, context, focusOpened, false)
+//            finish()
+//        }
+
+//        onLoadingChanged: {
+//            var surl = url.toString()
+
+//            if (operation == "resolve" && !loading) {
+//                if (!delayedPP) {
+//                    delayedPP = true
+//                    self.delay(200, function() {
+//                        delayedPP = false
+//                        if (!loading && linkReceiver.url.toString() == surl)
+//                            finish()
+//                    })
+//                }
+//            }
+
+//            if (operation != "screenshot") {
+//                return
+//            }
+//            if (surl == "" || surl == "about:blank" || surl.search(/google\.\w+\/url/) !== -1 || surl.search(/yandex\.\w+\/clck\/jsredir/) !== -1) {
+//                return
+//            }
+//            console.log("Screenshot progress: " + surl + " " + loading + " progress: " + loadProgress)
+//            if (!loading && surl != "about:blank") {
+//                linkReceiver.grabToImage(context, size)
+//                finish()
+//            }
+//        }
+//    }
+//    MouseArea {
+//        anchors.fill: linkReceiver
+//    }
 }

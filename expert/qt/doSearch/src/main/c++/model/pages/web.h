@@ -72,7 +72,9 @@ public: // new functionality
 public: // overloads
     Page* parentPage() const;
 
-    QUrl originalUrl() const { return m_url; }
+    QUrl originalUrl() const {
+        return m_url;
+    }
     void setOriginalUrl(const QUrl& url);
 
     WebPage* redirect() const { return m_redirect; }
@@ -125,14 +127,14 @@ public:
     }
 
     QString icon() const {
-        QVariant var = value("web.favicon");
+        QVariant var = value("web.favicon"); //TODO http change
         return var.isNull() ? "" : var.toString();
     }
 
     void setIcon(const QString& icon) {
         store("web.favicon", icon);
         save();
-        iconChanged(icon);
+        emit iconChanged(icon);
     }
 
     QUrl originalUrl() const { return page()->originalUrl(); }

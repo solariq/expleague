@@ -15,10 +15,12 @@ Item {
     property alias hover: tabMouseArea.containsMouse
     property string state
     property bool imageOnly: modelData.title.length === 0
+    property bool showTree
     implicitWidth: imageOnly ? 24 : Math.min(invisibleText.implicitWidth, 200) + 24 + 4
     implicitHeight: 24
     z: parent.z + (self.state == "selected" ? 2 : (self.state == "active" ? 1 : 0))
     clip: false
+
 
     MouseArea {
         id: tabMouseArea
@@ -27,8 +29,10 @@ Item {
         drag.target: tab
         propagateComposedEvents: true
         onClicked: {
+            dosearch.navigation.context.printTree(dosearch.navigation.context, 0, 10)
             dosearch.navigation.select(group, modelData)
         }
+
         onReleased: {
             if (drag.active) {
                 tab.Drag.drop()
@@ -38,8 +42,13 @@ Item {
         Item {
             id: tab
 
-//            Drag.dragType: Drag.Internal
+            //            Drag.dragType: Drag.Internal
             Drag.active: tabMouseArea.drag.active
+            Drag.keys: "tab"
+            Drag.onDragFinished: {
+                console.log("on drag finished")
+//                dosearch.main.dragType = ""
+            }
 
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
@@ -113,13 +122,13 @@ Item {
             }
             states: [
                 State {
-                name: "drag"
-                when: tabMouseArea.drag.active
-                ParentChange { target: tab; parent: dosearch.main.screenRef }
-                AnchorChanges { target: tab; anchors.verticalCenter: undefined; anchors.horizontalCenter: undefined }
-                PropertyChanges { target: tab; z: 100 }
-                PropertyChanges { target: dosearch.main; drag: modelData; dragType: "page" }
-            }]
+                    name: "drag"
+                    when: tabMouseArea.drag.active
+                    ParentChange { target: tab; parent: dosearch.main.screenRef }
+                    AnchorChanges { target: tab; anchors.verticalCenter: undefined; anchors.horizontalCenter: undefined }
+                    PropertyChanges { target: tab; z: 100 }
+                    PropertyChanges { target: dosearch.main; drag: modelData; dragType: "page" }
+                }]
         }
     }
     Text {

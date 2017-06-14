@@ -8,6 +8,7 @@ Item {
 
     anchors.centerIn: parent
 
+
     Image {
         mipmap: true
         anchors.fill: parent

@@ -12,12 +12,14 @@ Item {
     property PagesGroup group: null
     property var append: null
     property var visiblePages: group.visiblePages
+    property var innerVisiblePages: []
     property var activePages: group.activePages
     property var closedPages: group.closedPages
     property bool closeEnabled: true
 
     visible: visiblePages.length > 0// || closedPages.length > 0
     implicitWidth: visibleList.implicitWidth + (group.parentGroup ? separator.width: 0)
+
 
     RowLayout {
         anchors.fill: parent
@@ -60,16 +62,16 @@ Item {
                 radius: Palette.radius
                 smooth: true
             }
-
             Row {
                 id: visibleList
                 spacing: 1
                 anchors.fill: parent
-
                 Repeater {
+                    id: repeater
                     delegate: NavigationTab {
                         height: visibleList.height
                         width: implicitWidth
+                        showTree: true
                         state: {
                             if (group.selectedPage !== modelData)
                                 return "idle"
@@ -91,9 +93,10 @@ Item {
                         }
                         return result + 1
                     }
-                    model: visiblePages
-
+                    model: (innerVisiblePages && innerVisiblePages.length > 0)? innerVisiblePages :  visiblePages
                 }
+
+
                 Button {
                     id: others
                     property bool opened: false
@@ -137,8 +140,110 @@ Item {
                         if (now - closedTime > 200)
                             popup.open()
                     }
+
+                }
+
+                move: Transition {
+                    NumberAnimation { properties: "x"; easing.type: Easing.OutBounce }
+                }
+
+            }
+            DropArea{
+                id: drop
+                anchors.fill: parent
+                property bool active: false
+                property int dropId: -1
+                onEntered: {
+                    active = dosearch.main.dragType == "page" &&
+                            navigation.canMovePage(dosearch.main.drag, group)
+                    console.log("drag enter", dosearch.main.dragType, active)
+                    if(active){
+                        innerVisiblePages = visiblePages
+                    }
+                }
+                onExited: {
+                    if(active){
+                        active = false
+                        dropId = -1
+                        innerVisiblePages = []
+                    }
+                }
+                onDropIdChanged: {
+                    console.log(dropId)
+                    if(dropId == -1){
+                        innerVisiblePages = []
+                        return
+                    }
+                    var pages = []
+                    for(var i =0; i < visiblePages.length; i++){
+                        pages.push(visiblePages[i]);
+                    }
+                    pages.splice(dropId, 0, dosearch.main.drag)
+                    innerVisiblePages = pages
+
+                }
+
+                onPositionChanged: {
+                    if(active){
+                        var size = 0
+                        for(var i = 0; i < repeater.count; i++){
+                            if(i == dropId){
+                                continue;
+                            }
+                            var dragCenter = drag.x + drag.source.width/2;
+                            var itemWidth = repeater.itemAt(i).width
+                            if(size + itemWidth > drag.x){
+                                if(size - itemWidth < drag.x){
+                                    dropId = i - (dropId >=0 && dropId < i ? 1 : 0);
+                                }else{
+                                    dropId = -1
+                                }
+                                return;
+                            }
+                            size += itemWidth
+                        }
+                        if(size - drag.source.width < drag.x){
+                            dropId = repeater.count - (repeater.count - 1 == dropId ? 1 : 0)
+                        }
+                    }
+                }
+                onDropped: {
+                    active = false
+                    if(dropId >= 0){
+                        console.log("drop")
+                        dosearch.main.dragType = ""
+                        var drag = dosearch.main.drag //qml magic. order is important
+                        dosearch.main.drag = null
+                        navigation.movePage(drag, group ,dropId)
+                        dropId = -1
+                    }
                 }
             }
+
+            //            Popup{
+            //                id: treePopup
+            //                closePolicy: Popup.CloseOnPressOutside
+            //                x: Math.max(parent.width - width, 0)
+            //                y: parent.mapFromItem(others.parent, 0, others.y).y + others.height + 1
+            //                width: 400
+            //                height: 400
+            ////                GroupTree{
+            ////                    id: tree
+            ////                    model: navigation.treeModel(group.root, navigation.context, 3)
+            ////                    itemDelegate : Component{
+            ////                        Text{
+            ////                            text: {
+            ////                                console.log("table view", modelData.title)
+            ////                                modelData.title
+            ////                            }
+            ////                        }
+            ////                    }
+            ////                }
+            ////                onOpened: {
+            ////                    tree.expand(tree.model.index(0, 0))
+            ////                }
+            //            }
+
 
             Popup {
                 x: Math.max(parent.width - width, 0)
@@ -232,6 +337,14 @@ Item {
                     }
                 }
             }
+
+            //            MouseArea{
+            //                anchors.fill: parent
+            //                hoverEnabled: true
+            //                onEntered: {
+            //                    treePopup.open()
+            //                }
+            //            }
         }
     }
 }

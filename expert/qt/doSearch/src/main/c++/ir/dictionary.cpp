@@ -1,4 +1,5 @@
 #include "dictionary.h"
+#include "../util/leveldb.h"
 
 #include <memory>
 #include <limits>
@@ -114,7 +115,7 @@ int CollectionDictionary::append(const QString& text, int lemmaId, int formIndex
 
     leveldb::WriteBatch batch;
     batch.Put(leveldb::Slice(reinterpret_cast<char*>(&id), sizeof(id)), word.toString().toStdString());
-    m_file->Write(leveldb::WriteOptions(), &batch);
+    m_levelDB->Write(leveldb::WriteOptions(), &batch);
     m_index[text] = id;
     return id;
 }
@@ -182,7 +183,7 @@ void CollectionDictionary::registerProfile(const BoW& profile) {
         batch.Put(leveldb::Slice(reinterpret_cast<const char*>(&id), sizeof(id)), result.toString().toStdString());
     });
     m_lock.unlock();
-    m_file->Write(leveldb::WriteOptions(), &batch);
+    m_levelDB->Write(leveldb::WriteOptions(), &batch);
 }
 
 void CollectionDictionary::updateProfile(const BoW& oldOne, const BoW& newOne) {
@@ -214,7 +215,7 @@ void CollectionDictionary::updateProfile(const BoW& oldOne, const BoW& newOne) {
         batch.Put(leveldb::Slice(reinterpret_cast<const char*>(&id), sizeof(id)), update.toString().toStdString());
     }
     m_lock.unlock();
-    m_file->Write(leveldb::WriteOptions(), &batch);
+    m_levelDB->Write(leveldb::WriteOptions(), &batch);
 }
 
 using namespace leveldb;
@@ -237,18 +238,15 @@ public:
     }
 };
 
-CollectionDictionary::CollectionDictionary(const QString& file, std::function<QString (const QString& word)> lemmer, QObject* parent): QObject(parent), m_lemmer(lemmer) {
+CollectionDictionary::CollectionDictionary(const QString& file, std::function<QString (const QString& word)> lemmer, QObject* parent):
+    QObject(parent), m_lemmer(lemmer)
+{
     leveldb::Options options;
     options.create_if_missing = true;
     options.comparator = new CollectionDictionaryComparator();
-    QDir dbDir(file);
-    if (!dbDir.exists()) {
-        dbDir.cdUp();
-        dbDir.mkpath(file.section('/', -1));
-    }
-    leveldb::Status status = leveldb::DB::Open(options, file.toStdString(), &m_file);
-    assert(status.ok());
-    std::unique_ptr<leveldb::Iterator> iter(m_file->NewIterator(leveldb::ReadOptions()));
+    m_levelDB = LevelDBContainer(file, options);
+
+    std::unique_ptr<leveldb::Iterator> iter(m_levelDB->NewIterator(leveldb::ReadOptions()));
     QList<Word> words;
     iter->SeekToFirst();
     while (iter->Valid()) {

@@ -52,6 +52,30 @@ void Context::setName(const QString& name) {
     emit titleChanged(m_name);
 }
 
+void Context::printTree(Page *page, int offset, int depth){
+    if(!depth){
+        return;
+    }
+    if(!offset){
+        qDebug() << "::::::::::::";
+    }
+    QString offsetStr;
+    for(int i = 0; i < offset; i++){
+        offsetStr.append("  ");
+    }
+    PagesGroup* group = associated(page, false);
+    qDebug() << "::::" << offsetStr << page->title() << (group && group->parentGroup() ? group->parentGroup()->root()->title() : "");
+
+    if(group){
+        for(auto it: group->pages()){
+            printTree(it, offset + 1, depth - 1);
+        }
+    }
+    if(!offset){
+        qDebug() << "::::::::::::";
+    }
+}
+
 void Context::setTask(Task *task) {
     QObject::connect(task, SIGNAL(finished()), SLOT(onTaskFinished()));
     QObject::connect(task, SIGNAL(cancelled()), SLOT(onTaskFinished()));

@@ -1,9 +1,10 @@
 TEMPLATE = app
 CONFIG += static console c++11
 CONFIG -= app_bundle
-CONFIG -= qt
 
 SOURCES += main.cpp
+
+QT += core
 
 INCLUDEPATH += \
     $$PWD/../libs/cef_win32

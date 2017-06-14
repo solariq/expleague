@@ -5,7 +5,7 @@ import "."
 
 ColumnLayout {
     id: self
-    property var webView: !!requestHolder.children[0] ? requestHolder.children[0].webView : null
+    //property var webView: !!requestHolder.children[0] ? requestHolder.children[0].webView : null
     property bool options: false
     anchors.fill: parent
     spacing: 0

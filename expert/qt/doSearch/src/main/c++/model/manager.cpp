@@ -7,6 +7,7 @@
 #include <limits>
 
 #include <QDnsLookup>
+#include <QQmlContext>
 #include <QQuickWindow>
 #include <QQmlApplicationEngine>
 
@@ -92,6 +93,17 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
     }
     if (!newGroup)
         context->transition(next, Page::TransitionType::FOLLOW_LINK);
+    if(!newGroup){
+        for(auto it: m_groups){
+            for(auto page: it->pages()){
+                if(page == next){
+                    select(it, next);
+                    return m_selected->ui();
+                }
+            }
+
+        }
+    }
     PagesGroup* group = 0;
     for (int i = 0; i < m_groups.size() - 1; i++) {
         WebResource* groupOwner = dynamic_cast<WebResource*>(m_groups[i]->root());
@@ -100,6 +112,7 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
             break;
         }
     }
+
     if (!group) { // creating new group if the site group was not found
         PagesGroup* const contextGroup = m_active_context->associated(context->container());
         if (!newGroup) {
@@ -115,6 +128,7 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
     }
     const int selectedIndex = group->pages().indexOf(m_selected);
     group->insert(next, selectedIndex >= 0 ? selectedIndex + 1 : -1);
+    m_active_context->associated(next)->setParentGroup(group);
     if (!newGroup)
         select(group, next);
     return m_selected->ui();
@@ -138,6 +152,54 @@ void NavigationManager::close(PagesGroup* context, Page* page) {
         else
             select(context->parentGroup(), context->root());
     }
+}
+
+
+void NavigationManager::movePage(Page *page, PagesGroup *target, int index){
+    PagesGroup *source = context()->associated(page, true);
+    PagesGroup *sourceParent = source->parentGroup();
+    assert(sourceParent);
+
+    bool pageSelected = sourceParent->selectedPage() == page;
+    bool groupSelected = sourceParent->selected();
+
+    sourceParent->remove(page);
+    target->insert(page, index);
+    source->setParentGroup(target);
+
+    popTo(target, false);
+    unfold();
+
+    if(pageSelected){
+        target->selectPage(page);
+        if(groupSelected){
+            target->setSelected(true);
+        }
+    }
+    emit groupsChanged();
+}
+
+bool NavigationManager::canMovePage(Page *page, PagesGroup *target){
+    if(target->type() == PagesGroup::SUGGEST){
+        qDebug() << "cant move page, wrong target group, type:" << target->type();
+        return false;
+    }
+    PagesGroup *source = context()->associated(page, true);
+    if(target->pages().contains(page)){
+        qDebug() << "cant move page inside group" << target->type();
+        return false;
+    }
+//    if(source->type() == PagesGroup::C){
+//        qDebug() << "cant move page, wrong source group type:" << source->type();
+//        return false;
+//    }
+    for(PagesGroup *current = target; current; current = current->parentGroup()){
+        if(current == source){
+            qDebug() << "cant move page, target cant be descendant of source";
+            return false;
+        }
+    }
+    return true;
 }
 
 void NavigationManager::select(PagesGroup* context, Page* selected) {
@@ -288,7 +350,7 @@ PagesGroup* NavigationManager::selectedGroup() const {
 void NavigationManager::activate(Context *ctxt) {
     if (ctxt == m_active_context)
         return;
-//    m_selected->transition(ctxt, Page::TransitionType::SELECT_TAB);
+    //    m_selected->transition(ctxt, Page::TransitionType::SELECT_TAB);
     m_active_context = ctxt;
     removeSuggestGroup();
     popTo(0, false);
@@ -356,7 +418,7 @@ void NavigationManager::rebalanceWidth() {
             - 8 // separate buttons from avatar
             - 36 // avatar
             - 4 // trailing space
-    ;
+            ;
 
     for(int i = 0; i < m_groups.size() - 1; i++) {
         PagesGroup* const group = m_groups[i];
@@ -407,10 +469,10 @@ void NavigationManager::rebalanceWidth() {
             visibleLength[bestGroupIndex]--;
             break;
         }
-        qDebug() << "Making visible: " << page->id() << " p: " << maxP;
+        //qDebug() << "Making visible: " << page->id() << " p: " << maxP;
     }
 
-    qDebug() << "Available width: " << available_width << " width used: " << effectiveWidth(activePages, closedPages, visibleStart, visibleLength);
+    //qDebug() << "Available width: " << available_width << " width used: " << effectiveWidth(activePages, closedPages, visibleStart, visibleLength);
     for(int i = 0; i < m_groups.size(); i++) {
         m_groups[i]->split(activePages[i], closedPages[i], visibleStart[i], visibleLength[i]);
     }
@@ -532,32 +594,34 @@ void NavigationManager::onGroupsChanged() {
             QQuickItem* inactiveScreen = page->ui(true);
             if (inactiveScreen) {
                 QObject::connect(inactiveScreen, &QObject::destroyed, [id]() {
-                    qDebug() << "Destroying ui of: " << id;
+                    //qDebug() << "Destroying ui of: " << id;
                 });
-                inactiveScreen->setParent(0);
                 page->clear();
-                inactiveScreen->deleteLater();
             }
         }
         m_prev_known = known;
     }
-    screens.removeOne(m_selected->ui());
-    if (m_screens != screens) {
-        foreach (QQuickItem* screen, screens) {
-            if (screen != m_active_screen)
-                screen->setVisible(false);
-        }
 
-        m_screens = screens;
-        emit screensChanged();
+    if(!parent()->main()){
+        return;
     }
-    if (m_active_screen != m_selected->ui()) {
-        connect(m_selected, SIGNAL(uiChanged()), this, SLOT(onActivePageUIChanged()));
-        m_active_screen = m_selected->ui();
-        emit activeScreenChanged();
-        m_active_screen->forceActiveFocus();
-        m_active_screen->setVisible(true);
+
+    if(!m_screens_handler){
+        m_screens_handler = parent()->main()->property("screensHolder").value<QQuickItem*>();
+        m_active_screen_handler =  parent()->main()->property("activeScreenHolder").value<QQuickItem*>();
     }
+    m_active_screen = m_selected->ui();
+    screens.removeOne(m_active_screen);
+    for(QQuickItem* screen: screens){
+        screen->setParentItem(m_screens_handler);
+        screen->setVisible(false);
+    }
+    m_active_screen->setParentItem(m_active_screen_handler);
+    m_active_screen->setVisible(true);
+    //m_active_screen->forceActiveFocus();
+    m_screens = screens;
+    emit activeScreenChanged();
+    emit screensChanged();
 }
 
 void NavigationManager::onActivePageUIChanged() {
@@ -642,6 +706,13 @@ void NavigationManager::moveTo(Page* page, Context *to) {
     typeIn(page, false);
 }
 
+
+QAbstractItemModel* NavigationManager::treeModel(Page* page, Context* context, int depth){
+    PageTree* root = new PageTree(this);
+    root->init(page, context, depth);
+    return new PageTreeModel(this, root);
+}
+
 void NavigationManager::setWindow(QQuickWindow* window) {
     m_screen_width = window->width();
     connect(window, SIGNAL(widthChanged(int)), this, SLOT(onScreenWidthChanged(int)));
@@ -658,4 +729,91 @@ NavigationManager::NavigationManager(doSearch* parent): QObject(parent),
     connect(m_lookup, SIGNAL(finished()), this, SLOT(onDnsRequestFinished()));
     connect(parent, SIGNAL(contextsChanged()), this, SLOT(onContextsChanged()));
 }
+
+PageTree::PageTree(QObject* parent): QObject(parent){
+}
+
+PageTree* PageTree::parent(){
+    return m_parent;
+}
+
+PageTree* PageTree::child(int number){
+    return m_children.at(number);
+}
+
+Page* PageTree::data(){
+    return m_data;
+}
+
+int PageTree::size(){
+    return m_children.size();
+}
+
+int PageTree::row(){
+    return m_row;
+}
+
+void PageTree::init(Page* page, Context* context, int depth){
+    m_data = page;
+    if(!depth){
+        return;
+    }
+    PagesGroup* group = context->associated(page, false);
+    if(!group){
+        return;
+    }
+    QList<Page*> pages = group->pages();
+    for(int i = 0; i < pages.size(); i++){
+        PageTree* tree = new PageTree(this);
+        tree->m_parent = this;
+        tree->m_row = i;
+        tree->init(pages.at(i), context, depth - 1);
+        m_children.push_back(tree);
+    }
+}
+
+PageTree* PageTreeModel::indexTree(QModelIndex index) const{
+    if(!index.isValid()){
+        return m_root;
+    }else{
+        return static_cast<PageTree*>(index.internalPointer());
+    }
+}
+
+PageTreeModel::PageTreeModel(QObject* parent, PageTree* root): QAbstractItemModel(parent), m_root(root){
+}
+
+QModelIndex PageTreeModel::index(int row, int column, const QModelIndex &parent) const{
+    PageTree* parentTree = indexTree(parent);
+    if(column != 0 || row >= parentTree->size()){
+        return QModelIndex();
+    }
+    return createIndex(row, column, parentTree->child(row));
+}
+
+QModelIndex PageTreeModel::parent(const QModelIndex &index) const{
+    PageTree* tree = indexTree(index);
+    PageTree* parent = tree->parent();
+    return parent ? createIndex(parent->row(), 0, parent) : QModelIndex();
+}
+
+int PageTreeModel::rowCount(const QModelIndex &parent) const{
+    return indexTree(parent)->size();
+}
+
+int PageTreeModel::columnCount(const QModelIndex &parent) const{
+    return 1;
+}
+
+QVariant PageTreeModel::data(const QModelIndex &index, int role) const{
+    if (!index.isValid() || role != Qt::DisplayRole){
+        return QVariant();
+    }
+    return QVariant::fromValue(static_cast<PageTree*>(index.internalPointer()));
+}
+
+bool PageTreeModel::hasChildren(const QModelIndex &parent) const{
+    return indexTree(parent)->size();
+}
+
 }

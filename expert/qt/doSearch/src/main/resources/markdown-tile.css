@@ -40,10 +40,12 @@ body {
     font-size: 10px;
     line-height: 1.;
 /*    color: #333;*/
-    background-color: #FFFBF0;
+    /*background-color: #FFFBF0;*/
+    background-color: #000000
     padding: 10px;
     max-width: 960px;
     margin: 0 auto;
+
 }
 
 body>*:first-child {

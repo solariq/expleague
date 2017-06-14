@@ -137,6 +137,10 @@ public:
 public:
     QDomElement toXml() const;
     friend bool operator ==(const Offer& left, const Offer& right);
+    //TODO delete this
+//    ~Offer(){
+//        qDebug() << "remove offer";
+//    }
 
 signals:
     void timeTick();

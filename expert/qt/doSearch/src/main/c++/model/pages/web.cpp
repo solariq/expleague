@@ -35,8 +35,12 @@ bool WebResource::isRoot() const {
 }
 
 QString WebPage::icon() const {
-    QVariant var = value("web.favicon");
-    return var.isNull() ? site()->icon() : var.toString();
+//    QVariant var = value("web.favicon");
+//    return var.isNull() ? site()->icon() : var.toString();
+    if(m_redirect){
+        return m_redirect->icon();
+    }
+    return site()->icon();
 }
 
 QString WebPage::title() const {
@@ -47,6 +51,11 @@ QString WebPage::title() const {
 }
 
 void WebPage::setTitle(const QString& title) {
+    if(m_redirect){
+        m_redirect->setTitle(title);
+        emit titleChanged(title);
+        return;
+    }
     if (title.isEmpty())
         return;
     QUrl url(title, QUrl::StrictMode);
@@ -56,10 +65,14 @@ void WebPage::setTitle(const QString& title) {
         return;
     store("web.title", title);
     save();
-    titleChanged(title);
+    emit titleChanged(title);
 }
 
 void WebPage::setIcon(const QString& icon) {
+    QUrl url(icon);
+    if(!url.isValid()){
+        return;
+    }
     store("web.favicon", icon);
     save();
     if (site()->icon().isEmpty())
@@ -67,8 +80,10 @@ void WebPage::setIcon(const QString& icon) {
     iconChanged(icon);
 }
 
+
 Page* WebPage::container() const {
-    return isRoot() ? static_cast<Page*>(site()) : static_cast<Page*>(const_cast<WebPage*>(this));
+    //return isRoot() ? static_cast<Page*>(site()) : static_cast<Page*>(const_cast<WebPage*>(this)); ???
+    return isRoot() ? site() : const_cast<Page*>((Page*)this);
 }
 
 bool WebPage::transferUI(UIOwner* other){
@@ -101,6 +116,7 @@ void WebPage::setRedirect(WebPage* target) {
     save();
     emit redirectChanged(target);
     emit titleChanged(title());
+    //emit urlChanged(url());
 }
 
 bool WebPage::forwardShortcutToWebView(const QString& shortcut, QQuickItem* view) {
@@ -134,7 +150,6 @@ bool WebPage::forwardToWebView(int key,
            && target->scopedFocusItem()->isEnabled()) {
         target = target->scopedFocusItem();
     }
-
     QCoreApplication::sendEvent(target, &event);
     return event.isAccepted();
 }
@@ -243,7 +258,7 @@ void WebPage::interconnect() {
     rebuildRedirects();
 }
 
-void WebSite::onPageLoaded(Page* child) {
+void WebSite::onPageLoaded(Page* child) { //TODO ????
     ContentPage* contentPage = qobject_cast<ContentPage*>(child);
     if (contentPage)
         appendPart(contentPage);
@@ -302,6 +317,7 @@ WebSite::WebSite(const QString& id, const QString& /*domain*/, const QUrl& rootU
     CompositeContentPage(id, "qrc:/WebSiteView.qml", parent)
 {
     store("site.root", rootUrl);
+    save();
 }
 
 WebSite::WebSite(const QString &id, doSearch *parent):

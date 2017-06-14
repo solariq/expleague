@@ -42,6 +42,10 @@ QString YandexSERPage::parseQuery(const QUrl& request) {
     return queryText.trimmed();
 }
 
+bool YandexSERPage::isSearchUrl(const QUrl &url){
+    return url.host().contains("yandex.") && (url.path() == "/search/" || url.path() == "/yandsearch");
+}
+
 YandexSERPage::YandexSERPage(const QString& id, const QUrl& url, doSearch* parent): SERPage(id, parseQuery(url), url, parent)
 {}
 
@@ -60,6 +64,10 @@ QString GoogleSERPage::parseQuery(const QUrl& request) {
     if ((index = site.indexIn(queryText)) >= 0)
         queryText = queryText.mid(0, index) + "#site(" + site.cap(1) + ")" + queryText.mid(index + site.matchedLength());
     return queryText.trimmed();
+}
+
+bool GoogleSERPage::isSearchUrl(const QUrl &url){
+    return url.host().contains("google.") && url.path() == "/search" && QUrlQuery(url.query()).queryItemValue("tbm") == "";
 }
 
 GoogleSERPage::GoogleSERPage(const QString& id, const QUrl& url, doSearch* parent): SERPage(id, parseQuery(url), url, parent)
@@ -177,6 +185,7 @@ bool SearchSession::check(SearchRequest* request) {
 }
 
 void SearchSession::setRequest(SearchRequest* request) {
+    parts()[m_index]->clear();
     const int index = parts().indexOf(request);
     if (index >= 0) {
         m_index = index;

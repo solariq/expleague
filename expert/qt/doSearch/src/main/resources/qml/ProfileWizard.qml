@@ -3,7 +3,7 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
-import QtWebEngine 1.2
+//import QtWebEngine 1.2
 
 import ExpLeague 1.0
 
@@ -124,7 +124,7 @@ Window {
         id: domain
         firstFocus: domainField
         ready: domainField.length > 0 && socialField.currentIndex >= 0
-        next: cookiesOff.checked ? socialPrivate : social
+        next: social
 
         go: function() {
             next.url = socialField.model.get(socialField.currentIndex).value
@@ -188,46 +188,41 @@ Window {
         if (arr != null) {
             builder.vkUser = userRe.exec(url)[1]
             builder.vkToken = arr[1]
-            stack.push(preview)
+            return true
         }
+        return false
     }
 
     WizardPage {
         id: social
-        property alias url: webView.url
+        property alias url: cefView.url
         property string token: ""
 
-        firstFocus: webView
+        firstFocus: cefView
         ready: token.length > 0
         next: preview
 
-        content: WebEngineView {
-            id: webView
+        content: CefView {
+            id: cefView
             anchors.fill: parent
-
-            onUrlChanged: parseToken(url)
-        }
-    }
-
-    WizardPage {
-        id: socialPrivate
-        property alias url: webViewPrivate.url
-        property string token: ""
-
-        firstFocus: webView
-        ready: token.length > 0
-        next: preview
-
-        content:  WebEngineView {
-            id: webViewPrivate
-            anchors.fill: parent
-            profile: WebEngineProfile {
-                offTheRecord: true
+            webView.onRedirect:{
+                if(parseToken(url)){
+                    if(cookiesOff.checked){
+                        webView.clearCookies("vk.com")
+                    }
+                    stack.push(preview)
+                }
             }
-
-            onUrlChanged: parseToken(url)
+            webView.allowLinkTtransitions: true
+            webView.running: visible
+            onVisibleChanged: {
+                if(visible){
+                    forceActiveFocus()
+                }
+            }
         }
     }
+
 
     WizardPage {
         id: preview

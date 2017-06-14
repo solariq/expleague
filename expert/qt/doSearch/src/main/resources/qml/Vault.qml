@@ -13,18 +13,19 @@ Rectangle {
     property bool editMode: false
     property real size: 13
     property var owner: context.vault
-    property var group: owner.activeGroup
-
+    property var group: owner.activeGroup != null ? owner.activeGroup : []
+    property var items: group.items
     property int moveTo: -1
 
     color: Palette.toolsBackground
+
 
     DropArea {
         id: dropArea
         visible: !editMode
         anchors.fill: parent
         onEntered: {
-//            console.log("Entered vault drop area")
+            //            console.log("Entered vault drop area")
             if (dosearch.main.dragType != "web" && dosearch.main.dragType != "delay")
                 return
             dosearch.main.dragType = "web"
@@ -185,11 +186,13 @@ Rectangle {
                 NumberAnimation { properties: "x,y"; easing.type: Easing.OutQuad;}
             }
 
-            model: DelegateModel {
+            model: visualModel
+            DelegateModel {
                 id: visualModel
-                model: owner.activeGroup ? owner.activeGroup.items : []
+                model: self.items
                 delegate: tileComponent
             }
+
         }
     }
 

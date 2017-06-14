@@ -13,6 +13,7 @@
 #include <QList>
 #include <QSet>
 #include <QHash>
+#include <QAbstractItemModel>
 
 class QQuickItem;
 class QQuickWindow;
@@ -21,6 +22,8 @@ class QDnsLookup;
 namespace expleague {
 class NavigationManager;
 class Context;
+class PageTreeModel;
+
 
 class NavigationManager: public QObject {
     static double MAX_TAB_WIDTH;
@@ -41,12 +44,15 @@ public:
 
     Q_INVOKABLE void select(PagesGroup* context, Page* selected);
     Q_INVOKABLE void close(PagesGroup* context, Page* page);
+    Q_INVOKABLE void movePage(Page *page, PagesGroup* target, int index);
+    Q_INVOKABLE bool canMovePage(Page *page, PagesGroup* target);
 
     Q_INVOKABLE void activate(Context* ctxt);
     Q_INVOKABLE QQuickItem* open(const QUrl& url, Page* context, bool newGroup = false, bool transferUI = true);
     Q_INVOKABLE void open(Page* page);
     Q_INVOKABLE void select(PagesGroup* group);
     Q_INVOKABLE void moveTo(Page* page, Context* dst);
+    Q_INVOKABLE QAbstractItemModel* treeModel(Page* page, Context* context, int depth);
 
 public:
     QQmlListProperty<expleague::PagesGroup> groups() const {
@@ -108,6 +114,9 @@ private:
     void typeIn(Page* page, bool suggest = true);
 
 private:
+    QQuickItem* m_screens_handler = 0;
+    QQuickItem* m_active_screen_handler = 0;
+
     double m_screen_width = 0;
     Context* m_active_context = 0;
 
@@ -120,6 +129,37 @@ private:
     QSet<Page*> m_prev_known;
     QQuickItem* m_active_screen = 0;
     QDnsLookup* m_lookup = 0;
+};
+
+class PageTree: public QObject{
+    Q_OBJECT
+public:
+    PageTree(QObject* parent);
+    PageTree* parent();
+    PageTree* child(int number);
+    int size();
+    int row();
+    Page* data();
+    void init(Page* page, Context* context, int depth);
+private:
+    QList<PageTree*> m_children;
+    PageTree* m_parent = nullptr;
+    Page* m_data;
+    int m_row = 0;
+};
+
+class PageTreeModel: public QAbstractItemModel{
+public:
+    PageTreeModel(QObject* parent, PageTree* root);
+    virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+    virtual QModelIndex parent(const QModelIndex &index) const Q_DECL_OVERRIDE;
+    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    virtual bool hasChildren(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+private:
+    PageTree* indexTree(QModelIndex index) const ;
+    PageTree* m_root;
 };
 
 }

@@ -1,5 +1,5 @@
 import QtQuick 2.7
-import QtWebEngine 1.3
+//import QtWebEngine 1.3
 import QtGraphicalEffects 1.0
 
 import "."
@@ -36,14 +36,14 @@ GridView {
         Item {
             id: editorPreview
             property string htmlContent: "<!DOCTYPE html><html><head>
-                                         <script src=\"qrc:/md-scripts.js\"></script>
-                                         <link rel=\"stylesheet\" href=\"qrc:/markdown-tile.css\"></head>
+                                         <script src=\"qrc:///md-scripts.js\"></script>
+                                         <link rel=\"stylesheet\" href=\"qrc:///markdown-tile.css\"></head>
                                          <body>" + (modelData != "append" ? modelData.html : "") + "</body></html>"
 
 
             visible: modelData != "append"
 
-            Drag.dragType: Drag.Automatic
+            Drag.dragType: Drag.Automatic //TODO uncommet
             Drag.active: tileArea.drag.active
             Drag.mimeData: { "text/html": htmlContent}
             Drag.keys: ["text/html"]
@@ -55,7 +55,7 @@ GridView {
 
             onHtmlContentChanged: {
                 var focused = dosearch.main ? dosearch.main.activeFocusItem : null
-                web.loadHtml(htmlContent)
+                web.webView.loadHtml(htmlContent)
                 if (focused)
                     focused.forceActiveFocus()
             }
@@ -64,12 +64,14 @@ GridView {
                 id: tile
                 anchors.fill: parent
                 color: "#FFFBF0"
-                WebEngineView {
+                CefView {
+                    z: parent.z + 1
                     id: web
                     anchors.centerIn: parent
+                    webView.running: visible
                     width: parent.width - 20
                     height: parent.height - 20
-                    Component.onCompleted: web.loadHtml(editorPreview.htmlContent)
+                    Component.onCompleted: web.webView.loadHtml(editorPreview.htmlContent)
                 }
             }
 

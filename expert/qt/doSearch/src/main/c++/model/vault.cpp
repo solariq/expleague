@@ -123,6 +123,7 @@ QString LinkKnugget::screenshot() const {
 }
 
 QString LinkKnugget::screenshotTarget() const {
+    QString str = storage().absoluteFilePath("screenshot.png");
     return storage().absoluteFilePath("screenshot.png");
 }
 
@@ -247,7 +248,7 @@ void Vault::insert(Knugget* item, int position) {
 }
 
 QString Vault::generateKnuggetId(const QString& suffix) {
-    return doSearch::instance()->nextId("knugget/" + suffix + "/");
+    return doSearch::instance()->nextId("knugget/" + suffix);
 }
 
 bool Vault::drop(const QString& text, const QString& html, const QList<QUrl>& urls, const QString& source) {

@@ -77,6 +77,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
+        propagateComposedEvents: true
         onEntered: self.ToolTip.show(user && user.name && user.name !== "" ? user.name : userId)
         onExited: self.ToolTip.hide()
     }

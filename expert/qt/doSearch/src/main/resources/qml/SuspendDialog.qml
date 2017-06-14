@@ -58,7 +58,7 @@ Window {
         Text {
             Layout.preferredWidth: 300
             Layout.alignment: Qt.AlignHCenter
-            text: qsTr("Вы действительно хотите преостановить выполнение задания?")
+            text: qsTr("Вы действительно хотите приостановить выполнение задания?")
             color: Palette.activeTextColor
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap

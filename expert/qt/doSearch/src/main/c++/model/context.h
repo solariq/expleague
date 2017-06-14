@@ -47,6 +47,7 @@ public:
     bool hasTask() const;
 
     Q_INVOKABLE void setName(const QString& name);
+    Q_INVOKABLE void printTree(Page* page, int offset, int depth);
 
     SearchSession* match(SearchRequest* request);
     void transition(Page* from, TransitionType type);

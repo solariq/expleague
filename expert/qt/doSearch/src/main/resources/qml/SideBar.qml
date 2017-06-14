@@ -5,7 +5,7 @@ import QtQuick.Controls 1.4 as Legacy
 import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.2
 
-import QtWebEngine 1.3
+//import QtWebEngine 1.3
 
 import ExpLeague 1.0
 
@@ -125,10 +125,11 @@ Item {
                 Layout.fillWidth: true
 
                 id: screenHolder
-                WebEngineView {
+                CefView {
                     id: preview
                     visible: false
                     focus: false
+
                     anchors.fill: parent
 
                     property real minWidth: 320
@@ -137,27 +138,28 @@ Item {
                     property real storedWidth: -1
                     property string html: ""
 
-                    url: "about:blank"
+                    webView.running: visible
 
                     onHtmlChanged: {
                         var focused = window.activeFocusItem
                         var html = "<!DOCTYPE html><html><head>
-                                <script src=\"qrc:/md-scripts.js\"></script>
-                                <link rel=\"stylesheet\" href=\"qrc:/markdownpad-github.css\"></head>
+                                <script src=\"qrc:///md-scripts.js\"></script>
+                                <link rel=\"stylesheet\" href=\"qrc:///markdownpad-github.css\"></head>
                                 <body>" + preview.html+ "</body></html>"
 
-                        loadHtml(html)
+                        webView.loadHtml(html)
                         if (focused)
                             focused.forceActiveFocus()
                     }
-                    onUrlChanged: {
-                        var url = "" + preview.url
-                        // console.log("New url: " + url)
-                        if (url.length > 0 && url != "about:blank" && url.indexOf("data:") !== 0) {
-                            preview.goBack()
-                            dosearch.navigation.handleOmnibox(url, 0)
-                        }
-                    }
+//                    onUrlChanged: {
+
+//                        var url = "" + preview.url
+//                        // console.log("New url: " + url)
+//                        if (url.length > 0 && url != "about:blank" && url.indexOf("data:") !== 0) {
+//                            preview.goBack()
+//                            dosearch.navigation.handleOmnibox(url, 0)
+//                        }
+//                    }
                 }
                 LeagueChat {
                     id: dialog

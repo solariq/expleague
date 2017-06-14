@@ -57,7 +57,7 @@ public:
     virtual ~MarkdownEditorPage();
 
 protected:
-    void initUI(QQuickItem *ui) const;
+    void initUI(QQuickItem *ui);
     void interconnect();
 
 private:

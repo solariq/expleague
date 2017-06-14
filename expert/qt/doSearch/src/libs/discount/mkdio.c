@@ -158,7 +158,7 @@ __mkd_io_strget(struct string_stream *in)
 
     --(in->size);
 
-    return *(in->data)++;
+    return (unsigned char)(*(in->data)++); //in msvc chars are signed, added unsigned char
 }
 
 

@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 CONFIG += ordered
-#CONFIG += cef
+CONFIG += cef
 
 TARGET = doSearch
 

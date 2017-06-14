@@ -4,7 +4,7 @@ import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 
 import QtLocation 5.3
-import QtWebEngine 1.3
+//import QtWebEngine 1.3
 
 import ExpLeague 1.0
 
@@ -169,17 +169,17 @@ Window {
                     color: textColor
                 }
 
-                WebEngineView {
+                CefView {
                     id: map
                     visible: offer && offer.hasLocation
-
+                    webView.running: visible
                     Layout.columnSpan: 2
                     Layout.preferredHeight: 200
                     Layout.preferredWidth: 300
                     Layout.alignment: Qt.AlignHCenter
                     enabled: false
 
-                    url: offer ? "qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude : ""
+                    webView.url: offer ? "qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude : ""
                 }
 
                 Component {

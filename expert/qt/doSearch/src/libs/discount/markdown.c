@@ -201,7 +201,7 @@ checkline(Line *l, DWORD flags)
     
     if (l->dle >= 4) { l->kind=chk_code; return; }
 
-    for ( eol = S(l->text); eol > l->dle && isspace(T(l->text)[eol-1]); --eol )
+    for ( eol = S(l->text); eol > l->dle && isspace((unsigned char)T(l->text)[eol-1]); --eol )
 	;
 
     for (i=l->dle; i<eol; i++) {

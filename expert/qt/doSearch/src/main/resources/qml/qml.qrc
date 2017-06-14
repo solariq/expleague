@@ -51,5 +51,8 @@
         <file>OfferDialog.qml</file>
         <file>FilterDialog.qml</file>
         <file>CefPage.qml</file>
+        <file>CefView.qml</file>
+        <file>GroupTree.qml</file>
+        <file>Empty.qml</file>
     </qresource>
 </RCC>

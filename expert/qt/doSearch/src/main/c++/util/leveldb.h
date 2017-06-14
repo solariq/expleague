@@ -4,18 +4,17 @@
 #include "leveldb/db.h"
 
 #include <QString>
+#include <memory>
 
 class LevelDBContainer
 {
 public:
     LevelDBContainer();
-    LevelDBContainer(const QString& path);
+    LevelDBContainer(const QString& path, leveldb::Options options = leveldb::Options());
     leveldb::DB* get();
-    ~LevelDBContainer();
+    leveldb::DB* operator->();
 private:
-    LevelDBContainer operator=(LevelDBContainer d);
-    LevelDBContainer(const LevelDBContainer& d);
-    leveldb::DB* db;
+    std::unique_ptr<leveldb::DB> m_db;
 };
 
 #endif // LEVELDB_H

@@ -51,7 +51,7 @@
 import QtQuick 2.1
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
-import QtWebEngine 1.2
+//import QtWebEngine 1.2
 import QtQuick.Layouts 1.0
 
 Rectangle {
@@ -102,7 +102,7 @@ Rectangle {
                 }
                 Label {
                     id: label
-                    text: path
+                    text: fullName
                     anchors {
                         verticalCenter: cancelButton.verticalCenter
                         left: parent.left
@@ -124,6 +124,11 @@ Rectangle {
                         downloadModel.remove(index)
                     }
                 }
+            }
+
+            MouseArea{
+                anchors.fill: parent
+                onClicked: downloadModel.downloads[index].open()
             }
         }
 

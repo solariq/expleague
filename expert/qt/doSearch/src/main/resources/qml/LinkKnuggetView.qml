@@ -13,10 +13,12 @@ Item {
     ToolTip.delay: 2000
     ToolTip.visible: hover
 
+
     Image {
+        asynchronous: true
         mipmap: true
         anchors.fill: parent
-        source: owner.screenshot.length > 0 ? "file:" + owner.screenshot : ""
+        source:  owner.screenshot.length > 0 ? "file:" + owner.screenshot : ""
         fillMode: Image.PreserveAspectCrop
     }
 
@@ -24,13 +26,13 @@ Item {
         target: dosearch
         onMainChanged: {
             if (!owner.hasScreenshot()) {
-                dosearch.main.saveScreenshot(owner.url, "400x400", owner)
+                dosearch.main.saveScreenshot(owner.url, Qt.size(400, 400), owner)
             }
         }
     }
 
     Component.onCompleted: {
         if (dosearch.main && !owner.hasScreenshot())
-            dosearch.main.saveScreenshot(owner.url, "400x400", owner)
+            dosearch.main.saveScreenshot(owner.url, Qt.size(400, 400), owner)
     }
 }

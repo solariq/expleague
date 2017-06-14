@@ -17,6 +17,9 @@ void GlobalChat::enter(RoomStatus* room) {
         return;
     room->clearUnread();
     Task* task = room->task();
+    if(!task){
+        return;
+    }
     task->enter();
     m_owner->appendDocument(task->answer());
     m_owner->setActiveDocument(task->answer());
@@ -90,7 +93,7 @@ void GlobalChat::onRoomStatusChanged(Task::Status /*status*/) {
 
 void GlobalChat::onRoomsChanged() {
     std::sort(m_rooms.begin(), m_rooms.end(), [this](RoomStatus* left, RoomStatus* right) {
-       return right->started().toTime_t() < left->started().toTime_t();
+        return right->started().toTime_t() < left->started().toTime_t();
     });
     emit roomsChanged();
     emit openCountChanged();
@@ -105,10 +108,8 @@ GlobalChat::GlobalChat(doSearch* parent): ContentPage(ID, "qrc:/GlobalChat.qml",
 GlobalChat::GlobalChat(const QString& id, doSearch* parent): ContentPage(id, "qrc:/GlobalChat.qml", parent) {
 }
 
-
-
 Member* RoomStatus::client() const {
-    return League::instance()->findMember(xmpp::user(m_offer->client()));
+    return League::instance()->findMember(xmpp::user(m_offer ? m_offer->client(): ""));
 }
 
 Task* RoomStatus::task() const {
@@ -200,11 +201,13 @@ void RoomStatus::onPresence(const QString& id, const QString& expert, const QStr
 void RoomStatus::onOrderStart(const QString& roomId, const QString& /*order*/, const QString& /*expert*/) {
     if (roomId != xmpp::user(m_jid))
         return;
-//    m_orders[progress.order] = progress.state;
+    //    m_orders[progress.order] = progress.state;
 }
 
 void RoomStatus::setOffer(Offer *offer) {
+    QObject::disconnect(m_offer, 0, this, 0);
     m_offer = offer;
+
     emit offerChanged();
 }
 
@@ -244,8 +247,13 @@ bool RoomStatus::connectTo(xmpp::ExpLeagueConnection* connection) {
 void RoomStatus::clearMembers() {
     m_involved.clear();
     m_occupied.clear();
+    Member* const client = this->client();
+    if (client){
+        client->remove(this);
+    }
     emit involvedChanged();
     emit occupiedChanged();
+
 }
 
 QString RoomStatus::roomId() const {
@@ -258,11 +266,9 @@ GlobalChat* RoomStatus::parent() const {
 
 RoomStatus::RoomStatus(Offer* task, GlobalChat* parent):
     QObject(parent), m_jid(task->roomJid()), m_offer(task)
-{}
-
-RoomStatus::~RoomStatus() {
-    Member* const client = this->client();
-    if (client)
-        client->remove(this);
+{
+//    QObject::connect(m_offer, &Offer::destroyed, [this](){
+//        m_offer = nullptr;
+//    });
 }
 }

@@ -6,8 +6,7 @@
 
 QHash<QUrl, QQmlComponent*> componentsCache;
 
-void collectChildren(QList<QQuickItem*>& children, QQuickItem* item);
-QQuickItem* findParent(QQuickItem* item);
+void collectChildren(QQuickItem* item, UIOwner* root, QList<UIOwner*>& children);
 
 UIOwner::UIOwner(const QString& uiQml, QObject* parent):
     m_ui_url(uiQml), QObject(parent){
@@ -15,13 +14,14 @@ UIOwner::UIOwner(const QString& uiQml, QObject* parent):
 }
 
 void UIOwner::clear(){
+    m_ui->deleteLater();
     m_ui = nullptr;
     for(auto child: m_children){
         if(child){
-            child->property("owner").value<UIOwner*>()->clear();
+            child->clear();
         }
     }
-    emit uiChanged();
+    //emit uiChanged();
 }
 
 QQuickItem* UIOwner::ui(bool cache){
@@ -46,12 +46,7 @@ QQuickItem* UIOwner::ui(bool cache){
         componentsCache[m_ui_url] = component;
     }
     QQuickItem* result = (QQuickItem*)component->create(m_context);
-    qDebug() << "root context" << rootEngine->rootContext();
-    qDebug() << "context before" << m_context;
-    qDebug() << "context after" << rootEngine->contextForObject(result);
-    if(result->childItems().size() > 0){
-        qDebug() << "childrencontext" << rootEngine->contextForObject(result->childItems().at(0));
-    }
+    //qDebug() << "ceating ui with owner" << QQmlEngine::contextForObject(result)->contextProperty("owner");
     if (cache) {
         m_ui = result;
         updateConnections();
@@ -65,6 +60,10 @@ QQuickItem* UIOwner::ui(bool cache){
     }
 
     return result;
+}
+
+QQuickItem* UIOwner::uiNoCache(){
+    return ui(false);
 }
 
 bool UIOwner::transferUI(UIOwner* other){
@@ -94,46 +93,48 @@ bool UIOwner::transferUI(UIOwner* other){
 }
 
 
-QList<QQuickItem*> UIOwner::children(){
+QList<UIOwner*> UIOwner::children(){
     return m_children;
 }
 
-QQuickItem* UIOwner::parent(){
+UIOwner* UIOwner::parent(){
     return m_parent;
 }
 
+
 void UIOwner::updateConnections(){
     m_children.clear();
-    if(m_ui != nullptr){
-        qDebug() << "children" << m_ui->childItems();
-        for(auto child: m_ui->childItems()){
-            collectChildren(m_children, child);
-        }
-        m_parent = findParent(m_ui->parentItem());
+    if(m_ui){
+        collectChildren(m_ui, this, m_children);
     }
 }
 
-void collectChildren(QList<QQuickItem*>& children, QQuickItem* item){
-    if(!item->property("owner").isNull()){
-        children.append(item);
+void collectChildren(QQuickItem* item, UIOwner* root, QList<UIOwner*>& children){
+    QQmlContext* context = QQmlEngine::contextForObject(item);
+    if(!context){
+        return;
+    }
+    UIOwner* owner = context->contextProperty("owner").value<UIOwner*>();
+    if(owner && (owner != root)){
+        children.append(owner);
         return;
     }
     for(auto child: item->childItems()){
-        collectChildren(children, child);
+        collectChildren(child, root, children);
     }
 }
 
-QQuickItem* findParent(QQuickItem* item){
-    if(!item){
+UIOwner* findParent(QQuickItem* item){
+    QQmlContext* context = QQmlEngine::contextForObject(item);
+    if(!context){
         return nullptr;
     }
-
-    if(!item->property("owner").isNull()){
-        return item;
+    UIOwner* owner = context->contextProperty("owner").value<UIOwner*>();
+    if(owner){
+        return owner;
     }
-    QQuickItem* parent = item->parentItem();
-    if(parent){
-        return findParent(parent);
+    if(item->parentItem()){
+        return findParent(item->parentItem());
     }
     return nullptr;
 }

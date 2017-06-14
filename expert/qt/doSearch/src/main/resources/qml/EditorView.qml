@@ -1,7 +1,8 @@
 import QtQuick 2.7
 import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.1
-import QtWebEngine 1.3
+//import QtWebEngine 1.3
+import QtGraphicalEffects 1.0
 
 import ExpLeague 1.0
 
@@ -13,7 +14,7 @@ Item {
     property var editorActions: !!dosearch.main && dosearch.main.editorActionsRef ? dosearch.main.editorActionsRef : "stubActions"
 
     property alias editor: edit
-//    property bool options: false
+    //    property bool options: false
 
     onFocusChanged: {
         if (focus && dosearch.navigation.activePage === owner) {
@@ -26,27 +27,47 @@ Item {
 //        preview.updateHtml()
 //    }
 
-//    WebEngineView {
-//        id: preview
-//        visible: false
-//        anchors.fill: parent
-//        enabled: false
+//    Rectangle{
+//        width: parent.width / 5
+//        height: parent.height / 2
+//        anchors.right: parent.right;
+//        anchors.bottom: parent.bottom;
+//        color: "#FFFBF0"
+//        visible: true
+//        z: parent.z  + 1
+//        CefView {
+//            z: parent.z + 1
+//            zoom: 0.2
+//            anchors.centerIn: parent
+//            width: parent.width - 10
+//            height: parent.height - 10
+//            id: preview
+//            function updateHtml() {
+//                webView.loadHtml("<!DOCTYPE html><html><head>
+//                    <script src=\"qrc:///md-scripts.js\"></script>
+//                    <link rel=\"stylesheet\" href=\"qrc:///markdownpad-github.css\"></head>
+//                    <body>" + owner.html + "</body></html>")
 
-//        function updateHtml() {
-//            loadHtml("<!DOCTYPE html><html><head>
-//                    <script src=\"qrc:/md-scripts.js\"></script>
-//                    <link rel=\"stylesheet\" href=\"qrc:/markdownpad-github.css\"></head>
-//                    <body>" + owner.html+ "</body></html>")
-//        }
-
-//        Connections {
-//            target: owner
-//            onHtmlChanged: {
-//                var focused = dosearch.main.activeFocusItem
-//                var html = preview.updateHtml()
-//                if (focused && focused == edit)
-//                    focused.forceActiveFocus()
 //            }
+
+//            Connections {
+//                target: owner
+//                onHtmlChanged: {
+//                    var focused = dosearch.main.activeFocusItem
+//                    var html = preview.updateHtml()
+//                    if (focused && focused == edit)
+//                        focused.forceActiveFocus()
+//                }
+//            }
+//        }
+//        DropShadow {
+//            z: parent.z - 1
+//            anchors.fill: parent
+//            cached: true
+//            radius: 10.0
+//            samples: 32
+//            color: "#aa000000"
+//            //source: tile
 //        }
 //    }
 

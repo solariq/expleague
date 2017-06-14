@@ -13,6 +13,7 @@
 #include <QDebug>
 
 #include <leveldb/db.h>
+#include "../util/leveldb.h"
 
 namespace expleague {
 
@@ -64,7 +65,6 @@ public:
 
 public:
     explicit CollectionDictionary(const QString& file, std::function<QString (const QString& word)> lemmer, QObject* parent = 0);
-    virtual ~CollectionDictionary() { delete m_file; }
 
 private:
     template<typename T>
@@ -91,7 +91,7 @@ private:
     QVector<int> m_lemma_offset;
     mutable QReadWriteLock m_lock;
 
-    leveldb::DB* m_file = 0;
+    LevelDBContainer m_levelDB;
 };
 
 template<typename T>

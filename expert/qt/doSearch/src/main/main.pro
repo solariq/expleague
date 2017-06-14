@@ -24,13 +24,16 @@
 VERSION = 0.8.6
 
 #CONFIG += test
-#CONFIG += cef
+CONFIG += cef
 cef{
     DEFINES += CEF
+}else{
+    QT += webengine webenginecore
+    QT_PRIVATE += webengine-private
 }
 
-QT += widgets core network location concurrent positioning gui quick quickcontrols2 webengine xml xmlpatterns multimedia webenginecore testlib opengl
-QT_PRIVATE += quick-private webengine-private
+QT += widgets core network location concurrent positioning gui quick quickcontrols2 xml xmlpatterns multimedia  testlib opengl
+QT_PRIVATE += quick-private
 qml.path += resources/qml
 target.path += ../../bin
 
@@ -55,6 +58,9 @@ unix: QMAKE_CXXFLAGS+=-g
 else:win32: {
     QMAKE_CXXFLAGS += /Zi
     QMAKE_LFLAGS_RELEASE += /DEBUG
+    #QMAKE_CFLAGS_WARN_ON -= -W3
+    #QMAKE_CXXFLAGS_WARN_ON -= -W3
+    #QMAKE_CXXFLAGS += -Wall -wd5026 -wd5027 -wd4626 -wd4625 -wd4464 -wd4820 -wd4365 -wd4619 -wd4100
 }
 
 SOURCES += \
@@ -65,7 +71,6 @@ SOURCES += \
     c++/model/history.cpp \
     c++/model/page.cpp \
     c++/model/manager.cpp \
-    c++/model/group.cpp \
     c++/model/context.cpp \
     c++/dosearch.cpp \
     c++/model/vault.cpp \
@@ -82,9 +87,12 @@ SOURCES += \
     c++/imagestore.cpp \
 #    c++/util/crashhandler.cpp \
     c++/util/leveldb.cpp \
-    test/util/pholder_test.cpp \
-    c++/model/uiowner.cpp
-
+    c++/model/uiowner.cpp \
+    c++/cef.cpp \
+    c++/model/group.cpp \
+    c++/model/downloads.cpp \
+    c++/qml/tabtreeview.cpp \
+    c++/cef/cookiemanager.cpp
 
 HEADERS += \
     c++/protocol.h \
@@ -109,13 +117,17 @@ HEADERS += \
     c++/model/pages/search.h \
     c++/model/pages/web.h \
     c++/ir/bow.h \
-    c++/util/pholder.h \
     c++/model/pages/admins.h \
     c++/model/pages/globalchat.h \
     c++/util/region.h \
 #    c++/util/crashhandler.h \
     c++/util/leveldb.h \
-    c++/model/uiowner.h
+    c++/model/uiowner.h \
+    c++/cef.h \
+    c++/model/downloads.h \
+    c++/qml/tabtreeview.h \
+    c++/cef/cookieclient.h \
+    c++/cef/cookiemanager.h
 
 cef{
     SOURCES += c++/model/pages/cefpage.cpp
@@ -124,6 +136,7 @@ cef{
 
 test {
     SOURCES += test/main_test.cpp
+    SOURCES += test/util/pholder_test.cpp
     HEADERS += test/util/pholder_test.h
 }
 else {

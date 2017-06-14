@@ -46,7 +46,7 @@ LevelDBContainer& PersistentPropertyHolder::getLevelDBCotainer(){
 }
 
 PersistentPropertyHolder PersistentPropertyHolder::cd(const QString& key){
-    return PersistentPropertyHolder(m_page + (key.isEmpty()?"":(devide + key)));
+    return PersistentPropertyHolder(m_page + (key.isEmpty()? "" : (devide + key)));
 }
 
 void PersistentPropertyHolder::put(const QString& key, const QVariant& val){
@@ -210,6 +210,7 @@ void PersistentPropertyHolder::ap(const QString& key, const QVariant& value) {
 
 void PersistentPropertyHolder::append(const QString& key, const QVariant& value) {
     ap(m_page + devide + key, value);
+    save();
     m_changes++;
 }
 

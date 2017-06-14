@@ -36,6 +36,7 @@ public:
         CONTEXT,
         CONTEXTS
     };
+    Q_ENUM(Type)
 
     Page* root() const { return m_root; }
     Type type() const { return m_type; }
@@ -83,9 +84,9 @@ public:
     QList<Page*> pages() const { return m_pages; }
     QList<Page*> visiblePagesList() const { return m_visible_pages; }
 
-    void insert(Page* page, int position = -1);
-    void close(Page* page);
-    bool remove(Page* page);
+    Q_INVOKABLE void insert(Page* page, int position = -1);
+    Q_INVOKABLE void close(Page* page);
+    Q_INVOKABLE bool remove(Page* page);
 
     void setParentGroup(PagesGroup* group);
 
@@ -104,7 +105,7 @@ public:
 
 private:
     void updatePages();
-
+    void setClosedStart(int closedStart);
 private:
     Context* m_owner = 0;
     Page* m_root = 0;

@@ -49,7 +49,7 @@ public:
 public:
 //    explicit RoomState(const QString& jid, GlobalChat* parent);
     explicit RoomStatus(Offer* offer, GlobalChat* parent);
-    virtual ~RoomStatus();
+//    virtual ~RoomStatus();
 
     friend class GlobalChat;
 
@@ -71,7 +71,6 @@ private slots:
     void onMessage(const QString& roomId, const QString& author, bool expert, int count);
     void onProgress(const QString& room, const QString& id, const QString& from, const xmpp::Progress&);
     void onOrderStart(const QString& roomId, const QString& order, const QString& expert);
-
     void onOfferChanged();
 
 protected:
@@ -79,7 +78,7 @@ protected:
 
 private:
     QString m_jid;
-    Offer* m_offer;
+    Offer* m_offer = nullptr;
     Task::Status m_state = Task::OPEN;
     int m_unread = 0;
 

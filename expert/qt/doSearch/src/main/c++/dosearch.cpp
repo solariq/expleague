@@ -14,13 +14,14 @@
 
 #include <QCoreApplication>
 #include <QQuickWindow>
+#include <QDesktopServices>
 
 expleague::doSearch* root;
 namespace expleague {
 
 doSearch::doSearch(QObject* parent) : QObject(parent) {
     m_dictionary = new CollectionDictionary(
-                QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/dictionary",
+                "dictionary",
                 [](const QString& word) { return word; },
                 this
     );
@@ -90,12 +91,12 @@ Page* doSearch::web(const QUrl& url) const {
         result->page()->setOriginalUrl(url);
         return result;
     }
-    else if (url.host().contains("google.") && url.path() == "/search") {
+    else if (GoogleSERPage::isSearchUrl(url)) {
         return page("search/" + GoogleSERPage::parseQuery(url) + "/google", [&url](const QString& id, doSearch* parent) {
             return new GoogleSERPage(id, url, parent);
         });
     }
-    else if (url.host().contains("yandex.") && (url.path() == "/search/" || url.path() == "/yandsearch")) {
+    else if (YandexSERPage::isSearchUrl(url)) {
         return page("search/" + YandexSERPage::parseQuery(url) + "/yandex", [&url](const QString& id, doSearch* parent) {
             return new YandexSERPage(id, url, parent);
         });
@@ -189,7 +190,7 @@ Page* doSearch::page(const QString &id) const {
         else if (id == AdminContext::ID)
             return new AdminContext(parent);
         else if (id == GlobalChat::ID)
-            return new GlobalChat(parent);//DOTO fix
+            return new GlobalChat(parent);
         else if (id.startsWith("web/") && id.endsWith("site"))
             return new WebSite(id, parent);
         else if (id.startsWith("web/"))
@@ -288,5 +289,4 @@ void doSearch::remove(Context* context, bool erase) {
         context->remove("");
     }
 }
-
 }

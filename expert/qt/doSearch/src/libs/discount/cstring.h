@@ -67,7 +67,7 @@
 #define ATTACH(t, p)	( T(t) ? ( (E(t)->next = (p)), (E(t) = (p)) ) \
 			       : ( (T(t) = E(t) = (p)) ) )
 
-typedef STRING(char) Cstring;
+typedef STRING(unsigned char) Cstring; //changed char to unsigned char
 
 extern void Csputc(int, Cstring *);
 extern int Csprintf(Cstring *, char *, ...);

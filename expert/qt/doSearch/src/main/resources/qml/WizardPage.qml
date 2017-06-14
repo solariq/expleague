@@ -10,7 +10,7 @@ Item {
     property var go: function () {}
 
     visible: false
-
+    anchors.fill: parent
     Item {
         anchors.fill: parent
         anchors.leftMargin: 100

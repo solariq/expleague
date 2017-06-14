@@ -343,6 +343,7 @@ void CompositeContentPage::interconnect() {
         connect(part, SIGNAL(changingProfile(BoW,BoW)), SLOT(onPartProfileChanged(BoW,BoW)));
         emit partAppended(part);
     });
+
     ContentPage::interconnect();
 }
 }

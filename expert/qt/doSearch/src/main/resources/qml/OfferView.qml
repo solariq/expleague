@@ -4,7 +4,7 @@ import QtQuick.Layouts 1.1
 
 import QtGraphicalEffects 1.0
 
-import QtWebEngine 1.3
+//import QtWebEngine 1.3
 
 import ExpLeague 1.0
 
@@ -196,6 +196,15 @@ Item {
                         }
                     }
                     enabled: editable || (task && task.answer && task.answer.text.indexOf("TODO") < 0)
+
+                    ToolTip.delay: 1000
+                    MouseArea {
+                        acceptedButtons: Qt.NoButton
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onEntered: self.ToolTip.show("Отправить")
+                        onExited: self.ToolTip.hide()
+                    }
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
@@ -203,6 +212,14 @@ Item {
                     highlightedIcon: "qrc:/tools/tags_h.png"
                     dark: true
                     onTriggered: dosearch.main.showDialog(tagsDialog)
+                    ToolTip.delay: 1000
+                    MouseArea {
+                        acceptedButtons: Qt.NoButton
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onEntered: self.ToolTip.show("Добавить тег к заданию")
+                        onExited: self.ToolTip.hide()
+                    }
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
@@ -210,6 +227,14 @@ Item {
                     highlightedIcon: "qrc:/tools/patterns_h.png"
                     dark: true
                     onTriggered: dosearch.main.showDialog(patternsDialog)
+                    ToolTip.delay: 1000
+                    MouseArea {
+                        acceptedButtons: Qt.NoButton
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onEntered: self.ToolTip.show("Добавить шаблон")
+                        onExited: self.ToolTip.hide()
+                    }
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
@@ -217,6 +242,14 @@ Item {
                     highlightedIcon: "qrc:/tools/phone_h.png"
                     dark: true
                     onTriggered: dosearch.main.showDialog(callDialog)
+                    ToolTip.delay: 1000
+                    MouseArea {
+                        acceptedButtons: Qt.NoButton
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onEntered: self.ToolTip.show("Сделать отметку звонке")
+                        onExited: self.ToolTip.hide()
+                    }
                 }
 
                 ToolbarButton {
@@ -225,6 +258,14 @@ Item {
                     highlightedIcon: "qrc:/tools/suspend_h.png"
                     dark: true
                     onTriggered: suspendDialog.visible = true
+                    ToolTip.delay: 1000
+                    MouseArea {
+                        acceptedButtons: Qt.NoButton
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onEntered: self.ToolTip.show("Приостановить")
+                        onExited: self.ToolTip.hide()
+                    }
                 }
 
                 ToolbarButton {
@@ -234,6 +275,14 @@ Item {
                     highlightedIcon: "qrc:/tools/experts_h.png"
                     dark: true
                     onTriggered: dosearch.main.showDialog(filterDialog)
+                    ToolTip.delay: 1000
+                    MouseArea {
+                        acceptedButtons: Qt.NoButton
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onEntered: self.ToolTip.show("Роли экспертов")
+                        onExited: self.ToolTip.hide()
+                    }
                 }
 
                 ToolbarButton {
@@ -246,6 +295,14 @@ Item {
                         sendDialog.questions = false
                         dosearch.main.showDialog(sendDialog)
                     }
+                    ToolTip.delay: 1000
+                    MouseArea {
+                        acceptedButtons: Qt.NoButton
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onEntered: self.ToolTip.show("Отправить ответ")
+                        onExited: self.ToolTip.hide()
+                    }
                 }
 
                 ToolbarButton {
@@ -257,6 +314,14 @@ Item {
                     onTriggered: {
                         task.verify()
                     }
+//                    ToolTip.delay: 1000
+//                    MouseArea {
+//                        acceptedButtons: Qt.NoButton
+//                        anchors.fill: parent
+//                        hoverEnabled: true
+//                        onEntered: self.ToolTip.show("Отправить")
+//                        onExited: self.ToolTip.hide()
+//                    }
                 }
 
                 Item { Layout.fillWidth: true }
@@ -475,10 +540,11 @@ Item {
                     Layout.preferredWidth: 300
                     Layout.alignment: Qt.AlignHCenter
 
-                    WebEngineView {
+                    CefView {
                         anchors.fill: parent
                         visible: offer && offer.hasLocation
-                        url: offer ? "qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude : ""
+                        webView.running: visible
+                        webView.url: offer ? "qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude : ""
                     }
                     TransparentMouseArea {
                         anchors.fill: parent

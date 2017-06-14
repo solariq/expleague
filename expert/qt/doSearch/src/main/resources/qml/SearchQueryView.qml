@@ -1,7 +1,7 @@
 import QtQuick 2.7
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.4
-import QtWebEngine 1.3
+//import QtWebEngine 1.3
 import QtQuick.Window 2.0
 
 import ExpLeague 1.0
@@ -9,6 +9,7 @@ import ExpLeague 1.0
 import "."
 
 Item {
+    focus: true
     id: self
     property Item selectedSerp: owner.serps[owner.selected].ui
     //property WebEngineView webView: owner.serps[owner.selected].ui.webView
@@ -64,14 +65,9 @@ Item {
             }
         }
     }
-
-    Component.onCompleted: {
-        if (visible)
-            owner.serps[owner.selected].ui.forceActiveFocus()
-    }
-
-    onFocusChanged: {
-        if (focus && visible)
-            owner.serps[owner.selected].ui.forceActiveFocus()
+    onActiveFocusChanged: {
+        if(activeFocus){
+            selectedSerp.forceActiveFocus()
+        }
     }
 }

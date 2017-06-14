@@ -85,7 +85,7 @@ Window {
                 }
                 return -1
             }
-            property string role: index >= 0 ? expertSelf.roles[dialog.rolesInner[index]] : "none"
+            property string role: index >= 0 ? expertSelf.roles[dialog.rolesInner[expertSelf.index]] : "none"
             Avatar {
                 Layout.preferredHeight: implicitHeight
                 Layout.preferredWidth: implicitWidth
