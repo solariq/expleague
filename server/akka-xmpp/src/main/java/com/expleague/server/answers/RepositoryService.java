@@ -141,20 +141,39 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
 
           final String order = answer.order();
           final Node answerForOrder;
-          if (answersNode.hasNode(order))
-            answerForOrder = answersNode.getNode(order);
+          if (answersNode.hasNode(order)) {
+            if (answersNode.getNode(order).isNodeType("nt:resource")) { //compatibility
+              answersNode.getNode(order).remove();
+              answerForOrder = answersNode.addNode(order);
+            } else {
+              answerForOrder = answersNode.getNode(order);
+            }
+          }
+          else {
+            answerForOrder = answersNode.addNode(order);
+          }
+
+          answerForOrder.setProperty("short-answer", shortAnswer);
+          answerForOrder.setProperty("difficulty", answer.difficulty());
+          answerForOrder.setProperty("success", answer.success());
+          answerForOrder.setProperty("specifications", answer.specifications());
+
+          final Node answerTextNode;
+          if (answerForOrder.hasNode("answer-text"))
+            answerTextNode = answerForOrder.getNode("answer-text");
           else
-            answerForOrder = answersNode.addNode(order, "nt:resource");
+            answerTextNode = answerForOrder.addNode("answer-text", "nt:resource");
 
-          answerForOrder.setProperty("jcr:mimeType", "text/markdown");
-          answerForOrder.setProperty("jcr:data", writeSession.getValueFactory().createBinary(new ByteArrayInputStream(fullAnswer.getBytes(StreamTools.UTF))));
-          answerForOrder.setProperty("jcr:encoding", "UTF-8");
+          answerTextNode.setProperty("jcr:mimeType", "text/markdown");
+          answerTextNode.setProperty("jcr:data", writeSession.getValueFactory().createBinary(new ByteArrayInputStream(fullAnswer.getBytes(StreamTools.UTF))));
+          answerTextNode.setProperty("jcr:encoding", "UTF-8");
+
+          { //remove old version if exists
+            if (offerNode.hasNode("answer")) {
+              offerNode.getNode("answer").remove();
+            }
+          }
         }
-
-        offerNode.setProperty("short-answer", shortAnswer);
-        offerNode.setProperty("difficulty", answer.difficulty());
-        offerNode.setProperty("success", answer.success());
-        offerNode.setProperty("specifications", answer.specifications());
       }
       if (msg.has(Operations.Verified.class)) {
         offerNode.setProperty("verified", msg.get(Operations.Verified.class).authority().local());
