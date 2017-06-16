@@ -47,17 +47,17 @@ public: // QML
 
     virtual Page* container() const;
 
-    Q_INVOKABLE bool forwardToWebView(int key,
-                                      Qt::KeyboardModifiers modifiers,
-                                      const QString& text,
-                                      bool autoRepeat,
-                                      ushort count,
-                                      QQuickItem* view);
+//    Q_INVOKABLE bool forwardToWebView(int key,
+//                                      Qt::KeyboardModifiers modifiers,
+//                                      const QString& text,
+//                                      bool autoRepeat,
+//                                      ushort count,
+//                                      QQuickItem* view);
 
-    Q_INVOKABLE bool forwardShortcutToWebView(const QString& shortcut, QQuickItem* view);
-    Q_INVOKABLE bool dragToWebView(QQuickDropEvent* drop, QQuickItem* view) const;
+//    Q_INVOKABLE bool forwardShortcutToWebView(const QString& shortcut, QQuickItem* view);
 //    Q_INVOKABLE bool dragToWebView(QQuickDropEvent* drop, QQuickItem* view) const;
-    Q_INVOKABLE void copyToClipboard(const QString& text) const;
+//    Q_INVOKABLE bool dragToWebView(QQuickDropEvent* drop, QQuickItem* view) const;
+//    Q_INVOKABLE void copyToClipboard(const QString& text) const;
     Q_INVOKABLE void open(QObject* request, bool newTab);
 
 public: // new functionality

@@ -12,7 +12,7 @@ protected:
     void shutDownCallBack(); //browser should call this after shutDown() call
 };
 
-void initCef();
+void initCef(int i, char *pString[]);
 
 void shutDownCef();
 

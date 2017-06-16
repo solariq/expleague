@@ -199,7 +199,7 @@ void League::onDisconnected() {
         QTimer::singleShot(500, this, &League::connect);
 }
 
-static time_t prevMessageTS = QDateTime::currentSecsSinceEpoch();
+static time_t prevMessageTS = time(0);
 void League::onMessage(const QString& room, const QString& id, const QString& from, const QString& text) {
     if (m_known_ids.contains(id))
         return;
@@ -256,7 +256,7 @@ void League::onRoomOffer(const QString& /*room*/, const Offer& offer) {
 }
 
 void League::onConnected(int role) {
-    prevMessageTS = QDateTime::currentSecsSinceEpoch();
+    prevMessageTS = time(0);
     m_status = LS_ONLINE;
     emit statusChanged(m_status);
     m_role = (Role)(NONE + role);

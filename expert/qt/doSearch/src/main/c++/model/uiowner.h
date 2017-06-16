@@ -21,7 +21,7 @@ signals:
 public slots:
     void updateConnections();
 protected:
-    virtual void initUI(QQuickItem*){}
+    virtual void initUI(QQuickItem*) {}
     virtual bool transferUI(UIOwner* other);
     void setContext(QQmlContext* context);
 private:

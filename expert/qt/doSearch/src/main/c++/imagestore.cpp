@@ -115,7 +115,7 @@ public:
         QNetworkRequest request((QUrl)baseUrl());
         request.setHeader(QNetworkRequest::ContentTypeHeader, "multipart/form-data; boundary=" + boundary);
         request.setHeader(QNetworkRequest::ContentLengthHeader, QByteArray::number(requestBodyData.length()));
-        QNetworkReply* reply = m_nam->post(request, requestBodyData); //TODO delete
+//        QNetworkReply* reply = m_nam->post(request, requestBodyData); //TODO delete
 //        QObject::connect(reply, &QNetworkReply::finished, [reply](){
 //            qDebug() << "upload finished";
 //            reply->deleteLater();

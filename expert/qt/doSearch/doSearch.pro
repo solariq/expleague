@@ -26,8 +26,10 @@ SUBDIRS = src/libs/qxmpp \
 win32: SUBDIRS += src/libs/leveldb-win
 else: SUBDIRS += src/libs/leveldb
 
+cef {
+    SUBDIRS += src/libs/cef-exec \
+               src/libs/cef-mac
+}
+
 SUBDIRS += src/main
 
-cef {
-    SUBDIRS += src/CEF
-}

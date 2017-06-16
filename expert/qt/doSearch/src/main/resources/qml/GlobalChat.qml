@@ -107,7 +107,7 @@ Item {
                         ListView {
                             Layout.preferredWidth: 100/*Math.min(100, implicitWidth)*/
                             Layout.fillHeight: true
-
+                            clip: true
                             implicitWidth: model.length * 20 + 6
 
                             id: involvedList
@@ -130,8 +130,12 @@ Item {
                         ListView {
                             Layout.preferredWidth: 60/*Math.min(60, implicitWidth)*/
                             Layout.fillHeight: true
-
+                            clip: true
                             implicitWidth: 30 * model.size
+
+                            function order(i) {
+                                return modelData.order(i)
+                            }
 
                             id: ordersList
                             model: modelData.orderStatuses
@@ -140,6 +144,8 @@ Item {
                             delegate: Rectangle {
                                 height: 24
                                 width: 24
+                                ToolTip.delay: 1000
+                                ToolTip.text: "" + ordersList.order(index)
 //                                border.color: Palette.borderColor("active")
 //                                border.width: 2
 //                                radius: height / 2

@@ -18,7 +18,7 @@
 #define DEFINITIONS_H
 
 extern "C" {
-#include <pmh_definitions.h>
+#include "pmh_definitions.h"
 }
 #include <QtGui/QTextCharFormat>
 

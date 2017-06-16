@@ -33,6 +33,7 @@ public:
     int feedback() const { return m_feedback; }
     bool occupied() const { return m_admin_active; }
     QStringList orderStatuses() const;
+    Q_INVOKABLE QString order(int index) const;
 
     Task* task() const;
     Task::Status status() const { return m_state; }
@@ -49,7 +50,7 @@ public:
 public:
 //    explicit RoomState(const QString& jid, GlobalChat* parent);
     explicit RoomStatus(Offer* offer, GlobalChat* parent);
-//    virtual ~RoomStatus();
+    virtual ~RoomStatus();
 
     friend class GlobalChat;
 
@@ -79,6 +80,7 @@ protected:
 private:
     QString m_jid;
     Offer* m_offer = nullptr;
+    QString m_client;
     Task::Status m_state = Task::OPEN;
     int m_unread = 0;
 

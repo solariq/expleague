@@ -101,31 +101,30 @@ QVariant PersistentPropertyHolder::get(const QString& key) const {
     QStringList prevPath;
     std::unique_ptr<leveldb::Iterator> iter(db->NewIterator(leveldb::ReadOptions()));
     QVariant root;
-    for(iter->Seek(slicekey); iter->Valid() && iter->key().starts_with(slicekey); iter->Next()){
-        QVariant* current = &root;
-        QString data =  QString::fromUtf8(QByteArray(iter->value().data(), iter->value().size()));
+    for(iter->Seek(slicekey); iter->Valid() && iter->key().starts_with(slicekey); iter->Next()) {
+        QVariant *current = &root;
+        QString data = QString::fromUtf8(QByteArray(iter->value().data(), iter->value().size()));
         QByteArray qkey(iter->key().data(), iter->key().size());
         QString spath = QString::fromUtf8(qkey).mid(fullKey.size() + 1);
-        if(spath.size() == 0){
+        if (spath.size() == 0) {
             return convert(data);
         }
         QStringList path = spath.split(devide);
         int prefixSize = commonPrefixSize(path, prevPath);
-        for(int i = 0; i <= path.length(); i++){
-            if(current->isNull()){
+        for (int i = 0; i <= path.length(); i++) {
+            if (current->isNull()) {
                 *current = makeComplexVariant(path, i, data);
                 break;
             }
-            if(current->type() == QVariant::List){
-                QVariantList& list = *reinterpret_cast<QVariantList*>(current->data());
-                if(prefixSize <= i){
+            if (current->type() == QVariant::List) {
+                QVariantList &list = *reinterpret_cast<QVariantList *>(current->data());
+                if (prefixSize <= i) {
                     list.append(QVariant());
                 }
                 current = &list.last();
-            }
-            else if(current->type() == QVariant::Hash){
-                QVariantHash& hash = *reinterpret_cast<QVariantHash*>(current->data());
-                if(!hash.contains(path[i])){
+            } else if (current->type() == QVariant::Hash) {
+                QVariantHash &hash = *reinterpret_cast<QVariantHash *>(current->data());
+                if (!hash.contains(path[i])) {
                     hash.insert(path[i], QVariant());
                 }
                 current = &hash[path[i]];
