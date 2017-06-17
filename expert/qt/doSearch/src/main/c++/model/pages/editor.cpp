@@ -89,7 +89,7 @@ void doSearch::setupHighlighter(QQuickTextDocument* document) const {
     highlighter->setStyles(styles);
 }
 
-void MarkdownEditorPage::initUI(QQuickItem* result){
+void MarkdownEditorPage::initUI(QQuickItem* result) {
     d_ptr.reset(new MarkdownEditorPagePrivate());
     connect(result, SIGNAL(destroyed(QObject*)), this, SLOT(onUiDestryed(QObject*)));
     d_ptr->ui = result;

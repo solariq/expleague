@@ -18,7 +18,7 @@
 #define STYLEPARSER_H
 
 #include "definitions.h"
-#include <pmh_styleparser.h>
+#include "pmh_styleparser.h"
 
 
 namespace PegMarkdownHighlight

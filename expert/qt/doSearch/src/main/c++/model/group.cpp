@@ -138,7 +138,7 @@ void PagesGroup::close(Page* page) {
 
 PagesGroup::PagesGroup(Page* root, Type type, Context* owner):
     QObject(owner),
-    PersistentPropertyHolder( owner->cd(type == SUGGEST ? "suggest" : "group").cd(md5(root->id())) ),
+    PersistentPropertyHolder( owner->cd(type == SUGGEST ? "suggest" : "group." + md5(root->id())) ),
     m_owner(owner), m_root(root), m_parent(0), m_type(type), m_closed_start(0)
 {
     if (type != SUGGEST) {
@@ -150,7 +150,7 @@ PagesGroup::PagesGroup(Page* root, Type type, Context* owner):
 
 PagesGroup::PagesGroup(const QString& groupId, Context* owner):
     QObject(owner),
-    PersistentPropertyHolder(owner->cd("group").cd(groupId)),
+    PersistentPropertyHolder(owner->cd("group." + groupId)),
     m_owner(owner), m_parent(0)
 {
     m_root = owner->parent()->page(value("root").toString());

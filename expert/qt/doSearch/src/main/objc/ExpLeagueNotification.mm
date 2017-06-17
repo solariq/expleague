@@ -16,7 +16,7 @@ int showNotification(const char* titleC, const char* detailsC) {
     NSString* title = [NSString stringWithCString:titleC encoding:NSUTF8StringEncoding];
     NSString* details = [NSString stringWithCString:detailsC encoding:NSUTF8StringEncoding];
     notification.title = title;
-    notification.informativeText = [NSString stringWithFormat:details];
+    notification.informativeText = details;
 //    notification.soundName = NSUserNotificationDefaultSoundName;
     [NSUserNotificationCenter defaultUserNotificationCenter].delegate = delegate;
     [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];

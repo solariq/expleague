@@ -18,8 +18,8 @@
 
 #include <QString>
 
-#include <pmh_definitions.h>
-#include <pmh_parser.h>
+#include "pmh_definitions.h"
+#include "pmh_parser.h"
 
 QMap<MarkdownElement::Type, QList<MarkdownElement> > PmhMarkdownParser::parseMarkdown(const QString &text)
 {

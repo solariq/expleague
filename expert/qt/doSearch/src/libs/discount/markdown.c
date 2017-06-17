@@ -258,7 +258,7 @@ static Line *
 commentblock(Paragraph *p, int *unclosed)
 {
     Line *t, *ret;
-    char *end;
+    unsigned char *end;
 
        for ( t = p->text; t ; t = t->next) {
 	   if ( end = strstr(T(t->text), "-->") ) {

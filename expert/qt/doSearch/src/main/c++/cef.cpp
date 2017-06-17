@@ -94,6 +94,8 @@ QSet<Browser*> GCStorage;
 QSet<Browser*> GCDestroyed;
 bool GCStorageBusy = false;
 
+QTimer* cefTimer = nullptr;
+
 void Browser::addCefBrowserToGC(){
     GCStorage.insert(this);
     qDebug() << "insert" << GCStorage.size();
@@ -117,14 +119,27 @@ void Browser::shutDownCallBack(){
     GCStorage.remove(this);
 }
 
-void initCef(){
-    CefMainArgs main_args(GetModuleHandle(NULL));
+
+void initCef(int argc, char *argv[]) {
     CefRefPtr<CefApp> cefapp;
     CefSettings settings;
-    CefString(&settings.browser_subprocess_path).FromASCII(
-                "C:\\pr\\expleague\\expert\\qt\\build-doSearch-Desktop_Qt_5_8_0_MSVC2015_32bit-Debug\\src\\CEF\\debug\\CEF.exe"); //TODO change path
+  #ifdef Q_OS_MAC
+    CefMainArgs main_args(argc, argv);
+//    CefString(&settings.browser_subprocess_path).FromASCII("cef/cef-instance");
+  #else
+    CefMainArgs main_args(GetModuleHandle(NULL));
+    CefString(&settings.browser_subprocess_path).FromASCII("cef/cef-instance.exe");
+  #endif
     CefInitialize(main_args, settings, cefapp, NULL);
     CefRegisterSchemeHandlerFactory("qrc", "", new SchemeFactory());
+
+    cefTimer = new QTimer();
+    cefTimer->setInterval(0);
+    cefTimer->setSingleShot(false);
+    QObject::connect(cefTimer, &QTimer::timeout, [](){
+      CefDoMessageLoopWork();
+    });
+    cefTimer->start();
 }
 
 void shutDownCef(){
@@ -140,6 +155,7 @@ void shutDownCef(){
         CefDoMessageLoopWork();
     }
     CefShutdown();
+    if(cefTimer) delete cefTimer;
 }
 
 }
