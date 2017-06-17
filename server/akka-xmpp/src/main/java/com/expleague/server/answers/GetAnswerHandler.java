@@ -51,11 +51,16 @@ public class GetAnswerHandler extends ActorAdapter {
           if (answerNum > 0)
             stringBuilder.append("<br/>");
 
-          stringBuilder.append("<p><h2>");
-          stringBuilder.append("Ответ №");
-          stringBuilder.append(++answerNum);
-          stringBuilder.append("</h2></p>");
-          stringBuilder.append(answerMd);
+          ++answerNum;
+          stringBuilder.append("<p><h2>")
+              .append("<a name=\"")
+              .append("answer")
+              .append(answerNum)
+              .append("\">")
+              .append("Ответ №")
+              .append(answerNum)
+              .append("</a></h2></p>")
+              .append(answerMd);
         }
         result = stringBuilder.toString();
         title = node.getParent().getParent().getParent().getProperty("topic").getString();

@@ -142,15 +142,11 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
           final String order = answer.order();
           final Node answerForOrder;
           if (answersNode.hasNode(order)) {
-            if (answersNode.getNode(order).isNodeType("nt:resource")) { //compatibility
-              answersNode.getNode(order).remove();
-              answerForOrder = answersNode.addNode(order);
-            } else {
-              answerForOrder = answersNode.getNode(order);
-            }
+            answerForOrder = answersNode.getNode(order);
           }
           else {
             answerForOrder = answersNode.addNode(order);
+            answerForOrder.setProperty("answer-num", answersNode.getNodes().getSize());
           }
 
           answerForOrder.setProperty("short-answer", shortAnswer);
