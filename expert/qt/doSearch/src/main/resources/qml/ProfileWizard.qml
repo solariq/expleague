@@ -213,6 +213,7 @@ Window {
                     stack.push(preview)
                 }
             }
+            webView.cookiesEnable: cookiesOff.checked
             webView.allowLinkTtransitions: true
             webView.running: visible
             onVisibleChanged: {

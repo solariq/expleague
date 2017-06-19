@@ -1,6 +1,8 @@
 #ifndef CEF_H
 #define CEF_H
 
+#include <functional>
+
 namespace expleague {
 
 class Browser{
@@ -9,13 +11,11 @@ public:
 protected:
     void addCefBrowserToGC();
     void removeCefBrowserFromGC();
-    void shutDownCallBack(); //browser should call this after shutDown() call
 };
 
 void initCef();
 
 void shutDownCef();
-
 
 }
 

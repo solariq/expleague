@@ -9,6 +9,7 @@
 #include "model/pages/cefpage.h"
 
 #include <QSet>
+#include <QStandardPaths>
 
 namespace expleague {
 
@@ -108,14 +109,16 @@ void Browser::removeCefBrowserFromGC(){
     GCStorage.remove(this);
 }
 
-void Browser::shutDownCallBack(){
-    qDebug() << "callback" << GCStorage.size() << GCDestroyed.size() << GCStorageBusy;
-    if(GCStorageBusy){
-        GCDestroyed.insert(this);
-        return;
+QString cachePath(){
+    QString appLocalPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    QDir cache_dir(appLocalPath + "/" + "BrowserCache");
+    if(!cache_dir.exists()){
+        QDir(appLocalPath).mkdir("BrowserCache");
     }
-    GCStorage.remove(this);
+    return cache_dir.absolutePath();
 }
+
+QTimer* cefTimer = nullptr;
 
 void initCef(){
     CefMainArgs main_args(GetModuleHandle(NULL));
@@ -123,9 +126,30 @@ void initCef(){
     CefSettings settings;
     CefString(&settings.browser_subprocess_path).FromASCII(
                 "C:\\pr\\expleague\\expert\\qt\\build-doSearch-Desktop_Qt_5_8_0_MSVC2015_32bit-Debug\\src\\CEF\\debug\\CEF.exe"); //TODO change path
+    CefString cache_path(&settings.cache_path);
+    QString appLocalPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    QDir cache_dir(appLocalPath);
+    cache_dir.mkdir("browserCache");
+    cache_dir.cd("browserCache");
+    cache_path = cache_dir.absolutePath().toStdString();
     CefInitialize(main_args, settings, cefapp, NULL);
     CefRegisterSchemeHandlerFactory("qrc", "", new SchemeFactory());
+    cefTimer = new QTimer();
+    cefTimer->setInterval(0);
+    QObject::connect(cefTimer, &QTimer::timeout, []{
+        CefDoMessageLoopWork();
+    });
+    cefTimer->start();
+
 }
+
+//class FlushCallBack: public CefCompletionCallback{
+//public:
+//    virtual void OnComplete(){
+//        CefShutdown();
+//    }
+//    IMPLEMENT_REFCOUNTING(FlushCallBack)
+//};
 
 void shutDownCef(){
     GCStorageBusy = true;
@@ -140,6 +164,8 @@ void shutDownCef(){
         CefDoMessageLoopWork();
     }
     CefShutdown();
+    if(cefTimer) delete cefTimer;
+    //CefCookieManager::GetGlobalManager(NULL)->FlushStore(new FlushCallBack());
 }
 
 }

@@ -10,10 +10,11 @@
 #include <QFileInfo>
 #include <QMimeDatabase>
 #include <QDebug>
+#include <QCoreApplication>
 
 void log(const std::string& mes){
     std::ofstream out;
-    out.open ("log.log", std::ofstream::app);
+    out.open ("Cef_exc.log", std::ofstream::app);
     out << mes << std::endl;
     out.close();
 }
@@ -22,8 +23,12 @@ class MyApp: public CefApp{
     virtual void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) OVERRIDE{
         command_line.get()->AppendSwitch("--off-screen-rendering-enabled");
         command_line.get()->AppendSwitch("--multi-threaded-message-loop");
+        //command_line.get()->AppendSwitch("--show-fps-counter");
         std::vector<CefString> argv;
-        command_line.get()->GetArgv(argv);        
+        command_line.get()->GetArgv(argv);
+        for(CefString str: argv){
+            log(str.ToString());
+        }
     }
 
     virtual void OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar) OVERRIDE { //TODO try is_local true and is_cors_enabled fasle
@@ -35,11 +40,11 @@ class MyApp: public CefApp{
     IMPLEMENT_REFCOUNTING(MyApp)
 };
 
-int main(int argc, char *argv[]) {\
-  qDebug() << "Start cef procces";
-  CefMainArgs main_args(GetModuleHandle(NULL));
-  // Optional implementation of the CefApp interface.
-  CefRefPtr<MyApp> app(new MyApp);
-  // Execute the sub-process logic. This will block until the sub-process should exit.
-  return CefExecuteProcess(main_args, app, NULL);
+int main(int argc, char *argv[]) {
+    log("execute cef proccess");
+    CefMainArgs main_args(GetModuleHandle(NULL));
+    // Optional implementation of the CefApp interface.
+    CefRefPtr<MyApp> app(new MyApp);
+    // Execute the sub-process logic. This will block until the sub-process should exit.
+    return CefExecuteProcess(main_args, app, NULL);
 }

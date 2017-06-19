@@ -32,7 +32,7 @@ cef{
     QT_PRIVATE += webengine-private
 }
 
-QT += widgets core network location concurrent positioning gui quick quickcontrols2 xml xmlpatterns multimedia  testlib opengl
+QT += widgets core network location concurrent positioning gui quick quickcontrols2 xml xmlpatterns multimedia testlib opengl
 QT_PRIVATE += quick-private
 qml.path += resources/qml
 target.path += ../../bin

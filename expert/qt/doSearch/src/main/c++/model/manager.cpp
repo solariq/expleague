@@ -212,7 +212,10 @@ void NavigationManager::select(PagesGroup* context, Page* selected) {
             PagesGroup* currentSelection = selectedGroup();
             if (currentSelection)
                 currentSelection->setSelected(false);
+            m_groups.clear();
+            m_groups.append(ctxt->associated(ctxt));
             emit onGroupsChanged();
+            emit groupsChanged();
         }
         else activate(ctxt);
         return;
@@ -386,6 +389,9 @@ double effectiveWidth(const QVector<QList<Page*>>& pages, const QVector<QList<Pa
 
 double NavigationManager::MAX_TAB_WIDTH = 228;
 void NavigationManager::rebalanceWidth() {
+    if(m_groups.size() == 0){
+        return;
+    }
     QVector<QList<Page*>> closedPages(m_groups.size());
     QVector<QList<Page*>> activePages(m_groups.size()); {
         QSet<Page*> known;

@@ -132,7 +132,7 @@ WebPage* doSearch::webPage(const QUrl& url) const {
 
 QString doSearch::nextId(const QString& prefix) const {
     QString id;
-    PersistentPropertyHolder root(prefix);
+    PersistentPropertyHolder root(pageResource(prefix));
     do {
         id = randString(10);
     }

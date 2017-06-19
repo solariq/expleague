@@ -69,6 +69,11 @@ void WebPage::setTitle(const QString& title) {
 }
 
 void WebPage::setIcon(const QString& icon) {
+    if(m_redirect){
+        m_redirect->setIcon(icon);
+        emit iconChanged(icon);
+        return;
+    }
     QUrl url(icon);
     if(!url.isValid()){
         return;

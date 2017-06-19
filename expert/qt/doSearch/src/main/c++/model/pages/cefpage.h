@@ -187,7 +187,7 @@ private:
     double m_zoom_factor = 1;
     bool m_fullscreen;
     bool m_running = true;
-    bool m_cookies_enamble = true;
+    bool m_cookies_enable = true;
     //property methods
 public:
     QUrl url() const;
@@ -228,7 +228,10 @@ private slots:
 
 private:
     void destroyBrowser();
+    void suspendBrowser();
+    void resumeBrowser();
 
+    bool m_suspended = false;
     friend class BrowserListener;
 };
 

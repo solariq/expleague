@@ -12,6 +12,7 @@ Item {
     id: self
     anchors.fill: parent
     property var editorActions: !!dosearch.main && dosearch.main.editorActionsRef ? dosearch.main.editorActionsRef : "stubActions"
+    property bool showPreview: false
 
     property alias editor: edit
     //    property bool options: false
@@ -145,19 +146,47 @@ Item {
                     action: editorActions.todo
                     dark: true
                 }
-
-
                 Item {Layout.fillWidth: true}
+
             }
         }
         Item {height: 3}
+
+        CefView {
+            id: preview
+            z: parent.z + 1
+            zoom: 0.2
+            anchors.centerIn: parent
+            width: parent.width - 10
+            height: parent.height - 10
+            visible: showPreview
+            function updateHtml() {
+                webView.loadHtml("<!DOCTYPE html><html><head>
+                            <script src=\"qrc:///md-scripts.js\"></script>
+                            <link rel=\"stylesheet\" href=\"qrc:///markdownpad-github.css\"></head>
+                            <body>" + owner.html + "</body></html>")
+            }
+
+            Connections {
+                target: owner
+//                onHtmlChanged: {
+//                    var focused = dosearch.main.activeFocusItem
+//                    var html = preview.updateHtml()
+//                    if (focused && focused == edit)
+//                        focused.forceActiveFocus()
+//                }
+                onVisibleChanged: {
+                    preview.updateHtml()
+                }
+            }
+        }
 
         Rectangle {
             id: editorBox
             width: parent.width
             height: parent.height - buttons.height
             color: "white"
-
+            visible: !showPreview
             Flickable {
                 id:  scroll
                 anchors.fill: parent

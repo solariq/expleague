@@ -38,9 +38,7 @@ QSystemTrayIcon* trayIcon;
 
 
 int main(int argc, char *argv[]) {
-#ifdef CEF
-    initCef();
-#endif
+
     //PersistentPropertyHolder::debugPrintAll();
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
@@ -71,6 +69,9 @@ int main(int argc, char *argv[]) {
     trayIcon = new QSystemTrayIcon();
     trayIcon->setIcon(QIcon(":/avatar.png"));
     trayIcon->show();
+#endif
+#ifdef CEF
+    initCef();
 #endif
 
     QQmlApplicationEngine engine;

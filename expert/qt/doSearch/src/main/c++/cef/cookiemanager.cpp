@@ -1,6 +1,6 @@
-#include "cookiemanager.h"
+//#include "cookiemanager.h"
 
-CookieManager::CookieManager()
-{
+//CookieManager::CookieManager()
+//{
 
-}
+//}

@@ -291,6 +291,7 @@ bool BrowserListener::OnBeforeBrowse(CefRefPtr<CefBrowser> browser, CefRefPtr<Ce
     if (is_redirect || now - m_last_event_time > 5000) { //redirect link would be opened from qt
         if(m_redirect_enable){
             emit m_owner->redirect(qurl);
+            //emit m_owner->iconChanged(qurl.scheme() + "://" + qurl.host() + "/favicon.ico");
             return false;
         }
         return true;
@@ -445,14 +446,14 @@ CefItem::CefItem(QQuickItem *parent): QQuickFramebufferObject(parent) {
             //qDebug() << "construct item" << this << "with parent" << parent;
             m_listener = new BrowserListener(this);
     m_renderer = new CefPageRenderer(this);
-    m_timer = new QTimer(this);
-    m_timer->setSingleShot(false);
-    m_timer->setInterval(5);
-    m_timer->setTimerType(Qt::TimerType::CoarseTimer);
-    QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(doCefWork()));
+//    m_timer = new QTimer(this);
+//    m_timer->setSingleShot(false);
+//    m_timer->setInterval(5);
+//    m_timer->setTimerType(Qt::TimerType::CoarseTimer);
+//    QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(doCefWork()));
     QObject::connect(this, SIGNAL(windowChanged(QQuickWindow*)), this, SLOT(initBrowser(QQuickWindow*)), Qt::QueuedConnection);
     //QObject::connect(this, SIGNAL(destroyed(QObject*)), this, SLOT(destroyBrowser()));
-    m_timer->start();
+//    m_timer->start();
     m_text_callback = new TextCallback();
     m_text_callback->setOwner(this);
 }
@@ -511,21 +512,27 @@ public:
     }
     virtual bool FlushStore(CefRefPtr<CefCompletionCallback> callback)
     {
+        qDebug() << "flush storage";
         return true;
     }
     IMPLEMENT_REFCOUNTING(EmptyCookieManager)
 };
 
-class EmptyCookieContextHandler: public CefRequestContextHandler{
+class CookieContextHandler: public CefRequestContextHandler{
 public:
-    EmptyCookieContextHandler(): m_manager(new EmptyCookieManager()){
+    CookieContextHandler(bool enable_cookie){
+//        if(enable_cookie){
+            m_manager = CefCookieManager::GetGlobalManager(NULL); /*new EmptyCookieManager();*/
+//        }else{
+//            m_manager = new EmptyCookieManager();
+//        }
     }
     virtual CefRefPtr<CefCookieManager> GetCookieManager() {
         return m_manager;
     }
 private:
     CefRefPtr<CefCookieManager> m_manager;
-    IMPLEMENT_REFCOUNTING(EmptyCookieContextHandler)
+    IMPLEMENT_REFCOUNTING(CookieContextHandler)
 };
 
 class ACefClient: public CefClient{
@@ -585,13 +592,13 @@ void CefItem::releaseResources(){
 void CefItem::shutDown(){
     if(m_browser){
         destroyBrowser();
-        return;
+    }else{
+        removeCefBrowserFromGC();
     }
-    shutDownCallBack();
 }
 
 void CefItem::onBrowserDestroyed(){
-    shutDownCallBack();
+    removeCefBrowserFromGC();
 }
 
 void CefItem::destroyBrowser(){
@@ -604,6 +611,16 @@ void CefItem::destroyBrowser(){
         m_browser = nullptr;
         m_text_callback->setOwner(nullptr);
     }
+}
+
+void CefItem::suspendBrowser(){
+#ifdef Q_OS_WIN32
+#endif
+}
+
+void CefItem::resumeBrowser(){
+#ifdef Q_OS_WIN32
+#endif
 }
 
 void CefItem::initBrowser(QQuickWindow* window) {
@@ -626,7 +643,7 @@ void CefItem::initBrowser(QQuickWindow* window) {
     //qDebug() << "Init Browser " << QString::fromStdString(fromUrl(m_url)) << m_url;
 
     CefRefPtr<CefRequestContext> requestContext =
-            m_cookies_enamble? nullptr : CefRequestContext::CreateContext(CefRequestContextSettings(), new EmptyCookieContextHandler());
+            CefRequestContext::CreateContext(CefRequestContextSettings(), new CookieContextHandler(m_cookies_enable));
 
     m_browser = CefBrowserHost::CreateBrowserSync(mainWindowInfo, acefclient, fromUrl(m_url), CefBrowserSettings(), requestContext);
 
@@ -635,7 +652,7 @@ void CefItem::initBrowser(QQuickWindow* window) {
     QObject::connect(this, SIGNAL(heightChanged()), this, SLOT(resize()));
 
     if(m_url.isEmpty()){
-        m_browser->GetMainFrame()->LoadStringW(m_html.toStdString(), "about:blank");
+        m_browser->GetMainFrame()->LoadString(m_html.toStdString(), "about:blank");
     }
     m_iobuffer.setBrowser(m_browser);
     addCefBrowserToGC();
@@ -758,6 +775,7 @@ int toWindows(int key){
     case 16777250: return 0x26; //win
     case 16777233: return 0x23; //end
     case 16777219: return 0x08; //backspace
+    //case 16777220: return 0x0D; //Enter
     default: return 0;
     }
 }
@@ -770,8 +788,17 @@ cef_event_flags_t getFlagFromKey(int key){
     }
 }
 
+int getWinVirtualKeyCodeFromUtf16Char(char16 c){
+    if(c >= 'a' && c <= 'z'){
+        return c - 'a' + 'A';
+    }
+    return c;
+}
 
 bool IOBuffer::keyPress(int key, Qt::KeyboardModifiers modifiers, const QString& tex, bool autoRepeat, ushort count) {
+    if(!m_browser){
+        return false;
+    }
     m_key_flags |= getFlagFromKey(key);
     qDebug() << "keyFlas" << m_key_flags;
 
@@ -793,11 +820,11 @@ bool IOBuffer::keyPress(int key, Qt::KeyboardModifiers modifiers, const QString&
     }
 
     if(tex.length() > 0){
-        char16 c = tex.utf16()[0];
+        int c = tex.utf16()[0];
         charEvent.windows_key_code = c;
-        pressEvent.windows_key_code = c;
+        pressEvent.windows_key_code = getWinVirtualKeyCodeFromUtf16Char(c);
         qDebug() << "key pressed !" << key << tex << c;
-        //m_browser->GetHost()->SendKeyEvent(pressEvent);
+        m_browser->GetHost()->SendKeyEvent(pressEvent);
         m_browser->GetHost()->SendKeyEvent(charEvent);
         return true;
     }
@@ -805,10 +832,16 @@ bool IOBuffer::keyPress(int key, Qt::KeyboardModifiers modifiers, const QString&
 }
 
 bool IOBuffer::keyRelease(int key, Qt::KeyboardModifiers modifiers, const QString& tex, bool autoRepeat, ushort count) {
+    if(!m_browser){
+        return false;
+    }
     m_key_flags &= ~getFlagFromKey(key);
     qDebug() << "keyFlas" << m_key_flags;
 
     int wkey = toWindows(key);
+    if(!wkey && tex.length() > 0){
+        wkey = getWinVirtualKeyCodeFromUtf16Char(tex.utf16()[0]);
+    }
     if(!wkey){
         return false;
     }
@@ -1036,7 +1069,7 @@ void CefItem::getText(){
 }
 
 void CefItem::clearCookies(const QString &url){
-    m_browser->GetHost()->GetRequestContext()->GetDefaultCookieManager(nullptr)->DeleteCookies(url.toStdString(), "", nullptr);
+    m_browser->GetHost()->GetRequestContext()->GetHandler()->GetCookieManager()->DeleteCookies(url.toStdString(), "", nullptr);
 }
 
 void CefItem::redirectEnable(bool redirect){
@@ -1107,11 +1140,11 @@ void CefItem::setAllowLinkTtransitions(bool allow){
 }
 
 void CefItem::setCookiesEnable(bool cookies){
-    m_cookies_enamble = cookies;
+    m_cookies_enable = cookies;
 }
 
 bool CefItem::cookiesEnable(){
-    return m_cookies_enamble;
+    return m_cookies_enable;
 }
 
 }

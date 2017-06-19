@@ -127,7 +127,7 @@ public:
     }
 
     QString icon() const {
-        QVariant var = value("web.favicon"); //TODO http change
+        QVariant var = value("web.favicon");
         return var.isNull() ? "" : var.toString();
     }
 

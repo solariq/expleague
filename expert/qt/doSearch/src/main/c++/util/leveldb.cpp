@@ -13,7 +13,7 @@ LevelDBContainer::LevelDBContainer(): m_db(nullptr){
 LevelDBContainer::LevelDBContainer(const QString& path, leveldb::Options options){
     options.create_if_missing = true;
     std::string cpath;
-#ifdef WIN32
+#ifdef Q_OS_WIN32
     QTextCodec* codec = QTextCodec::codecForName("System");
     assert(codec);
     cpath = codec->fromUnicode(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/" + path);
