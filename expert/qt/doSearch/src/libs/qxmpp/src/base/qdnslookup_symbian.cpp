@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#include <QtGlobal>
+
+#ifdef Q_OS_SYMBIAN
 #include "qdnslookup_p.h"
 
 #include <QUrl>
@@ -96,3 +99,4 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
 }
 
 QT_END_NAMESPACE
+#endif

@@ -13,8 +13,6 @@
 #include <QTextCodec>
 #include <QQuickWindow>
 
-//#include <QtWebEngine>
-
 #include "expleague.h"
 #include "model/history.h"
 #include "util/crashhandler.h"
@@ -22,10 +20,6 @@
 #include "cef.h"
 #include "model/pages/cefpage.h"
 #endif
-#include "model/uiowner.h"
-//#include "util/crashhandler.h"
-
-#include <cmath>
 
 using namespace expleague;
 

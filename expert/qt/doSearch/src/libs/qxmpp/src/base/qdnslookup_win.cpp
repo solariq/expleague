@@ -38,7 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtGlobal>
 
+#ifdef Q_OS_WIN
 #include <winsock2.h>
 #include "qdnslookup_p.h"
 
@@ -148,3 +150,4 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
 }
 
 QT_END_NAMESPACE
+#endif

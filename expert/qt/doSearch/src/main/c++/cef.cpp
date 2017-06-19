@@ -12,7 +12,6 @@
 
 namespace expleague {
 
-
 class QrcResourceHandler: public CefResourceHandler{
     virtual bool ProcessRequest(CefRefPtr<CefRequest> request,
                                 CefRefPtr<CefCallback> callback) OVERRIDE //url format is qrc:///filename
