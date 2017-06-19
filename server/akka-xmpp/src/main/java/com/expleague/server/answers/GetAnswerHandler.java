@@ -41,25 +41,30 @@ public class GetAnswerHandler extends ActorAdapter {
       final String result;
       final String title;
       final Node node = session.getNodeByIdentifier(id); // answer node
-      if (!"answer".equals(node.getName())) {
-        final NodeIterator nodeIterator = node.getParent().getNodes();
+      if ("answer-text".equals(node.getName())) {
+        final NodeIterator nodeIterator = node.getParent().getParent().getNodes();
         final StringBuilder stringBuilder = new StringBuilder();
         int answerNum = 0;
         while (nodeIterator.hasNext()) {
-          final Node answerNode = nodeIterator.nextNode();
-          final String answerMd = extractAnswer(answerNode);
+          final Node answerTextNode = nodeIterator.nextNode().getNode("answer-text");
+          final String answerMd = extractAnswer(answerTextNode);
           if (answerNum > 0)
             stringBuilder.append("<br/>");
 
-          stringBuilder.append("<p><h2>");
-          stringBuilder.append("Ответ №");
-          stringBuilder.append(++answerNum);
-          stringBuilder.append("</h2></p>");
-          stringBuilder.append(answerMd);
+          ++answerNum;
+          stringBuilder.append("<p><h2>")
+              .append("<a name=\"")
+              .append("answer")
+              .append(answerNum)
+              .append("\">")
+              .append("Ответ №")
+              .append(answerNum)
+              .append("</a></h2></p>")
+              .append(answerMd);
         }
         result = stringBuilder.toString();
-        title = node.getParent().getParent().getProperty("topic").getString();
-      } else {
+        title = node.getParent().getParent().getParent().getProperty("topic").getString();
+      } else { //old version
         result = extractAnswer(node);
         title = node.getParent().getProperty("topic").getString();
       }

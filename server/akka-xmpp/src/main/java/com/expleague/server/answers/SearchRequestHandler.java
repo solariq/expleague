@@ -68,13 +68,25 @@ public class SearchRequestHandler extends ActorAdapter<UntypedActor> {
       final List<SearchItemDto> searchItems = new ArrayList<>();
       while (nodeIterator.hasNext()) {
         final Node node = nodeIterator.nextNode();
-        final Uri answerUri = Uri.create(uri.scheme() + "://" + uri.host() + "/get?id=" + node.getIdentifier()).port(uri.port());
-        final String topic;
-        if ("answer".equals(node.getName()))
-          topic = node.getParent().getProperty("topic").getString();
-        else
-          topic = node.getParent().getParent().getProperty("topic").getString();
+        final StringBuilder uriSb = new StringBuilder();
+        uriSb.append(uri.scheme()).append("://").append(uri.host()).append("/get?id=").append(node.getIdentifier());
 
+        final String topic;
+        if ("answer-text".equals(node.getName())) {
+          final StringBuilder topicSb = new StringBuilder();
+          topicSb.append(node.getParent().getParent().getParent().getProperty("topic").getString());
+          if (node.getParent().getParent().getNodes().getSize() > 1) {
+            final long answerNum = node.getParent().getProperty("answer-num").getLong();
+            topicSb.append(" (Ответ №").append(answerNum).append(")");
+            uriSb.append("#answer").append(answerNum);
+          }
+          topic = topicSb.toString();
+        }
+        else { //old version
+          topic = node.getParent().getProperty("topic").getString();
+        }
+
+        final Uri answerUri = Uri.create(uriSb.toString()).port(uri.port());
         searchItems.add(new SearchItemDto(topic, answerUri.toString()));
       }
       map.put("items", searchItems);

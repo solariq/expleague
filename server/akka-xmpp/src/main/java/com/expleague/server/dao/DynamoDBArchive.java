@@ -20,7 +20,9 @@ import com.spbsu.commons.util.cache.impl.FixedSizeCache;
 import gnu.trove.list.array.TLongArrayList;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -34,8 +36,10 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public class DynamoDBArchive implements Archive {
   private static final Logger log = Logger.getLogger(DynamoDBArchive.class.getName());
+  private static final int ROOM_POSTFIX_START = 1;
+
   private final BlockingDeque<Message> roomAccumulatedChangesDeque = new LinkedBlockingDeque<>();
-  private final Set<String> fullRooms = Collections.newSetFromMap(new ConcurrentHashMap<>());
+  private final ConcurrentHashMap<String, Integer> roomPostfix = new ConcurrentHashMap<>();
   private final DynamoDBMapper mapper;
   private final AmazonDynamoDBAsyncClient client;
 
@@ -68,8 +72,7 @@ public class DynamoDBArchive implements Archive {
           while (true) {
             final Message message = roomAccumulatedChangesDeque.take();
             final String roomId = message.stanza().to().local();
-            if (fullRooms.contains(roomId))
-              continue;
+            final String dynamoDbItemId = roomPostfix.containsKey(roomId) ? itemId(roomId, roomPostfix.get(roomId)) : roomId;
 
             final long timeInNanos = System.nanoTime();
             long first = timeInNanos;
@@ -86,7 +89,7 @@ public class DynamoDBArchive implements Archive {
             history.add(System.nanoTime());
 
             final List<Message> changesToApply = new ArrayList<>(Collections.singletonList(message));
-            UpdateItemRequest currentUpdate = updateRequest(roomId, changesToApply);
+            UpdateItemRequest currentUpdate = updateRequest(dynamoDbItemId, changesToApply);
             final Iterator<Message> queueIterator = roomAccumulatedChangesDeque.iterator();
             while (queueIterator.hasNext()) {
               final Message next = queueIterator.next();
@@ -94,7 +97,7 @@ public class DynamoDBArchive implements Archive {
                 continue;
               changesToApply.add(next);
 
-              final UpdateItemRequest update = updateRequest(roomId, changesToApply);
+              final UpdateItemRequest update = updateRequest(dynamoDbItemId, changesToApply);
               //noinspection ConstantConditions
               boolean tooBig = TextDecoderTools.getBytes(update.toString(), TextDecoderTools.UTF8).length > throughputInBytesPerInterval;
               if (tooBig) {
@@ -111,11 +114,9 @@ public class DynamoDBArchive implements Archive {
               client.updateItem(currentUpdate);
             } catch (AmazonClientException ace) {
               if (ace instanceof AmazonServiceException && ((AmazonServiceException) ace).getErrorType() == AmazonServiceException.ErrorType.Client) {
-                fullRooms.add(roomId);
+                roomPostfix.compute(roomId, (id, postfix) -> postfix == null ? ROOM_POSTFIX_START : postfix + 1);
               }
-              else {
-                Lists.reverse(changesToApply).forEach(roomAccumulatedChangesDeque::addFirst);
-              }
+              Lists.reverse(changesToApply).forEach(roomAccumulatedChangesDeque::addFirst);
               log.log(Level.WARNING, "Unable to deliver message to DynamoDB: " + ace.getMessage());
               log.log(Level.WARNING, "Failed update: " + currentUpdate.toString());
             }
@@ -131,10 +132,10 @@ public class DynamoDBArchive implements Archive {
     }
   }
 
-  private UpdateItemRequest updateRequest(String roomId, List<Message> changesToApply) {
+  private UpdateItemRequest updateRequest(String id, List<Message> changesToApply) {
     return new UpdateItemRequest()
         .withTableName(ExpLeagueServer.config().dynamoDB())
-        .withKey(InternalUtils.toAttributeValueMap(new PrimaryKey("id", roomId)))
+        .withKey(InternalUtils.toAttributeValueMap(new PrimaryKey("id", id)))
         .withUpdateExpression("set #m = list_append(if_not_exists(#m, :empty_list), :i)")
         .withExpressionAttributeNames(new HashMap<String, String>() {{
           put("#m", "messages");
@@ -148,6 +149,10 @@ public class DynamoDBArchive implements Archive {
           emptyList.setL(Collections.emptyList());
           put(":empty_list", emptyList);
         }});
+  }
+
+  private String itemId(String id, int num) {
+    return id + "#" + num;
   }
 
   private FixedSizeCache<String, RoomArchive> dumpsCache = new FixedSizeCache<>(1000, CacheStrategy.Type.LRU);
@@ -187,7 +192,23 @@ public class DynamoDBArchive implements Archive {
       RoomArchive archive = mapper.load(getRoomArchiveClass(), id);
       if (archive == null)
         archive = new RoomArchive(id);
-      archive.handlers(roomAccumulatedChangesDeque, fullRooms);
+
+      for (int i = ROOM_POSTFIX_START; i < Integer.MAX_VALUE; i++) {
+        final String extraItemId = itemId(id, i);
+        final RoomArchive extraArchive = mapper.load(getRoomArchiveClass(), extraItemId);
+        if (extraArchive == null) {
+          final int postfix = i - 1;
+          if (postfix >= ROOM_POSTFIX_START) {
+            roomPostfix.putIfAbsent(id, postfix);
+          }
+          break;
+        }
+        else {
+          archive.setMessages(extraArchive.getMessages());
+        }
+      }
+
+      archive.handlers(roomAccumulatedChangesDeque);
       return archive;
     });
   }
@@ -195,7 +216,7 @@ public class DynamoDBArchive implements Archive {
   @Override
   public synchronized Dump register(String room, String owner) {
     final RoomArchive archive = new RoomArchive(room);
-    archive.handlers(roomAccumulatedChangesDeque, fullRooms);
+    archive.handlers(roomAccumulatedChangesDeque);
     dumpsCache.put(room, archive);
     return archive;
   }
@@ -258,9 +279,7 @@ public class DynamoDBArchive implements Archive {
       if (accumulatedChange.isEmpty())
         return;
 
-      if (!fullRooms.contains(id)) {
-        roomAccumulatedChangesDeque.addAll(accumulatedChange);
-      }
+      roomAccumulatedChangesDeque.addAll(accumulatedChange);
     }
 
     @Override
@@ -288,11 +307,9 @@ public class DynamoDBArchive implements Archive {
     }
 
     private BlockingDeque<Message> roomAccumulatedChangesDeque;
-    private Set<String> fullRooms;
 
-    public void handlers(BlockingDeque<Message> roomAccumulatedChangesQueue, Set<String> fullRooms) {
+    public void handlers(BlockingDeque<Message> roomAccumulatedChangesQueue) {
       this.roomAccumulatedChangesDeque = roomAccumulatedChangesQueue;
-      this.fullRooms = fullRooms;
     }
   }
 

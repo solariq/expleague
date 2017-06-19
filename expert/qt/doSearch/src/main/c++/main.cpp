@@ -17,6 +17,7 @@
 
 #include "expleague.h"
 #include "model/history.h"
+#include "util/crashhandler.h"
 #ifdef CEF
 #include "cef.h"
 #include "model/pages/cefpage.h"
@@ -59,8 +60,8 @@ int main(int argc, char *argv[]) {
         appDir.mkpath("dictionary");
         appDir.mkpath("pages");
     }
-#ifndef DEBUG
-//    Atomix::CrashHandler::instance()->Init(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/crash");
+#ifndef QT_DEBUG
+    Atomix::CrashHandler::instance()->Init(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/crash");
 #endif
     QGuiApplication app(argc, argv);
 //    QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
@@ -70,10 +71,9 @@ int main(int argc, char *argv[]) {
     trayIcon->setIcon(QIcon(":/avatar.png"));
     trayIcon->show();
 #endif
-#ifdef CEF
-    initCef();
-#endif
-
+    #ifdef CEF
+    initCef(argc, argv);
+    #endif
     QQmlApplicationEngine engine;
     //QtWebEngine::initialize();
     rootEngine = &engine;

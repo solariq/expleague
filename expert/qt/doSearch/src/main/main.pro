@@ -25,7 +25,7 @@ VERSION = 0.8.6
 
 #CONFIG += test
 CONFIG += cef
-cef{
+cef {
     DEFINES += CEF
 }else{
     QT += webengine webenginecore
@@ -39,8 +39,6 @@ target.path += ../../bin
 
 TARGET = doSearch
 TEMPLATE = app
-
-LIBS += -lopengl32 -lglu32
 
 macx:QMAKE_LFLAGS_RPATH=
 macx:QMAKE_LFLAGS += -rpath @loader_path/../Frameworks
@@ -85,14 +83,15 @@ SOURCES += \
     c++/util/region.cpp \
     c++/task.cpp \
     c++/imagestore.cpp \
-#    c++/util/crashhandler.cpp \
+    c++/util/crashhandler.cpp \
     c++/util/leveldb.cpp \
     c++/model/uiowner.cpp \
     c++/cef.cpp \
     c++/model/group.cpp \
     c++/model/downloads.cpp \
     c++/qml/tabtreeview.cpp \
-    c++/cef/cookiemanager.cpp
+    c++/cef/cookiemanager.cpp \
+    c++/util/filethrottle.cpp
 
 HEADERS += \
     c++/protocol.h \
@@ -129,7 +128,7 @@ HEADERS += \
     c++/cef/cookieclient.h \
     c++/cef/cookiemanager.h
 
-cef{
+cef {
     SOURCES += c++/model/pages/cefpage.cpp
     HEADERS += c++/model/pages/cefpage.h
 }
@@ -160,6 +159,7 @@ DISTFILES += resources/doSearch.ico \
 DISTFILES += resources/doSearch.icns
 
 win32: LIBS += -lshlwapi
+else:macx:LIBS += -framework AppKit
 
 win32:CONFIG(release, debug|release): LIBS += \
 #    -L$$OUT_PWD/../libs/qxmpp/src/ -lqxmpp \
@@ -203,11 +203,11 @@ else:win32:CONFIG(debug, debug|release): LIBS += \
     -L$$OUT_PWD/../libs/cef_win32/debug -llibcef_dll_wrapper
 }
 
+LIBS += -lopengl32 -lglu32
+
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../libs/peg-markdown-highlight/release/ -lpmh
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../libs/peg-markdown-highlight/debug/ -lpmh
 else:unix: LIBS += -L$$OUT_PWD/../libs/peg-markdown-highlight/ -lpmh
-
-macx:LIBS += -framework AppKit
 
 INCLUDEPATH += \
     $$PWD/../libs/qxmpp/src/client $$PWD/../libs/qxmpp/src/base \
@@ -217,10 +217,9 @@ INCLUDEPATH += \
     $$PWD/../libs/cutemarked \
     $$PWD/../libs/breakpad \
     $$PWD/../libs/breakpad/src \
-    $$PWD/../libs/leveldb/include \
+    $$PWD/../libs/leveldb/include
 
-
-cef{
+cef {
     INCLUDEPATH += $$PWD/../libs/cef_win32
 }
 

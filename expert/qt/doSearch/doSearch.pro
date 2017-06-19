@@ -18,7 +18,6 @@ QXMPP_LIBRARY_TYPE = staticlib
 SUBDIRS = src/libs/qxmpp \
           src/libs/discount \
           src/libs/peg-markdown-highlight \
-          src/libs/fontawesomeicon \
           src/libs/hunspell \
           src/libs/cutemarked \
           src/libs/breakpad \
@@ -26,8 +25,10 @@ SUBDIRS = src/libs/qxmpp \
 win32: SUBDIRS += src/libs/leveldb-win
 else: SUBDIRS += src/libs/leveldb
 
+cef {
+    SUBDIRS += src/libs/cef-exec
+    macx: SUBDIRS += src/libs/cef-mac
+}
+
 SUBDIRS += src/main
 
-cef {
-    SUBDIRS += src/CEF
-}

@@ -13,7 +13,7 @@ protected:
     void removeCefBrowserFromGC();
 };
 
-void initCef();
+void initCef(int i, char *pString[]);
 
 void shutDownCef();
 

@@ -95,9 +95,9 @@ public class Stanza extends Item {
     final int separator = id.lastIndexOf('-');
     if (separator != -1) {
       try {
-        //noinspection ResultOfMethodCallIgnored
-        Long.parseLong(id.substring(separator + 1));
-        return true;
+        final String stringTs = id.substring(separator + 1);
+        final long ts = Long.parseLong(stringTs) * (stringTs.length() > 10 ? 1 : 1000);
+        return ts > 1451606401L * 1000L; //1 January 2016, 00:00:01
       } catch (NumberFormatException e) {
         return false;
       }

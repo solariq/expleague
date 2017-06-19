@@ -201,8 +201,9 @@ QDir Page::storage() const {
     return parent()->pageStorage(id());
 }
 
-Page::Page(const QString& id, const QString& ui, doSearch* parent): PersistentPropertyHolder(parent->pageResource(id)),
-    m_id(id), UIOwner(ui, parent), m_in_total(0), m_out_total(0)
+Page::Page(const QString& id, const QString& ui, doSearch* parent):
+    UIOwner(ui, parent), PersistentPropertyHolder(parent->pageResource(id)),
+    m_id(id), m_in_total(0), m_out_total(0)
 {
     m_last_visit_ts = value("ts").toInt();
 //    qDebug() << id << " restored: " << m_properties;
