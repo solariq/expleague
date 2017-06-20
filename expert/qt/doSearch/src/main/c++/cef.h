@@ -34,7 +34,7 @@ protected:
 
 void initCef(int i, char *pString[]);
 
-void shutDownCef();
+void shutDownCef(std::function<void ()> callback);
 
 }
 

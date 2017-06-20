@@ -571,9 +571,11 @@ void CefItem::destroyBrowser() {
     m_renderer->clearBuffer();
     m_renderer->stop();
     m_listener->setEnable(false);
+    m_listener = nullptr;
     m_browser->GetHost()->CloseBrowser(true);
     m_browser = nullptr;
     m_text_callback->setOwner(nullptr);
+    m_text_callback = nullptr;
   }
 }
 

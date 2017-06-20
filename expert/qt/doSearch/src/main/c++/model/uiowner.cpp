@@ -18,9 +18,7 @@ void UIOwner::clear() {
     m_ui->deleteLater();
     m_ui = nullptr;
     for(auto child: m_children){
-        if(child && child->property("owner").value<UIOwner*>()){
-            child->clear();
-        }
+        child->clear();
     }
     //emit uiChanged();
 }
@@ -106,21 +104,21 @@ UIOwner* UIOwner::parent() {
 void UIOwner::updateConnections() {
     m_children.clear();
     if(m_ui ){
-            collectChildren(m_ui, this, m_children);
+        collectChildren(m_ui, this, m_children);
     }
 }
 
-void collectChildren(QQuickItem*item, UIOwner* root, QList<UIOwner*>& children){
-    QQmlContext* context = QQmlEngine::contextForObject( item);
-    if(!context){
-        return;
-    }
-    UIOwner*owner= context->contextProperty("owner").value<UIOwner*>();
-    if(owner && (owner != root)){
-        children.append(owner);
-        return;
-    }
+void collectChildren(QQuickItem* item, UIOwner* root, QList<UIOwner*>& children){
     for(auto child: item->childItems()) {
+        QQmlContext* context = QQmlEngine::contextForObject(child);
+        if(!context){
+            continue;
+        }
+        UIOwner* owner = context->contextProperty("owner").value<UIOwner*>();
+        if(owner && owner != root){
+            children.append(owner);
+            continue;
+        }
         collectChildren(child, root, children);
     }
 }

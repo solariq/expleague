@@ -94,9 +94,14 @@ int main(int argc, char *argv[]) {
     engine.load(QUrl(QStringLiteral("qrc:/Main.qml")));
     if (engine.rootObjects().isEmpty())
         return -1;
-    int ret = app.exec();
-    shutDownCef();
-    return ret;
+
+    app.setQuitOnLastWindowClosed(false);
+    QObject::connect(&app, &QGuiApplication::lastWindowClosed, []{
+        shutDownCef([](){
+            QCoreApplication::quit();
+        });
+    });
+    return app.exec();
 }
 
 void setupScreenDefaults() {

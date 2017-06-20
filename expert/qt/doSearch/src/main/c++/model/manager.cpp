@@ -167,15 +167,15 @@ void NavigationManager::movePage(Page *page, PagesGroup *target, int index){
     target->insert(page, index);
     source->setParentGroup(target);
 
-    popTo(target, false);
-    unfold();
-
     if(pageSelected){
         target->selectPage(page);
         if(groupSelected){
             target->setSelected(true);
         }
     }
+
+    popTo(target, false);
+    unfold();
     emit groupsChanged();
 }
 

@@ -173,7 +173,9 @@ void initCef(int argc, char *argv[]) {
 //    IMPLEMENT_REFCOUNTING(FlushCallBack)
 //};
 
-void shutDownCef(){
+QTimer* shutDownTimer;
+
+void shutDownCef(std::function<void()> callback){
     GCStorageBusy = true;
     for(Browser* browser: GCStorage){
         browser->shutDown();
@@ -182,11 +184,19 @@ void shutDownCef(){
     for(Browser* browser: GCDestroyed){
         GCStorage.remove(browser);
     }
-    while(!GCStorage.empty()){
-        CefDoMessageLoopWork();
-    }
-    CefShutdown();
-    if(cefTimer) delete cefTimer;
+    shutDownTimer = new QTimer();
+    shutDownTimer->setInterval(0);
+    QObject::connect(shutDownTimer, &QTimer::timeout, [callback](){
+      if(GCStorage.empty()){
+          CefShutdown();
+          callback();
+          cefTimer->stop();
+          shutDownTimer->stop();
+          cefTimer->deleteLater();
+          shutDownTimer->deleteLater();
+      }
+    });
+    shutDownTimer->start();
 }
 
 }
