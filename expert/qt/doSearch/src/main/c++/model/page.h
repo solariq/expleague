@@ -128,7 +128,7 @@ signals:
     void changingProfile(const BoW& oldOne, const BoW& newOne) const;
 
 public:
-    BoW profile() const { return m_profile; }
+    virtual BoW profile() const { return m_profile; }
 
     void processTextContentWhenAvailable(std::function<void (const QString&)> callback) const;
     void processProfileWhenAvailable(std::function<void (const BoW&)> callback) const;

@@ -124,6 +124,8 @@ target_include_directories(doSearch PRIVATE
   ../libs/leveldb/include
 )
 
+target_include_directories(doSearch PRIVATE ${Qt5Quick_PRIVATE_INCLUDE_DIRS})
+
 #set_target_properties(doSearch PROPERTIES PREFIX com.expleague.)
 
 target_link_libraries(doSearch

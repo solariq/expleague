@@ -736,38 +736,39 @@ int getWinVirtualKeyCodeFromUtf16Char(char16 c){
 }
 
 
-bool IOBuffer::keyPress(int key, Qt::KeyboardModifiers modifiers, const QString& tex, bool autoRepeat, ushort count) {
-    if(!m_browser){
+bool IOBuffer::keyPress(QKeyEvent* event) {
+    if (!m_browser){
         return false;
     }
-    m_key_flags |= getFlagFromKey(key);
+    m_browser->GetHost()->SendKeyEvent(CefEventFactory::createPressEvent(event));
 
-    QKeyEvent event(QKeyEvent::KeyPress, key, modifiers, tex, autoRepeat, count);
-    m_browser->GetHost()->SendKeyEvent(CefEventFactory::createPressEvent(&event));
-
-    if(tex.length() > 0){
-        m_browser->GetHost()->SendKeyEvent(CefEventFactory::createCharEvent(&event));
+    if (!event->text().isEmpty()){
+        m_browser->GetHost()->SendKeyEvent(CefEventFactory::createCharEvent(event));
     }
     return true;
 }
 
-bool IOBuffer::keyRelease(int key, Qt::KeyboardModifiers modifiers, const QString& tex, bool autoRepeat, ushort count) {
+bool IOBuffer::keyRelease(QKeyEvent* event) {
     if(!m_browser){
         return false;
     }
-    QKeyEvent event(QKeyEvent::KeyRelease, key, modifiers, tex, autoRepeat, count);
-    m_browser->GetHost()->SendKeyEvent(CefEventFactory::createReleaseEvent(&event));
+    m_browser->GetHost()->SendKeyEvent(CefEventFactory::createReleaseEvent(event));
     return true;
 }
 
-bool
-CefItem::sendKeyPress(int key, Qt::KeyboardModifiers modifiers, const QString &tex, bool autoRepeat, ushort count) {
-  return m_iobuffer.keyPress(key, modifiers, tex, autoRepeat, count);
+class QOpenQuickEvent: public QObject {
+public:
+  QKeyEvent event;
+};
+
+bool CefItem::sendKeyPress(QObject* qKeyEvent) {
+  QOpenQuickEvent *event2 = static_cast<QOpenQuickEvent*>((void*)qKeyEvent);
+  return m_iobuffer.keyPress(&event2->event);
 }
 
-bool
-CefItem::sendKeyRelease(int key, Qt::KeyboardModifiers modifiers, const QString &tex, bool autoRepeat, ushort count) {
-  return m_iobuffer.keyRelease(key, modifiers, tex, autoRepeat, count);
+bool CefItem::sendKeyRelease(QObject* qKeyEvent) {
+  QOpenQuickEvent *event2 = static_cast<QOpenQuickEvent*>((void*)qKeyEvent);
+  return m_iobuffer.keyRelease(&event2->event);
 }
 
 CefMouseEvent createMouseEvent(double x, double y) {

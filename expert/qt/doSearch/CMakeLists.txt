@@ -42,8 +42,15 @@ endif()
 
 
 if(CEF)
+#  include(ExternalProject)
   add_subdirectory(src/libs/cef-exec)
   if(OS_MACOSX)
+#    ExternalProject_Add(
+#      cef-mac
+#      URL https://cefbuilds.s3.amazonaws.com/2272/win/41.0.2272.76/cef_binary_3.2272.2077_windows32.7z
+#      PREFIX ${CMAKE_SOURCE_DIR}/src/libs/cef-mac
+#      INSTALL_COMMAND ""
+#    )
     add_subdirectory(src/libs/cef-mac)
   elseif(OS_WINDOWS)
     add_subdirectory(src/libs/cef-win)
