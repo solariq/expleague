@@ -35,7 +35,7 @@ IMPLEMENT_REFCOUNTING(MyApp)
 };
 
 int main(int argc, char *argv[]) {
-  #ifdef Q_OS_MAC
+  #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
   CefMainArgs main_args(argc, argv);
   #else
   CefMainArgs main_args(GetModuleHandle(NULL));

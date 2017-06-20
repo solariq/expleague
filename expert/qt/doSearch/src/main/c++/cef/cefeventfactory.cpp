@@ -3,7 +3,7 @@
 #include "cefeventfactory.h"
 #include "windowskeyboardcodes.h"
 
-static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad)
+static int windowsKeyCodeForKeyEvent(int keycode, bool isKeypad)
 {
     // Determine wheter the event comes from the keypad
     if (isKeypad) {
@@ -494,7 +494,7 @@ CefKeyEvent CefEventFactory::createPressEvent(QKeyEvent *ev){
     event.type = KEYEVENT_KEYDOWN;
     event.modifiers = modifiersForEvent(ev);
     event.native_key_code = ev->nativeVirtualKey();
-    event.windows_key_code = windowsKeyCodeForKeyEvent(ev->key(), ev->modifiers() & Qt::KeypadModifier);
+    event.windows_key_code = windowsKeyCodeForKeyEvent(ev->key(), (ev->modifiers() & Qt::KeypadModifier) != 0);
     return event;
 }
 
@@ -503,7 +503,7 @@ CefKeyEvent CefEventFactory::createReleaseEvent(QKeyEvent *ev){
     event.type = KEYEVENT_KEYUP;
     event.modifiers = modifiersForEvent(ev);
     event.native_key_code = ev->nativeVirtualKey();
-    event.windows_key_code = windowsKeyCodeForKeyEvent(ev->key(), ev->modifiers() & Qt::KeypadModifier);
+    event.windows_key_code = windowsKeyCodeForKeyEvent(ev->key(), (ev->modifiers() & Qt::KeypadModifier) != 0);
     return event;
 }
 
@@ -514,7 +514,11 @@ CefKeyEvent CefEventFactory::createCharEvent(QKeyEvent *ev){
     event.modifiers = modifiersForEvent(ev);
     event.native_key_code = ev->nativeVirtualKey();
     event.character = ev->text().utf16()[0];
+#ifdef Q_OS_WIN
     event.windows_key_code = event.character;
+#else
+    event.windows_key_code = windowsKeyCodeForKeyEvent(ev->key(), (ev->modifiers() & Qt::KeypadModifier) != 0);
+#endif
     return event;
 }
 

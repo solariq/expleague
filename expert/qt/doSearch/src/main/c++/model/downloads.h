@@ -7,7 +7,7 @@
 #include <QNetworkReply>
 
 
-class Download: public QObject{
+class Download: public QObject {
     Q_OBJECT
 public:
     enum Status{
@@ -61,7 +61,7 @@ private:
     QString m_file_name;
     QString m_path;
     QUrl m_url;
-    QNetworkAccessManager m_network;
+    QNetworkAccessManager* m_network;
     QNetworkReply* m_reply;
     QFile m_file;
     Status m_status;

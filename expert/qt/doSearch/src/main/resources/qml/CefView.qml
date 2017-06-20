@@ -122,11 +122,11 @@ Rectangle{
     }
 
     Keys.onPressed: {
-        event.accepted = webView.sendKeyPress(event.key, event.modifiers, event.text, event.autoRepeat, event.count)
+        event.accepted = webView.sendKeyPress(event)
     }
 
     Keys.onReleased: {
-        event.accepted = webView.sendKeyRelease(event.key, event.modifiers, event.text, event.autoRepeat, event.count)
+        event.accepted = webView.sendKeyRelease(event)
     }
 
     onActiveFocusChanged: {

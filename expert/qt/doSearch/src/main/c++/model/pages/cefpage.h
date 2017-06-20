@@ -138,9 +138,9 @@ public:
 
   void mouseWheel(int x, int y, int buttons, QPoint angle);
 
-  bool keyPress(int key, Qt::KeyboardModifiers modifiers, const QString &tex, bool autoRepeat, ushort count);
+  bool keyPress(QKeyEvent* event);
 
-  bool keyRelease(int key, Qt::KeyboardModifiers modifiers, const QString &tex, bool autoRepeat, ushort count);
+  bool keyRelease(QKeyEvent* event);
 
 private:
   CefRefPtr<CefBrowser> m_browser;
@@ -195,10 +195,10 @@ public:
   Q_INVOKABLE void redirectEnable(bool redirect);
 
   Q_INVOKABLE bool
-  sendKeyPress(int key, Qt::KeyboardModifiers modifiers, const QString &tex, bool autoRepeat, ushort count);
+  sendKeyPress(QObject* qKeyEvent);
 
   Q_INVOKABLE bool
-  sendKeyRelease(int key, Qt::KeyboardModifiers modifiers, const QString &tex, bool autoRepeat, ushort count);
+  sendKeyRelease(QObject* qKeyEvent);
 
   Q_INVOKABLE void setBrowserFocus(bool focus);
 
