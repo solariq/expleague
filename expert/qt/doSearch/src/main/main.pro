@@ -90,8 +90,8 @@ SOURCES += \
     c++/model/group.cpp \
     c++/model/downloads.cpp \
     c++/qml/tabtreeview.cpp \
-    c++/cef/cookiemanager.cpp \
-    c++/util/filethrottle.cpp
+    c++/util/filethrottle.cpp \
+    c++/cef/cefeventfactory.cpp
 
 HEADERS += \
     c++/protocol.h \
@@ -125,8 +125,7 @@ HEADERS += \
     c++/cef.h \
     c++/model/downloads.h \
     c++/qml/tabtreeview.h \
-    c++/cef/cookieclient.h \
-    c++/cef/cookiemanager.h
+    c++/cef/cefeventfactory.h
 
 cef {
     SOURCES += c++/model/pages/cefpage.cpp

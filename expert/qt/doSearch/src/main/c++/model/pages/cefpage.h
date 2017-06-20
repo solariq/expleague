@@ -3,7 +3,8 @@
 
 #include "../page.h"
 #include "../../cef.h"
-#include "../../cef/cookieclient.h"
+#include "../../cef/cefeventfactory.h"
+
 
 #include <QQuickFramebufferObject>
 #include <QTimer>
@@ -96,7 +97,7 @@ public:
                        const RectList &dirtyRects, const void *buffer,
                        int width, int height) OVERRIDE;
 
-  #ifdef Q_OS_WINDOWS
+  #ifdef Q_OS_WIN
   virtual void OnCursorChange(CefRefPtr<CefBrowser> browser, HCURSOR cursor, CursorType type, const CefCursorInfo &custom_cursor_info) OVERRIDE;
   #elif defined(Q_OS_MAC)
   virtual void OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor, CursorType type, const CefCursorInfo &custom_cursor_info)  OVERRIDE;
@@ -141,6 +142,11 @@ public:
 
   bool keyRelease(int key, Qt::KeyboardModifiers modifiers, const QString &tex, bool autoRepeat, ushort count);
 
+//  virtual bool OnPreKeyEvent(CefRefPtr<CefBrowser> browser,  const CefKeyEvent& event,
+//                             CefEventHandle os_event, bool* is_keyboard_shortcut);
+
+//  virtual bool OnKeyEvent(CefRefPtr<CefBrowser> browser, const CefKeyEvent& event,
+//                          CefEventHandle os_event);
 private:
   CefRefPtr<CefBrowser> m_browser;
   uint32 m_key_flags = EVENTFLAG_NONE;
@@ -398,12 +404,6 @@ public:
 
   virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) OVERRIDE;
 
-//    virtual bool OnKeyEvent(CefRefPtr<CefBrowser> browser, const CefKeyEvent &event, MSG *os_event){
-//        qDebug() << "key Event" << m_owner->url() << "native_key_code" << event.native_key_code <<
-//                    "windows_key_code" << event.windows_key_code << "character" << event.character <<
-//                    "unmodified_character" << event.unmodified_character;
-//        return false;
-//    }
 
   virtual void OnLoadStart(CefRefPtr<CefBrowser> browser,
                            CefRefPtr<CefFrame> frame,

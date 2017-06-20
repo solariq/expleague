@@ -1,7 +1,6 @@
 #include "cefpage.h"
 
 #include "include/wrapper/cef_helpers.h"
-//#include <QtQuick/private/qquickdroparea_p.h>
 #include <QtOpenGL>
 #include <QQuickWindow>
 #include <QQmlEngine>
@@ -265,7 +264,7 @@ Qt::CursorShape toQCursor(CefPageRenderer::CursorType type) {
   }
 }
 
-#ifdef Q_OS_WINDOWS
+#ifdef Q_OS_WIN
 void CefPageRenderer::OnCursorChange(CefRefPtr<CefBrowser> browser, HCURSOR cursor,
                                      CursorType type, const CefCursorInfo &custom_cursor_info)
 {
@@ -718,45 +717,6 @@ void IOBuffer::mouseWheel(int x, int y, int buttons, QPoint angle) {
   }
 }
 
-int toWindows(int key) {
-  switch (key) {
-    case 16777234:
-      return 0x25; //Left arrow
-    case 16777235:
-      return 0x26; //Up arrow
-    case 16777236:
-      return 0x27; //Right arrow
-    case 16777237:
-      return 0x28; //Down arrow
-    case 16777217:
-      return 0x09; //Tab
-    case 16777216:
-      return 0x1B; //Esc
-    case 16777249:
-      return 0x11; //Ctrl key
-    case 16777223:
-      return 0x2E; //Delete
-    case 16777222:
-      return 0x2D; //Insert
-    case 16777232:
-      return 0x24; //Home
-    case 16777238:
-      return 0x21; //Page Up
-    case 16777239:
-      return 0x22; //Page Down
-    case 16777251:
-      return 0x12; //alt
-    case 16777250:
-      return 0x26; //win
-    case 16777233:
-      return 0x23; //end
-    case 16777219:
-      return 0x08; //backspace
-    default:
-      return 0;
-  }
-}
-
 cef_event_flags_t getFlagFromKey(int key) {
   switch (key) {
     case 16777249:
@@ -781,50 +741,22 @@ bool IOBuffer::keyPress(int key, Qt::KeyboardModifiers modifiers, const QString&
         return false;
     }
     m_key_flags |= getFlagFromKey(key);
-    qDebug() << "keyFlas" << m_key_flags;
 
-    CefKeyEvent charEvent;
-    charEvent.type = KEYEVENT_CHAR;
-    charEvent.modifiers = 0;
-    charEvent.is_system_key = 0;
-    CefKeyEvent pressEvent;
-    pressEvent.type = KEYEVENT_KEYDOWN;
-    pressEvent.modifiers = 0;
-    pressEvent.is_system_key = 0;
+    QKeyEvent event(QKeyEvent::KeyPress, key, modifiers, tex, autoRepeat, count);
+    m_browser->GetHost()->SendKeyEvent(CefEventFactory::createPressEvent(&event));
 
     if(tex.length() > 0){
-        int c = tex.utf16()[0];
-        charEvent.windows_key_code = c;
-        pressEvent.windows_key_code = getWinVirtualKeyCodeFromUtf16Char(c);
-        qDebug() << "key pressed !" << key << tex << c;
-        m_browser->GetHost()->SendKeyEvent(pressEvent);
-        m_browser->GetHost()->SendKeyEvent(charEvent);
-        return true;
+        m_browser->GetHost()->SendKeyEvent(CefEventFactory::createCharEvent(&event));
     }
-    return false;
+    return true;
 }
 
 bool IOBuffer::keyRelease(int key, Qt::KeyboardModifiers modifiers, const QString& tex, bool autoRepeat, ushort count) {
     if(!m_browser){
         return false;
     }
-    m_key_flags &= ~getFlagFromKey(key);
-    qDebug() << "keyFlas" << m_key_flags;
-
-    int wkey = toWindows(key);
-    if(!wkey && tex.length() > 0){
-        wkey = getWinVirtualKeyCodeFromUtf16Char(tex.utf16()[0]);
-    }
-    if(!wkey){
-        return false;
-    }
-    //qDebug() << "key released" << key << tex << wkey;
-    CefKeyEvent keyEvent;
-    keyEvent.modifiers = 0;
-    keyEvent.is_system_key = 0;
-    keyEvent.type = KEYEVENT_KEYUP;
-    keyEvent.windows_key_code = wkey;
-    m_browser->GetHost()->SendKeyEvent(keyEvent);
+    QKeyEvent event(QKeyEvent::KeyRelease, key, modifiers, tex, autoRepeat, count);
+    m_browser->GetHost()->SendKeyEvent(CefEventFactory::createReleaseEvent(&event));
     return true;
 }
 
@@ -1011,7 +943,7 @@ void CefItem::loadHtml(const QString &html) {
   }
   m_html = html;
   if (m_running && m_browser) {
-#ifdef Q_OS_WINDOWS
+#ifdef Q_OS_WIN
     m_browser->GetMainFrame()->LoadStringW(m_html.toStdString(), "about:blank");
 #elif defined(Q_OS_MAC)
     m_browser->GetMainFrame()->LoadString(m_html.toStdString(), "about:blank");
