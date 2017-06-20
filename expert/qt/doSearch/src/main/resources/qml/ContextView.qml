@@ -23,6 +23,7 @@ Rectangle {
         var text = owner.title
         if (activeFocus && (text == "" || text == qsTr("Новый контекст"))) {
             contextName.forceActiveFocus()
+            return
         }
     }
 

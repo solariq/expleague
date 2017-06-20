@@ -128,10 +128,8 @@ Rectangle{
     Keys.onReleased: {
         event.accepted = webView.sendKeyRelease(event.key, event.modifiers, event.text, event.autoRepeat, event.count)
     }
-    FocusScope{
-        anchors.fill: parent
-        onActiveFocusChanged: {
-            webView.setBrowserFocus(activeFocus)
-        }
+
+    onActiveFocusChanged: {
+        webView.setBrowserFocus(activeFocus)
     }
 }

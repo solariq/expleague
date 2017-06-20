@@ -9,7 +9,8 @@ import ExpLeague 1.0
 import "."
 
 Item {
-    focus: true
+//    focus: true
+    visible: false
     id: self
     property Item selectedSerp: owner.serps[owner.selected].ui
     //property WebEngineView webView: owner.serps[owner.selected].ui.webView
@@ -67,6 +68,11 @@ Item {
     }
     onActiveFocusChanged: {
         if(activeFocus){
+            selectedSerp.forceActiveFocus()
+        }
+    }
+    onVisibleChanged: {
+        if(visible){
             selectedSerp.forceActiveFocus()
         }
     }

@@ -14,8 +14,15 @@ import "."
 
 ApplicationWindow {
     id: self
-    //onActiveFocusItemChanged: console.log("active focus changed on", activeFocusItem)
-
+    onActiveFocusItemChanged: {
+        var item = activeFocusItem
+        console.log("active focus changed on")
+        while(item){
+            console.log("---",item)
+            item = item.parent
+        }
+        console.log("---------------")
+    }
     property QtObject activeDialog
     property alias omnibox: omnibox
     //property alias webProfileRef: webProfile
@@ -40,6 +47,7 @@ ApplicationWindow {
 //        return 134279169
 //    }
 
+
     WindowStateSaver {
         window: self
         id: mainPageSettings
@@ -48,7 +56,7 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        root.main = self
+        root.main = self;
     }
 
     visible: true
@@ -491,6 +499,11 @@ ApplicationWindow {
                             objectName: "activeScreenHolder"
                             anchors.fill: parent
                             z: 5
+//                            onChildrenChanged: {
+//                                if(!children.length > 0){
+//                                    children[0].forceActiveFocus()
+//                                }
+//                            }
 
                         }
                         Rectangle {

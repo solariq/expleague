@@ -126,7 +126,7 @@ private:
   std::function<void(const void *buffer, int w, int h)> m_next_frame_func;
 };
 
-class IOBuffer {
+class IOBuffer{
 public:
   void setBrowser(CefRefPtr<CefBrowser> browser);
 
@@ -142,11 +142,6 @@ public:
 
   bool keyRelease(int key, Qt::KeyboardModifiers modifiers, const QString &tex, bool autoRepeat, ushort count);
 
-//  virtual bool OnPreKeyEvent(CefRefPtr<CefBrowser> browser,  const CefKeyEvent& event,
-//                             CefEventHandle os_event, bool* is_keyboard_shortcut);
-
-//  virtual bool OnKeyEvent(CefRefPtr<CefBrowser> browser, const CefKeyEvent& event,
-//                          CefEventHandle os_event);
 private:
   CefRefPtr<CefBrowser> m_browser;
   uint32 m_key_flags = EVENTFLAG_NONE;

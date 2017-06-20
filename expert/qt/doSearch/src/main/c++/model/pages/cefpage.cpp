@@ -760,6 +760,18 @@ bool IOBuffer::keyRelease(int key, Qt::KeyboardModifiers modifiers, const QStrin
     return true;
 }
 
+
+//cef_key_event_t ev;
+//bool IOBuffer::OnPreKeyEvent(CefRefPtr<CefBrowser> browser,  const CefKeyEvent& event,
+//                           CefEventHandle os_event, bool* is_keyboard_shortcut){
+//    qDebug() << "OnPreKeyEvent windows" << event.windows_key_code << event.modifiers << event.type << event.character;
+//    return false;
+//}
+
+//bool IOBuffer::OnKeyEvent(CefRefPtr<CefBrowser> browser, const CefKeyEvent& event, CefEventHandle os_event){
+//    return false;
+//}
+
 bool
 CefItem::sendKeyPress(int key, Qt::KeyboardModifiers modifiers, const QString &tex, bool autoRepeat, ushort count) {
   return m_iobuffer.keyPress(key, modifiers, tex, autoRepeat, count);
@@ -1012,6 +1024,19 @@ void CefItem::setZoomFactor(double zoomFactor) {
 QUrl CefItem::url() const {
   return m_url;
 }
+
+//QString parseURL(const QUrl &url){
+//    if(url.host.contains("google.")){
+//        QUrlQuery qurey(url);
+//        QString qureyUrl = qurey.queryItemValue("url");
+//        return qureyUrl == "" ? url.toString() : qureyUrl;
+//    }
+//    if(url.host.contains("yandex.")){
+//        QUrlQuery qurey(url);
+//        QString qureyUrl = qurey.queryItemValue("url");
+//        return qureyUrl == "" ? url.toString() : qureyUrl;
+//    }
+//}
 
 void CefItem::setUrl(const QUrl &url) {
   //qDebug() << "set url" << url;

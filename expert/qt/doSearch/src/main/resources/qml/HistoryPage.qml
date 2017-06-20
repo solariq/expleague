@@ -85,7 +85,7 @@ Item {
         section.labelPositioning: ViewSection.CurrentLabelAtStart
         section.criteria: ViewSection.FullString
         delegate: pageDelegate
-        focus: true
+        //focus: true
         clip: true
     }
 

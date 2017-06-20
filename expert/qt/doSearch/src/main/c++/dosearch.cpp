@@ -197,9 +197,9 @@ Page* doSearch::page(const QString &id) const {
             return new WebPage(id, parent);
         else if (id.startsWith("search/session"))
             return new SearchSession(id, parent);
-        else if (id.startsWith("search/") && id.endsWith("/google"))
+        else if (id.startsWith("search/") && id.endsWith("/google") && id.size() > 14)
             return new GoogleSERPage(id, parent);
-        else if (id.startsWith("search/") && id.endsWith("/yandex"))
+        else if (id.startsWith("search/") && id.endsWith("/yandex") && id.size() > 14)
             return new YandexSERPage(id, parent);
         else if (id.startsWith("search/"))
             return new SearchRequest(id, parent);
