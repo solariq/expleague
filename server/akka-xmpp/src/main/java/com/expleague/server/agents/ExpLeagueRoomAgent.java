@@ -251,14 +251,14 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       answer(msg);
       tellGlobal(new RoomMessageReceived(from, true));
 
-      final String[] currentOrder = new String[1];
       inflightOrders().forEach(order->{
         if (order.state() != OrderState.DONE && (order.id().equals(answer.order()) || answer.order() == null)) {
           order.state(OrderState.DONE, currentTime);
-          currentOrder[0] = order.id();
         }
       });
-      answer.order(currentOrder[0]);
+      if (answer.order() == null && orders.size() > 0) {
+        answer.order(orders.get(orders.size() - 1).id());
+      }
       message(new Message(jid(), RepositoryService.jid(), currentOffer, answer));
     }
     else if (msg.has(Verified.class)) {
