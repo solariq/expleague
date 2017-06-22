@@ -29,7 +29,7 @@ Item {
         drag.target: tab
         propagateComposedEvents: true
         onClicked: {
-            dosearch.navigation.context.printTree(dosearch.navigation.context, 0, 10)
+            //dosearch.navigation.context.printTree(dosearch.navigation.context, 0, 10)
             dosearch.navigation.select(group, modelData)
         }
 

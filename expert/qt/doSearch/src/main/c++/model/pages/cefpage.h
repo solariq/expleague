@@ -8,6 +8,7 @@
 
 #include <QQuickFramebufferObject>
 #include <QTimer>
+#include <QtCore>
 #include <QtOpenGL>
 #include <mutex>
 
@@ -126,7 +127,7 @@ private:
   std::function<void(const void *buffer, int w, int h)> m_next_frame_func;
 };
 
-class IOBuffer{
+class IOBuffer: public CefKeyboardHandler{
 public:
   void setBrowser(CefRefPtr<CefBrowser> browser);
 
@@ -142,6 +143,23 @@ public:
 
   bool keyRelease(QKeyEvent* event);
 
+  virtual bool OnPreKeyEvent(CefRefPtr<CefBrowser> browser,
+                             const CefKeyEvent& event,
+                             CefEventHandle os_event,
+                             bool* is_keyboard_shortcut) {
+      qDebug() << "OnPreKeyEvent" << event.windows_key_code << event.type;
+      //*is_keyboard_shortcut = true;
+      return false;
+  }
+
+  virtual bool OnKeyEvent(CefRefPtr<CefBrowser> browser,
+                          const CefKeyEvent& event,
+                          CefEventHandle os_event) {
+      qDebug() << "OnKeyEvent" << event.windows_key_code << event.type;
+      return false;
+  }
+
+  IMPLEMENT_REFCOUNTING(IOBuffer)
 private:
   CefRefPtr<CefBrowser> m_browser;
   uint32 m_key_flags = EVENTFLAG_NONE;
@@ -179,6 +197,8 @@ Q_OBJECT
                      cookiesEnable
                      WRITE
                      setCookiesEnable)
+
+    Q_PROPERTY(bool mute READ mute WRITE setMute)
 public:
   CefItem(QQuickItem *parent = 0);
 
@@ -263,7 +283,7 @@ private:
   CefRefPtr<BrowserListener> m_listener;
   CefRefPtr<CefBrowser> m_browser = nullptr;
   CefRefPtr<TextCallback> m_text_callback;
-  IOBuffer m_iobuffer;
+  CefRefPtr<IOBuffer> m_iobuffer;
   QTimer *m_timer;
 
   int m_current_search_id = 0;
@@ -276,6 +296,7 @@ private:
     bool m_fullscreen;
     bool m_running = true;
     bool m_cookies_enable = true;
+    bool m_mute;
     //property methods
 public:
   QUrl url() const;
@@ -299,6 +320,10 @@ public:
   void setCookiesEnable(bool cookies);
 
   QSize pageSize();
+
+  bool mute();
+
+  void setMute(bool);
 
 signals:
 
@@ -337,10 +362,23 @@ private slots:
   void updateVisible();
 
 private:
+  void setJSMute(bool);
   void destroyBrowser();
 
   friend class BrowserListener;
 };
+
+//class ContextMenuModel: QObject{
+//public:
+//    ContextMenuModel(CefRefPtr<CefMenuModel> model);
+//    Q_PROPERTY(QQmlListProperty<QString> options READ options)
+//    Q_INVOKABLE void select(int number);
+//    Q_INVOKABLE void cancle();
+//private:
+//    QList<QString> m_options;
+//    CefRefPtr<CefRunContextMenuCallback> m_callback;
+//    QMap<int, int> m_option_ids;
+//};
 
 class TextCallback : public CefStringVisitor {
 public:
@@ -396,6 +434,14 @@ public:
   virtual bool OnContextMenuCommand(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                                     CefRefPtr<CefContextMenuParams> params, int command_id,
                                     EventFlags event_flags) OVERRIDE;
+
+  virtual bool RunContextMenu(CefRefPtr<CefBrowser> browser,
+                              CefRefPtr<CefFrame> frame,
+                              CefRefPtr<CefContextMenuParams> params,
+                              CefRefPtr<CefMenuModel> model,
+                              CefRefPtr<CefRunContextMenuCallback> callback) {
+    return false;
+  }
 
   virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) OVERRIDE;
 

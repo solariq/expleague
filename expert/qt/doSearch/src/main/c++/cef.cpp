@@ -23,6 +23,7 @@
 #include <QSet>
 #include <QStandardPaths>
 
+#include <chrono>
 
 namespace expleague {
 
@@ -157,10 +158,21 @@ void initCef(int argc, char *argv[]) {
     CefRegisterSchemeHandlerFactory("qrc", "", new SchemeFactory());
 
     cefTimer = new QTimer();
-    cefTimer->setInterval(0);
+    cefTimer->setInterval(1);
     cefTimer->setSingleShot(false);
     QObject::connect(cefTimer, &QTimer::timeout, [](){
-      CefDoMessageLoopWork();
+        auto start = std::chrono::high_resolution_clock::now();
+        CefDoMessageLoopWork();
+        auto finish = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<_int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start);
+        int interval = cefTimer->interval();
+        if(dif.count() < 10000){
+            if(interval < 100){
+                cefTimer->setInterval(cefTimer->interval());
+            }
+        }else if(dif.count() > 100000 && cefTimer->interval() > 0){
+            cefTimer->setInterval(interval == 1 ? 1 : interval/2);
+        }
     });
     cefTimer->start();
 }

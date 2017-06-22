@@ -345,11 +345,8 @@ Rectangle{
             }
             return
         }
-        else if(!!(event.modifiers & Qt.ControlModifier) || event.key == Qt.Key_Control){
-            webView.sendKeyPress(event.key, event.modifiers, event.text, event.autoRepeat, event.count)
-            return
-        }
-        event.accepted = webView.sendKeyPress(event.key, event.modifiers, event.text, event.autoRepeat, event.count)
+        event.accepted = webView.sendKeyPress(event)
+        //event.accepted = webView.sendKeyPress(event.key, event.modifiers, event.text, event.autoRepeat, event.count)
     }
 
     Keys.onReleased: {
@@ -362,11 +359,7 @@ Rectangle{
             event.accepted = true
             return
         }
-        if(!!(event.modifiers & Qt.ControlModifier) || event.key == Qt.Key_Control){
-            webView.sendKeyRelease(event.key, event.modifiers, event.text, event.autoRepeat, event.count)
-            return
-        }
-        event.accepted = webView.sendKeyRelease(event.key, event.modifiers, event.text, event.autoRepeat, event.count)
+        event.accepted = webView.sendKeyRelease(event)
     }
     onVisibleChanged: {
         if(visible){

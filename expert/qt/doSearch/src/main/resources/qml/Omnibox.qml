@@ -142,8 +142,8 @@ Item {
 //                    self.visible = false
 //                    if (completion)
 //                        completion.visible = false
-                    navigation.activeScreen.forceActiveFocus()
                     event.accepted = true
+                    navigation.activeScreen.forceActiveFocus()
                 }
             }
             Connections {
