@@ -167,7 +167,8 @@ Item {
             if (!!webView) {
                 webView.paste()
             }
-            else if (!!editor) {
+            else
+            if (!!editor) {
                 if (!!editor['pasteMD'])
                     editor.pasteMD()
                 else

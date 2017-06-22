@@ -122,10 +122,12 @@ Rectangle{
     }
 
     Keys.onPressed: {
+        console.log("pressEvent")
         event.accepted = webView.sendKeyPress(event)
     }
 
     Keys.onReleased: {
+        console.log("releaseEvent")
         event.accepted = webView.sendKeyRelease(event)
     }
 

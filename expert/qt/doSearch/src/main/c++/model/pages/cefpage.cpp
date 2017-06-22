@@ -773,6 +773,9 @@ bool IOBuffer::keyPress(QKeyEvent* event) {
     if (!m_browser){
         return false;
     }
+    m_pressed_keys.insert(event->key());
+    qDebug() << "keyPressEvent" << "key:" << event->key() << "modifires" << event->modifiers();
+
     m_browser->GetHost()->SendKeyEvent(CefEventFactory::createPressEvent(event));
 
     if (!event->text().isEmpty()){
@@ -785,6 +788,12 @@ bool IOBuffer::keyRelease(QKeyEvent* event) {
     if(!m_browser){
         return false;
     }
+    if(!m_pressed_keys.contains(event->key())){
+        m_browser->GetHost()->SendKeyEvent(CefEventFactory::createPressEvent(event)); //qml sometimes gives only release events
+    }else{
+        m_pressed_keys.remove(event->key());
+    }
+    //qDebug() << "keyReleaseEvent" << "key:" << event->key() << "modifires" << event->modifiers();
     m_browser->GetHost()->SendKeyEvent(CefEventFactory::createReleaseEvent(event));
     return true;
 }
@@ -801,7 +810,6 @@ bool CefItem::sendKeyPress(QObject* qKeyEvent) {
     }
     QOpenQuickEvent *event2 = static_cast<QOpenQuickEvent*>((void*)qKeyEvent);
     return m_iobuffer->keyPress(&event2->event);
-
 }
 
 bool CefItem::sendKeyRelease(QObject* qKeyEvent) {

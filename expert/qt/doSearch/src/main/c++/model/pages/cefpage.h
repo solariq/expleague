@@ -165,6 +165,7 @@ private:
   uint32 m_key_flags = EVENTFLAG_NONE;
   int m_last_click_time;
   int m_click_count;
+  QSet<int> m_pressed_keys;
 };
 
 

@@ -329,6 +329,7 @@ Rectangle{
 
     property bool escape_pressed_in_search: false
     Keys.onPressed: {
+
         if (pageSearch.length > 0) {
             if (event.key === Qt.Key_Left) {
                 webView.findText(pageSearch, false)
@@ -345,6 +346,7 @@ Rectangle{
             }
             return
         }
+        console.log("pressEvent")
         event.accepted = webView.sendKeyPress(event)
         //event.accepted = webView.sendKeyPress(event.key, event.modifiers, event.text, event.autoRepeat, event.count)
     }
