@@ -137,6 +137,7 @@ class YandexSERPage: public SERPage {
 public:
     static QString parseQuery(const QUrl& url);
     static bool isSearchUrl(const QUrl& url);
+    static void removeTimeStamps(QUrl& url);
     bool accept(const QUrl &url) const { return parseQuery(url) == query(); }
 
     QString icon() const { return "qrc:/tools/yandex.png"; }

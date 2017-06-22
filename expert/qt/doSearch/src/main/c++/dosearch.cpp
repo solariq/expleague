@@ -84,6 +84,12 @@ Page* doSearch::empty() const {
     });
 }
 
+void removeTimeStamps(QUrl& url){
+    if(url.host().contains("google.")){
+
+    }
+}
+
 Page* doSearch::web(const QUrl& url) const {
     QString query = url.query().isEmpty() ? "" : "/" + md5(url.query());
     if (WebResource::rootUrl(url)) { // site
@@ -91,17 +97,19 @@ Page* doSearch::web(const QUrl& url) const {
         result->page()->setOriginalUrl(url);
         return result;
     }
-    else if (GoogleSERPage::isSearchUrl(url)) {
+    if (GoogleSERPage::isSearchUrl(url)) {
         return page("search/" + GoogleSERPage::parseQuery(url) + "/google", [&url](const QString& id, doSearch* parent) {
             return new GoogleSERPage(id, url, parent);
         });
     }
-    else if (YandexSERPage::isSearchUrl(url)) {
+    if (YandexSERPage::isSearchUrl(url)) {
         return page("search/" + YandexSERPage::parseQuery(url) + "/yandex", [&url](const QString& id, doSearch* parent) {
             return new YandexSERPage(id, url, parent);
         });
     }
-    else return webPage(url);
+    QUrl urlCopy = url;
+    YandexSERPage::removeTimeStamps(urlCopy);
+    return webPage(urlCopy);
 }
 
 WebSite* doSearch::webSite(const QString& domain) const {

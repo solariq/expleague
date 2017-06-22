@@ -46,6 +46,16 @@ bool YandexSERPage::isSearchUrl(const QUrl &url){
     return url.host().contains("yandex.") && (url.path() == "/search/" || url.path() == "/yandsearch");
 }
 
+void YandexSERPage::removeTimeStamps(QUrl& url){
+    if(!url.host().contains("yandex.") || !(url.path().contains("clck"))){
+        return;
+    }
+    QUrlQuery query(url);
+    query.removeQueryItem("cts");
+    query.removeQueryItem("mc");
+    url.setQuery(query);
+}
+
 YandexSERPage::YandexSERPage(const QString& id, const QUrl& url, doSearch* parent): SERPage(id, parseQuery(url), url, parent)
 {}
 
