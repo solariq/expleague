@@ -87,7 +87,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
       connection.handleWithAsyncHandler((Function<HttpRequest, Future<HttpResponse>>) httpRequest -> {
         final Future ask = Patterns.ask(context().actorOf(props(Handler.class)), httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
         //noinspection unchecked
-        return (Future<HttpResponse>)ask;
+        return (Future<HttpResponse>) ask;
       }, materializer);
     }
     else unhandled(o);
@@ -116,7 +116,9 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
             }
           }
           else if ("/open".equals(path)) {
-            response = getOrders(board.open());
+            try (final Stream<ExpLeagueOrder> open = board.open()) {
+              response = getOrders(open);
+            }
           }
           else if ("/replay".equals(path)) {
             final Option<String> room = request.getUri().query().get("room");
@@ -129,26 +131,33 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
 
           }
           else if ("/closed/without/feedback".equals(path)) {
-            response = getOrders(board.orders(
-              new LaborExchange.OrderFilter(true, EnumSet.of(OrderState.DONE))
-            ));
+            try (final Stream<ExpLeagueOrder> orders = board.orders(
+                new LaborExchange.OrderFilter(true, EnumSet.of(OrderState.DONE))
+            )) {
+              response = getOrders(orders);
+            }
           }
           else if ("/closed".equals(path)) {
-            response = getOrders(board.orders(
-              new LaborExchange.OrderFilter(false, EnumSet.of(OrderState.DONE))
-            ));
+            try (final Stream<ExpLeagueOrder> orders = board.orders(
+                new LaborExchange.OrderFilter(false, EnumSet.of(OrderState.DONE))
+            )) {
+              response = getOrders(orders);
+            }
           }
           else if ("/top/experts".equals(path)) {
-            final List<ExpertsProfileDto> experts = board.topExperts()
-                .map(JID::local)
-                .map(Roster.instance()::profile)
-                .map(ExpertsProfileDto::new)
-                .collect(Collectors.toList());
-            response = getJsonResponse("experts", experts);
+            try (final Stream<JID> topExperts = board.topExperts()) {
+              final List<ExpertsProfileDto> experts = topExperts.map(JID::local)
+                  .map(Roster.instance()::profile)
+                  .map(ExpertsProfileDto::new)
+                  .collect(Collectors.toList());
+              response = getJsonResponse("experts", experts);
+            }
           }
           else if (path.startsWith("/history/")) {
             final String roomId = path.substring("/history/".length());
-            response = getOrders(board.history(roomId));
+            try (final Stream<ExpLeagueOrder> history = board.history(roomId)) {
+              response = getOrders(history);
+            }
           }
           else if (path.startsWith("/active/")) {
             final String roomId = path.substring("/active/".length());
@@ -156,14 +165,16 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           }
           else if (path.startsWith("/related/")) {
             final JID jid = JID.parse(path.substring("/related/".length()));
-            response = getOrders(board.related(jid));
+            try (final Stream<ExpLeagueOrder> related = board.related(jid)) {
+              response = getOrders(related);
+            }
           }
           else if (path.startsWith("/dump/")) {
             final Timeout timeout = new Timeout(Duration.create(Long.parseLong(request.getUri().query().get("timeout").getOrElse("2")), TimeUnit.SECONDS));
             final JID jid = JID.parse(path.substring("/dump/".length()));
             final Future<Object> ask = Patterns.ask(XMPP.register(jid, context()), new RoomAgent.DumpRequest(), timeout);
             //noinspection unchecked
-            final List<Stanza> result = (List<Stanza>)Await.result(ask, timeout.duration());
+            final List<Stanza> result = (List<Stanza>) Await.result(ask, timeout.duration());
             final List<DumpItemDto> messages = result.stream().map(DumpItemDto::new).collect(Collectors.toList());
             response = getJsonResponse("messages", messages);
           }
@@ -172,7 +183,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
             final JID jid = JID.parse(path.substring("/xml-dump/".length()));
             final Future<Object> ask = Patterns.ask(XMPP.register(jid, context()), new RoomAgent.DumpRequest(), timeout);
             //noinspection unchecked
-            final List<Stanza> result = (List<Stanza>)Await.result(ask, timeout.duration());
+            final List<Stanza> result = (List<Stanza>) Await.result(ask, timeout.duration());
             final StringBuilder builder = new StringBuilder();
             result.stream().map(stanza -> stanza.xmlString() + "\n").forEach(builder::append);
             response = HttpResponse.create().withStatus(200).withEntity(Item.XMPP_START + "\n" + builder.toString() + Item.XMPP_END);
@@ -180,25 +191,26 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           else if (path.startsWith("/rebuild-archive")) {
             final List<JID> failed = new ArrayList<>();
             final List<JID> success = new ArrayList<>();
-            LaborExchange.board()
-                .orders(new LaborExchange.OrderFilter(false, EnumSet.noneOf(OrderState.class)))
-                .map(ExpLeagueOrder::room)
-                .forEach(roomJid -> {
-                  final Future<Object> result = Patterns.ask(XMPP.register(roomJid, context()), new RoomAgent.Replay(), Timeout.apply(10, TimeUnit.HOURS));
-                  try {
-                    final RoomAgent.Replay replay = (RoomAgent.Replay)Await.result(result, Duration.Inf());
-                    if (replay.success) {
-                      success.add(roomJid);
+            try (final Stream<ExpLeagueOrder> orders = LaborExchange.board()
+                .orders(new LaborExchange.OrderFilter(false, EnumSet.noneOf(OrderState.class)))) {
+              orders.map(ExpLeagueOrder::room)
+                  .forEach(roomJid -> {
+                    final Future<Object> result = Patterns.ask(XMPP.register(roomJid, context()), new RoomAgent.Replay(), Timeout.apply(10, TimeUnit.HOURS));
+                    try {
+                      final RoomAgent.Replay replay = (RoomAgent.Replay) Await.result(result, Duration.Inf());
+                      if (replay.success) {
+                        success.add(roomJid);
+                      }
+                      else {
+                        failed.add(roomJid);
+                      }
+                    } catch (Exception e) {
+                      throw new RuntimeException(e);
                     }
-                    else {
-                      failed.add(roomJid);
-                    }
-                  } catch (Exception e) {
-                    throw new RuntimeException(e);
-                  }
-                  XMPP.whisper(roomJid, new RoomAgent.DumpRequest("archive"), context());
-                  success.add(roomJid);
-                });
+                    XMPP.whisper(roomJid, new RoomAgent.DumpRequest("archive"), context());
+                    success.add(roomJid);
+                  });
+            }
             response = HttpResponse.create().withStatus(200).withEntity("Archive restored for " + success.size() + ", failed for: " + failed.toString());
           }
           else if ("/kpi".equals(path)) {
@@ -229,37 +241,39 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
       final TLongLongHashMap timestamp2TaskDuration = new TLongLongHashMap();
       final TLongDoubleHashMap timestamp2Feedback = new TLongDoubleHashMap();
 
-      board.orders(new LaborExchange.OrderFilter(false, EnumSet.allOf(OrderState.class))).forEach(
-        order -> {
-          final long startTimestamp = (long) (order.offer().started() * 1000);
-          final DateTime startDay = new DateTime(startTimestamp).dayOfMonth().roundFloorCopy();
-          timestamp2TasksCount.adjustOrPutValue(startDay.getMillis(), 1, 1);
-          final String user = order.offer().client().bare().getAddr();
-          timestamp2UniqueUsers.put(startDay.getMillis(), user);
-          if (knownUsers.add(user)) {
-            timestamp2NewUsers.put(startDay.getMillis(), user);
-          }
+      try (final Stream<ExpLeagueOrder> orders = board.orders(new LaborExchange.OrderFilter(false, EnumSet.allOf(OrderState.class)))) {
+        orders.forEach(
+            order -> {
+              final long startTimestamp = (long) (order.offer().started() * 1000);
+              final DateTime startDay = new DateTime(startTimestamp).dayOfMonth().roundFloorCopy();
+              timestamp2TasksCount.adjustOrPutValue(startDay.getMillis(), 1, 1);
+              final String user = order.offer().client().bare().getAddr();
+              timestamp2UniqueUsers.put(startDay.getMillis(), user);
+              if (knownUsers.add(user)) {
+                timestamp2NewUsers.put(startDay.getMillis(), user);
+              }
 
-          if (order.state() == OrderState.DONE) {
-            final long closeTimestamp = order.statusHistoryRecords()
-              .filter(statusHistoryRecord -> statusHistoryRecord.getStatus() == OrderState.DONE)
-              .findFirst().get()
-              .getDate().getTime();
+              if (order.state() == OrderState.DONE) {
+                final long closeTimestamp = order.statusHistoryRecords()
+                    .filter(statusHistoryRecord -> statusHistoryRecord.getStatus() == OrderState.DONE)
+                    .findFirst().get()
+                    .getDate().getTime();
 
-            final DateTime closeDay = new DateTime(closeTimestamp).dayOfMonth().roundFloorCopy();
-            timestamp2ClosedTaskCount.adjustOrPutValue(closeDay.getMillis(), 1, 1);
+                final DateTime closeDay = new DateTime(closeTimestamp).dayOfMonth().roundFloorCopy();
+                timestamp2ClosedTaskCount.adjustOrPutValue(closeDay.getMillis(), 1, 1);
 
-            final long durationMinutes = (closeTimestamp - startTimestamp) / (60 * 1000L);
-            timestamp2TaskDuration.adjustOrPutValue(closeDay.getMillis(), durationMinutes, durationMinutes);
+                final long durationMinutes = (closeTimestamp - startTimestamp) / (60 * 1000L);
+                timestamp2TaskDuration.adjustOrPutValue(closeDay.getMillis(), durationMinutes, durationMinutes);
 
-            final double feedback = order.feedback();
-            if (feedback != -1) {
-              timestamp2TasksWithFeedbackCount.adjustOrPutValue(closeDay.getMillis(), 1, 1);
-              timestamp2Feedback.adjustOrPutValue(closeDay.getMillis(), feedback, feedback);
+                final double feedback = order.feedback();
+                if (feedback != -1) {
+                  timestamp2TasksWithFeedbackCount.adjustOrPutValue(closeDay.getMillis(), 1, 1);
+                  timestamp2Feedback.adjustOrPutValue(closeDay.getMillis(), feedback, feedback);
+                }
+              }
             }
-          }
-        }
-      );
+        );
+      }
 
       {
         final List<TimeSeriesDto.PointDto> allTasks = new ArrayList<>();
@@ -286,24 +300,24 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           }
         }
         charts.add(new TimeSeriesChartDto(
-          "Number of tasks",
-          "Time",
-          "Tasks",
-          Lists.newArrayList(
-            new TimeSeriesDto("Received tasks", allTasks),
-            new TimeSeriesDto("Closed tasks", closedTasks),
-            new TimeSeriesDto("Tasks with feedback", closedWithFeedbackTasks)
-          )
+            "Number of tasks",
+            "Time",
+            "Tasks",
+            Lists.newArrayList(
+                new TimeSeriesDto("Received tasks", allTasks),
+                new TimeSeriesDto("Closed tasks", closedTasks),
+                new TimeSeriesDto("Tasks with feedback", closedWithFeedbackTasks)
+            )
         ));
 
         charts.add(new TimeSeriesChartDto(
-          "Number of users",
-          "Time",
-          "Users",
-          Lists.newArrayList(
-            new TimeSeriesDto("Unique users", uniqueUsers),
-            new TimeSeriesDto("New users", newUsers)
-          )
+            "Number of users",
+            "Time",
+            "Users",
+            Lists.newArrayList(
+                new TimeSeriesDto("Unique users", uniqueUsers),
+                new TimeSeriesDto("New users", newUsers)
+            )
         ));
       }
 
@@ -315,13 +329,13 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           points.add(new TimeSeriesDto.PointDto(ts, timestamp2TaskDuration.get(ts) / timestamp2ClosedTaskCount.get(ts)));
         }
         charts.add(new TimeSeriesChartDto(
-          "Average task duration",
-          "Time",
-          "Minutes",
-          Lists.newArrayList(new TimeSeriesDto(
-            "Task duration",
-            points
-          ))
+            "Average task duration",
+            "Time",
+            "Minutes",
+            Lists.newArrayList(new TimeSeriesDto(
+                "Task duration",
+                points
+            ))
         ));
       }
 
@@ -333,13 +347,13 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           points.add(new TimeSeriesDto.PointDto(ts, timestamp2Feedback.get(ts) / timestamp2TasksWithFeedbackCount.get(ts)));
         }
         charts.add(new TimeSeriesChartDto(
-          "Average task feedback",
-          "Time",
-          "Score",
-          Lists.newArrayList(new TimeSeriesDto(
-            "Task feedback",
-            points
-          ))
+            "Average task feedback",
+            "Time",
+            "Score",
+            Lists.newArrayList(new TimeSeriesDto(
+                "Task feedback",
+                points
+            ))
         ));
       }
       return charts;
@@ -351,18 +365,18 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
 
       final DateTimeFormatter formatter = DateTimeFormat.forPattern("dd-MM-yyyy");
       final Map<String, List<OrderDto>> history = orders
-        .stream()
-        .collect(Collectors.groupingBy(
-          orderDto -> {
-            final long startedMs = orderDto.getOffer().getStartedMs();
-            return formatter.print(startedMs);
-          }
-        ));
+          .stream()
+          .collect(Collectors.groupingBy(
+              orderDto -> {
+                final long startedMs = orderDto.getOffer().getStartedMs();
+                return formatter.print(startedMs);
+              }
+          ));
       final List<OrdersGroupDto> result = new ArrayList<>();
       for (Map.Entry<String, List<OrderDto>> entry : history.entrySet()) {
         result.add(new OrdersGroupDto(
-          entry.getKey(),
-          entry.getValue()
+            entry.getKey(),
+            entry.getValue()
         ));
       }
       result.sort((o1, o2) -> {
@@ -376,25 +390,26 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
     protected HttpResponse getJsonResponse(final String name, final Object value) throws JsonProcessingException {
       final Map<String, Object> map = new HashMap<>();
       map.put(name, value);
-      final List<ExpertsProfileDto> experts = LaborExchange.board().topExperts()
-          .map(JID::local)
-          .map(Roster.instance()::profile)
-          .map(ExpertsProfileDto::new)
-          .collect(Collectors.toList());
-      map.put("experts", experts);
-      return HttpResponse.create().withStatus(200).withEntity(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(map));
+      try (final Stream<JID> topExperts = LaborExchange.board().topExperts()) {
+        final List<ExpertsProfileDto> experts = topExperts.map(JID::local)
+            .map(Roster.instance()::profile)
+            .map(ExpertsProfileDto::new)
+            .collect(Collectors.toList());
+        map.put("experts", experts);
+        return HttpResponse.create().withStatus(200).withEntity(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(map));
+      }
     }
 
     @NotNull
     protected ContentType getContentType(final File file) {
       final String fileName = file.getName();
       return fileName.endsWith(".js")
-        ? ContentTypes.create(MediaTypes.APPLICATION_JSON)
-        : fileName.endsWith(".css")
-        ? ContentTypes.create(MediaTypes.TEXT_CSS, HttpCharsets.UTF_8)
-        : fileName.endsWith(".png")
-        ? ContentTypes.create(MediaTypes.IMAGE_PNG)
-        : ContentTypes.create(MediaTypes.APPLICATION_OCTET_STREAM);
+          ? ContentTypes.create(MediaTypes.APPLICATION_JSON)
+          : fileName.endsWith(".css")
+          ? ContentTypes.create(MediaTypes.TEXT_CSS, HttpCharsets.UTF_8)
+          : fileName.endsWith(".png")
+          ? ContentTypes.create(MediaTypes.IMAGE_PNG)
+          : ContentTypes.create(MediaTypes.APPLICATION_OCTET_STREAM);
     }
   }
 

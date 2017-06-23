@@ -7,6 +7,7 @@ import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
 import com.expleague.server.XMPPUser;
+import com.expleague.util.stream.RequiresClose;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.register.RegisterQuery;
 import com.spbsu.commons.util.cache.CacheStrategy;
@@ -145,6 +146,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
     });
   }
 
+  @RequiresClose
   @Override
   public Stream<XMPPDevice> allDevices() {
     try {
@@ -160,6 +162,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
     }
   }
 
+  @RequiresClose
   @Override
   public Stream<XMPPUser> allExperts() {
     try {
@@ -245,6 +248,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
     profilesCache.clear(jid.local());
   }
 
+  @RequiresClose
   @Override
   public Stream<Tag> specializations(JID jid) {
     try {

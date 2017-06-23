@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * Experts League
@@ -133,7 +134,9 @@ public class NotificationsManager extends ActorAdapter<UntypedActor> {
         }
         else if (aow != null && !aow.equals(this.aow)) {
           AOWNotificationScheduler scheduler = new AOWNotificationScheduler(aow);
-          Roster.instance().allDevices().forEach(device -> schedule(aow.roomId(), scheduler, device));
+          try (final Stream<XMPPDevice> allDevices = Roster.instance().allDevices()) {
+            allDevices.forEach(device -> schedule(aow.roomId(), scheduler, device));
+          }
           this.aow = aow;
         }
       }

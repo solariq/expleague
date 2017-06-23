@@ -7,8 +7,12 @@ import com.expleague.model.Tag;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPUser;
-import com.expleague.server.agents.*;
+import com.expleague.server.agents.ExpLeagueOrder;
+import com.expleague.server.agents.LaborExchange;
+import com.expleague.server.agents.RoomAgent;
+import com.expleague.server.agents.XMPP;
 import com.expleague.server.dao.fake.InMemBoard;
+import com.expleague.util.stream.RequiresClose;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.register.RegisterQuery;
 import com.google.common.base.Joiner;
@@ -87,15 +91,16 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @Nullable
   @Override
   public synchronized ExpLeagueOrder[] active(final String roomId) {
-    return replayAwareStream(() -> {
-      try {
-        return stream("SELECT * FROM Orders WHERE room = ? AND status < " + OrderState.DONE.code(), stmt -> stmt.setString(1, roomId)).map(createOrderView());
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
+    try {
+      try (final Stream<ResultSet> stream = stream("SELECT * FROM Orders WHERE room = ? AND status < " + OrderState.DONE.code(), stmt -> stmt.setString(1, roomId))) {
+        return replayAwareStream(() -> stream.map(createOrderView())).collect(Collectors.toList()).toArray(new ExpLeagueOrder[0]);
       }
-    }).collect(Collectors.toList()).toArray(new ExpLeagueOrder[0]);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
+  @RequiresClose
   @Override
   public synchronized Stream<ExpLeagueOrder> history(final String roomId) {
     return replayAwareStream(() -> {
@@ -107,6 +112,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     });
   }
 
+  @RequiresClose
   @Override
   public synchronized Stream<ExpLeagueOrder> related(JID jid) {
     return replayAwareStream(() -> {
@@ -122,11 +128,13 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     });
   }
 
+  @RequiresClose
   @Override
   public Stream<ExpLeagueOrder> open() {
     return orders(new LaborExchange.OrderFilter(false, EnumSet.complementOf(EnumSet.of(OrderState.DONE))));
   }
 
+  @RequiresClose
   @Override
   public synchronized Stream<ExpLeagueOrder> orders(final LaborExchange.OrderFilter filter) {
     final OrderQuery orderQuery = createQuery(filter);
@@ -146,6 +154,7 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
     XMPP.whisper(jid, new RoomAgent.Replay(), context);
   }
 
+  @RequiresClose
   @Override
   public Stream<JID> topExperts() {
     try {
@@ -169,14 +178,16 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   public Stream<Tag> tags() {
     tags = new TObjectIntHashMap<>();
     try {
-      stream("SELECT * FROM Tags", q -> {
-      }).forEach(rs -> {
-        try {
-          tags.put(new Tag(rs.getString(2), rs.getString(3)), rs.getInt(1));
-        } catch (SQLException e) {
-          throw new RuntimeException(e);
-        }
-      });
+      try (final Stream<ResultSet> stream = stream("SELECT * FROM Tags", q -> {
+      })) {
+        stream.forEach(rs -> {
+          try {
+            tags.put(new Tag(rs.getString(2), rs.getString(3)), rs.getInt(1));
+          } catch (SQLException e) {
+            throw new RuntimeException(e);
+          }
+        });
+      }
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -188,15 +199,16 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   @Override
   public LaborExchange.AnswerOfTheWeek answerOfTheWeek() {
     try {
-      return stream("SELECT room, topic FROM AnswersOfTheWeek WHERE CURRENT_TIME() < DATE_ADD(starts, INTERVAL 1 WEEK) ORDER BY starts DESC", stmt -> {
-      })
-          .map(rs -> {
-            try {
-              return new LaborExchange.AnswerOfTheWeek(rs.getString(1), rs.getString(2));
-            } catch (SQLException e) {
-              throw new RuntimeException(e);
-            }
-          }).findFirst().orElse(null);
+      try (final Stream<ResultSet> resultSetStream = stream("SELECT room, topic FROM AnswersOfTheWeek WHERE CURRENT_TIME() < DATE_ADD(starts, INTERVAL 1 WEEK) ORDER BY starts DESC", stmt -> {
+      })) {
+        return resultSetStream.map(rs -> {
+          try {
+            return new LaborExchange.AnswerOfTheWeek(rs.getString(1), rs.getString(2));
+          } catch (SQLException e) {
+            throw new RuntimeException(e);
+          }
+        }).findFirst().orElse(null);
+      }
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -405,15 +417,17 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
       if (!tagsAcquired) {
         tagsAcquired = true;
         try {
-          super.tags.addAll(stream("SELECT Tags.tag, Tags.icon FROM Topics JOIN Tags ON Topics.tag = Tags.id WHERE `order` = ?",
+          try (final Stream<ResultSet> stream = stream("SELECT Tags.tag, Tags.icon FROM Topics JOIN Tags ON Topics.tag = Tags.id WHERE `order` = ?",
               stmt -> stmt.setString(1, id)
-          ).map(rs -> {
-            try {
-              return new Tag(rs.getString(1), rs.getString(2));
-            } catch (SQLException e) {
-              throw new RuntimeException(e);
-            }
-          }).collect(Collectors.toSet()));
+          )) {
+            super.tags.addAll(stream.map(rs -> {
+              try {
+                return new Tag(rs.getString(1), rs.getString(2));
+              } catch (SQLException e) {
+                throw new RuntimeException(e);
+              }
+            }).collect(Collectors.toSet()));
+          }
         } catch (SQLException e) {
           throw new RuntimeException(e);
         }

@@ -2,6 +2,7 @@ package com.expleague.server.dao;
 
 import com.expleague.model.Pattern;
 import com.expleague.server.ExpLeagueServer;
+import com.expleague.util.stream.RequiresClose;
 
 import java.util.stream.Stream;
 

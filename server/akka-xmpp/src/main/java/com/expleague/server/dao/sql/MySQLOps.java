@@ -1,5 +1,6 @@
 package com.expleague.server.dao.sql;
 
+import com.expleague.util.stream.RequiresClose;
 import com.spbsu.commons.util.ThreadTools;
 import org.intellij.lang.annotations.Language;
 
@@ -49,14 +50,17 @@ public class MySQLOps {
     }
   }
 
+  @RequiresClose
   public Stream<ResultSet> stream(@Language("MySQL") String stmt, QuerySetup setup) throws SQLException {
     final PreparedStatement statement = createStatement(stmt);
+    final ResultSetIterator resultSetIterator = new ResultSetIterator(statement);
     try {
       if (setup != null)
         setup.setup(statement);
-      final Stream<ResultSet> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(new ResultSetIterator(statement), 0), false);
+      final Stream<ResultSet> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(resultSetIterator, 0), false);
       return stream.onClose(() -> {
         try {
+          resultSetIterator.close();
           statement.close();
         } catch (SQLException e) {
           throw new RuntimeException(e);
@@ -64,6 +68,7 @@ public class MySQLOps {
       });
     } catch (Error | RuntimeException e) {
       try {
+        resultSetIterator.close();
         statement.close();
       } catch (SQLException ex) {
         try {
@@ -114,7 +119,7 @@ public class MySQLOps {
       return rs;
     }
 
-    private void close() {
+    public void close() {
       try {
         if (rs != null && !rs.isClosed())
           rs.close();
