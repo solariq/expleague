@@ -4,11 +4,8 @@ import com.spbsu.commons.util.ThreadTools;
 import org.intellij.lang.annotations.Language;
 
 import java.sql.*;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Spliterators;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -18,46 +15,22 @@ import java.util.stream.StreamSupport;
  * Time: 18:55
  */
 public class MySQLOps {
-  private static final Logger log = Logger.getLogger(MySQLOps.class.getName());
-
   public static final int ATTEMPT_TIMEOUT_MS = 1000;
   public static final int MAX_NUMBER_OF_ATTEMPTS = 20;
 
   private final String connectionUrl;
   private Connection conn;
-  private final ThreadLocal<Map<String, PreparedStatement>> statements = new ThreadLocal<Map<String, PreparedStatement>>(){
-    @Override
-    protected Map<String, PreparedStatement> initialValue() {
-      return new HashMap<>();
-    }
-  };
 
   public MySQLOps(String connectionUrl) {
     this.connectionUrl = connectionUrl;
   }
 
-  public PreparedStatement createStatement(String name, @Language("MySQL") String stmt) {
-    return createStatement(name, stmt, false);
+  public PreparedStatement createStatement(@Language("MySQL") String stmt) throws SQLException {
+    return createStatement(stmt, false);
   }
 
-  public PreparedStatement createStatement(String name, @Language("MySQL") String stmt, boolean returnGenKeys) {
-    PreparedStatement preparedStatement = statements.get().get(name);
-    try {
-      int attempt = 0;
-      while (preparedStatement == null || preparedStatement.isClosed() || preparedStatement.getConnection() == null || preparedStatement.getConnection() != conn || conn.isClosed() || !conn.isValid(0)) {
-        if (attempt++ > MAX_NUMBER_OF_ATTEMPTS) {
-          throw new RuntimeException("Unable to prepareStatement in " + MAX_NUMBER_OF_ATTEMPTS + " attempts");
-        }
-        ThreadTools.sleep(attempt * ATTEMPT_TIMEOUT_MS);
-        preparedStatement = conn().prepareStatement(stmt, returnGenKeys ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS);
-      }
-      preparedStatement.clearParameters();
-      statements.get().put(name, preparedStatement);
-      return preparedStatement;
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-
+  public PreparedStatement createStatement(@Language("MySQL") String stmt, boolean returnGenKeys) throws SQLException {
+    return conn().prepareStatement(stmt, returnGenKeys ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS);
   }
 
   public Connection conn() {
@@ -76,9 +49,9 @@ public class MySQLOps {
     }
   }
 
-  public Stream<ResultSet> stream(String name, @Language("MySQL") String stmt, QuerySetup setup) {
+  public Stream<ResultSet> stream(@Language("MySQL") String stmt, QuerySetup setup) throws SQLException {
+    final PreparedStatement statement = createStatement(stmt);
     try {
-      final PreparedStatement statement = createStatement(name, stmt);
       if (setup != null)
         setup.setup(statement);
       final Stream<ResultSet> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(new ResultSetIterator(statement), 0), false);
@@ -89,9 +62,16 @@ public class MySQLOps {
           throw new RuntimeException(e);
         }
       });
-    }
-    catch (SQLException e) {
-      throw new RuntimeException(e);
+    } catch (Error | RuntimeException e) {
+      try {
+        statement.close();
+      } catch (SQLException ex) {
+        try {
+          e.addSuppressed(ex);
+        } catch (Throwable ignore) {
+        }
+      }
+      throw e;
     }
   }
 
@@ -106,8 +86,7 @@ public class MySQLOps {
     public void init() {
       try {
         rs = ps.executeQuery();
-      }
-      catch (SQLException e) {
+      } catch (SQLException e) {
         close();
         throw new RuntimeException(e);
       }
@@ -124,8 +103,7 @@ public class MySQLOps {
         if (!hasMore)
           close();
         return hasMore;
-      }
-      catch (SQLException e) {
+      } catch (SQLException e) {
         close();
         throw new RuntimeException(e);
       }
