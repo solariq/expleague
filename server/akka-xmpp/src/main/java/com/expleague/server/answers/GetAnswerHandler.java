@@ -2,26 +2,20 @@ package com.expleague.server.answers;
 
 import akka.http.javadsl.model.*;
 import akka.japi.Option;
-import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
 import com.spbsu.commons.io.StreamTools;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
 
 import javax.jcr.*;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Experts League
  * Created by solar on 18.04.17.
  */
-public class GetAnswerHandler extends ActorAdapter {
-  private static final Logger log = Logger.getLogger(GetAnswerHandler.class.getName());
+public class GetAnswerHandler extends WebHandler {
   private final Session session;
 
   public GetAnswerHandler(Session session) {
@@ -37,6 +31,7 @@ public class GetAnswerHandler extends ActorAdapter {
       return;
     }
     final String id = optId.get();
+    final boolean showMd = query.get("md").isDefined() && Boolean.parseBoolean(query.get("md").get());
     try {
       final String result;
       final String title;
@@ -47,7 +42,8 @@ public class GetAnswerHandler extends ActorAdapter {
         int answerNum = 0;
         while (nodeIterator.hasNext()) {
           final Node answerTextNode = nodeIterator.nextNode().getNode("answer-text");
-          final String answerMd = extractAnswer(answerTextNode);
+          final Property answerProp = answerTextNode.getProperty(Property.JCR_DATA);
+          final String answer = showMd ? answerProp.getString() : extractAnswer(answerProp);
           if (answerNum > 0)
             stringBuilder.append("<br/>");
 
@@ -60,35 +56,32 @@ public class GetAnswerHandler extends ActorAdapter {
               .append("Ответ №")
               .append(answerNum)
               .append("</a></h2></p>")
-              .append(answerMd);
+              .append(showMd ? textAreaWithParams() + answer + "</textarea>" : answer);
         }
         result = stringBuilder.toString();
         title = node.getParent().getParent().getParent().getProperty("topic").getString();
-      } else { //old version
-        result = extractAnswer(node);
+      }
+      else { //old version
+        final Property answerProp = node.getProperty(Property.JCR_DATA);
+        result = showMd ? textAreaWithParams() + answerProp.getString() + "</textarea>" : extractAnswer(answerProp);
         title = node.getParent().getProperty("topic").getString();
       }
       reply(HttpResponse.create().withStatus(200).withEntity(
           MediaTypes.TEXT_HTML.toContentType(HttpCharsets.UTF_8),
           "<html><title>" + title + "</title><body>" + result + "</body></html>"));
     } catch (RepositoryException | IOException e) {
-      log.log(Level.WARNING, "Unable to login to jackrabbit repository", e);
-
-      final ByteArrayOutputStream out = new ByteArrayOutputStream();
-      e.printStackTrace(new PrintStream(out));
-      String trace = new String(out.toByteArray(), StreamTools.UTF);
-      trace = trace.replace("\n", "<br/>\n");
-      reply(HttpResponse.create().withStatus(503).withEntity(
-          MediaTypes.TEXT_HTML.toContentType(HttpCharsets.UTF_8),
-          "<html><body>Exception while request processing: <br/>" + trace + "</body></html>"));
+      handleException(e);
     }
   }
 
-  private String extractAnswer(Node node) throws RepositoryException, IOException {
-    final Property property = node.getProperty(Property.JCR_DATA);
+  private static String extractAnswer(Property property) throws RepositoryException, IOException {
     final Binary binary = property.getBinary();
     final HtmlRenderer renderer = HtmlRenderer.builder().build();
     final Parser parser = Parser.builder().build();
     return renderer.render(parser.parseReader(new InputStreamReader(binary.getStream(), StreamTools.UTF)));
+  }
+
+  private static String textAreaWithParams() {
+    return "<textarea cols=\"100\" rows=\"20\">";
   }
 }

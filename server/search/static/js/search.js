@@ -51,7 +51,7 @@ Search.searchViewModel = function () {
             success: function (data) {
                 $("#loader").hide();
                 _.each(data.items, function (item) {
-                    var searchItem = new self.searchResultItem(item.topic, item.link, "");
+                    var searchItem = new self.searchResultItem(item.topic, item.link, item.mdLink, "");
                     self.searchResult.push(searchItem);
                 });
                 $(function () {
@@ -118,9 +118,10 @@ Search.searchViewModel = function () {
         self.initPagination(self.resultsOnPage, 1);
     };
 
-    self.searchResultItem = function resultItem(title, link, description) {
+    self.searchResultItem = function resultItem(title, link, mdLink, description) {
         this.title = ko.observable(title);
         this.link = ko.observable(link);
+        this.mdLink = ko.observable(mdLink);
         this.description = ko.observable(description);
     };
 };
