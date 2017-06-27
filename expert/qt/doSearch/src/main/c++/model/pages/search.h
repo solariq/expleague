@@ -34,6 +34,7 @@ protected:
 
     void interconnect();
 
+    Q_INVOKABLE QString customJavaScript();
 private slots:
     void onSessionChanged() { emit containerChanged(); }
 
@@ -159,7 +160,6 @@ public:
     QString icon() const { return "qrc:/tools/google.png"; }
 
     int index() const { return 0; }
-
 public:
     GoogleSERPage(const QString& id, const QUrl& url, doSearch* parent);
     GoogleSERPage(const QString& id, doSearch* parent);

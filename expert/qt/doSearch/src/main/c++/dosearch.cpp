@@ -84,12 +84,6 @@ Page* doSearch::empty() const {
     });
 }
 
-void removeTimeStamps(QUrl& url){
-    if(url.host().contains("google.")){
-
-    }
-}
-
 Page* doSearch::web(const QUrl& url) const {
     QString query = url.query().isEmpty() ? "" : "/" + md5(url.query());
     if (WebResource::rootUrl(url)) { // site
@@ -140,11 +134,11 @@ WebPage* doSearch::webPage(const QUrl& url) const {
 
 QString doSearch::nextId(const QString& prefix) const {
     QString id;
-    PersistentPropertyHolder root(pageResource(prefix));
+    PersistentPropertyHolder rootHolder(pageResource(prefix));
     do {
         id = randString(10);
     }
-    while (root.containsKey(id));
+    while (rootHolder.containsKey(id));
     return prefix + "/" + id;
 }
 

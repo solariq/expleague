@@ -51,6 +51,10 @@ Rectangle{
         }
 
         onLoadEnd:{
+            var script = owner.customJavaScript()
+            if(script.length != 0){
+                webView.executeJS(script)
+            }
             webView.getText()
         }
     }

@@ -98,20 +98,20 @@ public:
                        const RectList &dirtyRects, const void *buffer,
                        int width, int height) OVERRIDE;
 
-  #ifdef Q_OS_WIN
+#ifdef Q_OS_WIN
   virtual void OnCursorChange(CefRefPtr<CefBrowser> browser, HCURSOR cursor, CursorType type, const CefCursorInfo &custom_cursor_info) OVERRIDE;
-  #elif defined(Q_OS_MAC)
+#elif defined(Q_OS_MAC)
   virtual void OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor, CursorType type, const CefCursorInfo &custom_cursor_info)  OVERRIDE;
-  #endif
+#endif
 
   virtual bool GetScreenPoint(CefRefPtr<CefBrowser> browser, int viewX, int viewY, int &screenX, int &screenY)  OVERRIDE;
 
   virtual bool
   StartDragging(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDragData> drag_data, DragOperationsMask allowed_ops, int x, int y) OVERRIDE;
 
-IMPLEMENT_REFCOUNTING(CefPageRenderer)
-private:
-  image_buffer m_buffer;
+  IMPLEMENT_REFCOUNTING(CefPageRenderer)
+  private:
+    image_buffer m_buffer;
   bool m_enable = true;
   bool m_pause = false;
   int m_x;
@@ -147,21 +147,21 @@ public:
                              const CefKeyEvent& event,
                              CefEventHandle os_event,
                              bool* is_keyboard_shortcut) {
-      qDebug() << "OnPreKeyEvent" << event.windows_key_code << event.type;
-      //*is_keyboard_shortcut = true;
-      return false;
+    qDebug() << "OnPreKeyEvent" << event.windows_key_code << event.type;
+    //*is_keyboard_shortcut = true;
+    return false;
   }
 
   virtual bool OnKeyEvent(CefRefPtr<CefBrowser> browser,
                           const CefKeyEvent& event,
                           CefEventHandle os_event) {
-      qDebug() << "OnKeyEvent" << event.windows_key_code << event.type;
-      return false;
+    qDebug() << "OnKeyEvent" << event.windows_key_code << event.type;
+    return false;
   }
 
   IMPLEMENT_REFCOUNTING(IOBuffer)
-private:
-  CefRefPtr<CefBrowser> m_browser;
+  private:
+    CefRefPtr<CefBrowser> m_browser;
   uint32 m_key_flags = EVENTFLAG_NONE;
   int m_last_click_time;
   int m_click_count;
@@ -170,36 +170,38 @@ private:
 
 
 class CefItem : public QQuickFramebufferObject, Browser {
-Q_OBJECT
+  Q_OBJECT
   Q_PROPERTY(QUrl url
-                     READ
-                     url
-                     WRITE
-                     setUrl
-                     NOTIFY
-                     urlChanged)
+             READ
+             url
+             WRITE
+             setUrl
+             NOTIFY
+             urlChanged) //url of webpage
   Q_PROPERTY(double zoomFactor
-                     READ
-                     zoomFactor
-                     WRITE
-                     setZoomFactor)
+             READ
+             zoomFactor
+             WRITE
+             setZoomFactor)
   Q_PROPERTY(bool running
-                     READ
-                     running
-                     WRITE
-                     setRunning)
+             READ
+             running
+             WRITE
+             setRunning)
   Q_PROPERTY(bool allowLinkTtransitions
-                     READ
-                     allowLinkTtransitions
-                     WRITE
-                     setAllowLinkTtransitions)
+             READ
+             allowLinkTtransitions
+             WRITE
+             setAllowLinkTtransitions)
   Q_PROPERTY(bool cookiesEnable
-                     READ
-                     cookiesEnable
-                     WRITE
-                     setCookiesEnable)
+             READ
+             cookiesEnable
+             WRITE
+             setCookiesEnable)
 
-    Q_PROPERTY(bool mute READ mute WRITE setMute)
+  Q_PROPERTY(bool mute READ mute WRITE setMute)
+
+  //Q_PROPERTY(QUrl actualUrl READ actualUrl NOTIFY actualUrlChanged) //url that can be changed in one web page
 public:
   CefItem(QQuickItem *parent = 0);
 
@@ -269,6 +271,8 @@ public:
 
   Q_INVOKABLE void clearCookies(const QString &domain);
 
+  Q_INVOKABLE void executeJS(const QString& sctript);
+
   void startTextDarg(const QString &text, const QString &html);
 
   void startImageDrag(const QImage &img);
@@ -291,14 +295,14 @@ private:
   QString last_find_request = "";
 
 private:
-    QUrl m_url;
-    QString m_html = "";
-    double m_zoom_factor = 1;
-    bool m_fullscreen;
-    bool m_running = true;
-    bool m_cookies_enable = true;
-    bool m_mute;
-    //property methods
+  QUrl m_url;
+  QString m_html = "";
+  double m_zoom_factor = 1;
+  bool m_fullscreen;
+  bool m_running = true;
+  bool m_cookies_enable = true;
+  bool m_mute;
+  //property methods
 public:
   QUrl url() const;
 
@@ -326,6 +330,8 @@ public:
 
   void setMute(bool);
 
+  //void actualUrl();
+
 signals:
 
   void urlChanged(const QUrl &url);
@@ -351,6 +357,8 @@ signals:
   void downloadStarted(Download *item);
 
   void savedToStorage(const QString &text);
+
+  //void setActualUrl();
 
 private slots:
 
@@ -389,17 +397,17 @@ public:
 
 private:
   CefItem *m_owner;
-IMPLEMENT_REFCOUNTING(TextCallback)
+  IMPLEMENT_REFCOUNTING(TextCallback)
 };
 
 class BrowserListener : public CefRequestHandler,
-                        public CefLifeSpanHandler,
-                        public CefDisplayHandler,
-                        public CefKeyboardHandler,
-                        public CefDragHandler,
-                        public CefLoadHandler,
-                        public CefDownloadHandler,
-                        public CefContextMenuHandler {
+    public CefLifeSpanHandler,
+    public CefDisplayHandler,
+    public CefKeyboardHandler,
+    public CefDragHandler,
+    public CefLoadHandler,
+    public CefDownloadHandler,
+    public CefContextMenuHandler {
 public:
   BrowserListener(CefItem *owner) : m_owner(owner) {}
 
@@ -450,15 +458,15 @@ public:
   virtual void OnLoadStart(CefRefPtr<CefBrowser> browser,
                            CefRefPtr<CefFrame> frame,
                            TransitionType transition_type) OVERRIDE;
-//    virtual bool OnDragEnter(CefRefPtr<CefBrowser> browser,
-//                             CefRefPtr<CefDragData> dragData,
-//                             DragOperationsMask mask)
-//    {
-//        qDebug() << "drag in cef" << QString::fromStdString(dragData->GetFileName().ToString())
-//                 << QString::fromStdString(dragData->GetLinkURL().ToString()) <<
-//                    dragData->IsFile();
-//        return false;
-//    }
+  //    virtual bool OnDragEnter(CefRefPtr<CefBrowser> browser,
+  //                             CefRefPtr<CefDragData> dragData,
+  //                             DragOperationsMask mask)
+  //    {
+  //        qDebug() << "drag in cef" << QString::fromStdString(dragData->GetFileName().ToString())
+  //                 << QString::fromStdString(dragData->GetLinkURL().ToString()) <<
+  //                    dragData->IsFile();
+  //        return false;
+  //    }
 
 
 
@@ -467,9 +475,9 @@ public:
 
   void setEnable(bool);
 
-IMPLEMENT_REFCOUNTING(CefRequestHandler)
-private:
-  bool m_first = true;
+  IMPLEMENT_REFCOUNTING(CefRequestHandler)
+  private:
+    bool m_first = true;
   qint64 m_last_event_time = 0;
   CefItem *m_owner;
   bool m_redirect_enable = true;

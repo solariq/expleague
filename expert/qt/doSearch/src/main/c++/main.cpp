@@ -38,8 +38,18 @@ QSystemTrayIcon* trayIcon;
 #endif
 
 
-int main(int argc, char *argv[]) {
+class StaticTest{
+public:
+    StaticTest(){
+        qDebug() << "Static test";
+        i = 1;
+    }
+    int i;
+};
 
+StaticTest test;
+
+int main(int argc, char *argv[]) {
     //PersistentPropertyHolder::debugPrintAll();
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
