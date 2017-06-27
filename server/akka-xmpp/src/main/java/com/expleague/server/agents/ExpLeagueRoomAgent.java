@@ -48,7 +48,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
 
   public ExpLeagueRoomAgent(JID jid) {
     super(jid, true);
-    orders = LaborExchange.board().history(jid().local()).collect(Collectors.toList());
+    try (final Stream<ExpLeagueOrder> history = LaborExchange.board().history(jid().local())) {
+      orders = history.collect(Collectors.toList());
+    }
   }
 
   private void state(RoomState newState) {

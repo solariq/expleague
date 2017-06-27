@@ -3,13 +3,14 @@ package com.expleague.server;
 import com.expleague.model.Application;
 import com.expleague.model.ExpertsProfile;
 import com.expleague.model.Tag;
+import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.XMPP;
+import com.expleague.util.stream.RequiresClose;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.register.RegisterQuery;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.expleague.server.agents.ExpLeagueOrder.Role.ACTIVE;
@@ -21,13 +22,17 @@ import static com.expleague.server.agents.ExpLeagueOrder.Role.ACTIVE;
  */
 public interface Roster {
   XMPPDevice register(RegisterQuery query) throws Exception;
+
   RegisterQuery required();
 
   XMPPDevice device(String name);
+
   XMPPUser user(String name);
+
   XMPPDevice[] devices(String id);
 
   Stream<XMPPDevice> allDevices();
+
   Stream<XMPPUser> allExperts();
 
   static Roster instance() {
@@ -43,27 +48,31 @@ public interface Roster {
       builder.name(user.name())
           .avatar(user.avatar())
           .authority(user.authority());
-      user.tags().forEach(tag -> builder.tag(tag.name(), tag.score()));
+      try (final Stream<Tag> tags = user.tags()) {
+        tags.forEach(tag -> builder.tag(tag.name(), tag.score()));
+      }
 
-      final int tasks = ((Long) LaborExchange.board().related(jid)
-          .filter(o -> o.role(jid) == ACTIVE)
-          .map(o -> {
-            final double feedback = o.feedback();
-            builder.score(feedback);
-            if (feedback > 0) {
-              Arrays.stream(o.tags()).forEach(tag ->
-                  builder.tag(tag.name(), feedback)
-              );
-            }
-            o.tags();
-            return o;
-          }).count()).intValue();
-      builder.tasks(tasks);
+      try (final Stream<ExpLeagueOrder> related = LaborExchange.board().related(jid)) {
+        final int tasks = ((Long) related.filter(o -> o.role(jid) == ACTIVE)
+            .map(o -> {
+              final double feedback = o.feedback();
+              builder.score(feedback);
+              if (feedback > 0) {
+                Arrays.stream(o.tags()).forEach(tag ->
+                    builder.tag(tag.name(), feedback)
+                );
+              }
+              o.tags();
+              return o;
+            }).count()).intValue();
+        builder.tasks(tasks);
+      }
     }
 
     return builder.build();
   }
 
+  @RequiresClose
   default Stream<JID> favorites(JID from) {
     return LaborExchange.board()
         .related(from)
@@ -74,17 +83,18 @@ public interface Roster {
 
   default Stream<Tag> specializations(JID jid) {
     final ExpertsProfile.Builder builder = new ExpertsProfile.Builder(jid);
-    LaborExchange.board().related(jid)
-        .filter(o -> o.role(jid) == ACTIVE)
-        .forEach(o -> {
-          final double feedback = o.feedback();
-          if (feedback > 0) {
-            Arrays.stream(o.tags()).forEach(
-                tag -> builder.tag(tag.name(), feedback)
-            );
-          }
-        });
-    return builder.build().tags();
+    try (final Stream<ExpLeagueOrder> related = LaborExchange.board().related(jid)) {
+      related.filter(o -> o.role(jid) == ACTIVE)
+          .forEach(o -> {
+            final double feedback = o.feedback();
+            if (feedback > 0) {
+              Arrays.stream(o.tags()).forEach(
+                  tag -> builder.tag(tag.name(), feedback)
+              );
+            }
+          });
+      return builder.build().tags();
+    }
   }
 
   void application(Application application, JID referer);

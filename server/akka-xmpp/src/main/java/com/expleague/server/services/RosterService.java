@@ -19,6 +19,7 @@ import scala.Option;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static com.expleague.xmpp.control.roster.RosterQuery.RosterItem.Subscription.FROM;
 
@@ -45,44 +46,47 @@ public class RosterService extends ActorAdapter<UntypedActor> {
           final Set<JID> online = XMPP.online(context());
           final RosterQuery query = new RosterQuery();
           final Set<JID> known = new HashSet<>(100);
-          Roster.instance().favorites(rosterIq.from())
-              .filter(known::add)
-              .map(jid -> Roster.instance().profile(jid.local()))
-              .map(p -> {
-                final RosterQuery.RosterItem item = new RosterQuery.RosterItem(p.jid(), FROM, p.name());
-                p.available(online.contains(p.jid()));
-                item.append(p);
-                item.group("Favorites");
-                return item;
-              })
-              .forEach(query::add);
+          try (final Stream<JID> favorites = Roster.instance().favorites(rosterIq.from())) {
+            favorites.filter(known::add)
+                .map(jid -> Roster.instance().profile(jid.local()))
+                .map(p -> {
+                  final RosterQuery.RosterItem item = new RosterQuery.RosterItem(p.jid(), FROM, p.name());
+                  p.available(online.contains(p.jid()));
+                  item.append(p);
+                  item.group("Favorites");
+                  return item;
+                })
+                .forEach(query::add);
+          }
 
-          LaborExchange.board().topExperts()
-              .filter(known::add)
-              .map(jid -> Roster.instance().profile(jid.local()))
-              .map(p -> {
-                final JID jid = p.jid();
-                final RosterQuery.RosterItem item = new RosterQuery.RosterItem(jid, FROM, p.name());
-                p.available(online.contains(jid));
-                item.append(p);
-                item.group("Top");
-                return item;
-              })
-              .forEach(query::add);
+          try (final Stream<JID> topExperts = LaborExchange.board().topExperts()) {
+            topExperts.filter(known::add)
+                .map(jid -> Roster.instance().profile(jid.local()))
+                .map(p -> {
+                  final JID jid = p.jid();
+                  final RosterQuery.RosterItem item = new RosterQuery.RosterItem(jid, FROM, p.name());
+                  p.available(online.contains(jid));
+                  item.append(p);
+                  item.group("Top");
+                  return item;
+                })
+                .forEach(query::add);
+          }
           sender().tell(Iq.answer(rosterIq, query), self());
         }
         else if (items.get(0).jid().local().equals("experts")) {
           final RosterQuery query = new RosterQuery();
-          Roster.instance().allExperts()
-              .map(XMPPUser::jid)
-              .map(jid -> Roster.instance().profile(jid.local()))
-              .map(p -> {
-                final JID jid = p.jid();
-                final RosterQuery.RosterItem item = new RosterQuery.RosterItem(jid, FROM, p.name());
-                item.append(p);
-                return item;
-              })
-              .forEach(query::add);
+          try (final Stream<XMPPUser> allExperts = Roster.instance().allExperts()) {
+            allExperts.map(XMPPUser::jid)
+                .map(jid -> Roster.instance().profile(jid.local()))
+                .map(p -> {
+                  final JID jid = p.jid();
+                  final RosterQuery.RosterItem item = new RosterQuery.RosterItem(jid, FROM, p.name());
+                  item.append(p);
+                  return item;
+                })
+                .forEach(query::add);
+          }
           sender().tell(Iq.answer(rosterIq, query), self());
         }
         else {
@@ -118,13 +122,14 @@ public class RosterService extends ActorAdapter<UntypedActor> {
       String waitingForId;
       Iq<RosterQuery> initial;
     }
+
     {
       startWith(States.INITIAL, new Data());
 
       when(States.INITIAL,
           matchEvent(Iq.class, (iq, data) -> {
             //noinspection unchecked
-            data.initial = (Iq<RosterQuery>)iq;
+            data.initial = (Iq<RosterQuery>) iq;
             final RosterQuery query = new RosterQuery();
             data.initial.get().items().stream()
                 .map(item -> new RosterQuery.RosterItem(item.jid(), RosterQuery.RosterItem.Subscription.NONE, item.jid().local()))

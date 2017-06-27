@@ -2,6 +2,7 @@ package com.expleague.server;
 
 import com.expleague.model.ExpertsProfile;
 import com.expleague.model.Tag;
+import com.expleague.util.stream.RequiresClose;
 import com.expleague.xmpp.JID;
 
 import java.util.Date;
@@ -54,6 +55,8 @@ public class XMPPUser {
   public XMPPDevice[] devices() {
     return Roster.instance().devices(this.id);
   }
+
+  @RequiresClose
   public Stream<Tag> tags() {
     return Roster.instance().specializations(this.jid);
   }

@@ -3,16 +3,20 @@ package com.expleague.server.agents;
 import akka.actor.*;
 import akka.util.Timeout;
 import com.expleague.model.*;
-import com.expleague.util.akka.*;
-import com.spbsu.commons.util.Pair;
 import com.expleague.server.ExpLeagueServer;
+import com.expleague.util.akka.ActorAdapter;
+import com.expleague.util.akka.ActorMethod;
+import com.expleague.util.akka.AkkaTools;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Presence;
+import com.spbsu.commons.util.Pair;
 import org.jetbrains.annotations.Nullable;
 import scala.Option;
 import scala.collection.JavaConversions;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 

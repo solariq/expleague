@@ -11,11 +11,11 @@ public class MySQLTestOps extends MySQLOps {
   }
 
   public void setUp() throws Exception {
-    createStatement("drop-orders", "DELETE FROM Orders").execute();
-    createStatement("drop-tags", "DELETE FROM Tags").execute();
-    createStatement("drop-applications", "DELETE FROM Applications").execute();
-    createStatement("drop-patterns", "DELETE FROM Patterns").execute();
-    createStatement("drop-devices", "DELETE FROM Devices").execute();
-    createStatement("drop-users", "DELETE FROM Users").execute();
+    createStatement("DELETE FROM Orders").execute();
+    createStatement("DELETE FROM Tags").execute();
+    createStatement("DELETE FROM Applications").execute();
+    createStatement("DELETE FROM Patterns").execute();
+    createStatement("DELETE FROM Devices").execute();
+    createStatement("DELETE FROM Users").execute();
   }
 }
