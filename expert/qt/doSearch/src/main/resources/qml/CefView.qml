@@ -39,6 +39,14 @@ Rectangle{
         onSavedToStorage: {
             dosearch.navigation.context.vault.drop(text, "", [], owner.id)
         }
+
+        onUrlChanged: {
+            running = true
+        }
+        onLoadEnd: {
+            console.log("Running rebound current state: " + self.visible)
+            running = Qt.binding(function() {return self.visible && dosearch.main.active})
+        }
     }
 
 

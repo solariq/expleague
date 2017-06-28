@@ -324,7 +324,7 @@ Rectangle{
         Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            CefView{
+            CefView {
                 id: cefView
                 anchors.fill: parent
             }

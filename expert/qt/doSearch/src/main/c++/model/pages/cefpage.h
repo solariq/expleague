@@ -44,51 +44,13 @@ class BrowserListener;
 
 class TextCallback;
 
-struct image_buffer {
-  int width;
-  int height;
-  const void* data;
-};
-
-
-class QTPageRenderer : public QQuickFramebufferObject::Renderer {
-public:
-  QTPageRenderer(CefRefPtr<CefPageRenderer> renderer);
-
-  //Qt methods
-  virtual void render();
-
-  virtual QOpenGLFramebufferObject* createFramebufferObject(const QSize& size);
-
-  virtual void synchronize(QQuickFramebufferObject* obj);
-
-  //Cef methods
-  void clearBuffer();
-
-  virtual ~QTPageRenderer();
-
-private:
-  CefRefPtr<CefPageRenderer> m_renderer;
-  QQuickWindow* m_window;
-};
-
 class CefPageRenderer : public CefRenderHandler {
 public:
-  CefPageRenderer(CefItem* owner);
+  void draw();
+  void resize(int width, int height);
 
-  void setSize(int height, int width);
-
-  void clearBuffer();
-
-  void bind();
-
-  void pause(); //stop render draw white square
-  void resume();
-
-  void stop(); //stop render on QT level
-  void start();
-
-  void synchronize(QQuickFramebufferObject* obj);
+  void disable(); //stop render on QT level
+  void enable();
 
   void processNextFrame(std::function<void(const void* buffer, int w, int h)>);
 
@@ -101,35 +63,51 @@ public:
 #ifdef Q_OS_WIN
   virtual void OnCursorChange(CefRefPtr<CefBrowser> browser, HCURSOR cursor, CursorType type, const CefCursorInfo &custom_cursor_info) OVERRIDE;
 #elif defined(Q_OS_MAC)
-
-  virtual void OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor, CursorType type,
-                              const CefCursorInfo& custom_cursor_info) OVERRIDE;
-
+  virtual void OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor, CursorType type, const CefCursorInfo& custom_cursor_info) OVERRIDE;
 #endif
 
   virtual bool GetScreenPoint(CefRefPtr<CefBrowser> browser, int viewX, int viewY, int& screenX, int& screenY) OVERRIDE;
+  virtual bool StartDragging(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDragData> drag_data, DragOperationsMask allowed_ops, int x, int y) OVERRIDE;
 
-  virtual bool
-  StartDragging(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDragData> drag_data, DragOperationsMask allowed_ops, int x,
-                int y) OVERRIDE;
+IMPLEMENT_REFCOUNTING(CefPageRenderer)
 
-  IMPLEMENT_REFCOUNTING(CefPageRenderer)
-  private:
-    image_buffer m_buffer;
-  bool m_enable = true;
-  bool m_pause = false;
-  int m_x;
-  int m_y;
-  int m_new_height;
-  int m_new_width;
-  int m_texture_height = 0;
-  int m_texture_width = 0;
-  GLuint m_screen_tex = 0;
-  CefItem* m_owner;
+public:
+  explicit CefPageRenderer(CefItem* owner);
+
+private:
+  bool m_enable = false;
+  GLuint m_screen_tex;
+  int m_height, m_width;
+  CefItem* const m_owner;
   std::mutex m_mutex;
-  std::vector<CefRect> m_dirty_rects;
   std::function<void(const void* buffer, int w, int h)> m_next_frame_func;
+  bool m_clean = true;
+  void* m_gpu_buffer = nullptr;
 };
+
+class CefItem;
+
+class QTPageRenderer : public QQuickFramebufferObject::Renderer {
+public:
+  QTPageRenderer(const CefItem* owner, CefRefPtr<CefPageRenderer> renderer);
+
+  //Qt methods
+  virtual void render();
+
+  virtual QOpenGLFramebufferObject* createFramebufferObject(const QSize& size);
+
+  virtual void synchronize(QQuickFramebufferObject* obj);
+
+  virtual ~QTPageRenderer();
+private:
+  const CefItem* const m_owner;
+  CefRefPtr<CefPageRenderer> m_cef_renderer;
+  friend class CefPageRenderer;
+
+  QQuickWindow* m_window = nullptr;
+  GLuint m_tex;
+};
+
 
 class IOBuffer : public CefKeyboardHandler {
 public:
@@ -164,61 +142,30 @@ public:
   }
 
 IMPLEMENT_REFCOUNTING(IOBuffer)
-  private:
-    CefRefPtr<CefBrowser> m_browser;
+private:
+  CefRefPtr<CefBrowser> m_browser;
   uint32 m_key_flags = EVENTFLAG_NONE;
   int m_last_click_time;
   int m_click_count;
   QSet<int> m_pressed_keys;
 };
 
-class CefBrowserUpdateEvent: public QEvent {
-public:
-  CefBrowserUpdateEvent(const QEvent& other);
-  CefBrowserUpdateEvent();
-};
-
 class CefItem : public QQuickFramebufferObject, Browser {
-  Q_OBJECT
-  Q_PROPERTY(QUrl url
-                     READ
-                             url
-                     WRITE
-                             setUrl
-                     NOTIFY
-                     urlChanged)//url of webpage
-  Q_PROPERTY(double zoomFactor
-                     READ
-                             zoomFactor
-                     WRITE
-                     setZoomFactor)
-  Q_PROPERTY(bool running
-                     READ
-                             running
-                     WRITE
-                     setRunning)
-  Q_PROPERTY(bool allowLinkTtransitions
-                     READ
-                             allowLinkTtransitions
-                     WRITE
-                     setAllowLinkTtransitions)
-  Q_PROPERTY(bool cookiesEnable
-                     READ
-                             cookiesEnable
-                     WRITE
-                     setCookiesEnable)
+Q_OBJECT
 
-  Q_PROPERTY(bool mute
-                     READ
-                     mute
-                     WRITE
-                     setMute)
+  Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)//url of webpage
+  Q_PROPERTY(double zoomFactor READ zoomFactor WRITE setZoomFactor)
+  Q_PROPERTY(bool running READ running WRITE setRunning)
+  Q_PROPERTY(bool allowLinkTtransitions READ allowLinkTtransitions WRITE setAllowLinkTtransitions)
+  Q_PROPERTY(bool cookiesEnable READ cookiesEnable WRITE setCookiesEnable)
+
+  Q_PROPERTY(bool mute READ mute WRITE setMute)
 
   //Q_PROPERTY(QUrl actualUrl READ actualUrl NOTIFY actualUrlChanged) //url that can be changed in one web page
 public:
-  CefItem(QQuickItem* parent = 0);
+  explicit CefItem(QQuickItem* parent = 0);
 
-  ~CefItem();
+  virtual ~CefItem();
 
   virtual Renderer* createRenderer() const;
 
@@ -230,11 +177,9 @@ public:
 
   Q_INVOKABLE void redirectEnable(bool redirect);
 
-  Q_INVOKABLE bool
-  sendKeyPress(QObject* qKeyEvent);
+  Q_INVOKABLE bool sendKeyPress(QObject* qKeyEvent);
 
-  Q_INVOKABLE bool
-  sendKeyRelease(QObject* qKeyEvent);
+  Q_INVOKABLE bool sendKeyRelease(QObject* qKeyEvent);
 
   Q_INVOKABLE void setBrowserFocus(bool focus);
 
@@ -299,59 +244,48 @@ public:
   virtual QQuickItem* asItem() {
     return this;
   }
+
+  CefRefPtr<CefBrowser> browser() const { return m_browser; }
+
 private:
-  CefRefPtr<CefPageRenderer> m_renderer;
-  CefRefPtr<BrowserListener> m_listener;
   CefRefPtr<CefBrowser> m_browser = nullptr;
-  CefRefPtr<TextCallback> m_text_callback;
-  CefRefPtr<IOBuffer> m_iobuffer;
-  QTimer* m_timer;
+  CefRefPtr<IOBuffer> m_iobuffer = nullptr;
+
+  const CefRefPtr<CefPageRenderer> m_renderer;
+  const CefRefPtr<BrowserListener> m_listener;
+  const CefRefPtr<TextCallback> m_text_callback;
 
   int m_current_search_id = 0;
-  QString last_find_request = "";
 
 private:
   QUrl m_url;
   QString m_html = "";
   double m_zoom_factor = 1;
-  bool m_fullscreen;
   bool m_running = true;
   bool m_cookies_enable = true;
   bool m_mute;
   //property methods
+
 public:
   QUrl url() const;
-
   void setUrl(const QUrl& url);
 
   bool running();
-
   void setRunning(bool running);
 
   double zoomFactor();
-
   void setZoomFactor(double zoomFactor);
 
   bool allowLinkTtransitions();
-
   void setAllowLinkTtransitions(bool);
 
   bool cookiesEnable();
-
   void setCookiesEnable(bool cookies);
 
   QSize pageSize();
 
   bool mute();
-
   void setMute(bool);
-
-protected:
-
-  virtual void customEvent(QEvent* evt) {
-//    if (dynamic_cast<CefBrowserUpdateEvent*>(evt))
-//      CefDoMessageLoopWork();
-  }
 
 signals:
 
@@ -382,52 +316,40 @@ signals:
   //void setActualUrl();
 
 private slots:
-
-  void resize();
-
   void initBrowser(QQuickWindow* window);
-
   void updateVisible();
 
 private:
   void setJSMute(bool);
-
   void destroyBrowser();
 
   friend class BrowserListener;
 };
 
-//class ContextMenuModel: QObject{
-//public:
-//    ContextMenuModel(CefRefPtr<CefMenuModel> model);
-//    Q_PROPERTY(QQmlListProperty<QString> options READ options)
-//    Q_INVOKABLE void select(int number);
-//    Q_INVOKABLE void cancle();
-//private:
-//    QList<QString> m_options;
-//    CefRefPtr<CefRunContextMenuCallback> m_callback;
-//    QMap<int, int> m_option_ids;
-//};
-
 class TextCallback : public CefStringVisitor {
 public:
-  void setOwner(CefItem* item);
-
   virtual void Visit(const CefString& string) OVERRIDE;
 
+  void enable() { m_enabled = true; }
+  void disable() { m_enabled = false; }
+
+public:
+  explicit TextCallback(CefItem* owner): m_owner(owner) {}
+
 private:
-  CefItem* m_owner;
-  IMPLEMENT_REFCOUNTING(TextCallback)
+  bool m_enabled = false;
+  CefItem* const m_owner;
+IMPLEMENT_REFCOUNTING(TextCallback)
 };
 
 class BrowserListener : public CefRequestHandler,
-    public CefLifeSpanHandler,
-    public CefDisplayHandler,
-    public CefKeyboardHandler,
-    public CefDragHandler,
-    public CefLoadHandler,
-    public CefDownloadHandler,
-    public CefContextMenuHandler {
+                        public CefLifeSpanHandler,
+                        public CefDisplayHandler,
+                        public CefKeyboardHandler,
+                        public CefDragHandler,
+                        public CefLoadHandler,
+                        public CefDownloadHandler,
+                        public CefContextMenuHandler {
 public:
   BrowserListener(CefItem* owner) : m_owner(owner) {}
 
@@ -478,28 +400,17 @@ public:
   virtual void OnLoadStart(CefRefPtr<CefBrowser> browser,
                            CefRefPtr<CefFrame> frame,
                            TransitionType transition_type) OVERRIDE;
-  //    virtual bool OnDragEnter(CefRefPtr<CefBrowser> browser,
-  //                             CefRefPtr<CefDragData> dragData,
-  //                             DragOperationsMask mask)
-  //    {
-  //        qDebug() << "drag in cef" << QString::fromStdString(dragData->GetFileName().ToString())
-  //                 << QString::fromStdString(dragData->GetLinkURL().ToString()) <<
-  //                    dragData->IsFile();
-  //        return false;
-  //    }
-
-
 
   void userEventOccured(); //click or smth
   void redirectEnable(bool);
 
-  void setEnable(bool);
+  void enable();
+  void disable();
 
-  IMPLEMENT_REFCOUNTING(CefRequestHandler)
-  private:
-    bool m_first = true;
+IMPLEMENT_REFCOUNTING(CefRequestHandler)
+private:
+  CefItem* const m_owner;
   qint64 m_last_event_time = 0;
-  CefItem* m_owner;
   bool m_redirect_enable = true;
   bool m_enable;
   bool m_allow_link_trans = false;

@@ -69,6 +69,7 @@ public: // new functionality
     Q_INVOKABLE void setIcon(const QString& icon);
     Q_INVOKABLE void reset() { setRedirect(0); }
 
+    Q_INVOKABLE virtual QString customJavaScript() { return "";}
 public: // overloads
     Page* parentPage() const;
 

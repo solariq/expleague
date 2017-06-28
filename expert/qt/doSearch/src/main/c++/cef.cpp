@@ -162,20 +162,19 @@ void initCef(int argc, char* argv[]) {
   cefTimer->setSingleShot(false);
   QObject::connect(cefTimer, &QTimer::timeout, []() {
     static auto prev = std::chrono::high_resolution_clock::now();
-    static int interval = 1;
+    static int interval = 100;
     CefDoMessageLoopWork();
     auto now = std::chrono::high_resolution_clock::now();
     std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
-    bool idle = dif.count() < 1000000;
-//    qDebug() << dif.count();
-    if (idle && interval < 100000) {
+    bool idle = dif.count() < 500000;
+//    qDebug() << dif.count() << interval;
+    if (idle && interval < 500000) {
       interval += 10;
     }
-    else if (!idle) {
-      interval = 0;
+    else if (!idle && interval > 100) {
+      interval -= 50;
     }
-    if (interval > 0)
-      QThread::usleep(interval); // I hate qt
+    QThread::usleep(interval); // I hate qt
     prev = std::chrono::high_resolution_clock::now();
   });
   cefTimer->start();
