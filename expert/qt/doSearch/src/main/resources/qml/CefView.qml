@@ -41,11 +41,10 @@ Rectangle{
         }
 
         onUrlChanged: {
-            running = true
+            focused = true
         }
         onLoadEnd: {
-            console.log("Running rebound current state: " + self.visible)
-            running = Qt.binding(function() {return self.visible && dosearch.main.active})
+            focused = Qt.binding(function() {return self.visible && dosearch.main.active})
         }
     }
 

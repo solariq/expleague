@@ -602,7 +602,6 @@ void CefItem::initBrowser(QQuickWindow* window) {
   m_listener->enable();
   m_text_callback->enable();
 
-
   CefWindowInfo mainWindowInfo;
 #ifdef Q_OS_WIN
   mainWindowInfo.SetAsWindowless((HWND) window->winId(), false);
@@ -1047,7 +1046,7 @@ void BrowserListener::disable() {
   m_enable = false;
 }
 
-double CefItem::zoomFactor() {
+double CefItem::zoomFactor() const {
   return m_zoom_factor;
 }
 
@@ -1087,7 +1086,7 @@ void CefItem::setUrl(const QUrl& url) {
   emit urlChanged(url);
 }
 
-bool CefItem::running() {
+bool CefItem::running() const {
   return m_running;
 }
 
@@ -1103,6 +1102,16 @@ void CefItem::setRunning(bool running) {
   else if (running && m_running && !m_browser) {
     initBrowser(window());
   }
+}
+
+bool CefItem::focused() const {
+  return m_focused;
+}
+
+void CefItem::setFocused(bool focused) {
+  if (m_browser)
+    m_browser->GetHost()->SetFocus(focused);
+  m_focused = focused;
 }
 
 bool CefItem::allowLinkTtransitions() {

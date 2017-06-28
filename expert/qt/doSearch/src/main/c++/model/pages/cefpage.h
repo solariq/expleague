@@ -156,6 +156,7 @@ Q_OBJECT
   Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)//url of webpage
   Q_PROPERTY(double zoomFactor READ zoomFactor WRITE setZoomFactor)
   Q_PROPERTY(bool running READ running WRITE setRunning)
+  Q_PROPERTY(bool focused READ focused WRITE setFocused)
   Q_PROPERTY(bool allowLinkTtransitions READ allowLinkTtransitions WRITE setAllowLinkTtransitions)
   Q_PROPERTY(bool cookiesEnable READ cookiesEnable WRITE setCookiesEnable)
 
@@ -270,10 +271,13 @@ public:
   QUrl url() const;
   void setUrl(const QUrl& url);
 
-  bool running();
+  bool running() const;
   void setRunning(bool running);
 
-  double zoomFactor();
+  bool focused() const;
+  void setFocused(bool focused);
+
+  double zoomFactor() const;
   void setZoomFactor(double zoomFactor);
 
   bool allowLinkTtransitions();
@@ -324,6 +328,8 @@ private:
   void destroyBrowser();
 
   friend class BrowserListener;
+
+  bool m_focused = false;
 };
 
 class TextCallback : public CefStringVisitor {
