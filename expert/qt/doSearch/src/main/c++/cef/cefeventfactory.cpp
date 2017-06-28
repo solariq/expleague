@@ -1,5 +1,6 @@
 
 
+#include <QCoreApplication>
 #include "cefeventfactory.h"
 #include "windowskeyboardcodes.h"
 
@@ -408,9 +409,9 @@ static inline uint32 modifierForKeyCode(int key)
         return EVENTFLAG_ALT_DOWN;
 #if defined(Q_OS_OSX)
     case Qt::Key_Control:
-        return (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) ? EVENTFLAG_COMMAND_DOWN : EVENTFLAG_CONTROL_DOWN;
+        return (!QCoreApplication::instance()->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) ? EVENTFLAG_COMMAND_DOWN : EVENTFLAG_CONTROL_DOWN;
     case Qt::Key_Meta:
-        return (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) ? EVENTFLAG_CONTROL_DOWN : EVENTFLAG_COMMAND_DOWN;
+        return (!QCoreApplication::instance()->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) ? EVENTFLAG_CONTROL_DOWN : EVENTFLAG_COMMAND_DOWN;
 #else
     case Qt::Key_Control:
         return EVENTFLAG_CONTROL_DOWN;

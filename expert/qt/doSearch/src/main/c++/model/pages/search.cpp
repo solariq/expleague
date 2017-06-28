@@ -25,14 +25,6 @@ void SERPage::interconnect() {
     connect(request(), SIGNAL(sessionChanged()), SLOT(onSessionChanged()));
 }
 
-QString SERPage::customJavaScript(){
-  return R"(
-  elems = document.getElementsByTagName("A")
-  for (var i = 0; i < elems.length; ++i) {
-      elems[i].removeAttribute("onmousedown")
-  })";
-}
-
 //SearchRequest SearchRequest::EMPTY("");
 
 QString YandexSERPage::parseQuery(const QUrl& request) {
@@ -63,7 +55,6 @@ void YandexSERPage::removeTimeStamps(QUrl& url){
     query.removeQueryItem("mc");
     url.setQuery(query);
 }
-
 
 YandexSERPage::YandexSERPage(const QString& id, const QUrl& url, doSearch* parent): SERPage(id, parseQuery(url), url, parent)
 {}

@@ -127,9 +127,7 @@ private:
 
     QList<QQuickItem*> m_screens;
     QSet<Page*> m_prev_known;
-    QDnsLookup* m_lookup = 0;
     QQuickItem* m_active_screen = 0;
-
 };
 
 class PageTree: public QObject{

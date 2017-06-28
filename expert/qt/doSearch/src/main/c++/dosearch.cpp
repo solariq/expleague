@@ -19,7 +19,7 @@
 expleague::doSearch* root;
 namespace expleague {
 
-doSearch::doSearch(QObject* parent) : QObject(parent) {
+doSearch::doSearch(QObject* parent) : QObject(parent), m_nam(new QNetworkAccessManager(this)) {
     m_dictionary = new CollectionDictionary(
                 "dictionary",
                 [](const QString& word) { return word; },
@@ -84,6 +84,12 @@ Page* doSearch::empty() const {
     });
 }
 
+void removeTimeStamps(QUrl& url){
+    if(url.host().contains("google.")){
+
+    }
+}
+
 Page* doSearch::web(const QUrl& url) const {
     QString query = url.query().isEmpty() ? "" : "/" + md5(url.query());
     if (WebResource::rootUrl(url)) { // site
@@ -134,11 +140,11 @@ WebPage* doSearch::webPage(const QUrl& url) const {
 
 QString doSearch::nextId(const QString& prefix) const {
     QString id;
-    PersistentPropertyHolder rootHolder(pageResource(prefix));
+    PersistentPropertyHolder root(pageResource(prefix));
     do {
         id = randString(10);
     }
-    while (rootHolder.containsKey(id));
+    while (root.containsKey(id));
     return prefix + "/" + id;
 }
 
@@ -290,5 +296,9 @@ void doSearch::remove(Context* context, bool erase) {
         contextDir.removeRecursively();
         context->remove("");
     }
+}
+
+QNetworkAccessManager *doSearch::sharedNAM() {
+  return m_nam;
 }
 }

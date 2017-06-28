@@ -21,15 +21,17 @@
 #pragma GCC diagnostic pop
 #endif
 
+class QQuickItem;
 namespace expleague {
 
 
-class Browser{
+class Browser {
 public:
-    virtual void shutDown() = 0;
+  virtual void shutDown() = 0;
+  virtual QQuickItem* asItem() = 0;
 protected:
-    void addCefBrowserToGC();
-    void removeCefBrowserFromGC();
+  void addCefBrowserToGC();
+  void removeCefBrowserFromGC();
 };
 
 void initCef(int i, char *pString[]);
