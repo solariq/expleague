@@ -184,7 +184,7 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
   }
 
   private void setupOffer(Node partNode, Offer offer) throws RepositoryException {
-    partNode.setProperty("topic", offer.topic());
+    assert writeSession != null;
     partNode.setProperty("started", offer.started());
     final Node locationNode;
     if (offer.location() != null) {
@@ -194,6 +194,17 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
         locationNode = partNode.getNode("location");
       locationNode.setProperty("latitude", offer.location().latitude());
       locationNode.setProperty("longitude", offer.location().longitude());
+    }
+    { //save topic to make index
+      final Node topicNode;
+      if (!partNode.hasNode("topic"))
+        topicNode = partNode.addNode("topic", "nt:resource");
+      else
+        topicNode = partNode.getNode("topic");
+
+      topicNode.setProperty("jcr:mimeType", "text/markdown");
+      topicNode.setProperty("jcr:data", writeSession.getValueFactory().createBinary(new ByteArrayInputStream(offer.topic().getBytes(StreamTools.UTF))));
+      topicNode.setProperty("jcr:encoding", "UTF-8");
     }
     { // tags & patterns cleanup
       final NodeIterator tagsIt = partNode.getNodes();
