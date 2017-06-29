@@ -93,7 +93,7 @@ class CefItem;
 
 class QTPageRenderer : public QQuickFramebufferObject::Renderer {
 public:
-  QTPageRenderer(const CefItem* owner, CefRefPtr<CefPageRenderer> renderer);
+  QTPageRenderer(const CefItem* owner);
 
   //Qt methods
   virtual void render();
@@ -103,7 +103,6 @@ public:
   virtual void synchronize(QQuickFramebufferObject* obj);
 private:
   const CefItem* const m_owner;
-  CefRefPtr<CefPageRenderer> m_cef_renderer;
   friend class CefPageRenderer;
 
   QQuickWindow* m_window = nullptr;
@@ -245,6 +244,10 @@ public:
 
   virtual QQuickItem* asItem() {
     return this;
+  }
+
+  CefPageRenderer* renderer() const{
+    return m_renderer.get();
   }
 
   CefRefPtr<CefBrowser> browser() const { return m_browser; }

@@ -609,7 +609,7 @@ void NavigationManager::onGroupsChanged() {
                 known.insert(page);
             }
             else {
-                Page* current = selectedLeaf(m_active_context, page);
+                Page* current = page; //selectedLeaf(m_active_context, page);
                 if (!known.contains(current)) {
                     screens += current->ui();
                     known.insert(current);

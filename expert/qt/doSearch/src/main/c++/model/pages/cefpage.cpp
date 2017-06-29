@@ -1,6 +1,7 @@
 
 #include "cefpage.h"
 #include "include/wrapper/cef_helpers.h"
+#include <QOpenGLFunctions_2_0>
 
 #include <QQuickWindow>
 #include <QQmlEngine>
@@ -8,22 +9,6 @@
 
 #include <QtOpenGL>
 namespace expleague {
-
-//void downloadSmallFile(const QUrl& url, const QString& destination, std::function<void()> callback){
-//    QNetworkAccessManager manager;
-//    QNetworkReply* replay = manager.get(QNetworkRequest(url));
-//    QObject::connect(replay, &QNetworkReply::finished, [replay, callback, destination](){
-//        QFile file(destination);
-//        if(!file.open(QFile::WriteOnly)){
-//            qDebug() << "ERROR: unable download file, wrong name";
-//            return;
-//        }
-//        file.write(replay->readAll());
-//        file.close();
-//        replay->deleteLater();
-//        callback();
-//    });
-//}
 
 CefString fromUrl(const QUrl& url) {
   QString surl = url.toString();
@@ -38,8 +23,9 @@ CefString fromUrl(const QUrl& url) {
 }
 
 QOpenGLFramebufferObject* QTPageRenderer::createFramebufferObject(const QSize& size) {
-  if (size.height() != m_cef_renderer->height() || size.width() != m_cef_renderer->width()) {
-    m_cef_renderer->resize(size.width(), size.height());
+  CefPageRenderer* renderer = m_owner->renderer();
+  if (size.height() != renderer->height() || size.width() != renderer->width()) {
+    renderer->resize(size.width(), size.height());
     const CefRefPtr<CefBrowser>& browser = m_owner->browser();
     if (browser.get())
       browser->GetHost()->WasResized();
@@ -47,7 +33,7 @@ QOpenGLFramebufferObject* QTPageRenderer::createFramebufferObject(const QSize& s
   return new QOpenGLFramebufferObject(size);
 }
 
-QTPageRenderer::QTPageRenderer(const CefItem* owner, CefRefPtr<CefPageRenderer> renderer): m_owner(owner), m_cef_renderer(renderer) {
+QTPageRenderer::QTPageRenderer(const CefItem* owner): m_owner(owner) {
 }
 
 //QT reder thread
@@ -57,7 +43,7 @@ void QTPageRenderer::render() {
     glEnable(GL_TEXTURE_2D);
 
   glBindTexture(GL_TEXTURE_2D, framebufferObject()->texture());
-  m_cef_renderer->draw();
+  m_owner->renderer()->draw();
   glBindTexture(GL_TEXTURE_2D, 0);
   if (texturesEnabled)
     glDisable(GL_TEXTURE_2D);
@@ -92,15 +78,16 @@ bool CefPageRenderer::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) 
 }
 
 void CefPageRenderer::draw() {
-  QOpenGLExtensions  glfunc(QOpenGLContext::currentContext());
-  QOpenGLExtraFunctions glfuncextra(QOpenGLContext::currentContext());
+  assert(QOpenGLContext::currentContext());
+  QOpenGLFunctions_2_0 glfunc;
+  glfunc.initializeOpenGLFunctions();
   std::lock_guard<std::mutex> guard(m_mutex);
   glfunc.glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_screen_tex);
-  glfuncextra.glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+  glfunc.glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+  glfunc.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
 
 //  auto prev = std::chrono::high_resolution_clock::now();
-  m_gpu_buffer = glfuncextra.glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+  m_gpu_buffer = glfunc.glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
   glfunc.glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 //  auto now = std::chrono::high_resolution_clock::now();
 //  std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
@@ -108,6 +95,9 @@ void CefPageRenderer::draw() {
 }
 
 void CefPageRenderer::resize(int width, int height) {
+  assert(QOpenGLContext::currentContext());
+  QOpenGLFunctions_2_0 glfunc;
+  glfunc.initializeOpenGLFunctions();
   std::lock_guard<std::mutex> guard(m_mutex);
   if (m_screen_tex) {
     glfunc.glUnmapBuffer(m_screen_tex);
@@ -116,7 +106,7 @@ void CefPageRenderer::resize(int width, int height) {
   glfunc.glGenBuffers(1, &m_screen_tex);
   glfunc.glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_screen_tex);
   glfunc.glBufferData(GL_PIXEL_UNPACK_BUFFER, width * height * 4, 0, GL_STREAM_DRAW);
-  m_gpu_buffer = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+  m_gpu_buffer = glfunc.glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
   glfunc.glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
   m_clean = true;
   m_height = height;
@@ -165,9 +155,12 @@ void CefPageRenderer::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType ty
 }
 
 CefPageRenderer::~CefPageRenderer() {
+  assert(QOpenGLContext::currentContext());
+  QOpenGLFunctions_2_0 glfunc;
+  glfunc.initializeOpenGLFunctions();
   if (m_screen_tex) {
-    glUnmapBuffer(m_screen_tex);
-    glDeleteBuffers(1, &m_screen_tex);
+    glfunc.glUnmapBuffer(m_screen_tex);
+    glfunc.glDeleteBuffers(1, &m_screen_tex);
   }
 }
 
@@ -466,7 +459,7 @@ CefItem::~CefItem() {
 }
 
 QQuickFramebufferObject::Renderer* CefItem::createRenderer() const {
-  return new QTPageRenderer(this, m_renderer);
+  return new QTPageRenderer(this);
 }
 
 class CookieContextHandler : public CefRequestContextHandler {

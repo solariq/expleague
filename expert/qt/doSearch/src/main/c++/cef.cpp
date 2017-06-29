@@ -150,7 +150,7 @@ void initCef(int argc, char* argv[]) {
 //    CefString(&settings.browser_subprocess_path).FromASCII("cef/cef-instance");
   #else
   CefMainArgs main_args(GetModuleHandle(NULL));
-  CefString(&settings.browser_subprocess_path).FromASCII("cef\\cef-exec.exe");
+  CefString(&settings.browser_subprocess_path).FromASCII("cef-exec.exe");
   #endif
 
   CefInitialize(main_args, settings, cefapp, NULL);
