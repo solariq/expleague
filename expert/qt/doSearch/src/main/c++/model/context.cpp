@@ -153,6 +153,7 @@ PagesGroup* Context::associated(Page* page, bool create){
     return m_associations[page->id()] = result;
 }
 
+
 PagesGroup* Context::suggest(Page* root) const {
     QList<Page*> pages;
     if (root == this) {

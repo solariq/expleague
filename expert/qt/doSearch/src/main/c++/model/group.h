@@ -82,6 +82,7 @@ public:
 
 public:
     QList<Page*> pages() const { return m_pages; }
+    QList<Page*> activePagesList() { return m_active_pages; }
     QList<Page*> visiblePagesList() const { return m_visible_pages; }
 
     Q_INVOKABLE void insert(Page* page, int position = -1);

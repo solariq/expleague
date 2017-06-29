@@ -151,7 +151,7 @@ void initCef(int argc, char *argv[]) {
 //    CefString(&settings.browser_subprocess_path).FromASCII("cef/cef-instance");
   #else
     CefMainArgs main_args(GetModuleHandle(NULL));
-    CefString(&settings.browser_subprocess_path).FromASCII("cef\\cef-exec.exe");
+    CefString(&settings.browser_subprocess_path).FromASCII("cef-exec.exe");
   #endif
 
     CefInitialize(main_args, settings, cefapp, NULL);
@@ -159,20 +159,21 @@ void initCef(int argc, char *argv[]) {
 
     cefTimer = new QTimer();
     cefTimer->setInterval(1);
-    cefTimer->setSingleShot(false);
+    cefTimer->setSingleShot(true);
     QObject::connect(cefTimer, &QTimer::timeout, [](){
-        auto start = std::chrono::high_resolution_clock::now();
+//        auto start = std::chrono::high_resolution_clock::now();
         CefDoMessageLoopWork();
-        auto finish = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<_int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start);
-        int interval = cefTimer->interval();
-        if(dif.count() < 10000){
-            if(interval < 100){
-                cefTimer->setInterval(cefTimer->interval());
-            }
-        }else if(dif.count() > 100000 && cefTimer->interval() > 0){
-            cefTimer->setInterval(interval == 1 ? 1 : interval/2);
-        }
+//        auto finish = std::chrono::high_resolution_clock::now();
+//        std::chrono::duration<_int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start);
+//        int interval = cefTimer->interval();
+//        if(dif.count() < 10000){
+//            if(interval < 100){
+//                cefTimer->setInterval(cefTimer->interval()*2);
+//            }
+//        }else if(dif.count() > 100000 && cefTimer->interval() > 0){
+//            cefTimer->setInterval(interval == 1 ? 1 : interval/2);
+//        }
+        cefTimer->start();
     });
     cefTimer->start();
 }

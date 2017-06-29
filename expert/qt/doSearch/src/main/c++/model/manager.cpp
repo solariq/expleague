@@ -548,6 +548,16 @@ void NavigationManager::onPagesChanged() {
     rebalanceWidth();
 }
 
+Page* selectedLeaf(Context* context, Page* page){
+  PagesGroup* current = context->associated(page, false);
+  Page* result = page;
+  while(current && (page = current->selectedPage())){
+    result = page;
+    current = context->associated(page, false);
+  }
+  return result;
+}
+
 void NavigationManager::onGroupsChanged() {
     rebalanceWidth();
     QSet<Page*> known;
@@ -568,10 +578,10 @@ void NavigationManager::onGroupsChanged() {
     }
 
     foreach (PagesGroup* group, m_groups) {
-        active.unite(group->visiblePagesList().toSet());
+        active.unite(group->activePagesList().toSet());
     }
     foreach (PagesGroup* group, m_groups) {
-        foreach(Page* page, group->visiblePagesList()) {
+        foreach(Page* page, group->activePagesList()) {
             if (known.contains(page))
                 continue;
             if (group->selectedPage() == page) {
@@ -579,12 +589,7 @@ void NavigationManager::onGroupsChanged() {
                 known.insert(page);
             }
             else {
-                Page* current = page;
-                QSet<Page*> context = active;
-                while (current->lastVisited() && !context.contains(current->lastVisited())) {
-                    current = current->lastVisited();
-                    context.unite(current->outgoing().toSet());
-                }
+                Page* current = selectedLeaf(m_active_context, page);
                 if (!known.contains(current)) {
                     screens += current->ui();
                     known.insert(current);

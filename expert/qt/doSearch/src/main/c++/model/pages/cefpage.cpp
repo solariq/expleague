@@ -673,20 +673,6 @@ void CefItem::mouseWheel(int x, int y, int buttons, QPoint angle) {
 }
 
 
-uint32 convertModifires(int mouseButtons) {
-  uint32 result = EVENTFLAG_NONE;
-  if (mouseButtons & Qt::LeftButton) {
-    result |= EVENTFLAG_LEFT_MOUSE_BUTTON;
-  }
-  if (mouseButtons & Qt::RightButton) {
-    result |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
-  }
-  if (mouseButtons & Qt::MiddleButton) {
-    result |= EVENTFLAG_MIDDLE_MOUSE_BUTTON;
-  }
-  return result;
-}
-
 cef_mouse_button_type_t getButton(int mouseButtons) {
   if (mouseButtons & Qt::LeftButton) {
     return MBT_LEFT;
@@ -705,7 +691,7 @@ void IOBuffer::mouseMove(int x, int y, int buttons) {
     CefMouseEvent event;
     event.x = x;
     event.y = y;
-    event.modifiers = convertModifires(buttons);;
+    event.modifiers = m_key_flags;
     m_browser->GetHost()->SendMouseMoveEvent(event, false);
   }
 }
@@ -722,7 +708,7 @@ void IOBuffer::mousePress(int x, int y, int buttons) {
     CefMouseEvent event;
     event.x = x;
     event.y = y;
-    m_key_flags &= convertModifires(buttons);
+    m_key_flags |= CefEventFactory::mouseEventFlags(buttons);
     event.modifiers = m_key_flags;
     m_browser->GetHost()->SendMouseClickEvent(event, getButton(buttons), false, m_click_count);
   }
@@ -733,7 +719,7 @@ void IOBuffer::mouseRelease(int x, int y, int buttons) {
     CefMouseEvent event;
     event.x = x;
     event.y = y;
-    m_key_flags &= ~convertModifires(buttons);
+    m_key_flags &= ~CefEventFactory::mouseEventFlags(buttons);
     event.modifiers = m_key_flags;
     m_browser->GetHost().get()->SendMouseClickEvent(event, getButton(buttons), true, m_click_count);
   }
@@ -750,34 +736,14 @@ void IOBuffer::mouseWheel(int x, int y, int buttons, QPoint angle) {
   }
 }
 
-cef_event_flags_t getFlagFromKey(int key) {
-  switch (key) {
-  case 16777249:
-    return EVENTFLAG_CONTROL_DOWN; //Ctrl key
-  case 16777251:
-    return EVENTFLAG_ALT_DOWN; //alt
-  default:
-    return EVENTFLAG_NONE;
-  }
-}
-
-int getWinVirtualKeyCodeFromUtf16Char(char16 c){
-  if(c >= 'a' && c <= 'z'){
-    return c - 'a' + 'A';
-  }
-  return c;
-}
-
 
 bool IOBuffer::keyPress(QKeyEvent* event) {
   if (!m_browser){
     return false;
   }
   m_pressed_keys.insert(event->key());
-  qDebug() << "keyPressEvent" << "key:" << event->key() << "modifires" << event->modifiers();
-
   m_browser->GetHost()->SendKeyEvent(CefEventFactory::createPressEvent(event));
-
+  m_key_flags |= CefEventFactory::keyEventFlags(event);
   if (!event->text().isEmpty()){
     m_browser->GetHost()->SendKeyEvent(CefEventFactory::createCharEvent(event));
   }
@@ -793,6 +759,7 @@ bool IOBuffer::keyRelease(QKeyEvent* event) {
   }else{
     m_pressed_keys.remove(event->key());
   }
+  m_key_flags &= ~CefEventFactory::keyEventFlags(event);
   //qDebug() << "keyReleaseEvent" << "key:" << event->key() << "modifires" << event->modifiers();
   m_browser->GetHost()->SendKeyEvent(CefEventFactory::createReleaseEvent(event));
   return true;
@@ -993,11 +960,7 @@ void CefItem::loadHtml(const QString &html) {
   }
   m_html = html;
   if (m_running && m_browser) {
-#ifdef Q_OS_WIN
-    m_browser->GetMainFrame()->LoadStringW(m_html.toStdString(), "about:blank");
-#elif defined(Q_OS_MAC)
     m_browser->GetMainFrame()->LoadString(m_html.toStdString(), "about:blank");
-#endif
   } else {
     initBrowser(window());
   }

@@ -529,4 +529,23 @@ CefMouseEvent CefEventFactory::createMouseEvent(double x, double y){
     return event;
 }
 
+uint32 CefEventFactory::mouseEventFlags(int mouseButtons){
+  uint32 result = EVENTFLAG_NONE;
+  if (mouseButtons & Qt::LeftButton) {
+    result |= EVENTFLAG_LEFT_MOUSE_BUTTON;
+  }
+  if (mouseButtons & Qt::RightButton) {
+    result |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
+  }
+  if (mouseButtons & Qt::MiddleButton) {
+    result |= EVENTFLAG_MIDDLE_MOUSE_BUTTON;
+  }
+  return result;
+}
+
+uint32 CefEventFactory::keyEventFlags(QKeyEvent* event){
+  return modifierForKeyCode(event->key());
+}
+
+
 
