@@ -110,6 +110,7 @@
             <param name="enableConsistencyCheck" value="true" />
             <param name="forceConsistencyCheck" value="true" />
             <param name="tikaConfigPath" value="${rep.home}/tika-config.xml"/>
+            <param name="analyzer" value="org.apache.lucene.analysis.ru.RussianAnalyzer"/>
         </SearchIndex>
     </Workspace>
 
@@ -144,6 +145,7 @@
     <SearchIndex class="org.apache.jackrabbit.core.query.lucene.SearchIndex">
         <param name="path" value="${rep.home}/repository/index"/>
         <param name="supportHighlighting" value="true"/>
+        <param name="analyzer" value="org.apache.lucene.analysis.ru.RussianAnalyzer"/>
     </SearchIndex>
 
     <!--

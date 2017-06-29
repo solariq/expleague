@@ -1,10 +1,12 @@
-#include "cefpage.h"
 
+#include "cefpage.h"
 #include "include/wrapper/cef_helpers.h"
-#include <QtOpenGL>
+
 #include <QQuickWindow>
 #include <QQmlEngine>
+#include "dosearch.h"
 
+#include <QtOpenGL>
 namespace expleague {
 
 //void downloadSmallFile(const QUrl& url, const QString& destination, std::function<void()> callback){
@@ -23,7 +25,7 @@ namespace expleague {
 //    });
 //}
 
-CefString fromUrl(const QUrl &url) {
+CefString fromUrl(const QUrl& url) {
   QString surl = url.toString();
   if (surl.isEmpty()) {
     return "about:blank";
@@ -35,12 +37,26 @@ CefString fromUrl(const QUrl &url) {
   return surl.toStdString();
 }
 
-QOpenGLFramebufferObject *QTPageRenderer::createFramebufferObject(const QSize &size) {
+QOpenGLFramebufferObject* QTPageRenderer::createFramebufferObject(const QSize& size) {
+//  m_window->resetOpenGLState();
+  m_cef_renderer->resize(size.width(), size.height());
+
+  if (m_tex)
+    glDeleteTextures(1, &m_tex);
+  glGenTextures(1, &m_tex);
+  glBindTexture(GL_TEXTURE_2D, m_tex);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+  glBindTexture(GL_TEXTURE_2D, 0);
+//  m_window->resetOpenGLState();
+  const CefRefPtr<CefBrowser>& browser = m_owner->browser();
+  if (browser.get())
+    browser->GetHost()->WasResized();
   return new QOpenGLFramebufferObject(size);
 }
 
-QTPageRenderer::QTPageRenderer(CefRefPtr<CefPageRenderer> renderer) : m_renderer(renderer) {
-
+QTPageRenderer::QTPageRenderer(const CefItem* owner, CefRefPtr<CefPageRenderer> renderer): m_owner(owner), m_cef_renderer(renderer) {
 }
 
 QTPageRenderer::~QTPageRenderer() {
@@ -49,10 +65,19 @@ QTPageRenderer::~QTPageRenderer() {
 
 //QT reder thread
 void QTPageRenderer::render() {
-  //  qDebug() << "render";
   m_window->resetOpenGLState();
+
   framebufferObject()->bind();
-  m_renderer->bind();
+
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, m_tex);
+
+  auto prev = std::chrono::high_resolution_clock::now();
+  m_cef_renderer->draw();
+//  auto now = std::chrono::high_resolution_clock::now();
+//  std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
+//  qDebug() << "Rendered for " << dif.count() << "usec";
+
   glBegin(GL_QUADS);
   glTexCoord2f(0.f, 0.f);
   glVertex2f(-1.f, -1.f);
@@ -63,134 +88,122 @@ void QTPageRenderer::render() {
   glTexCoord2f(1.f, 0.f);
   glVertex2f(1.f, -1.f);
   glEnd();
-  glDisable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, 0);
+//  glDisable(GL_TEXTURE_2D);
   m_window->resetOpenGLState();
 }
 
-CefPageRenderer::CefPageRenderer(CefItem *owner) : m_owner(owner) {
-  m_buffer.data = 0;
+CefPageRenderer::CefPageRenderer(CefItem* owner): m_owner(owner) {
 }
 
 //Qt render thread,  ui (onpaint, CefDoMessageLoopWork, QQuickFramebufferObject) blocked
-void QTPageRenderer::synchronize(QQuickFramebufferObject *obj) {
+void QTPageRenderer::synchronize(QQuickFramebufferObject* obj) {
   m_window = obj->window();
-  m_renderer->synchronize(obj);
 }
 
-void CefPageRenderer::synchronize(QQuickFramebufferObject *obj) {
-  QPointF c = obj->mapToGlobal(QPointF(0, 0));
-  m_x = (int) (c.x());
-  m_y = (int) (c.y());
-}
-
-void CefPageRenderer::processNextFrame(std::function<void(const void *, int, int)> f) {
+void CefPageRenderer::processNextFrame(std::function<void(const void*, int, int)> f) {
   m_next_frame_func = f;
 }
 
-//ui thread
-void CefPageRenderer::setSize(int width, int height) {
-  CEF_REQUIRE_UI_THREAD()
-      this->clearBuffer();
-  m_new_height = height;
-  m_new_width = width;
-}
-
-void CefPageRenderer::clearBuffer() {
-  m_mutex.lock();
-  m_buffer.data = 0;
-  m_mutex.unlock();
-}
-
-void CefPageRenderer::pause() {
-  m_mutex.lock();
-  m_pause = true;
-  m_buffer.data = 0;
-  m_mutex.unlock();
-}
-
-void CefPageRenderer::resume() {
-  m_mutex.lock();
-  m_pause = false;
-  m_mutex.unlock();
-  //qDebug() <<"resume";
-}
-
-void CefPageRenderer::stop() {
+void CefPageRenderer::disable() {
   m_enable = false;
 }
 
-void CefPageRenderer::start() {
+void CefPageRenderer::enable() {
   m_enable = true;
 }
 
-void CefPageRenderer::bind() {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-  if (!m_screen_tex) {
-    glGenTextures(1, &m_screen_tex);
-    glBindTexture(GL_TEXTURE_2D, m_screen_tex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-  }
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, m_screen_tex);
-  m_mutex.lock();
-  if (m_buffer.data && !m_pause) {
-    if (m_texture_width != m_buffer.width || m_texture_height != m_buffer.height) {
-      m_texture_width = m_buffer.width;
-      m_texture_height = m_buffer.height;
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_buffer.width, m_buffer.height, 0, GL_BGRA, GL_UNSIGNED_BYTE,
-                   m_buffer.data);
-    } else {
-      const void *data = 0;
-      for (CefRect rect: m_dirty_rects) {
-        data = (char *) m_buffer.data + (rect.y * m_buffer.width + rect.x) * 4;
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, m_buffer.width);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x, rect.y, rect.width, rect.height, GL_BGRA, GL_UNSIGNED_BYTE, data);
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-      }
-    }
-  }
-  m_buffer.data = 0;
-  m_mutex.unlock();
-}
-
 //ui thread
-bool CefPageRenderer::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect) {
+bool CefPageRenderer::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) {
   CEF_REQUIRE_UI_THREAD()
-      rect = CefRect(0, 0, m_new_width, m_new_height);
+  rect = CefRect(0, 0, m_width, m_height);
   return true;
 }
 
+void CefPageRenderer::draw() {
+  QOpenGLExtensions  glfunc(QOpenGLContext::currentContext());
+  QOpenGLExtraFunctions glfuncextra(QOpenGLContext::currentContext());
+  std::lock_guard<std::mutex> guard(m_mutex);
+  glfunc.glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_screen_tex);
+  glfuncextra.glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+
+//  auto prev = std::chrono::high_resolution_clock::now();
+  m_gpu_buffer = glfuncextra.glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+  glfunc.glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+//  auto now = std::chrono::high_resolution_clock::now();
+//  std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
+//  qDebug() << "Copy for " << dif.count() << "usec";
+}
+
+void CefPageRenderer::resize(int width, int height) {
+  std::lock_guard<std::mutex> guard(m_mutex);
+  if (m_screen_tex) {
+    glfunc.glUnmapBuffer(m_screen_tex);
+    glfunc.glDeleteBuffers(1, &m_screen_tex);
+  }
+  glfunc.glGenBuffers(1, &m_screen_tex);
+  glfunc.glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_screen_tex);
+  glfunc.glBufferData(GL_PIXEL_UNPACK_BUFFER, width * height * 4, 0, GL_STREAM_DRAW);
+  m_gpu_buffer = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+  glfunc.glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+  m_clean = true;
+  m_height = height;
+  m_width = width;
+}
+
 //ui thread
-void CefPageRenderer::OnPaint(CefRefPtr<CefBrowser> browser,
-                              PaintElementType type,
-                              const RectList &dirtyRects,
-                              const void *buffer,
-                              int width, int height) {
+void CefPageRenderer::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList& dirtyRects,
+                              const void* buffer, int width, int height) {
   CEF_REQUIRE_UI_THREAD()
-      if (m_new_height != height || m_new_width != width || m_pause) {
+  if (m_width != width || m_height != height)
     return;
+  {
+//    auto prev = std::chrono::high_resolution_clock::now();
+    std::lock_guard<std::mutex> guard(m_mutex);
+    if (m_gpu_buffer) {
+      if (!m_clean) {
+        for (CefRect rect: dirtyRects) {
+          if (rect.width < width) {
+            for (int i = 0; i < rect.height; i++) {
+              const int offset = (i * width + rect.x) * 4;
+              memcpy((char*) m_gpu_buffer + offset, (char*) buffer + offset, (size_t) rect.width * 4);
+            }
+          }
+          else  {
+            const int offset = (rect.y * width + rect.x) * 4;
+            memcpy((char*) m_gpu_buffer + offset, (char*) buffer + offset, (size_t) rect.width * rect.height * 4);
+          }
+        }
+      }
+      else memcpy(m_gpu_buffer, buffer, (size_t) width * height * 4);
+      m_clean = false;
+    }
+//    auto now = std::chrono::high_resolution_clock::now();
+//    std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
+//    qDebug() << "Copy for " << dif.count() << "usec";
   }
   if (m_next_frame_func) {
     m_next_frame_func(buffer, width, height);
     m_next_frame_func = nullptr;
   }
   //  qDebug() << "onPaint" << buffer;
-  m_mutex.lock();
-  m_buffer.data = buffer;
-  m_buffer.width = width;
-  m_buffer.height = height;
-  m_dirty_rects = dirtyRects;
-  m_mutex.unlock();
   if (m_enable) {
     m_owner->update();
   }
 }
 
-bool CefPageRenderer::GetScreenPoint(CefRefPtr<CefBrowser> browser, int viewX, int viewY, int &screenX, int &screenY) {
-  screenX = m_x + viewX;
-  screenY = m_y + viewY;
+bool CefPageRenderer::GetScreenPoint(CefRefPtr<CefBrowser> browser, int viewX, int viewY, int& screenX, int& screenY) {
+  const QPointF& global = m_owner->mapToGlobal(QPointF(viewX, viewY));
+  screenX = global.x();
+#ifdef Q_OS_MAC
+  QScreen* screen = doSearch::instance()->main()->screen();
+  const QRect& all = screen->geometry();
+  screenY = all.bottom() - global.y();
+#else
+  screenY = global.y();
+#endif
+//  qDebug() << global.y() << screenY << viewY;
   return true;
 }
 
@@ -204,11 +217,13 @@ bool CefPageRenderer::StartDragging(CefRefPtr<CefBrowser> browser, CefRefPtr<Cef
     urls.append(QUrl::fromLocalFile(fileDir));
     m_owner->startUrlsDrag(urls);
     QFile::remove(fileDir);
-  } else if (drag_data->IsFragment()) {
+  }
+  else if (drag_data->IsFragment()) {
     //qDebug() << "drag text" << QString::fromStdString(drag_data->GetFragmentText());
     m_owner->startTextDarg(QString::fromStdString(drag_data->GetFragmentText()),
                            QString::fromStdString(drag_data->GetFragmentHtml()));
-  } else if (drag_data->IsLink()) {
+  }
+  else if (drag_data->IsLink()) {
     //qDebug() << "drag Link";
     m_owner->startTextDarg(QString::fromStdString(drag_data->GetFragmentText()), "");
   }
@@ -217,50 +232,50 @@ bool CefPageRenderer::StartDragging(CefRefPtr<CefBrowser> browser, CefRefPtr<Cef
 
 Qt::CursorShape toQCursor(CefPageRenderer::CursorType type) {
   switch (type) {
-  case CT_POINTER:
-    return Qt::ArrowCursor;
-  case CT_CROSS:
-    return Qt::CrossCursor;
-  case CT_WAIT:
-    return Qt::WaitCursor;
-  case CT_IBEAM:
-    return Qt::IBeamCursor;
-  case CT_NORTHRESIZE:
-    return Qt::SizeVerCursor;
-  case CT_NORTHEASTRESIZE:
-    return Qt::SizeBDiagCursor;
-  case CT_NORTHWESTRESIZE:
-    return Qt::SizeFDiagCursor;
-  case CT_SOUTHRESIZE:
-    return Qt::SizeVerCursor;
-  case CT_SOUTHEASTRESIZE:
-    return Qt::SizeFDiagCursor;
-  case CT_SOUTHWESTRESIZE:
-    return Qt::SizeBDiagCursor;
-  case CT_WESTRESIZE:
-    return Qt::SizeHorCursor;
-  case CT_NORTHSOUTHRESIZE:
-    return Qt::SizeVerCursor;
-  case CT_EASTWESTRESIZE:
-    return Qt::SizeHorCursor;
-  case CT_NORTHEASTSOUTHWESTRESIZE:
-    return Qt::SizeAllCursor;
-  case CT_NORTHWESTSOUTHEASTRESIZE:
-    return Qt::SizeAllCursor;
-  case CT_COLUMNRESIZE:
-    return Qt::SplitHCursor;
-  case CT_ROWRESIZE:
-    return Qt::SplitVCursor;
-  case CT_HAND:
-    return Qt::PointingHandCursor;
-  case CT_NODROP:
-    return Qt::ForbiddenCursor;
-  case CT_HELP:
-    return Qt::WhatsThisCursor;
-  case CT_PROGRESS:
-    return Qt::BusyCursor;
-  default:
-    return Qt::ArrowCursor;
+    case CT_POINTER:
+      return Qt::ArrowCursor;
+    case CT_CROSS:
+      return Qt::CrossCursor;
+    case CT_WAIT:
+      return Qt::WaitCursor;
+    case CT_IBEAM:
+      return Qt::IBeamCursor;
+    case CT_NORTHRESIZE:
+      return Qt::SizeVerCursor;
+    case CT_NORTHEASTRESIZE:
+      return Qt::SizeBDiagCursor;
+    case CT_NORTHWESTRESIZE:
+      return Qt::SizeFDiagCursor;
+    case CT_SOUTHRESIZE:
+      return Qt::SizeVerCursor;
+    case CT_SOUTHEASTRESIZE:
+      return Qt::SizeFDiagCursor;
+    case CT_SOUTHWESTRESIZE:
+      return Qt::SizeBDiagCursor;
+    case CT_WESTRESIZE:
+      return Qt::SizeHorCursor;
+    case CT_NORTHSOUTHRESIZE:
+      return Qt::SizeVerCursor;
+    case CT_EASTWESTRESIZE:
+      return Qt::SizeHorCursor;
+    case CT_NORTHEASTSOUTHWESTRESIZE:
+      return Qt::SizeAllCursor;
+    case CT_NORTHWESTSOUTHEASTRESIZE:
+      return Qt::SizeAllCursor;
+    case CT_COLUMNRESIZE:
+      return Qt::SplitHCursor;
+    case CT_ROWRESIZE:
+      return Qt::SplitVCursor;
+    case CT_HAND:
+      return Qt::PointingHandCursor;
+    case CT_NODROP:
+      return Qt::ForbiddenCursor;
+    case CT_HELP:
+      return Qt::WhatsThisCursor;
+    case CT_PROGRESS:
+      return Qt::BusyCursor;
+    default:
+      return Qt::ArrowCursor;
   }
 }
 
@@ -275,21 +290,20 @@ void CefPageRenderer::OnCursorChange(CefRefPtr<CefBrowser> browser, HCURSOR curs
 #elif defined(Q_OS_MAC)
 
 void CefPageRenderer::OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor,
-                                     CursorType type, const CefCursorInfo &custom_cursor_info) {
+                                     CursorType type, const CefCursorInfo& custom_cursor_info) {
   if (m_enable) {
     emit m_owner->cursorChanged(toQCursor(type));
   }
 }
+
 #endif
-
-bool BrowserListener::OnBeforeBrowse(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
-                                     CefRefPtr<CefRequest> request, bool is_redirect) {
-  if (!m_enable) {
-    return true;
-  }
-
+bool BrowserListener::OnBeforeBrowse(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefRequest> request,
+                                bool is_redirect) {
   if (request->GetResourceType() != RT_MAIN_FRAME) { //request page resources
     return false;
+  }
+  if (!m_enable) {
+    return true;
   }
 
   QString url = QString::fromStdString(request->GetURL().ToString());
@@ -317,7 +331,7 @@ bool BrowserListener::OnBeforeBrowse(CefRefPtr<CefBrowser> browser, CefRefPtr<Ce
 }
 
 bool BrowserListener::OnOpenURLFromTab(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
-                                       const CefString &target_url,
+                                       const CefString& target_url,
                                        CefRequestHandler::WindowOpenDisposition target_disposition,
                                        bool user_gesture) {
   if (!m_enable) {
@@ -332,11 +346,11 @@ bool BrowserListener::OnOpenURLFromTab(CefRefPtr<CefBrowser> browser, CefRefPtr<
 
 
 bool BrowserListener::OnBeforePopup(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
-                                    const CefString &target_url, const CefString &target_frame_name,
+                                    const CefString& target_url, const CefString& target_frame_name,
                                     CefLifeSpanHandler::WindowOpenDisposition target_disposition, bool user_gesture,
-                                    const CefPopupFeatures &popupFeatures, CefWindowInfo &windowInfo,
-                                    CefRefPtr<CefClient> &client, CefBrowserSettings &settings,
-                                    bool *no_javascript_access) {
+                                    const CefPopupFeatures& popupFeatures, CefWindowInfo& windowInfo,
+                                    CefRefPtr<CefClient>& client, CefBrowserSettings& settings,
+                                    bool* no_javascript_access) {
   if (!m_enable) {
     return true;
   }
@@ -345,7 +359,7 @@ bool BrowserListener::OnBeforePopup(CefRefPtr<CefBrowser> browser, CefRefPtr<Cef
   return true;
 }
 
-void BrowserListener::OnTitleChange(CefRefPtr<CefBrowser> browser, const CefString &title) {
+void BrowserListener::OnTitleChange(CefRefPtr<CefBrowser> browser, const CefString& title) {
   if (!m_enable) {
     return;
   }
@@ -354,7 +368,7 @@ void BrowserListener::OnTitleChange(CefRefPtr<CefBrowser> browser, const CefStri
   emit m_owner->titleChanged(str); //TODO crash here
 }
 
-void BrowserListener::OnFaviconURLChange(CefRefPtr<CefBrowser> browser, const std::vector<CefString> &icon_urls) {
+void BrowserListener::OnFaviconURLChange(CefRefPtr<CefBrowser> browser, const std::vector<CefString>& icon_urls) {
   if (!m_enable || icon_urls.empty()) {
     return;
   }
@@ -370,7 +384,7 @@ void BrowserListener::OnLoadingStateChange(CefRefPtr<CefBrowser> browser, bool i
 }
 
 void BrowserListener::OnBeforeDownload(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDownloadItem> download_item,
-                                       const CefString &suggested_name, CefRefPtr<CefBeforeDownloadCallback> callback) {
+                                       const CefString& suggested_name, CefRefPtr<CefBeforeDownloadCallback> callback) {
   m_owner->download(QString::fromStdString(download_item->GetURL().ToString()));
 }
 
@@ -397,7 +411,6 @@ void BrowserListener::OnBeforeContextMenu(CefRefPtr<CefBrowser> browser, CefRefP
     model->AddItem(MENU_USER_SAVE_LINK_TO_STORAGE, "Сохранить ссылку в хранилище");
     return;
   }
-
 }
 
 //bool BrowserListener::RunContextMenu(CefRefPtr<CefBrowser> browser,
@@ -420,25 +433,25 @@ bool BrowserListener::OnContextMenuCommand(CefRefPtr<CefBrowser> browser, CefRef
     return false;
   }
   switch (command_id) {
-  case MENU_USER_NEW_TAB:
-    emit m_owner->requestPage(QString::fromStdString(params->GetLinkUrl().ToString()), true);
-    return true;
-  case MENU_USER_OPEN_IMAGGE:
-    emit m_owner->requestPage(QString::fromStdString(params->GetSourceUrl().ToString()), false);
-    return true;
-  case MENU_USER_SAVE_IMAGE_TO_STORAGE: {
-    //        QString path = QStandardPaths::TempLocation();
-    //        Download::download(url, path, [this](){
-    //            m_owner->savedToStorage(path);
-    //        });
-    return true;
-  }
-  case MENU_USER_SAVE_LINK_TO_STORAGE:
-    emit m_owner->savedToStorage(QString::fromStdString((params->GetLinkUrl().ToString())));
-    return true;
-  case MENU_USER_DOWNLOAD:
-    m_owner->download(QString::fromStdString(params->GetSourceUrl().ToString()));
-    return true;
+    case MENU_USER_NEW_TAB:
+      emit m_owner->requestPage(QString::fromStdString(params->GetLinkUrl().ToString()), true);
+      return true;
+    case MENU_USER_OPEN_IMAGGE:
+      emit m_owner->requestPage(QString::fromStdString(params->GetSourceUrl().ToString()), false);
+      return true;
+    case MENU_USER_SAVE_IMAGE_TO_STORAGE: {
+      //        QString path = QStandardPaths::TempLocation();
+      //        Download::download(url, path, [this](){
+      //            m_owner->savedToStorage(path);
+      //        });
+      return true;
+    }
+    case MENU_USER_SAVE_LINK_TO_STORAGE:
+      emit m_owner->savedToStorage(QString::fromStdString((params->GetLinkUrl().ToString())));
+      return true;
+    case MENU_USER_DOWNLOAD:
+      m_owner->download(QString::fromStdString(params->GetSourceUrl().ToString()));
+      return true;
   }
   return true;
 }
@@ -449,25 +462,18 @@ void BrowserListener::userEventOccured() {
 }
 
 void BrowserListener::OnLoadStart(CefRefPtr<CefBrowser> browser,
-                                  CefRefPtr<CefFrame> frame, TransitionType transition_type){
-  if(m_enable && frame->IsMain()){
-    m_owner->m_renderer->resume();
-    browser->GetHost()->WasResized();
-  }
+                                  CefRefPtr<CefFrame> frame, TransitionType transition_type) {
+//  if (m_enable && frame->IsMain()) {
+//    browser->GetHost()->WasResized();
+//  }
 }
 
-CefItem::CefItem(QQuickItem *parent): QQuickFramebufferObject(parent) {
+CefItem::CefItem(QQuickItem* parent): QQuickFramebufferObject(parent),
+        m_listener(new BrowserListener(this)), m_renderer(new CefPageRenderer(this)),
+        m_text_callback(new TextCallback(this)) {
   CEF_REQUIRE_UI_THREAD()
-      //qDebug() << "construct item" << this << "with parent" << parent;
-      m_listener = new BrowserListener(this);
-  m_renderer = new CefPageRenderer(this);
-  QObject::connect(this, SIGNAL(windowChanged(QQuickWindow*)), this, SLOT(initBrowser(QQuickWindow*)), Qt::QueuedConnection);
-  m_text_callback = new TextCallback();
-  m_text_callback->setOwner(this);
-}
-
-void CefItem::doCefWork() {
-  CefDoMessageLoopWork();
+  QObject::connect(this, SIGNAL(windowChanged(QQuickWindow * )), this, SLOT(initBrowser(QQuickWindow * )),
+                   Qt::QueuedConnection);
 }
 
 void CefItem::updateVisible() {
@@ -481,21 +487,23 @@ CefItem::~CefItem() {
   destroyBrowser();
 }
 
-QQuickFramebufferObject::Renderer *CefItem::createRenderer() const {
-  return new QTPageRenderer(m_renderer);
+QQuickFramebufferObject::Renderer* CefItem::createRenderer() const {
+  return new QTPageRenderer(this, m_renderer);
 }
 
-class CookieContextHandler: public CefRequestContextHandler{
+class CookieContextHandler : public CefRequestContextHandler {
 public:
-  CookieContextHandler(bool enable_cookie){
+  CookieContextHandler(bool enable_cookie) {
     m_manager = CefCookieManager::GetGlobalManager(NULL); /*new EmptyCookieManager();*/
   }
+
   virtual CefRefPtr<CefCookieManager> GetCookieManager() {
     return m_manager;
   }
+
 private:
   CefRefPtr<CefCookieManager> m_manager;
-  IMPLEMENT_REFCOUNTING(CookieContextHandler)
+IMPLEMENT_REFCOUNTING(CookieContextHandler)
 };
 
 class ACefClient : public CefClient {
@@ -508,7 +516,7 @@ public:
     m_listener = listener;
   }
 
-  void setIO(CefRefPtr<IOBuffer> io){
+  void setIO(CefRefPtr<IOBuffer> io) {
     m_io = io;
   }
 
@@ -552,85 +560,74 @@ private:
   CefRefPtr<CefRenderHandler> m_renderer;
   CefRefPtr<BrowserListener> m_listener;
   CefRefPtr<IOBuffer> m_io;
-  IMPLEMENT_REFCOUNTING(ACefClient)
+IMPLEMENT_REFCOUNTING(ACefClient)
 };
-
-void CefItem::resize() {
-  if (m_browser) {
-    m_renderer->setSize((int) width(), (int) height());
-    m_browser->GetHost()->WasResized();
-  }
-}
 
 void CefItem::releaseResources() {
   destroyBrowser();
 }
 
-void CefItem::shutDown(){
-  if(m_browser){
+void CefItem::shutDown() {
+  if (m_browser) {
     destroyBrowser();
-  }else{
+  }
+  else {
     removeCefBrowserFromGC();
   }
 }
 
-void CefItem::onBrowserDestroyed(){
+void CefItem::onBrowserDestroyed() {
   removeCefBrowserFromGC();
 }
 
-void CefItem::setJSMute(bool mute){
+void CefItem::setJSMute(bool mute) {
 
 }
 
 void CefItem::destroyBrowser() {
   if (m_browser) {
+    m_renderer->disable();
+    m_listener->disable();
+    m_text_callback->disable();
     m_iobuffer->setBrowser(nullptr);
-    m_renderer->clearBuffer();
-    m_renderer->stop();
-    m_listener->setEnable(false);
-    m_listener = nullptr;
     m_browser->GetHost()->CloseBrowser(true);
     m_browser = nullptr;
-    m_text_callback->setOwner(nullptr);
-    m_text_callback = nullptr;
   }
 }
 
-void CefItem::initBrowser(QQuickWindow *window) {
-  if (!window || !m_running || (m_url.isEmpty() && m_html.isEmpty())) {
+void CefItem::initBrowser(QQuickWindow* window) {
+  if (!window || !m_running || (m_url.isEmpty() && m_html.isEmpty()))
     return;
-  }
-  CEF_REQUIRE_UI_THREAD()
-      m_iobuffer =new IOBuffer();
-  m_renderer->setSize(width(), height());
-  m_renderer->start();
-  CefRefPtr<ACefClient> acefclient = new ACefClient();
-  acefclient->set(m_renderer);
-  acefclient->setIO(m_iobuffer);
 
-  m_text_callback->setOwner(this);
-  m_listener->setEnable(true);
-  acefclient->setBrowserListener(m_listener);
+  CEF_REQUIRE_UI_THREAD()
+  m_iobuffer = new IOBuffer();
+  m_renderer->enable();
+  m_listener->enable();
+  m_text_callback->enable();
 
   CefWindowInfo mainWindowInfo;
 #ifdef Q_OS_WIN
   mainWindowInfo.SetAsWindowless((HWND) window->winId(), false);
 #elif defined(Q_OS_MAC)
-  mainWindowInfo.SetAsWindowless((NSView*) window->winId());
+  mainWindowInfo.SetAsWindowless(reinterpret_cast<NSView*>(window->winId()));
+//  mainWindowInfo.SetAsChild(reinterpret_cast<NSView*>(window->winId()), x(), y(), width(), height());
 #endif
 
   //qDebug() << "Init Browser " << QString::fromStdString(fromUrl(m_url)) << m_url;
 
   CefRefPtr<CefRequestContext> requestContext =
-      CefRequestContext::CreateContext(CefRequestContextSettings(), new CookieContextHandler(m_cookies_enable));
-
+          CefRequestContext::CreateContext(CefRequestContextSettings(), new CookieContextHandler(m_cookies_enable));
+  CefRefPtr<ACefClient> acefclient = new ACefClient();
+  {
+    acefclient->set(m_renderer);
+    acefclient->setIO(m_iobuffer);
+    acefclient->setBrowserListener(m_listener);
+  }
 
   m_browser = CefBrowserHost::CreateBrowserSync(mainWindowInfo, acefclient, fromUrl(m_url), CefBrowserSettings(),
                                                 requestContext);
 
-  QObject::connect(this, SIGNAL(visibleChanged()), this, SLOT(updateVisible())); //TODO make update visible
-  QObject::connect(this, SIGNAL(widthChanged()), this, SLOT(resize()));
-  QObject::connect(this, SIGNAL(heightChanged()), this, SLOT(resize()));
+  QObject::connect(this, SIGNAL(visibleChanged()), this, SLOT(updateVisible()));
 
   if (m_url.isEmpty()) {
     m_browser->GetMainFrame()->LoadString(m_html.toStdString(), "about:blank");
@@ -644,21 +641,21 @@ void IOBuffer::setBrowser(CefRefPtr<CefBrowser> browser) {
 }
 
 void CefItem::mouseMove(int x, int y, int buttons) {
-  if(!m_iobuffer){
+  if (!m_iobuffer) {
     return;
   }
   m_iobuffer->mouseMove(x, y, buttons);
 }
 
 void CefItem::mousePress(int x, int y, int buttons) {
-  if(!m_iobuffer){
+  if (!m_iobuffer) {
     return;
   }
   m_iobuffer->mousePress(x, y, buttons);
 }
 
 void CefItem::mouseRelease(int x, int y, int buttons) {
-  if(!m_iobuffer){
+  if (!m_iobuffer) {
     return;
   }
   m_listener->userEventOccured();
@@ -666,7 +663,7 @@ void CefItem::mouseRelease(int x, int y, int buttons) {
 }
 
 void CefItem::mouseWheel(int x, int y, int buttons, QPoint angle) {
-  if(!m_iobuffer){
+  if (!m_iobuffer) {
     return;
   }
   m_iobuffer->mouseWheel(x, y, buttons, angle);
@@ -701,7 +698,8 @@ void IOBuffer::mousePress(int x, int y, int buttons) {
     int time = QTime::currentTime().msecsSinceStartOfDay();
     if (time - m_last_click_time < 200) {
       m_click_count++;
-    } else {
+    }
+    else {
       m_click_count = 1;
     }
     m_last_click_time = time;
@@ -736,9 +734,8 @@ void IOBuffer::mouseWheel(int x, int y, int buttons, QPoint angle) {
   }
 }
 
-
 bool IOBuffer::keyPress(QKeyEvent* event) {
-  if (!m_browser){
+  if (!m_browser) {
     return false;
   }
   m_pressed_keys.insert(event->key());
@@ -751,12 +748,14 @@ bool IOBuffer::keyPress(QKeyEvent* event) {
 }
 
 bool IOBuffer::keyRelease(QKeyEvent* event) {
-  if(!m_browser){
+  if (!m_browser) {
     return false;
   }
-  if(!m_pressed_keys.contains(event->key())){
-    m_browser->GetHost()->SendKeyEvent(CefEventFactory::createPressEvent(event)); //qml sometimes gives only release events
-  }else{
+  if (!m_pressed_keys.contains(event->key())) {
+    m_browser->GetHost()->SendKeyEvent(
+            CefEventFactory::createPressEvent(event)); //qml sometimes gives only release events
+  }
+  else {
     m_pressed_keys.remove(event->key());
   }
   m_key_flags &= ~CefEventFactory::keyEventFlags(event);
@@ -766,24 +765,24 @@ bool IOBuffer::keyRelease(QKeyEvent* event) {
 }
 
 
-class QOpenQuickEvent: public QObject {
+class QOpenQuickEvent : public QObject {
 public:
   QKeyEvent event;
 };
 
 bool CefItem::sendKeyPress(QObject* qKeyEvent) {
-  if(!m_iobuffer){
+  if (!m_iobuffer) {
     return false;
   }
-  QOpenQuickEvent *event2 = static_cast<QOpenQuickEvent*>((void*)qKeyEvent);
+  QOpenQuickEvent* event2 = static_cast<QOpenQuickEvent*>((void*) qKeyEvent);
   return m_iobuffer->keyPress(&event2->event);
 }
 
 bool CefItem::sendKeyRelease(QObject* qKeyEvent) {
-  if(!m_iobuffer){
+  if (!m_iobuffer) {
     return false;
   }
-  QOpenQuickEvent *event2 = static_cast<QOpenQuickEvent*>((void*)qKeyEvent);
+  QOpenQuickEvent* event2 = static_cast<QOpenQuickEvent*>((void*) qKeyEvent);
   return m_iobuffer->keyRelease(&event2->event);
 }
 
@@ -797,14 +796,14 @@ CefMouseEvent createMouseEvent(double x, double y) {
 
 CefBrowserHost::DragOperationsMask translateAction(Qt::DropAction action) {
   switch (action) {
-  case Qt::DropAction::CopyAction:
-    return DRAG_OPERATION_COPY;
-  case Qt::DropAction::LinkAction:
-    return DRAG_OPERATION_LINK;
-  case Qt::DropAction::MoveAction:
-    return DRAG_OPERATION_MOVE;
-  default:
-    return DRAG_OPERATION_NONE;
+    case Qt::DropAction::CopyAction:
+      return DRAG_OPERATION_COPY;
+    case Qt::DropAction::LinkAction:
+      return DRAG_OPERATION_LINK;
+    case Qt::DropAction::MoveAction:
+      return DRAG_OPERATION_MOVE;
+    default:
+      return DRAG_OPERATION_NONE;
   }
 }
 
@@ -881,8 +880,8 @@ CefBrowserHost::DragOperationsMask toDragOperationsMask(Qt::DropAction dropActio
   return DRAG_OPERATION_NONE;
 }
 
-void CefItem::startDrag(QMimeData *mimeData) {
-  QDrag *drag = new QDrag(this);
+void CefItem::startDrag(QMimeData* mimeData) {
+  QDrag* drag = new QDrag(this);
   drag->setMimeData(mimeData);
   emit dragStarted();
   Qt::DropAction dropAction = drag->exec();
@@ -890,34 +889,34 @@ void CefItem::startDrag(QMimeData *mimeData) {
   m_browser->GetHost()->DragSourceSystemDragEnded();
 }
 
-void CefItem::startTextDarg(const QString &text, const QString &html) {
-  QMimeData *mimeData = new QMimeData;
+void CefItem::startTextDarg(const QString& text, const QString& html) {
+  QMimeData* mimeData = new QMimeData;
   mimeData->setText(text);
   mimeData->setHtml(html);
   startDrag(mimeData);
 }
 
-void CefItem::startImageDrag(const QImage &img) {
-  QMimeData *mimeData = new QMimeData;
+void CefItem::startImageDrag(const QImage& img) {
+  QMimeData* mimeData = new QMimeData;
   mimeData->setImageData(img);
   startDrag(mimeData);
 }
 
-void CefItem::startUrlsDrag(const QList<QUrl> &urls) {
-  QMimeData *mimeData = new QMimeData;
+void CefItem::startUrlsDrag(const QList<QUrl>& urls) {
+  QMimeData* mimeData = new QMimeData;
   mimeData->setUrls(urls);
   startDrag(mimeData);
 }
 
-void CefItem::download(const QUrl &url) {
-  Download *item = new Download(url, QStandardPaths::writableLocation(QStandardPaths::DownloadLocation));
+void CefItem::download(const QUrl& url) {
+  Download* item = new Download(url, QStandardPaths::writableLocation(QStandardPaths::DownloadLocation));
   item->start();
   QQmlEngine::setObjectOwnership(item, QQmlEngine::JavaScriptOwnership);
   emit downloadStarted(item);
 }
 
 
-void CefItem::findText(const QString &text, bool findForward) {
+void CefItem::findText(const QString& text, bool findForward) {
   if (text.length() == 0) {
     m_browser->GetHost()->StopFinding(true);
     return;
@@ -954,7 +953,7 @@ void CefItem::reload() {
   m_browser->Reload();
 }
 
-void CefItem::loadHtml(const QString &html) {
+void CefItem::loadHtml(const QString& html) {
   if (!html.size()) {
     return;
   }
@@ -966,9 +965,9 @@ void CefItem::loadHtml(const QString &html) {
   }
 }
 
-void CefItem::saveScreenshot(const QString &fileName, int x, int y, int w, int h) {
-  m_renderer->processNextFrame([this, fileName, x, y, w, h](const void *buffer, int width, int heigth) {
-    QImage img((uchar *) buffer + (width * y + x) * 4, w, h, width * 4, QImage::Format_RGBA8888);
+void CefItem::saveScreenshot(const QString& fileName, int x, int y, int w, int h) {
+  m_renderer->processNextFrame([this, fileName, x, y, w, h](const void* buffer, int width, int heigth) {
+    QImage img((uchar*) buffer + (width * y + x) * 4, w, h, width * 4, QImage::Format_RGBA8888);
     QImage res = img.rgbSwapped();
     res.save(fileName);
     emit screenShotSaved();
@@ -991,12 +990,8 @@ void CefItem::saveScreenshot(const QString &fileName, int x, int y, int w, int h
 //    m_callback->Cancel();
 //}
 
-void TextCallback::setOwner(CefItem *item) {
-  m_owner = item;
-}
-
-void TextCallback::Visit(const CefString &string) {
-  if (m_owner) {
+void TextCallback::Visit(const CefString& string) {
+  if (m_enabled) {
     emit m_owner->textRecieved(QString::fromStdString(string.ToString()));
   }
 }
@@ -1008,11 +1003,12 @@ void CefItem::getText() {
 }
 
 
-void CefItem::clearCookies(const QString &url) {
-  m_browser->GetHost()->GetRequestContext()->GetDefaultCookieManager(nullptr)->DeleteCookies(url.toStdString(), "",                                                                                              nullptr);
+void CefItem::clearCookies(const QString& url) {
+  m_browser->GetHost()->GetRequestContext()->GetDefaultCookieManager(nullptr)->DeleteCookies(url.toStdString(), "",
+                                                                                             nullptr);
 }
 
-void CefItem::executeJS(const QString& sctript){
+void CefItem::executeJS(const QString& sctript) {
   CefRefPtr<CefFrame> frame = m_browser->GetMainFrame();
   frame->ExecuteJavaScript(sctript.toStdString(), frame->GetURL(), 0);
 }
@@ -1025,11 +1021,15 @@ void BrowserListener::redirectEnable(bool redirect) {
   m_redirect_enable = redirect;
 }
 
-void BrowserListener::setEnable(bool enable) {
-  m_enable = enable;
+void BrowserListener::enable() {
+  m_enable = true;
 }
 
-double CefItem::zoomFactor() {
+void BrowserListener::disable() {
+  m_enable = false;
+}
+
+double CefItem::zoomFactor() const {
   return m_zoom_factor;
 }
 
@@ -1057,19 +1057,19 @@ QUrl CefItem::url() const {
 //    }
 //}
 
-void CefItem::setUrl(const QUrl &url) {
+void CefItem::setUrl(const QUrl& url) {
   //qDebug() << "set url" << url;
   if (m_browser) {
-    m_renderer->pause();
     m_browser->GetMainFrame()->LoadURL(url.toString().toStdString());
-  } else if (!url.isEmpty()) {
+  }
+  else if (!url.isEmpty()) {
     m_url = url;
     initBrowser(window());
   }
   emit urlChanged(url);
 }
 
-bool CefItem::running() {
+bool CefItem::running() const {
   return m_running;
 }
 
@@ -1077,16 +1077,24 @@ void CefItem::setRunning(bool running) {
   if (running && !m_running) {
     m_running = true;
     initBrowser(window());
-    return;
   }
-  if (!running && m_running) {
+  else if (!running && m_running) {
     destroyBrowser();
     m_running = false;
-    return;
   }
-  if (running && m_running && !m_browser) {
+  else if (running && m_running && !m_browser) {
     initBrowser(window());
   }
+}
+
+bool CefItem::focused() const {
+  return m_focused;
+}
+
+void CefItem::setFocused(bool focused) {
+  if (m_browser)
+    m_browser->GetHost()->SetFocus(focused);
+  m_focused = focused;
 }
 
 bool CefItem::allowLinkTtransitions() {
@@ -1097,19 +1105,19 @@ void CefItem::setAllowLinkTtransitions(bool allow) {
   m_listener->m_allow_link_trans = allow;
 }
 
-void CefItem::setCookiesEnable(bool cookies){
+void CefItem::setCookiesEnable(bool cookies) {
   m_cookies_enable = cookies;
 }
 
-bool CefItem::cookiesEnable(){
+bool CefItem::cookiesEnable() {
   return m_cookies_enable;
 }
 
-bool CefItem::mute(){
+bool CefItem::mute() {
   return m_mute;
 }
 
-void CefItem::setMute(bool mute){
+void CefItem::setMute(bool mute) {
   m_mute = mute;
   setJSMute(mute);
 }

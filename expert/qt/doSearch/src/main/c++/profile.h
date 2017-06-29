@@ -183,9 +183,7 @@ public: // setters
     }
 
 public: // constructors
-    explicit ProfileBuilder(QObject* parent = 0): QObject(parent), m_nam(this) {
-        connect(&m_nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(finished(QNetworkReply*)));
-    }
+    explicit ProfileBuilder(QObject* parent = 0);
 
 signals:
     void nameChanged(const QString&);
@@ -211,7 +209,7 @@ public slots:
     void finished(QNetworkReply*);
 
 private:
-    QNetworkAccessManager m_nam;
+    QNetworkAccessManager* m_nam;
 
     QString m_vkUser;
     QString m_vkToken;

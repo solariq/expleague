@@ -7,7 +7,7 @@
 #include <QBuffer>
 
 #include <QXmlQuery>
-
+#include "../dosearch.h"
 static RegionResolver* resolver;
 static QBasicAtomicInt flag;
 
@@ -55,6 +55,6 @@ void RegionResolver::onFinished(QNetworkReply* reply) {
     query->deleteLater();
 }
 
-RegionResolver::RegionResolver(): m_nam(new QNetworkAccessManager(this)) {
+RegionResolver::RegionResolver(): m_nam(expleague::doSearch::instance()->sharedNAM()) {
     QObject::connect(m_nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(onFinished(QNetworkReply*)));
 }

@@ -39,6 +39,13 @@ Rectangle{
         onSavedToStorage: {
             dosearch.navigation.context.vault.drop(text, "", [], owner.id)
         }
+
+        onUrlChanged: {
+            focused = true
+        }
+        onLoadEnd: {
+            focused = Qt.binding(function() {return self.visible && dosearch.main.active})
+        }
     }
 
 

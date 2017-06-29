@@ -1,10 +1,13 @@
 #include "downloads.h"
+
+#include "dosearch.h"
 #include <QDesktopServices>
 
+namespace expleague {
 int Download::max_id = 0;
 
 Download::Download(const QUrl &url, const QString &path, int id):
-        m_id(id), m_path(path), m_url(url), m_network(0/*new QNetworkAccessManager(this)*/)
+        m_id(id), m_path(path), m_url(url)
 {
   m_file_name = url.fileName();
   max_id = std::max(id, max_id);
@@ -13,7 +16,7 @@ Download::Download(const QUrl &url, const QString &path, int id):
 void Download::start() {
   qDebug() << "Download Start" << m_file_name;
   QNetworkRequest request(m_url);
-  m_reply = m_network->get(request);
+  m_reply = doSearch::instance()->sharedNAM()->get(request);
   m_file.setFileName(m_path + '/' + m_file_name);
   m_file.open(QIODevice::WriteOnly);
   QObject::connect(m_reply, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(progress(qint64, qint64)));
@@ -110,4 +113,5 @@ void download(QUrl url, QString path, std::function<void()> callback) {
 //    QObject::connect(down, &Download::faild, [down](){
 //        down->deleteLater();
 //    });
+}
 }

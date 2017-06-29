@@ -9,6 +9,12 @@
           <option name="INDENT_CLASS_MEMBERS" value="2" />
           <option name="INDENT_INSIDE_CODE_BLOCK" value="2" />
           <option name="INDENT_DIRECTIVE_AS_CODE" value="true" />
+          <option name="CLASS_CONSTRUCTOR_INIT_LIST_ALIGN_MULTILINE" value="false" />
+          <option name="SPACE_BEFORE_INIT_LIST_COLON" value="false" />
+          <option name="SPACE_BEFORE_POINTER_IN_DECLARATION" value="false" />
+          <option name="SPACE_AFTER_POINTER_IN_DECLARATION" value="true" />
+          <option name="SPACE_BEFORE_REFERENCE_IN_DECLARATION" value="false" />
+          <option name="SPACE_AFTER_REFERENCE_IN_DECLARATION" value="true" />
         </Objective-C>
         <Objective-C-extensions>
           <file>
@@ -43,6 +49,7 @@
           </indentOptions>
         </codeStyleSettings>
         <codeStyleSettings language="ObjectiveC">
+          <option name="ELSE_ON_NEW_LINE" value="true" />
           <indentOptions>
             <option name="INDENT_SIZE" value="2" />
             <option name="TAB_SIZE" value="2" />
