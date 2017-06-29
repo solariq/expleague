@@ -38,59 +38,29 @@ CefString fromUrl(const QUrl& url) {
 }
 
 QOpenGLFramebufferObject* QTPageRenderer::createFramebufferObject(const QSize& size) {
-//  m_window->resetOpenGLState();
-  m_cef_renderer->resize(size.width(), size.height());
-
-  if (m_tex)
-    glDeleteTextures(1, &m_tex);
-  glGenTextures(1, &m_tex);
-  glBindTexture(GL_TEXTURE_2D, m_tex);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-  glBindTexture(GL_TEXTURE_2D, 0);
-//  m_window->resetOpenGLState();
-  const CefRefPtr<CefBrowser>& browser = m_owner->browser();
-  if (browser.get())
-    browser->GetHost()->WasResized();
+  if (size.height() != m_cef_renderer->height() || size.width() != m_cef_renderer->width()) {
+    m_cef_renderer->resize(size.width(), size.height());
+    const CefRefPtr<CefBrowser>& browser = m_owner->browser();
+    if (browser.get())
+      browser->GetHost()->WasResized();
+  }
   return new QOpenGLFramebufferObject(size);
 }
 
 QTPageRenderer::QTPageRenderer(const CefItem* owner, CefRefPtr<CefPageRenderer> renderer): m_owner(owner), m_cef_renderer(renderer) {
 }
 
-QTPageRenderer::~QTPageRenderer() {
-  //qDebug() << "Destroy renderer";
-}
-
 //QT reder thread
 void QTPageRenderer::render() {
-  m_window->resetOpenGLState();
+  const bool texturesEnabled = glIsEnabled(GL_TEXTURE_2D);
+  if (!texturesEnabled)
+    glEnable(GL_TEXTURE_2D);
 
-  framebufferObject()->bind();
-
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, m_tex);
-
-  auto prev = std::chrono::high_resolution_clock::now();
+  glBindTexture(GL_TEXTURE_2D, framebufferObject()->texture());
   m_cef_renderer->draw();
-//  auto now = std::chrono::high_resolution_clock::now();
-//  std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
-//  qDebug() << "Rendered for " << dif.count() << "usec";
-
-  glBegin(GL_QUADS);
-  glTexCoord2f(0.f, 0.f);
-  glVertex2f(-1.f, -1.f);
-  glTexCoord2f(0.f, 1.f);
-  glVertex2f(-1.f, 1.f);
-  glTexCoord2f(1.f, 1.f);
-  glVertex2f(1.f, 1.f);
-  glTexCoord2f(1.f, 0.f);
-  glVertex2f(1.f, -1.f);
-  glEnd();
   glBindTexture(GL_TEXTURE_2D, 0);
-//  glDisable(GL_TEXTURE_2D);
-  m_window->resetOpenGLState();
+  if (texturesEnabled)
+    glDisable(GL_TEXTURE_2D);
 }
 
 CefPageRenderer::CefPageRenderer(CefItem* owner): m_owner(owner) {
@@ -99,6 +69,7 @@ CefPageRenderer::CefPageRenderer(CefItem* owner): m_owner(owner) {
 //Qt render thread,  ui (onpaint, CefDoMessageLoopWork, QQuickFramebufferObject) blocked
 void QTPageRenderer::synchronize(QQuickFramebufferObject* obj) {
   m_window = obj->window();
+  m_window->setClearBeforeRendering(true);
 }
 
 void CefPageRenderer::processNextFrame(std::function<void(const void*, int, int)> f) {
@@ -190,6 +161,13 @@ void CefPageRenderer::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType ty
   //  qDebug() << "onPaint" << buffer;
   if (m_enable) {
     m_owner->update();
+  }
+}
+
+CefPageRenderer::~CefPageRenderer() {
+  if (m_screen_tex) {
+    glUnmapBuffer(m_screen_tex);
+    glDeleteBuffers(1, &m_screen_tex);
   }
 }
 

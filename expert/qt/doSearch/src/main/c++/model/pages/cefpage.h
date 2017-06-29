@@ -52,6 +52,9 @@ public:
   void disable(); //stop render on QT level
   void enable();
 
+  int width() const { return m_width; }
+  int height() const { return m_height; }
+
   void processNextFrame(std::function<void(const void* buffer, int w, int h)>);
 
   virtual bool GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) OVERRIDE;
@@ -73,6 +76,7 @@ IMPLEMENT_REFCOUNTING(CefPageRenderer)
 
 public:
   explicit CefPageRenderer(CefItem* owner);
+  virtual ~CefPageRenderer();
 
 private:
   bool m_enable = false;
@@ -97,15 +101,12 @@ public:
   virtual QOpenGLFramebufferObject* createFramebufferObject(const QSize& size);
 
   virtual void synchronize(QQuickFramebufferObject* obj);
-
-  virtual ~QTPageRenderer();
 private:
   const CefItem* const m_owner;
   CefRefPtr<CefPageRenderer> m_cef_renderer;
   friend class CefPageRenderer;
 
   QQuickWindow* m_window = nullptr;
-  GLuint m_tex;
 };
 
 

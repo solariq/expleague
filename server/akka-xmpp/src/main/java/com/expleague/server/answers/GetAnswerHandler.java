@@ -36,8 +36,13 @@ public class GetAnswerHandler extends WebHandler {
       final String result;
       final String title;
       final Node node = session.getNodeByIdentifier(id); // answer node
-      if ("answer-text".equals(node.getName())) {
-        final NodeIterator nodeIterator = node.getParent().getParent().getNodes();
+      if ("answer-text".equals(node.getName()) || "topic".equals(node.getName())) {
+        final NodeIterator nodeIterator;
+        if ("answer-text".equals(node.getName()))
+          nodeIterator = node.getParent().getParent().getNodes();
+        else
+          nodeIterator = node.getParent().getNode("answers").getNodes();
+
         final StringBuilder stringBuilder = new StringBuilder();
         int answerNum = 0;
         while (nodeIterator.hasNext()) {
@@ -59,7 +64,15 @@ public class GetAnswerHandler extends WebHandler {
               .append(showMd ? textAreaWithParams() + answer + "</textarea>" : answer);
         }
         result = stringBuilder.toString();
-        title = node.getParent().getParent().getParent().getProperty("topic").getString();
+        if ("answer-text".equals(node.getName())) {
+          if (node.getParent().getParent().getParent().hasProperty("topic"))
+            title = node.getParent().getParent().getParent().getProperty("topic").getString();
+          else
+            title = node.getParent().getParent().getParent().getNode("topic").getProperty(Property.JCR_DATA).getString();
+        }
+        else {
+          title = node.getProperty(Property.JCR_DATA).getString();
+        }
       }
       else { //old version
         final Property answerProp = node.getProperty(Property.JCR_DATA);

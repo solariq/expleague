@@ -8,10 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import org.jetbrains.annotations.Nullable;
 
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
+import javax.jcr.*;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 import java.util.ArrayList;
@@ -69,14 +66,19 @@ public class SearchRequestHandler extends WebHandler {
         final String topic;
         if ("answer-text".equals(node.getName())) {
           final StringBuilder topicSb = new StringBuilder();
-          topicSb.append(node.getParent().getParent().getParent().getProperty("topic").getString());
-          if (node.getParent().getParent().getNodes().getSize() > 1) {
-            final long answerNum = node.getParent().getProperty("answer-num").getLong();
-            topicSb.append(" (Ответ №").append(answerNum).append(")");
-            uriSb.append("#answer").append(answerNum);
-            mdUriSb.append("#answer").append(answerNum);
-          }
+          if (node.getParent().getParent().getParent().hasProperty("topic"))
+            topicSb.append(node.getParent().getParent().getParent().getProperty("topic").getString());
+          else
+            topicSb.append(node.getParent().getParent().getParent().getNode("topic").getProperty(Property.JCR_DATA).getString());
+
+          final long answerNum = node.getParent().getProperty("answer-num").getLong();
+          topicSb.append(" (Ответ №").append(answerNum).append(")");
+          uriSb.append("#answer").append(answerNum);
+          mdUriSb.append("#answer").append(answerNum);
           topic = topicSb.toString();
+        }
+        else if ("topic".equals(node.getName())) {
+          topic = node.getProperty(Property.JCR_DATA).getString();
         }
         else { //old version
           topic = node.getParent().getProperty("topic").getString();
