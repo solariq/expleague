@@ -138,7 +138,7 @@ Item {
                     property real storedWidth: -1
                     property string html: ""
 
-                    webView.running: visible
+                    webView.focused: visible
 
                     onHtmlChanged: {
                         var focused = window.activeFocusItem
