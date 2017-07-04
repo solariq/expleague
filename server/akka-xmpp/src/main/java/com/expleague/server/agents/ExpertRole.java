@@ -68,7 +68,12 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
     // todo: Ok can be received here and will be unhandled
     when(State.READY,
         matchEvent(Presence.class,
-            (presence, task) -> presence.available() || presence.to() != null ? stay() : goTo(State.OFFLINE)
+            (presence, task) -> {
+              if (presence.available() || presence.to() != null)
+                return stay();
+              explain("Expert has gone offline.");
+              return goTo(State.OFFLINE);
+            }
         ).event(ActorRef.class, // broker
             (offer, task) -> stay().replying(self())
         ).event(Offer.class,
@@ -269,7 +274,7 @@ public class ExpertRole extends AbstractLoggingFSM<ExpertRole.State, ExpertRole.
               return stay().replying(new Ignore());
             }
         ).event(ActorRef.class, // broker
-                (broker, task) -> stay().replying(new Ignore()))
+            (broker, task) -> stay().replying(new Ignore()))
     );
 
     onTransition((from, to) -> {

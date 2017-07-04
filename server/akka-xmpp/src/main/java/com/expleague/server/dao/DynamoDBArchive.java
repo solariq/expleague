@@ -280,6 +280,7 @@ public class DynamoDBArchive implements Archive {
         return;
 
       roomAccumulatedChangesDeque.addAll(accumulatedChange);
+      accumulatedChange.clear();
     }
 
     @Override
