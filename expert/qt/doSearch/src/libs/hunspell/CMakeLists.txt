@@ -17,6 +17,10 @@ set(hunspell_sources
 
 #CONFIG += static
 #CONFIG += precompile_header warn_off
+#if(MSVC)
+#    set(CMAKE_CXX_FLAGS_DEBUG "/DWIN32 /D_WINDOWS /EHsc /wd4355 /wd4251 /wd4250 /wd4996")
+#endif()
+
 file(WRITE config.h "/* Version number of package */\n#define VERSION \"${VERSION}\"")
 include_directories(src/src/hunspell)
 

@@ -11,6 +11,9 @@ SET(pmh_sources
         pmh_parser.cpp
         pmh_styleparser.cpp)
 
+
+#SET_SOURCE_FILES_PROPERTIES(${pmh_sources} PROPERTIES LANGUAGE C )
+
 ###################################################################################################
 ## DEPENDENCIES
 ###################################################################################################
@@ -18,6 +21,6 @@ SET(pmh_sources
 #
 # peg-markdown-highlight
 #
-ADD_LIBRARY(pmh ${pmh_sources})
 
+ADD_LIBRARY(pmh STATIC ${pmh_sources})
 target_link_libraries(pmh Qt5::Core Qt5::Widgets)
