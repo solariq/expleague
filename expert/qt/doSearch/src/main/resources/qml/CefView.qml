@@ -14,6 +14,12 @@ Rectangle{
     property double zoom
     property alias webView: webView
     property alias url: webView.url
+    property bool mute: true
+
+    onMuteChanged: {
+        webView.setMute(mute)
+    }
+
     CefItem {
         id: webView;
         zoomFactor: zoom
@@ -45,7 +51,24 @@ Rectangle{
         }
         onLoadEnd: {
             focused = Qt.binding(function() {return self.visible && dosearch.main.active})
+            if(self.mute)
+                setMute(true)
         }
+
+        function setMute(mute){
+            if(mute){
+                executeJS("var videos = document.querySelectorAll('video'), audios = document.querySelectorAll('audio');
+                                [].forEach.call(videos, function(video) { video.muted = true;});
+                                [].forEach.call(audios, function(audio) { audio.muted = true;});
+                           ")
+            }else{
+                executeJS("var videos = document.querySelectorAll('video'), audios = document.querySelectorAll('audio');
+                                [].forEach.call(videos, function(video) { video.muted = false});
+                                [].forEach.call(audios, function(audio) { audio.muted = false});
+                           ")
+            }
+        }
+
     }
 
 

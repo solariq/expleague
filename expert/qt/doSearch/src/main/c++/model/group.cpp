@@ -49,10 +49,8 @@ void PagesGroup::insert(Page* page, int position) {
     assert(position <= m_closed_start || position < 0);
     int index = m_pages.indexOf(page);
     position = position < 0 ? m_closed_start : position;
-//    if (index >= 0 && index <= position) ???
-//        return;
-//    if (index >= position)
-//        m_pages.removeOne(page);
+    if (index >= 0 && index <= position)
+        return;
     if(index >= 0){
         m_pages.removeOne(page);
     }

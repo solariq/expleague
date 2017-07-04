@@ -14,13 +14,14 @@ void log(const std::string& mes){
 
 class MyApp: public CefApp {
     virtual void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) OVERRIDE {
-        command_line.get()->AppendSwitch("--off-screen-rendering-enabled");
-        command_line.get()->AppendSwitch("--multi-threaded-message-loop");
+        command_line->AppendSwitch("--off-screen-rendering-enabled");
+        command_line->AppendSwitch("--multi-threaded-message-loop");
+        command_line->AppendSwitch("--enable-system-flash");
         std::vector<CefString> argv;
         command_line.get()->GetArgv(argv);
-        for(CefString str: argv){
-            log(str.ToString());
-        }
+//        for(CefString str: argv){
+//            log(str.ToString());
+//        }
     }
 
     virtual void OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar) OVERRIDE { //TODO try is_local true and is_cors_enabled fasle

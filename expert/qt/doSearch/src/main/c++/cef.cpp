@@ -103,18 +103,18 @@ class CefRenderProcessHandlerImpl: public CefRenderProcessHandler{
 };
 
 
-QSet<Browser*> GCStorage;
-QSet<Browser*> GCDestroyed;
+QSet<ShutDownGCItem*> GCStorage;
+QSet<ShutDownGCItem*> GCDestroyed;
 bool GCStorageBusy = false;
 
 QTimer* cefTimer = nullptr;
 
-void Browser::addCefBrowserToGC() {
+void ShutDownGCItem::addToShutDownGC() {
   GCStorage.insert(this);
   qDebug() << "insert" << GCStorage.size();
 }
 
-void Browser::removeCefBrowserFromGC() {
+void ShutDownGCItem::removeFromShutDownGC() {
   qDebug() << "remove" << GCStorage.size() << GCDestroyed.size() << GCStorageBusy;
   if (GCStorageBusy) {
     GCDestroyed.insert(this);
@@ -132,10 +132,16 @@ QString cachePath() {
   return cache_dir.absolutePath();
 }
 
+class CefAppImpl: public CefApp{
+  virtual void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line){
+    command_line->AppendSwitch("--enable-system-flash");
+  }
 
+  IMPLEMENT_REFCOUNTING(CefAppImpl)
+};
 
 void initCef(int argc, char* argv[]) {
-  CefRefPtr<CefApp> cefapp;
+  CefRefPtr<CefApp> cefapp(new CefAppImpl());
   CefSettings settings;
 
   CefString cache_path(&settings.cache_path);
@@ -192,11 +198,11 @@ QTimer* shutDownTimer;
 
 void shutDownCef(std::function<void()> callback) {
   GCStorageBusy = true;
-  for (Browser* browser: GCStorage) {
+  for (auto browser: GCStorage) {
     browser->shutDown();
   }
   GCStorageBusy = false;
-  for (Browser* browser: GCDestroyed) {
+  for (auto browser: GCDestroyed) {
     GCStorage.remove(browser);
   }
   shutDownTimer = new QTimer();

@@ -12,24 +12,6 @@
 #include <QtOpenGL>
 #include <mutex>
 
-#if _MSC_VER && !__INTEL_COMPILER
-#pragma warning (push, 0)
-#else
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#endif
-
-#include "include/cef_app.h"
-#include "include/cef_client.h"
-#include "include/cef_render_process_handler.h"
-#include "include/cef_browser.h"
-
-#if _MSC_VER && !__INTEL_COMPILER
-#pragma warning (pop)
-#else
-#pragma GCC diagnostic pop
-#endif
-
 #include "../downloads.h"
 
 
@@ -108,7 +90,6 @@ private:
   QQuickWindow* m_window = nullptr;
 };
 
-
 class IOBuffer : public CefKeyboardHandler {
 public:
   void setBrowser(CefRefPtr<CefBrowser> browser);
@@ -150,7 +131,7 @@ private:
   QSet<int> m_pressed_keys;
 };
 
-class CefItem : public QQuickFramebufferObject, Browser {
+class CefItem : public QQuickFramebufferObject, ShutDownGCItem {
 Q_OBJECT
 
   Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)//url of webpage
@@ -160,7 +141,7 @@ Q_OBJECT
   Q_PROPERTY(bool allowLinkTtransitions READ allowLinkTtransitions WRITE setAllowLinkTtransitions)
   Q_PROPERTY(bool cookiesEnable READ cookiesEnable WRITE setCookiesEnable)
 
-  Q_PROPERTY(bool mute READ mute WRITE setMute)
+  //Q_PROPERTY(bool mute READ mute WRITE setMute)
 
   //Q_PROPERTY(QUrl actualUrl READ actualUrl NOTIFY actualUrlChanged) //url that can be changed in one web page
 public:
@@ -292,8 +273,8 @@ public:
 
   QSize pageSize();
 
-  bool mute();
-  void setMute(bool);
+//  bool mute();
+//  void setMute(bool);
 
 signals:
 
@@ -328,12 +309,13 @@ private slots:
   void updateVisible();
 
 private:
-  void setJSMute(bool);
   void destroyBrowser();
 
   friend class BrowserListener;
 
   bool m_focused = false;
+
+  void updateJS();
 };
 
 class TextCallback : public CefStringVisitor {

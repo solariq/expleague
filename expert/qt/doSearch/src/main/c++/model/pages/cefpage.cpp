@@ -1,6 +1,7 @@
 
 #include "cefpage.h"
 #include "include/wrapper/cef_helpers.h"
+
 #include <QOpenGLFunctions_2_0>
 
 #include <QQuickWindow>
@@ -155,13 +156,13 @@ void CefPageRenderer::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType ty
 }
 
 CefPageRenderer::~CefPageRenderer() {
-  assert(QOpenGLContext::currentContext());
-  QOpenGLFunctions_2_0 glfunc;
-  glfunc.initializeOpenGLFunctions();
-  if (m_screen_tex) {
-    glfunc.glUnmapBuffer(m_screen_tex);
-    glfunc.glDeleteBuffers(1, &m_screen_tex);
-  }
+//  assert(QOpenGLContext::currentContext());
+//  QOpenGLFunctions_2_0 glfunc;
+//  glfunc.initializeOpenGLFunctions();
+//  if (m_screen_tex) {
+//    glfunc.glUnmapBuffer(m_screen_tex);
+//    glfunc.glDeleteBuffers(1, &m_screen_tex);
+//  }
 }
 
 bool CefPageRenderer::GetScreenPoint(CefRefPtr<CefBrowser> browser, int viewX, int viewY, int& screenX, int& screenY) {
@@ -394,7 +395,8 @@ void BrowserListener::OnBeforeContextMenu(CefRefPtr<CefBrowser> browser, CefRefP
 //}
 
 void BrowserListener::OnBeforeClose(CefRefPtr<CefBrowser> browser) {
-  m_owner->onBrowserDestroyed();
+  if(m_enable)
+    m_owner->onBrowserDestroyed();
 }
 
 bool BrowserListener::OnContextMenuCommand(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
@@ -445,6 +447,7 @@ CefItem::CefItem(QQuickItem* parent): QQuickFramebufferObject(parent),
   CEF_REQUIRE_UI_THREAD()
   QObject::connect(this, SIGNAL(windowChanged(QQuickWindow * )), this, SLOT(initBrowser(QQuickWindow * )),
                    Qt::QueuedConnection);
+  m_listener->enable();
 }
 
 void CefItem::updateVisible() {
@@ -455,6 +458,9 @@ void CefItem::updateVisible() {
 
 CefItem::~CefItem() {
   //CEF_REQUIRE_UI_THREAD()
+  if(m_browser)
+    removeFromShutDownGC();
+  m_listener->disable();
   destroyBrowser();
 }
 
@@ -543,22 +549,18 @@ void CefItem::shutDown() {
     destroyBrowser();
   }
   else {
-    removeCefBrowserFromGC();
+    removeFromShutDownGC();
   }
 }
 
 void CefItem::onBrowserDestroyed() {
-  removeCefBrowserFromGC();
+  removeFromShutDownGC();
 }
 
-void CefItem::setJSMute(bool mute) {
-
-}
 
 void CefItem::destroyBrowser() {
   if (m_browser) {
     m_renderer->disable();
-    m_listener->disable();
     m_text_callback->disable();
     m_iobuffer->setBrowser(nullptr);
     m_browser->GetHost()->CloseBrowser(true);
@@ -573,7 +575,6 @@ void CefItem::initBrowser(QQuickWindow* window) {
   CEF_REQUIRE_UI_THREAD()
   m_iobuffer = new IOBuffer();
   m_renderer->enable();
-  m_listener->enable();
   m_text_callback->enable();
 
   CefWindowInfo mainWindowInfo;
@@ -604,7 +605,7 @@ void CefItem::initBrowser(QQuickWindow* window) {
     m_browser->GetMainFrame()->LoadString(m_html.toStdString(), "about:blank");
   }
   m_iobuffer->setBrowser(m_browser);
-  addCefBrowserToGC();
+  addToShutDownGC();
 }
 
 void IOBuffer::setBrowser(CefRefPtr<CefBrowser> browser) {
@@ -1084,13 +1085,16 @@ bool CefItem::cookiesEnable() {
   return m_cookies_enable;
 }
 
-bool CefItem::mute() {
-  return m_mute;
-}
+//bool CefItem::mute() {
+//  return m_mute;
+//}
 
-void CefItem::setMute(bool mute) {
-  m_mute = mute;
-  setJSMute(mute);
-}
+//void CefItem::setMute(bool mute) {
+//  m_mute = mute;
+////  if(m_browser){
+////    CefBrowserHostImpl* impl = static_cast<CefBrowserHostImpl*>(m_browser->get());
+////    impl->web_contents()->SetAudioMuted(m_mute);
+////  }
+//}
 
 }

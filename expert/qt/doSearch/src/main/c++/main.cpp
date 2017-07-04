@@ -48,6 +48,10 @@ int main(int argc, char* argv[]) {
 #ifdef Q_OS_MAC
   initApp();
 #endif
+
+#ifndef QT_DEBUG
+  qsrand(time(NULL));
+#endif
   //PersistentPropertyHolder::debugPrintAll();
   QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
   QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));

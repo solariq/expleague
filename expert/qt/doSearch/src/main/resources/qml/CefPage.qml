@@ -327,6 +327,7 @@ Rectangle{
             CefView {
                 id: cefView
                 anchors.fill: parent
+                mute: muteCheck.checked
             }
         }
     }

@@ -1,0 +1,25 @@
+<RCC>
+    <qresource prefix="/">
+        <file>themes/byword-dark.txt</file>
+        <file>themes/byword-dark+.txt</file>
+        <file>themes/clearness-dark.txt</file>
+        <file>themes/clearness-dark+.txt</file>
+        <file>themes/default.txt</file>
+        <file>themes/default+.txt</file>
+        <file>themes/solarized-dark.txt</file>
+        <file>themes/solarized-dark+.txt</file>
+        <file>themes/solarized-light.txt</file>
+        <file>themes/solarized-light+.txt</file>
+        <file>sounds/owl.wav</file>
+        <file>markdownpad-github.css</file>
+        <file>md-scripts.js</file>
+        <file>html/yandex-map.html</file>
+        <file>html/yandex-map.js</file>
+        <file>markdown-tile.css</file>
+        <file>dictionaries/en_US.dic</file>
+        <file>dictionaries/en_US.aff</file>
+        <file>dictionaries/ru_RU.aff</file>
+        <file>dictionaries/ru_RU.dic</file>
+        <file>sounds/kuku.wav</file>
+    </qresource>
+</RCC>

@@ -15,6 +15,7 @@
 #include "include/cef_render_process_handler.h"
 #include "include/cef_browser.h"
 
+
 #if _MSC_VER && !__INTEL_COMPILER
 #pragma warning (pop)
 #else
@@ -25,13 +26,12 @@ class QQuickItem;
 namespace expleague {
 
 
-class Browser {
+class ShutDownGCItem {
 public:
   virtual void shutDown() = 0;
-  virtual QQuickItem* asItem() = 0;
 protected:
-  void addCefBrowserToGC();
-  void removeCefBrowserFromGC();
+  void addToShutDownGC();
+  void removeFromShutDownGC();
 };
 
 void initCef(int i, char *pString[]);
