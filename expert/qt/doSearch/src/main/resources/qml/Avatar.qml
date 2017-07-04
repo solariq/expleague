@@ -1,6 +1,4 @@
 import QtQuick 2.5
-import QtGraphicalEffects 1.0
-
 import QtQuick.Controls 2.1
 
 import ExpLeague 1.0

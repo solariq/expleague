@@ -1,14 +1,12 @@
 
 #include "cefpage.h"
 #include "include/wrapper/cef_helpers.h"
-
-#include <QOpenGLFunctions_2_0>
-
 #include <QQuickWindow>
 #include <QQmlEngine>
 #include "dosearch.h"
 
-#include <QtOpenGL>
+#include <QOpenGLFunctions_3_1>
+
 namespace expleague {
 
 CefString fromUrl(const QUrl& url) {
@@ -23,40 +21,106 @@ CefString fromUrl(const QUrl& url) {
   return surl.toStdString();
 }
 
+QOpenGLFunctions_3_1* glfunc = 0;
+
 QOpenGLFramebufferObject* QTPageRenderer::createFramebufferObject(const QSize& size) {
   CefPageRenderer* renderer = m_owner->renderer();
   if (size.height() != renderer->height() || size.width() != renderer->width()) {
-    renderer->resize(size.width(), size.height());
+    GLuint oldBuffer = m_buffer;
+//    const GLubyte* string = glfunc->glGetString(GL_VERSION);
+    glfunc->glGenBuffers(1, &m_buffer);
+    glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_buffer);
+    glfunc->glBufferData(GL_PIXEL_UNPACK_BUFFER, size.width() * size.height() * 4, 0, GL_STREAM_DRAW);
+    {
+      std::lock_guard<std::mutex> guard(m_owner->m_mutex);
+
+      if (oldBuffer) {
+        const int height = std::min(renderer->height(), size.height());
+        const int width = std::min(renderer->width(), size.width());
+
+        glfunc->glBindBuffer(GL_UNIFORM_BUFFER, oldBuffer);
+        glfunc->glUnmapBuffer(GL_UNIFORM_BUFFER);
+        for (int i = 0; i < height; i++) {
+          glfunc->glCopyBufferSubData(GL_UNIFORM_BUFFER, GL_PIXEL_UNPACK_BUFFER, i * renderer->width() * 4, i * size.width() * 4, width * 4);
+        }
+        glfunc->glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        glfunc->glDeleteBuffers(1, &oldBuffer);
+      }
+
+      renderer->setBuffer(glfunc->glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY), size.width(), size.height());
+    }
+    glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
     const CefRefPtr<CefBrowser>& browser = m_owner->browser();
     if (browser.get())
       browser->GetHost()->WasResized();
   }
-  return new QOpenGLFramebufferObject(size);
+  QOpenGLFramebufferObject* fbo = new QOpenGLFramebufferObject(size);
+  {
+//    m_window->resetOpenGLState();
+//    fbo->bind();
+//    glfunc->glColor3f(1, 0, 0);
+//    glfunc->glBegin(GL_QUADS);
+//    glfunc->glVertex2f(-1.f, -1.f);
+//    glfunc->glVertex2f(-1.f, 1.f);
+//    glfunc->glVertex2f(1.f, 1.f);
+//    glfunc->glVertex2f(1.f, -1.f);
+//    glfunc->glEnd();
+//    fbo->release();
+//    m_window->resetOpenGLState();
+  }
+  return fbo;
 }
 
-QTPageRenderer::QTPageRenderer(const CefItem* owner): m_owner(owner) {
+QTPageRenderer::QTPageRenderer(CefItem* owner): m_owner(owner) {
+  glfunc = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_1>();
+}
+
+QTPageRenderer::~QTPageRenderer() {
+  if (m_buffer) {
+    glfunc->glDeleteBuffers(1, &m_buffer);
+  }
 }
 
 //QT reder thread
 void QTPageRenderer::render() {
-  const bool texturesEnabled = glIsEnabled(GL_TEXTURE_2D);
+  assert(QOpenGLContext::currentContext());
+
+  QOpenGLFramebufferObject* fbo = framebufferObject();
+  const int height = fbo->height();
+  const int width = fbo->width();
+
+  const bool texturesEnabled = glfunc->glIsEnabled(GL_TEXTURE_2D);
   if (!texturesEnabled)
-    glEnable(GL_TEXTURE_2D);
+    glfunc->glEnable(GL_TEXTURE_2D);
 
-  glBindTexture(GL_TEXTURE_2D, framebufferObject()->texture());
-  m_owner->renderer()->draw();
-  glBindTexture(GL_TEXTURE_2D, 0);
+  glfunc->glBindTexture(GL_TEXTURE_2D, fbo->texture());
+
+//  auto prev = std::chrono::high_resolution_clock::now();
+  glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_buffer);
+  {
+    std::lock_guard<std::mutex> guard(m_owner->m_mutex);
+    glfunc->glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+    glfunc->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+    m_owner->renderer()->setBuffer(glfunc->glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY), width, height);
+  }
+  glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+//  auto now = std::chrono::high_resolution_clock::now();
+//  std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
+//  qDebug() << "Copy for " << dif.count() << "usec";
+
+  glfunc->glBindTexture(GL_TEXTURE_2D, 0);
   if (texturesEnabled)
-    glDisable(GL_TEXTURE_2D);
-}
-
-CefPageRenderer::CefPageRenderer(CefItem* owner): m_owner(owner) {
+    glfunc->glDisable(GL_TEXTURE_2D);
 }
 
 //Qt render thread,  ui (onpaint, CefDoMessageLoopWork, QQuickFramebufferObject) blocked
 void QTPageRenderer::synchronize(QQuickFramebufferObject* obj) {
   m_window = obj->window();
   m_window->setClearBeforeRendering(true);
+}
+
+CefPageRenderer::CefPageRenderer(CefItem* owner): m_owner(owner) {
 }
 
 void CefPageRenderer::processNextFrame(std::function<void(const void*, int, int)> f) {
@@ -74,55 +138,19 @@ void CefPageRenderer::enable() {
 //ui thread
 bool CefPageRenderer::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) {
   CEF_REQUIRE_UI_THREAD()
-  rect = CefRect(0, 0, m_width, m_height);
+  rect = CefRect(0, 0, (int)(m_width/m_scale_factor), (int)(m_height/m_scale_factor));
   return true;
-}
-
-void CefPageRenderer::draw() {
-  assert(QOpenGLContext::currentContext());
-  QOpenGLFunctions_2_0 glfunc;
-  glfunc.initializeOpenGLFunctions();
-  std::lock_guard<std::mutex> guard(m_mutex);
-  glfunc.glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_screen_tex);
-  glfunc.glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-  glfunc.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
-
-//  auto prev = std::chrono::high_resolution_clock::now();
-  m_gpu_buffer = glfunc.glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-  glfunc.glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-//  auto now = std::chrono::high_resolution_clock::now();
-//  std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
-//  qDebug() << "Copy for " << dif.count() << "usec";
-}
-
-void CefPageRenderer::resize(int width, int height) {
-  assert(QOpenGLContext::currentContext());
-  QOpenGLFunctions_2_0 glfunc;
-  glfunc.initializeOpenGLFunctions();
-  std::lock_guard<std::mutex> guard(m_mutex);
-  if (m_screen_tex) {
-    glfunc.glUnmapBuffer(m_screen_tex);
-    glfunc.glDeleteBuffers(1, &m_screen_tex);
-  }
-  glfunc.glGenBuffers(1, &m_screen_tex);
-  glfunc.glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_screen_tex);
-  glfunc.glBufferData(GL_PIXEL_UNPACK_BUFFER, width * height * 4, 0, GL_STREAM_DRAW);
-  m_gpu_buffer = glfunc.glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-  glfunc.glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-  m_clean = true;
-  m_height = height;
-  m_width = width;
 }
 
 //ui thread
 void CefPageRenderer::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList& dirtyRects,
                               const void* buffer, int width, int height) {
   CEF_REQUIRE_UI_THREAD()
-  if (m_width != width || m_height != height)
+  if (m_width != width || m_height != height || !m_gpu_buffer || !m_enable)
     return;
   {
 //    auto prev = std::chrono::high_resolution_clock::now();
-    std::lock_guard<std::mutex> guard(m_mutex);
+    std::lock_guard<std::mutex> guard(m_owner->m_mutex);
     if (m_gpu_buffer) {
       if (!m_clean) {
         for (CefRect rect: dirtyRects) {
@@ -150,19 +178,21 @@ void CefPageRenderer::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType ty
     m_next_frame_func = nullptr;
   }
   //  qDebug() << "onPaint" << buffer;
-  if (m_enable) {
-    m_owner->update();
-  }
+  m_owner->update();
 }
-
-CefPageRenderer::~CefPageRenderer() {
-//  assert(QOpenGLContext::currentContext());
-//  QOpenGLFunctions_2_0 glfunc;
-//  glfunc.initializeOpenGLFunctions();
-//  if (m_screen_tex) {
-//    glfunc.glUnmapBuffer(m_screen_tex);
-//    glfunc.glDeleteBuffers(1, &m_screen_tex);
-//  }
+cef_screen_info_t a;
+bool CefPageRenderer::GetScreenInfo(CefRefPtr<CefBrowser> browser,
+                           CefScreenInfo& screen_info) {
+  if(!m_enable)
+    return false;
+  m_scale_factor = (float) m_owner->window()->devicePixelRatio();
+  screen_info.device_scale_factor = m_scale_factor;
+  screen_info.depth = 24;
+  screen_info.depth_per_component = 8;
+  screen_info.is_monochrome = 0;
+//  screen_info.rect = CefRect(0, 0, m_width, m_height);
+//  screen_info.available_rect = CefRect(0, 0, m_width, m_height);
+  return true;
 }
 
 bool CefPageRenderer::GetScreenPoint(CefRefPtr<CefBrowser> browser, int viewX, int viewY, int& screenX, int& screenY) {
@@ -264,11 +294,24 @@ void CefPageRenderer::OnCursorChange(CefRefPtr<CefBrowser> browser, HCURSOR curs
 void CefPageRenderer::OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor,
                                      CursorType type, const CefCursorInfo& custom_cursor_info) {
   if (m_enable) {
+    qDebug() << "cursor changed" << toQCursor(type);
     emit m_owner->cursorChanged(toQCursor(type));
   }
 }
 
 #endif
+
+void CefPageRenderer::setBuffer(void* pVoid, int width, int height) {
+  m_gpu_buffer = pVoid;
+  m_clean = m_height != height || m_width != width;
+  m_height = height;
+  m_width = width;
+}
+
+const void* CefPageRenderer::buffer() {
+  return m_gpu_buffer;
+}
+
 bool BrowserListener::OnBeforeBrowse(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefRequest> request,
                                 bool is_redirect) {
   if (request->GetResourceType() != RT_MAIN_FRAME) { //request page resources
@@ -379,7 +422,7 @@ void BrowserListener::OnBeforeContextMenu(CefRefPtr<CefBrowser> browser, CefRefP
   }
   if (params->GetLinkUrl().size() > 0) {
     model->Clear();
-    model->AddItem(MENU_USER_NEW_TAB, "Открыть в suggest группе");
+    model->AddItem(MENU_USER_NEW_TAB, "Открыть в новой вкладке");
     model->AddItem(MENU_USER_SAVE_LINK_TO_STORAGE, "Сохранить ссылку в хранилище");
     return;
   }
@@ -447,6 +490,8 @@ CefItem::CefItem(QQuickItem* parent): QQuickFramebufferObject(parent),
   CEF_REQUIRE_UI_THREAD()
   QObject::connect(this, SIGNAL(windowChanged(QQuickWindow * )), this, SLOT(initBrowser(QQuickWindow * )),
                    Qt::QueuedConnection);
+  setKeepMouseGrab(true);
+  setKeepTouchGrab(true);
   m_listener->enable();
 }
 
@@ -465,7 +510,7 @@ CefItem::~CefItem() {
 }
 
 QQuickFramebufferObject::Renderer* CefItem::createRenderer() const {
-  return new QTPageRenderer(this);
+  return new QTPageRenderer(const_cast<CefItem*>(this));
 }
 
 class CookieContextHandler : public CefRequestContextHandler {
@@ -474,7 +519,7 @@ public:
     m_manager = CefCookieManager::GetGlobalManager(NULL); /*new EmptyCookieManager();*/
   }
 
-  virtual CefRefPtr<CefCookieManager> GetCookieManager() {
+  virtual CefRefPtr<CefCookieManager> GetCookieManager() OVERRIDE {
     return m_manager;
   }
 
@@ -661,6 +706,8 @@ void IOBuffer::mouseMove(int x, int y, int buttons) {
     event.x = x;
     event.y = y;
     event.modifiers = m_key_flags;
+    if(!(x % 10) || !(y % 10))
+      qDebug() << "Move event" << x << y << "modifiers" << m_key_flags;
     m_browser->GetHost()->SendMouseMoveEvent(event, false);
   }
 }
@@ -678,8 +725,9 @@ void IOBuffer::mousePress(int x, int y, int buttons) {
     CefMouseEvent event;
     event.x = x;
     event.y = y;
-    m_key_flags |= CefEventFactory::mouseEventFlags(buttons);
     event.modifiers = m_key_flags;
+    m_key_flags |= CefEventFactory::mouseEventFlags(buttons);
+    qDebug() << "press Event" << x << y << "modifiers" << event.modifiers << "buttons" << buttons;
     m_browser->GetHost()->SendMouseClickEvent(event, getButton(buttons), false, m_click_count);
   }
 }
@@ -689,6 +737,7 @@ void IOBuffer::mouseRelease(int x, int y, int buttons) {
     CefMouseEvent event;
     event.x = x;
     event.y = y;
+    qDebug() << "press Release" << x << y << "modifiers" << event.modifiers << "buttons" << buttons;
     m_key_flags &= ~CefEventFactory::mouseEventFlags(buttons);
     event.modifiers = m_key_flags;
     m_browser->GetHost().get()->SendMouseClickEvent(event, getButton(buttons), true, m_click_count);

@@ -61,14 +61,14 @@ if(OS_MACOSX)
   set(ICON_PATH "resources/${ICON_NAME}")
 
   # OpenGL
-  include_directories(/System/Library/Frameworks)
-  find_library(COCOA_LIBRARY Cocoa)
-  find_library(GLUT_LIBRARY GLUT)
-  find_library(OpenGL_LIBRARY OpenGL)
-  mark_as_advanced(COCOA_LIBRARY
-    GLUT_LIBRARY
-    OpenGL_LIBRARY)
-  set(EXTRA_LIBS ${COCOA_LIBRARY} ${GLUT_LIBRARY} ${OpenGL_LIBRARY})
+#  include_directories(/System/Library/Frameworks)
+#  find_library(COCOA_LIBRARY Cocoa)
+#  find_library(GLUT_LIBRARY GLUT)
+#  find_library(OpenGL_LIBRARY OpenGL)
+#  mark_as_advanced(COCOA_LIBRARY
+#    GLUT_LIBRARY
+#    OpenGL_LIBRARY)
+#  set(EXTRA_LIBS ${COCOA_LIBRARY} ${GLUT_LIBRARY} ${OpenGL_LIBRARY})
 #  target_sources(doSearch PUBLIC ${EXTRA_LIBS})
 #
   add_executable(doSearch MACOSX_BUNDLE ${doSearch_sources} ${ICON_PATH} ${RESOURCES})
@@ -164,7 +164,7 @@ target_link_libraries(doSearch
   leveldb
 )
 
-target_link_libraries(doSearch ${EXTRA_LIBS})
+#target_link_libraries(doSearch ${EXTRA_LIBS})
 
 if (CEF)
   add_definitions(-DCEF)

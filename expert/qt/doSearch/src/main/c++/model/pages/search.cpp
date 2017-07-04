@@ -25,6 +25,14 @@ void SERPage::interconnect() {
     connect(request(), SIGNAL(sessionChanged()), SLOT(onSessionChanged()));
 }
 
+QString SERPage::customJavaScript(){
+  return R"(
+  elems = document.getElementsByTagName("A")
+  for (var i = 0; i < elems.length; ++i) {
+      elems[i].removeAttribute("onmousedown")
+  })";
+}
+
 //SearchRequest SearchRequest::EMPTY("");
 
 QString YandexSERPage::parseQuery(const QUrl& request) {

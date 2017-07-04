@@ -54,5 +54,6 @@
         <file>CefView.qml</file>
         <file>GroupTree.qml</file>
         <file>Empty.qml</file>
+        <file>OpacityMask.qml</file>
     </qresource>
 </RCC>
