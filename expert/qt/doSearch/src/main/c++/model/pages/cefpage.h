@@ -9,8 +9,8 @@
 
 #include <QQuickFramebufferObject>
 #include <QTimer>
-#include <QtOpenGL>
 #include <mutex>
+#include <QtQuick>
 
 #include "../downloads.h"
 
@@ -26,11 +26,27 @@ class BrowserListener;
 
 class TextCallback;
 
+class CefItem;
+
+class QTPageRenderer : public QQuickFramebufferObject::Renderer {
+public:
+  explicit QTPageRenderer(CefItem* owner);
+  ~QTPageRenderer();
+  //Qt methods
+  virtual void render();
+
+  virtual QOpenGLFramebufferObject* createFramebufferObject(const QSize& size);
+
+  virtual void synchronize(QQuickFramebufferObject* obj);
+private:
+  CefItem* const m_owner;
+  GLuint m_buffer = 0;
+  friend class CefPageRenderer;
+  QQuickWindow* m_window = nullptr;
+};
+
 class CefPageRenderer : public CefRenderHandler {
 public:
-  void draw();
-  void resize(int width, int height);
-
   void disable(); //stop render on QT level
   void enable();
 
@@ -45,6 +61,8 @@ public:
                        const RectList& dirtyRects, const void* buffer,
                        int width, int height) OVERRIDE;
 
+  virtual bool GetScreenInfo(CefRefPtr<CefBrowser> browser, CefScreenInfo& screen_info) OVERRIDE;
+
 #ifdef Q_OS_WIN
   virtual void OnCursorChange(CefRefPtr<CefBrowser> browser, HCURSOR cursor, CursorType type, const CefCursorInfo &custom_cursor_info) OVERRIDE;
 #elif defined(Q_OS_MAC)
@@ -54,41 +72,23 @@ public:
   virtual bool GetScreenPoint(CefRefPtr<CefBrowser> browser, int viewX, int viewY, int& screenX, int& screenY) OVERRIDE;
   virtual bool StartDragging(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDragData> drag_data, DragOperationsMask allowed_ops, int x, int y) OVERRIDE;
 
-IMPLEMENT_REFCOUNTING(CefPageRenderer)
+  const void* buffer();
+  void setBuffer(void* pVoid, int width, int height);
 
+IMPLEMENT_REFCOUNTING(CefPageRenderer)
 public:
   explicit CefPageRenderer(CefItem* owner);
-  virtual ~CefPageRenderer();
 
 private:
   bool m_enable = false;
-  GLuint m_screen_tex;
   int m_height, m_width;
   CefItem* const m_owner;
-  std::mutex m_mutex;
   std::function<void(const void* buffer, int w, int h)> m_next_frame_func;
   bool m_clean = true;
   void* m_gpu_buffer = nullptr;
+  float m_scale_factor = 1.f;
 };
 
-class CefItem;
-
-class QTPageRenderer : public QQuickFramebufferObject::Renderer {
-public:
-  QTPageRenderer(const CefItem* owner);
-
-  //Qt methods
-  virtual void render();
-
-  virtual QOpenGLFramebufferObject* createFramebufferObject(const QSize& size);
-
-  virtual void synchronize(QQuickFramebufferObject* obj);
-private:
-  const CefItem* const m_owner;
-  friend class CefPageRenderer;
-
-  QQuickWindow* m_window = nullptr;
-};
 
 class IOBuffer : public CefKeyboardHandler {
 public:
@@ -109,7 +109,7 @@ public:
   virtual bool OnPreKeyEvent(CefRefPtr<CefBrowser> browser,
                              const CefKeyEvent& event,
                              CefEventHandle os_event,
-                             bool* is_keyboard_shortcut) {
+                             bool* is_keyboard_shortcut) OVERRIDE {
     qDebug() << "OnPreKeyEvent" << event.windows_key_code << event.type;
     //*is_keyboard_shortcut = true;
     return false;
@@ -117,7 +117,7 @@ public:
 
   virtual bool OnKeyEvent(CefRefPtr<CefBrowser> browser,
                           const CefKeyEvent& event,
-                          CefEventHandle os_event) {
+                          CefEventHandle os_event) OVERRIDE {
     qDebug() << "OnKeyEvent" << event.windows_key_code << event.type;
     return false;
   }
@@ -250,6 +250,7 @@ private:
   bool m_running = true;
   bool m_cookies_enable = true;
   bool m_mute;
+  std::mutex m_mutex;
   //property methods
 
 public:
@@ -312,7 +313,8 @@ private:
   void destroyBrowser();
 
   friend class BrowserListener;
-
+  friend class CefPageRenderer;
+  friend class QTPageRenderer;
   bool m_focused = false;
 
   void updateJS();
@@ -382,7 +384,7 @@ public:
                               CefRefPtr<CefFrame> frame,
                               CefRefPtr<CefContextMenuParams> params,
                               CefRefPtr<CefMenuModel> model,
-                              CefRefPtr<CefRunContextMenuCallback> callback) {
+                              CefRefPtr<CefRunContextMenuCallback> callback) OVERRIDE {
     return false;
   }
 

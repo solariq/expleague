@@ -174,7 +174,7 @@ void initCef(int argc, char* argv[]) {
     std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
     bool idle = dif.count() < 500000;
 //    qDebug() << dif.count() << interval;
-    if (idle && interval < 500000) {
+    if (idle && interval < 10000) {
       interval += 10;
     }
     else if (!idle && interval > 100) {

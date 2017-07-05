@@ -156,8 +156,7 @@ add_dependencies(doSearch
     hunspell
     cutemarked
     breakpad
-    leveldb
-    )
+    leveldb)
 
 target_link_libraries(doSearch PUBLIC
     qxmpp

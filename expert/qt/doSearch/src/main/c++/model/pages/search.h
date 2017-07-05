@@ -34,6 +34,7 @@ protected:
 
     void interconnect();
 
+    Q_INVOKABLE QString customJavaScript();
 private slots:
     void onSessionChanged() { emit containerChanged(); }
 

@@ -1,4 +1,4 @@
-import QtQuick 2.7
+import QtQuick 2.8
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Controls 2.0 as ControlsNG
@@ -46,7 +46,6 @@ ApplicationWindow {
 //            return Qt.FramelessWindowHint | Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint
 //        return 134279169
 //    }
-
 
     WindowStateSaver {
         window: self
