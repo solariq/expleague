@@ -7,7 +7,6 @@
 #include <QSystemTrayIcon>
 #include <QQmlApplicationEngine>
 #include <QtQml/QQmlContext>
-#include <QtWebView/QtWebView>
 #include <QStyleOptionButton>
 #include <QStyle>
 #include <QTextCodec>

@@ -268,7 +268,7 @@ void WebPage::interconnect() {
     rebuildRedirects();
 }
 
-void WebSite::onPageLoaded(Page *child) { //TODO ????
+void WebSite::onPageLoaded(Page *child) {
     ContentPage *contentPage = qobject_cast<ContentPage *>(child);
     if (contentPage)
         appendPart(contentPage);

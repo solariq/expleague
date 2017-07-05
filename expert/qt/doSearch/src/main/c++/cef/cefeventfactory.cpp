@@ -425,8 +425,34 @@ static inline uint32 modifierForKeyCode(int key)
 
 static inline uint32 modifiersForEvent(const QInputEvent* event)
 {
-    unsigned result = 0;
-    Qt::KeyboardModifiers modifiers = event->modifiers();
+    uint32 result = 0;
+    result |= CefEventFactory::modifiersFromQtKeyBoardModifiers(event->modifiers());
+
+    switch (event->type()) {
+    //    case QEvent::MouseButtonPress:
+    //    case QEvent::MouseButtonRelease:
+    //    case QEvent::MouseMove:
+    //        result |= mouseButtonsModifiersForEvent(static_cast<const QMouseEvent*>(event));
+    //        break;
+    //    case QEvent::Wheel:
+    //        result |= mouseButtonsModifiersForEvent(static_cast<const QWheelEvent*>(event));
+    //        break;
+    case QEvent::KeyPress:
+    case QEvent::KeyRelease: {
+        const QKeyEvent *keyEvent = static_cast<const QKeyEvent*>(event);
+        //        if (keyEvent->isAutoRepeat())
+        //            result |= WebInputEvent::IsAutoRepeat;
+        result |= modifierForKeyCode(keyEvent->key());
+    }
+    default:
+        break;
+    }
+
+    return result;
+}
+
+uint32 CefEventFactory::modifiersFromQtKeyBoardModifiers(int modifiers){
+  uint32 result = 0;
 #if defined(Q_OS_OSX)
     if (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
         if (modifiers & Qt::ControlModifier)
@@ -453,27 +479,6 @@ static inline uint32 modifiersForEvent(const QInputEvent* event)
         result |= EVENTFLAG_ALT_DOWN;
     if (modifiers & Qt::KeypadModifier)
         result |= EVENTFLAG_IS_KEY_PAD;
-
-    switch (event->type()) {
-    //    case QEvent::MouseButtonPress:
-    //    case QEvent::MouseButtonRelease:
-    //    case QEvent::MouseMove:
-    //        result |= mouseButtonsModifiersForEvent(static_cast<const QMouseEvent*>(event));
-    //        break;
-    //    case QEvent::Wheel:
-    //        result |= mouseButtonsModifiersForEvent(static_cast<const QWheelEvent*>(event));
-    //        break;
-    case QEvent::KeyPress:
-    case QEvent::KeyRelease: {
-        const QKeyEvent *keyEvent = static_cast<const QKeyEvent*>(event);
-        //        if (keyEvent->isAutoRepeat())
-        //            result |= WebInputEvent::IsAutoRepeat;
-        result |= modifierForKeyCode(keyEvent->key());
-    }
-    default:
-        break;
-    }
-
     return result;
 }
 

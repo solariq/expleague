@@ -94,13 +94,13 @@ class IOBuffer : public CefKeyboardHandler {
 public:
   void setBrowser(CefRefPtr<CefBrowser> browser);
 
-  void mouseMove(int x, int y, int buttons, int modifiers);
+  void mouseMove(int x, int y, int buttons);
 
-  void mousePress(int x, int y, int buttons, int modifiers);
+  void mousePress(int x, int y, int buttons);
 
-  void mouseRelease(int x, int y, int buttons, int modifiers);
+  void mouseRelease(int x, int y, int buttons);
 
-  void mouseWheel(int x, int y, int buttons, QPoint angle, int modifiers);
+  void mouseWheel(int x, int y, int buttons, QPoint angle);
 
   bool keyPress(QKeyEvent* event);
 
@@ -165,7 +165,7 @@ public:
 
   Q_INVOKABLE void setBrowserFocus(bool focus);
 
-  Q_INVOKABLE void mouseMove(int x, int y, int buttons, int modifiers);
+  Q_INVOKABLE void mouseMove(int x, int y, int buttons);
 
   Q_INVOKABLE void mousePress(int x, int y, int buttons, int modifiers);
 

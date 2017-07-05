@@ -369,8 +369,11 @@ bool BrowserListener::OnBeforePopup(CefRefPtr<CefBrowser> browser, CefRefPtr<Cef
   if (!m_enable) {
     return true;
   }
+  if(target_disposition == WOD_CURRENT_TAB){
+    return false;
+  }
   QUrl url(QString::fromStdString(target_url.ToString()), QUrl::TolerantMode);
-  emit m_owner->requestPage(url, false);
+  emit m_owner->requestPage(url, target_disposition == WOD_NEW_BACKGROUND_TAB);
   return true;
 }
 
@@ -657,33 +660,33 @@ void IOBuffer::setBrowser(CefRefPtr<CefBrowser> browser) {
   m_browser = browser;
 }
 
-void CefItem::mouseMove(int x, int y, int buttons) {
+void CefItem::mouseMove(int x, int y, int buttons, int modifiers) {
   if (!m_iobuffer) {
     return;
   }
-  m_iobuffer->mouseMove(x, y, buttons);
+  m_iobuffer->mouseMove(x, y, buttons, modifiers);
 }
 
-void CefItem::mousePress(int x, int y, int buttons) {
+void CefItem::mousePress(int x, int y, int buttons, int modifiers) {
   if (!m_iobuffer) {
     return;
   }
-  m_iobuffer->mousePress(x, y, buttons);
+  m_iobuffer->mousePress(x, y, buttons, modifiers);
 }
 
-void CefItem::mouseRelease(int x, int y, int buttons) {
+void CefItem::mouseRelease(int x, int y, int buttons, int modifiers) {
   if (!m_iobuffer) {
     return;
   }
   m_listener->userEventOccured();
-  m_iobuffer->mouseRelease(x, y, buttons);
+  m_iobuffer->mouseRelease(x, y, buttons, modifiers);
 }
 
-void CefItem::mouseWheel(int x, int y, int buttons, QPoint angle) {
+void CefItem::mouseWheel(int x, int y, int buttons, QPoint angle, int modifiers) {
   if (!m_iobuffer) {
     return;
   }
-  m_iobuffer->mouseWheel(x, y, buttons, angle);
+  m_iobuffer->mouseWheel(x, y, buttons, angle, modifiers);
 }
 
 
@@ -700,19 +703,19 @@ cef_mouse_button_type_t getButton(int mouseButtons) {
   return MBT_LEFT;
 }
 
-void IOBuffer::mouseMove(int x, int y, int buttons) {
+void IOBuffer::mouseMove(int x, int y, int buttons, int modifiers) {
   if (m_browser) {
     CefMouseEvent event;
     event.x = x;
     event.y = y;
-    event.modifiers = m_key_flags;
-    if(!(x % 10) || !(y % 10))
-      qDebug() << "Move event" << x << y << "modifiers" << m_key_flags;
+    event.modifiers = CefEventFactory::modifiersFromQtKeyBoardModifiers(modifiers) | CefEventFactory::mouseEventFlags(buttons);
+//    if(!(x % 20) || !(y % 20))
+//      qDebug() << "Move event" << x << y << "modifiers" << event.modifiers;
     m_browser->GetHost()->SendMouseMoveEvent(event, false);
   }
 }
 
-void IOBuffer::mousePress(int x, int y, int buttons) {
+void IOBuffer::mousePress(int x, int y, int buttons, int modifiers) {
   if (m_browser) {
     int time = QTime::currentTime().msecsSinceStartOfDay();
     if (time - m_last_click_time < 200) {
@@ -725,31 +728,31 @@ void IOBuffer::mousePress(int x, int y, int buttons) {
     CefMouseEvent event;
     event.x = x;
     event.y = y;
-    event.modifiers = m_key_flags;
-    m_key_flags |= CefEventFactory::mouseEventFlags(buttons);
+    event.modifiers = CefEventFactory::modifiersFromQtKeyBoardModifiers(modifiers) | CefEventFactory::mouseEventFlags(buttons);
     qDebug() << "press Event" << x << y << "modifiers" << event.modifiers << "buttons" << buttons;
     m_browser->GetHost()->SendMouseClickEvent(event, getButton(buttons), false, m_click_count);
+    m_key_flags |= CefEventFactory::mouseEventFlags(buttons);
   }
 }
 
-void IOBuffer::mouseRelease(int x, int y, int buttons) {
+void IOBuffer::mouseRelease(int x, int y, int buttons, int modifiers) {
   if (m_browser) {
     CefMouseEvent event;
     event.x = x;
     event.y = y;
     qDebug() << "press Release" << x << y << "modifiers" << event.modifiers << "buttons" << buttons;
     m_key_flags &= ~CefEventFactory::mouseEventFlags(buttons);
-    event.modifiers = m_key_flags;
+    event.modifiers = CefEventFactory::modifiersFromQtKeyBoardModifiers(modifiers) | CefEventFactory::mouseEventFlags(buttons);
     m_browser->GetHost().get()->SendMouseClickEvent(event, getButton(buttons), true, m_click_count);
   }
 }
 
-void IOBuffer::mouseWheel(int x, int y, int buttons, QPoint angle) {
+void IOBuffer::mouseWheel(int x, int y, int buttons, QPoint angle, int modifiers) {
   if (m_browser) {
     CefMouseEvent event;
     event.x = x;
     event.y = y;
-    event.modifiers = m_key_flags;
+    event.modifiers = event.modifiers = CefEventFactory::modifiersFromQtKeyBoardModifiers(modifiers) | CefEventFactory::mouseEventFlags(buttons);;
     //qDebug() << "scroll x" << angle.x() << "y" << angle.y();
     m_browser->GetHost()->SendMouseWheelEvent(event, angle.x(), angle.y());
   }

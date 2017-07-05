@@ -84,12 +84,6 @@ Page* doSearch::empty() const {
     });
 }
 
-void removeTimeStamps(QUrl& url){
-    if(url.host().contains("google.")){
-
-    }
-}
-
 Page* doSearch::web(const QUrl& url) const {
     QString query = url.query().isEmpty() ? "" : "/" + md5(url.query());
     if (WebResource::rootUrl(url)) { // site

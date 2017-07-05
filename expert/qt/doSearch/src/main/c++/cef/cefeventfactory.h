@@ -13,6 +13,7 @@ public:
     static CefMouseEvent createMouseEvent(double x, double y);
     static uint32 keyEventFlags(QKeyEvent *ev);
     static uint32 mouseEventFlags(int mouseButtons);
+    static uint32 modifiersFromQtKeyBoardModifiers(int modifiers);
 };
 
 #endif // CEFEVENTFACTORY_H

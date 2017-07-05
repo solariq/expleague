@@ -79,22 +79,22 @@ Rectangle{
         //propagateComposedEvents: true
         acceptedButtons: Qt.AllButtons
         onPressed: {
-            webView.mousePress(mouse.x, mouse.y, mouse.button)
+            webView.mousePress(mouse.x, mouse.y, mouse.button, mouse.modifiers)
             mouse.accepted = true
         }
 
         onReleased: {
-            webView.mouseRelease(mouse.x, mouse.y, mouse.button)
+            webView.mouseRelease(mouse.x, mouse.y, mouse.button, mouse.modifiers)
             mouse.accepted = true
         }
 
         onPositionChanged: {
-            webView.mouseMove(mouse.x, mouse.y, mouse.buttons)
+            webView.mouseMove(mouse.x, mouse.y, mouse.buttons, mouse.modifiers)
             mouse.accepted = true
         }
 
         onWheel: {
-            webView.mouseWheel(wheel.x, wheel.y, wheel.buttons, wheel.angleDelta)
+            webView.mouseWheel(wheel.x, wheel.y, wheel.buttons, wheel.angleDelta, wheel.modifiers)
             wheel.accepted = true
         }
     }
