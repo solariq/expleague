@@ -35,6 +35,7 @@ public class GetAnswerHandler extends WebHandler {
     try {
       final String result;
       final String title;
+      final String roomId;
       final Node node = session.getNodeByIdentifier(id); // answer node
       if ("answer-text".equals(node.getName()) || "topic".equals(node.getName())) {
         final NodeIterator nodeIterator;
@@ -65,6 +66,7 @@ public class GetAnswerHandler extends WebHandler {
         }
         result = stringBuilder.toString();
         if ("answer-text".equals(node.getName())) {
+          roomId = node.getParent().getParent().getParent().getParent().getName();
           if (node.getParent().getParent().getParent().hasProperty("topic"))
             title = node.getParent().getParent().getParent().getProperty("topic").getString();
           else
@@ -72,16 +74,18 @@ public class GetAnswerHandler extends WebHandler {
         }
         else {
           title = node.getProperty(Property.JCR_DATA).getString();
+          roomId = node.getParent().getParent().getName();
         }
       }
       else { //old version
         final Property answerProp = node.getProperty(Property.JCR_DATA);
         result = showMd ? textAreaWithParams() + answerProp.getString() + "</textarea>" : extractAnswer(answerProp);
         title = node.getParent().getProperty("topic").getString();
+        roomId = node.getParent().getParent().getName();
       }
       reply(HttpResponse.create().withStatus(200).withEntity(
           MediaTypes.TEXT_HTML.toContentType(HttpCharsets.UTF_8),
-          "<html><title>" + title + "</title><body>" + result + "</body></html>"));
+          "<html><title>" + title + "</title><body>" + result + "<div style=\"display:none;\">" + roomId + "</div></body></html>"));
     } catch (RepositoryException | IOException e) {
       handleException(e);
     }
