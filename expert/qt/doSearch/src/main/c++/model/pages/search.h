@@ -101,7 +101,7 @@ public:
     QQmlListProperty<SearchRequest> queriesQml() const { return QQmlListProperty<SearchRequest>(const_cast<SearchSession*>(this), reinterpret_cast<QList<SearchRequest*>&>(const_cast<SearchSession*>(this)->partsRef())); }
 
     Q_INVOKABLE bool check(SearchRequest* request);
-    Q_INVOKABLE void append(SearchRequest* request) { appendPart(request); }
+    Q_INVOKABLE void append(SearchRequest* request);
     void setRequest(SearchRequest* request);
 
 public:

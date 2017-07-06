@@ -57,6 +57,13 @@ Rectangle{
             }
             webView.getText()
         }
+
+        onUrlChanged:{
+            if (!owner.accept(url)) {
+                owner.open(url, true)
+            }
+        }
+
     }
 
     ColumnLayout {

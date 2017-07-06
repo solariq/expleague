@@ -156,7 +156,7 @@ void CefPageRenderer::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType ty
         for (CefRect rect: dirtyRects) {
           if (rect.width < width) {
             for (int i = 0; i < rect.height; i++) {
-              const int offset = (i * width + rect.x) * 4;
+              const int offset = ((i + rect.y) * width + rect.x) * 4;
               memcpy((char*) m_gpu_buffer + offset, (char*) buffer + offset, (size_t) rect.width * 4);
             }
           }
@@ -398,7 +398,6 @@ void BrowserListener::OnLoadingStateChange(CefRefPtr<CefBrowser> browser, bool i
   if (!isLoading && m_enable) {
     emit m_owner->loadEnd();
   }
-
 }
 
 void BrowserListener::OnBeforeDownload(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDownloadItem> download_item,
@@ -485,6 +484,15 @@ void BrowserListener::OnLoadStart(CefRefPtr<CefBrowser> browser,
 //  if (m_enable && frame->IsMain()) {
 //    browser->GetHost()->WasResized();
 //  }
+}
+
+void BrowserListener::OnAddressChange(CefRefPtr<CefBrowser> browser,
+                             CefRefPtr<CefFrame> frame,
+                             const CefString& url){
+  if(m_enable && frame->IsMain()){
+    QUrl qurl = QUrl(QString::fromStdString(url));
+    emit m_owner->urlChanged(qurl);
+  }
 }
 
 CefItem::CefItem(QQuickItem* parent): QQuickFramebufferObject(parent),
@@ -1033,8 +1041,10 @@ void CefItem::clearCookies(const QString& url) {
 }
 
 void CefItem::executeJS(const QString& sctript) {
-  CefRefPtr<CefFrame> frame = m_browser->GetMainFrame();
-  frame->ExecuteJavaScript(sctript.toStdString(), frame->GetURL(), 0);
+  if(m_browser){
+    CefRefPtr<CefFrame> frame = m_browser->GetMainFrame();
+    frame->ExecuteJavaScript(sctript.toStdString(), frame->GetURL(), 0);
+  }
 }
 
 void CefItem::redirectEnable(bool redirect) {

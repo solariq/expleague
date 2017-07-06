@@ -23,14 +23,15 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 endif()
 
 set(CEF true)
-set (CMAKE_PREFIX_PATH "C:/Qt/5.8/mingw53_32")
+
 if(MSVC)
-    set(CMAKE_CXX_FLAGS_DEBUG "/Zi /DEBUG /MDd")
+    set(CMAKE_CXX_FLAGS_DEBUG "/DEBUG /MDd")
     set(CMAKE_CXX_FLAGS_RELEASE "/MD /O2 /Ob2 /DNDEBUG /DQT_NO_DEBUG_OUTPUT")
     set(CMAKE_CXX_FLAGS "/GR /DWIN32 /D_WINDOWS /EHsc /wd4355 /wd4251 /wd4250 /wd4996")
-    set(CMAKE_C_FLAGS_DEBUG "/Zi /MDd /DEBUG")
+    set(CMAKE_C_FLAGS_DEBUG "/MDd /DEBUG")
     set(CMAKE_C_FLAGS_RELEASE "/MD /O2 /Ob2 /DNDEBUG")
     set(CMAKE_C_FLAGS "/DWIN32 /D_WINDOWS /EHsc")
+    set (CMAKE_PREFIX_PATH "C:/Qt/5.8/msvc2015")
 endif()
 
 if(CEF)

@@ -395,6 +395,10 @@ public:
                            CefRefPtr<CefFrame> frame,
                            TransitionType transition_type) OVERRIDE;
 
+  virtual void OnAddressChange(CefRefPtr<CefBrowser> browser,
+                               CefRefPtr<CefFrame> frame,
+                               const CefString& url);
+
   void userEventOccured(); //click or smth
   void redirectEnable(bool);
 

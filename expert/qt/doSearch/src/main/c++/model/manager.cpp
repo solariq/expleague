@@ -71,7 +71,7 @@ void NavigationManager::typeIn(Page* page, bool suggest) {
   if (newContent && suggest) {
     Context* suggest = this->suggest(newContent);
     if (suggest)
-            emit suggestAvailable(suggest);
+      emit suggestAvailable(suggest);
     else
       connect(newContent, SIGNAL(changingProfile(BoW, BoW)), SLOT(onTypeInProfileChange(BoW, BoW)));
   }
@@ -193,10 +193,10 @@ bool NavigationManager::canMovePage(Page* page, PagesGroup* target) {
     qDebug() << "cant move page inside group" << target->type();
     return false;
   }
-//    if(source->type() == PagesGroup::C){
-//        qDebug() << "cant move page, wrong source group type:" << source->type();
-//        return false;
-//    }
+  //    if(source->type() == PagesGroup::C){
+  //        qDebug() << "cant move page, wrong source group type:" << source->type();
+  //        return false;
+  //    }
   for (PagesGroup* current = target; current; current = current->parentGroup()) {
     if (current == source) {
       qDebug() << "cant move page, target cant be descendant of source";
@@ -284,12 +284,12 @@ void NavigationManager::open(Page* page) {
   PagesGroup* group = m_active_context->associated(page, false);
   if (!group) { // new group, trying to match existing
     Context::GroupMatchType matchType = Context::NONE;
-            foreach(Context* context, parent()->contexts()) {
-        PagesGroup* matchGroup;
-        if (matchType > context->match(page, &matchGroup)) {
-          group = matchGroup;
-        }
+    foreach(Context* context, parent()->contexts()) {
+      PagesGroup* matchGroup;
+      if (matchType > context->match(page, &matchGroup)) {
+        group = matchGroup;
       }
+    }
 
     if (group) {
       group->insert(page);
@@ -338,11 +338,11 @@ void NavigationManager::open(Page* page) {
 }
 
 PagesGroup* NavigationManager::selectedGroup() const {
-          foreach(PagesGroup* group, m_groups) {
-      if (group->selected()) {
-        return group;
-      }
+  foreach(PagesGroup* group, m_groups) {
+    if (group->selected()) {
+      return group;
     }
+  }
   return 0;
 }
 
@@ -414,16 +414,16 @@ void NavigationManager::rebalanceWidth() {
   QVector<int> visibleLength(m_groups.size());
 
   const double available_width = m_screen_width
-                                 - 4 // starting separator
-                                 - 24 // context icon
-                                 - 6 // ci separator
-                                 - 8 // spacing before buttons
-                                 - (27 + 4) * 3 // search button, vault button, editor button
-                                 - (m_active_context->task() ? (27 + 4) * 2 : 0) // preview and chat buttons
-                                 - 8 // separate buttons from avatar
-                                 - 36 // avatar
-                                 - 4 // trailing space
-  ;
+      - 4 // starting separator
+      - 24 // context icon
+      - 6 // ci separator
+      - 8 // spacing before buttons
+      - (27 + 4) * 3 // search button, vault button, editor button
+      - (m_active_context->task() ? (27 + 4) * 2 : 0) // preview and chat buttons
+      - 8 // separate buttons from avatar
+      - 36 // avatar
+      - 4 // trailing space
+      ;
 
   for (int i = 0; i < m_groups.size() - 1; i++) {
     PagesGroup* const group = m_groups[i];
@@ -502,7 +502,7 @@ void NavigationManager::unfold() {
     if (!nextGroup)
       break;
     nextGroup->setParentGroup(
-            current); // during setParentGroup the visible contents can be changed if pages are visible at the above level
+          current); // during setParentGroup the visible contents can be changed if pages are visible at the above level
     if (nextGroup->empty() || m_groups.contains(nextGroup) || !nextGroup->selectedPage())
       break;
     appendGroup(nextGroup);
@@ -564,10 +564,10 @@ void NavigationManager::onGroupsChanged() {
   QSet<Page*> active;
   QList<QQuickItem*> screens;
   if (m_active_context) {
-            foreach (Page* page, m_active_context->documents()) {
-        screens.append(page->ui());
-        known.insert(page);
-      }
+    foreach (Page* page, m_active_context->documents()) {
+      screens.append(page->ui());
+      known.insert(page);
+    }
     screens.append(m_active_context->ui());
     known.insert(m_active_context);
   }
@@ -577,60 +577,52 @@ void NavigationManager::onGroupsChanged() {
     known.insert(m_selected);
   }
 
-          foreach (PagesGroup* group, m_groups) {
-      active.unite(group->visiblePagesList().toSet());
-    }
-          foreach (PagesGroup* group, m_groups) {
-              foreach(Page* page, group->visiblePagesList()) {
-          if (known.contains(page))
-            continue;
-          if (group->selectedPage() == page) {
-            screens += page->ui();
-            known.insert(page);
-        }
-        screens.append(m_active_context->ui());
-        known.insert(m_active_context);
+  for (PagesGroup* group: m_groups) {
+    active.unite(group->visiblePagesList().toSet());
+  }
+  for (PagesGroup* group: m_groups) {
+    foreach(Page* page, group->visiblePagesList()) {
+      if (known.contains(page))
+        continue;
+      if (group->selectedPage() == page) {
+        screens += page->ui();
+        known.insert(page);
+      }
+      screens.append(m_active_context->ui());
+      known.insert(m_active_context);
     }
 
     if (!known.contains(m_selected)) {
-        screens.append(m_selected->ui());
-        known.insert(m_selected);
+      screens.append(m_selected->ui());
+      known.insert(m_selected);
     }
 
-    foreach (PagesGroup* group, m_groups) {
-        active.unite(group->activePagesList().toSet());
+    for (PagesGroup* group: m_groups) {
+      active.unite(group->activePagesList().toSet());
     }
-    foreach (PagesGroup* group, m_groups) {
-        foreach(Page* page, group->activePagesList()) {
-            if (known.contains(page))
-                continue;
-            if (group->selectedPage() == page) {
-                screens += page->ui();
-                known.insert(page);
-            }
-            else {
-                Page* current = page; //selectedLeaf(m_active_context, page);
-                if (!known.contains(current)) {
-                    screens += current->ui();
-                    known.insert(current);
-                }
-            }
-          }
-        }
-    }
-  if (m_prev_known != known) {
-            foreach (Page* page, m_prev_known) { // cleanup
+    for (PagesGroup* group: m_groups) {
+      foreach(Page* page, group->activePagesList()) {
         if (known.contains(page))
           continue;
-        QString id = page->id();
-        QQuickItem* inactiveScreen = page->ui(true);
-        if (inactiveScreen) {
-          QObject::connect(inactiveScreen, &QObject::destroyed, [id]() {
-            //qDebug() << "Destroying ui of: " << id;
-          });
-          page->clear();
+        if (group->selectedPage() == page) {
+          screens += page->ui();
+          known.insert(page);
+        }
+        else {
+          Page* current = page; //selectedLeaf(m_active_context, page);
+          if (!known.contains(current)) {
+            screens += current->ui();
+            known.insert(current);
+          }
         }
       }
+    }
+  }
+  if (m_prev_known != known) {
+    for (Page* page: m_prev_known) { // cleanup
+      if (!known.contains(page))
+        page->clear();
+    }
     m_prev_known = known;
   }
 
@@ -667,24 +659,24 @@ Context* NavigationManager::suggest(ContentPage* page, const BoW& profile) {
   if (!page)
     return 0;
   BoW currentProfileWOLast = m_active_context->contains(qobject_cast<ContentPage*>(sender())) ? updateSumComponent(
-          m_active_context->profile(), page->profile(), BoW()) : m_active_context->profile();
+                                                                                                  m_active_context->profile(), page->profile(), BoW()) : m_active_context->profile();
   BoW next = profile.module() > 0 ? profile : page->profile();
   double cosDistance = 1 - cos(next, currentProfileWOLast);
   double minCosDistance = cosDistance;
   Context* suggest = m_active_context;
-          foreach (Context* ctxt, parent()->contexts()) {
-      if (ctxt == m_active_context)
-        continue;
-      double ctxtCosDistance = 1 - cos(next, ctxt->profile());
-      if (ctxtCosDistance < minCosDistance) {
-        suggest = ctxt;
-        minCosDistance = ctxtCosDistance;
-      }
+  foreach (Context* ctxt, parent()->contexts()) {
+    if (ctxt == m_active_context)
+      continue;
+    double ctxtCosDistance = 1 - cos(next, ctxt->profile());
+    if (ctxtCosDistance < minCosDistance) {
+      suggest = ctxt;
+      minCosDistance = ctxtCosDistance;
     }
+  }
   qDebug() << "Current context cos distance: " << cosDistance << " minimal cos distance: " << minCosDistance << " for "
            << suggest->title();
   return !suggest->hasTask() && !m_active_context->hasTask() && suggest != m_active_context &&
-         minCosDistance < cosDistance - 0.01 ? suggest : 0;
+      minCosDistance < cosDistance - 0.01 ? suggest : 0;
 }
 
 void NavigationManager::onTypeInProfileChange(const BoW& /*prev*/, const BoW& next) {
@@ -728,12 +720,12 @@ void NavigationManager::moveTo(Page* page, Context* to) {
     return;
   Context* from = m_active_context;
   PagesGroup* fromGroup;
-          foreach(PagesGroup* group, m_groups) {
-      if (group->pages().contains(page)) {
-        fromGroup = group;
-        break;
-      }
+  foreach(PagesGroup* group, m_groups) {
+    if (group->pages().contains(page)) {
+      fromGroup = group;
+      break;
     }
+  }
   if (fromGroup && fromGroup->type() != PagesGroup::SUGGEST)
     fromGroup->remove(page);
   from->removePart(cpage);
@@ -754,11 +746,11 @@ void NavigationManager::setWindow(QQuickWindow* window) {
 }
 
 NavigationManager::NavigationManager(doSearch* parent) :
-        QObject(parent),
-        m_screen_width(0),
-        m_active_context(0),
-        m_selected(parent->empty()),
-        m_active_screen(0)
+  QObject(parent),
+  m_screen_width(0),
+  m_active_context(0),
+  m_selected(parent->empty()),
+  m_active_screen(0)
 {
   connect(this, SIGNAL(groupsChanged()), this, SLOT(onGroupsChanged()));
   connect(parent, SIGNAL(contextsChanged()), this, SLOT(onContextsChanged()));

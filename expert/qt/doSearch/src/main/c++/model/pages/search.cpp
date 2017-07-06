@@ -202,12 +202,19 @@ bool SearchSession::check(SearchRequest* request) {
     return false;
 }
 
+void SearchSession::append(SearchRequest* request) {
+  appendPart(request);
+}
+
 void SearchSession::setRequest(SearchRequest* request) {
-    parts()[m_index]->clear();
     const int index = parts().indexOf(request);
     if (index >= 0) {
+      if(m_index != index){
+        if(m_index >= 0)
+          parts()[m_index]->clear();
         m_index = index;
         emit queriesChanged();
+      }
     }
     else appendPart(request);
 }
@@ -216,6 +223,8 @@ void SearchSession::onPartAppended(ContentPage* part) {
     SearchRequest* request = qobject_cast<SearchRequest*>(part);
     if (!request)
         return;
+    if(m_index > 0)
+      parts()[m_index]->clear();
     request->setSession(this);
     connect(request, SIGNAL(selectedChanged()), SLOT(onSelectedSEChanged()));
     m_index = parts().size() - 1;
