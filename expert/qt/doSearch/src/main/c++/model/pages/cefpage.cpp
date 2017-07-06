@@ -27,7 +27,7 @@ QOpenGLFramebufferObject* QTPageRenderer::createFramebufferObject(const QSize& s
   CefPageRenderer* renderer = m_owner->renderer();
   if (size.height() != renderer->height() || size.width() != renderer->width()) {
     GLuint oldBuffer = m_buffer;
-//    const GLubyte* string = glfunc->glGetString(GL_VERSION);
+    //    const GLubyte* string = glfunc->glGetString(GL_VERSION);
     glfunc->glGenBuffers(1, &m_buffer);
     glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_buffer);
     glfunc->glBufferData(GL_PIXEL_UNPACK_BUFFER, size.width() * size.height() * 4, 0, GL_STREAM_DRAW);
@@ -57,17 +57,17 @@ QOpenGLFramebufferObject* QTPageRenderer::createFramebufferObject(const QSize& s
   }
   QOpenGLFramebufferObject* fbo = new QOpenGLFramebufferObject(size);
   {
-//    m_window->resetOpenGLState();
-//    fbo->bind();
-//    glfunc->glColor3f(1, 0, 0);
-//    glfunc->glBegin(GL_QUADS);
-//    glfunc->glVertex2f(-1.f, -1.f);
-//    glfunc->glVertex2f(-1.f, 1.f);
-//    glfunc->glVertex2f(1.f, 1.f);
-//    glfunc->glVertex2f(1.f, -1.f);
-//    glfunc->glEnd();
-//    fbo->release();
-//    m_window->resetOpenGLState();
+    //    m_window->resetOpenGLState();
+    //    fbo->bind();
+    //    glfunc->glColor3f(1, 0, 0);
+    //    glfunc->glBegin(GL_QUADS);
+    //    glfunc->glVertex2f(-1.f, -1.f);
+    //    glfunc->glVertex2f(-1.f, 1.f);
+    //    glfunc->glVertex2f(1.f, 1.f);
+    //    glfunc->glVertex2f(1.f, -1.f);
+    //    glfunc->glEnd();
+    //    fbo->release();
+    //    m_window->resetOpenGLState();
   }
   return fbo;
 }
@@ -96,7 +96,7 @@ void QTPageRenderer::render() {
 
   glfunc->glBindTexture(GL_TEXTURE_2D, fbo->texture());
 
-//  auto prev = std::chrono::high_resolution_clock::now();
+  //  auto prev = std::chrono::high_resolution_clock::now();
   glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_buffer);
   {
     std::lock_guard<std::mutex> guard(m_owner->m_mutex);
@@ -105,9 +105,9 @@ void QTPageRenderer::render() {
     m_owner->renderer()->setBuffer(glfunc->glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY), width, height);
   }
   glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-//  auto now = std::chrono::high_resolution_clock::now();
-//  std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
-//  qDebug() << "Copy for " << dif.count() << "usec";
+  //  auto now = std::chrono::high_resolution_clock::now();
+  //  std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
+  //  qDebug() << "Copy for " << dif.count() << "usec";
 
   glfunc->glBindTexture(GL_TEXTURE_2D, 0);
   if (texturesEnabled)
@@ -138,7 +138,7 @@ void CefPageRenderer::enable() {
 //ui thread
 bool CefPageRenderer::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) {
   CEF_REQUIRE_UI_THREAD()
-  rect = CefRect(0, 0, (int)(m_width/m_scale_factor), (int)(m_height/m_scale_factor));
+      rect = CefRect(0, 0, (int)(m_width/m_scale_factor), (int)(m_height/m_scale_factor));
   return true;
 }
 
@@ -146,12 +146,14 @@ bool CefPageRenderer::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) 
 void CefPageRenderer::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList& dirtyRects,
                               const void* buffer, int width, int height) {
   CEF_REQUIRE_UI_THREAD()
-  if (m_width != width || m_height != height || !m_gpu_buffer || !m_enable)
-    return;
+      if (m_width != width || m_height != height || !m_gpu_buffer || !m_enable)
+      return;
   {
-//    auto prev = std::chrono::high_resolution_clock::now();
+
+    //    auto prev = std::chrono::high_resolution_clock::now();
     std::lock_guard<std::mutex> guard(m_owner->m_mutex);
     if (m_gpu_buffer) {
+      auto prevt = std::chrono::high_resolution_clock::now();
       if (!m_clean) {
         for (CefRect rect: dirtyRects) {
           if (rect.width < width) {
@@ -167,11 +169,14 @@ void CefPageRenderer::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType ty
         }
       }
       else memcpy(m_gpu_buffer, buffer, (size_t) width * height * 4);
+//      auto now = std::chrono::high_resolution_clock::now();
+//      std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prevt);
+//      qDebug() << "memcpy time" <<  dif.count()/1000;
       m_clean = false;
     }
-//    auto now = std::chrono::high_resolution_clock::now();
-//    std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
-//    qDebug() << "Copy for " << dif.count() << "usec";
+    //    auto now = std::chrono::high_resolution_clock::now();
+    //    std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
+    //    qDebug() << "Copy for " << dif.count() << "usec";
   }
   if (m_next_frame_func) {
     m_next_frame_func(buffer, width, height);
@@ -182,7 +187,7 @@ void CefPageRenderer::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType ty
 }
 cef_screen_info_t a;
 bool CefPageRenderer::GetScreenInfo(CefRefPtr<CefBrowser> browser,
-                           CefScreenInfo& screen_info) {
+                                    CefScreenInfo& screen_info) {
   if(!m_enable)
     return false;
   m_scale_factor = (float) m_owner->window()->devicePixelRatio();
@@ -190,8 +195,8 @@ bool CefPageRenderer::GetScreenInfo(CefRefPtr<CefBrowser> browser,
   screen_info.depth = 24;
   screen_info.depth_per_component = 8;
   screen_info.is_monochrome = 0;
-//  screen_info.rect = CefRect(0, 0, m_width, m_height);
-//  screen_info.available_rect = CefRect(0, 0, m_width, m_height);
+  //  screen_info.rect = CefRect(0, 0, m_width, m_height);
+  //  screen_info.available_rect = CefRect(0, 0, m_width, m_height);
   return true;
 }
 
@@ -205,7 +210,7 @@ bool CefPageRenderer::GetScreenPoint(CefRefPtr<CefBrowser> browser, int viewX, i
 #else
   screenY = global.y();
 #endif
-//  qDebug() << global.y() << screenY << viewY;
+  //  qDebug() << global.y() << screenY << viewY;
   return true;
 }
 
@@ -234,50 +239,50 @@ bool CefPageRenderer::StartDragging(CefRefPtr<CefBrowser> browser, CefRefPtr<Cef
 
 Qt::CursorShape toQCursor(CefPageRenderer::CursorType type) {
   switch (type) {
-    case CT_POINTER:
-      return Qt::ArrowCursor;
-    case CT_CROSS:
-      return Qt::CrossCursor;
-    case CT_WAIT:
-      return Qt::WaitCursor;
-    case CT_IBEAM:
-      return Qt::IBeamCursor;
-    case CT_NORTHRESIZE:
-      return Qt::SizeVerCursor;
-    case CT_NORTHEASTRESIZE:
-      return Qt::SizeBDiagCursor;
-    case CT_NORTHWESTRESIZE:
-      return Qt::SizeFDiagCursor;
-    case CT_SOUTHRESIZE:
-      return Qt::SizeVerCursor;
-    case CT_SOUTHEASTRESIZE:
-      return Qt::SizeFDiagCursor;
-    case CT_SOUTHWESTRESIZE:
-      return Qt::SizeBDiagCursor;
-    case CT_WESTRESIZE:
-      return Qt::SizeHorCursor;
-    case CT_NORTHSOUTHRESIZE:
-      return Qt::SizeVerCursor;
-    case CT_EASTWESTRESIZE:
-      return Qt::SizeHorCursor;
-    case CT_NORTHEASTSOUTHWESTRESIZE:
-      return Qt::SizeAllCursor;
-    case CT_NORTHWESTSOUTHEASTRESIZE:
-      return Qt::SizeAllCursor;
-    case CT_COLUMNRESIZE:
-      return Qt::SplitHCursor;
-    case CT_ROWRESIZE:
-      return Qt::SplitVCursor;
-    case CT_HAND:
-      return Qt::PointingHandCursor;
-    case CT_NODROP:
-      return Qt::ForbiddenCursor;
-    case CT_HELP:
-      return Qt::WhatsThisCursor;
-    case CT_PROGRESS:
-      return Qt::BusyCursor;
-    default:
-      return Qt::ArrowCursor;
+  case CT_POINTER:
+    return Qt::ArrowCursor;
+  case CT_CROSS:
+    return Qt::CrossCursor;
+  case CT_WAIT:
+    return Qt::WaitCursor;
+  case CT_IBEAM:
+    return Qt::IBeamCursor;
+  case CT_NORTHRESIZE:
+    return Qt::SizeVerCursor;
+  case CT_NORTHEASTRESIZE:
+    return Qt::SizeBDiagCursor;
+  case CT_NORTHWESTRESIZE:
+    return Qt::SizeFDiagCursor;
+  case CT_SOUTHRESIZE:
+    return Qt::SizeVerCursor;
+  case CT_SOUTHEASTRESIZE:
+    return Qt::SizeFDiagCursor;
+  case CT_SOUTHWESTRESIZE:
+    return Qt::SizeBDiagCursor;
+  case CT_WESTRESIZE:
+    return Qt::SizeHorCursor;
+  case CT_NORTHSOUTHRESIZE:
+    return Qt::SizeVerCursor;
+  case CT_EASTWESTRESIZE:
+    return Qt::SizeHorCursor;
+  case CT_NORTHEASTSOUTHWESTRESIZE:
+    return Qt::SizeAllCursor;
+  case CT_NORTHWESTSOUTHEASTRESIZE:
+    return Qt::SizeAllCursor;
+  case CT_COLUMNRESIZE:
+    return Qt::SplitHCursor;
+  case CT_ROWRESIZE:
+    return Qt::SplitVCursor;
+  case CT_HAND:
+    return Qt::PointingHandCursor;
+  case CT_NODROP:
+    return Qt::ForbiddenCursor;
+  case CT_HELP:
+    return Qt::WhatsThisCursor;
+  case CT_PROGRESS:
+    return Qt::BusyCursor;
+  default:
+    return Qt::ArrowCursor;
   }
 }
 
@@ -313,7 +318,7 @@ const void* CefPageRenderer::buffer() {
 }
 
 bool BrowserListener::OnBeforeBrowse(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefRequest> request,
-                                bool is_redirect) {
+                                     bool is_redirect) {
   if (request->GetResourceType() != RT_MAIN_FRAME) { //request page resources
     return false;
   }
@@ -451,25 +456,25 @@ bool BrowserListener::OnContextMenuCommand(CefRefPtr<CefBrowser> browser, CefRef
     return false;
   }
   switch (command_id) {
-    case MENU_USER_NEW_TAB:
-      emit m_owner->requestPage(QString::fromStdString(params->GetLinkUrl().ToString()), true);
-      return true;
-    case MENU_USER_OPEN_IMAGGE:
-      emit m_owner->requestPage(QString::fromStdString(params->GetSourceUrl().ToString()), false);
-      return true;
-    case MENU_USER_SAVE_IMAGE_TO_STORAGE: {
-      //        QString path = QStandardPaths::TempLocation();
-      //        Download::download(url, path, [this](){
-      //            m_owner->savedToStorage(path);
-      //        });
-      return true;
-    }
-    case MENU_USER_SAVE_LINK_TO_STORAGE:
-      emit m_owner->savedToStorage(QString::fromStdString((params->GetLinkUrl().ToString())));
-      return true;
-    case MENU_USER_DOWNLOAD:
-      m_owner->download(QString::fromStdString(params->GetSourceUrl().ToString()));
-      return true;
+  case MENU_USER_NEW_TAB:
+    emit m_owner->requestPage(QString::fromStdString(params->GetLinkUrl().ToString()), true);
+    return true;
+  case MENU_USER_OPEN_IMAGGE:
+    emit m_owner->requestPage(QString::fromStdString(params->GetSourceUrl().ToString()), false);
+    return true;
+  case MENU_USER_SAVE_IMAGE_TO_STORAGE: {
+    //        QString path = QStandardPaths::TempLocation();
+    //        Download::download(url, path, [this](){
+    //            m_owner->savedToStorage(path);
+    //        });
+    return true;
+  }
+  case MENU_USER_SAVE_LINK_TO_STORAGE:
+    emit m_owner->savedToStorage(QString::fromStdString((params->GetLinkUrl().ToString())));
+    return true;
+  case MENU_USER_DOWNLOAD:
+    m_owner->download(QString::fromStdString(params->GetSourceUrl().ToString()));
+    return true;
   }
   return true;
 }
@@ -481,14 +486,14 @@ void BrowserListener::userEventOccured() {
 
 void BrowserListener::OnLoadStart(CefRefPtr<CefBrowser> browser,
                                   CefRefPtr<CefFrame> frame, TransitionType transition_type) {
-//  if (m_enable && frame->IsMain()) {
-//    browser->GetHost()->WasResized();
-//  }
+  //  if (m_enable && frame->IsMain()) {
+  //    browser->GetHost()->WasResized();
+  //  }
 }
 
 void BrowserListener::OnAddressChange(CefRefPtr<CefBrowser> browser,
-                             CefRefPtr<CefFrame> frame,
-                             const CefString& url){
+                                      CefRefPtr<CefFrame> frame,
+                                      const CefString& url){
   if(m_enable && frame->IsMain()){
     QUrl qurl = QUrl(QString::fromStdString(url));
     emit m_owner->urlChanged(qurl);
@@ -496,11 +501,11 @@ void BrowserListener::OnAddressChange(CefRefPtr<CefBrowser> browser,
 }
 
 CefItem::CefItem(QQuickItem* parent): QQuickFramebufferObject(parent),
-        m_listener(new BrowserListener(this)), m_renderer(new CefPageRenderer(this)),
-        m_text_callback(new TextCallback(this)) {
+  m_listener(new BrowserListener(this)), m_renderer(new CefPageRenderer(this)),
+  m_text_callback(new TextCallback(this)) {
   CEF_REQUIRE_UI_THREAD()
-  QObject::connect(this, SIGNAL(windowChanged(QQuickWindow * )), this, SLOT(initBrowser(QQuickWindow * )),
-                   Qt::QueuedConnection);
+      QObject::connect(this, SIGNAL(windowChanged(QQuickWindow * )), this, SLOT(initBrowser(QQuickWindow * )),
+                       Qt::QueuedConnection);
   setKeepMouseGrab(true);
   setKeepTouchGrab(true);
   m_listener->enable();
@@ -536,7 +541,7 @@ public:
 
 private:
   CefRefPtr<CefCookieManager> m_manager;
-IMPLEMENT_REFCOUNTING(CookieContextHandler)
+  IMPLEMENT_REFCOUNTING(CookieContextHandler)
 };
 
 class ACefClient : public CefClient {
@@ -593,7 +598,7 @@ private:
   CefRefPtr<CefRenderHandler> m_renderer;
   CefRefPtr<BrowserListener> m_listener;
   CefRefPtr<IOBuffer> m_io;
-IMPLEMENT_REFCOUNTING(ACefClient)
+  IMPLEMENT_REFCOUNTING(ACefClient)
 };
 
 void CefItem::releaseResources() {
@@ -629,7 +634,7 @@ void CefItem::initBrowser(QQuickWindow* window) {
     return;
 
   CEF_REQUIRE_UI_THREAD()
-  m_iobuffer = new IOBuffer();
+      m_iobuffer = new IOBuffer();
   m_renderer->enable();
   m_text_callback->enable();
 
@@ -638,21 +643,22 @@ void CefItem::initBrowser(QQuickWindow* window) {
   mainWindowInfo.SetAsWindowless((HWND) window->winId(), false);
 #elif defined(Q_OS_MAC)
   mainWindowInfo.SetAsWindowless(reinterpret_cast<NSView*>(window->winId()));
-//  mainWindowInfo.SetAsChild(reinterpret_cast<NSView*>(window->winId()), x(), y(), width(), height());
+  //  mainWindowInfo.SetAsChild(reinterpret_cast<NSView*>(window->winId()), x(), y(), width(), height());
 #endif
 
   //qDebug() << "Init Browser " << QString::fromStdString(fromUrl(m_url)) << m_url;
 
   CefRefPtr<CefRequestContext> requestContext =
-          CefRequestContext::CreateContext(CefRequestContextSettings(), new CookieContextHandler(m_cookies_enable));
+      CefRequestContext::CreateContext(CefRequestContextSettings(), new CookieContextHandler(m_cookies_enable));
   CefRefPtr<ACefClient> acefclient = new ACefClient();
   {
     acefclient->set(m_renderer);
     acefclient->setIO(m_iobuffer);
     acefclient->setBrowserListener(m_listener);
   }
-
-  m_browser = CefBrowserHost::CreateBrowserSync(mainWindowInfo, acefclient, fromUrl(m_url), CefBrowserSettings(),
+  CefBrowserSettings settings;
+  settings.windowless_frame_rate = 60;
+  m_browser = CefBrowserHost::CreateBrowserSync(mainWindowInfo, acefclient, fromUrl(m_url), settings,
                                                 requestContext);
 
   QObject::connect(this, SIGNAL(visibleChanged()), this, SLOT(updateVisible()));
@@ -717,8 +723,8 @@ void IOBuffer::mouseMove(int x, int y, int buttons, int modifiers) {
     event.x = x;
     event.y = y;
     event.modifiers = CefEventFactory::modifiersFromQtKeyBoardModifiers(modifiers) | CefEventFactory::mouseEventFlags(buttons);
-//    if(!(x % 20) || !(y % 20))
-//      qDebug() << "Move event" << x << y << "modifiers" << event.modifiers;
+    //    if(!(x % 20) || !(y % 20))
+    //      qDebug() << "Move event" << x << y << "modifiers" << event.modifiers;
     m_browser->GetHost()->SendMouseMoveEvent(event, false);
   }
 }
@@ -785,7 +791,7 @@ bool IOBuffer::keyRelease(QKeyEvent* event) {
   }
   if (!m_pressed_keys.contains(event->key())) {
     m_browser->GetHost()->SendKeyEvent(
-            CefEventFactory::createPressEvent(event)); //qml sometimes gives only release events
+          CefEventFactory::createPressEvent(event)); //qml sometimes gives only release events
   }
   else {
     m_pressed_keys.remove(event->key());
@@ -828,14 +834,14 @@ CefMouseEvent createMouseEvent(double x, double y) {
 
 CefBrowserHost::DragOperationsMask translateAction(Qt::DropAction action) {
   switch (action) {
-    case Qt::DropAction::CopyAction:
-      return DRAG_OPERATION_COPY;
-    case Qt::DropAction::LinkAction:
-      return DRAG_OPERATION_LINK;
-    case Qt::DropAction::MoveAction:
-      return DRAG_OPERATION_MOVE;
-    default:
-      return DRAG_OPERATION_NONE;
+  case Qt::DropAction::CopyAction:
+    return DRAG_OPERATION_COPY;
+  case Qt::DropAction::LinkAction:
+    return DRAG_OPERATION_LINK;
+  case Qt::DropAction::MoveAction:
+    return DRAG_OPERATION_MOVE;
+  default:
+    return DRAG_OPERATION_NONE;
   }
 }
 

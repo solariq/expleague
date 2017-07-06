@@ -135,6 +135,7 @@ QString cachePath() {
 class CefAppImpl: public CefApp{
   virtual void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line){
     command_line->AppendSwitch("--enable-system-flash");
+    command_line->AppendSwitch("--disable-gpu-compositing");
   }
 
   IMPLEMENT_REFCOUNTING(CefAppImpl)
@@ -169,7 +170,7 @@ void initCef(int argc, char* argv[]) {
   QObject::connect(cefTimer, &QTimer::timeout, []() {
     static auto prev = std::chrono::high_resolution_clock::now();
     static int interval = 100;
-    CefDoMessageLoopWork();
+      CefDoMessageLoopWork();
     auto now = std::chrono::high_resolution_clock::now();
     std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
     bool idle = dif.count() < 500000;
