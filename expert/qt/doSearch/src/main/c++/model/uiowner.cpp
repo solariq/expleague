@@ -53,7 +53,6 @@ QQuickItem* UIOwner::ui(bool cache) {
         updateConnections();
         //    m_ui->setParent(const_cast<Page*>(this));
         connect(m_ui, &QQuickItem::destroyed, [this](){
-            m_ui = 0;
             emit uiChanged();
         });
         initUI(result);

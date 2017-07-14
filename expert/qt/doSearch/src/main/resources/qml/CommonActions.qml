@@ -72,7 +72,7 @@ Item {
     Action {
         id: closeTabAction
         text: qsTr("Закрыть таб")
-        shortcut: StandardKey.Close
+        shortcut: "Ctrl+W"
         enabled: page
         onTriggered: {
             if (page && dosearch.navigation.activeGroup) {
@@ -236,21 +236,21 @@ Item {
         text: qsTr("Вернуть исходный масштаб")
         shortcut: "Ctrl+0"
         enabled: webView
-        onTriggered: webView.zoomFactor = 1.0;
+        onTriggered: webView.zoomFactor = 0;
     }
 
     Action {
         id: zoomInAction
         text: qsTr("Увеличить масштаб")
         shortcut: StandardKey.ZoomOut
-        onTriggered: webView.zoomFactor -= 0.1;
+        onTriggered: webView.zoomFactor -= 0.2;
     }
 
     Action {
         id: zoomOutAction
         text: qsTr("Уменьшить масштаб")
         shortcut: StandardKey.ZoomIn
-        onTriggered: webView.zoomFactor += 0.1;
+        onTriggered: webView.zoomFactor += 0.2;
     }
 
     Action {

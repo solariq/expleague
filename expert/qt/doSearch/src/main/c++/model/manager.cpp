@@ -127,6 +127,7 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
     } else { // insert page to both associated group and suggest group
       contextGroup->insert(next);
       m_groups.last()->insert(next);
+      m_active_context->associated(next)->setParentGroup(contextGroup);
       return m_selected->ui();
     }
   }
@@ -160,7 +161,7 @@ void NavigationManager::close(PagesGroup* context, Page* page) {
 
 
 void NavigationManager::movePage(Page* page, PagesGroup* target, int index) {
-  PagesGroup* source = context()->associated(page, true);
+  PagesGroup* source = context()->associated(page, false);
   PagesGroup* sourceParent = source->parentGroup();
   assert(sourceParent);
 
@@ -242,8 +243,7 @@ void NavigationManager::select(PagesGroup* context, Page* selected) {
       PagesGroup* group = m_active_context->associated(context->root());
       group->insert(selected);
       removeSuggestGroup();
-      group->setParentGroup(m_groups.last());
-      m_groups.append(group);
+      appendGroup(group);
       context->deleteLater();
       context = group;
     }
@@ -386,34 +386,26 @@ double effectiveWidth(const QVector<QList<Page*>>& pages, const QVector<QList<Pa
 
 double NavigationManager::MAX_TAB_WIDTH = 228;
 
-void NavigationManager::rebalanceWidth() {
-  if (m_groups.size() == 0) {
-    return;
+
+double getMaxTabWidth(QVector<double> widths, int avaibleWidth){
+  qSort(widths);
+  double totalWidth = 0;
+  for(double w: widths){
+    totalWidth += w;
   }
-  QVector<QList<Page*>> closedPages(m_groups.size());
-  QVector<QList<Page*>> activePages(m_groups.size());
-  {
-    QSet<Page*> known;
-    for (int i = 0; i < m_groups.size(); i++) {
-      QList<Page*> current = m_groups[i]->pages();
-      QList<Page*>::iterator iter = current.begin();
-      while (iter != current.end()) {
-        if (!known.contains(*iter)) {
-          known.insert(*iter);
-          if (!m_groups[i]->closed(*iter))
-            activePages[i].push_back(*iter);
-          else
-            closedPages[i].push_back(*iter);
-        }
-        iter++;
-      }
+  for(int i = widths.size() - 1; i > 0; i--){
+    double diff = widths[i] - widths[i - 1];
+    totalWidth -= diff * (widths.size() - i);
+    if(totalWidth <= avaibleWidth){
+      return  widths[i - 1] + (avaibleWidth - totalWidth) / (widths.size() - i);
     }
   }
+  return widths[0];
+}
 
-  QVector<int> visibleStart(m_groups.size());
-  QVector<int> visibleLength(m_groups.size());
-
-  const double available_width = m_screen_width
+void NavigationManager::rebalanceWidth() {
+  QVector<double> widths(m_groups.size());
+  double available_width = m_screen_width
       - 4 // starting separator
       - 24 // context icon
       - 6 // ci separator
@@ -423,63 +415,23 @@ void NavigationManager::rebalanceWidth() {
       - 8 // separate buttons from avatar
       - 36 // avatar
       - 4 // trailing space
+      - 24 * (m_groups.size() - 1) // separators
       ;
-
-  for (int i = 0; i < m_groups.size() - 1; i++) {
-    PagesGroup* const group = m_groups[i];
-    Page* const selected = group->selectedPage();
-    visibleStart[i] = (std::max)(0, activePages[i].indexOf(selected));
-    visibleLength[i] = selected ? 1 : 0;
-  }
-  visibleStart[m_groups.size() - 1] = 0;
-  visibleLength[m_groups.size() - 1] = 0;
-
-  while (true) { // greedy (by probability of next click) pages selection
-    double maxP = -1;
-    int bestPageIndex;
-    int bestGroupIndex;
-    double prior = 1;
-    for (int i = m_groups.size() - 1; i >= 0; i--, prior *= 0.8) {
-      const QList<Page*> pages = activePages[i];
-
-      int start = visibleStart[i] - 1;
-      int end = visibleStart[i] + visibleLength[i];
-      if (start >= 0) { // left expansion available
-        double pOut = m_selected->pOut(pages[start]) * prior;
-        if (pOut > maxP) {
-          maxP = pOut;
-          bestGroupIndex = i;
-          bestPageIndex = start;
-        }
-      }
-      if (end < pages.size()) { // right expansion available
-        double pOut = m_selected->pOut(pages[end]) * prior;
-        if (pOut > maxP) {
-          maxP = pOut;
-          bestGroupIndex = i;
-          bestPageIndex = end;
-        }
-      }
+  double minimalWidth = 0;
+  for(int i = 0; i < m_groups.size(); i++){
+    auto group = m_groups[i];
+    if(group->hasClosedPages()){
+      available_width -= 13;
     }
-    if (maxP < 0)
-      break;
-    Page* const page = activePages[bestGroupIndex][bestPageIndex];
-    if (bestPageIndex < visibleStart[bestGroupIndex])
-      visibleStart[bestGroupIndex]--;
-    visibleLength[bestGroupIndex]++;
-    double width = effectiveWidth(activePages, closedPages, visibleStart, visibleLength);
-    if (width > available_width) {
-      if (bestPageIndex == visibleStart[bestGroupIndex])
-        visibleStart[bestGroupIndex]++;
-      visibleLength[bestGroupIndex]--;
-      break;
+    auto pages = group->pages();
+    for(int j = 0; j < pages.size() && !group->closed(pages[j]); j++){
+      widths[i] += (std::min)(MAX_TAB_WIDTH, pages[j]->titleWidth() + 28);
     }
-    //qDebug() << "Making visible: " << page->id() << " p: " << maxP;
+    minimalWidth += (std::min)(widths[i], 300.0);
   }
-
-  //qDebug() << "Available width: " << available_width << " width used: " << effectiveWidth(activePages, closedPages, visibleStart, visibleLength);
-  for (int i = 0; i < m_groups.size(); i++) {
-    m_groups[i]->split(activePages[i], closedPages[i], visibleStart[i], visibleLength[i]);
+  double maxTabWidth = getMaxTabWidth(widths, std::max(available_width, minimalWidth));
+  for(int i = 0; i < m_groups.size(); i++){
+    m_groups[i]->updateVisibleState(std::min(widths[i], maxTabWidth));
   }
 }
 
@@ -548,6 +500,7 @@ void NavigationManager::onPagesChanged() {
   rebalanceWidth();
 }
 
+
 Page* selectedLeaf(Context* context, Page* page){
   PagesGroup* current = context->associated(page, false);
   Page* result = page;
@@ -560,8 +513,8 @@ Page* selectedLeaf(Context* context, Page* page){
 
 void NavigationManager::onGroupsChanged() {
   rebalanceWidth();
+  printGroups();
   QSet<Page*> known;
-  QSet<Page*> active;
   QList<QQuickItem*> screens;
   if (m_active_context) {
     foreach (Page* page, m_active_context->documents()) {
@@ -578,10 +531,7 @@ void NavigationManager::onGroupsChanged() {
   }
 
   for (PagesGroup* group: m_groups) {
-    active.unite(group->visiblePagesList().toSet());
-  }
-  for (PagesGroup* group: m_groups) {
-    foreach(Page* page, group->visiblePagesList()) {
+    foreach(Page* page, group->activePagesList()) {
       if (known.contains(page))
         continue;
       if (group->selectedPage() == page) {
@@ -595,10 +545,6 @@ void NavigationManager::onGroupsChanged() {
     if (!known.contains(m_selected)) {
       screens.append(m_selected->ui());
       known.insert(m_selected);
-    }
-
-    for (PagesGroup* group: m_groups) {
-      active.unite(group->activePagesList().toSet());
     }
     for (PagesGroup* group: m_groups) {
       foreach(Page* page, group->activePagesList()) {
@@ -729,16 +675,15 @@ void NavigationManager::moveTo(Page* page, Context* to) {
   if (fromGroup && fromGroup->type() != PagesGroup::SUGGEST)
     fromGroup->remove(page);
   from->removePart(cpage);
-  activate(to);
+  m_active_context = to;
+  removeSuggestGroup();
+  popTo(0, false);
+  m_selected = to;
+  appendGroup(to->associated(to));
+  unfold();
   typeIn(page, false);
 }
 
-
-QAbstractItemModel* NavigationManager::treeModel(Page* page, Context* context, int depth) {
-  PageTree* root = new PageTree(this);
-  root->init(page, context, depth);
-  return new PageTreeModel(this, root);
-}
 
 void NavigationManager::setWindow(QQuickWindow* window) {
   m_screen_width = window->width();
@@ -754,92 +699,6 @@ NavigationManager::NavigationManager(doSearch* parent) :
 {
   connect(this, SIGNAL(groupsChanged()), this, SLOT(onGroupsChanged()));
   connect(parent, SIGNAL(contextsChanged()), this, SLOT(onContextsChanged()));
-}
-
-PageTree::PageTree(QObject* parent) : QObject(parent) {
-}
-
-PageTree* PageTree::parent() {
-  return m_parent;
-}
-
-PageTree* PageTree::child(int number) {
-  return m_children.at(number);
-}
-
-Page* PageTree::data() {
-  return m_data;
-}
-
-int PageTree::size() {
-  return m_children.size();
-}
-
-int PageTree::row() {
-  return m_row;
-}
-
-void PageTree::init(Page* page, Context* context, int depth) {
-  m_data = page;
-  if (!depth) {
-    return;
-  }
-  PagesGroup* group = context->associated(page, false);
-  if (!group) {
-    return;
-  }
-  QList<Page*> pages = group->pages();
-  for (int i = 0; i < pages.size(); i++) {
-    PageTree* tree = new PageTree(this);
-    tree->m_parent = this;
-    tree->m_row = i;
-    tree->init(pages.at(i), context, depth - 1);
-    m_children.push_back(tree);
-  }
-}
-
-PageTree* PageTreeModel::indexTree(QModelIndex index) const {
-  if (!index.isValid()) {
-    return m_root;
-  } else {
-    return static_cast<PageTree*>(index.internalPointer());
-  }
-}
-
-PageTreeModel::PageTreeModel(QObject* parent, PageTree* root) : QAbstractItemModel(parent), m_root(root) {
-}
-
-QModelIndex PageTreeModel::index(int row, int column, const QModelIndex& parent) const {
-  PageTree* parentTree = indexTree(parent);
-  if (column != 0 || row >= parentTree->size()) {
-    return QModelIndex();
-  }
-  return createIndex(row, column, parentTree->child(row));
-}
-
-QModelIndex PageTreeModel::parent(const QModelIndex& index) const {
-  PageTree* tree = indexTree(index);
-  PageTree* parent = tree->parent();
-  return parent ? createIndex(parent->row(), 0, parent) : QModelIndex();
-}
-
-int PageTreeModel::rowCount(const QModelIndex& parent) const {
-  return indexTree(parent)->size();
-}
-
-int PageTreeModel::columnCount(const QModelIndex& parent) const {
-  return 1;
-}
-
-QVariant PageTreeModel::data(const QModelIndex& index, int role) const {
-  if (!index.isValid() || role != Qt::DisplayRole) {
-    return QVariant();
-  }
-  return QVariant::fromValue(static_cast<PageTree*>(index.internalPointer()));
-}
-
-bool PageTreeModel::hasChildren(const QModelIndex& parent) const {
-  return indexTree(parent)->size();
 }
 
 }

@@ -39,6 +39,7 @@ Rectangle{
         }
 
         onDownloadStarted: {
+            dosearch.navigation.select(0, dosearch.navigation.context)
             dosearch.navigation.context.ui.downloads.append(item)
         }
 
@@ -94,7 +95,11 @@ Rectangle{
         }
 
         onWheel: {
-            webView.mouseWheel(wheel.x, wheel.y, wheel.buttons, wheel.angleDelta, wheel.modifiers)
+            if(wheel.modifiers & Qt.ControlModifier){
+                webView.zoomFactor += wheel.x > 0 ? 0.2 : -0.2
+            }else{
+                webView.mouseWheel(wheel.x, wheel.y, wheel.buttons, wheel.angleDelta, wheel.modifiers)
+            }
             wheel.accepted = true
         }
     }
@@ -143,7 +148,7 @@ Rectangle{
         onDropped: {
             if (dosearch.main.dragType != "web" && dosearch.main.dragType != "none" && dosearch.main.dragType != "")
                 return
-            //                    console.log("Dropped: " + drag)
+            //console.log("Dropped: " + drag)
             dosearch.main.drag = null
             dosearch.main.dragType = ""
             if(webView.dragDrop(drop.x, drop.y))
@@ -152,12 +157,11 @@ Rectangle{
     }
 
     Keys.onPressed: {
-        console.log("pressEvent")
         event.accepted = webView.sendKeyPress(event)
     }
 
     Keys.onReleased: {
-        console.log("releaseEvent")
+//        console.log("releaseEvent")
         event.accepted = webView.sendKeyRelease(event)
     }
 

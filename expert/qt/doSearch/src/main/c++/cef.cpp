@@ -165,24 +165,24 @@ void initCef(int argc, char* argv[]) {
   CefRegisterSchemeHandlerFactory("qrc", "", new SchemeFactory());
 
   cefTimer = new QTimer();
-  cefTimer->setInterval(0);
+  cefTimer->setInterval(1);
   cefTimer->setSingleShot(false);
   QObject::connect(cefTimer, &QTimer::timeout, []() {
-    static auto prev = std::chrono::high_resolution_clock::now();
-    static int interval = 100;
+//    static auto prev = std::chrono::high_resolution_clock::now();
+//    static int interval = 100;
       CefDoMessageLoopWork();
-    auto now = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
-    bool idle = dif.count() < 500000;
-//    qDebug() << dif.count() << interval;
-    if (idle && interval < 10000) {
-      interval += 10;
-    }
-    else if (!idle && interval > 100) {
-      interval -= 50;
-    }
-    QThread::usleep(interval); // I hate qt
-    prev = std::chrono::high_resolution_clock::now();
+//    auto now = std::chrono::high_resolution_clock::now();
+//    std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
+//    bool idle = dif.count() < 500000;
+////    qDebug() << dif.count() << interval;
+//    if (idle && interval < 10000) {
+//      interval += 10;
+//    }
+//    else if (!idle && interval > 100) {
+//      interval -= 50;
+//    }
+//    QThread::usleep(interval); // I hate qt
+//    prev = std::chrono::high_resolution_clock::now();
   });
   cefTimer->start();
 }

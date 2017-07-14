@@ -15,13 +15,11 @@
 
 namespace expleague {
 
-void PagesGroup::split(const QList<Page *>& active, const QList<Page *>& closed, int visibleStart, int visibleCount)  {
-    m_active_pages = active;
-    m_visible_pages = m_active_pages.mid(visibleStart, visibleCount);
-    m_visible_start = visibleStart;
-    m_visible_count = visibleCount;
-    m_closed_pages = closed;
-    emit visiblePagesChanged();
+void PagesGroup::updateVisibleState(double width){
+  m_width = width;
+  m_active_pages = m_pages.mid(0, m_closed_start);
+  m_closed_pages = m_pages.mid(m_closed_start);
+  emit visibleStateChanged();
 }
 
 void PagesGroup::setParentGroup(PagesGroup* group) {
@@ -131,8 +129,18 @@ void PagesGroup::close(Page* page) {
     updatePages();
     save();
     emit pagesChanged();
-    emit visiblePagesChanged();
 }
+
+void PagesGroup::setScroll(double scroll){
+  if(scroll > 1){
+    scroll = 1;
+  }
+  else if(scroll < 0){
+    scroll = 0;
+  }
+  m_scroll = scroll;
+}
+
 
 PagesGroup::PagesGroup(Page* root, Type type, Context* owner):
     QObject(owner),

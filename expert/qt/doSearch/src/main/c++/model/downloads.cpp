@@ -102,16 +102,4 @@ void Download::setStatus(Status status) {
   m_status = status;
   emit statusChanged();
 }
-
-void download(QUrl url, QString path, std::function<void()> callback) {
-//    Download* down = new Download(url, path);
-//    down->start();
-//    QObject::connect(down, &Download::completed, [down](){
-//        down->deleteLater();
-//        callback();
-//    });
-//    QObject::connect(down, &Download::faild, [down](){
-//        down->deleteLater();
-//    });
-}
 }

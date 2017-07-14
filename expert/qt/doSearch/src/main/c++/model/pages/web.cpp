@@ -160,9 +160,9 @@ void WebPage::setRedirect(WebPage *target) {
 //    return event.isAccepted();
 //}
 //
-//void WebPage::copyToClipboard(const QString& text) const {
-//    QApplication::clipboard()->setText(text);
-//}
+void WebPage::copyToClipboard(const QString& text) const {
+    QApplication::clipboard()->setText(text);
+}
 //
 //class QQuickDropEventOpen: public QObject {
 //    Q_OBJECT
@@ -192,14 +192,14 @@ void WebPage::setOriginalUrl(const QUrl &url) {
 }
 
 bool WebPage::accept(const QUrl &url) const {
-    if (url.scheme().isEmpty())
-        return true;
-    if (url.scheme() != m_url.scheme())
-        return false;
-    if (url.host().toLower() != m_url.host().toLower())
-        return false;
-    if (url.path() != m_url.path())
-        return false;
+//    if (url.scheme().isEmpty())
+//        return true;
+//    if (url.scheme() != m_url.scheme())
+//        return false;
+//    if (url.host().toLower() != m_url.host().toLower())
+//        return false;
+//    if (url.path() != m_url.path())
+//        return false;
     //    if (url.query() != m_url.query())
     //        return false;
     return true;

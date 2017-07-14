@@ -117,7 +117,6 @@ void Context::transition(Page* to, TransitionType type) {
 }
 
 QString Context::title() const {
-    qDebug() << "Context " << id() << " title: " << m_name;
     return m_name;
 }
 

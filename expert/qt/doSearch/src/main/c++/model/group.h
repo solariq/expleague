@@ -12,22 +12,20 @@ class Context;
 class PagesGroup: public QObject, public PersistentPropertyHolder {
     Q_OBJECT
 
-    Q_PROPERTY(expleague::Page* root READ root CONSTANT)
-    Q_PROPERTY(bool selected READ selected WRITE setSelected NOTIFY selectedChanged)
-    Q_PROPERTY(expleague::PagesGroup* parentGroup READ parentGroup NOTIFY parentGroupChanged)
-    Q_PROPERTY(expleague::Context* owner READ owner CONSTANT)
+  Q_PROPERTY(expleague::Page* root READ root CONSTANT)
+  Q_PROPERTY(bool selected READ selected WRITE setSelected NOTIFY selectedChanged)
+  Q_PROPERTY(expleague::PagesGroup* parentGroup READ parentGroup NOTIFY parentGroupChanged)
+  Q_PROPERTY(expleague::Context* owner READ owner CONSTANT)
 
-    Q_PROPERTY(QQmlListProperty<expleague::Page> visiblePages READ visiblePages NOTIFY visiblePagesChanged)
-    Q_PROPERTY(QQmlListProperty<expleague::Page> activePages READ activePages NOTIFY visiblePagesChanged)
-    Q_PROPERTY(QQmlListProperty<expleague::Page> closedPages READ closedPages NOTIFY visiblePagesChanged)
+  Q_PROPERTY(QQmlListProperty<expleague::Page> activePages READ activePages NOTIFY visibleStateChanged)
+  Q_PROPERTY(QQmlListProperty<expleague::Page> closedPages READ closedPages NOTIFY visibleStateChanged)
+  Q_PROPERTY(double width READ width)
+  Q_PROPERTY(double scroll READ scroll WRITE setScroll) //from 0 to 1
 
-    Q_PROPERTY(int visibleStart READ visibleStart NOTIFY visiblePagesChanged)
-    Q_PROPERTY(int visibleEnd READ visibleEnd NOTIFY visiblePagesChanged)
+  Q_PROPERTY(expleague::Page* selectedPage READ selectedPage WRITE selectPage NOTIFY selectedPageChanged)
+  Q_PROPERTY(expleague::PagesGroup::Type type READ type CONSTANT)
 
-    Q_PROPERTY(expleague::Page* selectedPage READ selectedPage WRITE selectPage NOTIFY selectedPageChanged)
-    Q_PROPERTY(expleague::PagesGroup::Type type READ type CONSTANT)
-
-    Q_ENUMS(Type)
+  Q_ENUMS(Type)
 
 public:
     enum Type: int {
@@ -43,6 +41,7 @@ public:
     bool selected() const { return m_selected; }
     Context* owner() const { return m_owner; }
     bool empty() const { return m_pages.empty() || m_closed_start == 0; }
+    bool hasClosedPages() { return m_closed_start < m_pages.size(); }
 
     bool closed(Page* page) const { return m_pages.indexOf(page) >= m_closed_start; }
 
@@ -60,30 +59,27 @@ public:
 
     PagesGroup* parentGroup() const { return m_parent; }
 
-    QQmlListProperty<Page> visiblePages() const {
-        return QQmlListProperty<Page>(const_cast<PagesGroup*>(this), const_cast<QList<Page*>&>(m_visible_pages));
-    }
-
     QQmlListProperty<Page> activePages() const {
-        return QQmlListProperty<Page>(const_cast<PagesGroup*>(this), const_cast<QList<Page*>&>(m_active_pages));
+      return QQmlListProperty<Page>(const_cast<PagesGroup*>(this), const_cast<QList<Page*>&>(m_active_pages));
     }
 
     QQmlListProperty<Page> closedPages() const {
-        return QQmlListProperty<Page>(const_cast<PagesGroup*>(this), const_cast<QList<Page*>&>(m_closed_pages));
+      return QQmlListProperty<Page>(const_cast<PagesGroup*>(this), const_cast<QList<Page*>&>(m_closed_pages));
     }
 
-    int visibleStart() const {
-        return m_visible_start;
+    double width(){
+      return m_width;
     }
 
-    int visibleEnd() const {
-        return m_visible_start + m_visible_count;
+    double scroll(){
+      return m_scroll;
     }
+
+    void setScroll(double scroll);
 
 public:
     QList<Page*> pages() const { return m_pages; }
     QList<Page*> activePagesList() { return m_active_pages; }
-    QList<Page*> visiblePagesList() const { return m_visible_pages; }
 
     Q_INVOKABLE void insert(Page* page, int position = -1);
     Q_INVOKABLE void close(Page* page);
@@ -93,12 +89,14 @@ public:
 
     void split(const QList<Page*>& active, const QList<Page*>& closed, int visibleStart, int visibleCount);
 
+    void updateVisibleState(double width);
+
 signals:
     void selectedChanged(bool selected);
     void pagesChanged();
-    void visiblePagesChanged();
     void selectedPageChanged(Page*);
     void parentGroupChanged(PagesGroup*);
+    void visibleStateChanged();
 
 public:
     explicit PagesGroup(Page* root = 0, Type type = Type::NORMAL, Context* owner = 0);
@@ -113,17 +111,18 @@ private:
     PagesGroup* m_parent = 0;
     Type m_type = NORMAL;
 
+
     QList<Page*> m_active_pages;
-    QList<Page*> m_visible_pages;
     QList<Page*> m_closed_pages;
 
-    int m_visible_start = 0;
-    int m_visible_count = 0;
+    double m_scroll = 0.5;
 
     QList<Page*> m_pages;
     bool m_selected = false;
     int m_selected_page_index = -1;
     int m_closed_start = 0;
+
+    double m_width = 0;
 };
 }
 

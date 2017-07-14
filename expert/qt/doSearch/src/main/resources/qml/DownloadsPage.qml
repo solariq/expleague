@@ -108,6 +108,10 @@ Rectangle {
                         left: parent.left
                         right: cancelButton.left
                     }
+                    MouseArea{
+                        anchors.fill: parent
+                        onClicked: downloadModel.downloads[index].open()
+                    }
                 }
                 Button {
                     id: cancelButton
@@ -126,10 +130,7 @@ Rectangle {
                 }
             }
 
-            MouseArea{
-                anchors.fill: parent
-                onClicked: downloadModel.downloads[index].open()
-            }
+
         }
 
     }

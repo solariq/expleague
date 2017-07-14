@@ -83,14 +83,12 @@ Rectangle{
 
             onRedirectIndexChanged: {
                 webView.redirectEnable(redirectIndex == 0)
-                console.log("redirect", urlTools.redirectIndex, owner.redirects.length, owner.redirects[0].originalUrl)
                 webView.url = owner.redirects[urlTools.redirectIndex].originalUrl
             }
 
             Connections {
                 target: owner
                 onRedirectsChanged: {
-                    console.log("redirect", owner.redirects[urlTools.redirectIndex].originalUrl )
                     urlTools.redirectIndex = 0
                 }
             }

@@ -106,7 +106,7 @@ void Page::transition(Page* page, TransitionType type) {
     if (page == this)
         return;
     switch(type) {
-    case TransitionType::SELECT_TAB:
+//    case TransitionType::SELECT_TAB:
     case TransitionType::FOLLOW_LINK:
     case TransitionType::REDIRECT:
     case TransitionType::TYPEIN:
@@ -123,6 +123,7 @@ void Page::transition(Page* page, TransitionType type) {
         store("lastVisited", page->id());
         break;
     }
+    case TransitionType::SELECT_TAB:
     case TransitionType::CHANGED_SCREEN:
         break;
     }
@@ -163,8 +164,8 @@ void Page::incomingTransition(Page* page, TransitionType type) {
 
 double Page::titleWidth() const {
     QString title = this->title();
-    QRect rect = titleFontMetrics.boundingRect(title);
-    return title.isEmpty() ? 200 : rect.width();
+    int width = titleFontMetrics.width(title);
+    return title.isEmpty() ? 200 : width;
 }
 
 doSearch* Page::parent() const {

@@ -110,7 +110,7 @@ public:
                              const CefKeyEvent& event,
                              CefEventHandle os_event,
                              bool* is_keyboard_shortcut) OVERRIDE {
-    qDebug() << "OnPreKeyEvent" << event.windows_key_code << event.type;
+//    qDebug() << "OnPreKeyEvent" << event.windows_key_code << event.type;
     //*is_keyboard_shortcut = true;
     return false;
   }
@@ -118,7 +118,7 @@ public:
   virtual bool OnKeyEvent(CefRefPtr<CefBrowser> browser,
                           const CefKeyEvent& event,
                           CefEventHandle os_event) OVERRIDE {
-    qDebug() << "OnKeyEvent" << event.windows_key_code << event.type;
+//    qDebug() << "OnKeyEvent" << event.windows_key_code << event.type;
     return false;
   }
 
@@ -223,6 +223,10 @@ public:
 
   void download(const QUrl& url);
 
+  void onPageTerminate();
+
+  qint64 lastUserActionTime();
+
   virtual QQuickItem* asItem() {
     return this;
   }
@@ -251,6 +255,7 @@ private:
   bool m_cookies_enable = true;
   bool m_mute;
   std::mutex m_mutex;
+  qint64 m_last_user_action_time = 0;
   //property methods
 
 public:
@@ -303,20 +308,18 @@ signals:
 
   void savedToStorage(const QString& text);
 
-  //void setActualUrl();
-
 private slots:
   void initBrowser(QQuickWindow* window);
   void updateVisible();
 
 private:
   void destroyBrowser();
+  void updateLastUserActionTime();
 
   friend class BrowserListener;
   friend class CefPageRenderer;
   friend class QTPageRenderer;
   bool m_focused = false;
-
   void updateJS();
 };
 
@@ -362,6 +365,9 @@ public:
                              CefRefPtr<CefClient>& client, CefBrowserSettings& settings,
                              bool* no_javascript_access) OVERRIDE;
 
+  virtual void OnRenderProcessTerminated(CefRefPtr<CefBrowser> browser,
+                                         TerminationStatus status);
+
   virtual void OnTitleChange(CefRefPtr<CefBrowser> browser, const CefString& title) OVERRIDE;
 
   virtual void OnFaviconURLChange(CefRefPtr<CefBrowser> browser, const std::vector<CefString>& icon_urls) OVERRIDE;
@@ -399,7 +405,6 @@ public:
                                CefRefPtr<CefFrame> frame,
                                const CefString& url);
 
-  void userEventOccured(); //click or smth
   void redirectEnable(bool);
 
   void enable();
@@ -408,7 +413,6 @@ public:
 IMPLEMENT_REFCOUNTING(CefRequestHandler)
 private:
   CefItem* const m_owner;
-  qint64 m_last_event_time = 0;
   bool m_redirect_enable = true;
   bool m_enable;
   bool m_allow_link_trans = false;

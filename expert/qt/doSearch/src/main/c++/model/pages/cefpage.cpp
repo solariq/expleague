@@ -319,7 +319,7 @@ const void* CefPageRenderer::buffer() {
 
 bool BrowserListener::OnBeforeBrowse(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefRequest> request,
                                      bool is_redirect) {
-  if (request->GetResourceType() != RT_MAIN_FRAME) { //request page resources
+  if (request->GetResourceType() != RT_MAIN_FRAME || request->GetTransitionType() == TT_FORM_SUBMIT) {
     return false;
   }
   if (!m_enable) {
@@ -328,14 +328,15 @@ bool BrowserListener::OnBeforeBrowse(CefRefPtr<CefBrowser> browser, CefRefPtr<Ce
 
   QString url = QString::fromStdString(request->GetURL().ToString());
   QUrl qurl(url, QUrl::TolerantMode);
-  //qDebug() << "on Before browse" << qurl << m_owner->m_url;
-  if (qurl == m_owner->m_url) { //onbeforebrowse called from QT
+  qDebug() << "on Before browse" << qurl << "is_redirect" << is_redirect << "transition type" << request->GetTransitionType();
+  if (qurl == m_owner->m_url) { //onbeforebrowse was called from QT
     return false;
   }
 
   qint64 now = QDateTime::currentMSecsSinceEpoch();
-  if (is_redirect || now - m_last_event_time > 5000) {
+  if (is_redirect ||  now - m_owner->lastUserActionTime() > 5000) { //redirect
     if (m_redirect_enable) {
+      m_owner->m_url = qurl;
       emit m_owner->redirect(qurl);
       return false;
     }
@@ -382,20 +383,27 @@ bool BrowserListener::OnBeforePopup(CefRefPtr<CefBrowser> browser, CefRefPtr<Cef
   return true;
 }
 
+void BrowserListener::OnRenderProcessTerminated(CefRefPtr<CefBrowser> browser,
+                                                             TerminationStatus status) {
+  if(m_enable){
+    m_owner->onPageTerminate();
+  }
+}
+
 void BrowserListener::OnTitleChange(CefRefPtr<CefBrowser> browser, const CefString& title) {
   if (!m_enable) {
     return;
   }
   QString str = QString::fromStdString(title.ToString());
   //qDebug() << "title changed" << str;
-  emit m_owner->titleChanged(str); //TODO crash here
+  emit m_owner->titleChanged(str);
 }
 
 void BrowserListener::OnFaviconURLChange(CefRefPtr<CefBrowser> browser, const std::vector<CefString>& icon_urls) {
   if (!m_enable || icon_urls.empty()) {
     return;
   }
-  emit m_owner->iconChanged(QString::fromStdString(icon_urls[0].ToString())); //TODO crash here
+  emit m_owner->iconChanged(QString::fromStdString(icon_urls[0].ToString()));
 }
 
 void BrowserListener::OnLoadingStateChange(CefRefPtr<CefBrowser> browser, bool isLoading,
@@ -477,11 +485,6 @@ bool BrowserListener::OnContextMenuCommand(CefRefPtr<CefBrowser> browser, CefRef
     return true;
   }
   return true;
-}
-
-
-void BrowserListener::userEventOccured() {
-  m_last_event_time = QDateTime::currentMSecsSinceEpoch();
 }
 
 void BrowserListener::OnLoadStart(CefRefPtr<CefBrowser> browser,
@@ -670,6 +673,10 @@ void CefItem::initBrowser(QQuickWindow* window) {
   addToShutDownGC();
 }
 
+void CefItem::updateLastUserActionTime(){
+  m_last_user_action_time = QDateTime::currentMSecsSinceEpoch();
+}
+
 void IOBuffer::setBrowser(CefRefPtr<CefBrowser> browser) {
   m_browser = browser;
 }
@@ -685,6 +692,7 @@ void CefItem::mousePress(int x, int y, int buttons, int modifiers) {
   if (!m_iobuffer) {
     return;
   }
+  updateLastUserActionTime();
   m_iobuffer->mousePress(x, y, buttons, modifiers);
 }
 
@@ -692,7 +700,7 @@ void CefItem::mouseRelease(int x, int y, int buttons, int modifiers) {
   if (!m_iobuffer) {
     return;
   }
-  m_listener->userEventOccured();
+  updateLastUserActionTime();
   m_iobuffer->mouseRelease(x, y, buttons, modifiers);
 }
 
@@ -700,6 +708,7 @@ void CefItem::mouseWheel(int x, int y, int buttons, QPoint angle, int modifiers)
   if (!m_iobuffer) {
     return;
   }
+  updateLastUserActionTime();
   m_iobuffer->mouseWheel(x, y, buttons, angle, modifiers);
 }
 
@@ -732,7 +741,7 @@ void IOBuffer::mouseMove(int x, int y, int buttons, int modifiers) {
 void IOBuffer::mousePress(int x, int y, int buttons, int modifiers) {
   if (m_browser) {
     int time = QTime::currentTime().msecsSinceStartOfDay();
-    if (time - m_last_click_time < 200) {
+    if (time - m_last_click_time < 500) {
       m_click_count++;
     }
     else {
@@ -743,7 +752,7 @@ void IOBuffer::mousePress(int x, int y, int buttons, int modifiers) {
     event.x = x;
     event.y = y;
     event.modifiers = CefEventFactory::modifiersFromQtKeyBoardModifiers(modifiers) | CefEventFactory::mouseEventFlags(buttons);
-    qDebug() << "press Event" << x << y << "modifiers" << event.modifiers << "buttons" << buttons;
+//    qDebug() << "press Event" << x << y << "modifiers" << event.modifiers << "buttons" << buttons;
     m_browser->GetHost()->SendMouseClickEvent(event, getButton(buttons), false, m_click_count);
     m_key_flags |= CefEventFactory::mouseEventFlags(buttons);
   }
@@ -754,7 +763,7 @@ void IOBuffer::mouseRelease(int x, int y, int buttons, int modifiers) {
     CefMouseEvent event;
     event.x = x;
     event.y = y;
-    qDebug() << "press Release" << x << y << "modifiers" << event.modifiers << "buttons" << buttons;
+//    qDebug() << "press Release" << x << y << "modifiers" << event.modifiers << "buttons" << buttons;
     m_key_flags &= ~CefEventFactory::mouseEventFlags(buttons);
     event.modifiers = CefEventFactory::modifiersFromQtKeyBoardModifiers(modifiers) | CefEventFactory::mouseEventFlags(buttons);
     m_browser->GetHost().get()->SendMouseClickEvent(event, getButton(buttons), true, m_click_count);
@@ -777,7 +786,8 @@ bool IOBuffer::keyPress(QKeyEvent* event) {
     return false;
   }
   m_pressed_keys.insert(event->key());
-  m_browser->GetHost()->SendKeyEvent(CefEventFactory::createPressEvent(event));
+  CefKeyEvent cefEv = CefEventFactory::createPressEvent(event);
+  m_browser->GetHost()->SendKeyEvent(cefEv);
   m_key_flags |= CefEventFactory::keyEventFlags(event);
   if (!event->text().isEmpty()){
     m_browser->GetHost()->SendKeyEvent(CefEventFactory::createCharEvent(event));
@@ -812,6 +822,7 @@ bool CefItem::sendKeyPress(QObject* qKeyEvent) {
   if (!m_iobuffer) {
     return false;
   }
+  updateLastUserActionTime();
   QOpenQuickEvent* event2 = static_cast<QOpenQuickEvent*>((void*) qKeyEvent);
   return m_iobuffer->keyPress(&event2->event);
 }
@@ -853,8 +864,8 @@ bool CefItem::dragEnterUrls(double x, double y, QList<QUrl> urls, Qt::DropAction
     if (surl.startsWith("file:///")) {
       surl = surl.mid(8);
     }
-    //qDebug() << "enter" << x << y << surl << action;
-    dragData->AddFile(surl.toStdString(), "some data"); //TODO change some data on smth
+    qDebug() << "enter" << x << y << surl << action;
+    dragData->AddFile(surl.toStdString(), "");
   }
   m_browser->GetHost()->DragTargetDragEnter(dragData, createMouseEvent(x, y), translateAction(action));
   return true;
@@ -892,6 +903,7 @@ bool CefItem::dragMove(double x, double y, Qt::DropAction action) {
 bool CefItem::dragDrop(double x, double y) {
   //qDebug() << "drop" << x << y;
   m_browser->GetHost()->DragTargetDrop(createMouseEvent(x, y));
+  updateLastUserActionTime();
   return true;
 }
 
@@ -953,6 +965,17 @@ void CefItem::download(const QUrl& url) {
   emit downloadStarted(item);
 }
 
+void CefItem::onPageTerminate(){
+  qDebug() << "Page" << m_url << "is dead";
+  destroyBrowser();
+  auto wind = window();
+  if(wind)
+    initBrowser(wind);
+}
+
+qint64 CefItem::lastUserActionTime(){
+  return m_last_user_action_time;
+}
 
 void CefItem::findText(const QString& text, bool findForward) {
   if (text.length() == 0) {
@@ -1084,21 +1107,10 @@ QUrl CefItem::url() const {
   return m_url;
 }
 
-//QString parseURL(const QUrl &url){
-//    if(url.host.contains("google.")){
-//        QUrlQuery qurey(url);
-//        QString qureyUrl = qurey.queryItemValue("url");
-//        return qureyUrl == "" ? url.toString() : qureyUrl;
-//    }
-//    if(url.host.contains("yandex.")){
-//        QUrlQuery qurey(url);
-//        QString qureyUrl = qurey.queryItemValue("url");
-//        return qureyUrl == "" ? url.toString() : qureyUrl;
-//    }
-//}
-
 void CefItem::setUrl(const QUrl& url) {
-  //qDebug() << "set url" << url;
+  if(m_url == url){
+    return;
+  }
   if (m_browser) {
     m_browser->GetMainFrame()->LoadURL(url.toString().toStdString());
   }

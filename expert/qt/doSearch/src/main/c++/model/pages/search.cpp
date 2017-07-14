@@ -14,7 +14,8 @@ SearchRequest* SERPage::request() const {
 }
 
 Page* SERPage::container() const {
-    return request()->session();
+  SearchSession* session = request()->session();
+  return session;
 }
 
 Page* SERPage::parentPage() const {
@@ -223,7 +224,7 @@ void SearchSession::onPartAppended(ContentPage* part) {
     SearchRequest* request = qobject_cast<SearchRequest*>(part);
     if (!request)
         return;
-    if(m_index > 0)
+    if(m_index >= 0)
       parts()[m_index]->clear();
     request->setSession(this);
     connect(request, SIGNAL(selectedChanged()), SLOT(onSelectedSEChanged()));

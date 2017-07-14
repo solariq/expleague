@@ -11,6 +11,8 @@
 #include <QStyle>
 #include <QTextCodec>
 #include <QQuickWindow>
+#include <QQmlDebuggingEnabler>
+
 
 //#include <QtWebEngine>
 
@@ -45,6 +47,8 @@ void initApp();
 #endif
 
 int main(int argc, char* argv[]) {
+
+  QQmlDebuggingEnabler enabler;
 #ifdef Q_OS_MAC
   initApp();
 #endif
