@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import com.expleague.model.Delivered;
 import com.expleague.model.ExpertsProfile;
 import com.expleague.model.Operations;
+import com.expleague.model.Social;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
@@ -59,10 +60,10 @@ public class ConnectedPhase extends XMPPPhase {
     if (bound)
       iq.from(jid());
     switch (iq.type()) {
-      case SET : {
+      case SET: {
         final Object payload = iq.get();
         if (payload instanceof Bind) {
-          if (iq.hasTs()){ //ts diff between client and server
+          if (iq.hasTs()) { //ts diff between client and server
             clientTsDiff = System.currentTimeMillis() - iq.ts();
             synched = true;
           }
@@ -151,6 +152,10 @@ public class ConnectedPhase extends XMPPPhase {
     if (message.has(Operations.Token.class)) {
       final Operations.Token token = message.get(Operations.Token.class);
       device.updateDevice(TokenUtil.sanitizeTokenString(token.value()), token.client());
+    }
+    if (message.has(Social.class)) {
+      Roster.instance().mergeWithSocial(device.user(), message.get(Social.class));
+      //need reconnect
     }
   }
 

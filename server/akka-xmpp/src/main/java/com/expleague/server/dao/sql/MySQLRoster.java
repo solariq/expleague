@@ -2,6 +2,7 @@ package com.expleague.server.dao.sql;
 
 import com.expleague.model.Application;
 import com.expleague.model.ExpertsProfile;
+import com.expleague.model.Social;
 import com.expleague.model.Tag;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
@@ -19,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -316,6 +318,50 @@ public class MySQLRoster extends MySQLOps implements Roster {
 //    }
 //  }
 
+  @Override
+  public void mergeWithSocial(XMPPUser user, Social social) {
+    try {
+      final XMPPUser associatedUser;
+      try (final PreparedStatement getAssociated = createStatement("SELECT user FROM Social WHERE type = ? AND id = ?")) {
+        getAssociated.setInt(1, social.type().code());
+        getAssociated.setString(2, social.id());
+        try (final ResultSet resultSet = getAssociated.executeQuery()) {
+          associatedUser = resultSet.next() ? user(resultSet.getString(1)) : null;
+        }
+      }
+
+      if (associatedUser != null) {
+        user.updateUser(associatedUser.id());
+        Arrays.stream(devices(user.id())).forEach(device -> device.updateUser(associatedUser));
+        try (final PreparedStatement updateParticipants = createStatement("UPDATE Participants SET partisipant = ? WHERE partisipant = ?")) {
+          updateParticipants.setString(1, associatedUser.id());
+          updateParticipants.setString(2, user.id());
+          updateParticipants.execute();
+        }
+        try (final PreparedStatement updateSpecializations = createStatement("UPDATE Specializations SET owner = ? WHERE owner = ?")) {
+          updateSpecializations.setString(1, associatedUser.id());
+          updateSpecializations.setString(2, user.id());
+          updateSpecializations.execute();
+        }
+        try (final PreparedStatement updateApplications = createStatement("UPDATE Applications SET referer = ? WHERE referer = ?")) {
+          updateApplications.setString(1, associatedUser.id());
+          updateApplications.setString(2, user.id());
+          updateApplications.execute();
+        }
+      }
+      else {
+        try (final PreparedStatement insertInSocial = createStatement("INSERT IGNORE INTO Social SET user = ?, type = ?, id = ?;")) {
+          insertInSocial.setString(1, user.id());
+          insertInSocial.setInt(2, social.type().code());
+          insertInSocial.setString(3, social.id());
+          insertInSocial.execute();
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @NotNull
   private XMPPUser createUser(ResultSet resultSet, int offset) throws SQLException {
     final int priority = resultSet.getInt(offset + 9);
@@ -329,7 +375,22 @@ public class MySQLRoster extends MySQLOps implements Roster {
         resultSet.getInt(offset + 6),
         resultSet.getTimestamp(offset + 7),
         resultSet.getString(offset + 8),
-        ExpertsProfile.Authority.valueOf(priority)
-    );
+        ExpertsProfile.Authority.valueOf(priority),
+        resultSet.getString(offset + 10)
+    ) {
+      @Override
+      public void updateUser(String substitutedBy) {
+        this.substitutedBy = substitutedBy;
+        try {
+          try (final PreparedStatement updateToken = createStatement("UPDATE Users SET `substituted_by` = ? WHERE id = ?")) {
+            updateToken.setString(1, substitutedBy);
+            updateToken.setString(2, id());
+            updateToken.execute();
+          }
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
   }
 }

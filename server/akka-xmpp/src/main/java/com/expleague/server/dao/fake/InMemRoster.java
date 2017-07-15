@@ -2,11 +2,13 @@ package com.expleague.server.dao.fake;
 
 import com.expleague.model.Application;
 import com.expleague.model.ExpertsProfile;
+import com.expleague.model.Social;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
 import com.expleague.server.XMPPUser;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.control.register.RegisterQuery;
+import com.spbsu.commons.util.Pair;
 
 import javax.security.sasl.AuthenticationException;
 import java.util.*;
@@ -56,7 +58,12 @@ public class InMemRoster implements Roster {
         if (query.trusted()) authority = ExpertsProfile.Authority.ADMIN;
         else authority = ExpertsProfile.Authority.EXPERT;
       else authority = ExpertsProfile.Authority.NONE;
-      associated = new XMPPUser(query.username(), query.country(), query.city(), query.name(), 0, 0, new Date(), query.avatar(), authority);
+      associated = new XMPPUser(query.username(), query.country(), query.city(), query.name(), 0, 0, new Date(), query.avatar(), authority, null) {
+        @Override
+        public void updateUser(String substitutedBy) {
+          this.substitutedBy = substitutedBy;
+        }
+      };
       users.put(associated.id(), associated);
       log.log(Level.INFO, "Created new user " + associated.name());
     }
@@ -109,6 +116,23 @@ public class InMemRoster implements Roster {
   @Override
   public void application(Application application, JID referer) {
     applications.add(application);
+  }
+
+  @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+  private final Map<Pair<String, Integer>, String> socials = new HashMap<>();
+  @Override
+  public void mergeWithSocial(XMPPUser user, Social social) {
+    final Pair<String, Integer> pair = new Pair<>(social.id(), social.type().code());
+    final String associatedUserId = socials.get(pair);
+    if (associatedUserId != null) {
+      user.updateUser(associatedUserId);
+      final XMPPUser associated = user(associatedUserId);
+      devices.values().stream()
+          .filter(device -> device.user().id().equals(user.id()))
+          .forEach(device -> device.updateUser(associated));
+    } else {
+      socials.put(pair, user.id());
+    }
   }
 
 //  @Override

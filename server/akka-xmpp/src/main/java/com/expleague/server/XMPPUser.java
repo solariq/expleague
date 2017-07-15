@@ -12,8 +12,11 @@ import java.util.stream.Stream;
  * Experts League
  * Created by solar on 02/03/16.
  */
-public class XMPPUser {
-  public static final XMPPUser NO_SUCH_USER = new XMPPUser("", "", "", "No Such User", 0, 0, new Date(), "", ExpertsProfile.Authority.NONE);
+public abstract class XMPPUser {
+  public static final XMPPUser NO_SUCH_USER = new XMPPUser("", "", "", "No Such User", 0, 0, new Date(), "", ExpertsProfile.Authority.NONE, null) {
+    @Override
+    public void updateUser(String substitutedBy) {}
+  };
   private final String id;
   private final String name;
   private final String country;
@@ -21,14 +24,16 @@ public class XMPPUser {
   private final String avatar;
   private final ExpertsProfile.Authority authority;
   private JID jid;
+  protected String substitutedBy;
 
-  public XMPPUser(String id, String country, String city, String name, int sex, int age, Date created, String avatar, ExpertsProfile.Authority authority) {
+  public XMPPUser(String id, String country, String city, String name, int sex, int age, Date created, String avatar, ExpertsProfile.Authority authority, String substitutedBy) {
     this.id = id;
     this.name = name;
     this.country = country;
     this.city = city;
     this.avatar = avatar;
     this.authority = authority;
+    this.substitutedBy = substitutedBy;
     jid = new JID(id, ExpLeagueServer.config().domain(), null);
   }
 
@@ -52,6 +57,10 @@ public class XMPPUser {
     return id;
   }
 
+  public String substitutedBy() {
+    return substitutedBy;
+  }
+
   public XMPPDevice[] devices() {
     return Roster.instance().devices(this.id);
   }
@@ -68,4 +77,6 @@ public class XMPPUser {
   public ExpertsProfile.Authority authority() {
     return authority;
   }
+
+  public abstract void updateUser(String substitutedBy);
 }
