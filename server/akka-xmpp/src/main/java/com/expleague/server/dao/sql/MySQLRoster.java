@@ -330,7 +330,7 @@ public class MySQLRoster extends MySQLOps implements Roster {
         }
       }
 
-      if (associatedUser != null) {
+      if (associatedUser != null && !user.id().equals(associatedUser.id())) {
         user.updateUser(associatedUser.id());
         Arrays.stream(devices(user.id())).forEach(device -> device.updateUser(associatedUser));
         try (final PreparedStatement updateParticipants = createStatement("UPDATE Participants SET partisipant = ? WHERE partisipant = ?")) {
@@ -349,8 +349,8 @@ public class MySQLRoster extends MySQLOps implements Roster {
           updateApplications.execute();
         }
       }
-      else {
-        try (final PreparedStatement insertInSocial = createStatement("INSERT IGNORE INTO Social SET user = ?, type = ?, id = ?;")) {
+      else if (associatedUser == null) {
+        try (final PreparedStatement insertInSocial = createStatement("INSERT INTO Social SET user = ?, type = ?, id = ?;")) {
           insertInSocial.setString(1, user.id());
           insertInSocial.setInt(2, social.type().code());
           insertInSocial.setString(3, social.id());
