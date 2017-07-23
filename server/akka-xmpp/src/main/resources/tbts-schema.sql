@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS Topics (
   `order` VARCHAR(64) NOT NULL,
   tag INTEGER(16) NOT NULL,
 
+  PRIMARY KEY (`order`, tag),
   CONSTRAINT Topics_Orders_id_fk FOREIGN KEY (`order`) REFERENCES Orders (id) ON DELETE CASCADE,
   CONSTRAINT Topics_Tags_id_fk FOREIGN KEY (tag) REFERENCES Tags (id) ON DELETE CASCADE
 );
