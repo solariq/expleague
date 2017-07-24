@@ -95,15 +95,17 @@ void PagesGroup::updatePages() {
 
 
 bool PagesGroup::selectPage(Page* page) {
-    const int index = m_pages.indexOf(page);
+    int index = m_pages.indexOf(page);
     if (index >= m_closed_start) {
-        if (m_closed_start < index)
+        if (m_closed_start < index){
             m_pages.move(index, m_closed_start);
+            index = m_closed_start;
+        }
         m_closed_start++;
         updatePages();
         emit pagesChanged();
     }
-    if (m_selected_page_index != index) {
+    if (m_selected_page_index != index ) {
         m_selected_page_index = index;
         store("selected", page ? QVariant(page->id()) : QVariant());
         emit selectedPageChanged(page);

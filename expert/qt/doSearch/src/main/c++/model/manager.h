@@ -140,6 +140,7 @@ private:
 
     QList<QQuickItem*> m_screens;
     QSet<Page*> m_prev_known;
+    QSet<Page*> m_always_active;
     QQuickItem* m_active_screen = 0;
 };
 }

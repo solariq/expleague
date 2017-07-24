@@ -8,6 +8,8 @@ import UIKit
 import XMPPFramework
 import CloudKit
 import FBSDKCoreKit
+import FBSDKLoginKit
+import FacebookLogin
 
 import unSearchCore
 
@@ -20,6 +22,8 @@ class AboutViewController: UIViewController {
     @IBOutlet weak var instructionsButton: UIButton!
     @IBOutlet weak var rateUsButton: UIButton!
     @IBOutlet weak var inviteButton: UIButton!
+    @IBOutlet weak var fbLogin: UIView!
+    @IBOutlet weak var rateUs: UIButton!
 
     @IBAction func invite(_ sender: AnyObject) {
         FBSDKAppEvents.logEvent("Invite", parameters: ["user": ExpLeagueProfile.active.jid.user])
@@ -78,18 +82,45 @@ class AboutViewController: UIViewController {
         inviteButton.layer.borderColor = Palette.CONTROL.cgColor
         inviteButton.layer.borderWidth = 2
         inviteButton.clipsToBounds = true
+        
+        rateUs.layer.cornerRadius = rateUs.frame.height / 2
+        rateUs.layer.borderColor = Palette.CONTROL.cgColor
+        rateUs.layer.borderWidth = 2
+        rateUs.clipsToBounds = true
+
         topConstraint.constant = view.frame.height * 0.1
         let system = Bundle.main.infoDictionary!
         let date: String = system["BuildDate"] as? String ?? ""
         build.text = "Version \(AppDelegate.versionName())\n\(date)"
+        
         navigationController!.navigationBar.setBackgroundImage(UIImage(named: "history_background"), for: .default)
         navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.white]
         navigationController!.navigationBar.tintColor = UIColor.white
+        
+        let login = LoginButton(frame: CGRect(x: 0, y: 0, width: fbLogin.frame.width, height: fbLogin.frame.height), readPermissions: [.publicProfile])
+        fbLogin.addSubview(login)
+        login.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
         updateSize(UIScreen.main.bounds.size)
         FBSDKAppEvents.logEvent("About tab active")
+    }
+}
+
+extension AboutViewController: LoginButtonDelegate {
+    func loginButtonDidCompleteLogin(_ loginButton: LoginButton, result: LoginResult) {
+        switch(result) {
+        case .success(_, _, let token):
+            ExpLeagueProfile.active.fbid = token.userId
+            print("Logged in with id: \(token.userId ?? "")")
+        default:
+            print("Unable to login")
+        }
+    }
+    
+    func loginButtonDidLogOut(_ loginButton: LoginButton) {
+        print("Logout")
     }
 }
 

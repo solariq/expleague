@@ -12,35 +12,39 @@ void log(const std::string& mes){
     out.close();
 }
 
+
 class MyApp: public CefApp {
-    virtual void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) OVERRIDE {
-        command_line->AppendSwitch("--off-screen-rendering-enabled");
-        command_line->AppendSwitch("--multi-threaded-message-loop");
-        command_line->AppendSwitch("--enable-system-flash");
-        std::vector<CefString> argv;
-        command_line.get()->GetArgv(argv);
-//        for(CefString str: argv){
-//            log(str.ToString());
-//        }
-    }
+  virtual void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) OVERRIDE {
+    command_line->AppendSwitch("--off-screen-rendering-enabled");
+    command_line->AppendSwitch("--multi-threaded-message-loop");
+    command_line->AppendSwitch("--enable-system-flash");
+    std::vector<CefString> argv;
+    command_line.get()->GetArgv(argv);
+  }
 
-    virtual void OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar) OVERRIDE { //TODO try is_local true and is_cors_enabled fasle
-      #if defined(__unix__) || (defined (__APPLE__) && defined (__MACH__))
-      registrar->AddCustomScheme("qrc", false, false, false, false, true, true);
-      #else
-      registrar->AddCustomScheme("qrc", false, false, false, false, true);
-      #endif
-    }
+  virtual void OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar) OVERRIDE { //TODO try is_local true and is_cors_enabled fasle
+#if defined(__unix__) || (defined (__APPLE__) && defined (__MACH__))
+    registrar->AddCustomScheme("qrc", false, false, false, false, true, true);
+#else
+    log("register scheme");
+    registrar->AddCustomScheme("qrc", false, false, false, false, true) ? log("true") : log("false");
+#endif
+  }
 
+  virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() {
+    log("calling GetBrowserProcessHandler");
+    return NULL;
+  }
 IMPLEMENT_REFCOUNTING(MyApp)
 };
 
+
 int main(int argc, char *argv[]) {
-  #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
   CefMainArgs main_args(argc, argv);
-  #else
+#else
   CefMainArgs main_args(GetModuleHandle(NULL));
-  #endif
+#endif
   CefRefPtr<MyApp> app(new MyApp);
   return CefExecuteProcess(main_args, app, NULL);
 }

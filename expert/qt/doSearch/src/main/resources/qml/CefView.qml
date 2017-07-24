@@ -24,14 +24,29 @@ Rectangle{
         id: webView;
         zoomFactor: zoom
         anchors.fill: parent;
+
+        onFullScreenChanged:{
+            if(fullScreen)
+                dosearch.main.screenRef.state = "FullScreen"
+            else
+                dosearch.main.screenRef.state = ""
+        }
+
         onRequestPage: {
             if(url != this.url){
                 owner.open(url, newTab, false)
             }
         }
 
-        onDragStarted: {
+        onDragFromCefStarted: {
+            var draggedItem = Qt.createQmlObject("import QtQuick 2.0; Rectangle{}", self, "drag");
             dosearch.main.dragType = "web";
+            dosearch.main.drag = draggedItem
+        }
+
+        onDragFromCefFinished: {
+            dosearch.main.drag = null
+            dosearch.main.dragType = "";
         }
 
         onCursorChanged: {
@@ -39,7 +54,7 @@ Rectangle{
         }
 
         onDownloadStarted: {
-            dosearch.navigation.select(0, dosearch.navigation.context)
+//            dosearch.navigation.select(0, dosearch.navigation.context)
             dosearch.navigation.context.ui.downloads.append(item)
         }
 
@@ -96,7 +111,7 @@ Rectangle{
 
         onWheel: {
             if(wheel.modifiers & Qt.ControlModifier){
-                webView.zoomFactor += wheel.x > 0 ? 0.2 : -0.2
+                webView.zoomFactor += wheel.angleDelta.y > 0 ? 0.2 : -0.2
             }else{
                 webView.mouseWheel(wheel.x, wheel.y, wheel.buttons, wheel.angleDelta, wheel.modifiers)
             }

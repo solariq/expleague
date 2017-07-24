@@ -22,7 +22,7 @@ class HistoryViewController: UITableViewController {
     var cellHeight = CGFloat(0.0)
     var selected: ExpLeagueOrder? {
         willSet(selected) {
-            guard selected != self.selected else {
+            guard selected != self.selected && isViewLoaded else {
                 return
             }
             let table = (self.view as! UITableView)
@@ -31,7 +31,7 @@ class HistoryViewController: UITableViewController {
             }
             if let sel = selected, let path = indexOf(sel) {
                 table.selectRow(at: path, animated: false, scrollPosition: .top)
-                tableView(table, didSelectRowAt: path)
+                self.performSegue(withIdentifier: "orderDetails", sender: self)
             }
         }
     }
@@ -41,6 +41,8 @@ class HistoryViewController: UITableViewController {
         let table = view as! UITableView
         let cell = table.dequeueReusableCell(withIdentifier: "OngoingOrder") as! OngoingOrderStateCell
         table.register(UITableViewCell.self, forCellReuseIdentifier: "Empty")
+        table.allowsSelection = true
+        table.allowsMultipleSelection = false
         cellHeight = cell.frame.height
         AppDelegate.instance.historyView = self
         self.navigationItem.rightBarButtonItem = self.editButtonItem
@@ -71,14 +73,14 @@ class HistoryViewController: UITableViewController {
         archived.removeAll()
         answerOfTheWeek = nil
         for order in ExpLeagueProfile.active.listOrders() {
-            if (order.isActive) {
-                ongoing.append(order)
-            }
-            else if (order.status == .archived){
+            if (order.status == .archived){
                 archived.append(order)
             }
-            else if (order.fake) {
+            else if (order.fake && order.status != .archived && order.status != .closed) {
                 answerOfTheWeek = order
+            }
+            else if (order.isActive) {
+                ongoing.append(order)
             }
             else {
                 finished.append(order)
@@ -125,7 +127,17 @@ class HistoryViewController: UITableViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         FBSDKAppEvents.logEvent("History tab active")
-        AppDelegate.instance.tabs?.tabBar.isHidden = false
+        if (selected != nil) {
+            let oldSelection = selected
+            selected = nil
+            selected = oldSelection
+        }
+        else {
+            let table = (self.view as! UITableView)
+            if (table.indexPathForSelectedRow != nil) {
+                table.deselectRow(at: table.indexPathForSelectedRow!, animated: false)
+            }
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -233,27 +245,25 @@ class HistoryViewController: UITableViewController {
         return model!
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let o: ExpLeagueOrder
-        switch(section(index: (indexPath as NSIndexPath).section)) {
-        case .none:
-            return;
-            
-        case .answerOfTheWeek:
-            o = answerOfTheWeek!
-        case .ongoing:
-            o = ongoing[(indexPath as NSIndexPath).row]
-        case .finished:
-            o = finished[(indexPath as NSIndexPath).row]
-        }
-        AppDelegate.instance.tabs?.tabBar.isHidden = true;
-        let messagesView = OrderDetailsViewController(data: model(o))
-        if (splitViewController!.isCollapsed) {
-            navigationController!.popToRootViewController(animated: true);
-            navigationController!.pushViewController(messagesView, animated: true)
-        }
-        else {
-            splitViewController!.showDetailViewController(messagesView, sender: self)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let indexPath = (view as! UITableView).indexPathForSelectedRow!
+        if (segue.identifier == "orderDetails") {
+            let o: ExpLeagueOrder
+            switch(section(index: indexPath.section)) {
+            case .none:
+                return;
+                
+            case .answerOfTheWeek:
+                o = answerOfTheWeek!
+            case .ongoing:
+                o = ongoing[indexPath.row]
+            case .finished:
+                o = finished[indexPath.row]
+            }
+
+            if let destination = segue.destination as? OrderDetailsViewController {
+                destination.data = model(o)
+            }
         }
     }
     
@@ -285,7 +295,7 @@ class HistoryViewController: UITableViewController {
                 order = ongoing[(indexPath as NSIndexPath).row]
                 empty = ongoing.count == 1
                 let alertView: UIAlertController
-                if (order.messages.filter({$0.type == .answer}).isEmpty) {
+                if (order.judged) {
                     alertView = UIAlertController(title: "unSearch", message: "Вы уверены, что хотите отменить задание?", preferredStyle: .alert)
                     alertView.addAction(UIAlertAction(title: "Да", style: .default, handler: {(x: UIAlertAction) -> Void in
                         _ = self.ongoing.remove(at: (indexPath as NSIndexPath).row)
@@ -394,26 +404,26 @@ class OngoingOrderStateCell: OrderBadge {
             }
             QObject.connect(o, signal: #selector(ExpLeagueOrder.messagesChanged), receiver: self, slot: #selector(onOrderChanged))
         }
-        if (o.messages.last?.type == .answer) {
-            status.textColor = Palette.OK
-            status.text = "ОТВЕТ ГОТОВ"
-        }
-        else if (o.status == .overtime) {
-            let formatter = DateFormatter()
-            formatter.timeStyle = .short
-            formatter.timeZone = TimeZone(secondsFromGMT: 0)
-            formatter.dateFormat = "H'ч 'mm'м'"
-            
-            status.textColor = Palette.ERROR
-            status.text = "ПРОСРОЧЕН НА \(formatter.string(from: Date(timeIntervalSince1970: -o.timeLeft)))"
-        }
-        else if (o.status == .expertSearch) {
+//        else if (o.status == .overtime) {
+//            let formatter = DateFormatter()
+//            formatter.timeStyle = .short
+//            formatter.timeZone = TimeZone(secondsFromGMT: 0)
+//            formatter.dateFormat = "H'ч 'mm'м'"
+//
+//            status.textColor = Palette.ERROR
+//            status.text = "ПРОСРОЧЕН НА \(formatter.string(from: Date(timeIntervalSince1970: -o.timeLeft)))"
+//        }
+        if (o.status == .expertSearch) {
             status.textColor = Palette.COMMENT
             status.text = "ИЩЕМ ЭКСПЕРТА"
         }
-        else if (o.status == .open) {
+        else if (o.status == .open || o.status == .overtime) {
             status.textColor = Palette.COMMENT
             status.text = "В РАБОТЕ: \(o.activeExpert?.name ?? "")"
+        }
+        else if (!o.judged) {
+            status.textColor = Palette.OK
+            status.text = "ОЖИДАЕТ ОЦЕНКИ"
         }
         let formatter = DateFormatter()
         formatter.dateStyle = .short;

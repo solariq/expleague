@@ -17,28 +17,21 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     weak var controller: OrderDetailsViewController? {
         didSet {
             if (controller != nil) {
-                controller!.messages.dataSource = self
-                controller!.messages.delegate = self
-                controller!.answerText = answer
-                controller!.state = state
+                controller!.chat.messages.dataSource = self
+                controller!.chat.messages.delegate = self
+                controller!.answer.text = answer
             }
         }
     }
     var answer: String = "" {
         didSet {
             if let controller = self.controller {
-                controller.answerText = answer
+                controller.answer.text = answer
             }
         }
     }
 
-    var state: ChatState = .chat {
-        didSet {
-            if let controller = self.controller {
-                controller.state = state
-            }
-        }
-    }
+    var state: ChatState = .chat
 
     func markAsRead() {
         order.messages.forEach{msg in
@@ -46,7 +39,14 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         }
     }
 
-    func sync(_ rebuild: Bool = false) {
+    func syncIt() {
+        self.sync(false) {
+            self.controller?.chat.scrollToLastMessage()
+            self.controller?.answer.onStateChanged()
+        }
+    }
+    
+    func sync(_ rebuild: Bool, callback: (() -> ())? = nil) {
         DispatchQueue.main.async{
             if (rebuild) {
                 self.rebuild()
@@ -54,6 +54,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
             else {
                 self.syncInner()
             }
+            callback?()
         }
     }
     
@@ -146,12 +147,14 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
                     for em in expertModel {
                         em.status = .finished
                     }
-                    let id = "message-\(msg.hashValue)"
-                    answer += "\n<div id=\"\(id)\"/>\n"
-                    answer += msg.html;
-                    answer += "\n<a class=\"back_to_chat\" href='unSearch:///chat-messages#\(cells.count)'>Обратно в чат</a>\n"
-                    lastAnswer = AnswerReceivedModel(id: id, progress: (progressModel as? TaskInProgressModel) ?? TaskInProgressModel(order: order))
-                    newModel = lastAnswer
+                    if (!msg.isEmpty) {
+                        let id = "message-\(msg.hashValue)"
+                        answer += "\n<div id=\"\(id)\"/>\n"
+                        answer += msg.html;
+                        answer += "\n<a class=\"back_to_chat\" href='unSearch:///chat-messages#\(cells.count)'>Обратно в чат</a>\n"
+                        lastAnswer = AnswerReceivedModel(id: id, progress: (progressModel as? TaskInProgressModel) ?? TaskInProgressModel(order: order))
+                        newModel = lastAnswer
+                    }
                     
                     progressModel = nil
                 }
@@ -190,20 +193,24 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         
         switch(order.status) {
         case .deciding:
-            state = .ask
-        case .closed, .canceled:
-            state = order.fake ? .save : .closed
-        default:
+            state = order.fake ? .save : (!order.judged ? .ask : .closed)
+        case .closed where order.judged, .canceled where order.judged:
+            state = .closed
+        case .open, .overtime, .expertSearch:
             state = .chat
             if (progressModel != nil) {
                 cells.append(progressModel!)
             }
+        default:
+            state = (!order.judged ? .ask : .closed)
         }
         self.answer = answer
         updateGroups()
-        controller?.messages.reloadData()
         finished = true
-        self.controller?.scrollToLastMessage()
+        if (controller?.chat.isViewLoaded ?? false) {
+            controller?.chat.messages.reloadData()
+            controller?.chat.scrollToLastMessage()
+        }
     }
 
     fileprivate var cells: [ChatCellModel] = [];
@@ -302,7 +309,7 @@ class ChatModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     init(order: ExpLeagueOrder) {
         self.order = order
         super.init()
-        QObject.connect(order, signal: #selector(ExpLeagueOrder.messagesChanged), receiver: self, slot: #selector(self.sync))
+        QObject.connect(order, signal: #selector(ExpLeagueOrder.messagesChanged), receiver: self, slot: #selector(self.syncIt))
     }
     
     deinit {

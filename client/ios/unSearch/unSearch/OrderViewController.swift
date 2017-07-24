@@ -385,6 +385,14 @@ class OrderTextDelegate: NSObject, UITextViewDelegate {
     var active: Bool = false
     var tapDetector: UIGestureRecognizer?
     func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
+        if (ExpLeagueProfile.active.activeCount >= 3) {
+            let alert = UIAlertController(title: "Слишком много заданий", message: "У вас слишком много одновременно открытых заданий. Чтобы начать новую задачу, оцените уже выполненные.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "В историю", style:.default, handler: {alert in
+                AppDelegate.instance.tabs?.selectedIndex = 1
+            }))
+            parent.present(alert, animated: true, completion: nil)
+            return false
+        }
         UIView.animate(withDuration: 0.3, animations: { () -> Void in
             if (textView.text == OrderTextDelegate.placeholder || textView.text == OrderTextDelegate.error_placeholder) {
                 textView.text = ""

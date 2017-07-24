@@ -348,21 +348,21 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         affiliation(from, Affiliation.ADMIN);
         if (state != WORK) {
           final XMPPDevice[] devices = Roster.instance().devices(owner.local());
-          if (Stream.of(devices).anyMatch(device -> device.build() > 70)) {
-            state(OFFER);
-          }
-          else {
-            state(WORK);
-            startOrders(currentOffer).forEach(order -> {
-              final Offer orderOffer = order.offer();
-              for (final Tag tag : orderOffer.tags()) {
-                message(new Message(from, jid(), new Progress(order.id(), new Progress.MetaChange(tag.name(), Progress.MetaChange.Operation.ADD, Progress.MetaChange.Target.TAGS))));
-              }
-              for (final Pattern pattern : orderOffer.patterns()) {
-                message(new Message(from, jid(), new Progress(order.id(), new Progress.MetaChange(pattern.name(), Progress.MetaChange.Operation.ADD, Progress.MetaChange.Target.PATTERNS))));
-              }
-            });
-          }
+//          if (Stream.of(devices).anyMatch(device -> device.build() > 70)) {
+//            state(OFFER);
+//          }
+//          else {
+          state(WORK);
+          startOrders(currentOffer).forEach(order -> {
+            final Offer orderOffer = order.offer();
+            for (final Tag tag : orderOffer.tags()) {
+              message(new Message(from, jid(), new Progress(order.id(), new Progress.MetaChange(tag.name(), Progress.MetaChange.Operation.ADD, Progress.MetaChange.Target.TAGS))));
+            }
+            for (final Pattern pattern : orderOffer.patterns()) {
+              message(new Message(from, jid(), new Progress(order.id(), new Progress.MetaChange(pattern.name(), Progress.MetaChange.Operation.ADD, Progress.MetaChange.Target.PATTERNS))));
+            }
+          });
+//          }
           tellGlobal(new RoomMessageReceived(from, true));
         }
         else { // order update during the work

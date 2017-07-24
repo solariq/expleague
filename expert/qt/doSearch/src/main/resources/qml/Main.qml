@@ -14,15 +14,15 @@ import "."
 
 ApplicationWindow {
     id: self
-//    onActiveFocusItemChanged: {
-//        var item = activeFocusItem
-//        console.log("active focus changed on")
-//        while(item){
-//            console.log("---",item)
-//            item = item.parent
-//        }
-//        console.log("---------------")
-//    }
+    //    onActiveFocusItemChanged: {
+    //        var item = activeFocusItem
+    //        console.log("active focus changed on")
+    //        while(item){
+    //            console.log("---",item)
+    //            item = item.parent
+    //        }
+    //        console.log("---------------")
+    //    }
     property QtObject activeDialog
     property alias omnibox: omnibox
     //property alias webProfileRef: webProfile
@@ -41,11 +41,11 @@ ApplicationWindow {
     property alias screensHolder: screensHolder
 
     property int someInt: 100
-//    flags: {
-//        if (Qt.platform.os === "osx")
-//            return Qt.FramelessWindowHint | Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint
-//        return 134279169
-//    }
+    //    flags: {
+    //        if (Qt.platform.os === "osx")
+    //            return Qt.FramelessWindowHint | Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint
+    //        return 134279169
+    //    }
 
     WindowStateSaver {
         window: self
@@ -82,33 +82,6 @@ ApplicationWindow {
         linkReceiver.focusOpened = focusOpened
         request.openIn(linkReceiver)
     }
-
-//    function screenshot(url, size, callback) {
-//        if (linkReceiver.operation != "") {
-//            console.log("Link receiver is busy, putting screenshot operation to the queue")
-//            linkReceiver.queue.push(function () {
-//                screenshot(url, size, callback)
-//            })
-//            return
-//        }
-//        console.log("Requesting screenshot for url " + url)
-//        linkReceiver.operation = "screenshot"
-//        linkReceiver.context = callback
-//        linkReceiver.size = size
-//        linkReceiver.url = url
-//    }
-
-//    function saveScreenshot(url, size, owner) {
-//        var qurl = url.toString()
-//        qurl.trim()
-//        if (qurl === "")
-//            return
-//        screenshot(url, size, function (result) {
-//            console.log("Saving screenshot " + owner.screenshotTarget())
-//            result.saveToFile(owner.screenshotTarget())
-//            owner.screenshotChanged()
-//        })
-//    }
 
     function screenshot(url, size, file, callback) {
         if (screenshotMaker.busy) {
@@ -248,7 +221,14 @@ ApplicationWindow {
         id: editorActions
     }
 
-    menuBar: MenuBar {
+    menuBar: menu
+
+    onMenuBarChanged: {
+        console.log(menuBar)
+    }
+
+    MenuBar {
+        id: menu
         Menu {
             title: qsTr("Профиль")
             MenuItem {
@@ -275,9 +255,9 @@ ApplicationWindow {
             MenuItem {
                 action: commonActions.showHistory
             }
-//            MenuItem {
-//                action: commonActions.exitFullScreen
-//            }
+            //            MenuItem {
+            //                action: commonActions.exitFullScreen
+            //            }
 
             MenuSeparator{}
             MenuItem {
@@ -484,7 +464,7 @@ ApplicationWindow {
                         Item {
                             id: screensHolder
                             objectName: "screensHolder"
-                            anchors.fill: parent                          
+                            anchors.fill: parent
                         }
                         Rectangle {
                             color: "white"
@@ -498,11 +478,11 @@ ApplicationWindow {
                             objectName: "activeScreenHolder"
                             anchors.fill: parent
                             z: 5
-//                            onChildrenChanged: {
-//                                if(!children.length > 0){
-//                                    children[0].forceActiveFocus()
-//                                }
-//                            }
+                            //                            onChildrenChanged: {
+                            //                                if(!children.length > 0){
+                            //                                    children[0].forceActiveFocus()
+                            //                                }
+                            //                            }
 
                         }
                         Rectangle {
@@ -526,7 +506,7 @@ ApplicationWindow {
             }
         }
 
-       ControlsNG.Button {
+        ControlsNG.Button {
             id: optionsButton
             x: tabs.x + 24 + 4 + 2 - width/2
             y: tabs.y + tabs.height - 8
@@ -673,11 +653,15 @@ ApplicationWindow {
                 target: self
 
                 onDragChanged: {
-//                    console.log("Drag changed to " + self.drag)
-                    if (self.drag && self.dragType != "page" && sidebar.state != "vault" && !vault.visible) {
+                    console.log("Drag changed to " + self.drag)
+                    if(self.drag == null){
+                        console.log("Drag")
+                    }
+
+                    if (/*self.drag &&*/ self.dragType != "page" && sidebar.state != "vault" && !vault.visible) {
                         vault.show()
                     }
-                    else if (!self.drag && vault.visible) {
+                    else if (/*!self.drag &&*/ vault.visible) {
                         vault.hide()
                     }
                 }
@@ -724,7 +708,7 @@ ApplicationWindow {
                 target: self
 
                 onDragTypeChanged: {
-//                    console.log("Drag changed to " + self.drag)
+                    //                    console.log("Drag changed to " + self.drag)
                     if (self.dragType == "page" && dosearch.navigation.context !== dosearch.navigation.activePage) {
                         contexts.show()
                     }
@@ -745,6 +729,10 @@ ApplicationWindow {
                 PropertyChanges {
                     target: navigation
                     visible: false
+                }
+                PropertyChanges {
+                    target: self
+                    menuBar: null
                 }
             }
         ]
@@ -787,97 +775,4 @@ ApplicationWindow {
             }
         }
     }
-
-//    WebEngineView {
-//        id: linkReceiver
-//        property string operation: ""
-//        property bool focusOpened: false
-//        property var context
-//        property bool jsredir: false
-//        property size size
-//        property var queue: []
-//        width: 400
-//        height: 400
-//        z: -1
-//        profile: webProfile
-//        enabled: false
-//        visible: false
-//        url: "about:blank"
-//        function finish() {
-//            operation = "finish"
-//            if (url.toString() != "about:blank") {
-//                console.log("Back from: " + url + " history length: " + navigationHistory.items.rowCount())
-//                if (navigationHistory.items.rowCount() > 1) {
-//                    goBack()
-//                    return
-//                }
-//                url = "about:blank"
-//            }
-//            console.log("Link operation finished. Url: " + url)
-//            operation = ""
-//            if (queue.length > 0) {
-//                var callback = queue.shift()
-//                console.log("Next from queue " + callback)
-//                callback()
-//            }
-//        }
-//        property bool delayedPP: false
-
-//        onUrlChanged: {
-////            console.log("url changed to " + url.toString())
-//            if (operation == "finish") {
-//                finish()
-//                return
-//            }
-//            if (operation != "resolve")
-//                return
-
-//            var surl = url.toString()
-//            surl.trim()
-//            if (!delayedPP) {
-//                delayedPP = true
-//                self.delay(200, function() {
-//                    delayedPP = false
-//                    if (!loading && linkReceiver.url.toString() == surl)
-//                        finish()
-//                })
-//            }
-//            if (surl == "" || surl == "about:blank" || surl.search(/google\.\w+\/url/) !== -1 || surl.search(/yandex\.\w+\/clck\/jsredir/) !== -1) {
-//                return
-//            }
-
-//            dosearch.navigation.open(url, context, focusOpened, false)
-//            finish()
-//        }
-
-//        onLoadingChanged: {
-//            var surl = url.toString()
-
-//            if (operation == "resolve" && !loading) {
-//                if (!delayedPP) {
-//                    delayedPP = true
-//                    self.delay(200, function() {
-//                        delayedPP = false
-//                        if (!loading && linkReceiver.url.toString() == surl)
-//                            finish()
-//                    })
-//                }
-//            }
-
-//            if (operation != "screenshot") {
-//                return
-//            }
-//            if (surl == "" || surl == "about:blank" || surl.search(/google\.\w+\/url/) !== -1 || surl.search(/yandex\.\w+\/clck\/jsredir/) !== -1) {
-//                return
-//            }
-//            console.log("Screenshot progress: " + surl + " " + loading + " progress: " + loadProgress)
-//            if (!loading && surl != "about:blank") {
-//                linkReceiver.grabToImage(context, size)
-//                finish()
-//            }
-//        }
-//    }
-//    MouseArea {
-//        anchors.fill: linkReceiver
-//    }
 }

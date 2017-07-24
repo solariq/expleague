@@ -17,6 +17,7 @@ Item {
     property Item completion
     property NavigationManager navigation
     property var commit: (function(tab){})
+    property var weakCommit: (function(){})
     property string pageSearch: ""
 
     function select(type) {
@@ -144,6 +145,8 @@ Item {
 //                        completion.visible = false
                     event.accepted = true
                     navigation.activeScreen.forceActiveFocus()
+                }else{
+                    self.weakCommit()
                 }
             }
             Connections {
@@ -195,8 +198,14 @@ Item {
                         navigation.activeScreen.pageSearch = pageSearch
                         navigation.activeScreen.forceActiveFocus()
                     }
-//                    navigation.handleOmnibox("#page " + pageSearch, false)
                     input.text = Qt.binding(function() {return pageSearch})
+                })
+                weakCommit: (function (tab) {
+                    pageSearch = input.text
+                    if (typeof navigation.activeScreen.pageSearch !== "undefined") {
+                        navigation.activeScreen.pageSearch = pageSearch
+                    }
+//                    input.text = Qt.binding(function() {return pageSearch})
                 })
                 completion: null
                 text: pageSearch

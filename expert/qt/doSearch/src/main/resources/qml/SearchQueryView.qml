@@ -13,7 +13,7 @@ Item {
     visible: false
     id: self
     property Item selectedSerp: owner.serps[owner.selected].ui
-    //property WebEngineView webView: owner.serps[owner.selected].ui.webView
+    property var webView: owner.serps[owner.selected].ui.webView
     anchors.fill: parent
 
     RowLayout {

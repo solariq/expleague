@@ -346,6 +346,21 @@ PagesGroup* NavigationManager::selectedGroup() const {
   return 0;
 }
 
+void limitAppend(QSet<Page*>& set, Page* page, int limit){
+  if(set.contains(page))
+    return;
+
+  while(set.size() >= limit){
+    auto min = set.begin();
+    for(auto it = min + 1; it != set.end(); it++){
+      if((*it)->lastVisitTs() < (*min)->lastVisitTs())
+        min = it;
+    }
+    set.erase(min);
+  }
+  set.insert(page);
+}
+
 void NavigationManager::activate(Context* ctxt) {
   if (ctxt == m_active_context)
     return;
@@ -564,6 +579,21 @@ void NavigationManager::onGroupsChanged() {
       }
     }
   }
+
+  if(!m_groups.isEmpty()){
+    QList<Page*> pages = m_groups[0]->activePagesList();
+    for(Page *page: pages){
+      limitAppend(m_always_active, page, pages.size() + 10);
+    }
+  }
+
+  for(Page* page: m_always_active){
+    if (!known.contains(page)) {
+      screens += page->ui();
+      known.insert(page);
+    }
+  }
+
   if (m_prev_known != known) {
     for (Page* page: m_prev_known) { // cleanup
       if (!known.contains(page))
@@ -604,8 +634,8 @@ void NavigationManager::onActivePageUIChanged() {
 Context* NavigationManager::suggest(ContentPage* page, const BoW& profile) {
   if (!page)
     return 0;
-  BoW currentProfileWOLast = m_active_context->contains(qobject_cast<ContentPage*>(sender())) ? updateSumComponent(
-                                                                                                  m_active_context->profile(), page->profile(), BoW()) : m_active_context->profile();
+  BoW currentProfileWOLast = m_active_context->contains(qobject_cast<ContentPage*>(sender())) ?
+        updateSumComponent(m_active_context->profile(), page->profile(), BoW()) : m_active_context->profile();
   BoW next = profile.module() > 0 ? profile : page->profile();
   double cosDistance = 1 - cos(next, currentProfileWOLast);
   double minCosDistance = cosDistance;

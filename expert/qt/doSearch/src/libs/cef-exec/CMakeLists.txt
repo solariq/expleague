@@ -2,8 +2,8 @@ include_directories(../cef)
 
 if(APPLE)
   add_executable(cef-exec MACOSX_BUNDLE main.cpp)
-else()
-  add_executable(cef-exec main.cpp)
+elseif(OS_WINDOWS)
+  add_executable(cef-exec WIN32 main.cpp)
 endif()
 
 set_target_properties(cef-exec PROPERTIES

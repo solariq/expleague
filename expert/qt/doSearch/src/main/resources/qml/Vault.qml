@@ -25,7 +25,7 @@ Rectangle {
         visible: !editMode
         anchors.fill: parent
         onEntered: {
-            //            console.log("Entered vault drop area")
+
             if (dosearch.main.dragType != "web" && dosearch.main.dragType != "delay")
                 return
             dosearch.main.dragType = "web"
@@ -43,7 +43,7 @@ Rectangle {
         }
 
         onDropped: {
-            if (dosearch.main.dragType != "web" && dosearch.main.dragType != "delay")
+            if (dosearch.main.dragType != "web" && dosearch.main.dragType != "delay" && dosearch.main.dragType != "")
                 return
             drop.getDataAsString(drop.formats[1])
             var source = "empty"
