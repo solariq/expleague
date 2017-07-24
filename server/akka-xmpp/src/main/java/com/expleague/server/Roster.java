@@ -2,6 +2,7 @@ package com.expleague.server;
 
 import com.expleague.model.Application;
 import com.expleague.model.ExpertsProfile;
+import com.expleague.model.Social;
 import com.expleague.model.Tag;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
@@ -98,6 +99,8 @@ public interface Roster {
   }
 
   void application(Application application, JID referer);
+
+  void mergeWithSocial(XMPPUser user, Social social);
 
 //  void merge(XMPPUser... users);
 }

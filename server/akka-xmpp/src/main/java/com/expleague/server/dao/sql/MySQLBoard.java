@@ -458,31 +458,35 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
 
     @Override
     protected void tag(String tag) {
-      try {
+      if (Arrays.stream(this.tags()).map(Tag::name).noneMatch(tag::equals)) {
         super.tag(tag);
-        final int tagId = MySQLBoard.this.tag(tag);
-        try (final PreparedStatement changeRole = createStatement("INSERT INTO Topics SET `order` = ?, tag = ?")) {
-          changeRole.setString(1, id);
-          changeRole.setInt(2, tagId);
-          changeRole.execute();
+        try {
+          final int tagId = MySQLBoard.this.tag(tag);
+          try (final PreparedStatement changeRole = createStatement("INSERT INTO Topics SET `order` = ?, tag = ?")) {
+            changeRole.setString(1, id);
+            changeRole.setInt(2, tagId);
+            changeRole.execute();
+          }
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
         }
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
       }
     }
 
     @Override
     protected void untag(String tag) {
-      try {
-        super.tag(tag);
-        final int tagId = MySQLBoard.this.tag(tag);
-        try (final PreparedStatement changeRole = createStatement("DELETE FROM Topics WHERE `order` = ? AND tag = ?")) {
-          changeRole.setString(1, id);
-          changeRole.setInt(2, tagId);
-          changeRole.execute();
+      if (Arrays.stream(this.tags()).map(Tag::name).anyMatch(tag::equals)) {
+        super.untag(tag);
+        try {
+          final int tagId = MySQLBoard.this.tag(tag);
+          try (final PreparedStatement changeRole = createStatement("DELETE FROM Topics WHERE `order` = ? AND tag = ?")) {
+            changeRole.setString(1, id);
+            changeRole.setInt(2, tagId);
+            changeRole.execute();
+          }
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
         }
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
       }
     }
 

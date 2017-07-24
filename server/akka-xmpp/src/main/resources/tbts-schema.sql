@@ -14,8 +14,10 @@ CREATE TABLE IF NOT EXISTS Users (
   created TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
   avatar VARCHAR(256) DEFAULT NULL,
   trusted BOOL DEFAULT FALSE,
+  substituted_by VARCHAR(64) DEFAULT NULL,
 
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  CONSTRAINT Users_Users_id_fk FOREIGN KEY (substituted_by) REFERENCES Users (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Devices (
@@ -64,6 +66,7 @@ CREATE TABLE IF NOT EXISTS Topics (
   `order` VARCHAR(64) NOT NULL,
   tag INTEGER(16) NOT NULL,
 
+  PRIMARY KEY (`order`, tag),
   CONSTRAINT Topics_Orders_id_fk FOREIGN KEY (`order`) REFERENCES Orders (id) ON DELETE CASCADE,
   CONSTRAINT Topics_Tags_id_fk FOREIGN KEY (tag) REFERENCES Tags (id) ON DELETE CASCADE
 );
@@ -122,4 +125,13 @@ CREATE TABLE IF NOT EXISTS Patterns (
     type int(8) DEFAULT 0,
 
     PRIMARY KEY (name)
+);
+
+CREATE TABLE IF NOT EXISTS Social (
+  user VARCHAR(64) NOT NULL,
+  type INTEGER(16) NOT NULL,
+  id VARCHAR(64) NOT NULL,
+
+  PRIMARY KEY (user, type),
+  CONSTRAINT Social_Users_id_fk FOREIGN KEY (user) REFERENCES Users (id) ON DELETE CASCADE
 );

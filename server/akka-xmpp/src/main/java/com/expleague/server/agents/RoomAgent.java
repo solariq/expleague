@@ -6,8 +6,9 @@ import akka.persistence.DeleteMessagesSuccess;
 import akka.persistence.RecoveryCompleted;
 import com.expleague.model.Affiliation;
 import com.expleague.model.Delivered;
-import com.expleague.model.Operations;
+import com.expleague.model.Offer;
 import com.expleague.model.Role;
+import com.expleague.server.Roster;
 import com.expleague.server.Subscription;
 import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.ActorMethod;
@@ -49,6 +50,9 @@ public class RoomAgent extends PersistentActorAdapter {
   private ProcessMode mode;
   private boolean inconsistent = false;
 
+  private String updatedOwner;
+  private String prevOwner;
+
   public RoomAgent(JID jid, boolean archive) {
     this.jid = jid;
     if (archive)
@@ -80,7 +84,7 @@ public class RoomAgent extends PersistentActorAdapter {
 
   public List<Message> archive(MucHistory history) {
     if (archive != null)
-      return history.filter(archive).map(s -> (Message)(s instanceof Message ? s : null)).filter(Objects::nonNull).collect(Collectors.toList());
+      return history.filter(archive).map(s -> (Message) (s instanceof Message ? s : null)).filter(Objects::nonNull).collect(Collectors.toList());
     else
       return Collections.emptyList();
   }
@@ -103,6 +107,7 @@ public class RoomAgent extends PersistentActorAdapter {
 
   @ActorMethod
   public final void onMessage(Message message) {
+    substituteOwnerIfNeeded(message);
     if (message.has(Received.class)) {
       persist(message, msg -> {
         archive(msg);
@@ -161,7 +166,9 @@ public class RoomAgent extends PersistentActorAdapter {
   public void onDelivered(Delivered id) {
   }
 
-  public static class Awake {}
+  public static class Awake {
+  }
+
   @ActorMethod
   public final void onAwake(Awake awake) {
     if (mode() != ProcessMode.NORMAL)
@@ -170,7 +177,10 @@ public class RoomAgent extends PersistentActorAdapter {
 
   public static class DumpRequest {
     private String fromId;
-    public DumpRequest() {}
+
+    public DumpRequest() {
+    }
+
     public DumpRequest(String from) {
       fromId = from;
     }
@@ -187,10 +197,12 @@ public class RoomAgent extends PersistentActorAdapter {
       this.success = success;
     }
 
-    public Replay() {}
+    public Replay() {
+    }
   }
 
   private ActorRef replayRequester;
+
   @ActorMethod
   public void onReplay(Replay replay) {
     if (archive == null) { // unable to replay the room with disabled archive functionality
@@ -271,14 +283,14 @@ public class RoomAgent extends PersistentActorAdapter {
   public void affiliation(JID from, Affiliation affiliation) {
     try {
       update(from, null, affiliation, ProcessMode.REPLAY);
-    } catch (MembershipChangeRefusedException ignore) {}
+    } catch (MembershipChangeRefusedException ignore) {
+    }
   }
 
   public boolean update(JID from, Role role, Affiliation affiliation) {
     try {
       return update(from, role, affiliation, mode);
-    }
-    catch (MembershipChangeRefusedException ignored) {
+    } catch (MembershipChangeRefusedException ignored) {
       return false;
     }
   }
@@ -305,8 +317,7 @@ public class RoomAgent extends PersistentActorAdapter {
         status.affiliation = affiliation;
       }
       return changed;
-    }
-    finally {
+    } finally {
       if (status.empty()) {
         participants.remove(from.bare());
         exit(from.bare());
@@ -314,9 +325,11 @@ public class RoomAgent extends PersistentActorAdapter {
     }
   }
 
-  public static class MembershipChangeRefusedException extends Exception {}
+  public static class MembershipChangeRefusedException extends Exception {
+  }
 
-  protected void exit(JID from) {}
+  protected void exit(JID from) {
+  }
 
   protected void enter(JID jid, MucXData xData) {
     if (mode() != ProcessMode.NORMAL)
@@ -326,7 +339,7 @@ public class RoomAgent extends PersistentActorAdapter {
         return;
       XMPP.send(participantCopy(s.presence(), jid), context());
     });
-    if (xData.has(MucHistory.class) ) {
+    if (xData.has(MucHistory.class)) {
       final MucHistory history = xData.get(MucHistory.class);
       archive(history).forEach(stanza -> {
         final JID to = stanza.to();
@@ -359,7 +372,10 @@ public class RoomAgent extends PersistentActorAdapter {
     }
   }
 
-  protected boolean filter(Presence pres) { return true; }
+  protected boolean filter(Presence pres) {
+    return true;
+  }
+
   protected boolean relevant(Stanza msg, JID to) {
     return !(msg instanceof Message) || ((Message) msg).type() == MessageType.GROUP_CHAT;
   }
@@ -390,14 +406,16 @@ public class RoomAgent extends PersistentActorAdapter {
     }
     return !(
         msg.type() == MessageType.GROUP_CHAT && role.priority() > Role.PARTICIPANT.priority()
-     || role.priority() > Role.VISITOR.priority()
+            || role.priority() > Role.VISITOR.priority()
     );
   }
 
   protected enum ProcessMode {
     NORMAL, REPLAY, RECOVER
   }
+
   private int msgIndex = 0;
+
   protected void process(Message msg) {
     final JID from = msg.from();
     if (role(from) == Role.NONE && mode == ProcessMode.NORMAL)
@@ -409,6 +427,7 @@ public class RoomAgent extends PersistentActorAdapter {
 
   protected void onStart() {
     mode = ProcessMode.NORMAL;
+    checkOwnerIsSubstituted();
   }
 
   protected void broadcast(Stanza stanza) {
@@ -431,8 +450,8 @@ public class RoomAgent extends PersistentActorAdapter {
           .from(roomAlias(stanza.from()));
     }
     return stanza.<S>copy()
-      .to(to)
-      .from(roomAlias(stanza.from()));
+        .to(to)
+        .from(roomAlias(stanza.from()));
   }
 
   protected void commit() {
@@ -569,6 +588,37 @@ public class RoomAgent extends PersistentActorAdapter {
   @Override
   protected void postStop() {
     XMPP.unsubscribe(subscription, context());
+  }
+
+  protected void checkOwnerIsSubstituted() {
+    if (mode() == ProcessMode.NORMAL && updatedOwner == null) {
+      final JID roomOwner = owner();
+      if (roomOwner != null) {
+        updatedOwner = Roster.instance().user(roomOwner.local()).substitutedBy();
+        if (updatedOwner != null) {
+          prevOwner = roomOwner.local();
+          replay();
+        }
+      }
+    }
+  }
+
+  private void substituteOwnerIfNeeded(Message message) {
+    if (updatedOwner != null) {
+      final JID from = message.from();
+      final JID to = message.to();
+      if (prevOwner.equals(from.local()))
+        message.from(new JID(updatedOwner, from.domain(), from.resource()));
+      else if (prevOwner.equals(to.resource()))
+        message.to(new JID(to.local(), to.domain(), updatedOwner));
+
+      if (message.has(Offer.class)) {
+        final Offer offer = message.get(Offer.class);
+        final JID client = offer.client();
+        if (client != null && prevOwner.equals(client.local()))
+          offer.client(new JID(updatedOwner, client.domain(), client.resource()));
+      }
+    }
   }
 
   private class MucUserStatus {

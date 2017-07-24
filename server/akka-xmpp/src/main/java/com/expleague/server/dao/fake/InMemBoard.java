@@ -148,8 +148,7 @@ public class InMemBoard implements LaborExchange.Board {
 
     @Override
     protected void tag(String tag) {
-      if (tags.stream().map(Tag::name).noneMatch(tag::equals))
-        tags.add(new Tag(tag));
+      tags.add(new Tag(tag));
     }
 
     @Override

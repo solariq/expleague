@@ -514,4 +514,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       }
     }
   }
+
+  @ActorMethod
+  public final void onStanza(Stanza stanza) {
+    checkOwnerIsSubstituted();
+  }
 }

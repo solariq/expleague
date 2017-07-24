@@ -20,3 +20,17 @@ alter table OrderStatusHistory MODIFY COLUMN `order` VARCHAR(64) NOT NULL;
 alter table OrderStatusHistory add CONSTRAINT OrderStatusHistory_Order_id_fk FOREIGN KEY (`order`) REFERENCES Orders (id) ON DELETE CASCADE;
 alter table Participants add CONSTRAINT Participants_Orders_id_fk FOREIGN KEY (`order`) REFERENCES Orders (id) ON DELETE CASCADE;
 alter table Topics add CONSTRAINT Topics_Orders_id_fk FOREIGN KEY (`order`) REFERENCES Orders (id) ON DELETE CASCADE;
+
+/* 14.07.2017 */
+
+CREATE TABLE Social (user VARCHAR(64) NOT NULL, type INTEGER(16) NOT NULL, id VARCHAR(64) NOT NULL, PRIMARY KEY (user, type));
+ALTER TABLE Social ADD CONSTRAINT Social_Users_id_fk FOREIGN KEY (user) REFERENCES Users (id) ON DELETE CASCADE;
+ALTER TABLE Users ADD COLUMN substituted_by VARCHAR(64) DEFAULT NULL;
+ALTER TABLE Users ADD CONSTRAINT Users_Users_id_fk FOREIGN KEY (substituted_by) REFERENCES Users (id) ON DELETE CASCADE;
+
+/* 23.07.2017 */
+CREATE TEMPORARY TABLE Topics_temp AS SELECT DISTINCT `order`, tag FROM Topics;
+TRUNCATE TABLE Topics;
+ALTER TABLE Topics ADD PRIMARY KEY (`order`, tag);
+INSERT INTO Topics(`order`, tag) SELECT `order`, tag FROM Topics_temp;
+DROP TEMPORARY TABLE Topics_temp;
