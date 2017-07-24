@@ -110,11 +110,19 @@ extension String {
 
 class KeyboardStateTracker: NSObject {
     func start() {
+        guard !started else {
+            return
+        }
+        started = true
         NotificationCenter.default.addObserver(self, selector: #selector(KeyboardStateTracker.keyboardShown(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(KeyboardStateTracker.keyboardHidden(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
     }
     
     func stop() {
+        guard started else {
+            return
+        }
+        started = false
         NotificationCenter.default.removeObserver(self)
     }
     
@@ -123,7 +131,8 @@ class KeyboardStateTracker: NSObject {
         let curve = (notification as NSNotification).userInfo![UIKeyboardAnimationCurveUserInfoKey] as! UInt
         let options: UIViewAnimationOptions = [.beginFromCurrentState, UIViewAnimationOptions(rawValue: (UIViewAnimationOptions.curveEaseIn.rawValue << curve))]
         UIView.animate(withDuration: duration, delay: 0, options: options, animations: { () -> Void in
-            self.closure(CGFloat(0))
+            self.height = CGFloat(0)
+            self.closure(self.height!)
         }, completion: nil)
     }
     
@@ -136,15 +145,22 @@ class KeyboardStateTracker: NSObject {
         let curve = (notification as NSNotification).userInfo![UIKeyboardAnimationCurveUserInfoKey] as! UInt
         let options: UIViewAnimationOptions = [.beginFromCurrentState, UIViewAnimationOptions(rawValue: (UIViewAnimationOptions.curveEaseIn.rawValue << curve))]
         UIView.animate(withDuration: duration, delay: 0, options: options, animations: { () -> Void in
-            self.closure(kbSize.height)
+            self.height = kbSize.height
+            self.closure(self.height!)
         }, completion: nil)
     }
     
     let closure: (CGFloat) -> ()
     let check: ()->Bool
+    var height: CGFloat?
+    var started = false
     init(check: @escaping ()->Bool, closure: @escaping (CGFloat)->()) {
         self.closure = closure
         self.check = check
+    }
+    
+    deinit {
+        stop()
     }
 }
 

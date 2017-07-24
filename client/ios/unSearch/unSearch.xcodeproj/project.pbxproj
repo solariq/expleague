@@ -15,7 +15,6 @@
 		688A5675DA0F17BFB8A68FB2 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A5ECEAEA343319DDDED6E /* HistoryViewController.swift */; };
 		688A595B1F3387F23AA2CC61 /* ChatModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A5DF0D4232A94DBB4A7CB /* ChatModel.swift */; };
 		688A597007AAFF6899530EA7 /* ChatCellModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A59B0B617C9FE015E93EE /* ChatCellModels.swift */; };
-		688A599209AAD7BBCC21E8D6 /* OrderDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A58C414F2611B9106E0EC /* OrderDetailsView.swift */; };
 		688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A58FFF35B86F1CBB41B6E /* AppDelegate.swift */; };
 		688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688A5C9AD7E21DA1B620D95C /* OrderViewController.swift */; };
 		688A5F9437AF93713CFE361E /* AnswerReceived.xib in Resources */ = {isa = PBXBuildFile; fileRef = 688A5C34FC2CDD0C969E8E4D /* AnswerReceived.xib */; };
@@ -39,7 +38,6 @@
 		EE2481711DC71636001B9B2F /* SiriOrderUI.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = EE2481661DC71636001B9B2F /* SiriOrderUI.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		EE2481761DC73A61001B9B2F /* LocationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE2481751DC73A61001B9B2F /* LocationProvider.swift */; };
 		EE297ACC1C4A6C79002DE78B /* ConnectionProgressController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE297ACB1C4A6C79002DE78B /* ConnectionProgressController.swift */; };
-		EE2DB1921C4E5AD800F9601D /* ChatInput.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE2DB1911C4E5AD800F9601D /* ChatInput.xib */; };
 		EE2DB1941C4E5E9000F9601D /* ChatInputViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE2DB1931C4E5E9000F9601D /* ChatInputViewController.swift */; };
 		EE4F7F971DC6822B004F0641 /* unSearchCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE5CFF011DC3DB7A00ACC991 /* unSearchCore.framework */; };
 		EE4F7F991DC68314004F0641 /* EVURLCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE4F7F981DC68314004F0641 /* EVURLCache.swift */; };
@@ -68,6 +66,10 @@
 		EE5CFF5A1DC6362C00ACC991 /* ProfileModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = EE5CFF541DC6362C00ACC991 /* ProfileModel.xcdatamodeld */; };
 		EE5CFF7F1DC6518700ACC991 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5CFF7E1DC6518700ACC991 /* SettingsViewController.swift */; };
 		EE5E59A01C5F70720040246E /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE5E599F1C5F70720040246E /* StoreKit.framework */; };
+		EE5FF40B1F0F78CC001E22E3 /* OrderDetails.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE5FF40A1F0F78CC001E22E3 /* OrderDetails.storyboard */; };
+		EE5FF40F1F14D512001E22E3 /* AnswerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5FF40E1F14D512001E22E3 /* AnswerViewController.swift */; };
+		EE5FF4111F14D53D001E22E3 /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5FF4101F14D53D001E22E3 /* ChatViewController.swift */; };
+		EE5FF4131F14F63C001E22E3 /* FeedbackViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5FF4121F14F63C001E22E3 /* FeedbackViewController.swift */; };
 		EE62BEEF1C452CA1004B6A42 /* OrderDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62BEEE1C452CA1004B6A42 /* OrderDetailsViewController.swift */; };
 		EE62CB4F1C958E1500352699 /* ExpertsOverview.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62CB4E1C958E1500352699 /* ExpertsOverview.swift */; };
 		EE62CB511C958E2B00352699 /* ExpertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE62CB501C958E2B00352699 /* ExpertView.swift */; };
@@ -86,7 +88,6 @@
 		EEAF257C1C99EF1100D75745 /* owl.wav in Resources */ = {isa = PBXBuildFile; fileRef = EEAF257B1C99EF1100D75745 /* owl.wav */; };
 		EEBDA8D81E85302B00362D2E /* OnboardPageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEBDA8D71E85302B00362D2E /* OnboardPageViewController.swift */; };
 		EEBDA8DC1E8545E400362D2E /* Onboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EEBDA8DB1E8545E400362D2E /* Onboard.storyboard */; };
-		EEC0FF321C9080D100889E68 /* FeedbackView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEC0FF311C9080D100889E68 /* FeedbackView.xib */; };
 		EEC901DE1E8C117F00686E3E /* markdownpad-github-pdf.css in Resources */ = {isa = PBXBuildFile; fileRef = EEC901DD1E8C117F00686E3E /* markdownpad-github-pdf.css */; };
 		EEDA3DA31E92537900CAA1F7 /* ReopenRoom.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEDA3DA21E92537900CAA1F7 /* ReopenRoom.xib */; };
 		EEF3E77B1C908EA50050A519 /* Separator.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEF3E77A1C908EA50050A519 /* Separator.xib */; };
@@ -156,7 +157,6 @@
 		688A572BF69C09B25F168A0A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.info; path = Info.plist; sourceTree = "<group>"; };
 		688A57432F80F266C309E3F5 /* SettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		688A58B09435AD1860CC5456 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		688A58C414F2611B9106E0EC /* OrderDetailsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderDetailsView.swift; sourceTree = "<group>"; };
 		688A58FFF35B86F1CBB41B6E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		688A59B0B617C9FE015E93EE /* ChatCellModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatCellModels.swift; sourceTree = "<group>"; };
 		688A5C00876CA19A64E86FA1 /* unSearch-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "unSearch-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -188,7 +188,6 @@
 		EE2481751DC73A61001B9B2F /* LocationProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationProvider.swift; sourceTree = "<group>"; };
 		EE2481771DC745E5001B9B2F /* SiriOrderHandler.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SiriOrderHandler.entitlements; sourceTree = "<group>"; };
 		EE297ACB1C4A6C79002DE78B /* ConnectionProgressController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionProgressController.swift; sourceTree = "<group>"; };
-		EE2DB1911C4E5AD800F9601D /* ChatInput.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ChatInput.xib; sourceTree = "<group>"; };
 		EE2DB1931C4E5E9000F9601D /* ChatInputViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatInputViewController.swift; sourceTree = "<group>"; };
 		EE3731AB1C689414007F55B0 /* unSearch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = unSearch.entitlements; sourceTree = "<group>"; };
 		EE4F7F981DC68314004F0641 /* EVURLCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EVURLCache.swift; sourceTree = "<group>"; };
@@ -225,6 +224,10 @@
 		EE5CFF5B1DC63DDD00ACC991 /* unSearchCore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unSearchCore.h; sourceTree = "<group>"; };
 		EE5CFF7E1DC6518700ACC991 /* SettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		EE5E599F1C5F70720040246E /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		EE5FF40A1F0F78CC001E22E3 /* OrderDetails.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = OrderDetails.storyboard; sourceTree = "<group>"; };
+		EE5FF40E1F14D512001E22E3 /* AnswerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnswerViewController.swift; sourceTree = "<group>"; };
+		EE5FF4101F14D53D001E22E3 /* ChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
+		EE5FF4121F14F63C001E22E3 /* FeedbackViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedbackViewController.swift; sourceTree = "<group>"; };
 		EE62BEEE1C452CA1004B6A42 /* OrderDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderDetailsViewController.swift; sourceTree = "<group>"; };
 		EE62CB4E1C958E1500352699 /* ExpertsOverview.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpertsOverview.swift; sourceTree = "<group>"; };
 		EE62CB501C958E2B00352699 /* ExpertView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpertView.swift; sourceTree = "<group>"; };
@@ -243,7 +246,6 @@
 		EEAF257B1C99EF1100D75745 /* owl.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = owl.wav; sourceTree = "<group>"; };
 		EEBDA8D71E85302B00362D2E /* OnboardPageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OnboardPageViewController.swift; sourceTree = "<group>"; };
 		EEBDA8DB1E8545E400362D2E /* Onboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Onboard.storyboard; path = Base.lproj/Onboard.storyboard; sourceTree = "<group>"; };
-		EEC0FF311C9080D100889E68 /* FeedbackView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FeedbackView.xib; sourceTree = "<group>"; };
 		EEC901DD1E8C117F00686E3E /* markdownpad-github-pdf.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "markdownpad-github-pdf.css"; sourceTree = "<group>"; };
 		EEDA3DA21E92537900CAA1F7 /* ReopenRoom.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ReopenRoom.xib; sourceTree = "<group>"; };
 		EEE1DF8A1DC67893005C433A /* ProfileModel  +modularized.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "ProfileModel  +modularized.xcdatamodel"; sourceTree = "<group>"; };
@@ -403,12 +405,14 @@
 		EE2DB18E1C4E5A0A00F9601D /* OrderDetails */ = {
 			isa = PBXGroup;
 			children = (
-				688A58C414F2611B9106E0EC /* OrderDetailsView.swift */,
-				EE62BEEE1C452CA1004B6A42 /* OrderDetailsViewController.swift */,
+				EE5FF40E1F14D512001E22E3 /* AnswerViewController.swift */,
+				EE5FF4101F14D53D001E22E3 /* ChatViewController.swift */,
+				EE5FF4121F14F63C001E22E3 /* FeedbackViewController.swift */,
 				EE2DB1931C4E5E9000F9601D /* ChatInputViewController.swift */,
 				688A5DF0D4232A94DBB4A7CB /* ChatModel.swift */,
 				EEF7BB3F1C4F9B2700E1B7BD /* ChatCellViews.swift */,
 				688A59B0B617C9FE015E93EE /* ChatCellModels.swift */,
+				EE62BEEE1C452CA1004B6A42 /* OrderDetailsViewController.swift */,
 				EE755C541C57E9110018AF12 /* Setup.xib */,
 				EE9EE79E1C576587000E9F46 /* LookingForExpert.xib */,
 				EEDA3DA21E92537900CAA1F7 /* ReopenRoom.xib */,
@@ -416,10 +420,9 @@
 				EE9EE7A11C577859000E9F46 /* TaskInProgress.xib */,
 				688A5C34FC2CDD0C969E8E4D /* AnswerReceived.xib */,
 				EEF7BB411C4F9B6000E1B7BD /* IncomingMessage.xib */,
+				EE5FF40A1F0F78CC001E22E3 /* OrderDetails.storyboard */,
 				EE0FC7E01C503CB9006F6045 /* OutgoingMessage.xib */,
-				EEC0FF311C9080D100889E68 /* FeedbackView.xib */,
 				6C76178F1CE79D2A004E4074 /* SearchLocationDialog.xib */,
-				EE2DB1911C4E5AD800F9601D /* ChatInput.xib */,
 				EE8259B41D0096490051CB2E /* SaveView.xib */,
 				EEF3E77A1C908EA50050A519 /* Separator.xib */,
 				688A50479C578C8365DA8927 /* ContinueView.xib */,
@@ -592,8 +595,9 @@
 				ORGANIZATIONNAME = "Experts League Inc.";
 				TargetAttributes = {
 					688A5EBB752445F69E4387AA = {
-						DevelopmentTeam = 726B9M57JK;
+						DevelopmentTeam = 6Y892U7VV9;
 						LastSwiftMigration = 0800;
+						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.ApplicationGroups.iOS = {
 								enabled = 1;
@@ -614,12 +618,12 @@
 					};
 					EE2481651DC71636001B9B2F = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = 726B9M57JK;
+						DevelopmentTeam = 6Y892U7VV9;
 						ProvisioningStyle = Automatic;
 					};
 					EE5CFED91DC37AEF00ACC991 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = 726B9M57JK;
+						DevelopmentTeam = 6Y892U7VV9;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.ApplicationGroups.iOS = {
@@ -629,7 +633,7 @@
 					};
 					EE5CFF001DC3DB7A00ACC991 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = 726B9M57JK;
+						DevelopmentTeam = 6Y892U7VV9;
 						LastSwiftMigration = 0800;
 						ProvisioningStyle = Automatic;
 					};
@@ -677,9 +681,9 @@
 				EE9EE7A31C577859000E9F46 /* TaskInProgress.xib in Resources */,
 				EE0FC7E11C503CB9006F6045 /* OutgoingMessage.xib in Resources */,
 				EE12123A1DC8D1560026BE8D /* arrow_cut_open.png in Resources */,
+				EE5FF40B1F0F78CC001E22E3 /* OrderDetails.storyboard in Resources */,
 				EEF7BB421C4F9B6000E1B7BD /* IncomingMessage.xib in Resources */,
 				688A50BC12A73F2E37A3EF75 /* LaunchScreen.storyboard in Resources */,
-				EE2DB1921C4E5AD800F9601D /* ChatInput.xib in Resources */,
 				6C65E6A91D2E7D5B008BE4D3 /* OrderAttachmentTableCell.xib in Resources */,
 				6C7617901CE79D2A004E4074 /* SearchLocationDialog.xib in Resources */,
 				EE62CB571C9834D000352699 /* ExpertPresentation.xib in Resources */,
@@ -687,7 +691,6 @@
 				EEC901DE1E8C117F00686E3E /* markdownpad-github-pdf.css in Resources */,
 				EEBDA8DC1E8545E400362D2E /* Onboard.storyboard in Resources */,
 				EE9EE79F1C576587000E9F46 /* LookingForExpert.xib in Resources */,
-				EEC0FF321C9080D100889E68 /* FeedbackView.xib in Resources */,
 				688A521E5814896E25462F09 /* ContinueView.xib in Resources */,
 				EE12123B1DC8D1560026BE8D /* arrow_hide.png in Resources */,
 				EE2481611DC71554001B9B2F /* AppIntentVocabulary.plist in Resources */,
@@ -726,9 +729,14 @@
 			files = (
 			);
 			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-unSearch/Pods-unSearch-resources.sh",
+				"${PODS_ROOT}/GoogleMaps/Maps/Frameworks/GoogleMaps.framework/Versions/A/Resources/GoogleMaps.bundle",
+				"${PODS_ROOT}/GooglePlacePicker/Frameworks/GooglePlacePicker.framework/Versions/A/Resources/GooglePlacePicker.bundle",
+				"${PODS_ROOT}/GooglePlaces/Frameworks/GooglePlaces.framework/Versions/A/Resources/GooglePlaces.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -741,13 +749,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-unSearchCore-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		62A19DA047B480DB8D253529 /* [CP] Embed Pods Frameworks */ = {
@@ -756,9 +767,40 @@
 			files = (
 			);
 			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-unSearch/Pods-unSearch-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/BNHtmlPdfKit/BNHtmlPdfKit.framework",
+				"${BUILT_PRODUCTS_DIR}/Bolts/Bolts.framework",
+				"${BUILT_PRODUCTS_DIR}/CocoaAsyncSocket/CocoaAsyncSocket.framework",
+				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
+				"${BUILT_PRODUCTS_DIR}/FBSDKCoreKit/FBSDKCoreKit.framework",
+				"${BUILT_PRODUCTS_DIR}/FBSDKLoginKit/FBSDKLoginKit.framework",
+				"${BUILT_PRODUCTS_DIR}/FBSDKShareKit/FBSDKShareKit.framework",
+				"${BUILT_PRODUCTS_DIR}/FacebookCore/FacebookCore.framework",
+				"${BUILT_PRODUCTS_DIR}/FacebookLogin/FacebookLogin.framework",
+				"${BUILT_PRODUCTS_DIR}/FacebookShare/FacebookShare.framework",
+				"${BUILT_PRODUCTS_DIR}/KissXML/KissXML.framework",
+				"${BUILT_PRODUCTS_DIR}/ReachabilitySwift/ReachabilitySwift.framework",
+				"${BUILT_PRODUCTS_DIR}/XMPPFramework/XMPPFramework.framework",
+				"${BUILT_PRODUCTS_DIR}/libidn/libidn.framework",
+				"${BUILT_PRODUCTS_DIR}/MMMarkdown/MMMarkdown.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BNHtmlPdfKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Bolts.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaAsyncSocket.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBSDKCoreKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBSDKLoginKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBSDKShareKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FacebookCore.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FacebookLogin.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FacebookShare.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KissXML.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReachabilitySwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/XMPPFramework.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/libidn.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MMMarkdown.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -771,13 +813,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-SiriOrderHandler-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		AB3F21E39DBC6B944F54D683 /* [CP] Copy Pods Resources */ = {
@@ -801,13 +846,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-unSearch-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		CCEE674775B029A0012A54E5 /* [CP] Copy Pods Resources */ = {
@@ -841,15 +889,17 @@
 				EEA973291D099D7D00324018 /* PurchaseHelper.swift in Sources */,
 				688A5C548CB46C588D1EE8C1 /* AppDelegate.swift in Sources */,
 				EE297ACC1C4A6C79002DE78B /* ConnectionProgressController.swift in Sources */,
+				EE5FF4131F14F63C001E22E3 /* FeedbackViewController.swift in Sources */,
 				688A5FCA2EBAD560BE5217CC /* SettingsViewController.swift in Sources */,
+				EE5FF40F1F14D512001E22E3 /* AnswerViewController.swift in Sources */,
 				EE4F7F991DC68314004F0641 /* EVURLCache.swift in Sources */,
 				EEFBDF471CBBC34F00F484F1 /* Utils.swift in Sources */,
 				6CFC5AE91D0C60410006336B /* AddAttachmentAlertController.swift in Sources */,
 				688A5D1F3258E303C1D73F39 /* OrderViewController.swift in Sources */,
 				688A5675DA0F17BFB8A68FB2 /* HistoryViewController.swift in Sources */,
+				EE5FF4111F14D53D001E22E3 /* ChatViewController.swift in Sources */,
 				688A597007AAFF6899530EA7 /* ChatCellModels.swift in Sources */,
 				EEBDA8D81E85302B00362D2E /* OnboardPageViewController.swift in Sources */,
-				688A599209AAD7BBCC21E8D6 /* OrderDetailsView.swift in Sources */,
 				6CD88B861D1EF1D100051197 /* OrderAttachments.swift in Sources */,
 				688A595B1F3387F23AA2CC61 /* ChatModel.swift in Sources */,
 				EE62CB4F1C958E1500352699 /* ExpertsOverview.swift in Sources */,
@@ -957,6 +1007,7 @@
 				CODE_SIGN_ENTITLEMENTS = unSearch/unSearch.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = 6Y892U7VV9;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$PROJECT_DIR/unSearchCore\"",
@@ -980,6 +1031,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.expleague.ios.unSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				USER_HEADER_SEARCH_PATHS = "\"${PROJECT_DIR}/Pods\"/**";
@@ -1009,6 +1061,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 71;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1063,6 +1116,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 71;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_BITCODE = NO;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1098,11 +1152,13 @@
 				CODE_SIGN_ENTITLEMENTS = unSearch/unSearch.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = 6Y892U7VV9;
 				INFOPLIST_FILE = unSearch/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.expleague.ios.unSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -1118,7 +1174,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = 726B9M57JK;
+				DEVELOPMENT_TEAM = 6Y892U7VV9;
 				INFOPLIST_FILE = SiriOrderUI/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -1139,7 +1195,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = 726B9M57JK;
+				DEVELOPMENT_TEAM = 6Y892U7VV9;
 				INFOPLIST_FILE = SiriOrderUI/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -1161,12 +1217,13 @@
 				CODE_SIGN_ENTITLEMENTS = SiriOrderHandler/SiriOrderHandler.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = 726B9M57JK;
+				DEVELOPMENT_TEAM = 6Y892U7VV9;
 				INFOPLIST_FILE = SiriOrderHandler/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.expleague.ios.unSearch.SiriOrderHandler;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
@@ -1185,12 +1242,13 @@
 				CODE_SIGN_ENTITLEMENTS = SiriOrderHandler/SiriOrderHandler.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = 726B9M57JK;
+				DEVELOPMENT_TEAM = 6Y892U7VV9;
 				INFOPLIST_FILE = SiriOrderHandler/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.expleague.ios.unSearch.SiriOrderHandler;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
@@ -1210,7 +1268,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 726B9M57JK;
+				DEVELOPMENT_TEAM = 6Y892U7VV9;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -1242,7 +1300,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 726B9M57JK;
+				DEVELOPMENT_TEAM = 6Y892U7VV9;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";

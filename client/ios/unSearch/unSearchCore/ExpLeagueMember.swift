@@ -49,23 +49,23 @@ public class ExpLeagueMember: NSManagedObject {
     }
     
     public var avatarUrl: String {
-        return xml.forName("avatar")!.stringValue!
+        return xml.forName("avatar") != nil ? xml.forName("avatar")!.stringValue! : ""
     }
     
     public var name: String {
-        return xml.attributeStringValue(forName: "name")
+        return xml.attribute(forName: "name") != nil ? xml.attributeStringValue(forName: "name") : ""
     }
     
     public var tasks: Int {
-        return xml.attributeIntegerValue(forName: "tasks")
+        return xml.attribute(forName: "tasks") != nil ? xml.attributeIntegerValue(forName: "tasks") : 0
     }
     
     public var rating: Double {
-        return xml.attributeDoubleValue(forName: "rating")
+        return xml.attribute(forName: "rating") != nil ? xml.attributeDoubleValue(forName: "rating") : 2.5
     }
     
     public var based: Int {
-        return xml.attributeIntegerValue(forName: "basedOn")
+        return xml.attribute(forName: "basedOn") != nil ? xml.attributeIntegerValue(forName: "basedOn") : 0
     }
     
     public var group: ExpLeagueMemberGroup {

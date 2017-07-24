@@ -24,7 +24,7 @@ public class ExpLeagueTag: NSManagedObject {
         if iconStr.hasPrefix("named://") {
             return UIImage(named: iconStr.substring(from: "named://".endIndex))!
         }
-        let request = URLRequest(url: URL(string: iconStr.trimmingCharacters(in: .whitespaces))!)
+        let request = URLRequest(url: URL(string: iconStr.trimmingCharacters(in: .whitespacesAndNewlines))!)
         
         do {
             let imageData = try NSURLConnection.sendSynchronousRequest(request, returning: nil)

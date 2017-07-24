@@ -22,6 +22,10 @@ public enum ExpLeagueCommunicatorStatus: Int {
 
 public class MyXMPPStream: XMPPStream {
     public override func generateUUID() -> String! {
+        return MyXMPPStream.nextId()
+    }
+    
+    public static func nextId() -> String {
         return "\(Utils.randString(10))-\(UInt64(floor(Date().timeIntervalSince1970)))"
     }
 }

@@ -88,11 +88,12 @@ class ExpertViewController: UIViewController {
         text.append(NSAttributedString(string: tags.joined(separator: ", "), attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 15)]))
         text.append(NSAttributedString(string: "\nОбразование: ", attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 15)]))
         text.append(NSAttributedString(string: "высшее", attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 15)]))
-        text.append(NSAttributedString(string: "\nВыполнено \(expert.tasks) заказ\(Lang.rusNumEnding(expert.tasks, variants: ["", "а", "ов"])). ", attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 15)]))
+        text.append(NSAttributedString(string: "\nВыполнено: ", attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 15)]))
+        text.append(NSAttributedString(string: "\(expert.tasks) заказ\(Lang.rusNumEnding(expert.tasks, variants: ["", "а", "ов"]))", attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 15)]))
         descriptionText.attributedText = text
         descriptionText.textColor = Palette.COMMENT
-        score.text = String(format: "%.1f балл\(Lang.rusNumEnding(Int(expert.rating.rounded(.down)), variants: ["", "а", "ов"])) %d оцен\(Lang.rusNumEnding(expert.based, variants: ["ка", "и", "ок"]))", expert.rating, expert.based)
-        orders.text = "\(expert.myTasks) ваш\(Lang.rusNumEnding(expert.myTasks, variants: ["", "их", "их"])) заказ\(Lang.rusNumEnding(expert.myTasks, variants: ["", "а", "ов"])) выполне\(expert.myTasks > 1 ? "н" : "но")"
+        score.text = String(format: "%.1f балл\(Lang.rusNumEnding(Int(expert.rating.rounded(.down)), variants: ["", "а", "ов"])) %d оцен\(Lang.rusNumEnding(expert.based, variants: ["ка", "ки", "ок"]))", expert.rating, expert.based)
+        orders.text = "\(expert.myTasks) ваш\(Lang.rusNumEnding(expert.myTasks, variants: ["", "их", "их"])) заказ\(Lang.rusNumEnding(expert.myTasks, variants: ["", "а", "ов"])) выполне\(Lang.rusNumEnding(expert.myTasks, variants: ["н", "но", "но"]))"
         view.layoutIfNeeded()
     }
     

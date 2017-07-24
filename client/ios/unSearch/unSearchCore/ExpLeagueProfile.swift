@@ -46,8 +46,20 @@ public class ExpLeagueProfile: NSManagedObject {
         return incoming > 0 || outgoing > 0 || expectingAOW
     }
     
+    public dynamic var fbid: String? {
+        didSet {
+            let msg = XMPPMessage(type: "normal")!
+            let token = DDXMLElement(name: "social", xmlns: ExpLeagueMessage.EXP_LEAGUE_SCHEME)
+            
+            token?.stringValue = fbid
+            token?.addAttribute(withName: "type", stringValue: "facebook")
+            msg.addChild(token!)
+            send(msg)
+        }
+    }
+    
     public func busyChanged() { QObject.notify(#selector(self.busyChanged), self) }
-    public func adjustUnread(_ increment: Int) {
+    public func adjustUnread(_ increment: Int32) {
         update {
             self.unread += increment
             if (self.unread < 0) {
@@ -147,6 +159,9 @@ public class ExpLeagueProfile: NSManagedObject {
             return orderSelected.intValue >= 0 && orderSelected.intValue < orders.count ? orders[orderSelected.intValue] as? ExpLeagueOrder : nil
         }
         set (value) {
+            guard value != selectedOrder else {
+                return
+            }
             update {
                 self.orderSelected = NSNumber(value: Int16(value != nil ? self.orders.index(of:value!) : -1))
                 self.ordersChanged()
@@ -295,7 +310,24 @@ public class ExpLeagueProfile: NSManagedObject {
                 let imageData = try NSURLConnection.sendSynchronousRequest(request, returning: nil)
             
                 if let image = UIImage(data: imageData) {
-                    return image
+                    let newImage: UIImage?
+                    if (image.size.height > image.size.width) {
+                        let newWidth = image.size.width
+                        let diff = image.size.height - image.size.width
+                        UIGraphicsBeginImageContext(CGSize(width: newWidth, height: newWidth))
+                        image.draw(in: CGRect(x: 0, y: -diff/2, width: image.size.width, height: image.size.height))
+                        newImage = UIGraphicsGetImageFromCurrentImageContext()
+                        UIGraphicsEndImageContext()
+                    }
+                    else {
+                        let newWidth = image.size.height
+                        let diff = image.size.width - image.size.height
+                        UIGraphicsBeginImageContext(CGSize(width: newWidth, height: newWidth))
+                        image.draw(in: CGRect(x: -diff/2, y: 0, width: image.size.width, height: image.size.height))
+                        newImage = UIGraphicsGetImageFromCurrentImageContext()
+                        UIGraphicsEndImageContext()
+                    }
+                    return newImage!
                 }
             }
             catch {
@@ -306,7 +338,26 @@ public class ExpLeagueProfile: NSManagedObject {
         return UIImage(named: "owl_exp")!
     }
     
-    public func ordersChanged() { DispatchQueue.main.async { QObject.notify(#selector(self.ordersChanged), self) } }
+    public func ordersChanged() {
+        _active = nil;
+        DispatchQueue.main.async { QObject.notify(#selector(self.ordersChanged), self) }
+    }
+    
+    fileprivate var _active: Int?
+    public var activeCount: Int {
+        if (_active != nil) {
+            return _active!
+        }
+        var count = 0
+        for o in orders {
+            let current = o as! ExpLeagueOrder
+            if (current.isActive) {
+                count +=  1
+            }
+        }
+        _active = count
+        return count
+    }
     
     public func placeOrder(topic: String, urgency: String, local: Bool, location locationOrNil: CLLocationCoordinate2D?, experts: [XMPPJID], images: [String]) {
         var rand = UUID().uuidString;

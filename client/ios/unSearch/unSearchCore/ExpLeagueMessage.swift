@@ -127,6 +127,10 @@ public class ExpLeagueMessage: NSManagedObject {
         }
         return _html!
     }
+    
+    public var isEmpty: Bool {
+        return type != .answer && body?.isEmpty ?? true || body?.range(of: "\n") == nil
+    }
         
     public func setProperty(_ name: String, value: AnyObject) {
         let properties = NSMutableDictionary()
@@ -185,6 +189,8 @@ public class ExpLeagueMessage: NSManagedObject {
         return properties["id"] as? String
     }
     
+    static let cutRE = try! NSRegularExpression(pattern: "\\+\\[([^\\]]+)\\]([^-]*(?:-[^\\[][^-]*)*)-\\[\\1\\]", options: [])
+    static let brokenLinksRE = try! NSRegularExpression(pattern: "(^\\s+)# ", options: [])
     fileprivate func md2html(md: String) -> String {
         if (!(body ?? "").hasPrefix("<answer")) {
             return body!
@@ -195,27 +201,31 @@ public class ExpLeagueMessage: NSManagedObject {
             if let firstLineEnd = answerText.range(of: "\n")?.lowerBound {
                 answerText = answerText.substring(from: firstLineEnd)
             }
-            let re = try! NSRegularExpression(pattern: "\\+\\[([^\\]]+)\\]([^-]*(?:-[^\\[][^-]*)*)-\\[\\1\\]", options: [])
-            let matches = re.matches(in: answerText, options: [], range: NSRange(location: 0, length: (answerText.characters.count)))
+            answerText = ExpLeagueMessage.brokenLinksRE.stringByReplacingMatches(in: answerText, options: .withoutAnchoringBounds, range: NSRange(location: 0, length: answerText.characters.count), withTemplate: "\\1#")
+            let matches = ExpLeagueMessage.cutRE.matches(in: answerText, options: [], range: NSRange(location: 0, length: answerText.characters.count))
             
             var finalMD = ""
-            var lastMatchIndex = answerText.startIndex
+            var lastMatchIndex = 0
             var index = 0
             for match in matches as [NSTextCheckingResult] {
                 let whole = match.rangeAt(0)
                 let id = "cut-\(self.id!)-\(index)"
                 let id_1 = "cuts-\(self.id!)-1-\(index)"
-                finalMD += answerText.substring(with: lastMatchIndex..<answerText.index(answerText.startIndex, offsetBy: whole.location))
-                finalMD += "<a class=\"cut\" id=\"" + id_1 + "\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">" +
-                    (answerText as NSString).substring(with: match.rangeAt(1)) +
-                    "</a>" +
-                    "<div class=\"cut\" id=\"" + id + "\">" + (answerText as NSString).substring(with: match.rangeAt(2)) +
-                    "\n<a class=\"hide\" href=\"#\(id_1)\" onclick=\"javascript:showHide('" + id + "','" + id_1 + "')\">скрыть</a>" +
-                "</div>";
-                lastMatchIndex = answerText.index(answerText.startIndex, offsetBy: whole.location + whole.length)
+                var section = String(answerText.utf16[String.UTF16Index(lastMatchIndex)..<String.UTF16Index(whole.location)])!
+                section.append("<a class=\"cut\" id=\"")
+                section.append(id_1)
+                section.append("\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">")
+                section.append((answerText as NSString).substring(with: match.rangeAt(1)))
+                section.append("</a>")
+                section.append("<div class=\"cut\" id=\"" + id + "\">")
+                section.append((answerText as NSString).substring(with: match.rangeAt(2)))
+                section.append("\n<a class=\"hide\" href=\"#" + id_1 + "\" onclick=\"javascript:showHide('" + id + "','" + id_1 + "')\">скрыть</a>")
+                section.append("</div>")
+                finalMD.append(section)
+                lastMatchIndex = whole.location + whole.length
                 index += 1
             }
-            finalMD += answerText.substring(with: lastMatchIndex..<answerText.endIndex)
+            finalMD.append(String(answerText.utf16[String.UTF16Index(lastMatchIndex)..<String.UTF16Index(answerText.utf16.count)])!)
             return try MMMarkdown.htmlString(withMarkdown: finalMD, extensions: [
                 .autolinkedURLs,
                 .fencedCodeBlocks,
@@ -223,7 +233,7 @@ public class ExpLeagueMessage: NSManagedObject {
                 .underscoresInWords,
                 .strikethroughs,
                 .gitHubFlavored
-                ])
+            ])
         }
         catch {
             parent.parent.log("\(error)")

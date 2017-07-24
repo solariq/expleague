@@ -12,24 +12,24 @@ import UIKit
 class ChatInputViewController: UIViewController, UITextViewDelegate {
     var placeHolder = "Напишите эксперту"
     @IBOutlet weak var text: UITextView!
-    var hDiff = CGFloat(0)
+    var hDiff = CGFloat(16)
     var inputViewHConstraint: NSLayoutConstraint?
     @IBOutlet weak var progress: UIProgressView!
     override func viewDidLoad() {
         text.delegate = self
         text.isScrollEnabled = false
-        hDiff = text.frame.minY + view.frame.height - text.frame.maxY
         text.layer.borderWidth = 2
         text.layer.borderColor = Palette.BORDER.cgColor
         text.layer.cornerRadius = Palette.CORNER_RADIUS
         view!.translatesAutoresizingMaskIntoConstraints = false
         progress.progress = 0.0
         progress.backgroundColor = Palette.CONTROL_BACKGROUND
-        inputViewHConstraint = NSLayoutConstraint(item: view, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: view.frame.height)
-        NSLayoutConstraint.activate([
-            inputViewHConstraint!
-        ])
         textViewDidEndEditing(text)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        inputViewHConstraint = (parent as! ChatViewController).inputHeight
+        inputViewHConstraint?.constant = 49
     }
     
     @IBAction func send(_ sender: AnyObject) {
@@ -43,7 +43,6 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
                 self.inputViewHConstraint?.constant = newSize.height + self.hDiff
             }, completion: { (Bool) -> () in
                 self.view.layoutIfNeeded()
-                self.owner.detailsView!.scrollToChat(true)
                 self.owner.view.layoutIfNeeded()
             })
         }
@@ -54,14 +53,15 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
     
     var delegate: ChatInputDelegate?
     
-    var owner: OrderDetailsViewController {
-        return parent as! OrderDetailsViewController
+    var owner: ChatViewController {
+        return parent as! ChatViewController
     }
     
     func textViewDidBeginEditing(_ textView: UITextView) {
         if (text.textColor == UIColor.lightGray) {
             text.textColor = UIColor.black
             text.text = ""
+            delegate?.startEditing()
         }
     }
     
@@ -90,4 +90,5 @@ class ChatInputViewController: UIViewController, UITextViewDelegate {
 protocol ChatInputDelegate {
     func chatInput(_ chatInput: ChatInputViewController, didSend text: String) -> Bool
     func attach(_ chatInput: ChatInputViewController)
+    func startEditing()
 }

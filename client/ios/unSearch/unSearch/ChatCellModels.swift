@@ -217,7 +217,7 @@ class CompositeCellModel: ChatCellModel {
 //        cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .height, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: ceil(height)))
         effectiveWidth = width + 8
         //cell.content.addConstraint(NSLayoutConstraint(item: cell.content, attribute: .width, relatedBy: .greaterThanOrEqual, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: ceil(width + 12)))
-        print("Cell: \(cell) for model \(self). Content size: (\(width), \(height)), cell size: \(cell.frame.size), maxWidth: \(cell.maxWidth)")
+//        print("Cell: \(cell) for model \(self). Content size: (\(width), \(height)), cell size: \(cell.frame.size), maxWidth: \(cell.maxWidth)")
 //        print("avatar frame \(cell.avatar?.frame ?? CGRect.zero). effective width: \(effectiveWidth)")
     }
 
@@ -276,6 +276,13 @@ class ChatMessageModel: CompositeCellModel {
         self.author = author
         self.incoming = incoming
         self.active = active
+        super.init()
+        if (!active && incoming) {
+            append(richText: NSAttributedString(string: "Администратор", attributes: [
+                NSFontAttributeName: UIFont.boldSystemFont(ofSize: 12),
+                NSForegroundColorAttributeName: Palette.COMMENT
+            ]), time: Date())
+        }
     }
 
     override func height(maxWidth width: CGFloat) -> CGFloat {
@@ -382,14 +389,14 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
         let label = timer.userInfo as! UILabel
         let timeLeft = order.before - CFAbsoluteTimeGetCurrent()
         switch(order.status) {
-        case .open, .expertSearch, .deciding:
+        case .open, .expertSearch, .deciding, .overtime:
             label.textColor = Palette.COMMENT
-            label.text = "ОТКРЫТО. Осталось: " + formatPeriodRussian(timeLeft)
+            label.text = "ОТКРЫТО" + (order.status != .overtime ? ". Осталось: " + formatPeriodRussian(timeLeft) : "")
             break
-        case .overtime:
-            label.textColor = Palette.ERROR
-            label.text = "ПРОСРОЧЕНО НА: " + formatPeriodRussian(-timeLeft)
-            break
+//        case .overtime:
+//            label.textColor = Palette.ERROR
+//            label.text = "ПРОСРОЧЕНО НА: " + formatPeriodRussian(-timeLeft)
+//            break
         case .canceled:
             label.textColor = Palette.COMMENT
             label.text = "ОТМЕНЕНО"
@@ -712,6 +719,7 @@ class AnswerReceivedModel: ChatCellModel {
     var expertProperties: NSDictionary?
     let id: String
     var score: Int?
+    var source: ExpLeagueMessage?
     var type: CellType {
         return .answerReceived
     }
@@ -724,7 +732,10 @@ class AnswerReceivedModel: ChatCellModel {
         if (message.type == .feedback) {
             score = message.properties["stars"] as? Int
         }
-        guard message.type == .answer || message.type == .feedback else {
+        if (source == nil && message.type == .answer) {
+            source = message
+        }
+        guard source == message || message.type == .feedback else {
             return false
         }
         return true

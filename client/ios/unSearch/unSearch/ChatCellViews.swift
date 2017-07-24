@@ -285,8 +285,8 @@ class AnswerReceivedCell: TaskInProgressCell {
         super.awakeFromNib()
         controlColor = Palette.CONTROL
         self.action = {
-            self.controller!.detailsView!.scrollToAnswer(true)
-            self.controller!.answer.stringByEvaluatingJavaScript(from: "document.getElementById('\(self.id!)').scrollIntoView()")
+            self.controller!.state = .answer
+            self.controller!.answer.webView.stringByEvaluatingJavaScript(from: "document.getElementById('\(self.id!)').scrollIntoView()")
         }
         AnswerReceivedCell.heightFromNib1 = frame.height
     }

@@ -12,6 +12,7 @@ import XMPPFramework
 import CoreData
 import MMMarkdown
 import FBSDKCoreKit
+import FacebookCore
 import Intents
 
 import unSearchCore
@@ -42,7 +43,15 @@ class AppDelegate: UIResponder {
     
     var window: UIWindow?
     
-    var tabs: TabsViewController?
+    fileprivate var _tabs: TabsViewController?
+    var tabs: TabsViewController? {
+        set(t) {
+            _tabs = t
+        }
+        get {
+            return _tabs
+        }
+    }
 
     var split: UISplitViewController {
         return tabs!.viewControllers![1] as! UISplitViewController
@@ -91,6 +100,9 @@ class AppDelegate: UIResponder {
         application.registerUserNotificationSettings(settings)
         application.isIdleTimerDisabled = false
         DataController.shared().start()
+        if let fbToken = AccessToken.current {
+            ExpLeagueProfile.active.fbid = fbToken.userId
+        }
     }
     
     func onProfileChanged() {
@@ -116,6 +128,8 @@ extension AppDelegate: UIApplicationDelegate {
         EVURLCache.MAX_AGE = "\(3.0 * 365 * 24 * 60 * 60 * 1000)"
         EVURLCache.FORCE_LOWERCASE = true // is already the default. You also have to put all files int he PreCache using lowercase names
         EVURLCache.activate()
+        FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
+        
         
         let controller = DataController.shared()
         controller.version = "unSearch \(AppDelegate.versionName()) @iOS \(ProcessInfo.processInfo.operatingSystemVersionString)"
@@ -245,8 +259,18 @@ extension AppDelegate: UIApplicationDelegate {
         for i in 0..<deviceToken.count {
             token += String(format: "%02.2hhx", arguments: [chars[i]])
         }
+//        let fblogin = FBSDKLoginManager()
+//        fblogin.logIn(withReadPermissions: <#T##[Any]!#>, from: <#T##UIViewController!#>, handler: )
         DataController.shared().token = token
-        print(token)
+    }
+    
+    public func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool {
+        return SDKApplicationDelegate.shared.application(application, open:url, sourceApplication:sourceApplication, annotation:annotation)
+    }
+    @available(iOS 9.0, *)
+    @discardableResult
+    public func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
+        return SDKApplicationDelegate.shared.application(app, open: url, options: options)
     }
 }
 

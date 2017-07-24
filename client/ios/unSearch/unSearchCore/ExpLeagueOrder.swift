@@ -20,7 +20,7 @@ class Weak<T: AnyObject> {
 
 public class ExpLeagueOrder: NSManagedObject {
     public var isActive: Bool {
-        return status != .closed && status != .archived && status != .canceled
+        return (!judged && status != .archived && status != .canceled) || status == .open || status == .overtime || status == .expertSearch
     }
     
     public var activeExpert: ExpLeagueMember? {
@@ -64,13 +64,13 @@ public class ExpLeagueOrder: NSManagedObject {
         }
         let result: [ExpLeagueMessage] = self.messagesRaw.array as! [ExpLeagueMessage]
         self._messages = result
-        var unread = 0
+        var unread: Int32 = 0
         for msg in result {
             unread += !msg.read ? 1 : 0
         }
-        if (Int(self.unread) != unread) {
+        if (self.unread != unread) {
             updateSync {
-                parent.adjustUnread(unread - Int(self.unread))
+                parent.adjustUnread(unread - self.unread)
                 self.unread = Int32(unread)
                 unreadChanged()
             }
@@ -91,6 +91,8 @@ public class ExpLeagueOrder: NSManagedObject {
     public var timeLeft: TimeInterval {
         return before - Date().timeIntervalSinceReferenceDate
     }
+    
+    public var hasFeedback = false
     
     fileprivate dynamic var _icon: UIImage?
     public var typeIcon: UIImage {
@@ -119,6 +121,28 @@ public class ExpLeagueOrder: NSManagedObject {
         return result
     }
     
+    fileprivate var _judged: Bool?
+    public var judged: Bool {
+        if (fake) {
+            return true
+        }
+        if (_judged != nil) {
+            return _judged!
+        }
+        
+        var hasAnswer: Bool = false
+        for m in messages {
+            if (m.type == .answer) {
+                hasAnswer = !m.isEmpty
+            }
+            else if (m.type == .feedback) {
+                hasAnswer = false
+            }
+        }
+        _judged = !hasAnswer
+        return !hasAnswer
+    }
+    
     internal func message(message msg: XMPPMessage, notify: Bool) {
         guard messagesRaw.filter({($0 as! ExpLeagueMessage).id == msg.elementID()}).isEmpty else {
             return
@@ -130,6 +154,11 @@ public class ExpLeagueOrder: NSManagedObject {
 
         if (message.type == .answer) {
             flags = flags | ExpLeagueOrderFlags.deciding.rawValue
+            _judged = false
+        }
+        else if (message.type == .feedback) {
+            flags = flags | ExpLeagueOrderFlags.closed.rawValue
+            _judged = true
         }
         
         if (notify) {
@@ -148,7 +177,7 @@ public class ExpLeagueOrder: NSManagedObject {
                 unread = 0
             }
             if (unread > 0) {
-                self.unread += unread
+                self.unread += Int32(unread)
                 message.read = false
                 self.parent.adjustUnread(1)
                 unreadChanged()
@@ -158,20 +187,29 @@ public class ExpLeagueOrder: NSManagedObject {
             self.flags = self.flags | ExpLeagueOrderFlags.closed.rawValue
         }
         else if (message.type == .clientCancel) {
-            if (self.messages.filter({msg in msg.type == .answer}).isEmpty) { // No answer yet
+            if (judged) {
                 self.flags = self.flags | ExpLeagueOrderFlags.canceled.rawValue
             }
             else {
                 self.flags = self.flags | ExpLeagueOrderFlags.deciding.rawValue
             }
         }
-        self.messagesChanged()
+        else if (message.type == .clientMessage) {
+            self.flags = self.flags
+                        & ~ExpLeagueOrderFlags.deciding.rawValue
+                        & ~ExpLeagueOrderFlags.closed.rawValue
+                        & ~ExpLeagueOrderFlags.canceled.rawValue
+        }
+        _status = nil
+        messagesChanged()
+        parent.ordersChanged()
         save()
     }
     
     public func send(text: String) {
         let msg = XMPPMessage(type: "groupchat", to: jid)!
         msg.addBody(text)
+        msg.addAttribute(withName: "id", stringValue: MyXMPPStream.nextId())
         update {
             self.message(message: msg, notify: false)
         }
@@ -181,6 +219,7 @@ public class ExpLeagueOrder: NSManagedObject {
     public func send(xml: DDXMLElement, type: String = "normal") {
         let msg = XMPPMessage(type: type, to: jid)!
         msg.addChild(xml)
+        msg.addAttribute(withName: "id", stringValue: MyXMPPStream.nextId())
         update {
             self.message(message: msg, notify: false)
         }
@@ -228,27 +267,32 @@ public class ExpLeagueOrder: NSManagedObject {
     public func emulate() {
         self.flags = self.flags | ExpLeagueOrderFlags.closed.rawValue | ExpLeagueOrderFlags.fake.rawValue
         self.flags = self.flags & ~ExpLeagueOrderFlags.archived.rawValue
+        _status = nil
         save()
     }
     
     public func markSaved() {
         update {
             self.flags = self.flags | ExpLeagueOrderFlags.saved.rawValue
+            self._status = nil
+            self.parent.ordersChanged()
         }
     }
     
     public var fake: Bool {
-        return (flags & ExpLeagueOrderFlags.fake.rawValue) != 0 && (flags & ExpLeagueOrderFlags.saved.rawValue == 0)
+        return (flags & (ExpLeagueOrderFlags.fake.rawValue | ExpLeagueOrderFlags.saved.rawValue) != 0)
     }
     
     public func archive() {
-        parent.adjustUnread(-(Int)(self.unread))
+        parent.adjustUnread(-self.unread)
         if (isActive) {
             cancel()
         }
         if (self.flags & ExpLeagueOrderFlags.archived.rawValue == 0) {
             update {
                 self.flags |= ExpLeagueOrderFlags.archived.rawValue
+                self._status = nil
+                self.parent.ordersChanged()
             }
         }
     }
@@ -256,33 +300,40 @@ public class ExpLeagueOrder: NSManagedObject {
     public func continueTask() {
         if (status == .deciding) {
             update {
-                self.flags ^= ExpLeagueOrderFlags.deciding.rawValue
+                self.flags &= ~ExpLeagueOrderFlags.deciding.rawValue
+                self._status = nil
             }
         }
     }
     
+    fileprivate var _status: ExpLeagueOrderStatus?
     public var status: ExpLeagueOrderStatus {
+        guard _status == nil else {
+            return _status!
+        }
+        let lastAnswer = messages.last?.type == .answer && !(messages.last?.isEmpty ?? false)
         if (flags & ExpLeagueOrderFlags.archived.rawValue != 0) {
-            return .archived
+            _status = .archived
         }
         else if (flags & ExpLeagueOrderFlags.canceled.rawValue != 0) {
-            return .canceled
+            _status = .canceled
         }
-        else if (flags & ExpLeagueOrderFlags.closed.rawValue != 0) {
-            return .closed
+        else if ((flags & ExpLeagueOrderFlags.saved.rawValue) == 0 && (flags & ExpLeagueOrderFlags.deciding.rawValue != 0 || fake || lastAnswer)) {
+            _status = .deciding
         }
-        else if (flags & ExpLeagueOrderFlags.deciding.rawValue != 0) {
-            return .deciding
+        else if (flags & (ExpLeagueOrderFlags.closed.rawValue | ExpLeagueOrderFlags.saved.rawValue) != 0) {
+            _status = .closed
         }
         else if (activeExpert == nil) {
-            return .expertSearch
+            _status = .expertSearch
         }
-        else if (before - CFAbsoluteTimeGetCurrent() > 0) {
-            return .open
+        else if (before - NSDate().timeIntervalSince1970 > 0) {
+            _status = .open
         }
         else {
-            return .overtime
+            _status = .overtime
         }
+        return _status!
     }
     
     fileprivate dynamic var _shortAnswer: String?

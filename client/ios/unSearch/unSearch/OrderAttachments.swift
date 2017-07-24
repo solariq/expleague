@@ -154,19 +154,19 @@ class CircularProgress: UIView {
             context?.saveGState()
             context?.setBlendMode(.destinationOut)
             let progress = CGFloat(p)
-            let endAngle: CGFloat = progress * 2 * CGFloat(M_PI)
+            let endAngle: CGFloat = progress * 2 * CGFloat(Double.pi)
             UIColor.white.set()
             let border =  UIBezierPath(arcCenter: center,
                                        radius: diameter / 2 - 1,
                                        startAngle: 0,
-                                       endAngle: 2.0 * CGFloat(M_PI),
+                                       endAngle: 2.0 * CGFloat(Double.pi),
                                        clockwise: true)
             border.lineWidth = 2
             border.stroke()
             let path =  UIBezierPath(arcCenter: center,
                                      radius: diameter / 2 - 4,
-                                     startAngle: -CGFloat(M_PI)/2,
-                                     endAngle: endAngle - CGFloat(M_PI)/2,
+                                     startAngle: -CGFloat(Double.pi)/2,
+                                     endAngle: endAngle - CGFloat(Double.pi)/2,
                                      clockwise: true)
             path.lineWidth = 4
             path.stroke()
@@ -177,7 +177,7 @@ class CircularProgress: UIView {
             let border =  UIBezierPath(arcCenter: center,
                                        radius: diameter / 2 - 2,
                                        startAngle: 0,
-                                       endAngle: 2.0 * CGFloat(M_PI),
+                                       endAngle: 2.0 * CGFloat(Double.pi),
                                        clockwise: true)
             border.lineWidth = 6
             border.stroke()

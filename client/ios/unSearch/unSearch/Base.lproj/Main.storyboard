@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="III-qh-xDz">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12118" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="III-qh-xDz">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12086"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -34,8 +34,8 @@
                                 <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" editable="NO" text="В настоящий момент доступ к приложению ограничен." textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Kca-f0-2rJ">
-                                <rect key="frame" x="24" y="155" width="276" height="60"/>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" text="В настоящий момент доступ к приложению ограничен." textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Kca-f0-2rJ">
+                                <rect key="frame" x="68" y="155" width="240" height="60"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="60" id="b1w-hC-Onr"/>
                                     <constraint firstAttribute="width" constant="240" id="kGK-p3-4yO"/>
@@ -241,7 +241,7 @@
         <scene sceneID="ykp-M5-MHO">
             <objects>
                 <navigationController id="III-qh-xDz" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="Ir6-U1-FJk">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="Ir6-U1-FJk">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -715,6 +715,7 @@
                                     <outlet property="status" destination="ZrY-ZA-oub" id="7Vb-y8-BfO"/>
                                     <outlet property="title" destination="ooJ-uj-TeV" id="NGu-UZ-MCY"/>
                                     <outlet property="unreadBadge" destination="1Y7-Hx-nn1" id="gup-te-ocI"/>
+                                    <segue destination="GNT-g5-mq2" kind="show" identifier="orderDetails" action="showDetailViewController:sender:" id="UvW-Az-bcB"/>
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="FinishedOrder" rowHeight="77" id="7XK-Wc-xaX" customClass="FinishedOrderStateCell" customModule="unSearch" customModuleProvider="target">
@@ -789,6 +790,7 @@
                                     <outlet property="shortAnswer" destination="VKr-On-Gnc" id="Scq-2L-4Av"/>
                                     <outlet property="title" destination="Nt8-AV-T6G" id="ZDj-gE-ksi"/>
                                     <outlet property="unreadBadge" destination="2Ry-P2-0Lb" id="hVZ-0V-hLC"/>
+                                    <segue destination="GNT-g5-mq2" kind="show" identifier="orderDetails" action="showDetailViewController:sender:" id="mag-dd-5QV"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -804,23 +806,31 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Klv-ZF-RtM" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-445" y="-803"/>
+            <point key="canvasLocation" x="95" y="-806"/>
+        </scene>
+        <!--OrderDetails-->
+        <scene sceneID="zOf-GI-iNc">
+            <objects>
+                <viewControllerPlaceholder storyboardName="OrderDetails" id="GNT-g5-mq2" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="2k5-TP-4eK" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="772" y="-807"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="g38-Dp-O16">
             <objects>
                 <navigationController id="RKt-x4-MsL" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="wB3-2v-qrM">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="wB3-2v-qrM">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <connections>
-                        <segue destination="sVA-DA-8kn" kind="relationship" relationship="rootViewController" id="1Ig-IR-icg"/>
+                        <segue destination="sVA-DA-8kn" kind="relationship" relationship="rootViewController" id="Vhd-4T-XEr"/>
                     </connections>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="PKP-yY-FJ0" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-959" y="-803"/>
+            <point key="canvasLocation" x="-623" y="-804"/>
         </scene>
         <!--Наши эксперты-->
         <scene sceneID="gaB-7p-Vhy">
@@ -955,7 +965,7 @@
         <scene sceneID="X1H-8r-9rS">
             <objects>
                 <navigationController id="M0D-mn-Sko" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="D8l-RS-bfR">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="D8l-RS-bfR">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -985,7 +995,7 @@
             <objects>
                 <navigationController modalTransitionStyle="flipHorizontal" id="bVO-XH-0ez" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="Заказ" image="tabbar_order_icon" selectedImage="tabbar_order_icon_active" id="1IO-EK-Mec"/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="7iH-af-w3r">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="7iH-af-w3r">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -1007,12 +1017,12 @@
                 <splitViewController storyboardIdentifier="Orders" useStoryboardIdentifierAsRestorationIdentifier="YES" id="2cF-hF-wzs" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="История" image="tabbar_history_icon" selectedImage="tabbar_history_icon_active" id="SSs-QA-n9B"/>
                     <connections>
-                        <segue destination="RKt-x4-MsL" kind="relationship" relationship="masterViewController" id="LnL-5P-GNK"/>
+                        <segue destination="RKt-x4-MsL" kind="relationship" relationship="masterViewController" id="MhF-y5-f9R"/>
                     </connections>
                 </splitViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="AVN-St-7Wf" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1491" y="-803"/>
+            <point key="canvasLocation" x="-1332" y="-806"/>
         </scene>
         <!--Enter Code View Controller-->
         <scene sceneID="qic-qL-WSL">
@@ -1103,7 +1113,7 @@
             <objects>
                 <navigationController id="Icc-fT-KIK" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="О нас" image="tabbar_info_icon" selectedImage="tabbar_info_icon_active" id="ygu-NQ-nWV"/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="r5A-gv-CTG">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="r5A-gv-CTG">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -1150,9 +1160,9 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9EB-7v-hjU">
-                                <rect key="frame" x="77.5" y="557" width="220" height="40"/>
+                                <rect key="frame" x="77.5" y="597" width="220" height="0.0"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="5bM-iY-0FS"/>
+                                    <constraint firstAttribute="height" id="5bM-iY-0FS"/>
                                     <constraint firstAttribute="width" constant="220" id="kdL-dv-2Zo"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
@@ -1174,7 +1184,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="db0-Zi-nFA">
-                                <rect key="frame" x="68.5" y="481" width="238" height="30"/>
+                                <rect key="frame" x="68.5" y="511" width="238" height="30"/>
                                 <state key="normal" title="Как пользоваться приложением?">
                                     <color key="titleColor" red="0.066666666669999999" green="0.54117647059999996" blue="0.87058823529999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -1183,7 +1193,11 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lD0-5m-eKO">
-                                <rect key="frame" x="141.5" y="512" width="92" height="30"/>
+                                <rect key="frame" x="67.5" y="542" width="240" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="VoR-x0-IlO"/>
+                                    <constraint firstAttribute="width" constant="240" id="s4s-ot-0BM"/>
+                                </constraints>
                                 <state key="normal" title="Оцените нас">
                                     <color key="titleColor" red="0.066666666669999999" green="0.54117647059999996" blue="0.87058823529999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -1191,10 +1205,19 @@
                                     <action selector="rateUs:" destination="BVX-oa-pIt" eventType="touchUpInside" id="10t-2S-q5G"/>
                                 </connections>
                             </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1iD-I3-oh6">
+                                <rect key="frame" x="68" y="250" width="240" height="29"/>
+                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="29" id="4Ea-Yo-tW5"/>
+                                    <constraint firstAttribute="width" constant="240" id="adk-FE-ADY"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="GRB-VN-8JI" firstAttribute="top" secondItem="vBe-iM-uev" secondAttribute="bottom" constant="14" id="AW3-BX-o68"/>
+                            <constraint firstItem="1iD-I3-oh6" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="CNy-xh-RGn"/>
                             <constraint firstItem="PxG-NB-lAb" firstAttribute="top" secondItem="9EB-7v-hjU" secondAttribute="bottom" constant="21" id="Gfq-HV-SFD"/>
                             <constraint firstItem="nIt-Ku-cuI" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="H5H-x0-LGy"/>
                             <constraint firstItem="lD0-5m-eKO" firstAttribute="centerX" secondItem="nIt-Ku-cuI" secondAttribute="centerX" id="KHd-5W-CYS"/>
@@ -1206,6 +1229,7 @@
                             <constraint firstItem="vBe-iM-uev" firstAttribute="top" secondItem="TK2-rY-V5f" secondAttribute="bottom" constant="8" id="Xp5-wa-oNe"/>
                             <constraint firstItem="vBe-iM-uev" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="azk-I3-n9k"/>
                             <constraint firstItem="GRB-VN-8JI" firstAttribute="centerX" secondItem="1cF-s3-1yC" secondAttribute="centerX" id="fvN-nP-bGv"/>
+                            <constraint firstItem="1iD-I3-oh6" firstAttribute="top" secondItem="GRB-VN-8JI" secondAttribute="bottom" constant="8" id="mkr-bN-mUJ"/>
                             <constraint firstItem="db0-Zi-nFA" firstAttribute="centerX" secondItem="nIt-Ku-cuI" secondAttribute="centerX" id="ofZ-Qn-s62"/>
                             <constraint firstItem="9EB-7v-hjU" firstAttribute="top" secondItem="lD0-5m-eKO" secondAttribute="bottom" constant="15" id="qkq-ZR-UoE"/>
                             <constraint firstItem="lD0-5m-eKO" firstAttribute="top" secondItem="db0-Zi-nFA" secondAttribute="bottom" constant="1" id="vJS-UO-gCj"/>
@@ -1217,8 +1241,10 @@
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="build" destination="GRB-VN-8JI" id="q2t-5C-clJ"/>
+                        <outlet property="fbLogin" destination="1iD-I3-oh6" id="zOO-rr-Kdp"/>
                         <outlet property="instructionsButton" destination="db0-Zi-nFA" id="5n7-2M-35N"/>
                         <outlet property="inviteButton" destination="9EB-7v-hjU" id="vKa-kZ-T37"/>
+                        <outlet property="rateUs" destination="lD0-5m-eKO" id="40i-26-2me"/>
                         <outlet property="rateUsButton" destination="lD0-5m-eKO" id="1Ru-4B-EYd"/>
                         <outlet property="slogan" destination="vBe-iM-uev" id="YdB-Bf-z0K"/>
                         <outlet property="topConstraint" destination="PL3-P5-9qM" id="8ZP-9b-HIh"/>
@@ -1405,4 +1431,7 @@
         <image name="tabbar_order_icon" width="32" height="34"/>
         <image name="tabbar_order_icon_active" width="32" height="34"/>
     </resources>
+    <inferredMetricsTieBreakers>
+        <segue reference="UvW-Az-bcB"/>
+    </inferredMetricsTieBreakers>
 </document>

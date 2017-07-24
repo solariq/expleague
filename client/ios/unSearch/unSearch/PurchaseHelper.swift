@@ -29,8 +29,8 @@ class PurchaseHelper: NSObject {
     }
     
     func request(_ id: String, callback: @escaping (_ rc: PurchaseResult, _ transactionId: String?) -> ()) {
-        if let val = products[id] {
-            if let product = val {
+        if (products.index(forKey: id) != nil) {
+            if let val = products[id], let product = val {
                 if queue[id] == nil {
                     queue[id] = []
                 }
@@ -138,7 +138,7 @@ extension PurchaseHelper: SKProductsRequestDelegate {
             self.products[product.productIdentifier] = product
         }
         response.invalidProductIdentifiers.forEach{invalidId in
-            self.products[invalidId] = nil
+            self.products[invalidId] = nil as SKProduct?
         }
         productsChanged()
     }
