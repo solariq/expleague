@@ -117,7 +117,7 @@ public class RoomAgent extends PersistentActorAdapter {
       return;
     }
 
-    if (!filter(message)) {
+    if (mode() != ProcessMode.REPLAY && !filter(message)) {
       final Message error = new Message(
           jid,
           message.from(),
@@ -130,6 +130,8 @@ public class RoomAgent extends PersistentActorAdapter {
     }
 
     persist(message, msg -> {
+      if (mode() == ProcessMode.REPLAY)
+        filter(msg);
       archive(msg);
       if (msg.to() != null && msg.to().resource().isEmpty()) // process only messages
         process(msg);
