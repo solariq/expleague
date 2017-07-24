@@ -22,9 +22,6 @@
 # mv ./doSearch.app/ ./temp/
 # hdiutil create -volname doSearch -srcfolder ./temp/ -ov -format UDZO doSearch.dmg
 
-
-
-set(DYLD_IMAGE_SUFFIX _debug)
 find_package(Qt5 REQUIRED COMPONENTS
     Widgets
     Core
@@ -54,31 +51,22 @@ set(RESOURCES ${RESOURCES} resources/markdown-tile.css)
 
 if(OS_MACOSX)
     file(GLOB_RECURSE doSearch_sources "./c++/*.cpp" "./objc/*.mm")
-    add_definitions("-g")
+    if(${CMAKE_BUILD_TYPE} EQUAL "Release")
+        add_definitions("-g -O5")
+    endif()
     set(doSearch_APP "${CMAKE_CURRENT_BINARY_DIR}/doSearch.app")
     set(doSearch_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 
     set(ICON_NAME "doSearch.icns")
     set(ICON_PATH "resources/${ICON_NAME}")
 
-    # OpenGL
-    include_directories(/System/Library/Frameworks)
-    find_library(COCOA_LIBRARY Cocoa)
-    find_library(GLUT_LIBRARY GLUT)
-    find_library(OpenGL_LIBRARY OpenGL)
-    mark_as_advanced(COCOA_LIBRARY
-        GLUT_LIBRARY
-        OpenGL_LIBRARY)
-    set(EXTRA_LIBS ${COCOA_LIBRARY} ${GLUT_LIBRARY} ${OpenGL_LIBRARY})
-    #  target_sources(doSearch PUBLIC ${EXTRA_LIBS})
-    #
     add_executable(doSearch MACOSX_BUNDLE ${doSearch_sources} ${ICON_PATH} ${RESOURCES})
 
     set_target_properties(doSearch PROPERTIES MACOSX_BUNDLE_ICON_FILE ${ICON_NAME})
 
     # System libs
     find_library(APP_KIT AppKit)
-    target_link_libraries(doSearch ${APP_KIT})
+    target_link_libraries(doSearch PUBLIC ${APP_KIT})
 
     add_custom_command(
         TARGET doSearch
@@ -109,14 +97,6 @@ elseif(OS_WINDOWS)
     add_executable(doSearch WIN32 ${doSearch_sources} ${ICON_PATH} ${RESOURCES} "doSearch_resource.rc")
 
     set_target_properties(doSearch PROPERTIES LINK_FLAGS "/DEBUG")
-
-    find_package(GLU REQUIRED)
-    find_package(OpenGL REQUIRED)
-
-    include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLU_INCLUDE_DIRS} )
-    target_link_libraries(doSearch PUBLIC ${OPENGL_LIBRARIES} ${GLU_LIBRARY} )
-    target_link_libraries(doSearch PUBLIC shlwapi)
-
 endif()
 target_include_directories(doSearch PRIVATE
     ../libs/qxmpp/src/client ../libs/qxmpp/src/base
@@ -165,11 +145,7 @@ target_link_libraries(doSearch PUBLIC
     hunspell
     cutemarked
     breakpad
-    leveldb
-    )
-
-target_link_libraries(doSearch ${EXTRA_LIBS})
-
+    leveldb)
 
 if (CEF)
     add_definitions(-DCEF)
