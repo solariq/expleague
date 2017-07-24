@@ -52,28 +52,25 @@ void Context::setName(const QString& name) {
     emit titleChanged(m_name);
 }
 
-void Context::printTree(Page *page, int offset, int depth){
-    if(!depth){
-        return;
+void htmlTree(Context* context, QFile* f, Page *page, int depth){
+  if(depth == 1){
+    f->write(("<li>" + page->title() + "</li>").toUtf8());
+  }else{
+    f->write(("<li>" + page->title() + "<ul>").toUtf8());
+    for(auto child: context->associated(page)->pages()){
+      htmlTree(context ,f, child, depth - 1);
     }
-    if(!offset){
-        qDebug() << "::::::::::::";
-    }
-    QString offsetStr;
-    for(int i = 0; i < offset; i++){
-        offsetStr.append("  ");
-    }
-    PagesGroup* group = associated(page, false);
-    qDebug() << "::::" << offsetStr << page->title() << (group && group->parentGroup() ? group->parentGroup()->root()->title() : "");
+    f->write("</ul></li>");
+  }
+}
 
-    if(group){
-        for(auto it: group->pages()){
-            printTree(it, offset + 1, depth - 1);
-        }
-    }
-    if(!offset){
-        qDebug() << "::::::::::::";
-    }
+QUrl Context::makeHtmlTree(Page *page, int depth){
+  QString path = QDir::tempPath() + "/" + "doSearchHistory.html";
+  QFile f(path);
+  f.open(QFile::WriteOnly);
+  htmlTree(this, &f, page, depth);
+  f.close();
+  return QUrl::fromLocalFile(path);
 }
 
 void Context::setTask(Task *task) {
@@ -90,7 +87,7 @@ void Context::setTask(Task *task) {
 SearchSession* Context::match(SearchRequest* request) {
     for (int i = m_sessions.size() - 1; i >= 0; i--) {
         if (m_sessions[i]->check(request)) {
-            m_sessions[i]->append(request);
+            m_sessions[i]->setRequest(request);
             return m_sessions[i];
         }
     }

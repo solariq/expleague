@@ -68,7 +68,7 @@ Item {
 
         Rectangle {
             id: background
-            x: self.state == "selected" ? -2 : (self.state == "active" ? -1 : 0)
+            x: self.state == "selected" ? -1 : (self.state == "active" ? -1 : 0)
             y: self.state != "idle" ? -1 : 0
             width: parent.width + (self.state == "selected" ? 2 : (self.state == "active" ? 1 : 0))
             height: parent.height + (self.state != "idle" ? 2 : 0)

@@ -393,6 +393,7 @@ Item {
         }
     }
 
+
 //    Action {
 //        id: exitFullScreenAction
 //        shortcut: "Escape"

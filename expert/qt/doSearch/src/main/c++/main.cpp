@@ -46,13 +46,14 @@ QSystemTrayIcon* trayIcon;
 void initApp();
 #endif
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 
-  QQmlDebuggingEnabler enabler;
 #ifdef Q_OS_MAC
   initApp();
 #endif
-
+#ifdef QT_DEBUG
+    QQmlDebuggingEnabler enabler;
+#endif
 #ifndef QT_DEBUG
   qsrand(time(NULL));
 #endif

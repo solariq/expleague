@@ -6,7 +6,7 @@ import "."
 ColumnLayout {
     id: self
     visible: false
-    //property var webView: !!requestHolder.children[0] ? requestHolder.children[0].webView : null
+    property var webView: !!requestHolder.children[0] ? requestHolder.children[0].webView : null
     property bool options: false
     anchors.fill: parent
     spacing: 0
@@ -42,6 +42,7 @@ ColumnLayout {
         clip: true
 
         ListView {
+
             id: queriesList
             anchors.centerIn: parent
             height: queries.height - 4
@@ -49,6 +50,7 @@ ColumnLayout {
             model: owner.queries
             currentIndex: { for (var i in model) { if (model[i] === owner.request) return i } return -1 }
             orientation: ListView.Horizontal
+            boundsBehavior: Flickable.StopAtBounds
             spacing: 2
 
             delegate: Rectangle {
@@ -75,6 +77,24 @@ ColumnLayout {
                     anchors.fill: parent
                     hoverEnabled: true
                     onClicked: owner.request = modelData
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                propagateComposedEvents: true
+
+                onWheel: {
+                    if(queriesList.width >= queriesList.contentWidth){
+                        return
+                    }
+                    var delta = 0
+                    if(Math.abs(wheel.angleDelta.x) > Math.abs(wheel.angleDelta.y)){
+                        delta = wheel.angleDelta.x
+                    }else{
+                        delta = wheel.angleDelta.y
+                    }
+                    queriesList.flick(delta*3, 0)
                 }
             }
         }

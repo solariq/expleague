@@ -46,12 +46,21 @@ private:
 };
 
 class CefPageRenderer : public CefRenderHandler {
+
+  struct Popup{
+    bool show = false;
+    CefRect rect;
+    void* buffer = nullptr;
+  };
+
 public:
   void disable(); //stop render on QT level
   void enable();
 
   int width() const { return m_width; }
   int height() const { return m_height; }
+
+  Popup popup(){ return m_popup; }
 
   void processNextFrame(std::function<void(const void* buffer, int w, int h)>);
 
@@ -62,6 +71,14 @@ public:
                        int width, int height) OVERRIDE;
 
   virtual bool GetScreenInfo(CefRefPtr<CefBrowser> browser, CefScreenInfo& screen_info) OVERRIDE;
+
+
+  virtual void OnPopupShow(CefRefPtr<CefBrowser> browser,
+                           bool show) OVERRIDE;
+
+  virtual void OnPopupSize(CefRefPtr<CefBrowser> browser,
+                           const CefRect& rect) OVERRIDE;
+
 
 #ifdef Q_OS_WIN
   virtual void OnCursorChange(CefRefPtr<CefBrowser> browser, HCURSOR cursor, CursorType type, const CefCursorInfo &custom_cursor_info) OVERRIDE;
@@ -87,6 +104,7 @@ private:
   bool m_clean = true;
   void* m_gpu_buffer = nullptr;
   float m_scale_factor = 1.f;
+  Popup m_popup;
 };
 
 
@@ -105,22 +123,6 @@ public:
   bool keyPress(QKeyEvent* event);
 
   bool keyRelease(QKeyEvent* event);
-
-  virtual bool OnPreKeyEvent(CefRefPtr<CefBrowser> browser,
-                             const CefKeyEvent& event,
-                             CefEventHandle os_event,
-                             bool* is_keyboard_shortcut) OVERRIDE {
-//    qDebug() << "OnPreKeyEvent" << event.windows_key_code << event.type;
-    //*is_keyboard_shortcut = true;
-    return false;
-  }
-
-  virtual bool OnKeyEvent(CefRefPtr<CefBrowser> browser,
-                          const CefKeyEvent& event,
-                          CefEventHandle os_event) OVERRIDE {
-//    qDebug() << "OnKeyEvent" << event.windows_key_code << event.type;
-    return false;
-  }
 
 IMPLEMENT_REFCOUNTING(IOBuffer)
 private:
@@ -141,9 +143,6 @@ Q_OBJECT
   Q_PROPERTY(bool allowLinkTtransitions READ allowLinkTtransitions WRITE setAllowLinkTtransitions)
   Q_PROPERTY(bool cookiesEnable READ cookiesEnable WRITE setCookiesEnable)
 
-  //Q_PROPERTY(bool mute READ mute WRITE setMute)
-
-  //Q_PROPERTY(QUrl actualUrl READ actualUrl NOTIFY actualUrlChanged) //url that can be changed in one web page
 public:
   explicit CefItem(QQuickItem* parent = 0);
 
@@ -213,17 +212,12 @@ public:
 
   Q_INVOKABLE void executeJS(const QString& sctript);
 
-  void startTextDarg(const QString& text, const QString& html);
-
-  void startImageDrag(const QImage& img);
-
-  void startUrlsDrag(const QList<QUrl>& urls);
-
   void startDrag(QMimeData* data);
 
   void download(const QUrl& url);
 
   void onPageTerminate();
+
 
   qint64 lastUserActionTime();
 
@@ -277,11 +271,6 @@ public:
   bool cookiesEnable();
   void setCookiesEnable(bool cookies);
 
-  QSize pageSize();
-
-//  bool mute();
-//  void setMute(bool);
-
 signals:
 
   void urlChanged(const QUrl& url);
@@ -294,7 +283,9 @@ signals:
 
   void iconChanged(const QString& icon);
 
-  void dragStarted();
+  void dragFromCefStarted();
+
+  void dragFromCefFinished();
 
   void cursorChanged(Qt::CursorShape cursorShape);
 
@@ -307,6 +298,8 @@ signals:
   void downloadStarted(Download* item);
 
   void savedToStorage(const QString& text);
+
+  void fullScreenChanged(bool fullScreen);
 
 private slots:
   void initBrowser(QQuickWindow* window);
@@ -338,6 +331,7 @@ private:
   CefItem* const m_owner;
 IMPLEMENT_REFCOUNTING(TextCallback)
 };
+
 
 class BrowserListener : public CefRequestHandler,
                         public CefLifeSpanHandler,
@@ -404,6 +398,29 @@ public:
   virtual void OnAddressChange(CefRefPtr<CefBrowser> browser,
                                CefRefPtr<CefFrame> frame,
                                const CefString& url);
+
+  virtual void OnFullscreenModeChange(CefRefPtr<CefBrowser> browser,
+                                      bool fullscreen);
+
+  virtual ReturnValue OnBeforeResourceLoad(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                                           CefRefPtr<CefRequest> request, CefRefPtr<CefRequestCallback> callback)
+  {
+    QString str(QString::fromStdString(request->GetURL()));
+//    qDebug() << "OnBeforeResourceLoad" << str;
+    return RV_CONTINUE;
+  }
+
+  virtual void OnResourceLoadComplete(CefRefPtr<CefBrowser> browser,
+                                      CefRefPtr<CefFrame> frame,
+                                      CefRefPtr<CefRequest> request,
+                                      CefRefPtr<CefResponse> response,
+                                      URLRequestStatus status,
+                                      int64 received_content_length)
+  {
+    QString str(QString::fromStdString(request->GetURL()));
+    QString str2(QString::fromStdString(response->GetStatusText()));
+//    qDebug() << "OnResourceLoadComplete" << str << "error" << response->GetError() << str2 << response->GetStatus();
+  }
 
   void redirectEnable(bool);
 

@@ -34,6 +34,7 @@ class QrcResourceHandler : public CefResourceHandler {
   virtual bool ProcessRequest(CefRefPtr<CefRequest> request,
                               CefRefPtr<CefCallback> callback) OVERRIDE //url format is qrc:///filename
   {
+    qDebug() << "ProcessRequest";
     QString str = "qrc:/" + (QString::fromStdString(request->GetURL().ToString())).mid(7);
     QUrl url = QUrl(str);
     m_file.setFileName(":/" + url.path());
@@ -46,7 +47,8 @@ class QrcResourceHandler : public CefResourceHandler {
 
   virtual void GetResponseHeaders(CefRefPtr<CefResponse> response,
                                   int64& response_length,
-                                  CefString& redirectUrl) OVERRIDE {
+                                  CefString& redirectUrl) OVERRIDE
+  {
     response_length = m_file.size();
     QMimeDatabase db;
     //qDebug() << "get headers" << db.mimeTypeForFile(QFileInfo(m_file)).name() <<  response_length;
@@ -58,7 +60,8 @@ class QrcResourceHandler : public CefResourceHandler {
   virtual bool ReadResponse(void* data_out,
                             int bytes_to_read,
                             int& bytes_read,
-                            CefRefPtr<CefCallback> callback) OVERRIDE {
+                            CefRefPtr<CefCallback> callback) OVERRIDE
+  {
     //qDebug() << "readResponse " << bytes_to_read;
     bytes_read = m_file.read((char*) data_out, bytes_to_read);
     if (bytes_read <= 0) {
@@ -89,19 +92,15 @@ class SchemeFactory : public CefSchemeHandlerFactory {
   }
 
 IMPLEMENT_REFCOUNTING(SchemeFactory)
+
 };
 
-class CefRenderProcessHandlerImpl: public CefRenderProcessHandler{
-  virtual bool OnBeforeNavigation(CefRefPtr<CefBrowser> browser,
-                                  CefRefPtr<CefFrame> frame,
-                                  CefRefPtr<CefRequest> request,
-                                  NavigationType navigation_type,
-                                  bool is_redirect) {
-    return false;
+class ProccessHandler: public CefBrowserProcessHandler{
+  virtual void OnContextInitialized() {
+//    CefRegisterSchemeHandlerFactory("qrc", "", new SchemeFactory());
   }
-
+  IMPLEMENT_REFCOUNTING(ProccessHandler)
 };
-
 
 QSet<ShutDownGCItem*> GCStorage;
 QSet<ShutDownGCItem*> GCDestroyed;
@@ -138,6 +137,18 @@ class CefAppImpl: public CefApp{
     command_line->AppendSwitch("--disable-gpu-compositing");
   }
 
+  virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() {
+    return new ProccessHandler();
+  }
+
+  virtual void OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar) OVERRIDE { //TODO try is_local true and is_cors_enabled fasle
+    #if defined(__unix__) || (defined (__APPLE__) && defined (__MACH__))
+    registrar->AddCustomScheme("qrc", false, false, false, false, true, true);
+    #else
+    bool ok = registrar->AddCustomScheme("qrc", false, false, false, false, true);
+    #endif
+  }
+
   IMPLEMENT_REFCOUNTING(CefAppImpl)
 };
 
@@ -162,27 +173,28 @@ void initCef(int argc, char* argv[]) {
 
   CefInitialize(main_args, settings, cefapp, NULL);
 
-  CefRegisterSchemeHandlerFactory("qrc", "", new SchemeFactory());
+  bool ok = CefRegisterSchemeHandlerFactory("qrc", "", new SchemeFactory());
+  qDebug() << "scheme registered" << ok;
 
   cefTimer = new QTimer();
   cefTimer->setInterval(1);
   cefTimer->setSingleShot(false);
   QObject::connect(cefTimer, &QTimer::timeout, []() {
-//    static auto prev = std::chrono::high_resolution_clock::now();
-//    static int interval = 100;
+    static auto prev = std::chrono::high_resolution_clock::now();
+    static int interval = 100;
       CefDoMessageLoopWork();
-//    auto now = std::chrono::high_resolution_clock::now();
-//    std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
-//    bool idle = dif.count() < 500000;
+    auto now = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
+    bool idle = dif.count() < 500000;
 ////    qDebug() << dif.count() << interval;
-//    if (idle && interval < 10000) {
-//      interval += 10;
-//    }
-//    else if (!idle && interval > 100) {
-//      interval -= 50;
-//    }
-//    QThread::usleep(interval); // I hate qt
-//    prev = std::chrono::high_resolution_clock::now();
+    if (idle && interval < 10000) {
+      interval += 10;
+    }
+    else if (!idle && interval > 100) {
+      interval -= 50;
+    }
+    QThread::usleep(interval); // I hate qt
+    prev = std::chrono::high_resolution_clock::now();
   });
   cefTimer->start();
 }
