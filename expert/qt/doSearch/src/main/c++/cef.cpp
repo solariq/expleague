@@ -105,7 +105,7 @@ QWaitCondition waitCondition;
 class ProccessHandler: public CefBrowserProcessHandler{
 
   virtual void OnContextInitialized() {
-//    CefRegisterSchemeHandlerFactory("qrc", "", new SchemeFactory());
+    CefRegisterSchemeHandlerFactory("qrc", "", new SchemeFactory());
   }
 
   virtual void OnScheduleMessagePumpWork(int64 delay_ms) override {
@@ -182,7 +182,7 @@ void initCef(int argc, char* argv[]) {
   QDir cache_dir(appLocalPath);
   cache_dir.mkdir("browserCache");
   cache_dir.cd("browserCache");
-  cache_path = cache_dir.absolutePath().toStdString();
+//  cache_path = cache_dir.absolutePath().toStdString();
 
   #ifdef Q_OS_MAC
   CefMainArgs main_args(argc, argv);
@@ -193,9 +193,6 @@ void initCef(int argc, char* argv[]) {
   #endif
 
   CefInitialize(main_args, settings, cefapp, NULL);
-
-  bool ok = CefRegisterSchemeHandlerFactory("qrc", "", new SchemeFactory());
-  qDebug() << "scheme registered" << ok;
 
   cefTimer = new QTimer();
   cefTimer->setInterval(1);

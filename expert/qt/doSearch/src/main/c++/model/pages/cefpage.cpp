@@ -567,20 +567,6 @@ QQuickFramebufferObject::Renderer* CefItem::createRenderer() const {
   return new QTPageRenderer(const_cast<CefItem*>(this));
 }
 
-class CookieContextHandler : public CefRequestContextHandler {
-public:
-  CookieContextHandler(bool enable_cookie) {
-    m_manager = CefCookieManager::GetGlobalManager(NULL); /*new EmptyCookieManager();*/
-  }
-
-  virtual CefRefPtr<CefCookieManager> GetCookieManager() OVERRIDE {
-    return m_manager;
-  }
-
-private:
-  CefRefPtr<CefCookieManager> m_manager;
-  IMPLEMENT_REFCOUNTING(CookieContextHandler)
-};
 
 class ACefClient : public CefClient {
 public:
@@ -688,8 +674,6 @@ void CefItem::initBrowser(QQuickWindow* window) {
 
   qDebug() << "Init Browser " << QString::fromStdString(fromUrl(m_url)) << m_url;
 
-  CefRefPtr<CefRequestContext> requestContext =
-      CefRequestContext::CreateContext(CefRequestContextSettings(), new CookieContextHandler(m_cookies_enable));
   CefRefPtr<ACefClient> acefclient = new ACefClient();
   {
     acefclient->set(m_renderer);
@@ -699,7 +683,7 @@ void CefItem::initBrowser(QQuickWindow* window) {
   CefBrowserSettings settings;
   settings.windowless_frame_rate = 60;
   m_browser = CefBrowserHost::CreateBrowserSync(mainWindowInfo, acefclient, fromUrl(m_url), settings,
-                                                requestContext);
+                                                nullptr);
 
   QObject::connect(this, SIGNAL(visibleChanged()), this, SLOT(updateVisible()));
 
