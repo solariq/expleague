@@ -1,11 +1,14 @@
 package com.expleague.server.admin;
 
+import akka.actor.ActorRef;
 import akka.actor.PoisonPill;
 import akka.actor.UntypedActor;
 import akka.http.javadsl.Http;
 import akka.http.javadsl.IncomingConnection;
 import akka.http.javadsl.ServerBinding;
 import akka.http.javadsl.model.*;
+import akka.http.javadsl.model.headers.ContentDisposition;
+import akka.http.javadsl.model.headers.ContentDispositionTypes;
 import akka.japi.Option;
 import akka.japi.function.Function;
 import akka.pattern.Patterns;
@@ -16,10 +19,17 @@ import akka.stream.javadsl.Source;
 import akka.util.Timeout;
 import com.expleague.model.OrderState;
 import com.expleague.server.Roster;
-import com.expleague.server.admin.dto.*;
+import com.expleague.server.admin.dto.DumpItemDto;
+import com.expleague.server.admin.dto.ExpertsProfileDto;
+import com.expleague.server.admin.dto.OrderDto;
+import com.expleague.server.admin.dto.OrdersGroupDto;
+import com.expleague.server.admin.reports.ExpertWorkReportHandler;
 import com.expleague.server.admin.series.TimeSeriesChartDto;
 import com.expleague.server.admin.series.TimeSeriesDto;
-import com.expleague.server.agents.*;
+import com.expleague.server.agents.ExpLeagueOrder;
+import com.expleague.server.agents.LaborExchange;
+import com.expleague.server.agents.RoomAgent;
+import com.expleague.server.agents.XMPP;
 import com.expleague.util.akka.ActorAdapter;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Item;
@@ -49,6 +59,7 @@ import scala.concurrent.duration.Duration;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -216,6 +227,29 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           else if ("/kpi".equals(path)) {
             response = getJsonResponse("charts", prepareKpiCharts(board));
           }
+          else if ("/report-experts".equals(path)) {
+            final Option<String> startParam = request.getUri().query().get("start");
+            final Option<String> endParam = request.getUri().query().get("end");
+            final Option<String> expertIdParam = request.getUri().query().get("expert");
+            if (!startParam.isDefined() || !endParam.isDefined()) {
+              response = HttpResponse.create().withStatus(400).withEntity("Parameters are not defined");
+            }
+            else {
+              final SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
+              final long start = formatter.parse(startParam.get()).getTime();
+              final long end = formatter.parse(endParam.get()).getTime();
+              final String expertId = expertIdParam.isDefined() ? expertIdParam.get() : null;
+
+              final ActorRef handler = context().actorOf(ActorAdapter.props(ExpertWorkReportHandler.class, start, end, expertId));
+              final Timeout timeout = Timeout.apply(Duration.create(10, TimeUnit.MINUTES));
+              final Future<Object> ask = Patterns.ask(handler, new ExpertWorkReportHandler.ReportRequest(start, end, expertId), timeout);
+              final String result = (String) Await.result(ask, timeout.duration());
+
+              final Map<String, String> params = new HashMap<>();
+              params.put("filename", "report-expert.csv");
+              response = HttpResponse.create().addHeader(ContentDisposition.create(ContentDispositionTypes.ATTACHMENT, params)).withStatus(200).withEntity(result);
+            }
+          }
         } catch (Exception e) {
           final ByteArrayOutputStream out = new ByteArrayOutputStream();
           e.printStackTrace(new PrintStream(out));
@@ -254,6 +288,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
               }
 
               if (order.state() == OrderState.DONE) {
+                //noinspection ConstantConditions
                 final long closeTimestamp = order.statusHistoryRecords()
                     .filter(statusHistoryRecord -> statusHistoryRecord.getStatus() == OrderState.DONE)
                     .findFirst().get()
