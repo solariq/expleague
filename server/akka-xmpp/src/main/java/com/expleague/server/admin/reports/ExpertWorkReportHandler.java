@@ -1,9 +1,11 @@
 package com.expleague.server.admin.reports;
 
+import com.expleague.model.Offer;
 import com.expleague.server.Roster;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.dao.sql.MySQLBoard;
 import com.expleague.util.akka.ActorMethod;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,7 +27,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
 
     final MySQLBoard mySQLBoard = (MySQLBoard) board;
     try {
-      headers("timestamp", "expert", "expert rating", "expert status", "room", "order", "tags", "score");
+      headers("timestamp", "expert", "expert rating", "expert status", "topic", "room", "order", "tags", "score");
       final Stream<ResultSet> mainResultStream;
       if (request.expertId() == null)
         mainResultStream = mySQLBoard.stream(
@@ -47,7 +49,8 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
         try {
           final String expertId = resultSet.getString(2);
           final String rating = Double.toString(Roster.instance().profile(expertId).rating());
-
+          //noinspection ConstantConditions
+          final String topic = StringEscapeUtils.escapeCsv(((Offer) Offer.create(resultSet.getString(4))).topic()).replace("\n", "\\n");
           final String orderId = resultSet.getString(6);
           final StringBuilder tags = new StringBuilder();
           { //tags
@@ -67,6 +70,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
               expertId,
               rating,
               resultSet.getString(3),
+              topic,
               resultSet.getString(5),
               orderId,
               tags.toString(),
