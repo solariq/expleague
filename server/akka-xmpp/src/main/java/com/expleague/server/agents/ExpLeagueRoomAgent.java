@@ -250,8 +250,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         message(answerCopy);
       }
       else state(VERIFY);
-
+      answer(msg);
       tellGlobal(new RoomMessageReceived(from, true));
+
       inflightOrders().forEach(order->{
         if (order.state() != OrderState.DONE && (order.id().equals(answer.order()) || answer.order() == null)) {
           order.state(OrderState.DONE, currentTime);
@@ -260,7 +261,6 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       if (answer.order() == null && orders.size() > 0) {
         answer.order(orders.get(orders.size() - 1).id());
       }
-      answer(msg);
       message(new Message(jid(), RepositoryService.jid(), currentOffer, answer));
     }
     else if (msg.has(Verified.class)) {
