@@ -1,5 +1,6 @@
 package com.expleague.server.admin.reports;
 
+import com.expleague.server.Roster;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.dao.sql.MySQLBoard;
 import com.expleague.util.akka.ActorMethod;
@@ -24,7 +25,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
 
     final MySQLBoard mySQLBoard = (MySQLBoard) board;
     try {
-      headers("timestamp", "expert", "status", "room", "order", "tags", "score");
+      headers("timestamp", "expert", "expert rating", "expert status", "room", "order", "tags", "score");
       final Stream<ResultSet> mainResultStream;
       if (request.expertId() == null)
         mainResultStream = mySQLBoard.stream(
@@ -44,6 +45,9 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
 
       mainResultStream.forEach(resultSet -> {
         try {
+          final String expertId = resultSet.getString(2);
+          final String rating = Double.toString(Roster.instance().profile(expertId).rating());
+
           final String orderId = resultSet.getString(6);
           final StringBuilder tags = new StringBuilder();
           { //tags
@@ -60,7 +64,8 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
           }
           row(
               resultSet.getString(1),
-              resultSet.getString(2),
+              expertId,
+              rating,
               resultSet.getString(3),
               resultSet.getString(5),
               orderId,
