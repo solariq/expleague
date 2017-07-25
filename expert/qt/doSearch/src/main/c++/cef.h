@@ -22,6 +22,8 @@
 #pragma GCC diagnostic pop
 #endif
 
+#include <QtCore>
+
 class QQuickItem;
 namespace expleague {
 
@@ -32,6 +34,14 @@ public:
 protected:
   void addToShutDownGC();
   void removeFromShutDownGC();
+};
+
+class CefWorker: public QObject{
+Q_OBJECT
+public slots:
+  void doWork(){
+    CefDoMessageLoopWork();
+  }
 };
 
 void initCef(int i, char *pString[]);

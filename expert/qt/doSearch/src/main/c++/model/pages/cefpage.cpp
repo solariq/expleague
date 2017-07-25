@@ -176,7 +176,8 @@ void CefPageRenderer::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType ty
   if(type == PET_POPUP){
     std::lock_guard<std::mutex> guard(m_owner->m_mutex);
     drawToBuffer(m_popup.buffer, dirtyRects, buffer, width, height);
-  }else{
+  }
+  else{
     if (m_width != width || m_height != height || !m_gpu_buffer || !m_enable)
       return;
     std::lock_guard<std::mutex> guard(m_owner->m_mutex);

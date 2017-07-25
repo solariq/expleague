@@ -25,6 +25,7 @@
 #include <QtCore>
 #include <QSet>
 #include <QStandardPaths>
+#include <QApplication>
 #include <chrono>
 
 namespace expleague {
@@ -91,14 +92,32 @@ class SchemeFactory : public CefSchemeHandlerFactory {
     return new QrcResourceHandler();
   }
 
+
+
 IMPLEMENT_REFCOUNTING(SchemeFactory)
 
 };
 
+static auto nextTimeToCallCef = std::chrono::high_resolution_clock::now();
+QWaitCondition waitCondition;
+
+
 class ProccessHandler: public CefBrowserProcessHandler{
+
   virtual void OnContextInitialized() {
 //    CefRegisterSchemeHandlerFactory("qrc", "", new SchemeFactory());
   }
+
+  virtual void OnScheduleMessagePumpWork(int64 delay_ms) override {
+    if (delay_ms <= 0 || delay_ms > 1000)
+      return;
+    auto next = std::chrono::high_resolution_clock::now();
+    next += std::chrono::milliseconds(delay_ms);
+    nextTimeToCallCef = next;
+//    qDebug() << "do cef work planned" << (int)delay_ms;
+  }
+
+  CefWorker worker;
   IMPLEMENT_REFCOUNTING(ProccessHandler)
 };
 
@@ -155,6 +174,8 @@ class CefAppImpl: public CefApp{
 void initCef(int argc, char* argv[]) {
   CefRefPtr<CefApp> cefapp(new CefAppImpl());
   CefSettings settings;
+  settings.external_message_pump = 1;
+
 
   CefString cache_path(&settings.cache_path);
   QString appLocalPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
@@ -180,21 +201,13 @@ void initCef(int argc, char* argv[]) {
   cefTimer->setInterval(1);
   cefTimer->setSingleShot(false);
   QObject::connect(cefTimer, &QTimer::timeout, []() {
-    static auto prev = std::chrono::high_resolution_clock::now();
-    static int interval = 100;
-      CefDoMessageLoopWork();
     auto now = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<int64, std::nano> dif = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prev);
-    bool idle = dif.count() < 500000;
-////    qDebug() << dif.count() << interval;
-    if (idle && interval < 10000) {
-      interval += 10;
+    if (now.time_since_epoch() > nextTimeToCallCef.time_since_epoch()) {
+      CefDoMessageLoopWork();
+      now = std::chrono::high_resolution_clock::now();
+      now += std::chrono::milliseconds(15);
+      nextTimeToCallCef = now;
     }
-    else if (!idle && interval > 100) {
-      interval -= 50;
-    }
-    QThread::usleep(interval); // I hate qt
-    prev = std::chrono::high_resolution_clock::now();
   });
   cefTimer->start();
 }
