@@ -15,10 +15,11 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public class InMemArchive implements Archive {
   final Map<String, MyDump> map = new HashMap<>();
+  private final Map<String, String> lastMessages = new HashMap<>();
 
   @Override
   public Dump dump(String local) {
-    return map.compute(local, (k,v) -> v != null ? v : new MyDump(k));
+    return map.compute(local, (k, v) -> v != null ? v : new MyDump(k));
   }
 
   @Override
@@ -26,6 +27,11 @@ public class InMemArchive implements Archive {
     final MyDump dump = new MyDump(owner);
     map.put(room, dump);
     return dump;
+  }
+
+  @Override
+  public String lastMessageId(String local) {
+    return lastMessages.get(local);
   }
 
   private class MyDump implements Dump {
@@ -43,10 +49,12 @@ public class InMemArchive implements Archive {
         return;
       snapshot.add(stanza);
       known.add(stanza.id());
+      lastMessages.put(owner, stanza.id());
     }
 
     @Override
-    public void commit() {}
+    public void commit() {
+    }
 
     @Override
     public Stream<Stanza> stream() {

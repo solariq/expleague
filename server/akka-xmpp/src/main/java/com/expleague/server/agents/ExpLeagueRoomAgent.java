@@ -9,6 +9,7 @@ import com.expleague.model.RoomState;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
 import com.expleague.server.answers.RepositoryService;
+import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
@@ -67,6 +68,11 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     if (state == WORK) {
       inflightOrders()
           .forEach(order -> LaborExchange.tell(context(), order, self()));
+    }
+    else if (EnumSet.of(CLOSED, FEEDBACK).contains(state)) {
+      if (Archive.instance().lastMessageId(jid().local()) == null) {
+        self().tell(new Message(jid(), jid(), new Operations.LastMessage()), self());
+      }
     }
     context().setReceiveTimeout(Duration.apply(1, TimeUnit.HOURS));
   }

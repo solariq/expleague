@@ -129,6 +129,7 @@ public class ExpLeagueServer {
     String iosPushPasswd();
 
     String dynamoDB();
+    String dynamoDBLastMessages();
 
     enum Type {
       PRODUCTION,
@@ -183,6 +184,12 @@ public class ExpLeagueServer {
     public String dynamoDB() {
       final String string = config.getString("dynamo.db");
       return string != null ? string : "expleague-rooms-test";
+    }
+
+    @Override
+    public String dynamoDBLastMessages() {
+      final String string = config.getString("dynamo.last-messages");
+      return string != null ? string : dynamoDB() + "-last-messages";
     }
 
     @Override

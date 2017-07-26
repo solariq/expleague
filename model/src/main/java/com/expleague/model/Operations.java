@@ -109,6 +109,9 @@ public class Operations {
   public static class Clear extends Command {}
 
   @XmlRootElement
+  public static class LastMessage extends Command {}
+
+  @XmlRootElement
   public static class Start extends Command {
     @XmlAttribute
     private String order;
