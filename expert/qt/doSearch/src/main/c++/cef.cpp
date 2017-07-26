@@ -109,12 +109,14 @@ class ProccessHandler: public CefBrowserProcessHandler{
   }
 
   virtual void OnScheduleMessagePumpWork(int64 delay_ms) override {
-    if (delay_ms <= 0 || delay_ms > 1000)
-      return;
-    auto next = std::chrono::high_resolution_clock::now();
-    next += std::chrono::milliseconds(delay_ms);
-    nextTimeToCallCef = next;
-//    qDebug() << "do cef work planned" << (int)delay_ms;
+//    if (delay_ms <= 0 || delay_ms > 1000)
+//      return;
+//    auto next = std::chrono::high_resolution_clock::now();
+//    next += std::chrono::milliseconds(delay_ms);
+//    nextTimeToCallCef = next;
+
+    if(delay_ms >= 0)
+    QMetaObject::invokeMethod(&worker, "doWork", Qt::QueuedConnection, Q_ARG(int, delay_ms));
   }
 
   CefWorker worker;
@@ -122,9 +124,9 @@ class ProccessHandler: public CefBrowserProcessHandler{
 };
 
 QSet<ShutDownGCItem*> GCStorage;
+
 QSet<ShutDownGCItem*> GCDestroyed;
 bool GCStorageBusy = false;
-
 QTimer* cefTimer = nullptr;
 
 void ShutDownGCItem::addToShutDownGC() {
@@ -171,6 +173,21 @@ class CefAppImpl: public CefApp{
   IMPLEMENT_REFCOUNTING(CefAppImpl)
 };
 
+CefWorker::CefWorker(){
+  m_timer.setSingleShot(false);
+  QObject::connect(&m_timer, SIGNAL(timeout()), this, SLOT(doWork()));
+};
+
+void CefWorker::doWork(int delay) {
+  if(delay == 0) {
+    CefDoMessageLoopWork();
+    return;
+  }
+  m_timer.stop();
+  m_timer.setInterval(qMin(20, delay));
+  m_timer.start();
+}
+
 void initCef(int argc, char* argv[]) {
   CefRefPtr<CefApp> cefapp(new CefAppImpl());
   CefSettings settings;
@@ -199,15 +216,12 @@ void initCef(int argc, char* argv[]) {
 
   cefTimer = new QTimer();
   cefTimer->setInterval(1);
-  cefTimer->setSingleShot(false);
+  cefTimer->setSingleShot(true);
   QObject::connect(cefTimer, &QTimer::timeout, []() {
-    auto now = std::chrono::high_resolution_clock::now();
-    if (now.time_since_epoch() > nextTimeToCallCef.time_since_epoch()) {
       CefDoMessageLoopWork();
-      now = std::chrono::high_resolution_clock::now();
-      now += std::chrono::milliseconds(15);
-      nextTimeToCallCef = now;
-    }
+//    qDebug() << "Work Done";
+      cefTimer->setInterval(5);
+      cefTimer->start();
   });
   cefTimer->start();
 }

@@ -580,19 +580,19 @@ void NavigationManager::onGroupsChanged() {
     }
   }
 
-  if(!m_groups.isEmpty()){
-    QList<Page*> pages = m_groups[0]->activePagesList();
-    for(Page *page: pages){
-      limitAppend(m_always_active, page, pages.size() + 10);
-    }
-  }
-
-  for(Page* page: m_always_active){
-    if (!known.contains(page)) {
-      screens += page->ui();
-      known.insert(page);
-    }
-  }
+//  if(!m_groups.isEmpty()){
+//    QList<Page*> pages = m_groups[0]->activePagesList();
+//    for(Page *page: pages){
+//      limitAppend(m_always_active, page, pages.size() + 10);
+//    }
+//  }
+//
+//  for(Page* page: m_always_active){
+//    if (!known.contains(page)) {
+//      screens += page->ui();
+//      known.insert(page);
+//    }
+//  }
 
   if (m_prev_known != known) {
     for (Page* page: m_prev_known) { // cleanup
