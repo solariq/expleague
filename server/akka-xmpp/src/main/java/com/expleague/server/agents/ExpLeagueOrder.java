@@ -29,7 +29,7 @@ public abstract class ExpLeagueOrder {
   public static int SIMULTANEOUSLY_INVITED = 3;
   private Offer offer;
 
-  protected OrderState state = OrderState.NONE;
+  protected volatile OrderState state = OrderState.NONE;
   private volatile ActorRef broker;
 
   public ExpLeagueOrder(Offer offer) {
