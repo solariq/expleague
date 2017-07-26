@@ -7,6 +7,7 @@ import com.expleague.model.Offer;
 import com.expleague.model.Operations;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
+import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
 import com.expleague.server.agents.RoomAgent;
 import com.expleague.server.agents.XMPP;
@@ -20,6 +21,7 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -42,7 +44,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
 
     final MySQLBoard mySQLBoard = (MySQLBoard) board;
     try {
-      headers("timestamp", "expert", "expert rating", "expert status", "topic", "is continue", "room", "order", "tags", "score");
+      headers("timestamp", "expert", "expert rating", "expert status", "topic", "continue", "room", "order", "tags", "score");
       final Stream<ResultSet> mainResultStream;
       if (request.expertId() == null)
         mainResultStream = mySQLBoard.stream(
@@ -87,18 +89,33 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
           final Future<Object> ask = Patterns.ask(XMPP.register(jid, context()), new RoomAgent.DumpRequest(), timeout);
           //noinspection unchecked
           final List<Stanza> dump = (List<Stanza>) Await.result(ask, timeout.duration());
-          boolean isContinue = false;
+          String continueText = "";
           { //continue
-            for (final Stanza stanza : dump) {
-              if (stanza instanceof Message && ((Message) stanza).has(Answer.class)) {
-                isContinue = true;
-                break;
+            final String owner;
+            try (final PreparedStatement getOwner = mySQLBoard.createStatement("SELECT partisipant FROM Participants WHERE `order` = ? AND role = ?")) {
+              getOwner.setString(1, orderId);
+              getOwner.setInt(2, ExpLeagueOrder.Role.OWNER.index());
+              try (final ResultSet getOwnerResult = getOwner.executeQuery()) {
+                owner = getOwnerResult.next() ? getOwnerResult.getString(1) : null;
               }
-              else if (stanza instanceof Message && ((Message) stanza).has(Operations.Start.class)) {
-                final Operations.Start start = ((Message) stanza).get(Operations.Start.class);
-                if (start.order().compareTo(orderId) >= 0) {
-                  isContinue = false;
-                  break;
+            }
+            if (owner != null) {
+              boolean prevAnswer = false;
+              for (final Stanza stanza : dump) {
+                if (stanza instanceof Message && ((Message) stanza).has(Answer.class)) {
+                  prevAnswer = true;
+                }
+                else if (stanza instanceof Message && ((Message) stanza).has(Message.Body.class)) {
+                  if (prevAnswer && stanza.from().local().equals(owner)) {
+                    continueText = StringEscapeUtils.escapeCsv(((Message) stanza).get(Message.Body.class).value()).replace("\n", "\\n");
+                    prevAnswer = false;
+                  }
+                }
+                else if (stanza instanceof Message && ((Message) stanza).has(Operations.Start.class)) {
+                  final Operations.Start start = ((Message) stanza).get(Operations.Start.class);
+                  if (start.order().compareTo(orderId) >= 0) {
+                    break;
+                  }
                 }
               }
             }
@@ -109,7 +126,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
               rating,
               resultSet.getString(3),
               topic,
-              Boolean.toString(isContinue),
+              continueText,
               roomId,
               orderId,
               tags.toString(),
