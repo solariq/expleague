@@ -38,10 +38,12 @@ protected:
 
 class CefWorker: public QObject{
 Q_OBJECT
+public:
+  CefWorker();
 public slots:
-  void doWork(){
-    CefDoMessageLoopWork();
-  }
+  void doWork(int delay = 0);
+private:
+  QTimer m_timer;
 };
 
 void initCef(int i, char *pString[]);
