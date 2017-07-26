@@ -22,18 +22,19 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
       return;
     }
 
+    final MySQLBoard mySQLBoard = (MySQLBoard) board;
     try {
-      headers("timestamp", "expert", "status", "room", "order", "score");
-      final Stream<ResultSet> resultStream;
+      headers("timestamp", "expert", "status", "room", "order", "tags", "score");
+      final Stream<ResultSet> mainResultStream;
       if (request.expertId() == null)
-        resultStream = ((MySQLBoard) board).stream(
+        mainResultStream = mySQLBoard.stream(
             "SELECT DISTINCT Participants.timestamp, Participants.partisipant, Users.trusted, Orders.offer, Orders.room, Participants.order, Orders.score, Participants.role FROM Participants INNER JOIN Orders ON Participants.order = Orders.id INNER JOIN Users ON Participants.partisipant = Users.id WHERE Participants.role < 7 AND Participants.timestamp >= ? AND Participants.timestamp <= ? ORDER BY Participants.timestamp",
             stmt -> {
               stmt.setTimestamp(1, new Timestamp(request.start()));
               stmt.setTimestamp(2, new Timestamp(request.end()));
             });
       else
-        resultStream = ((MySQLBoard) board).stream(
+        mainResultStream = mySQLBoard.stream(
             "SELECT DISTINCT Participants.timestamp, Participants.partisipant, Users.trusted, Orders.offer, Orders.room, Participants.order, Orders.score, Participants.role FROM Participants INNER JOIN Orders ON Participants.order = Orders.id INNER JOIN Users ON Participants.partisipant = Users.id WHERE Participants.role < 7 AND Participants.timestamp >= ? AND Participants.timestamp <= ? AND Participants.partisipant = ? ORDER BY Participants.timestamp",
             stmt -> {
               stmt.setTimestamp(1, new Timestamp(request.start()));
@@ -41,21 +42,36 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
               stmt.setString(3, request.expertId());
             });
 
-      resultStream.forEach(resultSet -> {
+      mainResultStream.forEach(resultSet -> {
         try {
+          final String orderId = resultSet.getString(6);
+          final StringBuilder tags = new StringBuilder();
+          { //tags
+            try (final Stream<ResultSet> tagsStream = mySQLBoard.stream("SELECT Tags.tag FROM Tags INNER JOIN Topics ON Tags.id = Topics.tag WHERE Topics.order = ?",
+                stmt -> stmt.setString(1, orderId))) {
+              tagsStream.forEach(r -> {
+                try {
+                  tags.append(r.getString(1)).append(";");
+                } catch (SQLException e) {
+                  throw new RuntimeException(e);
+                }
+              });
+            }
+          }
           row(
               resultSet.getString(1),
               resultSet.getString(2),
               resultSet.getString(3),
               resultSet.getString(5),
-              resultSet.getString(6),
+              orderId,
+              tags.toString(),
               resultSet.getString(7)
           );
         } catch (SQLException e) {
           throw new RuntimeException(e);
         }
       });
-      resultStream.close();
+      mainResultStream.close();
       sender().tell(build(), self());
     } catch (SQLException e) {
       throw new RuntimeException(e);
