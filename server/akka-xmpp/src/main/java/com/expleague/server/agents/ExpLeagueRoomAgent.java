@@ -287,6 +287,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
           final Cancel cancel = msg.get(Cancel.class);
           if (knownToClient.contains(from))
             message(new Message(from, roomAlias(owner()), cancel));
+          if (currentOffer.room() == null) // backward compatibility
+            currentOffer.room(jid());
+
           final Offer oldOffer = currentOffer;
           currentOffer = currentOffer.copy();
           currentOffer.filter().reject(from);
