@@ -188,7 +188,7 @@ public class ExpLeagueServer {
 
     @Override
     public String dynamoDBLastMessages() {
-      final String string = config.getString("dynamo.last-messages");
+      final String string = config.hasPath("dynamo.last-messages") ? config.getString("dynamo.last-messages") : null;
       return string != null ? string : dynamoDB() + "-last-messages";
     }
 
