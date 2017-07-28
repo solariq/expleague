@@ -36,4 +36,19 @@ public class Image extends Attachment {
   public String url() {
     return src;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Image image = (Image) o;
+
+    return src != null ? src.equals(image.src) : image.src == null;
+  }
+
+  @Override
+  public int hashCode() {
+    return src != null ? src.hashCode() : 0;
+  }
 }
