@@ -86,30 +86,6 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
             }
           }
 
-          String continueText = "";
-          { //continue
-            boolean prevAnswer = false;
-            for (final Stanza stanza : dump) {
-              if (!(stanza instanceof Message))
-                continue;
-              final Message message = ((Message) stanza);
-              if (message.has(Answer.class)) {
-                prevAnswer = true;
-              }
-              else if (message.has(Message.Body.class)) {
-                if (prevAnswer && stanza.from().local().equals(owner)) {
-                  continueText = StringEscapeUtils.escapeCsv(((Message) stanza).get(Message.Body.class).value()).replace("\n", "\\n");
-                  prevAnswer = false;
-                }
-              }
-              else if (message.has(Operations.Start.class)) {
-                final Operations.Start start = ((Message) stanza).get(Operations.Start.class);
-                if (start.order().compareTo(orderId) >= 0) {
-                  break;
-                }
-              }
-            }
-          }
           final ExpLeagueOrder.Role role = ExpLeagueOrder.Role.valueOf(resultSet.getInt(8));
           OrderResult orderResult = OrderResult.NA;
           { //order result
@@ -138,7 +114,8 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
                   if (message.from().local().equals(owner)) {
                     orderResult = OrderResult.CANCEL_BY_CLIENT;
                     break;
-                  } else if (message.from().local().equals(expertId)) {
+                  }
+                  else if (message.from().local().equals(expertId)) {
                     orderResult = OrderResult.CANCEL_FROM_TASK;
                     break;
                   }
@@ -146,12 +123,40 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
                 else if (started && message.has(Answer.class) && message.from().local().equals(expertId)) {
                   orderResult = OrderResult.DONE;
                   break;
-                } else if (started && message.has(Operations.Progress.class)) {
+                }
+                else if (started && message.has(Operations.Progress.class)) {
                   final Operations.Progress progress = message.get(Operations.Progress.class);
                   if (orderId.equals(progress.order()) && progress.state() == OrderState.DONE) {
-                    orderResult = OrderResult.DONE;
+                    orderResult = OrderResult.NO_RESULT;
                     break;
                   }
+                }
+              }
+            }
+          }
+          if (orderResult == OrderResult.NO_RESULT)
+            return;
+
+          String continueText = "";
+          { //continue
+            boolean prevAnswer = false;
+            for (final Stanza stanza : dump) {
+              if (!(stanza instanceof Message))
+                continue;
+              final Message message = ((Message) stanza);
+              if (message.has(Answer.class)) {
+                prevAnswer = true;
+              }
+              else if (message.has(Message.Body.class)) {
+                if (prevAnswer && stanza.from().local().equals(owner)) {
+                  continueText = StringEscapeUtils.escapeCsv(((Message) stanza).get(Message.Body.class).value()).replace("\n", "\\n");
+                  prevAnswer = false;
+                }
+              }
+              else if (message.has(Operations.Start.class)) {
+                final Operations.Start start = ((Message) stanza).get(Operations.Start.class);
+                if (start.order().compareTo(orderId) >= 0) {
+                  break;
                 }
               }
             }
@@ -225,7 +230,8 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
     DONE(2),
     CANCEL_BY_CLIENT(3),
     IN_PROGRESS(4),
-    NA(5),;
+    NA(5),
+    NO_RESULT(6),;
 
     int index;
 
