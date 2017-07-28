@@ -344,7 +344,7 @@ const void* CefPageRenderer::buffer() {
 
 bool BrowserListener::OnBeforeBrowse(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefRequest> request,
                                      bool is_redirect) {
-  if (request->GetResourceType() != RT_MAIN_FRAME || request->GetTransitionType() == TT_FORM_SUBMIT) {
+  if (request->GetResourceType() != RT_MAIN_FRAME /*|| request->GetTransitionType() == TT_FORM_SUBMIT*/) {
     return false;
   }
   if (!m_enable) {
@@ -644,7 +644,7 @@ void CefItem::onBrowserDestroyed() {
 
 void CefItem::destroyBrowser() {
   if (m_browser) {
-//    qDebug() << "DestroyBrowser";
+    qDebug() << "DestroyBrowser" << m_url;
     m_renderer->disable();
     m_text_callback->disable();
     m_iobuffer->setBrowser(nullptr);

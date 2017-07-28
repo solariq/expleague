@@ -140,9 +140,9 @@ Item {
                     event.accepted = true
                 }
                 else if (event.key === Qt.Key_Escape) {
-//                    self.visible = false
-//                    if (completion)
-//                        completion.visible = false
+                    self.visible = false
+                    if (completion)
+                        completion.visible = false
                     event.accepted = true
                     navigation.activeScreen.forceActiveFocus()
                 }else{
