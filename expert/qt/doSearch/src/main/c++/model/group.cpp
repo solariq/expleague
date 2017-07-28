@@ -38,6 +38,19 @@ void PagesGroup::setParentGroup(PagesGroup* group) {
             group = group->m_parent;
         }
     }
+    if(type() == SUGGEST){
+      while (group) {
+        auto it = m_pages.begin();
+        while(it != m_pages.end()){
+          if (group->pages().contains(*it)){
+            it = m_pages.erase(it);
+          }else{
+            it++;
+          }
+        }
+        group = group->m_parent;
+      }
+    }
     store("context", group ? QVariant(group->root()->id()) : QVariant());
     save();
     emit parentGroupChanged(group);
@@ -143,6 +156,9 @@ void PagesGroup::setScroll(double scroll){
   m_scroll = scroll;
 }
 
+void PagesGroup::loadParent(){
+  m_parent = m_owner->associated(m_owner->parent()->page(value("context").toString()));
+}
 
 PagesGroup::PagesGroup(Page* root, Type type, Context* owner):
     QObject(owner),
@@ -161,15 +177,14 @@ PagesGroup::PagesGroup(const QString& groupId, Context* owner):
     PersistentPropertyHolder(owner->cd("group." + groupId)),
     m_owner(owner), m_parent(0)
 {
-    m_root = owner->parent()->page(value("root").toString());
-    m_type = qobject_cast<Context*>(m_root) ? CONTEXT : NORMAL;
-    visitValues("page", [this, owner](const QVariant& pageId){
-        m_pages.append(owner->parent()->page(pageId.toString()));
-    });
-    m_pages.removeAll(0);
-    m_closed_start = value("closed-pages-start").isNull() ? m_pages.size() : value("closed-pages-start").toInt();
-    m_closed_start = (std::min)(m_closed_start, m_pages.size());
-    m_selected_page_index = value("selected").isNull() ? -1 : m_pages.indexOf(owner->parent()->page(value("selected").toString()));
-    m_parent = m_owner->associated(owner->parent()->page(value("context").toString()));
+  m_root = owner->parent()->page(value("root").toString());
+  m_type = qobject_cast<Context*>(m_root) ? CONTEXT : NORMAL;
+  visitValues("page", [this, owner](const QVariant& pageId){
+      m_pages.append(owner->parent()->page(pageId.toString()));
+  });
+  m_pages.removeAll(0);
+  m_closed_start = value("closed-pages-start").isNull() ? m_pages.size() : value("closed-pages-start").toInt();
+  m_closed_start = (std::min)(m_closed_start, m_pages.size());
+  m_selected_page_index = value("selected").isNull() ? -1 : m_pages.indexOf(owner->parent()->page(value("selected").toString()));
 }
 }

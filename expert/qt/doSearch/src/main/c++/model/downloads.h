@@ -46,8 +46,7 @@ public:
                      NOTIFY
                      statusChanged)
 
-  Download(const QUrl &url, const QString &path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation),
-           int id = max_id);
+  Download(const QUrl &url, const QString &path, const QString& name, int id = max_id);
 
   qint64 receivedBytes();
 

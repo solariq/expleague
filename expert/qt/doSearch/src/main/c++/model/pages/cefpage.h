@@ -214,7 +214,7 @@ public:
 
   void startDrag(QMimeData* data);
 
-  void download(const QUrl& url);
+  void download(const QUrl& url, const QString& name);
 
   void onPageTerminate();
 

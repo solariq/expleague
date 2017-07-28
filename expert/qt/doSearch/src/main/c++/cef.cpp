@@ -199,7 +199,7 @@ void initCef(int argc, char* argv[]) {
   QDir cache_dir(appLocalPath);
   cache_dir.mkdir("browserCache");
   cache_dir.cd("browserCache");
-//  cache_path = cache_dir.absolutePath().toStdString();
+  cache_path = cache_dir.absolutePath().toStdString();
 
   #ifdef Q_OS_MAC
   CefMainArgs main_args(argc, argv);
@@ -217,7 +217,7 @@ void initCef(int argc, char* argv[]) {
   QObject::connect(cefTimer, &QTimer::timeout, []() {
       CefDoMessageLoopWork();
 //    qDebug() << "Work Done";
-      cefTimer->setInterval(5);
+      cefTimer->setInterval(1);
       cefTimer->start();
   });
   cefTimer->start();

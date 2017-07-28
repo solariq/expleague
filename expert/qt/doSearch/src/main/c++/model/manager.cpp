@@ -11,7 +11,10 @@
 #include <QQuickWindow>
 #include <QQmlApplicationEngine>
 
+#include <chrono>
+
 namespace expleague {
+
 typedef QHash<QString, PagesGroup*> GroupsHash;
 
 void NavigationManager::handleOmnibox(const QString& text, int /*modifier*/) {
@@ -468,8 +471,8 @@ void NavigationManager::unfold() {
     PagesGroup* nextGroup = m_active_context->associated(next, false);
     if (!nextGroup)
       break;
-    nextGroup->setParentGroup(
-          current); // during setParentGroup the visible contents can be changed if pages are visible at the above level
+//    nextGroup->setParentGroup(
+//          current); // during setParentGroup the visible contents can be changed if pages are visible at the above level
     if (nextGroup->empty() || m_groups.contains(nextGroup) || !nextGroup->selectedPage())
       break;
     appendGroup(nextGroup);
@@ -512,7 +515,7 @@ void NavigationManager::onContextsChanged() {
 }
 
 void NavigationManager::onPagesChanged() {
-  rebalanceWidth();
+  onGroupsChanged();
 }
 
 
@@ -580,19 +583,26 @@ void NavigationManager::onGroupsChanged() {
     }
   }
 
-//  if(!m_groups.isEmpty()){
-//    QList<Page*> pages = m_groups[0]->activePagesList();
-//    for(Page *page: pages){
+  if(!m_groups.isEmpty()){
+    QList<Page*> closed = m_groups[0]->closedPagesList();
+    for(Page* page: closed){
+      if(m_always_active.contains(page)){
+        m_always_active.remove(page);
+      }
+    }
+    QList<Page*> pages = m_groups[0]->activePagesList();
+    for(Page* page: pages){
+      m_always_active.insert(page);
 //      limitAppend(m_always_active, page, pages.size() + 10);
-//    }
-//  }
-//
-//  for(Page* page: m_always_active){
-//    if (!known.contains(page)) {
-//      screens += page->ui();
-//      known.insert(page);
-//    }
-//  }
+    }
+  }
+
+  for(Page* page: m_always_active){
+    if (!known.contains(page)) {
+      screens += page->ui();
+      known.insert(page);
+    }
+  }
 
   if (m_prev_known != known) {
     for (Page* page: m_prev_known) { // cleanup

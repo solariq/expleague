@@ -25,21 +25,20 @@ Rectangle {
         visible: !editMode
         anchors.fill: parent
         onEntered: {
-
-            if (dosearch.main.dragType != "web" && dosearch.main.dragType != "delay")
-                return
-            dosearch.main.dragType = "web"
-            dosearch.main.drag = drag.source
+//            if (dosearch.main.dragType != "web" && dosearch.main.dragType != "delay" && dosearch.main.dragType != "")
+//                return
+//            dosearch.main.dragType = "web"
+//            dosearch.main.drag = drag.source
         }
 
         onExited: {
-            if (dosearch.main.dragType != "web" && dosearch.main.dragType != "delay")
-                return
-            dosearch.main.dragType = "delay"
-            dosearch.main.delay(100, function () {
-                if (dosearch.main.dragType == "delay")
-                    dosearch.main.drag = null
-            })
+//            if (dosearch.main.dragType != "web" && dosearch.main.dragType != "delay" && dosearch.main.dragType != "")
+//                return
+//            dosearch.main.dragType = "delay"
+//            dosearch.main.delay(100, function () {
+//                if (dosearch.main.dragType == "delay")
+//                    dosearch.main.drag = null
+//            })
         }
 
         onDropped: {
@@ -152,7 +151,7 @@ Rectangle {
                     font.pixelSize: 24
                     color: "white"
                     Keys.onReturnPressed: {
-                        owner.activeGroup.setName(groupName.text)
+                        owner.activeGroup.setTitle(groupName.text)
                         groupName.focus = false
                     }
                     onTextChanged: {

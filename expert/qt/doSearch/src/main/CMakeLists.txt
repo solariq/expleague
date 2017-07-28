@@ -195,6 +195,7 @@ if (CEF)
         #    endif()
 
     elseif(OS_WINDOWS)
+
         set_target_properties(doSearch PROPERTIES COMPILER_FLAGS ${CMAKE_CXX_FLAGS_DEBUG})
         #ADD_WINDOWS_MANIFEST("${CMAKE_CURRENT_BINARY_DIR}" "doSearch" "exe")
         COPY_FILES("doSearch" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")

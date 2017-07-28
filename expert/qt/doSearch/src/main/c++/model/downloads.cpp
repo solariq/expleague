@@ -6,10 +6,9 @@
 namespace expleague {
 int Download::max_id = 0;
 
-Download::Download(const QUrl &url, const QString &path, int id):
-        m_id(id), m_path(path), m_url(url)
+Download::Download(const QUrl &url, const QString &path, const QString& name, int id):
+        m_id(id), m_path(path), m_url(url), m_file_name(name)
 {
-  m_file_name = url.fileName();
   max_id = std::max(id, max_id);
 }
 

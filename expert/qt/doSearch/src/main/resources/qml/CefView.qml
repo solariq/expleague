@@ -5,6 +5,8 @@ import QtQuick.Controls.impl 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Controls 1.4 as Legacy
 import QtQuick.Window 2.0
+import QtQuick.Dialogs 1.1
+
 
 import ExpLeague 1.0
 import "."
@@ -18,6 +20,21 @@ Rectangle{
 
     onMuteChanged: {
         webView.setMute(mute)
+    }
+    Popup {
+        padding: 10
+        id: downloadPopup
+        opacity: 0.75
+        background: Rectangle {
+            color: "#000"
+            radius: 7
+        }
+        Text {
+            id: popupText
+            color: "#FFF"
+            text: "Загрузка началась"
+            font.pointSize: 15
+        }
     }
 
     CefItem {
@@ -54,7 +71,12 @@ Rectangle{
         }
 
         onDownloadStarted: {
-//            dosearch.navigation.select(0, dosearch.navigation.context)
+            downloadPopup.x = dragArea.mouseX
+            downloadPopup.y = dragArea.mouseY
+            downloadPopup.open()
+            dosearch.main.delay(1000, function(){
+                downloadPopup.close()
+            })
             dosearch.navigation.context.ui.downloads.append(item)
         }
 

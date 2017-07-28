@@ -374,6 +374,9 @@ void Context::interconnect() {
             PagesGroup* group = new PagesGroup(sub, this);
             m_associations[group->root()->id()] = group;
         });
+        for(PagesGroup* group: m_associations.values()){
+           group->loadParent();
+        }
     }
 }
 

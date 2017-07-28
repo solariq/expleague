@@ -46,4 +46,7 @@ set(leveldb_sources
 
 add_library(leveldb STATIC ${leveldb_sources})
 add_definitions(-DLEVELDB_PLATFORM_WINDOWS -DLEVELDB_ATOMIC_PRESENT -DNDEBUG)
+
+find_library(SHLWAPI REQUIRED Shlwapi.lib)
+target_link_libraries(leveldb Shlwapi.lib)
 target_include_directories(leveldb PUBLIC ./ include)

@@ -353,7 +353,7 @@ bool BrowserListener::OnBeforeBrowse(CefRefPtr<CefBrowser> browser, CefRefPtr<Ce
 
   QString url = QString::fromStdString(request->GetURL().ToString());
   QUrl qurl(url, QUrl::TolerantMode);
-//  qDebug() << "on Before browse" << qurl << "is_redirect" << is_redirect << "transition type" << request->GetTransitionType();
+  qDebug() << "on Before browse" << qurl << "is_redirect" << is_redirect << "transition type" << request->GetTransitionType();
   if (qurl == m_owner->m_url) { //onbeforebrowse was called from QT
     return false;
   }
@@ -440,7 +440,7 @@ void BrowserListener::OnLoadingStateChange(CefRefPtr<CefBrowser> browser, bool i
 
 void BrowserListener::OnBeforeDownload(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDownloadItem> download_item,
                                        const CefString& suggested_name, CefRefPtr<CefBeforeDownloadCallback> callback) {
-  m_owner->download(QString::fromStdString(download_item->GetURL().ToString()));
+  m_owner->download(QString::fromStdString(download_item->GetURL().ToString()), QString::fromStdString(suggested_name));
 }
 
 enum {
@@ -506,7 +506,7 @@ bool BrowserListener::OnContextMenuCommand(CefRefPtr<CefBrowser> browser, CefRef
     emit m_owner->savedToStorage(QString::fromStdString((params->GetLinkUrl().ToString())));
     return true;
   case MENU_USER_DOWNLOAD:
-    m_owner->download(QString::fromStdString(params->GetSourceUrl().ToString()));
+    m_owner->download(QString::fromStdString(params->GetSourceUrl().ToString()), "");
     return true;
   }
   return true;
@@ -556,9 +556,7 @@ void CefItem::updateVisible() {
 }
 
 CefItem::~CefItem() {
-  //CEF_REQUIRE_UI_THREAD()
-  if(m_browser)
-    removeFromShutDownGC();
+  removeFromShutDownGC();
   m_listener->disable();
   destroyBrowser();
 }
@@ -961,8 +959,8 @@ void CefItem::startDrag(QMimeData *mimeData){
   emit dragFromCefFinished();
 }
 
-void CefItem::download(const QUrl& url) {
-  Download* item = new Download(url, QStandardPaths::writableLocation(QStandardPaths::DownloadLocation));
+void CefItem::download(const QUrl& url, const QString& name) {
+  Download* item = new Download(url, QStandardPaths::writableLocation(QStandardPaths::DownloadLocation), name == "" ? url.fileName(): name);
   item->start();
   QQmlEngine::setObjectOwnership(item, QQmlEngine::JavaScriptOwnership);
   emit downloadStarted(item);

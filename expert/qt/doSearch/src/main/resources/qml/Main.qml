@@ -653,15 +653,11 @@ ApplicationWindow {
                 target: self
 
                 onDragChanged: {
-                    console.log("Drag changed to " + self.drag)
-                    if(self.drag == null){
-                        console.log("Drag")
-                    }
-
-                    if (/*self.drag &&*/ self.dragType != "page" && sidebar.state != "vault" && !vault.visible) {
+                    console.log("Drag changed to " + self.drag + self.dragType)
+                    if (self.drag && self.dragType != "page" && sidebar.state != "vault" && !vault.visible) {
                         vault.show()
                     }
-                    else if (/*!self.drag &&*/ vault.visible) {
+                    else if (!self.drag && vault.visible) {
                         vault.hide()
                     }
                 }

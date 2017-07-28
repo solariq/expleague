@@ -20,6 +20,7 @@ Item {
     visible: activePages.length > 0
     implicitWidth: visibleList.implicitWidth + (group.parentGroup ? separator.width: 0)
 
+
     RowLayout {
         anchors.fill: parent
         spacing: 0
@@ -102,8 +103,11 @@ Item {
 
                         property  var savedItemsX: []
                         property int totalWidth: 0
+                        property int fullTabsWidth: implicitWidth * (1 - Math.atan(totalWidth - implicitWidth)/(4*Math.PI))
+                        property var selectedPage
 
                         model: (innerVisiblePages && innerVisiblePages.length > 0) ? innerVisiblePages : activePages
+
 
                         onModelChanged: {
                             var newTotalWidth = 0
@@ -112,6 +116,10 @@ Item {
                             }
                             totalWidth = newTotalWidth
                             implicitWidth = width()
+                            if(selectedPage != group.selectedPage && newTotalWidth != 0){
+                                selectedPage = group.selectedPage
+                                scrollTo(selectedPage)
+                            }
                             update(false, drop.dropId < 0)
                         }
 
@@ -122,9 +130,8 @@ Item {
                         function update(animate, saveItemsX, wheel){
                             var realWidth = implicitWidth
                             if(wheel){
-                                group.scroll = group.scroll + wheel/totalWidth
+                                group.scroll -= wheel/totalWidth
                             }
-                            var fullTabsWidth = realWidth * (1 - Math.atan(totalWidth - realWidth)/(4*Math.PI))
                             var leftx = (totalWidth - fullTabsWidth)*group.scroll
                             var lefty = (realWidth - fullTabsWidth)*group.scroll
                             var rightx = leftx + fullTabsWidth
@@ -158,7 +165,30 @@ Item {
                             if(saveItemsX)
                                 savedItemsX.push(realWidth)
                         }
+                        function scrollTo(page){
+                            console.log("scroll 1", totalWidth, fullTabsWidth)
+                            if(totalWidth - fullTabsWidth == 0){
+                                return
+                            }
+                            var sum = 0
+                            var i = 0
+                            for(i = 0; i < repeater.count - 1 && activePages[i] != page; i++){
+                                sum += itemAt(i).width;
+                            }
+                            var leftx = (totalWidth - fullTabsWidth) * group.scroll
+                            if(sum < leftx){
+                                group.scroll = sum/(totalWidth - fullTabsWidth)
+                            }
+                            else if(sum  > leftx + fullTabsWidth - itemAt(i).width){
+                                group.scroll = (sum - fullTabsWidth + itemAt(i).width)/(totalWidth - fullTabsWidth)
+                            }
+//                            console.log("new scroll", group.scroll, "sum" , sum, "width", totalWidth - fullTabsWidth)
+//                            console.log("leftx", leftx, "rightx", leftx + fullTabsWidth)
+                            update(true, true)
+                        }
+
                     }
+
 
                     MouseArea{
                         z: -100

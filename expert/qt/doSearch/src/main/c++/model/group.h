@@ -80,6 +80,7 @@ public:
 public:
     QList<Page*> pages() const { return m_pages; }
     QList<Page*> activePagesList() { return m_active_pages; }
+    QList<Page*> closedPagesList() { return m_closed_pages; }
 
     Q_INVOKABLE void insert(Page* page, int position = -1);
     Q_INVOKABLE void close(Page* page);
@@ -90,6 +91,8 @@ public:
     void split(const QList<Page*>& active, const QList<Page*>& closed, int visibleStart, int visibleCount);
 
     void updateVisibleState(double width);
+
+    void loadParent();
 
 signals:
     void selectedChanged(bool selected);
