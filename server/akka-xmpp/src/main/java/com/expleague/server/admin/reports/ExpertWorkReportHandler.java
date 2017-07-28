@@ -48,14 +48,14 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
       final Stream<ResultSet> mainResultStream;
       if (request.expertId() == null)
         mainResultStream = mySQLBoard.stream(
-            "SELECT DISTINCT Participants.timestamp, Participants.partisipant, Users.trusted, Orders.offer, Orders.room, Participants.order, Orders.score, Participants.role FROM Participants INNER JOIN Orders ON Participants.order = Orders.id INNER JOIN Users ON Participants.partisipant = Users.id WHERE Participants.role < 7 AND Participants.timestamp >= ? AND Participants.timestamp <= ? ORDER BY Participants.timestamp",
+            "SELECT DISTINCT Participants.timestamp, Participants.partisipant, Users.trusted, Orders.offer, Orders.room, Participants.order, Orders.score, Participants.role FROM Participants INNER JOIN Orders ON Participants.order = Orders.id INNER JOIN Users ON Participants.partisipant = Users.id WHERE Participants.role < 7 AND Participants.timestamp >= ? AND Participants.timestamp <= ? GROUP BY Participants.partisipant, Participants.order, Participants.role ORDER BY Participants.timestamp",
             stmt -> {
               stmt.setTimestamp(1, new Timestamp(request.start()));
               stmt.setTimestamp(2, new Timestamp(request.end()));
             });
       else
         mainResultStream = mySQLBoard.stream(
-            "SELECT DISTINCT Participants.timestamp, Participants.partisipant, Users.trusted, Orders.offer, Orders.room, Participants.order, Orders.score, Participants.role FROM Participants INNER JOIN Orders ON Participants.order = Orders.id INNER JOIN Users ON Participants.partisipant = Users.id WHERE Participants.role < 7 AND Participants.timestamp >= ? AND Participants.timestamp <= ? AND Participants.partisipant = ? ORDER BY Participants.timestamp",
+            "SELECT DISTINCT Participants.timestamp, Participants.partisipant, Users.trusted, Orders.offer, Orders.room, Participants.order, Orders.score, Participants.role FROM Participants INNER JOIN Orders ON Participants.order = Orders.id INNER JOIN Users ON Participants.partisipant = Users.id WHERE Participants.role < 7 AND Participants.timestamp >= ? AND Participants.timestamp <= ? AND Participants.partisipant = ? GROUP BY Participants.partisipant, Participants.order, Participants.role ORDER BY Participants.timestamp",
             stmt -> {
               stmt.setTimestamp(1, new Timestamp(request.start()));
               stmt.setTimestamp(2, new Timestamp(request.end()));
