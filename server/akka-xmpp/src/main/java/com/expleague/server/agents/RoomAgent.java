@@ -4,10 +4,7 @@ import akka.actor.ActorRef;
 import akka.persistence.DeleteMessagesFailure;
 import akka.persistence.DeleteMessagesSuccess;
 import akka.persistence.RecoveryCompleted;
-import com.expleague.model.Affiliation;
-import com.expleague.model.Delivered;
-import com.expleague.model.Offer;
-import com.expleague.model.Role;
+import com.expleague.model.*;
 import com.expleague.server.Roster;
 import com.expleague.server.Subscription;
 import com.expleague.server.dao.Archive;
@@ -247,7 +244,7 @@ public class RoomAgent extends PersistentActorAdapter {
       knownIds.add(iq.id());
       archive.add(iq);
       if (mode == ProcessMode.NORMAL)
-        dump.accept(iq);
+        dump().accept(iq);
     }
   }
 
@@ -423,7 +420,7 @@ public class RoomAgent extends PersistentActorAdapter {
     if (role(from) == Role.NONE && mode == ProcessMode.NORMAL)
       update(from, suggestRole(from, affiliation(from)), null);
 
-    if (mode == ProcessMode.NORMAL && ++msgIndex % 10 == 0)
+    if (mode == ProcessMode.NORMAL && (++msgIndex % 10 == 0 || msg.has(Operations.LastMessage.class)))
       commit();
   }
 
@@ -458,7 +455,7 @@ public class RoomAgent extends PersistentActorAdapter {
 
   protected void commit() {
     if (mode() == ProcessMode.NORMAL)
-      dump.commit();
+      dump().commit();
   }
 
   @NotNull
@@ -504,7 +501,15 @@ public class RoomAgent extends PersistentActorAdapter {
     if (o instanceof RecoveryCompleted) {
       if (archive != null) {
         inconsistent |= !check(archive);
-        if (dump.size() > archive.size() || inconsistent) {
+        final boolean dumpOk;
+        final String lastMessage = Archive.instance().lastMessageId(jid().local());
+        if (lastMessage != null && archive.size() > 0) {
+          dumpOk = archive.get(archive.size() - 1).id().equals(lastMessage);
+        }
+        else {
+          dumpOk = archive.size() == dump().size();
+        }
+        if (!dumpOk || inconsistent) {
           replay();
           return;
         }
@@ -551,7 +556,7 @@ public class RoomAgent extends PersistentActorAdapter {
         assert archive != null;
         archive.clear();
         knownIds.clear();
-        dump.stream().forEach(stanza -> {
+        dump().stream().forEach(stanza -> {
           if (stanza instanceof Iq)
             onIq((Iq) stanza);
           else if (stanza instanceof Message)
@@ -583,7 +588,6 @@ public class RoomAgent extends PersistentActorAdapter {
     if (archive != null)
       archive.clear();
     XMPP.subscribe(subscription, context());
-    dump = Archive.instance().dump(jid.local());
     mode = ProcessMode.RECOVER;
   }
 
@@ -621,6 +625,12 @@ public class RoomAgent extends PersistentActorAdapter {
           offer.client(new JID(updatedOwner, client.domain(), client.resource()));
       }
     }
+  }
+
+  private Archive.Dump dump() {
+    if (dump == null)
+      dump = Archive.instance().dump(jid.local());
+    return dump;
   }
 
   private class MucUserStatus {

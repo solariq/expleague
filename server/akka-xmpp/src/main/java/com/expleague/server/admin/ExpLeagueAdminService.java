@@ -241,7 +241,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
               final String expertId = expertIdParam.isDefined() ? expertIdParam.get() : null;
 
               final ActorRef handler = context().actorOf(ActorAdapter.props(ExpertWorkReportHandler.class, start, end, expertId));
-              final Timeout timeout = Timeout.apply(Duration.create(10, TimeUnit.MINUTES));
+              final Timeout timeout = Timeout.apply(Duration.create(2, TimeUnit.HOURS));
               final Future<Object> ask = Patterns.ask(handler, new ExpertWorkReportHandler.ReportRequest(start, end, expertId), timeout);
               final String result = (String) Await.result(ask, timeout.duration());
 

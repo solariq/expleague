@@ -22,6 +22,7 @@ import gnu.trove.list.array.TLongArrayList;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,28 +41,35 @@ public class DynamoDBArchive implements Archive {
 
   private final BlockingDeque<Message> roomAccumulatedChangesDeque = new LinkedBlockingDeque<>();
   private final ConcurrentHashMap<String, Integer> roomPostfix = new ConcurrentHashMap<>();
-  private final DynamoDBMapper mapper;
+  private final DynamoDBMapper mainTableMapper;
   private final AmazonDynamoDBAsyncClient client;
+  private final ConcurrentMap<String, String> lastMessages = new ConcurrentHashMap<>();
 
   public DynamoDBArchive() {
     final BasicAWSCredentials credentials = new BasicAWSCredentials("AKIAJPLJBHVNFAWY3S4A", "UEnvfQ2ver5mlOu7IJsjxRH3G9uF3/f0WNLFZ9c6");
+    //noinspection deprecation
     client = new AmazonDynamoDBAsyncClient(credentials);
-    mapper = new DynamoDBMapper(client, new DynamoDBMapperConfig((DynamoDBMapperConfig.TableNameResolver) (clazz, config) -> ExpLeagueServer.config().dynamoDB()));
     final List<String> tableNames = client.listTables().getTableNames();
-    final String tableName = ExpLeagueServer.config().dynamoDB();
     final long readWriteCapacity = 10L;
-    if (!tableNames.contains(tableName)) {
-      final CreateTableRequest createReq = mapper.generateCreateTableRequest(RoomArchive.class);
-      createReq.setProvisionedThroughput(new ProvisionedThroughput(readWriteCapacity, readWriteCapacity));
-      final CreateTableResult createTableResult = client.createTable(createReq);
-      try {
-        Thread.sleep(5000);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-    }
-    final DynamoDB db = new DynamoDB(client);
 
+    final String mainTableName = ExpLeagueServer.config().dynamoDB();
+    //noinspection deprecation
+    mainTableMapper = new DynamoDBMapper(client, new DynamoDBMapperConfig((DynamoDBMapperConfig.TableNameResolver) (clazz, config) -> mainTableName));
+    if (!tableNames.contains(mainTableName)) {
+      createTable(mainTableMapper, RoomArchive.class, readWriteCapacity, readWriteCapacity);
+    }
+    final String lastMessageTableName = ExpLeagueServer.config().dynamoDBLastMessages();
+    //noinspection deprecation
+    final DynamoDBMapper lastMessagesMapper = new DynamoDBMapper(client, new DynamoDBMapperConfig((DynamoDBMapperConfig.TableNameResolver) (clazz, config) -> lastMessageTableName));
+    if (!tableNames.contains(lastMessageTableName)) {
+      createTable(lastMessagesMapper, RoomLastMessage.class, readWriteCapacity, readWriteCapacity);
+    }
+    else {
+      final PaginatedScanList<RoomLastMessage> scanList = lastMessagesMapper.scan(RoomLastMessage.class, new DynamoDBScanExpression());
+      scanList.forEach(roomLastMessage -> lastMessages.put(roomLastMessage.getRoom(), roomLastMessage.getMessageId()));
+    }
+
+    final DynamoDB db = new DynamoDB(client);
     { //Start update consumer
       final Thread updateConsumer = new Thread(() -> {
         final long intervalInNanos = 1000L * 1000L * 1000L;
@@ -110,10 +118,18 @@ public class DynamoDBArchive implements Archive {
               }
             }
 
+            boolean mainTableUpdateFails = false;
             try {
+              final String lastMessageId = changesToApply.get(changesToApply.size() - 1).stanza().id();
+              final UpdateItemRequest updateLastMessage = new UpdateItemRequest()
+                  .withTableName(lastMessageTableName)
+                  .withKey(InternalUtils.toAttributeValueMap(new PrimaryKey("room", roomId)))
+                  .addAttributeUpdatesEntry("messageId", new AttributeValueUpdate().withValue(new AttributeValue().withS(lastMessageId)).withAction(AttributeAction.PUT));
+              client.updateItem(updateLastMessage);
+              mainTableUpdateFails = true;
               client.updateItem(currentUpdate);
             } catch (AmazonClientException ace) {
-              if (ace instanceof AmazonServiceException && ((AmazonServiceException) ace).getErrorType() == AmazonServiceException.ErrorType.Client) {
+              if (mainTableUpdateFails && ace instanceof AmazonServiceException && ((AmazonServiceException) ace).getErrorType() == AmazonServiceException.ErrorType.Client) {
                 roomPostfix.compute(roomId, (id, postfix) -> postfix == null ? ROOM_POSTFIX_START : postfix + 1);
               }
               Lists.reverse(changesToApply).forEach(roomAccumulatedChangesDeque::addFirst);
@@ -189,13 +205,13 @@ public class DynamoDBArchive implements Archive {
       };
     }
     return dumpsCache.get(local, id -> {
-      RoomArchive archive = mapper.load(getRoomArchiveClass(), id);
+      RoomArchive archive = mainTableMapper.load(getRoomArchiveClass(), id);
       if (archive == null)
         archive = new RoomArchive(id);
 
       for (int i = ROOM_POSTFIX_START; i < Integer.MAX_VALUE; i++) {
         final String extraItemId = itemId(id, i);
-        final RoomArchive extraArchive = mapper.load(getRoomArchiveClass(), extraItemId);
+        final RoomArchive extraArchive = mainTableMapper.load(getRoomArchiveClass(), extraItemId);
         if (extraArchive == null) {
           final int postfix = i - 1;
           if (postfix >= ROOM_POSTFIX_START) {
@@ -208,7 +224,7 @@ public class DynamoDBArchive implements Archive {
         }
       }
 
-      archive.handlers(roomAccumulatedChangesDeque);
+      archive.handlers(roomAccumulatedChangesDeque, lastMessages);
       return archive;
     });
   }
@@ -216,13 +232,29 @@ public class DynamoDBArchive implements Archive {
   @Override
   public synchronized Dump register(String room, String owner) {
     final RoomArchive archive = new RoomArchive(room);
-    archive.handlers(roomAccumulatedChangesDeque);
+    archive.handlers(roomAccumulatedChangesDeque, lastMessages);
     dumpsCache.put(room, archive);
     return archive;
   }
 
+  @Override
+  public String lastMessageId(String local) {
+    return lastMessages.get(local);
+  }
+
   protected Class<? extends RoomArchive> getRoomArchiveClass() {
     return RoomArchive.class;
+  }
+
+  private void createTable(DynamoDBMapper mapper, Class<?> clazz, long readCapacity, long writeCapacity) {
+    final CreateTableRequest createReq = mapper.generateCreateTableRequest(clazz);
+    createReq.setProvisionedThroughput(new ProvisionedThroughput(readCapacity, writeCapacity));
+    final CreateTableResult createTableResult = client.createTable(createReq);
+    try {
+      Thread.sleep(5000);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @DynamoDBTable(tableName = "expleague-rooms")
@@ -271,6 +303,7 @@ public class DynamoDBArchive implements Archive {
       final Message message = new Message(stanza.from().toString(), stanza.xmlString(), System.currentTimeMillis());
       known.add(stanza.id());
       messages.add(message);
+      lastMessages.put(id, stanza.id());
       accumulatedChange.add(message);
     }
 
@@ -308,9 +341,11 @@ public class DynamoDBArchive implements Archive {
     }
 
     private BlockingDeque<Message> roomAccumulatedChangesDeque;
+    private ConcurrentMap<String, String> lastMessages;
 
-    public void handlers(BlockingDeque<Message> roomAccumulatedChangesQueue) {
+    public void handlers(BlockingDeque<Message> roomAccumulatedChangesQueue, ConcurrentMap<String, String> lastMessages) {
       this.roomAccumulatedChangesDeque = roomAccumulatedChangesQueue;
+      this.lastMessages = lastMessages;
     }
   }
 
@@ -373,6 +408,30 @@ public class DynamoDBArchive implements Archive {
           .addMEntry("text", new AttributeValue().withS(text))
           .addMEntry("author", new AttributeValue().withS(author))
           .addMEntry("ts", new AttributeValue().withN(Long.toString(ts)));
+    }
+  }
+
+  @DynamoDBTable(tableName = "expleague-rooms-last-messages")
+  public static class RoomLastMessage {
+    String room;
+    String messageId;
+
+    @DynamoDBHashKey
+    public String getRoom() {
+      return room;
+    }
+
+    public void setRoom(String room) {
+      this.room = room;
+    }
+
+    @DynamoDBAttribute
+    public String getMessageId() {
+      return messageId;
+    }
+
+    public void setMessageId(String messageId) {
+      this.messageId = messageId;
     }
   }
 }

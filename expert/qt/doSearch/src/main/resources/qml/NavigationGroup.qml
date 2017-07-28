@@ -90,7 +90,7 @@ Item {
                             Behavior on x {
                                 id: animation
                                 PropertyAnimation {
-                                    duration: 1000
+                                    duration: 50
                                 }
                             }
                             Connections{

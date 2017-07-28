@@ -9,6 +9,7 @@ import com.expleague.model.RoomState;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPDevice;
 import com.expleague.server.answers.RepositoryService;
+import com.expleague.server.dao.Archive;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.Item;
 import com.expleague.xmpp.JID;
@@ -67,6 +68,11 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     if (state == WORK) {
       inflightOrders()
           .forEach(order -> LaborExchange.tell(context(), order, self()));
+    }
+    else if (EnumSet.of(CLOSED, FEEDBACK).contains(state)) {
+      if (Archive.instance().lastMessageId(jid().local()) == null) {
+        self().tell(new Message(jid(), jid(), new Operations.LastMessage()), self());
+      }
     }
     context().setReceiveTimeout(Duration.apply(1, TimeUnit.HOURS));
   }
@@ -250,8 +256,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
         message(answerCopy);
       }
       else state(VERIFY);
-
+      answer(msg);
       tellGlobal(new RoomMessageReceived(from, true));
+
       inflightOrders().forEach(order->{
         if (order.state() != OrderState.DONE && (order.id().equals(answer.order()) || answer.order() == null)) {
           order.state(OrderState.DONE, currentTime);
@@ -260,7 +267,6 @@ public class ExpLeagueRoomAgent extends RoomAgent {
       if (answer.order() == null && orders.size() > 0) {
         answer.order(orders.get(orders.size() - 1).id());
       }
-      answer(msg);
       message(new Message(jid(), RepositoryService.jid(), currentOffer, answer));
     }
     else if (msg.has(Verified.class)) {
@@ -287,6 +293,9 @@ public class ExpLeagueRoomAgent extends RoomAgent {
           final Cancel cancel = msg.get(Cancel.class);
           if (knownToClient.contains(from))
             message(new Message(from, roomAlias(owner()), cancel));
+          if (currentOffer.room() == null) // backward compatibility
+            currentOffer.room(jid());
+
           final Offer oldOffer = currentOffer;
           currentOffer = currentOffer.copy();
           currentOffer.filter().reject(from);
