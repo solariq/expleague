@@ -42,7 +42,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
 
     final MySQLBoard mySQLBoard = (MySQLBoard) board;
     try {
-      headers("timestamp", "expert", "expert rating", "expert status", "topic", "continue", "room", "order", "tags", "score", "cancel/done");
+      headers("timestamp", "expert", "expert rating", "expert status", "topic", "continue", "room", "order", "tags", "score", "cancel/done", "client");
       final Stream<ResultSet> mainResultStream;
       if (request.expertId() == null)
         mainResultStream = mySQLBoard.stream(
@@ -197,7 +197,8 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
               orderId,
               tags.toString(),
               resultSet.getString(7),
-              Integer.toString(orderResult.index())
+              Integer.toString(orderResult.index()),
+              owner
           );
         } catch (Exception e) {
           throw new RuntimeException(e);
