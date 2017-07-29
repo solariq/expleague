@@ -2,10 +2,7 @@ package com.expleague.server.admin.reports;
 
 import akka.pattern.Patterns;
 import akka.util.Timeout;
-import com.expleague.model.Answer;
-import com.expleague.model.Offer;
-import com.expleague.model.Operations;
-import com.expleague.model.OrderState;
+import com.expleague.model.*;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.Roster;
 import com.expleague.server.agents.ExpLeagueOrder;
@@ -66,7 +63,8 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
       mainResultStream.forEach(resultSet -> {
         try {
           final String expertId = resultSet.getString(2);
-          final String rating = Double.toString(Roster.instance().profile(expertId).rating());
+          final ExpertsProfile expertsProfile = Roster.instance().profile(expertId);
+          final String rating = Double.toString(expertsProfile.rating());
           //noinspection ConstantConditions
           final String topic = StringEscapeUtils.escapeCsv(((Offer) Offer.create(resultSet.getString(4))).topic()).replace("\n", "\\n");
           final String orderId = resultSet.getString(6);
@@ -106,7 +104,8 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
                     orderResult = OrderResult.IN_PROGRESS;
                   }
                   else if (started) {
-                    orderResult = OrderResult.NA;
+                    if (orderResult != OrderResult.NEED_VERIFY)
+                      orderResult = OrderResult.NA;
                     break;
                   }
                 }
@@ -121,10 +120,19 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
                   }
                 }
                 else if (started && message.has(Answer.class) && message.from().local().equals(expertId)) {
+                  if (expertsProfile.authority().priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
+                    orderResult = OrderResult.DONE;
+                    break;
+                  }
+                  else {
+                    orderResult = OrderResult.NEED_VERIFY;
+                  }
+                }
+                else if (started && message.has(Operations.Verified.class) && orderResult == OrderResult.NEED_VERIFY) {
                   orderResult = OrderResult.DONE;
                   break;
                 }
-                else if (started && message.has(Operations.Progress.class)) {
+                else if (started && message.has(Operations.Progress.class) && orderResult != OrderResult.NEED_VERIFY) {
                   final Operations.Progress progress = message.get(Operations.Progress.class);
                   if (orderId.equals(progress.order()) && progress.state() == OrderState.DONE) {
                     orderResult = OrderResult.NO_RESULT;
@@ -144,7 +152,10 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
               if (!(stanza instanceof Message))
                 continue;
               final Message message = ((Message) stanza);
-              if (message.has(Answer.class)) {
+              if (message.has(Answer.class) && expertsProfile.authority().priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
+                prevAnswer = true;
+              }
+              else if (message.has(Operations.Verified.class)) {
                 prevAnswer = true;
               }
               else if (message.has(Message.Body.class)) {
@@ -227,11 +238,12 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
   private enum OrderResult {
     CANCEL_FROM_INVITE(0),
     CANCEL_FROM_TASK(1),
-    DONE(2),
-    CANCEL_BY_CLIENT(3),
-    IN_PROGRESS(4),
-    NA(5),
-    NO_RESULT(6),;
+    NEED_VERIFY(2),
+    DONE(3),
+    CANCEL_BY_CLIENT(4),
+    IN_PROGRESS(5),
+    NA(6),
+    NO_RESULT(7),;
 
     int index;
 
