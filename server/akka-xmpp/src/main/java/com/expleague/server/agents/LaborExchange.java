@@ -193,6 +193,7 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
     Stream<ExpLeagueOrder> related(JID jid);
     Stream<ExpLeagueOrder> open();
     Stream<ExpLeagueOrder> orders(OrderFilter filter);
+    ExpLeagueOrder order(String id);
 
     void replay(String roomId, ActorContext context);
 
