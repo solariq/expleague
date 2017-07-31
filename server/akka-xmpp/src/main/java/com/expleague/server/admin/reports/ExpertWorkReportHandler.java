@@ -95,7 +95,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
                 final Message message = ((Message) stanza);
                 if (message.has(Operations.Start.class)) {
                   final Operations.Start start = (message.get(Operations.Start.class));
-                  if (start.order().equals(orderId)) {
+                  if (orderId.equals(start.order())) {
                     started = true;
                     orderResult = OrderResult.IN_PROGRESS;
                   }
@@ -106,16 +106,16 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
                   }
                 }
                 else if (started && message.has(Operations.Cancel.class)) {
-                  if (message.from().local().equals(client)) {
+                  if (client.equals(message.from().local())) {
                     orderResult = OrderResult.CANCEL_BY_CLIENT;
                     break;
                   }
-                  else if (message.from().local().equals(expertId)) {
+                  else if (expertId.equals(message.from().local())) {
                     orderResult = OrderResult.CANCEL_FROM_TASK;
                     break;
                   }
                 }
-                else if (started && message.has(Answer.class) && message.from().local().equals(expertId)) {
+                else if (started && message.has(Answer.class) && expertId.equals(message.from().local())) {
                   if (expertsProfile.authority().priority() <= ExpertsProfile.Authority.EXPERT.priority()) {
                     orderResult = OrderResult.DONE;
                     break;
@@ -155,7 +155,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
                 prevAnswer = true;
               }
               else if (message.has(Message.Body.class)) {
-                if (prevAnswer && stanza.from().local().equals(client)) {
+                if (prevAnswer && client.equals(stanza.from().local())) {
                   continueText = StringEscapeUtils.escapeCsv(((Message) stanza).get(Message.Body.class).value()).replace("\n", "\\n");
                   prevAnswer = false;
                 }
