@@ -694,6 +694,7 @@ void CefItem::initBrowser(QQuickWindow* window) {
   QObject::connect(this, SIGNAL(visibleChanged()), this, SLOT(updateVisible()));
 
   if (m_url.isEmpty()) {
+    qDebug() << m_html;
     m_browser->GetMainFrame()->LoadString(m_html.toStdString(), "about:blank");
   }
   m_iobuffer->setBrowser(m_browser);
@@ -1029,7 +1030,7 @@ void CefItem::loadHtml(const QString& html) {
   }
   m_html = html;
   if (m_running && m_browser) {
-    qDebug() << "load html";
+    qDebug() << "load html" << m_html;
     m_browser->GetMainFrame()->LoadString(m_html.toStdString(), "about:blank");
   } else {
     initBrowser(window());

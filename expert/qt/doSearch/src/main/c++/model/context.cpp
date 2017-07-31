@@ -268,6 +268,13 @@ void Context::removeDocument(MarkdownEditorPage* document) {
 }
 
 void Context::setActiveDocument(MarkdownEditorPage* active) {
+    if(!active){
+      m_active_document = nullptr;
+      emit activeDocumentChanged();
+      store("context.active", "");
+      save();
+      return;
+    }
     const int index = m_documents.indexOf(active);
     if (index < 0)
         return;
