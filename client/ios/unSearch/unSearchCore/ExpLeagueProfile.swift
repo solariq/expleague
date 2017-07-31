@@ -59,17 +59,14 @@ public class ExpLeagueProfile: NSManagedObject {
     }
     
     public func busyChanged() { QObject.notify(#selector(self.busyChanged), self) }
-    public func adjustUnread(_ increment: Int32) {
-        update {
-            self.unread += increment
-            if (self.unread < 0) {
-                self.unread = 0
-            }
-            
-            self.unreadChanged()
+    public var unread: Int {
+        guard myUnread < 0 else {
+            return Int(myUnread)
         }
+        _ = listOrders()
+        return Int(myUnread)
     }
-    public func unreadChanged() { QObject.notify(#selector(self.unreadChanged), self) }
+    public func unreadChanged() { update { self.myUnread = -1; QObject.notify(#selector(self.unreadChanged), self) }}
 
     public func disconnect() {
         communicator?.state.mode = .background
@@ -148,8 +145,8 @@ public class ExpLeagueProfile: NSManagedObject {
                 unread += order.unread
             }
         }
-        if (self.unread != unread) {
-            adjustUnread(unread - self.unread)
+        updateSync {
+            myUnread = unread
         }
         return result
     }

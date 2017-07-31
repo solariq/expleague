@@ -81,8 +81,12 @@ class AppDelegate: UIResponder {
         }
     }
     
+    let storyboard = UIStoryboard(name: "Main", bundle: nil)
+    fileprivate var started = false
     func start() {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        guard !started else {
+            return
+        }
         tabs = storyboard.instantiateViewController(withIdentifier: "tabs") as? TabsViewController
         self.window?.rootViewController = tabs
         GMSServices.provideAPIKey(AppDelegate.GOOGLE_API_KEY)
@@ -103,6 +107,7 @@ class AppDelegate: UIResponder {
         if let fbToken = AccessToken.current {
             ExpLeagueProfile.active.fbid = fbToken.userId
         }
+        started = true
     }
     
     func onProfileChanged() {
@@ -242,9 +247,10 @@ extension AppDelegate: UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
+        start()
         if let orderId = notification.userInfo?["order"] as? String, let order = ExpLeagueProfile.active.order(name: orderId) {
-            ExpLeagueProfile.active.selectedOrder = order
             tabs?.selectedIndex = 1
+            ExpLeagueProfile.active.selectedOrder = order
         }
     }
     

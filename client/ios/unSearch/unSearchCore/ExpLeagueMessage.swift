@@ -190,7 +190,7 @@ public class ExpLeagueMessage: NSManagedObject {
     }
     
     static let cutRE = try! NSRegularExpression(pattern: "\\+\\[([^\\]]+)\\]([^-]*(?:-[^\\[][^-]*)*)-\\[\\1\\]", options: [])
-    static let brokenLinksRE = try! NSRegularExpression(pattern: "(^\\s+)# ", options: [])
+    static let brokenLinksRE = try! NSRegularExpression(pattern: "(\\w+|\\/)#\\s+", options: [])
     fileprivate func md2html(md: String) -> String {
         if (!(body ?? "").hasPrefix("<answer")) {
             return body!
@@ -201,6 +201,7 @@ public class ExpLeagueMessage: NSManagedObject {
             if let firstLineEnd = answerText.range(of: "\n")?.lowerBound {
                 answerText = answerText.substring(from: firstLineEnd)
             }
+            
             answerText = ExpLeagueMessage.brokenLinksRE.stringByReplacingMatches(in: answerText, options: .withoutAnchoringBounds, range: NSRange(location: 0, length: answerText.characters.count), withTemplate: "\\1#")
             let matches = ExpLeagueMessage.cutRE.matches(in: answerText, options: [], range: NSRange(location: 0, length: answerText.characters.count))
             
