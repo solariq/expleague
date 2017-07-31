@@ -103,39 +103,53 @@ extension OrderAttachmentsController: UICollectionViewDelegate, UICollectionView
         return cell
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        if let index = attachmentsCollection?.indexPathsForVisibleItems[0] {
+            select(indexPath: index)
+        }
+    }
+    
     func imageTapped(_ sender: UITapGestureRecognizer) {
-        if let indexPath = (attachmentsCollection?.indexPathForItem(at: sender.location(in: attachmentsCollection))),
-            let imagePreview = attachmentsCollection?.cellForItem(at: indexPath) as! AttachedImageCell? {
-            attachmentsCollection.indexPathsForSelectedItems?.forEach {
-                attachmentsCollection.deselectItem(at: $0, animated: true)
-            }
-            attachmentsCollection.selectItem(at: indexPath, animated: true, scrollPosition: UICollectionViewScrollPosition())
+        if let indexPath = attachmentsCollection?.indexPathForItem(at: sender.location(in: attachmentsCollection)) {
+            select(indexPath: indexPath)
+        }
+    }
 
-            if (selected != imagePreview.attachment) {
-                selected = imagePreview.attachment
-                if let error = selected?.error {
-                    errorDescription.isHidden = false
-                    errorDescription.text = error
-                }
-                else {
-                    errorDescription.isHidden = true
-                    let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [imagePreview.attachment!.imageId], options: nil)
-                    if fetchResult.count > 0 {
-                        let asset = fetchResult.object(at: 0)
-                        PHImageManager.default().requestImage(
-                            for: asset,
-                            targetSize: self.preview.frame.size,
-                            contentMode: PHImageContentMode.aspectFit,
-                            options: nil
-                        ) { (image, _) in
-                            self.preview.image = image
-                        }
+    func select(indexPath: IndexPath) {
+        guard let imagePreview = attachmentsCollection?.cellForItem(at: indexPath) as! AttachedImageCell? else {
+            return
+        }
+        
+        attachmentsCollection.indexPathsForSelectedItems?.forEach {
+            attachmentsCollection.deselectItem(at: $0, animated: true)
+        }
+        attachmentsCollection.selectItem(at: indexPath, animated: true, scrollPosition: UICollectionViewScrollPosition())
+        
+        if (selected != imagePreview.attachment) {
+            selected = imagePreview.attachment
+            if let error = selected?.error {
+                errorDescription.isHidden = false
+                errorDescription.text = "Не удалось загрузить изображение. Попробуйте позже."
+                print(error)
+            }
+            else {
+                errorDescription.isHidden = true
+                let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [imagePreview.attachment!.imageId], options: nil)
+                if fetchResult.count > 0 {
+                    let asset = fetchResult.object(at: 0)
+                    PHImageManager.default().requestImage(
+                        for: asset,
+                        targetSize: self.preview.frame.size,
+                        contentMode: PHImageContentMode.aspectFit,
+                        options: nil
+                    ) { (image, _) in
+                        self.preview.image = image
                     }
                 }
             }
-            else {
-                selected?.selected = !(selected?.selected ?? false)
-            }
+        }
+        else {
+            selected?.selected = !(selected?.selected ?? false)
         }
     }
 }

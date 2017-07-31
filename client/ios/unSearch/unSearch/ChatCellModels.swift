@@ -389,22 +389,15 @@ class SetupModel: NSObject, ChatCellModel, UICollectionViewDataSource, UICollect
         let label = timer.userInfo as! UILabel
         let timeLeft = order.before - CFAbsoluteTimeGetCurrent()
         switch(order.status) {
-        case .open, .expertSearch, .deciding, .overtime:
+        case .open, .expertSearch, .overtime:
             label.textColor = Palette.COMMENT
-            label.text = "ОТКРЫТО" + (order.status != .overtime ? ". Осталось: " + formatPeriodRussian(timeLeft) : "")
-            break
-//        case .overtime:
-//            label.textColor = Palette.ERROR
-//            label.text = "ПРОСРОЧЕНО НА: " + formatPeriodRussian(-timeLeft)
-//            break
+            label.text = "ОТКРЫТО" + (timeLeft > 0 ? ". Осталось: " + formatPeriodRussian(timeLeft) : "")
         case .canceled:
             label.textColor = Palette.COMMENT
             label.text = "ОТМЕНЕНО"
-            break
-        case .closed:
+        case .closed, .deciding:
             label.textColor = Palette.OK
             label.text = "ВЫПОЛНЕНО"
-            break
         default:
             break
         }

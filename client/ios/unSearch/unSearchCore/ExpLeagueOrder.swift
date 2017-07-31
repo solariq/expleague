@@ -70,7 +70,6 @@ public class ExpLeagueOrder: NSManagedObject {
         }
         if (self.unread != unread) {
             updateSync {
-                parent.adjustUnread(unread - self.unread)
                 self.unread = Int32(unread)
                 unreadChanged()
             }
@@ -81,6 +80,7 @@ public class ExpLeagueOrder: NSManagedObject {
     public func messagesChanged() {
         _experts = nil
         _icon = nil
+        _status = nil
         QObject.notify(#selector(messagesChanged), self)
     }
 
@@ -121,13 +121,12 @@ public class ExpLeagueOrder: NSManagedObject {
         return result
     }
     
-    fileprivate var _judged: Bool?
     public var judged: Bool {
         if (fake) {
             return true
         }
-        if (_judged != nil) {
-            return _judged!
+        if (myJudged != nil) {
+            return myJudged!.boolValue
         }
         
         var hasAnswer: Bool = false
@@ -139,7 +138,9 @@ public class ExpLeagueOrder: NSManagedObject {
                 hasAnswer = false
             }
         }
-        _judged = !hasAnswer
+        update {
+            self.myJudged = NSNumber(value: !hasAnswer)
+        }
         return !hasAnswer
     }
     
@@ -148,21 +149,17 @@ public class ExpLeagueOrder: NSManagedObject {
             return
         }
         let message = ExpLeagueMessage(msg: msg, parent: self, context: self.managedObjectContext!)
-        if (_messages != nil) {
-            _messages?.append(message)
-        }
-
         if (message.type == .answer) {
             flags = flags | ExpLeagueOrderFlags.deciding.rawValue
-            _judged = false
+            myJudged = NSNumber(value: false)
         }
         else if (message.type == .feedback) {
             flags = flags | ExpLeagueOrderFlags.closed.rawValue
-            _judged = true
+            myJudged = NSNumber(value: true)
         }
         
         if (notify) {
-            var unread = 1
+            var unread = status != .archived ? 1 : 0
             if (message.type == .answer) {
                 Notifications.notifyAnswerReceived(self, answer: message)
             }
@@ -179,7 +176,6 @@ public class ExpLeagueOrder: NSManagedObject {
             if (unread > 0) {
                 self.unread += Int32(unread)
                 message.read = false
-                self.parent.adjustUnread(1)
                 unreadChanged()
             }
         }
@@ -200,10 +196,15 @@ public class ExpLeagueOrder: NSManagedObject {
                         & ~ExpLeagueOrderFlags.closed.rawValue
                         & ~ExpLeagueOrderFlags.canceled.rawValue
         }
-        _status = nil
-        messagesChanged()
-        parent.ordersChanged()
         save()
+        _status = nil
+        if (_messages != nil) {
+            _messages?.append(message)
+        }
+        self.parent.ordersChanged()
+        DispatchQueue.main.async {
+            self.messagesChanged()
+        }
     }
     
     public func send(text: String) {
@@ -212,8 +213,8 @@ public class ExpLeagueOrder: NSManagedObject {
         msg.addAttribute(withName: "id", stringValue: MyXMPPStream.nextId())
         update {
             self.message(message: msg, notify: false)
+            _ = self.parent.send(msg)
         }
-        _ = parent.send(msg)
     }
     
     public func send(xml: DDXMLElement, type: String = "normal") {
@@ -222,8 +223,8 @@ public class ExpLeagueOrder: NSManagedObject {
         msg.addAttribute(withName: "id", stringValue: MyXMPPStream.nextId())
         update {
             self.message(message: msg, notify: false)
+            _ = self.parent.send(msg)
         }
-        _ = parent.send(msg)
     }
     
     public var jid : XMPPJID {
@@ -256,8 +257,6 @@ public class ExpLeagueOrder: NSManagedObject {
             feedback?.addAttribute(withName: "payment", stringValue: id)
         }
         send(xml: feedback!)
-        
-        close()
     }
 
     public func close() {
@@ -284,7 +283,7 @@ public class ExpLeagueOrder: NSManagedObject {
     }
     
     public func archive() {
-        parent.adjustUnread(-self.unread)
+        parent.unreadChanged()
         if (isActive) {
             cancel()
         }
@@ -311,27 +310,36 @@ public class ExpLeagueOrder: NSManagedObject {
         guard _status == nil else {
             return _status!
         }
-        let lastAnswer = messages.last?.type == .answer && !(messages.last?.isEmpty ?? false)
         if (flags & ExpLeagueOrderFlags.archived.rawValue != 0) {
             _status = .archived
         }
         else if (flags & ExpLeagueOrderFlags.canceled.rawValue != 0) {
             _status = .canceled
         }
-        else if ((flags & ExpLeagueOrderFlags.saved.rawValue) == 0 && (flags & ExpLeagueOrderFlags.deciding.rawValue != 0 || fake || lastAnswer)) {
+        else if ((flags & ExpLeagueOrderFlags.saved.rawValue) == 0 && (flags & ExpLeagueOrderFlags.deciding.rawValue != 0 || fake)) {
             _status = .deciding
         }
         else if (flags & (ExpLeagueOrderFlags.closed.rawValue | ExpLeagueOrderFlags.saved.rawValue) != 0) {
             _status = .closed
         }
-        else if (activeExpert == nil) {
-            _status = .expertSearch
-        }
-        else if (before - NSDate().timeIntervalSince1970 > 0) {
-            _status = .open
-        }
         else {
-            _status = .overtime
+            let lastMessage = messages.last
+            let lastAnswer = lastMessage?.type == .answer && !(lastMessage?.isEmpty ?? false)
+            if ((flags & ExpLeagueOrderFlags.saved.rawValue) == 0 && lastAnswer) {
+                _status = .deciding
+            }
+            else if (lastMessage?.type == .feedback) {
+                _status = .closed
+            }
+            else if (activeExpert == nil) {
+                _status = .expertSearch
+            }
+            else if (before - NSDate().timeIntervalSince1970 > 0) {
+                _status = .open
+            }
+            else {
+                _status = .overtime
+            }
         }
         return _status!
     }
@@ -357,12 +365,11 @@ public class ExpLeagueOrder: NSManagedObject {
         update {
             if (self.unread > 0) {
                 self.unread -= 1
-                self.parent.adjustUnread(-1)
                 self.unreadChanged()
             }
         }
     }
-    public func unreadChanged() { QObject.notify(#selector(self.unreadChanged), self) }
+    public func unreadChanged() { parent.unreadChanged(); QObject.notify(#selector(self.unreadChanged), self) }
 
     override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?) {
         super.init(entity: entity, insertInto: context)
