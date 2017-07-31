@@ -302,10 +302,24 @@ extension ExpLeagueCommunicator: XMPPStreamDelegate {
         }
 
         // sending not confirmed messages
-        for item in queue {
+        let queueCopy = queue
+        var index = 0
+        var profileChanged = false
+        profile.queue = profile.queue?.removeAll {(item: QueueItem) -> Bool in
+            return item.receipt == nil
+        }
+        for item in queueCopy {
             if (item.attribute(forName: "id") != nil) {
                 sender.send(item)
+                index += 1
             }
+            else {
+                queue.remove(at: index)
+                profileChanged = true
+            }
+        }
+        if (profileChanged) {
+            profile.update {}
         }
         
         // getting latest experts

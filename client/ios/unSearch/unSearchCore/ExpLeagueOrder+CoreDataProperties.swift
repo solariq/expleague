@@ -21,4 +21,5 @@ extension ExpLeagueOrder {
 
     @NSManaged var flags: Int16
     @NSManaged var messagesRaw: NSOrderedSet
+    @NSManaged var myJudged: NSNumber?
 }

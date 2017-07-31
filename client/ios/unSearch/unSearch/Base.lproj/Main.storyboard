@@ -241,7 +241,7 @@
         <scene sceneID="ykp-M5-MHO">
             <objects>
                 <navigationController id="III-qh-xDz" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="Ir6-U1-FJk">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="Ir6-U1-FJk">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -649,11 +649,11 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="OngoingOrder" rowHeight="77" id="lJb-qG-B6w" customClass="OngoingOrderStateCell" customModule="unSearch" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="OngoingOrder" rowHeight="77" id="lJb-qG-B6w" customClass="OngoingOrderStateCell" customModule="unSearch" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="28" width="375" height="77"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="lJb-qG-B6w" id="yx5-WV-ac3">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="77"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="342" height="77"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="search_icon" translatesAutoresizingMaskIntoConstraints="NO" id="NzD-Ak-qfr">
@@ -664,25 +664,25 @@
                                             </constraints>
                                         </imageView>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Что за модель мотоцикла?" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ooJ-uj-TeV">
-                                            <rect key="frame" x="78" y="8" width="289" height="20.5"/>
+                                            <rect key="frame" x="78" y="8" width="256" height="20.5"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ВЫПОЛНЯЕТСЯ" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZrY-ZA-oub">
-                                            <rect key="frame" x="78" y="30" width="289" height="17"/>
+                                            <rect key="frame" x="78" y="30" width="256" height="17"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="12:27" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="INr-K8-fey">
-                                            <rect key="frame" x="78" y="51" width="289" height="18"/>
+                                            <rect key="frame" x="78" y="51" width="256" height="18"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                             <color key="textColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1Y7-Hx-nn1">
-                                            <rect key="frame" x="346" y="6" width="17" height="17"/>
+                                            <rect key="frame" x="313" y="6" width="17" height="17"/>
                                             <color key="backgroundColor" red="1" green="0.40000000600000002" blue="0.40000000600000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="17" id="KTr-TT-WMG"/>
@@ -715,30 +715,30 @@
                                     <outlet property="status" destination="ZrY-ZA-oub" id="7Vb-y8-BfO"/>
                                     <outlet property="title" destination="ooJ-uj-TeV" id="NGu-UZ-MCY"/>
                                     <outlet property="unreadBadge" destination="1Y7-Hx-nn1" id="gup-te-ocI"/>
-                                    <segue destination="GNT-g5-mq2" kind="show" identifier="orderDetails" action="showDetailViewController:sender:" id="UvW-Az-bcB"/>
+                                    <segue destination="GNT-g5-mq2" kind="push" identifier="orderDetails" id="UvW-Az-bcB"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="FinishedOrder" rowHeight="77" id="7XK-Wc-xaX" customClass="FinishedOrderStateCell" customModule="unSearch" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="FinishedOrder" rowHeight="77" id="7XK-Wc-xaX" customClass="FinishedOrderStateCell" customModule="unSearch" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="105" width="375" height="77"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="7XK-Wc-xaX" id="E5k-dW-qOY">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="77"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="342" height="77"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Здесь должен быть краткий ответ" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VKr-On-Gnc">
-                                            <rect key="frame" x="78" y="29" width="289" height="18"/>
+                                            <rect key="frame" x="78" y="29" width="256" height="18"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                             <color key="textColor" red="0.2470588235" green="0.3294117647" blue="0.50980392159999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="12:27" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="a1u-Or-pFQ">
-                                            <rect key="frame" x="78" y="51" width="289" height="18"/>
+                                            <rect key="frame" x="78" y="51" width="256" height="18"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                             <color key="textColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Что за модель мотоцикла?" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nt8-AV-T6G">
-                                            <rect key="frame" x="78" y="8" width="289" height="20.5"/>
+                                            <rect key="frame" x="78" y="8" width="256" height="20.5"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
@@ -751,7 +751,7 @@
                                             </constraints>
                                         </imageView>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Ry-P2-0Lb">
-                                            <rect key="frame" x="346" y="6" width="17" height="17"/>
+                                            <rect key="frame" x="313" y="6" width="17" height="17"/>
                                             <color key="backgroundColor" red="1" green="0.40000000600000002" blue="0.40000000600000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="17" id="0mv-ei-5oA"/>
@@ -790,7 +790,7 @@
                                     <outlet property="shortAnswer" destination="VKr-On-Gnc" id="Scq-2L-4Av"/>
                                     <outlet property="title" destination="Nt8-AV-T6G" id="ZDj-gE-ksi"/>
                                     <outlet property="unreadBadge" destination="2Ry-P2-0Lb" id="hVZ-0V-hLC"/>
-                                    <segue destination="GNT-g5-mq2" kind="show" identifier="orderDetails" action="showDetailViewController:sender:" id="mag-dd-5QV"/>
+                                    <segue destination="GNT-g5-mq2" kind="push" identifier="orderDetails" id="mag-dd-5QV"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -811,7 +811,9 @@
         <!--OrderDetails-->
         <scene sceneID="zOf-GI-iNc">
             <objects>
-                <viewControllerPlaceholder storyboardName="OrderDetails" id="GNT-g5-mq2" sceneMemberID="viewController"/>
+                <viewControllerPlaceholder storyboardName="OrderDetails" id="GNT-g5-mq2" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="Hh0-Jt-Tg5"/>
+                </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="2k5-TP-4eK" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="772" y="-807"/>
@@ -820,7 +822,7 @@
         <scene sceneID="g38-Dp-O16">
             <objects>
                 <navigationController id="RKt-x4-MsL" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="wB3-2v-qrM">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="wB3-2v-qrM">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -965,7 +967,7 @@
         <scene sceneID="X1H-8r-9rS">
             <objects>
                 <navigationController id="M0D-mn-Sko" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="D8l-RS-bfR">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="D8l-RS-bfR">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -995,7 +997,7 @@
             <objects>
                 <navigationController modalTransitionStyle="flipHorizontal" id="bVO-XH-0ez" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="Заказ" image="tabbar_order_icon" selectedImage="tabbar_order_icon_active" id="1IO-EK-Mec"/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="7iH-af-w3r">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="7iH-af-w3r">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -1113,7 +1115,7 @@
             <objects>
                 <navigationController id="Icc-fT-KIK" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="О нас" image="tabbar_info_icon" selectedImage="tabbar_info_icon_active" id="ygu-NQ-nWV"/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="r5A-gv-CTG">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="r5A-gv-CTG">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -1432,6 +1434,6 @@
         <image name="tabbar_order_icon_active" width="32" height="34"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="UvW-Az-bcB"/>
+        <segue reference="mag-dd-5QV"/>
     </inferredMetricsTieBreakers>
 </document>

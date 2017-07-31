@@ -22,13 +22,14 @@ class HistoryViewController: UITableViewController {
     var cellHeight = CGFloat(0.0)
     var selected: ExpLeagueOrder? {
         willSet(selected) {
-            guard selected != self.selected && isViewLoaded else {
+            guard selected != self.selected && isViewLoaded && selected != nil else {
                 return
             }
             let table = (self.view as! UITableView)
             if (table.indexPathForSelectedRow != nil) {
                 table.deselectRow(at: table.indexPathForSelectedRow!, animated: false)
             }
+            navigationController?.popToViewController(self, animated: false)
             if let sel = selected, let path = indexOf(sel) {
                 table.selectRow(at: path, animated: false, scrollPosition: .top)
                 self.performSegue(withIdentifier: "orderDetails", sender: self)
@@ -127,12 +128,7 @@ class HistoryViewController: UITableViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         FBSDKAppEvents.logEvent("History tab active")
-        if (selected != nil) {
-            let oldSelection = selected
-            selected = nil
-            selected = oldSelection
-        }
-        else {
+        if (selected == nil) {
             let table = (self.view as! UITableView)
             if (table.indexPathForSelectedRow != nil) {
                 table.deselectRow(at: table.indexPathForSelectedRow!, animated: false)

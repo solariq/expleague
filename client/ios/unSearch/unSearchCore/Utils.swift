@@ -11,7 +11,7 @@ import CoreData
 
 class Utils {
     static func randString(_ len: Int, seed: Int? = nil) -> String {
-        let seedX = seed != nil ? seed! : Int(arc4random())
+        let seedX = seed != nil ? seed! : Int(Int32(bitPattern: arc4random()))
         let chars = "0123456789ABCDEF".characters
         var result = ""
         
