@@ -17,8 +17,6 @@
 //#include <QtWebEngine>
 
 #include "expleague.h"
-#include "model/history.h"
-#include "util/crashhandler.h"
 
 #ifdef CEF
 

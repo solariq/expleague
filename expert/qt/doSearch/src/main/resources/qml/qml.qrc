@@ -55,5 +55,8 @@
         <file>GroupTree.qml</file>
         <file>Empty.qml</file>
         <file>OpacityMask.qml</file>
+        <file>DropShadow.qml</file>
+        <file>GaussianBlur.qml</file>
+        <file>Glow.qml</file>
     </qresource>
 </RCC>
