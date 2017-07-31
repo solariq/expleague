@@ -173,12 +173,15 @@ void drawToBuffer(void* dest, const std::vector<CefRect>& dirtyRects,
 //ui thread
 void CefPageRenderer::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList& dirtyRects,
                               const void* buffer, int width, int height) {
+  if(!m_enable){
+    return;
+  }
   if(type == PET_POPUP){
     std::lock_guard<std::mutex> guard(m_owner->m_mutex);
     drawToBuffer(m_popup.buffer, dirtyRects, buffer, width, height);
   }
   else{
-    if (m_width != width || m_height != height || !m_gpu_buffer || !m_enable)
+    if (m_width != width || m_height != height || !m_gpu_buffer)
       return;
     std::lock_guard<std::mutex> guard(m_owner->m_mutex);
     if (m_gpu_buffer) {
@@ -218,7 +221,12 @@ bool CefPageRenderer::GetScreenInfo(CefRefPtr<CefBrowser> browser,
                                     CefScreenInfo& screen_info) {
   if(!m_enable)
     return false;
-  m_scale_factor = (float) m_owner->window()->devicePixelRatio();
+  QQuickWindow* wind = m_owner->window();
+  if(!wind){
+    qWarning() << "Cef item hasnt window";
+    return false;
+  }
+  m_scale_factor = (float) wind->devicePixelRatio();
   screen_info.device_scale_factor = m_scale_factor;
   screen_info.depth = 24;
   screen_info.depth_per_component = 8;
