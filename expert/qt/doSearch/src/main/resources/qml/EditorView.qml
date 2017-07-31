@@ -167,18 +167,18 @@ Item {
                             <body>" + owner.html + "</body></html>")
             }
 
-            Connections {
-                target: owner
-//                onHtmlChanged: {
-//                    var focused = dosearch.main.activeFocusItem
-//                    var html = preview.updateHtml()
-//                    if (focused && focused == edit)
-//                        focused.forceActiveFocus()
+//            Connections {
+//                target: owner
+////                onHtmlChanged: {
+////                    var focused = dosearch.main.activeFocusItem
+////                    var html = preview.updateHtml()
+////                    if (focused && focused == edit)
+////                        focused.forceActiveFocus()
+////                }
+//                onVisibleChanged: {
+//                    preview.updateHtml()
 //                }
-                onVisibleChanged: {
-                    preview.updateHtml()
-                }
-            }
+//            }
         }
 
         Rectangle {

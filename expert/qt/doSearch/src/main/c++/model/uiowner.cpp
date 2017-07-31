@@ -17,6 +17,8 @@ UIOwner::UIOwner(const QString& uiQml, QObject* parent):
 void UIOwner::clear() {
   updateConnections();
   if(m_ui){
+    m_ui->setParent(nullptr);
+    m_ui->setParentItem(nullptr);
     m_ui->deleteLater();
     m_ui = nullptr;
     for(auto child: m_children){

@@ -155,7 +155,7 @@ QString cachePath() {
 class CefAppImpl: public CefApp{
   virtual void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line){
     command_line->AppendSwitch("--enable-system-flash");
-    command_line->AppendSwitch("--disable-gpu-compositing");
+//    command_line->AppendSwitch("--disable-gpu-compositing");
   }
 
   virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() {
