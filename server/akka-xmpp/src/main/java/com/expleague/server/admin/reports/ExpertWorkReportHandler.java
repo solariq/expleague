@@ -162,7 +162,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
               }
               else if (message.has(Operations.Start.class)) {
                 final Operations.Start start = ((Message) stanza).get(Operations.Start.class);
-                if (start.order().compareTo(orderId) >= 0) {
+                if (start.order() != null && start.order().compareTo(orderId) >= 0) {
                   break;
                 }
               }
