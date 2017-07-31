@@ -42,7 +42,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
 
     final MySQLBoard mySQLBoard = (MySQLBoard) board;
     try {
-      headers("timestamp", "expert", "expert rating", "expert status", "topic", "continue", "room", "order", "tags", "patterns", "score", "cancel/done", "client");
+      headers("timestamp", "expert", "expert rating", "expert status", "topic", "continue", "room", "order", "tags", "patterns", "score", "cancel/done", "active time", "suspend time", "client");
       final Stream<ResultSet> mainResultStream;
       if (request.expertId() == null)
         mainResultStream = mySQLBoard.stream(
@@ -168,22 +168,9 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
               }
             }
           }
-          final StringBuilder tags = new StringBuilder();
-          { //tags
-            try (final Stream<ResultSet> tagsStream = mySQLBoard.stream("SELECT Tags.tag FROM Tags INNER JOIN Topics ON Tags.id = Topics.tag WHERE Topics.order = ?",
-                stmt -> stmt.setString(1, orderId))) {
-              tagsStream.forEach(r -> {
-                try {
-                  tags.append(r.getString(1)).append(";");
-                } catch (SQLException e) {
-                  throw new RuntimeException(e);
-                }
-              });
-            }
-          }
           final StringBuilder patternsBuilder = new StringBuilder();
           { //patterns
-            Set<String> patterns = new HashSet<>(Arrays.stream(offer.patterns()).map(Pattern::name).collect(Collectors.toList()));
+            final Set<String> patterns = new HashSet<>(Arrays.stream(offer.patterns()).map(Pattern::name).collect(Collectors.toList()));
             for (final Stanza stanza : dump) {
               if (!(stanza instanceof Message))
                 continue;
@@ -195,7 +182,8 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
                     if (metaChange.target() == Operations.Progress.MetaChange.Target.PATTERNS) {
                       if (metaChange.operation() == Operations.Progress.MetaChange.Operation.ADD) {
                         patterns.add(metaChange.name());
-                      } else {
+                      }
+                      else {
                         patterns.remove(metaChange.name());
                       }
                     }
@@ -204,6 +192,35 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
               }
             }
             patterns.forEach(s -> patternsBuilder.append(s).append(";"));
+          }
+
+          final ExpLeagueOrder expLeagueOrder = LaborExchange.board().order(orderId);
+          final StringBuilder tags = new StringBuilder();
+          { //tags
+            Arrays.stream(expLeagueOrder.tags()).forEach(tag -> tags.append(tag.name()).append(";"));
+          }
+          final String activeTime;
+          final String suspendTime;
+          { //time
+            long activeTimeMs = 0;
+            long suspendTimeMs = 0;
+            final List<ExpLeagueOrder.StatusHistoryRecord> history = expLeagueOrder.statusHistoryRecords().collect(Collectors.toList());
+            if (history.size() > 0) {
+              final long fullTimeMs = history.get(history.size() - 1).getDate().getTime() - history.get(0).getDate().getTime();
+              long startSuspended = -1;
+              for (final ExpLeagueOrder.StatusHistoryRecord record : history) {
+                if (record.getStatus() == OrderState.SUSPENDED) {
+                  startSuspended = record.getDate().getTime();
+                }
+                else if (startSuspended != -1) {
+                  suspendTimeMs += (record.getDate().getTime() - startSuspended);
+                  startSuspended = -1;
+                }
+              }
+              activeTimeMs = fullTimeMs - suspendTimeMs;
+            }
+            activeTime = String.format("%d h %d min", ((activeTimeMs / 1000) / 60 / 60), (((activeTimeMs / 1000) / 60)) % 60);
+            suspendTime = String.format("%d h %d min", ((suspendTimeMs / 1000) / 60 / 60), (((suspendTimeMs / 1000) / 60)) % 60);
           }
 
           row(
@@ -219,6 +236,8 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
               patternsBuilder.toString(),
               resultSet.getString(7),
               Integer.toString(orderResult.index()),
+              activeTime,
+              suspendTime,
               client
           );
         } catch (Exception e) {

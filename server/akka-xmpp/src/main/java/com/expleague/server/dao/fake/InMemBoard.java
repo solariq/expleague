@@ -75,6 +75,11 @@ public class InMemBoard implements LaborExchange.Board {
   }
 
   @Override
+  public ExpLeagueOrder order(String id) {
+    return history.stream().filter(expLeagueOrder -> expLeagueOrder.id().equals(id)).findFirst().orElse(null);
+  }
+
+  @Override
   public void replay(String roomId, ActorContext context) {
   }
 

@@ -149,6 +149,17 @@ public class MySQLBoard extends MySQLOps implements LaborExchange.Board {
   }
 
   @Override
+  public ExpLeagueOrder order(String id) {
+    try {
+      try (Stream<ExpLeagueOrder> stream = stream("SELECT * FROM Orders WHERE id = ?", statement -> statement.setString(1, id)).map(createOrderView())) {
+        return stream.findFirst().orElse(null);
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
   public synchronized void replay(String roomId, ActorContext context) {
     final JID jid = new JID(roomId, "muc." + ExpLeagueServer.config().domain(), null);
     XMPP.whisper(jid, new RoomAgent.Replay(), context);
