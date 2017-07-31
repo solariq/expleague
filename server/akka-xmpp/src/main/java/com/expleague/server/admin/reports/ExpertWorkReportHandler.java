@@ -42,7 +42,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
 
     final MySQLBoard mySQLBoard = (MySQLBoard) board;
     try {
-      headers("timestamp", "expert", "expert rating", "expert status", "topic", "continue", "room", "order", "tags", "patterns", "score", "cancel/done", "active time", "suspend time", "client");
+      headers("timestamp", "expert", "expert rating", "expert status", "topic", "continue", "room", "order", "tags", "patterns", "score", "cancel/done", "active time", "suspend time", "deniers", "client");
       final Stream<ResultSet> mainResultStream;
       if (request.expertId() == null)
         mainResultStream = mySQLBoard.stream(
@@ -222,6 +222,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
             activeTime = String.format("%d h %d min", ((activeTimeMs / 1000) / 60 / 60), (((activeTimeMs / 1000) / 60)) % 60);
             suspendTime = String.format("%d h %d min", ((suspendTimeMs / 1000) / 60 / 60), (((suspendTimeMs / 1000) / 60)) % 60);
           }
+          final String deniers = Long.toString(expLeagueOrder.of(ExpLeagueOrder.Role.DENIER).count() + expLeagueOrder.of(ExpLeagueOrder.Role.SLACKER).count());
 
           row(
               resultSet.getString(1),
@@ -238,6 +239,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
               Integer.toString(orderResult.index()),
               activeTime,
               suspendTime,
+              deniers,
               client
           );
         } catch (Exception e) {
