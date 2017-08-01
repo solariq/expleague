@@ -207,8 +207,8 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
             long suspendTimeMs = 0;
             final List<ExpLeagueOrder.StatusHistoryRecord> history = expLeagueOrder.statusHistoryRecords().collect(Collectors.toList());
             if (history.size() > 0) {
-              final long fullTimeMs = history.get(history.size() - 1).getDate().getTime() - history.get(0).getDate().getTime();
               long startSuspended = -1;
+              long startActive = -1;
               for (final ExpLeagueOrder.StatusHistoryRecord record : history) {
                 if (record.getStatus() == OrderState.SUSPENDED) {
                   startSuspended = record.getDate().getTime();
@@ -217,8 +217,15 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
                   suspendTimeMs += (record.getDate().getTime() - startSuspended);
                   startSuspended = -1;
                 }
+
+                if (record.getStatus() == OrderState.IN_PROGRESS) {
+                  startActive = record.getDate().getTime();
+                }
+                else if (startActive != -1) {
+                  activeTimeMs += (record.getDate().getTime() - startActive);
+                  startActive = -1;
+                }
               }
-              activeTimeMs = fullTimeMs - suspendTimeMs;
             }
             activeTime = String.format("%d h %d min", ((activeTimeMs / 1000) / 60 / 60), (((activeTimeMs / 1000) / 60)) % 60);
             suspendTime = String.format("%d h %d min", ((suspendTimeMs / 1000) / 60 / 60), (((suspendTimeMs / 1000) / 60)) % 60);
