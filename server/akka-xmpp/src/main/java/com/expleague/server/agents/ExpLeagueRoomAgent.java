@@ -311,7 +311,7 @@ public class ExpLeagueRoomAgent extends RoomAgent {
     }
     else if (msg.has(Feedback.class)) {
       final Feedback feedback = msg.get(Feedback.class);
-      orders(OrderState.DONE).filter(order -> Double.compare(order.feedback(), -1) == 0).forEach(order -> order.feedback(feedback.stars(), feedback.payment()));
+      orders(OrderState.DONE).forEach(order -> order.feedback(feedback.stars(), feedback.payment()));
       tellGlobal(feedback);
       message(new Message(jid(), RepositoryService.jid(), currentOffer, feedback));
       state(CLOSED);
