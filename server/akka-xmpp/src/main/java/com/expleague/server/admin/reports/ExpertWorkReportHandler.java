@@ -14,6 +14,7 @@ import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
 import com.expleague.xmpp.stanza.Stanza;
+import com.spbsu.commons.util.Holder;
 import org.apache.commons.lang.StringEscapeUtils;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
@@ -42,7 +43,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
 
     final MySQLBoard mySQLBoard = (MySQLBoard) board;
     try {
-      headers("timestamp", "expert", "expert rating", "expert status", "topic", "continue", "room", "order", "tags", "patterns", "score", "cancel/done", "active time", "suspend time", "deniers", "client");
+      headers("timestamp", "expert", "expert rating", "expert status", "topic", "continue", "room", "order", "tags", "patterns", "score", "score comment", "cancel/done", "active time", "suspend time", "deniers", "client");
       final Stream<ResultSet> mainResultStream;
       if (request.expertId() == null)
         mainResultStream = mySQLBoard.stream(
@@ -66,7 +67,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
           if (offer == null || offer.client() == null)
             return;
           final String client = offer.client().local();
-          final String topic = StringEscapeUtils.escapeCsv(offer.topic()).replace("\n", "\\n");
+          final String topic = escape(offer.topic());
 
           final String expertId = resultSet.getString(2);
           final ExpertsProfile expertsProfile = Roster.instance().profile(expertId);
@@ -156,7 +157,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
               }
               else if (message.has(Message.Body.class)) {
                 if (prevAnswer && client.equals(stanza.from().local())) {
-                  continueText = StringEscapeUtils.escapeCsv(((Message) stanza).get(Message.Body.class).value()).replace("\n", "\\n");
+                  continueText = escape(((Message) stanza).get(Message.Body.class).value());
                   prevAnswer = false;
                 }
               }
@@ -224,6 +225,49 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
           }
           final String deniers = Long.toString(expLeagueOrder.of(ExpLeagueOrder.Role.DENIER).count() + expLeagueOrder.of(ExpLeagueOrder.Role.SLACKER).count());
 
+          final double score = resultSet.getDouble(7);
+          String scoreComment = "";
+          { //score comment
+            if (score >= 0) {
+              final Holder<Message> feedbackHolder = new Holder<>();
+              boolean started = false;
+              boolean done = false;
+              for (final Stanza stanza : dump) {
+                if (!(stanza instanceof Message))
+                  continue;
+                final Message message = ((Message) stanza);
+                if (message.has(Operations.Start.class)) {
+                  final Operations.Start start = message.get(Operations.Start.class);
+                  if (orderId.equals(start.order())) {
+                    started = true;
+                  }
+                }
+                else if (started && message.has(Answer.class) && expertId.equals(message.from().local())) {
+                  done = true;
+                }
+                else if (message.has(Operations.Progress.class)) {
+                  final Operations.Progress progress = message.get(Operations.Progress.class);
+                  if (orderId.equals(progress.order()) && progress.state() == OrderState.DONE) {
+                    done = true;
+                  }
+                }
+                else if (done && message.has(Operations.Feedback.class)) {
+                  feedbackHolder.setValue(message);
+                  break;
+                }
+              }
+              if (feedbackHolder.filled()) {
+                final Message.Body scoreCommentBody = dump.stream().filter(stanza -> stanza instanceof Message).filter(stanza -> {
+                  final Message message = (Message) stanza;
+                  return message.ts() == feedbackHolder.getValue().ts() && message.has(Message.Body.class);
+                }).map(stanza -> ((Message) stanza).get(Message.Body.class)).findFirst().orElse(null);
+                if (scoreCommentBody != null) {
+                  scoreComment = escape(scoreCommentBody.value());
+                }
+              }
+            }
+          }
+
           row(
               resultSet.getString(1),
               expertId,
@@ -236,6 +280,7 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
               tags.toString(),
               patternsBuilder.toString(),
               resultSet.getString(7),
+              scoreComment,
               Integer.toString(orderResult.index()),
               activeTime,
               suspendTime,
@@ -251,6 +296,10 @@ public class ExpertWorkReportHandler extends CsvReportHandler {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static String escape(String s) {
+    return StringEscapeUtils.escapeCsv(s).replace("\n", "\\n");
   }
 
   public static class ReportRequest {
