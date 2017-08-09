@@ -18,6 +18,7 @@ Item {
     property NavigationManager navigation
     property var commit: (function(tab){})
     property var weakCommit: (function(){})
+    property var cancle: (function(){})
     property string pageSearch: ""
 
     function select(type) {
@@ -140,15 +141,19 @@ Item {
                     event.accepted = true
                 }
                 else if (event.key === Qt.Key_Escape) {
+                    cancle()
                     self.visible = false
                     if (completion)
                         completion.visible = false
                     event.accepted = true
                     navigation.activeScreen.forceActiveFocus()
-                }else{
-                    self.weakCommit()
                 }
             }
+
+            Keys.onReleased: {
+                self.weakCommit()
+            }
+
             Connections {
                 target: suggest
                 onItemChoosen: {
@@ -206,6 +211,12 @@ Item {
                         navigation.activeScreen.pageSearch = pageSearch
                     }
 //                    input.text = Qt.binding(function() {return pageSearch})
+                })
+                cancle: (function () {
+                    pageSearch = ""
+                    if (typeof navigation.activeScreen.pageSearch !== "undefined") {
+                        navigation.activeScreen.pageSearch = pageSearch
+                    }
                 })
                 completion: null
                 text: pageSearch

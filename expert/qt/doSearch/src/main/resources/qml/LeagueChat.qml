@@ -86,14 +86,19 @@ Rectangle {
                     mipmap: true
                     autoTransform: true
                     onStatusChanged: {
-                        var w = (column.width - 30)
-                        if (sourceSize.height/sourceSize.width > 2./3.) {
-                            image.height = w * 2./3.
-                            image.width = image.height * sourceSize.width/sourceSize.height
-                        }
-                        else {
-                            image.width = w
-                            image.height = w * sourceSize.height/sourceSize.width
+                        if(status == Image.Ready){
+                            var w = (column.width - 30)
+                            if(w < 0){
+                                w = 300 //property didnt update
+                            }
+                            if (sourceSize.height/sourceSize.width > 2./3.) {
+                                image.height = w * 2./3.
+                                image.width = image.height * sourceSize.width/sourceSize.height
+                            }
+                            else {
+                                image.width = w
+                                image.height = w * sourceSize.height/sourceSize.width
+                            }
                         }
                     }
                 }

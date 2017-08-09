@@ -44,6 +44,7 @@ void PagesGroup::setParentGroup(PagesGroup* group) {
         while(it != m_pages.end()){
           if (group->pages().contains(*it)){
             it = m_pages.erase(it);
+            m_closed_start--;
           }else{
             it++;
           }
@@ -57,22 +58,27 @@ void PagesGroup::setParentGroup(PagesGroup* group) {
 }
 
 void PagesGroup::insert(Page* page, int position) {
-    assert(position <= m_closed_start || position < 0);
-    int index = m_pages.indexOf(page);
-    position = position < 0 ? m_closed_start : position;
-    if (index >= 0 && index <= position)
-        return;
-    if(index >= 0){
-        m_pages.removeOne(page);
-    }
-    m_pages.insert(position, page);
-    m_closed_start++;
-    if (position <= m_selected_page_index)
-        m_selected_page_index++;
+  assert(position <= m_closed_start || position < 0);
+  int index = m_pages.indexOf(page);
+  if(index >= 0){
+    m_pages.removeOne(page);
+    if(index < m_closed_start)
+      m_closed_start--;
+    if(position < 0)
+      position = index;
+    else if(index < position)
+      position--;
+  }
 
-    updatePages();
-    save();
-    emit pagesChanged();
+  position = position < 0 ? m_closed_start : position;
+  m_pages.insert(position, page);
+  m_closed_start++;
+  if (position <= m_selected_page_index)
+    m_selected_page_index++;
+
+  updatePages();
+  save();
+  emit pagesChanged();
 }
 
 bool PagesGroup::remove(Page* page) {
@@ -163,20 +169,22 @@ void PagesGroup::loadParent(){
 PagesGroup::PagesGroup(Page* root, Type type, Context* owner):
     QObject(owner),
     PersistentPropertyHolder( owner->cd(type == SUGGEST ? "suggest" : "group." + md5(root->id())) ),
-    m_owner(owner), m_root(root), m_parent(0), m_type(type), m_closed_start(0)
+    m_owner(owner), m_root(root), m_parent(0), m_type(type), m_closed_start(0), m_active_pages_model(this)
 {
-    if (type != SUGGEST) {
-        store("root", root->id());
-        save();
-    }
+  QObject::connect(this, SIGNAL(pagesChanged()), &m_active_pages_model, SIGNAL(layoutChanged()));
+  if (type != SUGGEST) {
+    store("root", root->id());
+    save();
+  }
 }
 
 
 PagesGroup::PagesGroup(const QString& groupId, Context* owner):
     QObject(owner),
     PersistentPropertyHolder(owner->cd("group." + groupId)),
-    m_owner(owner), m_parent(0)
+    m_owner(owner), m_parent(0), m_active_pages_model(this)
 {
+  QObject::connect(this, SIGNAL(pagesChanged()), &m_active_pages_model, SIGNAL(layoutChanged()));
   m_root = owner->parent()->page(value("root").toString());
   m_type = qobject_cast<Context*>(m_root) ? CONTEXT : NORMAL;
   visitValues("page", [this, owner](const QVariant& pageId){
@@ -187,4 +195,29 @@ PagesGroup::PagesGroup(const QString& groupId, Context* owner):
   m_closed_start = (std::min)(m_closed_start, m_pages.size());
   m_selected_page_index = value("selected").isNull() ? -1 : m_pages.indexOf(owner->parent()->page(value("selected").toString()));
 }
+
+
+QVariant ActivePagesModel::data(const QModelIndex &index, int role ) const{
+  QList<Page*> pages = m_group->pages();
+  if(index.row() < 0 || index.row() >= pages.size()){
+    return QVariant();
+  }
+  Page* page = pages.at(index.row());
+  return qVariantFromValue(page);
+}
+
+int ActivePagesModel::rowCount(const QModelIndex &parent) const{
+  return m_group->activeCount();
+}
+
+QHash<int, QByteArray> ActivePagesModel::roleNames() const {
+    QHash<int, QByteArray> roles;
+    roles[Qt::UserRole + 1] = "modelData";
+    return roles;
+}
+
+
+ActivePagesModel::ActivePagesModel(PagesGroup* group): m_group(group){
+}
+
 }

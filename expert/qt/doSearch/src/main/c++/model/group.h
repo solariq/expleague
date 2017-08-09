@@ -2,12 +2,26 @@
 #define GROUP_H
 
 #include <QQmlListProperty>
+#include <QAbstractListModel>
 
 #include "page.h"
 
 namespace expleague {
 class NavigationManager;
 class Context;
+class PagesGroup;
+
+class ActivePagesModel: public QAbstractListModel {
+  Q_OBJECT
+public:
+  QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+  int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+  QHash<int, QByteArray> roleNames() const override;
+
+  ActivePagesModel(PagesGroup* group);
+private:
+  PagesGroup* m_group;
+};
 
 class PagesGroup: public QObject, public PersistentPropertyHolder {
     Q_OBJECT
@@ -17,9 +31,10 @@ class PagesGroup: public QObject, public PersistentPropertyHolder {
   Q_PROPERTY(expleague::PagesGroup* parentGroup READ parentGroup NOTIFY parentGroupChanged)
   Q_PROPERTY(expleague::Context* owner READ owner CONSTANT)
 
+  Q_PROPERTY(QAbstractListModel* activePagesModel READ activePagesModel NOTIFY pagesChanged)
   Q_PROPERTY(QQmlListProperty<expleague::Page> activePages READ activePages NOTIFY visibleStateChanged)
   Q_PROPERTY(QQmlListProperty<expleague::Page> closedPages READ closedPages NOTIFY visibleStateChanged)
-  Q_PROPERTY(double width READ width)
+  Q_PROPERTY(double width READ width NOTIFY visibleStateChanged)
   Q_PROPERTY(double scroll READ scroll WRITE setScroll) //from 0 to 1
 
   Q_PROPERTY(expleague::Page* selectedPage READ selectedPage WRITE selectPage NOTIFY selectedPageChanged)
@@ -42,7 +57,7 @@ public:
     Context* owner() const { return m_owner; }
     bool empty() const { return m_pages.empty() || m_closed_start == 0; }
     bool hasClosedPages() { return m_closed_start < m_pages.size(); }
-
+    int activeCount() { return m_closed_start; }
     bool closed(Page* page) const { return m_pages.indexOf(page) >= m_closed_start; }
 
     void setSelected(bool selected) {
@@ -65,6 +80,10 @@ public:
 
     QQmlListProperty<Page> closedPages() const {
       return QQmlListProperty<Page>(const_cast<PagesGroup*>(this), const_cast<QList<Page*>&>(m_closed_pages));
+    }
+
+    QAbstractListModel* activePagesModel(){
+      return &m_active_pages_model;
     }
 
     double width(){
@@ -125,8 +144,13 @@ private:
     int m_selected_page_index = -1;
     int m_closed_start = 0;
 
+    ActivePagesModel m_active_pages_model;
+
     double m_width = 0;
 };
+
+
+
 }
 
 Q_DECLARE_METATYPE(expleague::PagesGroup::Type)

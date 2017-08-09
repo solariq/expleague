@@ -75,23 +75,23 @@ GridView {
                 }
             }
 
-            Glow {
-                visible: context.document === modelData
-                anchors.fill: tile
-                source: tile
-                radius: 8
-                samples: 17
-                color: Palette.borderColor("selected")
-            }
+//            Glow {
+//                visible: context.document === modelData
+//                anchors.fill: tile
+//                source: tile
+//                radius: 8
+//                samples: 17
+//                color: Palette.borderColor("selected")
+//            }
 
-            DropShadow {
-                anchors.fill: parent
-                cached: true
-                radius: 10.0
-                samples: 32
-                color: "#aa000000"
-                source: tile
-            }
+//            DropShadow {
+//                anchors.fill: parent
+//                cached: true
+//                radius: 10.0
+//                samples: 32
+//                color: "#aa000000"
+//                source: tile
+//            }
             MouseArea {
                 id: tileArea
                 anchors.fill: parent

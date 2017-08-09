@@ -15,11 +15,16 @@ Item {
     property var innerVisiblePages: []
     property var activePages: group.activePages
     property var closedPages: group.closedPages
-    property bool closeEnabled: true
+    property bool closeEnabled: true 
+    property Page selectedPage: group.selectedPage
 
     visible: activePages.length > 0
     implicitWidth: visibleList.implicitWidth + (group.parentGroup ? separator.width: 0)
 
+    onSelectedPageChanged: {
+        repeater.scrollTo(selectedPage)
+        update(false, drop.dropId < 0)
+    }
 
     RowLayout {
         anchors.fill: parent
@@ -72,12 +77,13 @@ Item {
                     clip: true
                     Repeater {
 
-                        id: repeater 
+                        id: repeater
                         delegate: NavigationTab {
                             id: tab
                             height: visibleList.height
                             width: implicitWidth
                             showTree: true
+                            page: modelData
                             state: {
                                 if (group.selectedPage !== modelData)
                                     return "idle"
@@ -94,8 +100,10 @@ Item {
                                 }
                             }
                             Connections{
-                                target: modelData
-                                onTitleChanged: dosearch.navigation.rebalanceWidth()
+                                target: page
+                                onTitleChanged: {
+                                    dosearch.navigation.rebalanceWidth()
+                                }
                             }
 
                             property alias animation: animation
@@ -104,27 +112,25 @@ Item {
                         property  var savedItemsX: []
                         property int totalWidth: 0
                         property int fullTabsWidth: implicitWidth * (1 - Math.atan(totalWidth - implicitWidth)/(4*Math.PI))
-                        property var selectedPage
-
-                        model: (innerVisiblePages && innerVisiblePages.length > 0) ? innerVisiblePages : activePages
 
 
+                        model: (innerVisiblePages && innerVisiblePages.length > 0) ? innerVisiblePages : group.activePagesModel
                         onModelChanged: {
+                            if(group.type == PagesGroup.SUGGEST){
+                                console.log("suggest model changed. size:", model.rowCount())
+                            }
+                            updateWidth()
+                            update(false, drop.dropId < 0)
+                        }
+
+
+                        function updateWidth(){
                             var newTotalWidth = 0
                             for(var i = 0; i < repeater.count; i++){
                                 newTotalWidth += repeater.itemAt(i).width
                             }
                             totalWidth = newTotalWidth
-                            implicitWidth = width()
-                            if(selectedPage != group.selectedPage && newTotalWidth != 0){
-                                selectedPage = group.selectedPage
-                                scrollTo(selectedPage)
-                            }
-                            update(false, drop.dropId < 0)
-                        }
-
-                        function width(){
-                            return Math.min(group.width, totalWidth)
+                            implicitWidth = Math.min(group.width, totalWidth)
                         }
 
                         function update(animate, saveItemsX, wheel){
@@ -138,8 +144,6 @@ Item {
                             var righty = lefty + fullTabsWidth
                             var x = 0
                             var z = parent.z
-//                            console.log(totalWidth, realWidth, fullTabsWidth, group.scroll)
-//                            console.log(leftx, lefty, rightx, righty)
                             if(saveItemsX)
                                 savedItemsX = []
                             for(var i = 0; i < repeater.count; i++){
@@ -160,13 +164,13 @@ Item {
                                     itemAt(i).animation.enabled = true
                                 z += 1
                                 itemAt(i).z = z
-
                             }
                             if(saveItemsX)
                                 savedItemsX.push(realWidth)
                         }
+
                         function scrollTo(page){
-                            console.log("scroll 1", totalWidth, fullTabsWidth)
+                            console.log("scroll to ", page)
                             if(totalWidth - fullTabsWidth == 0){
                                 return
                             }
@@ -182,13 +186,17 @@ Item {
                             else if(sum  > leftx + fullTabsWidth - itemAt(i).width){
                                 group.scroll = (sum - fullTabsWidth + itemAt(i).width)/(totalWidth - fullTabsWidth)
                             }
-//                            console.log("new scroll", group.scroll, "sum" , sum, "width", totalWidth - fullTabsWidth)
-//                            console.log("leftx", leftx, "rightx", leftx + fullTabsWidth)
                             update(true, true)
                         }
-
                     }
 
+                    Connections{
+                        target: group
+                        onWidthChanged: {
+                            repeater.updateWidth()
+                            repeater.update(false, drop.dropId < 0)
+                        }
+                    }
 
                     MouseArea{
                         z: -100
@@ -267,7 +275,6 @@ Item {
                 onEntered: {
                     active = dosearch.main.dragType == "page" &&
                             navigation.canMovePage(dosearch.main.drag, group)
-                    console.log("drag enter", dosearch.main.dragType, active)
                     if(active){
                         innerVisiblePages = activePages
                     }
@@ -280,7 +287,6 @@ Item {
                     }
                 }
                 onDropIdChanged: {
-                    console.log("dropId", dropId)
                     if(dropId == -1){
                         innerVisiblePages = []
                         return
@@ -303,10 +309,8 @@ Item {
                         var items = repeater.savedItemsX
                         for(var i = 0; i < items.length - 1; i++){
                             itemX = (items[i] + items[i + 1])/2
-//                            console.log("itemX", itemX, "drag.x", drag.x, drag.width)
                             if(itemX > drag.x){
                                 dropId = i
-//                                console.log("new dropId", dropId)
                                 return;
                             }
                         }
@@ -318,7 +322,6 @@ Item {
                 onDropped: {
                     active = false
                     if(dropId >= 0){
-//                        console.log("drop1")
                         dosearch.main.dragType = ""
                         var drag = dosearch.main.drag //qml magic. order is important
                         dosearch.main.drag = null
@@ -327,30 +330,6 @@ Item {
                     }
                 }
             }
-
-            //            Popup{
-            //                id: treePopup
-            //                closePolicy: Popup.CloseOnPressOutside
-            //                x: Math.max(parent.width - width, 0)
-            //                y: parent.mapFromItem(others.parent, 0, others.y).y + others.height + 1
-            //                width: 400
-            //                height: 400
-            ////                GroupTree{
-            ////                    id: tree
-            ////                    model: navigation.treeModel(group.root, navigation.context, 3)
-            ////                    itemDelegate : Component{
-            ////                        Text{
-            ////                            text: {
-            ////                                console.log("table view", modelData.title)
-            ////                                modelData.title
-            ////                            }
-            ////                        }
-            ////                    }
-            ////                }
-            ////                onOpened: {
-            ////                    tree.expand(tree.model.index(0, 0))
-            ////                }
-            //            }
 
 
             Popup {
@@ -400,31 +379,6 @@ Item {
                             id: foldedList
                             anchors.fill: parent
                             spacing: 0
-                            //                            Repeater {
-                            //                                delegate: NavigationTab {
-                            //                                    width: flickableContainer.contentWidth
-                            //                                    height: 24
-                            //                                    anchors.left: parent.left
-                            //                                    state: {
-                            //                                        var visible = false
-                            //                                        for (var i in self.visiblePages) {
-                            //                                            if (self.visiblePages[i] === modelData) {
-                            //                                                visible = true
-                            //                                                break
-                            //                                            }
-                            //                                        }
-
-                            //                                        if (visible) {
-                            //                                            return hover ? "selected" : "active"
-                            //                                        }
-                            //                                        else {
-                            //                                            return hover ? "active" : "idle"
-                            //                                        }
-                            //                                    }
-                            //                                    closeEnabled: false
-                            //                                }
-                            //                                model: self.activePages
-                            //                            }
                             Text {
                                 id: closedLabel
                                 text: qsTr("Закрытые:")
@@ -433,6 +387,7 @@ Item {
                             }
                             Repeater {
                                 delegate: NavigationTab {
+                                    page: modelData
                                     width: flickableContainer.contentWidth
                                     height: 24
                                     state: hover ? "active" : "idle"
@@ -446,13 +401,6 @@ Item {
                 }
             }
 
-            //            MouseArea{
-            //                anchors.fill: parent
-            //                hoverEnabled: true
-            //                onEntered: {
-            //                    treePopup.open()
-            //                }
-            //            }
         }
     }
 }

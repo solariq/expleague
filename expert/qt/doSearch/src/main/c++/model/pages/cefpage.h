@@ -11,7 +11,7 @@
 #include <QTimer>
 #include <mutex>
 #include <QtQuick>
-
+#include <QOpenGLFunctions_3_1>
 #include "../downloads.h"
 
 
@@ -43,6 +43,7 @@ private:
   GLuint m_buffer = 0;
   friend class CefPageRenderer;
   QQuickWindow* m_window = nullptr;
+  QOpenGLFunctions_3_1* m_glfunc = 0;
 };
 
 class CefPageRenderer : public CefRenderHandler {

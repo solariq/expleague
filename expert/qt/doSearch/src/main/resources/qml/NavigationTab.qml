@@ -10,17 +10,17 @@ import "."
 
 Item {
     id: self
+    property Page page
     property color textColor: "black"
     property bool closeEnabled: true
     property alias hover: tabMouseArea.containsMouse
     property string state
-    property bool imageOnly: modelData.title.length === 0
+    property bool imageOnly: page.title.length === 0
     property bool showTree
     implicitWidth: imageOnly ? 24 : Math.min(invisibleText.implicitWidth, 200) + 24 + 4
     implicitHeight: 24
     //    z: parent.z + (self.state == "selected" ? 2 : (self.state == "active" ? 1 : 0))
     clip: false
-
 
 
     Item {
@@ -36,6 +36,12 @@ Item {
         width: self.width
         height: self.height
 
+        Component.onDestruction: {
+            if(Drag.active){
+                Drag.drop()
+            }
+        }
+
         MouseArea {
             id: tabMouseArea
             anchors.fill: parent
@@ -43,7 +49,7 @@ Item {
             drag.target: tab
             propagateComposedEvents: true
             onClicked: {
-                dosearch.navigation.select(group, modelData)
+                dosearch.navigation.select(group, page)
             }
 
             onPositionChanged: {
@@ -55,6 +61,8 @@ Item {
                     mouse.accepted = true
                 }
             }
+
+
         }
         Rectangle{
             id: leftBorder
@@ -102,14 +110,14 @@ Item {
                 id: crossIcon
                 z: parent.z + 1
                 visible: tabMouseArea.containsMouse || this['icon'] !== null
-                source: closeEnabled && tabMouseArea.containsMouse ? "qrc:/cross.png" : this['icon'] !== null ? modelData.icon : ""
+                source: closeEnabled && tabMouseArea.containsMouse ? "qrc:/cross.png" : this['icon'] !== null ? page.icon : ""
                 fillMode: Image.PreserveAspectFit
                 mipmap: true
                 MouseArea {
                     visible: closeEnabled
                     anchors.fill: parent
                     onClicked: {
-                        dosearch.navigation.close(group, modelData)
+                        dosearch.navigation.close(group, page)
                     }
                 }
             }
@@ -134,7 +142,9 @@ Item {
                 font.weight: self.state == "selected" ? Font.Medium : Font.Normal
                 font.pixelSize:  13
                 font.family: "Helvetica"
-                text: modelData.title.replace("\n", " ")
+                text: {
+                    page.title.replace("\n", " ")
+                }
                 elide: Text.ElideRight
             }
             Item {
@@ -149,7 +159,7 @@ Item {
                 ParentChange { target: tab; parent: dosearch.main.screenRef }
                 AnchorChanges { target: tab; anchors.verticalCenter: undefined; anchors.horizontalCenter: undefined }
                 PropertyChanges { target: tab; z: 100 }
-                PropertyChanges { target: dosearch.main; drag: modelData; dragType: "page" }
+                PropertyChanges { target: dosearch.main; drag: page; dragType: "page" }
             }]
     }
     Text {
@@ -158,6 +168,6 @@ Item {
         font.weight: self.state == "selected" ? Font.Medium : Font.Normal
         font.pixelSize:  13
         font.family: "Helvetica"
-        text: modelData.title.replace("\n", " ")
+        text: page.title.replace("\n", " ")
     }
 }

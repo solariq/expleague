@@ -172,19 +172,19 @@ Item {
         }
     }
 
-    Glow {
-        id: thumbnailGlow
-        visible: false
-        anchors.fill: thumbnailHolder
-        source: thumbnailHolder
-        radius: 0
-        samples: 17
-        color: Palette.borderColor("selected")
-        spread: 0.4
-        NumberAnimation on radius {
-            easing.type: Easing.InOutQuad; duration: 750
-        }
-    }
+//    Glow {
+//        id: thumbnailGlow
+//        visible: false
+//        anchors.fill: thumbnailHolder
+//        source: thumbnailHolder
+//        radius: 0
+//        samples: 17
+//        color: Palette.borderColor("selected")
+//        spread: 0.4
+//        NumberAnimation on radius {
+//            easing.type: Easing.InOutQuad; duration: 750
+//        }
+//    }
 
 //    Text {
 //        anchors.centerIn: parent

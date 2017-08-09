@@ -205,13 +205,8 @@ PagesGroup* Context::suggest(Page* root) const {
         Page* const page = pages[i];
         if (parent()->history()->recent(page) != this)
             continue;
-        suggest->insert(page);
-    }
-    if (associated) {
-        foreach (Page* page, associated->pages()) {
-            if (associated->closed(page))
-                suggest->remove(page);
-        }
+        if (!associated || !associated->closed(page))
+         suggest->insert(page);
     }
     return suggest;
 }

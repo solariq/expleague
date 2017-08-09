@@ -90,15 +90,21 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
   WebResource* const nextWeb = dynamic_cast<WebResource*>(next);
   WebResource* const contextWeb = dynamic_cast<WebResource*>(context);
   SERPage* const serp = qobject_cast<SERPage*>(next);
+  if (serp) {
+    if(serp == context){ //diffrent page in serp. For example second page of google search
+      serp->setOriginalUrl(url);
+      return serp->ui();
+    }
+    open(serp);
+    return serp->ui();
+  }
+
   if (next == context) // redirect
     return context->ui();
   if (contextWeb && !newGroup &&
       transferUI) // speedup of the link open: it will be opened inplace and the context page will be built from the scratch
     contextWeb->page()->transferUI(nextWeb->page());
-  if (serp) {
-    open(serp);
-    return serp->ui();
-  }
+
   if (!newGroup)
     context->transition(next, Page::TransitionType::FOLLOW_LINK);
   if (!newGroup) {
@@ -122,7 +128,7 @@ QQuickItem* NavigationManager::open(const QUrl& url, Page* context, bool newGrou
   }
 
   if (!group) { // creating new group if the site group was not found
-    PagesGroup* const contextGroup = m_active_context->associated(context->container());
+    PagesGroup* contextGroup = m_active_context->associated(context->container());
     if (!newGroup) {
       group = contextGroup;
       removeSuggestGroup();
@@ -154,6 +160,10 @@ void NavigationManager::close(PagesGroup* context, Page* page) {
   else
     next = 0;
   context->close(page);
+  if(context->type() == PagesGroup::SUGGEST){
+    PagesGroup* contextParent = m_active_context->associated(context->root());
+    contextParent->close(page);
+  }
   if (selected) {
     if (next && !context->closed(next))
       select(context, next);
@@ -265,6 +275,11 @@ void NavigationManager::select(PagesGroup* group) {
     if (group)
       group->setSelected(true);
   }
+}
+
+void NavigationManager::open(const QUrl& url){
+  Page* page = parent()->web(url);
+  typeIn(page);
 }
 
 void NavigationManager::open(Page* page) {
@@ -659,8 +674,8 @@ Context* NavigationManager::suggest(ContentPage* page, const BoW& profile) {
       minCosDistance = ctxtCosDistance;
     }
   }
-  qDebug() << "Current context cos distance: " << cosDistance << " minimal cos distance: " << minCosDistance << " for "
-           << suggest->title();
+//  qDebug() << "Current context cos distance: " << cosDistance << " minimal cos distance: " << minCosDistance << " for "
+//           << suggest->title();
   return !suggest->hasTask() && !m_active_context->hasTask() && suggest != m_active_context &&
       minCosDistance < cosDistance - 0.01 ? suggest : 0;
 }

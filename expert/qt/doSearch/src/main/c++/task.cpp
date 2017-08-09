@@ -39,7 +39,6 @@ void Task::setOffer(Offer* offer) {
     setFilter(offer->filter());
     emit tagsChanged();
     emit patternsChanged();
-    emit filterChanged();
     emit offerChanged();
 }
 
@@ -59,6 +58,7 @@ void Task::setFilter(QMap<QString, Offer::FilterType> filter) {
         }
         else m_roles[index] = (int)m_filter[id];
     }
+    emit filterChanged();
 }
 
 void Task::answerReceived(const QString &from, const QString& text) {
@@ -319,7 +319,7 @@ void Task::filter(Member* member, int role) {
         m_filter.remove(member->id());
     else
         m_filter[member->id()] = (Offer::FilterType)role;
-    emit filterChanged();
+    setFilter(m_filter);
 }
 
 QString Task::id() const  {

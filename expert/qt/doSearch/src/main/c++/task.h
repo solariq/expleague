@@ -257,6 +257,7 @@ public:
     Q_INVOKABLE void filter(Member* members, int role);
     Q_INVOKABLE void commitOffer(const QString& topic, const QString& comment, const QList<Member*>& selected = QList<Member*>()) const;
 
+
     bool active() const { return m_context; }
     void setContext(Context* context);
 

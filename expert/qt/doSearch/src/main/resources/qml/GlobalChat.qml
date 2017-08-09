@@ -30,7 +30,7 @@ Item {
 
             implicitHeight: 75
             implicitWidth: 346
-            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.horizontalCenter: roomCard.horizontalCenter
 
             Rectangle {
                 anchors.fill: parent

@@ -18,6 +18,7 @@ class MyApp: public CefApp {
     command_line->AppendSwitch("--off-screen-rendering-enabled");
     command_line->AppendSwitch("--multi-threaded-message-loop");
     command_line->AppendSwitch("--enable-system-flash");
+//    command_line->AppendSwitch("--enable-npapi");
     std::vector<CefString> argv;
     command_line.get()->GetArgv(argv);
   }
@@ -26,13 +27,11 @@ class MyApp: public CefApp {
 #if defined(__unix__) || (defined (__APPLE__) && defined (__MACH__))
     registrar->AddCustomScheme("qrc", false, false, false, false, true, true);
 #else
-    log("register scheme");
-    registrar->AddCustomScheme("qrc", false, false, false, false, true) ? log("true") : log("false");
+    registrar->AddCustomScheme("qrc", false, false, false, false, true);
 #endif
   }
 
   virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() {
-    log("calling GetBrowserProcessHandler");
     return NULL;
   }
 IMPLEMENT_REFCOUNTING(MyApp)

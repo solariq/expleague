@@ -35,7 +35,6 @@ class QrcResourceHandler : public CefResourceHandler {
   virtual bool ProcessRequest(CefRefPtr<CefRequest> request,
                               CefRefPtr<CefCallback> callback) OVERRIDE //url format is qrc:///filename
   {
-    qDebug() << "ProcessRequest";
     QString str = "qrc:/" + (QString::fromStdString(request->GetURL().ToString())).mid(7);
     QUrl url = QUrl(str);
     m_file.setFileName(":/" + url.path());
@@ -131,11 +130,11 @@ QTimer* cefTimer = nullptr;
 
 void ShutDownGCItem::addToShutDownGC() {
   GCStorage.insert(this);
-  qDebug() << "insert" << GCStorage.size();
+//  qDebug() << "insert" << GCStorage.size();
 }
 
 void ShutDownGCItem::removeFromShutDownGC() {
-  qDebug() << "remove" << GCStorage.size() << GCDestroyed.size() << GCStorageBusy;
+//  qDebug() << "remove" << GCStorage.size() << GCDestroyed.size() << GCStorageBusy;
   if (GCStorageBusy) {
     GCDestroyed.insert(this);
     return;
@@ -192,7 +191,7 @@ void initCef(int argc, char* argv[]) {
   CefRefPtr<CefApp> cefapp(new CefAppImpl());
   CefSettings settings;
   settings.external_message_pump = 1;
-
+  settings.no_sandbox = 0;
 
   CefString cache_path(&settings.cache_path);
   QString appLocalPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);

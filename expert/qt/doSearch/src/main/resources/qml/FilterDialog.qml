@@ -56,7 +56,7 @@ Window {
             for (var i = 0; i < expertsInner.length; i++) {
                 task.filter(expertsInner[i], rolesInner[i])
             }
-
+//            task.commitFilterChanges()
             dialog.hide()
         }
     }
@@ -78,14 +78,11 @@ Window {
             Layout.alignment: Qt.AlignHCenter
             property Member expert: modelData
             property var roles: ["accepted", "rejected", "prefered", "none"]
-            property int index: {
-                for (var i in dialog.expertsInner) {
-                    if (dialog.expertsInner[i] === expert)
-                        return i
-                }
-                return -1
-            }
-            property string role: index >= 0 ? expertSelf.roles[dialog.rolesInner[expertSelf.index]] : "none"
+            property int expertIndex: index
+
+            property string role: rolesInner.length == expertsInner.length ? expertSelf.roles[dialog.rolesInner[index]] : "none"
+            //sometimes rolesInner.length != expertsInner.length because qml doesnt update properties sequentially
+
             Avatar {
                 Layout.preferredHeight: implicitHeight
                 Layout.preferredWidth: implicitWidth
@@ -115,7 +112,7 @@ Window {
                     return -1
                 }
                 onActivated: {
-                    dialog.rolesInner[expertSelf.index] = index
+                    dialog.rolesInner[expertSelf.expertIndex] = index
                 }
             }
         }

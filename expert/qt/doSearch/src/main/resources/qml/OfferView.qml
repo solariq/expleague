@@ -568,7 +568,6 @@ Item {
                             fillMode: Image.PreserveAspectFit
                             source: "image://store/" + modelData
                             onStatusChanged: {
-                                console.log("Status changed to " + status)
                                 if (sourceSize.height/sourceSize.width > 2./3.) {
                                     img.height = 200
                                     img.width = undefined

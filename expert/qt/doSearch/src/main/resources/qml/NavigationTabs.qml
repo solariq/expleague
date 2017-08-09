@@ -38,6 +38,9 @@ RowLayout {
     Item {Layout.preferredWidth: 6}
     Repeater {
         model: navigation.groups
+        onModelChanged: {
+            console.log("navigation tabs model changed")
+        }
 
         delegate: NavigationGroup {
             Layout.fillHeight: true

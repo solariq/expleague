@@ -49,12 +49,6 @@ Rectangle{
                 dosearch.main.screenRef.state = ""
         }
 
-        onRequestPage: {
-            if(url != this.url){
-                owner.open(url, newTab, false)
-            }
-        }
-
         onDragFromCefStarted: {
             var draggedItem = Qt.createQmlObject("import QtQuick 2.0; Rectangle{}", self, "drag");
             dosearch.main.dragType = "web";
@@ -198,7 +192,6 @@ Rectangle{
     }
 
     Keys.onReleased: {
-//        console.log("releaseEvent")
         event.accepted = webView.sendKeyRelease(event)
     }
 

@@ -25,7 +25,7 @@ Item {
     property real maxWidth: 0
     property real minWidth: 0
     property var activeItem
-    implicitWidth: 0
+    implicitWidth: 320
 
     onContextChanged: {
         preview.html = ""
@@ -160,6 +160,13 @@ Item {
 //                            dosearch.navigation.handleOmnibox(url, 0)
 //                        }
 //                    }
+                    Connections{
+                        target: preview.webView
+                        onRequestPage: {
+                            console.log("Request page url", url)
+                            dosearch.navigation.open(url)
+                        }
+                    }
                 }
                 LeagueChat {
                     id: dialog

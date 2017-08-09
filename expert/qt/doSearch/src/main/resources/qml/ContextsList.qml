@@ -41,6 +41,7 @@ Rectangle {
                     var context = dosearch.createContext(qsTr("Новый контекст"))
                     dosearch.navigation.open(context)
                     dosearch.navigation.select(0, context)
+                    context.ui.forceActiveFocus()
                 }
             }
         }

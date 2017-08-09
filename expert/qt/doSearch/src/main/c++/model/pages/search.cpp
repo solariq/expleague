@@ -32,6 +32,7 @@ QString SERPage::customJavaScript(){
   for (var i = 0; i < elems.length; ++i) {
       elems[i].removeAttribute("onmousedown")
   })";
+  return "";
 }
 
 //SearchRequest SearchRequest::EMPTY("");

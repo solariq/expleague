@@ -5,8 +5,6 @@
 #include <QQmlEngine>
 #include "dosearch.h"
 
-#include <QOpenGLFunctions_3_1>
-
 namespace expleague {
 
 CefString fromUrl(const QUrl& url) {
@@ -14,23 +12,20 @@ CefString fromUrl(const QUrl& url) {
   if (surl.isEmpty()) {
     return "about:blank";
   }
-  if (surl.startsWith("qrc:/")) {
-    //qDebug() << "convert Url"  << "qrc:///" + surl.mid(5);
+  if (surl.startsWith("qrc:/") && !surl.startsWith("qrc:///")) {
     return ("qrc:///" + surl.mid(5)).toStdString();
   }
   return surl.toStdString();
 }
 
-QOpenGLFunctions_3_1* glfunc = 0;
-
 QOpenGLFramebufferObject* QTPageRenderer::createFramebufferObject(const QSize& size) {
   CefPageRenderer* renderer = m_owner->renderer();
   if (size.height() != renderer->height() || size.width() != renderer->width()) {
     GLuint oldBuffer = m_buffer;
-    //    const GLubyte* string = glfunc->glGetString(GL_VERSION);
-    glfunc->glGenBuffers(1, &m_buffer);
-    glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_buffer);
-    glfunc->glBufferData(GL_PIXEL_UNPACK_BUFFER, size.width() * size.height() * 4, 0, GL_STREAM_DRAW);
+    //    const GLubyte* string = m_glfunc->glGetString(GL_VERSION);
+    m_glfunc->glGenBuffers(1, &m_buffer);
+    m_glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_buffer);
+    m_glfunc->glBufferData(GL_PIXEL_UNPACK_BUFFER, size.width() * size.height() * 4, 0, GL_STREAM_DRAW);
     {
       std::lock_guard<std::mutex> guard(m_owner->m_mutex);
 
@@ -38,18 +33,18 @@ QOpenGLFramebufferObject* QTPageRenderer::createFramebufferObject(const QSize& s
         const int height = std::min(renderer->height(), size.height());
         const int width = std::min(renderer->width(), size.width());
 
-        glfunc->glBindBuffer(GL_UNIFORM_BUFFER, oldBuffer);
-        glfunc->glUnmapBuffer(GL_UNIFORM_BUFFER);
+        m_glfunc->glBindBuffer(GL_UNIFORM_BUFFER, oldBuffer);
+        m_glfunc->glUnmapBuffer(GL_UNIFORM_BUFFER);
         for (int i = 0; i < height; i++) {
-          glfunc->glCopyBufferSubData(GL_UNIFORM_BUFFER, GL_PIXEL_UNPACK_BUFFER, i * renderer->width() * 4, i * size.width() * 4, width * 4);
+          m_glfunc->glCopyBufferSubData(GL_UNIFORM_BUFFER, GL_PIXEL_UNPACK_BUFFER, i * renderer->width() * 4, i * size.width() * 4, width * 4);
         }
-        glfunc->glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        glfunc->glDeleteBuffers(1, &oldBuffer);
+        m_glfunc->glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        m_glfunc->glDeleteBuffers(1, &oldBuffer);
       }
 
-      renderer->setBuffer(glfunc->glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY), size.width(), size.height());
+      renderer->setBuffer(m_glfunc->glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY), size.width(), size.height());
     }
-    glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    m_glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
     const CefRefPtr<CefBrowser>& browser = m_owner->browser();
     if (browser.get())
@@ -59,13 +54,13 @@ QOpenGLFramebufferObject* QTPageRenderer::createFramebufferObject(const QSize& s
   {
     //    m_window->resetOpenGLState();
     //    fbo->bind();
-    //    glfunc->glColor3f(1, 0, 0);
-    //    glfunc->glBegin(GL_QUADS);
-    //    glfunc->glVertex2f(-1.f, -1.f);
-    //    glfunc->glVertex2f(-1.f, 1.f);
-    //    glfunc->glVertex2f(1.f, 1.f);
-    //    glfunc->glVertex2f(1.f, -1.f);
-    //    glfunc->glEnd();
+    //    m_glfunc->glColor3f(1, 0, 0);
+    //    m_glfunc->glBegin(GL_QUADS);
+    //    m_glfunc->glVertex2f(-1.f, -1.f);
+    //    m_glfunc->glVertex2f(-1.f, 1.f);
+    //    m_glfunc->glVertex2f(1.f, 1.f);
+    //    m_glfunc->glVertex2f(1.f, -1.f);
+    //    m_glfunc->glEnd();
     //    fbo->release();
     //    m_window->resetOpenGLState();
   }
@@ -73,12 +68,12 @@ QOpenGLFramebufferObject* QTPageRenderer::createFramebufferObject(const QSize& s
 }
 
 QTPageRenderer::QTPageRenderer(CefItem* owner): m_owner(owner) {
-  glfunc = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_1>();
+  m_glfunc = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_1>();
 }
 
 QTPageRenderer::~QTPageRenderer() {
   if (m_buffer) {
-    glfunc->glDeleteBuffers(1, &m_buffer);
+    m_glfunc->glDeleteBuffers(1, &m_buffer);
   }
 }
 
@@ -90,27 +85,27 @@ void QTPageRenderer::render() {
   const int height = fbo->height();
   const int width = fbo->width();
 
-  const bool texturesEnabled = glfunc->glIsEnabled(GL_TEXTURE_2D);
+  const bool texturesEnabled = m_glfunc->glIsEnabled(GL_TEXTURE_2D);
   if (!texturesEnabled)
-    glfunc->glEnable(GL_TEXTURE_2D);
+    m_glfunc->glEnable(GL_TEXTURE_2D);
 
-  glfunc->glBindTexture(GL_TEXTURE_2D, fbo->texture());
+  m_glfunc->glBindTexture(GL_TEXTURE_2D, fbo->texture());
 
-  glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_buffer);
+  m_glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_buffer);
   {
     std::lock_guard<std::mutex> guard(m_owner->m_mutex);
-    glfunc->glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-    glfunc->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
-    m_owner->renderer()->setBuffer(glfunc->glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY), width, height);
-    glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    m_glfunc->glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+    m_glfunc->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+    m_owner->renderer()->setBuffer(m_glfunc->glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY), width, height);
+    m_glfunc->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     auto popup = m_owner->renderer()->popup();
     if(popup.show)
-      glfunc->glTexSubImage2D(GL_TEXTURE_2D, 0, popup.rect.x, popup.rect.y, popup.rect.width, popup.rect.height, GL_BGRA, GL_UNSIGNED_BYTE, popup.buffer);
+      m_glfunc->glTexSubImage2D(GL_TEXTURE_2D, 0, popup.rect.x, popup.rect.y, popup.rect.width, popup.rect.height, GL_BGRA, GL_UNSIGNED_BYTE, popup.buffer);
   }
 
-  glfunc->glBindTexture(GL_TEXTURE_2D, 0);
+  m_glfunc->glBindTexture(GL_TEXTURE_2D, 0);
   if (texturesEnabled)
-    glfunc->glDisable(GL_TEXTURE_2D);
+    m_glfunc->glDisable(GL_TEXTURE_2D);
 }
 
 //Qt render thread,  ui (onpaint, CefDoMessageLoopWork, QQuickFramebufferObject) blocked
@@ -352,7 +347,7 @@ const void* CefPageRenderer::buffer() {
 
 bool BrowserListener::OnBeforeBrowse(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefRequest> request,
                                      bool is_redirect) {
-  if (request->GetResourceType() != RT_MAIN_FRAME /*|| request->GetTransitionType() == TT_FORM_SUBMIT*/) {
+  if (request->GetResourceType() != RT_MAIN_FRAME || request->GetTransitionType() == TT_EXPLICIT) {
     return false;
   }
   if (!m_enable) {
@@ -361,10 +356,8 @@ bool BrowserListener::OnBeforeBrowse(CefRefPtr<CefBrowser> browser, CefRefPtr<Ce
 
   QString url = QString::fromStdString(request->GetURL().ToString());
   QUrl qurl(url, QUrl::TolerantMode);
-  qDebug() << "on Before browse" << qurl << "is_redirect" << is_redirect << "transition type" << request->GetTransitionType();
-  if (qurl == m_owner->m_url) { //onbeforebrowse was called from QT
-    return false;
-  }
+
+//  qDebug() << "on Before browse" << qurl << "is_redirect" << is_redirect << "transition type" << request->GetTransitionType();
 
   qint64 now = QDateTime::currentMSecsSinceEpoch();
   if (is_redirect ||  now - m_owner->lastUserActionTime() > 5000) { //redirect
@@ -624,6 +617,13 @@ public:
     return m_listener;
   }
 
+  virtual bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                                        CefProcessId source_process,
+                                        CefRefPtr<CefProcessMessage> message) {
+    qDebug() << "IPC message recieved" << QString::fromStdString(message->GetName());
+    return false;
+  }
+
 private:
   CefRefPtr<CefRenderHandler> m_renderer;
   CefRefPtr<BrowserListener> m_listener;
@@ -678,7 +678,7 @@ void CefItem::initBrowser(QQuickWindow* window) {
   //  mainWindowInfo.SetAsChild(reinterpret_cast<NSView*>(window->winId()), x(), y(), width(), height());
 #endif
 
-  qDebug() << "Init Browser " << QString::fromStdString(fromUrl(m_url)) << m_url;
+//  qDebug() << "Init Browser " << QString::fromStdString(fromUrl(m_url)) << m_url;
 
   CefRefPtr<ACefClient> acefclient = new ACefClient();
   {
@@ -694,7 +694,7 @@ void CefItem::initBrowser(QQuickWindow* window) {
   QObject::connect(this, SIGNAL(visibleChanged()), this, SLOT(updateVisible()));
 
   if (m_url.isEmpty()) {
-    qDebug() << m_html;
+//    qDebug() << m_html;
     m_browser->GetMainFrame()->LoadString(m_html.toStdString(), "about:blank");
   }
   m_iobuffer->setBrowser(m_browser);
@@ -815,6 +815,7 @@ bool IOBuffer::keyPress(QKeyEvent* event) {
   }
   m_pressed_keys.insert(event->key());
   CefKeyEvent cefEv = CefEventFactory::createPressEvent(event);
+//  qDebug() << "keyPressEvent" << "key:" << event->key() << "modifires" << event->modifiers();
   m_browser->GetHost()->SendKeyEvent(cefEv);
   m_key_flags |= CefEventFactory::keyEventFlags(event);
   if (!event->text().isEmpty()){
@@ -828,6 +829,7 @@ bool IOBuffer::keyRelease(QKeyEvent* event) {
     return false;
   }
   if (!m_pressed_keys.contains(event->key())) {
+//    qDebug() << "Released not pressed key" << "key:" << event->key() << "modifires" << event->modifiers();
     m_browser->GetHost()->SendKeyEvent(
           CefEventFactory::createPressEvent(event)); //qml sometimes gives only release events
   }
@@ -835,7 +837,7 @@ bool IOBuffer::keyRelease(QKeyEvent* event) {
     m_pressed_keys.remove(event->key());
   }
   m_key_flags &= ~CefEventFactory::keyEventFlags(event);
-  //qDebug() << "keyReleaseEvent" << "key:" << event->key() << "modifires" << event->modifiers();
+//  qDebug() << "keyReleaseEvent" << "key:" << event->key() << "modifires" << event->modifiers();
   m_browser->GetHost()->SendKeyEvent(CefEventFactory::createReleaseEvent(event));
   return true;
 }
@@ -1030,7 +1032,7 @@ void CefItem::loadHtml(const QString& html) {
   }
   m_html = html;
   if (m_running && m_browser) {
-    qDebug() << "load html" << m_html;
+//    qDebug() << "load html" << m_html;
     m_browser->GetMainFrame()->LoadString(m_html.toStdString(), "about:blank");
   } else {
     initBrowser(window());
@@ -1046,21 +1048,6 @@ void CefItem::saveScreenshot(const QString& fileName, int x, int y, int w, int h
   });
   update();
 }
-
-//ContextMenuModel::ContextMenuModel(CefRefPtr<CefMenuModel> model){
-//    for(int i = 0; i < model->GetCount(); i++){
-//        m_options.append(QString::fromStdString(model->GetLabelAt(i).ToString()));
-//        m_option_ids.insert(i, model->GetCommandIdAt(i));
-//    }
-//}
-
-//void ContextMenuModel::select(int number){
-//    m_callback->Continue(number, false);
-//}
-
-//void ContextMenuModel::cancle(){
-//    m_callback->Cancel();
-//}
 
 void TextCallback::Visit(const CefString& string) {
   if (m_enabled) {
@@ -1123,6 +1110,7 @@ void CefItem::setUrl(const QUrl& url) {
     return;
   }
   if (m_browser) {
+    m_browser->GetMainFrame()->LoadURL("about:blank"); //Google search pages work only this way
     m_browser->GetMainFrame()->LoadURL(url.toString().toStdString());
   }
   else if (!url.isEmpty()) {

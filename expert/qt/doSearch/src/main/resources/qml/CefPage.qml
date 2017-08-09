@@ -22,9 +22,7 @@ Rectangle{
     anchors.fill: parent;
     //focus: true;
     onUrlChanged:{
-        if(webView.url != url){
-            webView.url = url
-        }
+        webView.url = url
     }
 
     onPageSearchChanged: {
@@ -48,6 +46,12 @@ Rectangle{
 
         onTextRecieved:{
             owner.text = text
+        }
+
+        onRequestPage: {
+            if(url != this.url){
+                owner.open(url, newTab, false)
+            }
         }
 
         onLoadEnd:{
@@ -356,9 +360,11 @@ Rectangle{
             }
             return
         }
-        console.log("pressEvent")
+        if(isShortCut(event)){
+            event.accepted = false
+            return
+        }
         event.accepted = webView.sendKeyPress(event)
-        //event.accepted = webView.sendKeyPress(event.key, event.modifiers, event.text, event.autoRepeat, event.count)
     }
 
     Keys.onReleased: {
@@ -371,16 +377,27 @@ Rectangle{
             event.accepted = true
             return
         }
+        if(isShortCut(event)){
+            event.accepted = false
+            return
+        }
         event.accepted = webView.sendKeyRelease(event)
     }
+
+    function isShortCut(event){
+        return (event.modifiers & Qt.ControlModifier) &&
+                (event.key == Qt.Key_V || event.key == Qt.Key_C || event.key == Qt.Key_Z || event.key == Qt.Key_X ||
+                 event.key == Qt.Key_Plus || event.key == Qt.Key_Minus || event.key == Qt.Key_F || event.key == Qt.Key_A)
+    }
+
     onVisibleChanged: {
         if(visible){
-            cefView.forceActiveFocus()
+            forceActiveFocus()
         }
     }
     Component.onCompleted: {
         if(visible){
-            cefView.forceActiveFocus()
+            forceActiveFocus()
         }
     }
 }

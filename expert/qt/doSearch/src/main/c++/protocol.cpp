@@ -211,7 +211,7 @@ void ExpLeagueConnection::onMessage(const QXmppMessage& msg, const QString& idOr
     QString sender;
     Progress progress;
     QUrl image;
-//    qDebug() << "messege" << msg;
+//    qDebug() << msg;
     foreach (const QXmppElement& element, msg.extensions()) {
         QDomElement xml = element.sourceDomElement();
         if (xml.namespaceURI() == EXP_LEAGUE_NS) {

@@ -13,9 +13,6 @@
 #include <QQuickWindow>
 #include <QQmlDebuggingEnabler>
 
-
-//#include <QtWebEngine>
-
 #include "expleague.h"
 
 #ifdef CEF
@@ -26,7 +23,7 @@
 #endif
 
 #include "model/uiowner.h"
-//#include "util/crashhandler.h"
+#include "util/crashhandler.h"
 
 #include <cmath>
 #include <QGLFormat>
@@ -57,7 +54,7 @@ int main(int argc, char *argv[]) {
 #endif
   //PersistentPropertyHolder::debugPrintAll();
   QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
-  QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
+  QLocale::setDefault(QLocale(QLocale::Russian, QLocale::Russia));
 //  QCoreApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);
 //    QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
   QCoreApplication::setOrganizationName("Experts League");
@@ -117,6 +114,9 @@ int main(int argc, char *argv[]) {
   app.setQuitOnLastWindowClosed(false);
   QObject::connect(&app, &QGuiApplication::lastWindowClosed, [] {
     shutDownCef([]() {
+#ifndef Q_OS_MAC
+      trayIcon->hide();
+#endif
       QCoreApplication::quit();
     });
   });
@@ -182,11 +182,13 @@ void declareTypes() {
   qRegisterMetaType<GroupKnugget*>("GroupKnugget*");
   qRegisterMetaType<RoomStatus*>("RoomState*");
   qRegisterMetaType<GlobalChat*>("GlobalChat*");
+//  qRegisterMetaType<ActivePagesModel*>("ActivePagesModel");
 #ifdef CEF
   qRegisterMetaType<CefItem*>("CefItem*");
 #endif
   qRegisterMetaType<UIOwner*>("UIOwner*");
 
+//  qmlRegisterType<ActivePagesModel>("ExpLeague",1,0,"ActivePagesModel");
   qmlRegisterType<ProfileBuilder>("ExpLeague", 1, 0, "ProfilePreview");
   qmlRegisterType<SearchRequest>("ExpLeague", 1, 0, "SearchRequest");
   qmlRegisterType<MarkdownEditorPage>("ExpLeague", 1, 0, "MarkdownEditorScreen");
