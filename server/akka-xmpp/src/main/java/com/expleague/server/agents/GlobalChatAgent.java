@@ -68,6 +68,15 @@ public class GlobalChatAgent extends RoomAgent {
     sender().tell(rooms, self());
   }
 
+  @ActorMethod
+  public void onRoomsRequest(RoomsRequest roomsRequest) {
+    final List<String> rooms = this.rooms.entrySet().stream()
+        .filter(stringRoomStatusEntry -> stringRoomStatusEntry.getValue().modificationTs > roomsRequest.startTs())
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toList());
+    sender().tell(rooms, self());
+  }
+
   @Override
   protected Role suggestRole(JID who, Affiliation affiliation) {
     if (who.isRoom())
@@ -434,6 +443,18 @@ public class GlobalChatAgent extends RoomAgent {
     public OrderStatus(OrderState state, JID expert) {
       this.state = state;
       this.expert = expert;
+    }
+  }
+
+  public static class RoomsRequest {
+    private final long startTs;
+
+    public RoomsRequest(long startTs) {
+      this.startTs = startTs;
+    }
+
+    public long startTs() {
+      return startTs;
     }
   }
 }
