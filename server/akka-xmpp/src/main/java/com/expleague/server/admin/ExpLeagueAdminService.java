@@ -23,7 +23,8 @@ import com.expleague.server.admin.dto.DumpItemDto;
 import com.expleague.server.admin.dto.ExpertsProfileDto;
 import com.expleague.server.admin.dto.OrderDto;
 import com.expleague.server.admin.dto.OrdersGroupDto;
-import com.expleague.server.admin.reports.ExpertWorkReportHandler;
+import com.expleague.server.admin.reports.db.ExpertWorkReportHandler;
+import com.expleague.server.admin.reports.dump.quality_monitoring.QualityMonitoringReportHandler;
 import com.expleague.server.admin.series.TimeSeriesChartDto;
 import com.expleague.server.admin.series.TimeSeriesDto;
 import com.expleague.server.agents.ExpLeagueOrder;
@@ -240,14 +241,32 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
               final long end = formatter.parse(endParam.get()).getTime();
               final String expertId = expertIdParam.isDefined() ? expertIdParam.get() : null;
 
-              final ActorRef handler = context().actorOf(ActorAdapter.props(ExpertWorkReportHandler.class, start, end, expertId));
+              final ActorRef handler = context().actorOf(ActorAdapter.props(ExpertWorkReportHandler.class));
               final Timeout timeout = Timeout.apply(Duration.create(2, TimeUnit.HOURS));
               final Future<Object> ask = Patterns.ask(handler, new ExpertWorkReportHandler.ReportRequest(start, end, expertId), timeout);
               final String result = (String) Await.result(ask, timeout.duration());
+              response = fileResponse(result, "report-expert.csv");
+            }
+          }
+          else if ("/report-quality".equals(path)) {
+            final Option<String> startParam = request.getUri().query().get("start");
+            final Option<String> endParam = request.getUri().query().get("end");
+            final Option<String> clientIdParam = request.getUri().query().get("client");
 
-              final Map<String, String> params = new HashMap<>();
-              params.put("filename", "report-expert.csv");
-              response = HttpResponse.create().addHeader(ContentDisposition.create(ContentDispositionTypes.ATTACHMENT, params)).withStatus(200).withEntity(result);
+            if (!startParam.isDefined() || !endParam.isDefined()) {
+              response = HttpResponse.create().withStatus(400).withEntity("Parameters are not defined");
+            }
+            else {
+              final SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
+              final long start = formatter.parse(startParam.get()).getTime();
+              final long end = formatter.parse(endParam.get()).getTime();
+              final String clientId = clientIdParam.isDefined() ? clientIdParam.get() : null;
+
+              final ActorRef handler = context().actorOf(ActorAdapter.props(QualityMonitoringReportHandler.class));
+              final Timeout timeout = Timeout.apply(Duration.create(2, TimeUnit.HOURS));
+              final Future<Object> ask = Patterns.ask(handler, new QualityMonitoringReportHandler.ReportRequest(start, end, clientId), timeout);
+              final String result = (String) Await.result(ask, timeout.duration());
+              response = fileResponse(result, "report-quality.csv");
             }
           }
         } catch (Exception e) {
@@ -446,6 +465,12 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
           ? ContentTypes.create(MediaTypes.IMAGE_PNG)
           : ContentTypes.create(MediaTypes.APPLICATION_OCTET_STREAM);
     }
+  }
+
+  private static HttpResponse fileResponse(String result, String fileName) {
+    final Map<String, String> params = new HashMap<>();
+    params.put("filename", fileName);
+    return HttpResponse.create().addHeader(ContentDisposition.create(ContentDispositionTypes.ATTACHMENT, params)).withStatus(200).withEntity(result);
   }
 
   public static class DefaultJsonMapper extends ObjectMapper {

@@ -92,7 +92,7 @@ public class UserAgent extends PersistentActorAdapter {
         context().stop(option.get());
       connected.remove(resource);
       if (connected.isEmpty())
-        invoke(new Presence(jid(), false));
+        invoke(new Presence(deviceJid, false));
     }
   }
 
