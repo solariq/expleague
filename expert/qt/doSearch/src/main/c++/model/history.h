@@ -27,6 +27,7 @@ public:
 public:
     QList<PageVisit*> story() const { return m_story; }
     QList<PageVisit*> last(int depth) const;
+    PageVisit* last() const;
 
     Q_INVOKABLE int visits(const QString& id) const;
     Q_INVOKABLE Context* recent(Page* page) const;

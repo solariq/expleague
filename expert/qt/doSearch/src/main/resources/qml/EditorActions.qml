@@ -31,6 +31,7 @@ Item {
         text: qsTr("Добавить метку")
         tooltip: qsTr("Добавить метку")
         iconSource: "qrc:/tools/todo.png"
+        property string highlightedIcon: "qrc:/tools/todo_h.png"
 
         shortcut: "Ctrl+/"
         enabled: editor

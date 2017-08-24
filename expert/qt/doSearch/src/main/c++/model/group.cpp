@@ -60,22 +60,24 @@ void PagesGroup::setParentGroup(PagesGroup* group) {
 void PagesGroup::insert(Page* page, int position) {
   assert(position <= m_closed_start || position < 0);
   int index = m_pages.indexOf(page);
+
   if(index >= 0){
-    m_pages.removeOne(page);
-    if(index < m_closed_start)
-      m_closed_start--;
     if(position < 0)
-      position = index;
-    else if(index < position)
-      position--;
+      return;
+    m_pages.move(index, position);
+    if(index >= m_closed_start || position == m_closed_start){
+      m_closed_start++;
+    }
+    if(index == m_selected_page_index){
+      m_selected_page_index = position;
+    }
+  }else{
+    position = position < 0 ? m_closed_start : position;
+    m_pages.insert(position, page);
+    m_closed_start++;
+    if (position <= m_selected_page_index)
+      m_selected_page_index++;
   }
-
-  position = position < 0 ? m_closed_start : position;
-  m_pages.insert(position, page);
-  m_closed_start++;
-  if (position <= m_selected_page_index)
-    m_selected_page_index++;
-
   updatePages();
   save();
   emit pagesChanged();

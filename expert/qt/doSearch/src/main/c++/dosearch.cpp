@@ -25,10 +25,12 @@ doSearch::doSearch(QObject* parent) : QObject(parent), m_nam(new QNetworkAccessM
                 [](const QString& word) { return word; },
                 this
     );
+    m_nam->setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
     m_saver = new StateSaver(this);
     m_league = new League(this);
     connect(m_league, SIGNAL(roleChanged(League::Role)), this, SLOT(onRoleChanged(League::Role)));
     m_navigation = new NavigationManager(this);
+    m_download_manger = new DownloadManager(this);
     connect(m_navigation, SIGNAL(activeScreenChanged()), this, SLOT(onActiveScreenChanged()));
     m_history = new History(this);
     QTimer::singleShot(10, m_history, &History::interconnect);
@@ -242,7 +244,8 @@ void doSearch::onActiveScreenChanged() {
     Page* active = m_navigation->activePage();
     if (m_main)
         m_main->setTitle(active->title());
-    m_history->onVisited(active, m_navigation->context());
+    if(!m_history->last() || m_history->last()->page() != active)
+      m_history->onVisited(active, m_navigation->context());
 }
 
 void doSearch::onRoleChanged(League::Role role) {

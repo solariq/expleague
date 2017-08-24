@@ -28,6 +28,10 @@ GridView {
         onDocumentsChanged: self.model = rebuildDocuments()
     }
 
+    onVisibleChanged: {
+        console.log("visible changed")
+    }
+
     model: rebuildDocuments()
 
     delegate: Item {
@@ -41,7 +45,7 @@ GridView {
                                          <body>" + (modelData != "append" ? modelData.html : "") + "</body></html>"
 
 
-            visible: modelData != "append"
+            visible: modelData != "append" && self.visible
 
             Drag.dragType: Drag.Automatic //TODO uncommet
             Drag.active: tileArea.drag.active
@@ -60,6 +64,10 @@ GridView {
                     focused.forceActiveFocus()
             }
 
+            Component.onCompleted: {
+                console.log("component loaded")
+            }
+
             Rectangle {
                 id: tile
                 anchors.fill: parent
@@ -69,29 +77,30 @@ GridView {
                     id: web
                     anchors.centerIn: parent
                     webView.running: visible
+                    webView.visible: visible
                     width: parent.width - 20
                     height: parent.height - 20
                     Component.onCompleted: web.webView.loadHtml(editorPreview.htmlContent)
                 }
             }
 
-//            Glow {
-//                visible: context.document === modelData
-//                anchors.fill: tile
-//                source: tile
-//                radius: 8
-//                samples: 17
-//                color: Palette.borderColor("selected")
-//            }
+            Glow {
+                visible: context.document === modelData
+                anchors.fill: tile
+                source: tile
+                radius: 8
+                samples: 17
+                color: Palette.borderColor("selected")
+            }
 
-//            DropShadow {
-//                anchors.fill: parent
-//                cached: true
-//                radius: 10.0
-//                samples: 32
-//                color: "#aa000000"
-//                source: tile
-//            }
+            DropShadow {
+                anchors.fill: parent
+                cached: true
+                radius: 10.0
+                samples: 32
+                color: "#aa000000"
+                source: tile
+            }
             MouseArea {
                 id: tileArea
                 anchors.fill: parent

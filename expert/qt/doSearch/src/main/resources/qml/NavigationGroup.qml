@@ -117,7 +117,7 @@ Item {
                         model: (innerVisiblePages && innerVisiblePages.length > 0) ? innerVisiblePages : group.activePagesModel
                         onModelChanged: {
                             if(group.type == PagesGroup.SUGGEST){
-                                console.log("suggest model changed. size:", model.rowCount())
+//                                console.log("suggest model changed. size:", model.rowCount())
                             }
                             updateWidth()
                             update(false, drop.dropId < 0)
@@ -170,7 +170,7 @@ Item {
                         }
 
                         function scrollTo(page){
-                            console.log("scroll to ", page)
+//                            console.log("scroll to ", page)
                             if(totalWidth - fullTabsWidth == 0){
                                 return
                             }

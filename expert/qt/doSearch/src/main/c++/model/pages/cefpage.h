@@ -11,7 +11,8 @@
 #include <QTimer>
 #include <mutex>
 #include <QtQuick>
-#include <QOpenGLFunctions_3_1>
+#include <QOpenGLFunctions>
+#include <QOpenGLFunctions_2_0>
 #include "../downloads.h"
 
 
@@ -31,20 +32,37 @@ class CefItem;
 class QTPageRenderer : public QQuickFramebufferObject::Renderer {
 public:
   explicit QTPageRenderer(CefItem* owner);
-  ~QTPageRenderer();
-  //Qt methods
-  virtual void render();
 
-  virtual QOpenGLFramebufferObject* createFramebufferObject(const QSize& size);
+  virtual void render() override;
+  virtual QOpenGLFramebufferObject* createFramebufferObject(const QSize& size) override;
+  virtual void synchronize(QQuickFramebufferObject* obj) override;
 
-  virtual void synchronize(QQuickFramebufferObject* obj);
+private:
+  CefItem* const m_owner;
+  friend class CefPageRenderer;
+  QQuickWindow* m_window = nullptr;
+  QOpenGLFunctions* m_glfunc = nullptr;
+};
+
+class QTPageRenderer_GL2_0 : public QQuickFramebufferObject::Renderer {
+public:
+  explicit QTPageRenderer_GL2_0(CefItem* owner);
+
+  virtual void render() override;
+  virtual QOpenGLFramebufferObject* createFramebufferObject(const QSize& size) override;
+
 private:
   CefItem* const m_owner;
   GLuint m_buffer = 0;
-  friend class CefPageRenderer;
+  GLuint m_old_buffer = 0;
+  int m_old_width = 0;
+  int m_old_height = 0;
   QQuickWindow* m_window = nullptr;
-  QOpenGLFunctions_3_1* m_glfunc = 0;
+  QOpenGLFunctions_2_0* m_glfunc = nullptr;
+  friend class CefPageRenderer;
 };
+
+
 
 class CefPageRenderer : public CefRenderHandler {
 
@@ -54,14 +72,27 @@ class CefPageRenderer : public CefRenderHandler {
     void* buffer = nullptr;
   };
 
+  struct Buffer{
+    int width = 0;
+    int height = 0;
+    char* data = nullptr;
+    bool clean = true;
+    void update(int width, int height);
+    Buffer(int width, int height, char* data, bool clean);
+    Buffer() = default;
+  };
+
 public:
   void disable(); //stop render on QT level
   void enable();
-
-  int width() const { return m_width; }
-  int height() const { return m_height; }
+  int height(){return m_draw_buffer.height;}
+  int width(){return m_draw_buffer.width;}
 
   Popup popup(){ return m_popup; }
+
+  qint64 lastRenderTime(){ return m_last_frame_render_time; }
+
+  void setRgbswap(bool swap){ m_swap_RGB = swap; }
 
   void processNextFrame(std::function<void(const void* buffer, int w, int h)>);
 
@@ -90,8 +121,8 @@ public:
   virtual bool GetScreenPoint(CefRefPtr<CefBrowser> browser, int viewX, int viewY, int& screenX, int& screenY) OVERRIDE;
   virtual bool StartDragging(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDragData> drag_data, DragOperationsMask allowed_ops, int x, int y) OVERRIDE;
 
-  const void* buffer();
-  void setBuffer(void* pVoid, int width, int height);
+  const Buffer& buffer();
+  void setBuffer(const Buffer& buffer);
 
 IMPLEMENT_REFCOUNTING(CefPageRenderer)
 public:
@@ -99,13 +130,13 @@ public:
 
 private:
   bool m_enable = false;
-  int m_height, m_width;
+  Buffer m_draw_buffer;
   CefItem* const m_owner;
   std::function<void(const void* buffer, int w, int h)> m_next_frame_func;
-  bool m_clean = true;
-  void* m_gpu_buffer = nullptr;
   float m_scale_factor = 1.f;
   Popup m_popup;
+  qint64 m_last_frame_render_time = 0;
+  bool m_swap_RGB = false;
 };
 
 
@@ -149,7 +180,7 @@ public:
 
   virtual ~CefItem();
 
-  virtual Renderer* createRenderer() const;
+  virtual Renderer* createRenderer() const override;
 
   virtual void releaseResources();
 
@@ -303,16 +334,19 @@ signals:
   void fullScreenChanged(bool fullScreen);
 
 private slots:
-  void initBrowser(QQuickWindow* window);
-  void updateVisible();
+
+  void onVisibleChanged();
+  void onWindowChanged(QQuickWindow* window);
 
 private:
+  void initBrowser(QQuickWindow* window);
   void destroyBrowser();
   void updateLastUserActionTime();
 
   friend class BrowserListener;
   friend class CefPageRenderer;
   friend class QTPageRenderer;
+  friend class QTPageRenderer_GL2_0;
   bool m_focused = false;
   void updateJS();
 };
@@ -434,7 +468,6 @@ private:
   bool m_redirect_enable = true;
   bool m_enable;
   bool m_allow_link_trans = false;
-
   friend class CefItem;
 };
 }

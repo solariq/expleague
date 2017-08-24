@@ -28,35 +28,52 @@ extern "C" {
 
 namespace expleague {
 
-QString buildHtmlByMD(const QString& text) {
-    const QRegExp CUT_RE = QRegExp("\\+\\[([^\\]]+)\\]([^-]*(?:-[^\\[][^-]*)*)-\\[\\1\\]");
-    QString html;
-    int prevPos = 0;
-    int nextPos;
-    int index = 0;
-    while ((nextPos = CUT_RE.indexIn(text, prevPos)) != -1) {
-//        qDebug() << "Match: " << nextPos << " from " << prevPos << " to " << nextPos + CUT_RE.matchedLength() << " length " << CUT_RE.matchedLength();
-        index++;
-        QString id = "cut-" + QString::number(index);
-        QString id_1 = "cuta-" + QString::number(index);
-        html += text.mid(prevPos, nextPos - prevPos);
-//        qDebug() << "Intermezzo: " << m_text.mid(prevPos, nextPos);
-//        qDebug() << "Fragment:" << m_text.mid(nextPos, nextPos - prevPos);
+void addSchemesToMarkDownUrls(QString &text){
+  QString result;
+  const QRegExp EXP(R"(\[([^\]]+)\]\(([^\/)]*\.[^)]*)\))");
+  int prevPos = 0;
+  int nextPos = 0;
+  while((nextPos = EXP.indexIn(text, prevPos)) != -1){
+    qDebug() << "modify url" << EXP.cap(2);;
+    result += text.mid(prevPos, nextPos - prevPos) + "[" + EXP.cap(1) + "]" + "(http://" + EXP.cap(2) + ")";
+    prevPos = nextPos + EXP.matchedLength();
+  }
+  if(prevPos != 0){
+    text = result + text.mid(prevPos);
+  }
+}
 
-        html += "<a class=\"cut_open\" id=\"" + id_1 + "\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">" + CUT_RE.cap(1) + "</a>" +
-                "<div class=\"cut_open\" id=\"" + id +"\">" + CUT_RE.cap(2) +
-                "\n<a class=\"hide\" href=\"#" + id_1 + "\" onclick=\"showHide('" + id + "','" + id_1 + "')\">" + QObject::tr("скрыть") + "</a></div>";
-        prevPos = nextPos + CUT_RE.matchedLength();
-    }
-    html += text.mid(prevPos);
-    QByteArray utf8 = html.toUtf8();
-    Document* mdDoc = mkd_string(utf8.constData(), utf8.length(), 0);
-    mkd_compile(mdDoc, 0);
-    char* result;
-    int length = mkd_document(mdDoc, &result);
-    QString resultHtml = QString::fromUtf8(result, length);
-    mkd_cleanup(mdDoc);
-    return resultHtml;
+QString buildHtmlByMD(QString text) {
+  addSchemesToMarkDownUrls(text);
+  const QRegExp CUT_RE("\\+\\[([^\\]]+)\\]([^-]*(?:-[^\\[][^-]*)*)-\\[\\1\\]");
+  QString html;
+  int prevPos = 0;
+  int nextPos;
+  int index = 0;
+  while ((nextPos = CUT_RE.indexIn(text, prevPos)) != -1) {
+    //        qDebug() << "Match: " << nextPos << " from " << prevPos << " to " << nextPos + CUT_RE.matchedLength() << " length " << CUT_RE.matchedLength();
+    index++;
+    QString id = "cut-" + QString::number(index);
+    QString id_1 = "cuta-" + QString::number(index);
+    html += text.mid(prevPos, nextPos - prevPos);
+    //        qDebug() << "Intermezzo: " << m_text.mid(prevPos, nextPos);
+    //        qDebug() << "Fragment:" << m_text.mid(nextPos, nextPos - prevPos);
+
+    html += "<a class=\"cut_open\" id=\"" + id_1 + "\" href=\"javascript:showHide('" + id + "','" + id_1 + "')\">" + CUT_RE.cap(1) + "</a>" +
+        "<div class=\"cut_open\" id=\"" + id +"\">" + CUT_RE.cap(2) +
+        "\n<a class=\"hide\" href=\"#" + id_1 + "\" onclick=\"showHide('" + id + "','" + id_1 + "')\">" + QObject::tr("скрыть") + "</a></div>";
+    prevPos = nextPos + CUT_RE.matchedLength();
+  }
+  html += text.mid(prevPos);
+  addSchemesToMarkDownUrls(html);
+  QByteArray utf8 = html.toUtf8();
+  Document* mdDoc = mkd_string(utf8.constData(), utf8.length(), 0);
+  mkd_compile(mdDoc, 0);
+  char* result;
+  int length = mkd_document(mdDoc, &result);
+  QString resultHtml = QString::fromUtf8(result, length);
+  mkd_cleanup(mdDoc);
+  return resultHtml;
 }
 
 struct MarkdownEditorPagePrivate {

@@ -1,5 +1,6 @@
 import QtQuick 2.7
 import QtQuick.Controls 2.0
+import QtGraphicalEffects 1.0
 
 import "."
 
@@ -172,19 +173,19 @@ Item {
         }
     }
 
-//    Glow {
-//        id: thumbnailGlow
-//        visible: false
-//        anchors.fill: thumbnailHolder
-//        source: thumbnailHolder
-//        radius: 0
-//        samples: 17
-//        color: Palette.borderColor("selected")
-//        spread: 0.4
-//        NumberAnimation on radius {
-//            easing.type: Easing.InOutQuad; duration: 750
-//        }
-//    }
+    Glow {
+        id: thumbnailGlow
+        visible: false
+        anchors.fill: thumbnailHolder
+        source: thumbnailHolder
+        radius: 0
+        samples: 17
+        color: Palette.borderColor("selected")
+        spread: 0.4
+        NumberAnimation on radius {
+            easing.type: Easing.InOutQuad; duration: 750
+        }
+    }
 
 //    Text {
 //        anchors.centerIn: parent
@@ -267,6 +268,7 @@ Item {
         onDropped: {
             if (self.state == "mkgroup")
                 vault.owner.group(item, drag.source.item)
+
 
             self.area = ""
             self.timeSpentInside = 0

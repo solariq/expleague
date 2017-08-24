@@ -27,6 +27,10 @@ Rectangle {
         }
     }
 
+    onVisibleChanged: {
+        console.log("Context view visbile changed on ", visible)
+    }
+
     RowLayout {
         anchors.fill: parent
         spacing: 0

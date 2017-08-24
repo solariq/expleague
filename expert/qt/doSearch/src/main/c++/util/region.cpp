@@ -51,8 +51,10 @@ void RegionResolver::request(const QGeoCoordinate& coord, std::function<void (co
 
 void RegionResolver::onFinished(QNetworkReply* reply) {
     RegionQuery* query = qobject_cast<RegionQuery*>(reply->request().originatingObject());
-    query->process(reply);
-    query->deleteLater();
+    if(query){
+      query->process(reply);
+      query->deleteLater();
+    }
 }
 
 RegionResolver::RegionResolver(): m_nam(expleague::doSearch::instance()->sharedNAM()) {

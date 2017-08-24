@@ -52,11 +52,13 @@ QQuickItem* UIOwner::ui(bool cache) {
     //qDebug() << "ceating ui with owner" << QQmlEngine::contextForObject(result)->contextProperty("owner");
     if (cache) {
         m_ui = result;
+//        QQmlEngine::setObjectOwnership(m_ui, QQmlEngine::CppOwnership);
         updateConnections();
         //    m_ui->setParent(const_cast<Page*>(this));
         connect(m_ui, &QQuickItem::destroyed, [this](){
             emit uiChanged();
         });
+
         initUI(result);
         emit uiChanged();
     }
@@ -105,10 +107,15 @@ UIOwner* UIOwner::parent() {
 
 
 void UIOwner::updateConnections() {
-    m_children.clear();
-    if(m_ui ){
-        collectChildren(m_ui, this, m_children);
+  for(UIOwner* child: m_children){
+    if(child->m_ui == nullptr){
+        child->clear();
     }
+  }
+  m_children.clear();
+  if(m_ui){
+    collectChildren(m_ui, this, m_children);
+  }
 }
 
 void collectChildren(QQuickItem* item, UIOwner* root, QList<UIOwner*>& children){

@@ -154,7 +154,7 @@ QString cachePath() {
 class CefAppImpl: public CefApp{
   virtual void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line){
     command_line->AppendSwitch("--enable-system-flash");
-//    command_line->AppendSwitch("--disable-gpu-compositing");
+    command_line->AppendSwitch("--disable-gpu-compositing");
   }
 
   virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() {
@@ -191,7 +191,6 @@ void initCef(int argc, char* argv[]) {
   CefRefPtr<CefApp> cefapp(new CefAppImpl());
   CefSettings settings;
   settings.external_message_pump = 1;
-  settings.no_sandbox = 0;
 
   CefString cache_path(&settings.cache_path);
   QString appLocalPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);

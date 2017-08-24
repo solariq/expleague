@@ -30,7 +30,6 @@
         <file>NavigationTabs.qml</file>
         <file>NavigationGroup.qml</file>
         <file>NavigationTab.qml</file>
-        <file>EmptyView.qml</file>
         <file>DownloadsPage.qml</file>
         <file>HistoryPage.qml</file>
         <file>SideBar.qml</file>
@@ -52,11 +51,5 @@
         <file>FilterDialog.qml</file>
         <file>CefPage.qml</file>
         <file>CefView.qml</file>
-        <file>GroupTree.qml</file>
-        <file>Empty.qml</file>
-        <file>OpacityMask.qml</file>
-        <file>DropShadow.qml</file>
-        <file>GaussianBlur.qml</file>
-        <file>Glow.qml</file>
     </qresource>
 </RCC>

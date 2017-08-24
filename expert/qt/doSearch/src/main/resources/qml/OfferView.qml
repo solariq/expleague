@@ -542,8 +542,8 @@ Item {
 
                     CefView {
                         anchors.fill: parent
-                        visible: offer && offer.hasLocation
                         webView.running: visible
+                        visible: offer && offer.hasLocation
                         webView.url: offer ? "qrc:/html/yandex-map.html?latitude=" + offer.latitude + "&longitude=" + offer.longitude : ""
                     }
                     TransparentMouseArea {

@@ -24,54 +24,6 @@ Item {
         }
     }
 
-//    Component.onCompleted: {
-//        preview.updateHtml()
-//    }
-
-//    Rectangle{
-//        width: parent.width / 5
-//        height: parent.height / 2
-//        anchors.right: parent.right;
-//        anchors.bottom: parent.bottom;
-//        color: "#FFFBF0"
-//        visible: true
-//        z: parent.z  + 1
-//        CefView {
-//            z: parent.z + 1
-//            zoom: 0.2
-//            anchors.centerIn: parent
-//            width: parent.width - 10
-//            height: parent.height - 10
-//            id: preview
-//            function updateHtml() {
-//                webView.loadHtml("<!DOCTYPE html><html><head>
-//                    <script src=\"qrc:///md-scripts.js\"></script>
-//                    <link rel=\"stylesheet\" href=\"qrc:///markdownpad-github.css\"></head>
-//                    <body>" + owner.html + "</body></html>")
-
-//            }
-
-//            Connections {
-//                target: owner
-//                onHtmlChanged: {
-//                    var focused = dosearch.main.activeFocusItem
-//                    var html = preview.updateHtml()
-//                    if (focused && focused == edit)
-//                        focused.forceActiveFocus()
-//                }
-//            }
-//        }
-//        DropShadow {
-//            z: parent.z - 1
-//            anchors.fill: parent
-//            cached: true
-//            radius: 10.0
-//            samples: 32
-//            color: "#aa000000"
-//            //source: tile
-//        }
-//    }
-
     Column {
         visible: true
         anchors.fill: parent
@@ -80,6 +32,7 @@ Item {
             height: 33
             width: parent.width
             color: Palette.toolsBackground
+            property int toolTipDelay: 1000
             RowLayout {
                 anchors.centerIn: parent
                 height: 27
@@ -90,61 +43,97 @@ Item {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.makeBold
                     dark: true
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("ctrl+B")
+                    ToolTip.delay: 1000
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.makeItalic
                     dark: true
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("ctrl+I")
+                    ToolTip.delay: 1000
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.insertHeader3
                     dark: true
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("ctrl+H")
+                    ToolTip.delay: 1000
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.insertImage
                     dark: true
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("ctrl+P")
+                    ToolTip.delay: 1000
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.insertLink
                     dark: true
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("ctrl+L")
+                    ToolTip.delay: 1000
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.insertSplitter
                     dark: true
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("ctrl+-")
+                    ToolTip.delay: 1000
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.makeCut
                     dark: true
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("ctrl+M")
+                    ToolTip.delay: 1000
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.insertCitation
                     dark: true
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("ctrl+J")
+                    ToolTip.delay: 1000
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.makeList
                     dark: true
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("ctrl+0")
+                    ToolTip.delay: 1000
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.makeEnumeration
                     dark: true
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("ctrl+1")
+                    ToolTip.delay: 1000
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.insertTable
                     dark: true
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("ctrl+T")
+                    ToolTip.delay: 1000
                 }
                 ToolbarButton {
                     Layout.alignment: Qt.AlignVCenter
                     action: editorActions.todo
                     dark: true
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("ctrl+/")
+                    ToolTip.delay: 1000
                 }
                 Item {Layout.fillWidth: true}
 

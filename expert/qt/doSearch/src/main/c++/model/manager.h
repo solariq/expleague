@@ -113,20 +113,6 @@ private:
     void appendGroup(PagesGroup* group);
     void typeIn(Page* page, bool suggest = true);
 
-    void printGroups(){
-//      qDebug() << "-----------groups------------";
-//      for(auto group: m_groups){
-//        auto debug = qDebug();
-//        debug << group->root()->id() << "||";
-//        for(auto page: group->pages()){
-//          bool selected = group->selectedPage() == page;
-//          if(selected) debug << "[";
-//          debug << page->id();
-//          if(selected) debug << "]";
-//        }
-//      }
-    }
-
 private:
     QQuickItem* m_screens_handler = 0;
     QQuickItem* m_active_screen_handler = 0;

@@ -236,8 +236,8 @@ Rectangle {
                                 break
                             }
                         }
-
-                        owner.move(moveFrom, self.moveTo)
+                        if(moveFrom >= 0) //item can be removed after drop
+                            owner.move(moveFrom, self.moveTo)
                         self.moveTo = -1
                     }
                 }

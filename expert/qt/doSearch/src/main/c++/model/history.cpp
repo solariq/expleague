@@ -74,6 +74,12 @@ QList<PageVisit*> History::last(int depth) const {
     return result;
 }
 
+PageVisit* History::last() const{
+  if(m_story.isEmpty())
+    return nullptr;
+  return m_story.last();
+}
+
 Page* History::current() const {
     return m_story[m_cursor]->page();
 }

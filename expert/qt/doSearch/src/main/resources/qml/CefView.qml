@@ -71,7 +71,7 @@ Rectangle{
             dosearch.main.delay(1000, function(){
                 downloadPopup.close()
             })
-            dosearch.navigation.context.ui.downloads.append(item)
+            dosearch.downloadManager.addDownload(item)
         }
 
         onSavedToStorage: {

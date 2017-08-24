@@ -25,7 +25,7 @@ endif()
 set(CEF true)
 if(MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "/DEBUG /MDd")
-    set(CMAKE_CXX_FLAGS_RELEASE "/MD /O2 /Ob2 /DNDEBUG /DQT_NO_DEBUG_OUTPUT ")
+    set(CMAKE_CXX_FLAGS_RELEASE "/MD /O2 /Ob2 /DNDEBUG ") #/DQT_NO_DEBUG_OUTPUT
     set(CMAKE_EXE_LINKER_FLAGS  "/subsystem:windows /entry:mainCRTStartup" )
     set(CMAKE_CXX_FLAGS "/GR /DWIN32 /D_WINDOWS /EHsc /wd4355 /wd4251 /wd4250 /wd4996  /Zi")
     set(CMAKE_C_FLAGS_DEBUG "/MDd /DEBUG /Zi")

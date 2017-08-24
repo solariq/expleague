@@ -10,6 +10,7 @@
 #include <QBuffer>
 #include <QClipboard>
 #include <QMimeData>
+#include "assert.h"
 
 //#include <QQuickDropAreaDrag>
 
@@ -27,10 +28,14 @@ Knugget::Knugget(const QString& id, Page* source, const QString& uiQml, doSearch
 }
 
 Knugget::Knugget(const QString& id, const QString& uiQml, doSearch* parent): ContentPage(id, uiQml, parent) {
-    m_source = parent->page(value("knugget.source").toString());
-    QVariant groupVar = value("knugget.group");
-    m_group = groupVar.isNull() ? 0 : qobject_cast<GroupKnugget*>(parent->page(groupVar.toString()));
-    m_title = value("knugget.title").toString();
+}
+
+void Knugget::interconnect(){
+  ContentPage::interconnect();
+  m_source = parent()->page(value("knugget.source").toString());
+  QVariant groupVar = value("knugget.group");
+  m_group = groupVar.isNull() ? 0 : qobject_cast<GroupKnugget*>(parent()->page(groupVar.toString()));
+  m_title = value("knugget.title").toString();
 }
 
 void Knugget::open() const {
@@ -40,10 +45,10 @@ void Knugget::open() const {
 }
 
 void Knugget::setGroup(GroupKnugget *group) {
-    m_group = group;
-    store("knugget.group", group ? group->id() : QVariant());
-    save();
-    emit groupChanged();
+  m_group = group;
+  store("knugget.group", group ? group->id() : QVariant());
+  save();
+  emit groupChanged();
 }
 
 TextKnugget::TextKnugget(const QString &id, const QString &text, Page* source, doSearch *parent): Knugget(id, source, "qrc:/TextKnuggetView.qml", parent), m_text(text) {
@@ -162,16 +167,18 @@ GroupKnugget::GroupKnugget(const QString &id, Context* source, doSearch *parent)
 }
 
 GroupKnugget::GroupKnugget(const QString &id, doSearch *parent):
-    Knugget(id, "qrc:/GroupKnuggetView.qml", parent)
-{
-    QVariant name = value("knugget.name");
-    m_name = name.isNull() ? tr("Новая группа") : value("knugget.name").toString();
+    Knugget(id, "qrc:/GroupKnuggetView.qml", parent){}
 
-    visitValues("knugget.element", [this, parent](const QVariant& value) {
-        m_items.append(qobject_cast<Knugget*>(parent->page(value.toString())));
-    });
-    QVariant parentGroup = value("knugget.parent");
-    m_parent_group = parentGroup.isNull() ? 0 : parent->page(parentGroup.toString());
+void GroupKnugget::interconnect(){
+  Knugget::interconnect();
+  QVariant name = value("knugget.name");
+  m_name = name.isNull() ? tr("Новая группа") : value("knugget.name").toString();
+
+  visitValues("knugget.element", [this](const QVariant& value) {
+      m_items.append(qobject_cast<Knugget*>(parent()->page(value.toString())));
+  });
+  QVariant parentGroup = value("knugget.parent");
+  m_parent_group = parentGroup.isNull() ? 0 : parent()->page(parentGroup.toString());
 }
 
 void GroupKnugget::insert(Knugget* item, int index) {

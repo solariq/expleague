@@ -1,7 +1,7 @@
 #include <QtCore/QUrl>
 #include <QtCore/QCommandLineOption>
 #include <QtCore/QCommandLineParser>
-#include <QGuiApplication>
+#include <QApplication>
 #include <QStyleHints>
 #include <QScreen>
 #include <QSystemTrayIcon>
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 #ifndef QT_DEBUG
   Atomix::CrashHandler::instance()->Init(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/crash");
 #endif
-  QGuiApplication app(argc, argv);
+  QApplication app(argc, argv);
 //    QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
 //    QCoreApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);
 #ifndef Q_OS_MAC
@@ -102,25 +102,25 @@ int main(int argc, char *argv[]) {
   context->setContextProperty("dosearch", root);
 
   root->restoreState();
-  QSurfaceFormat format;
-  format.setVersion(3, 2);
-  format.setProfile(QSurfaceFormat::CoreProfile);
-  QSurfaceFormat::setDefaultFormat(format);
+//  QSurfaceFormat format;
+//  format.setVersion(2, 1);
+//  format.setProfile(QSurfaceFormat::CoreProfile);
+//  QSurfaceFormat::setDefaultFormat(format);
 
   engine.load(QUrl(QStringLiteral("qrc:/Main.qml")));
   if (engine.rootObjects().isEmpty())
     return -1;
 
-  app.setQuitOnLastWindowClosed(false);
-  QObject::connect(&app, &QGuiApplication::lastWindowClosed, [] {
-    shutDownCef([]() {
-#ifndef Q_OS_MAC
-      trayIcon->hide();
-#endif
-      QCoreApplication::quit();
-    });
-  });
+//  app.setQuitOnLastWindowClosed(false);
+  QObject::connect(&engine, &QQmlEngine::quit, [] {
 
+      shutDownCef([]() {
+#ifndef Q_OS_MAC
+        trayIcon->hide();
+#endif
+        QCoreApplication::quit();
+      });
+  });
   return app.exec();
 }
 

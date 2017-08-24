@@ -7,9 +7,29 @@ namespace expleague {
 int Download::max_id = 0;
 
 Download::Download(const QUrl &url, const QString &path, const QString& name, int id):
-        m_id(id), m_path(path), m_url(url), m_file_name(name)
+  PersistentPropertyHolder("downloads/" + QString::number(id)),
+  m_id(id), m_path(path), m_url(url), m_file_name(name)
 {
   max_id = std::max(id, max_id);
+  store("path", m_path);
+  store("url", m_url);
+  store("file_name", m_file_name);
+  store("status", m_status);
+  save();
+}
+
+Download::Download(int id): PersistentPropertyHolder("downloads/" + QString::number(id)), m_id(id){
+  m_path = value("path").toString();
+  m_url = value("url").toString();
+  m_file_name = value("file_name").toString();
+  m_status = (Status)value("status").toInt();
+  m_total_bytes = value("size").toInt();
+  if(m_status == FINISHED){
+    m_recieved_bytes = m_total_bytes;
+  }
+  if(m_status == DOWNLOADING){
+    m_status = CANCELED;
+  }
 }
 
 void Download::start() {
@@ -47,7 +67,7 @@ void Download::cancel() {
   m_reply->abort();
   m_file.close();
   m_file.remove();
-  setStatus(CANCLELD);
+  setStatus(CANCELED);
 }
 
 QString Download::path() {
@@ -69,6 +89,8 @@ void Download::setReceivedBytes(int recieved_bytes) {
 
 void Download::setTotalBytes(int total_bytes) {
   m_total_bytes = total_bytes;
+  store("size", QVariant(m_total_bytes));
+  save();
   emit totalBytesChanged();
 }
 
@@ -78,8 +100,7 @@ void Download::progress(qint64 bytesReceived, qint64 bytesTotal) {
     emit receivedBytesChanged();
   }
   if (bytesTotal != m_total_bytes) {
-    m_total_bytes = bytesTotal;
-    emit totalBytesChanged();
+    setTotalBytes(bytesTotal);
   }
   qDebug() << m_recieved_bytes << "downloaded of" << m_total_bytes;
 }
@@ -98,7 +119,68 @@ void Download::finished() {
 }
 
 void Download::setStatus(Status status) {
+  store("status", QVariant(status));
+  save();
   m_status = status;
+
   emit statusChanged();
 }
+
+DownloadManager::DownloadManager(QObject* parent):QAbstractListModel(parent){
+  PersistentPropertyHolder holder("downloads");
+  QList<int> ids;
+  holder.visitKeys("", [&ids](const QString& id){
+    bool ok;
+    int i = id.toInt(&ok);
+    if(ok)
+      ids.append(i);
+  });
+  for(int id: ids){
+    m_downloads.append(new Download(id));
+  }
+  emit layoutChanged();
+}
+
+QVariant DownloadManager::data(const QModelIndex &index, int role) const{
+  if(index.row() < 0 || index.row() >= m_downloads.size()){
+    return QVariant();
+  }
+  return qVariantFromValue(m_downloads.at(index.row()));
+}
+
+int DownloadManager::rowCount(const QModelIndex &parent) const{
+  if (parent.isValid())
+    return 0;
+  return m_downloads.size();
+}
+
+QHash<int, QByteArray> DownloadManager::roleNames() const {
+    QHash<int, QByteArray> roles;
+    roles[Qt::UserRole + 1] = "modelData";
+    return roles;
+}
+
+void DownloadManager::addDownload(Download *download){
+  if(!download)
+    return;
+  if(download->status() == Download::NOT_STARTED)
+    download->start();
+  download->setParent(this);
+  int row = m_downloads.size();
+  beginInsertRows(QModelIndex(), row, row);
+  m_downloads.push_back(download);
+  endInsertRows();
+}
+
+
+void DownloadManager::removeDownload(Download * download){
+  download->cancel();
+  download->deleteLater();
+  download->remove("");
+  int row = m_downloads.size() - 1;
+  beginRemoveRows(QModelIndex(), row, row);
+  m_downloads.removeOne(download);
+  endRemoveRows();
+}
+
 }

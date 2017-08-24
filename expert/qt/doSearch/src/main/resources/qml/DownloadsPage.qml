@@ -57,17 +57,7 @@ import QtQuick.Layouts 1.0
 Rectangle {
     id: downloadView
     color: "lightgray"
-
-    ListModel {
-        id: downloadModel
-        property var downloads: []
-    }
-
-    function append(download) {
-        downloadModel.append(download)
-        downloadModel.downloads.push(download)
-        parent.parent.state = "downloads"
-    }
+    property var manager: dosearch.downloadManager
 
     Component {
         id: downloadItemDelegate
@@ -82,16 +72,16 @@ Rectangle {
             Rectangle {
                 id: progressBar
 
-                property real progress: receivedBytes / totalBytes
+                property real progress: modelData.receivedBytes / modelData.totalBytes
 
                 radius: 3
                 color: width == listView.width ? "green" : "#2b74c7"
                 width: listView.width * progress
                 height: cancelButton.height
 
-                Behavior on width {
-                    SmoothedAnimation { duration: 100 }
-                }
+//                Behavior on width {
+//                    SmoothedAnimation { duration: 100 }
+//                }
             }
             Rectangle {
                 anchors {
@@ -101,7 +91,7 @@ Rectangle {
                 }
                 Label {
                     id: label
-                    text: fullName
+                    text: modelData.fullName
                     anchors {
                         verticalCenter: cancelButton.verticalCenter
                         left: parent.left
@@ -109,7 +99,7 @@ Rectangle {
                     }
                     MouseArea{
                         anchors.fill: parent
-                        onClicked: downloadModel.downloads[index].open()
+                        onClicked: modelData.open()
                     }
                 }
                 Button {
@@ -117,14 +107,7 @@ Rectangle {
                     anchors.right: parent.right
                     iconSource: "qrc:/cross.png"
                     onClicked: {
-                        var download = downloadModel.downloads[index]
-
-                        download.cancel()
-
-//                        downloadModel.downloads = downloadModel.downloads.filter(function (el) {
-//                            return el.id !== download.id;
-//                        });
-                        downloadModel.remove(index)
+                        manager.removeDownload(modelData)
                     }
                 }
             }
@@ -144,7 +127,7 @@ Rectangle {
         width: parent.width - 20
         spacing: 5
 
-        model: downloadModel
+        model: manager
         delegate: downloadItemDelegate
 
         Text {

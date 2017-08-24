@@ -26,6 +26,7 @@ public:
     void setGroup(GroupKnugget* group);
     Q_INVOKABLE virtual void open() const;
 
+    virtual void interconnect() override;
 signals:
     void groupChanged() const;
 
@@ -134,6 +135,7 @@ public:
     void open() const;
     QList<Knugget*> items() const { return m_items; }
 
+    virtual void interconnect() override;
 signals:
     void itemsChanged() const;
 

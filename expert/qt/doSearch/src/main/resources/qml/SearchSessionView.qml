@@ -12,13 +12,13 @@ ColumnLayout {
     spacing: 0
 
     onVisibleChanged: {
-        console.log("Session " + owner.id + " visibility changed to " + visible)
+//        console.log("Session " + owner.id + " visibility changed to " + visible)
         owner.request.ui.visible = visible
     }
 
     onFocusChanged: {
         if (focus && visible) {
-            console.log("Enforce focus to session active request: " + owner.request.id)
+//            console.log("Enforce focus to session active request: " + owner.request.id)
             owner.request.ui.forceActiveFocus()
         }
     }

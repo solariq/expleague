@@ -49,9 +49,9 @@ Rectangle{
         }
 
         onRequestPage: {
-            if(url != this.url){
+//            if(url != this.url){
                 owner.open(url, newTab, false)
-            }
+//            }
         }
 
         onLoadEnd:{
@@ -67,7 +67,7 @@ Rectangle{
                 owner.open(url, true)
             }
         }
-
+//        connectionType: Qt.QueuedConnection
     }
 
     ColumnLayout {

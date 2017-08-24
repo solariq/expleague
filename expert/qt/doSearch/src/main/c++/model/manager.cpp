@@ -546,7 +546,6 @@ Page* selectedLeaf(Context* context, Page* page){
 
 void NavigationManager::onGroupsChanged() {
   rebalanceWidth();
-  printGroups();
   QSet<Page*> known;
   QList<QQuickItem*> screens;
   if (m_active_context) {
@@ -571,8 +570,6 @@ void NavigationManager::onGroupsChanged() {
         screens += page->ui();
         known.insert(page);
       }
-      screens.append(m_active_context->ui());
-      known.insert(m_active_context);
     }
 
     if (!known.contains(m_selected)) {
