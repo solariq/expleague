@@ -7,11 +7,9 @@ import com.expleague.model.Offer;
 import com.expleague.server.ExpLeagueServer;
 import com.expleague.server.admin.reports.CsvReportHandler;
 import com.expleague.server.agents.GlobalChatAgent;
-import com.expleague.server.agents.RoomAgent;
 import com.expleague.server.agents.XMPP;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
-import com.expleague.xmpp.stanza.Stanza;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
@@ -20,7 +18,6 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * User: Artem
@@ -37,14 +34,12 @@ public abstract class BaseDumpReportHandler extends CsvReportHandler {
       final List<String> rooms = (List<String>) Await.result(roomsAsk, timeout.duration());
       for (final String roomId : rooms) {
         final JID roomJid = JID.parse(roomId + "@muc." + ExpLeagueServer.config().domain());
-        final ActorRef roomActor = XMPP.register(roomJid, context());
-        final Future<Object> dumpAsk = Patterns.ask(roomActor, new RoomAgent.DumpRequest(), timeout);
+        final ActorRef roomDumpActor = context().actorOf(RoomDumpAgent.props(roomJid));
+        final Future<Object> dumpAsk = Patterns.ask(roomDumpActor, new RoomDumpAgent.DumpRequest(), timeout);
         //noinspection unchecked
-        final List<Message> dump = ((List<Stanza>) Await.result(dumpAsk, timeout.duration()))
-            .stream()
-            .filter(stanza -> stanza instanceof Message)
-            .map(stanza -> (Message) stanza)
-            .collect(Collectors.toList());
+        final List<Message> dump = ((List<Message>) Await.result(dumpAsk, timeout.duration()));
+        context().stop(roomDumpActor);
+
         final long initTs = dump.stream()
             .filter(message -> message.has(Offer.class))
             .map(message -> message.get(Offer.class))
