@@ -23,42 +23,41 @@ void GlobalChat::enter(RoomStatus *room) {
 }
 
 int GlobalChat::openCount() {
-    if (parent()->league()->role() != League::ADMIN)
-        return 0;
-    int result = 0;
-            foreach(RoomStatus *room, m_rooms) {
-            if (room->status() == Task::OPEN || room->status() == Task::VERIFY)
-                result++;
-        }
-    if (result > m_open)
-        League::instance()->notifyIfNeeded("", tr("Открылось новое задание"), true);
-    m_open = result;
-    return result;
+  if (parent()->league()->role() != League::ADMIN)
+    return 0;
+  int result = 0;
+  auto rooms = m_rooms_model->rooms();
+  for(RoomStatus *room: rooms) {
+    if (room->status() == Task::OPEN || room->status() == Task::VERIFY)
+      result++;
+  }
+  if (result > m_open)
+    League::instance()->notifyIfNeeded("", tr("Открылось новое задание"), true);
+  m_open = result;
+  return result;
 }
 
 RoomStatus *GlobalChat::state(const QString &id) const {
-            foreach(RoomStatus *state, m_rooms) {
-            if (xmpp::user(state->jid()) == id)
-                return state;
-        }
-    return 0;
+  for(RoomStatus *state: m_rooms_model->rooms()) {
+    if (xmpp::user(state->jid()) == id)
+      return state;
+  }
+  return 0;
 }
 
 RoomStatus *GlobalChat::registerRoom(Offer *offer) {
-            foreach (RoomStatus *state, m_rooms) {
-            if (state->roomId() == offer->room()) {
-                state->setOffer(offer);
-                return state;
-            }
-        }
-    RoomStatus *room = new RoomStatus(offer, this);
-    m_rooms.append(room);
-    connect(room, SIGNAL(statusChanged(expleague::Task::Status)), this,
-            SLOT(onRoomStatusChanged(expleague::Task::Status)));
-    connect(room, SIGNAL(offerChanged()), this, SLOT(onRoomsChanged()));
-    room->connectTo(League::instance()->connection());
-    onRoomsChanged();
-    return room;
+  for (RoomStatus *state: m_rooms_model->rooms()) {
+    if (state->roomId() == offer->room()) {
+      state->setOffer(offer);
+      return state;
+    }
+  }
+  RoomStatus *room = new RoomStatus(offer, this);
+  m_rooms_model->insertRoom(room);
+  connect(room, SIGNAL(statusChanged(expleague::Task::Status)), this, SLOT(onRoomStatusChanged(expleague::Task::Status)));
+  connect(room, SIGNAL(offerChanged()), this, SLOT(onRoomOfferChanged()));
+  room->connectTo(League::instance()->connection());
+  return room;
 }
 
 void GlobalChat::interconnect() {
@@ -69,41 +68,35 @@ void GlobalChat::interconnect() {
 
 
 void GlobalChat::onConnectionChanged() {
-    QList<RoomStatus *> rooms = m_rooms;
-    m_rooms.clear();
-    m_focus = 0;
-    //    QTimer::singleShot(100, this, [rooms](){
-            foreach (RoomStatus *state, rooms) {
-            state->clearMembers();
-            state->deleteLater();
-        }
-    onRoomsChanged();
-    //    });
-    if (League::instance()->connection()) {
-        restore(xmpp::domain(League::instance()->connection()->jid()));
-        onRoomsChanged();
-    }
+  QList<RoomStatus *> rooms = m_rooms_model->rooms();
+  m_rooms_model->clear();
+  m_focus = 0;
+  foreach (RoomStatus *state, rooms) {
+    state->clearMembers();
+    state->deleteLater();
+  }
+
+  if (League::instance()->connection()) {
+    restore(xmpp::domain(League::instance()->connection()->jid()));
+  }
 }
 
 void GlobalChat::onRoomStatusChanged(Task::Status /*status*/) {
     emit openCountChanged();
 }
 
-void GlobalChat::onRoomsChanged() {
-    std::sort(m_rooms.begin(), m_rooms.end(), [this](RoomStatus *left, RoomStatus *right) {
-      return right->started().toTime_t() < left->started().toTime_t();
-    });
-    emit roomsChanged();
-    emit openCountChanged();
+void GlobalChat::onRoomOfferChanged() {
+  m_rooms_model->sortRooms();
+  emit openCountChanged();
 }
 
 void GlobalChat::restore(const QString & /*id*/) {
 }
 
-GlobalChat::GlobalChat(doSearch *parent) : ContentPage(ID, "qrc:/GlobalChat.qml", parent) {
+GlobalChat::GlobalChat(doSearch *parent) : ContentPage(ID, "qrc:/GlobalChat.qml", parent), m_rooms_model(new RoomListModel(this)) {
 }
 
-GlobalChat::GlobalChat(const QString &id, doSearch *parent) : ContentPage(id, "qrc:/GlobalChat.qml", parent) {
+GlobalChat::GlobalChat(const QString &id, doSearch *parent) : ContentPage(id, "qrc:/GlobalChat.qml", parent), m_rooms_model(new RoomListModel(this)) {
 }
 
 
@@ -245,12 +238,9 @@ bool RoomStatus::connectTo(xmpp::ExpLeagueConnection *connection) {
     connect(connection, SIGNAL(roomStatus(QString, int)), SLOT(onStatus(QString, int)));
     connect(connection, SIGNAL(roomFeedback(QString, int)), SLOT(onFeedback(QString, int)));
     connect(connection, SIGNAL(roomMessage(QString, QString, bool, int)), SLOT(onMessage(QString, QString, bool, int)));
-    connect(connection, SIGNAL(roomPresence(QString, QString, QString, QString)),
-            SLOT(onPresence(QString, QString, QString, QString)));
-    connect(connection, SIGNAL(roomOrderStart(QString, QString, QString)),
-            SLOT(onOrderStart(QString, QString, QString)));
-    connect(connection, SIGNAL(progress(QString, QString, QString, xmpp::Progress)),
-            SLOT(onProgress(QString, QString, QString, xmpp::Progress)));
+    connect(connection, SIGNAL(roomPresence(QString, QString, QString, QString)), SLOT(onPresence(QString, QString, QString, QString)));
+    connect(connection, SIGNAL(roomOrderStart(QString, QString, QString)), SLOT(onOrderStart(QString, QString, QString)));
+    connect(connection, SIGNAL(progress(QString, QString, QString, xmpp::Progress)), SLOT(onProgress(QString, QString, QString, xmpp::Progress)));
     return true;
 }
 
@@ -263,7 +253,6 @@ void RoomStatus::clearMembers() {
     }
     emit involvedChanged();
     emit occupiedChanged();
-
 }
 
 QString RoomStatus::roomId() const {
@@ -282,4 +271,51 @@ RoomStatus::~RoomStatus() {
     if (client)
         client->remove(this);
 }
+
+RoomListModel::RoomListModel(GlobalChat * owner): QAbstractListModel(owner) {
+}
+
+QVariant RoomListModel::data(const QModelIndex &index, int role) const{
+  if(index.row() < 0 || index.row() >= m_rooms.size()){
+    return QVariant();
+  }
+  return qVariantFromValue(m_rooms.at(index.row()));
+}
+
+int RoomListModel::rowCount(const QModelIndex &parent) const{
+  if (parent.isValid())
+    return 0;
+  return m_rooms.size();
+}
+
+QHash<int, QByteArray> RoomListModel::roleNames() const {
+    QHash<int, QByteArray> roles;
+    roles[Qt::UserRole + 1] = "modelData";
+    return roles;
+}
+
+void RoomListModel::clear(){
+  m_rooms.clear();
+  emit layoutChanged();
+}
+
+void RoomListModel::insertRoom(RoomStatus* room){
+  int index = 0;
+  for(;index < m_rooms.size(); index++){
+    if(m_rooms.at(index)->started().toTime_t() < room->started().toTime_t())
+      break;
+  }
+  beginInsertRows(QModelIndex(), index, index);
+  m_rooms.insert(index, room);
+  endInsertRows();
+}
+
+void RoomListModel::sortRooms(){
+  emit layoutAboutToBeChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
+  std::sort(m_rooms.begin(), m_rooms.end(), [this](RoomStatus *left, RoomStatus *right) {
+    return right->started().toTime_t() < left->started().toTime_t();
+  });
+  emit layoutChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
+}
+
 }

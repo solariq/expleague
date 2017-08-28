@@ -8,7 +8,7 @@ namespace expleague {
 
 QString AdminContext::ID = "league/admins-context";
 
-QString AdminContext::title() const {
+QString AdminContext::title() const  {
     return tr("Админский контекст");
 }
 

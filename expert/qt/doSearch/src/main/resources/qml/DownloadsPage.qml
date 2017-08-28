@@ -91,6 +91,7 @@ Rectangle {
                 }
                 Label {
                     id: label
+                    clip: true
                     text: modelData.fullName
                     anchors {
                         verticalCenter: cancelButton.verticalCenter

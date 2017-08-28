@@ -19,7 +19,7 @@ public:
     Page* source() const {return m_source;}
     virtual QString md() const = 0;
 
-    QString title() const { return m_title.isEmpty() ? m_source->title() : m_title; }
+    QString title() const override { return m_title.isEmpty() ? m_source->title() : m_title; }
     Q_INVOKABLE virtual void setTitle(const QString& name);
 
     GroupKnugget* group() const { return m_group; }
@@ -71,15 +71,15 @@ public:
     QString text() const { return m_text; }
     QUrl url() const { return m_link; }
     QString screenshot() const;
-    void open() const;
+    void open() const override;
     QString icon() const { return "qrc:/vault/link.png";}
 
-    QString title() const;
+    QString title() const override;
 
     Q_INVOKABLE bool hasScreenshot() const;
     Q_INVOKABLE QString screenshotTarget() const;
 
-    QString md() const;
+    QString md() const override;
 
 signals:
     Q_INVOKABLE void screenshotChanged() const;
@@ -102,8 +102,8 @@ class ImageKnugget: public Knugget {
 public:
     QUrl src() const { return m_src; }
     QString alt() const { return m_alt; }
-    QString md() const;
-    QString icon() const { return "qrc:/vault/image.png";}
+    QString md() const override;
+    QString icon() const override { return "qrc:/vault/image.png";}
 
 public:
     ImageKnugget(const QString& id, doSearch* parent);
@@ -120,10 +120,10 @@ class GroupKnugget: public Knugget {
     Q_PROPERTY(QQmlListProperty<expleague::Knugget> items READ itemsQml NOTIFY itemsChanged)
 
 public:
-    QString title() const { return m_name; }
-    QString md() const;
+    QString title()  const override { return m_name; }
+    QString md() const override;
 
-    Q_INVOKABLE void setTitle(const QString& name);
+    Q_INVOKABLE void setTitle(const QString& name) override;
 
     QQmlListProperty<Knugget> itemsQml() const { return QQmlListProperty<Knugget>(const_cast<GroupKnugget*>(this), const_cast<QList<Knugget*>&>(m_items)); }
 
@@ -132,7 +132,7 @@ public:
     Q_INVOKABLE void move(int from, int to);
     void insert(Knugget* item, int index = -1);
     int indexOf(Knugget* item) const { return m_items.indexOf(item); }
-    void open() const;
+    void open() const override;
     QList<Knugget*> items() const { return m_items; }
 
     virtual void interconnect() override;

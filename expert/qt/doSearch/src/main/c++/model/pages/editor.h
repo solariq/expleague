@@ -24,15 +24,15 @@ class MarkdownEditorPage: public ContentPage {
     Q_PROPERTY(QString text READ textContent NOTIFY htmlChanged)
 
 public:
-    QString title() const;
-    QString icon() const;
+    QString title() const override;
+    QString icon() const override;
 
-    QString textContent() const { return m_text; }
+    QString textContent() const override { return m_text; }
 
     QString html();
 
 public:
-    void setTextContent(const QString& text);
+    void setTextContent(const QString& text) override;
     void setEditable(bool editable);
     Q_INVOKABLE QStringList codeClipboard();
 
@@ -57,8 +57,8 @@ public:
     virtual ~MarkdownEditorPage();
 
 protected:
-    void initUI(QQuickItem *ui);
-    void interconnect();
+    void initUI(QQuickItem *ui) override;
+    void interconnect() override;
 
 private:
     QString m_text;

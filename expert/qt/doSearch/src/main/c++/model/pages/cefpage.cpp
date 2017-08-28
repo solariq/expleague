@@ -362,19 +362,32 @@ CefPageRenderer::Buffer::Buffer(int width_, int height_, char* data_, bool clean
 bool CefPageRenderer::StartDragging(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDragData> drag_data,
                                     DragOperationsMask allowed_ops, int x, int y) {
   QMimeData* mimeData = new QMimeData();
+  QDrag* drag = new QDrag(m_owner);
+  drag->setMimeData(mimeData);
   if (drag_data->IsFile()) {
     QString fileDir = QDir::tempPath() + "/" + QString::fromStdString(drag_data->GetFileName().ToString());
     drag_data->GetFileContents(CefStreamWriter::CreateForFile(fileDir.toStdString()));
-    QList<QUrl> urls;
-    urls.append(QUrl::fromLocalFile(fileDir));
+    QList<QUrl> urls = {QUrl::fromLocalFile(fileDir)};
     mimeData->setUrls(urls);
-    m_owner->startDrag(mimeData);
+
+    QPixmap pixmap(fileDir);
+    pixmap = pixmap.height() > pixmap.width() ? pixmap.scaledToHeight(200) : pixmap.scaledToWidth(200);
+    QPixmap result_pixmap(pixmap.size());
+    QPainter painter;
+    painter.begin(&result_pixmap);
+    painter.setOpacity(0.5);
+    painter.drawPixmap(0, 0, pixmap);
+    painter.end();
+
+    drag->setHotSpot({result_pixmap.size().width()/2, result_pixmap.size().height()/2});
+    drag->setPixmap(result_pixmap);
+    m_owner->startDrag(drag);
     QFile::remove(fileDir);
   }
   else if (drag_data->IsFragment() || drag_data->IsLink()) {
     mimeData->setText(QString::fromStdString(drag_data->GetFragmentText()));
     mimeData->setHtml(QString::fromStdString(drag_data->GetFragmentHtml()));
-    m_owner->startDrag(mimeData);
+    m_owner->startDrag(drag);
   }
   return true;
 }
@@ -1076,9 +1089,8 @@ CefBrowserHost::DragOperationsMask toDragOperationsMask(Qt::DropAction dropActio
   return DRAG_OPERATION_NONE;
 }
 
-void CefItem::startDrag(QMimeData *mimeData){
-  QDrag* drag = new QDrag(this);
-  drag->setMimeData(mimeData);
+void CefItem::startDrag(QDrag* drag){
+  drag->setParent(this);
   emit dragFromCefStarted();
   Qt::DropAction dropAction = drag->exec();
   m_browser->GetHost()->DragSourceEndedAt(0, 0, toDragOperationsMask(dropAction));

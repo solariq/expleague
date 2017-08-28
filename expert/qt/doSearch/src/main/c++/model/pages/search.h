@@ -19,12 +19,12 @@ class SERPage: public WebPage {
 public:
     SearchRequest* request() const;
     QString query() const { return m_query; }
-    QString title() const { return query(); }
+    QString title() const override { return query(); }
 
-    bool accept(const QUrl &url) const = 0;
+    bool accept(const QUrl &url) const override = 0;
 
-    Page* parentPage() const;
-    Page* container() const;
+    Page* parentPage() const override;
+    Page* container() const override;
 
     virtual int index() const = 0;
 
@@ -32,9 +32,9 @@ protected:
     SERPage(const QString&id, const QString& query, const QUrl& url, doSearch* parent): WebPage(id, url, parent), m_query(query) { store("serp.query", query); save(); }
     SERPage(const QString&id, doSearch* parent): WebPage(id, parent), m_query(value("serp.query").toString()) {}
 
-    void interconnect();
+    void interconnect() override;
 
-    Q_INVOKABLE QString customJavaScript();
+    Q_INVOKABLE QString customJavaScript() override;
 private slots:
     void onSessionChanged() { emit containerChanged(); }
 
@@ -57,8 +57,8 @@ private:
 public:
     QQmlListProperty<SERPage> serpsQml() const { return QQmlListProperty<SERPage>(const_cast<SearchRequest*>(this), reinterpret_cast<QList<SERPage*>&>(const_cast<SearchRequest*>(this)->partsRef())); }
 
-    QString icon() const { return serp()->icon(); }
-    QString title() const { return m_query; }
+    QString icon() const override { return serp()->icon(); }
+    QString title() const override { return m_query; }
 
     QString query() const { return m_query; }
     SERPage* serp() const { return static_cast<SERPage*>(part(m_selected)); }
@@ -74,8 +74,8 @@ signals:
     void sessionChanged();
 
 protected:
-    void interconnect();
-    void onPartProfileChanged(const BoW& oldOne, const BoW& newOne);
+    void interconnect() override;
+    void onPartProfileChanged(const BoW& oldOne, const BoW& newOne) override;
 
 public:
     explicit SearchRequest(const QString& id, const QString& query, doSearch* parent);
@@ -95,8 +95,8 @@ class SearchSession: public CompositeContentPage {
     Q_PROPERTY(expleague::SearchRequest* request READ current WRITE setRequest NOTIFY queriesChanged)
 
 public:
-    QString icon() const { return current()->icon(); }
-    QString title() const { return current()->title(); }
+    QString icon() const override { return current()->icon(); }
+    QString title() const override { return current()->title(); }
 
     QQmlListProperty<SearchRequest> queriesQml() const { return QQmlListProperty<SearchRequest>(const_cast<SearchSession*>(this), reinterpret_cast<QList<SearchRequest*>&>(const_cast<SearchSession*>(this)->partsRef())); }
 
@@ -106,7 +106,7 @@ public:
 
 public:
     QList<SearchRequest*> queries() const { return QList<SearchRequest*>(reinterpret_cast<QList<SearchRequest*>&>(const_cast<SearchSession*>(this)->partsRef())); }
-    BoW profile() const { return m_profile; }
+    BoW profile() const override { return m_profile; }
     SearchRequest* query(int index) const { return static_cast<SearchRequest*>(part(index)); }
 
 signals:
@@ -117,13 +117,13 @@ private slots:
     void onSelectedSEChanged();
 
 protected:
-    void initUI(QQuickItem* ui) { CompositeContentPage::initUI(ui); emit queriesChanged(); }
+    void initUI(QQuickItem* ui) override { CompositeContentPage::initUI(ui); emit queriesChanged(); }
     SearchRequest* current() const { return query(m_index); }
 
 public:
     explicit SearchSession(const QString& id, SearchRequest* seed, doSearch* parent);
     explicit SearchSession(const QString& id, doSearch* parent);
-    virtual ~SearchSession();
+    virtual ~SearchSession() override;
 
 private:
     int m_index = -1;
@@ -141,8 +141,8 @@ public:
     static void removeTimeStamps(QUrl& url);
     bool accept(const QUrl &url) const { return parseQuery(url) == query(); }
 
-    QString icon() const { return "qrc:/tools/yandex.png"; }
-    int index() const { return 1; }
+    QString icon() const override { return "qrc:/tools/yandex.png"; }
+    int index() const override { return 1; }
 
 public:
     YandexSERPage(const QString& id, const QUrl& url, doSearch* parent);
@@ -155,11 +155,11 @@ class GoogleSERPage: public SERPage {
 public:
     static QString parseQuery(const QUrl& url);
     static bool isSearchUrl(const QUrl& url);
-    bool accept(const QUrl &url) const { return parseQuery(url) == query(); }
+    bool accept(const QUrl &url) const override { return parseQuery(url) == query(); }
 
-    QString icon() const { return "qrc:/tools/google.png"; }
+    QString icon() const override { return "qrc:/tools/google.png"; }
 
-    int index() const { return 0; }
+    int index() const override { return 0; }
 
 public:
     GoogleSERPage(const QString& id, const QUrl& url, doSearch* parent);

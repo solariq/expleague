@@ -152,8 +152,8 @@ public:
     bool contains(ContentPage* page) const { return m_parts.contains(page); }
     QList<ContentPage*> parts() const { return m_parts; }
 
-    QString textContent() const;
-    void setTextContent(const QString& content);
+    QString textContent() const override;
+    void setTextContent(const QString& content) override;
 
     friend class ContentPage;
 
@@ -174,7 +174,7 @@ protected:
     bool appendPart(ContentPage* part);
     void removePart(ContentPage* part);
 
-    void interconnect();
+    void interconnect() override;
 
 private:
     QList<ContentPage*> m_parts;

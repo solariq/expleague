@@ -48,6 +48,9 @@ include_directories(objc/)
 qt5_add_resources(RESOURCES resources/misc.qrc resources/images/images.qrc resources/qml/qml.qrc)
 set(RESOURCES ${RESOURCES} resources/markdown-tile.css)
 
+if(MSVC)
+    add_compile_options(/we4263 /we4266)
+endif()
 
 if(OS_MACOSX)
     file(GLOB_RECURSE doSearch_sources "./c++/*.cpp" "./objc/*.mm")
@@ -97,6 +100,7 @@ elseif(OS_WINDOWS)
     add_executable(doSearch ${doSearch_sources} ${ICON_PATH} ${RESOURCES} "doSearch_resource.rc")
 
     set_target_properties(doSearch PROPERTIES LINK_FLAGS "/DEBUG")
+    set_target_properties(doSearch PROPERTIES COMPILER_FLAGS "${CMAKE_CXX_FLAGS_DEBUG} /Wall")
 endif()
 target_include_directories(doSearch PRIVATE
     ../libs/qxmpp/src/client ../libs/qxmpp/src/base
@@ -195,8 +199,7 @@ if (CEF)
         #    endif()
 
     elseif(OS_WINDOWS)
-#        message("CMAKE FLAGS" ${CMAKE_CXX_FLAGS_DEBUG})
-        set_target_properties(doSearch PROPERTIES COMPILER_FLAGS ${CMAKE_CXX_FLAGS_DEBUG})
+
         #ADD_WINDOWS_MANIFEST("${CMAKE_CURRENT_BINARY_DIR}" "doSearch" "exe")
         COPY_FILES("doSearch" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
         COPY_FILES("doSearch" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")

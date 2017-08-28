@@ -69,7 +69,7 @@ private:
   QUrl m_url;
   QFile m_file;
   Status m_status = NOT_STARTED;
-  QNetworkReply* m_reply;
+  QNetworkReply* m_reply = nullptr;
   static int max_id;
 };
 

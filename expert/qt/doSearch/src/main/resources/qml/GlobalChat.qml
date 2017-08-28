@@ -73,12 +73,12 @@ Item {
                                 anchors.centerIn: parent
                                 anchors.verticalCenterOffset: -5
                                 size: 33
-                                user: client
-                                userId: client ? client.id : ""
+                                user: modelData.client
+                                userId: modelData.client ? modelData.client.id : ""
                             }
                             Text {
                                 anchors.top: clientAva.bottom
-                                text: !!client ? client.id : ""
+                                text: !!modelData.client ? modelData.client.id : ""
                                 font.pixelSize: 10
                             }
                         }
@@ -113,7 +113,7 @@ Item {
                             id: involvedList
                             model: modelData.involved
                             property var occupied: modelData.occupied
-                            visible: involved.length > 0
+                            visible: modelData.involved.length > 0
                             orientation: Qt.Horizontal
                             delegate: Avatar {
                                 anchors.verticalCenter: parent.verticalCenter
@@ -292,26 +292,20 @@ Item {
                 ListView {
                     id: roomsList
                     anchors.fill: parent
-                    anchors.topMargin: 2
-                    anchors.bottomMargin: 2
+                    anchors.margins: 2
                     spacing: 2
                     clip: true
+                    boundsBehavior: Flickable.StopAtBounds
                     property var selectedRoom
 
                     onSelectedRoomChanged: {
                         self.selectedRoom = roomsList.selectedRoom
                     }
 
-                    model: owner.rooms
+                    model: owner.roomsModel
 
                     delegate: roomCard
-                    currentIndex: {
-                        for (var i in owner.rooms) {
-                            if (owner.rooms[i] === selectedRoom)
-                                return i
-                        }
-                        return -1
-                    }
+                    currentIndex: owner.roomsModel.indexOf(selectedRoom)
                     highlight: Rectangle {
                         visible: !!roomsList.currentItem
                         width: roomsList.width
@@ -388,10 +382,9 @@ Item {
 
                                         property var selectedRoom
                                         anchors.fill: parent
+                                        anchors.margins: 2
                                         orientation: ListView.Vertical
-
-                                        anchors.topMargin: 2
-                                        anchors.bottomMargin: 2
+                                        boundsBehavior: Flickable.StopAtBounds
                                         spacing: 2
                                         clip: true
 

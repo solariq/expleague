@@ -44,7 +44,7 @@ void doSearch::setMain(QQuickWindow* main) {
 }
 
 doSearch* doSearch::instance() {
-    return &*root;
+    return root;
 }
 
 void doSearch::restoreState() {

@@ -42,10 +42,10 @@ class WebPage: public ContentPage, public WebResource {
 public: // QML
     QQmlListProperty<WebPage> redirects() const { return QQmlListProperty<WebPage>(const_cast<WebPage*>(this), const_cast<QList<WebPage*>&>(m_redirects)); }
 
-    QString icon() const;
-    QString title() const;
+    QString icon() const override;
+    QString title() const override;
 
-    virtual Page* container() const;
+    virtual Page* container() const override;
 
 //    Q_INVOKABLE bool forwardToWebView(int key,
 //                                      Qt::KeyboardModifiers modifiers,
@@ -81,9 +81,9 @@ public: // overloads
     WebPage* redirect() const { return m_redirect; }
     void setRedirect(WebPage* target);
 
-    WebSite* site() const;
-    WebPage* page() const { return const_cast<WebPage*>(this); }
-    bool transferUI(UIOwner* other);
+    WebSite* site() const override;
+    WebPage* page() const override { return const_cast<WebPage*>(this); }
+    bool transferUI(UIOwner* other) override;
 
 signals:
     void redirectChanged(WebPage* target);
@@ -91,7 +91,7 @@ signals:
     void originalUrlChanged(const QUrl& url);
 
 protected:
-    void interconnect();
+    void interconnect() override;
     void rebuildRedirects();
 
 public:
@@ -120,14 +120,14 @@ public:
     QSet<WebSite*> mirrors() const { return m_mirrors; }
 
 public:
-    QString title() const {
+    QString title() const override {
         QString domain = page()->originalUrl().host();
         if (domain.startsWith("www."))
             domain = domain.mid(4);
         return domain;
     }
 
-    QString icon() const {
+    QString icon() const override {
         QVariant var = value("web.favicon");
         return var.isNull() ? "" : var.toString();
     }
@@ -138,19 +138,19 @@ public:
         emit iconChanged(icon);
     }
 
-    QUrl originalUrl() const { return page()->originalUrl(); }
-    void setOriginalUrl(const QUrl& url) { page()->setOriginalUrl(url); }
+    QUrl originalUrl() const  override{ return page()->originalUrl(); }
+    void setOriginalUrl(const QUrl& url) override { page()->setOriginalUrl(url); }
 
-    WebSite* site() const { return const_cast<WebSite*>(this); }
-    WebPage* page() const { return m_root; }
+    WebSite* site() const override { return const_cast<WebSite*>(this); }
+    WebPage* page() const override { return m_root; }
 
-    WebPage* redirect() const { return page()->redirect(); }
-    virtual void setRedirect(WebPage* target) {  page()->setRedirect(target); }
+    WebPage* redirect() const override { return page()->redirect(); }
+    virtual void setRedirect(WebPage* target) override {  page()->setRedirect(target); }
 
     BoW removeTemplates(const BoW& profile) const;
 
 protected:
-    void setProfile(const BoW& profile);
+    void setProfile(const BoW& profile) override;
 
 signals:
     void mirrorsChanged();
@@ -163,7 +163,7 @@ public slots:
 private slots:
     void onMirrorsChanged();
     void onRootUrlChanged(const QUrl& url) { emit urlChanged(url); }
-    void onPartProfileChanged(const BoW& oldOne, const BoW& newOne);
+    void onPartProfileChanged(const BoW& oldOne, const BoW& newOne) override;
 
     void onChildRedirectChanged(WebPage* target) {
         if (target)
@@ -174,7 +174,7 @@ public:
     explicit WebSite(const QString& id, const QString& domain, const QUrl& rootUrl, doSearch* parent);
     explicit WebSite(const QString &id, doSearch *parent);
 
-    void interconnect();
+    void interconnect() override;
 
 private:
     void addMirror(WebSite* site);

@@ -165,7 +165,7 @@ class CefAppImpl: public CefApp{
     #if defined(__unix__) || (defined (__APPLE__) && defined (__MACH__))
     registrar->AddCustomScheme("qrc", false, false, false, false, true, true);
     #else
-    bool ok = registrar->AddCustomScheme("qrc", false, false, false, false, true);
+    registrar->AddCustomScheme("qrc", false, false, false, false, true);
     #endif
   }
 

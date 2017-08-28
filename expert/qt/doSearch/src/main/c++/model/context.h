@@ -29,8 +29,8 @@ class Context: public CompositeContentPage {
 public:
     Task* task() const { return m_task; }
 
-    QString title() const;
-    QString icon() const;
+    QString title() const override;
+    QString icon() const override;
 
     SearchRequest* lastRequest() const;
 
@@ -80,8 +80,8 @@ private slots:
     void onGroupPagesChanged();
 
 protected:
-    void interconnect();
-    void onPartProfileChanged(const BoW& from, const BoW& to);
+    void interconnect() override;
+    void onPartProfileChanged(const BoW& from, const BoW& to) override;
 
     friend class NavigationManager;
     friend class PagesGroup;
@@ -89,7 +89,7 @@ protected:
 public:
     explicit Context(const QString& id, const QString& name, doSearch* parent);
     explicit Context(const QString& id = "unknown", doSearch* parent = 0);
-    virtual ~Context();
+    virtual ~Context() override;
 
 private:
     QString m_name;

@@ -50,7 +50,7 @@ public:
 public:
 //    explicit RoomState(const QString& jid, GlobalChat* parent);
     explicit RoomStatus(Offer* offer, GlobalChat* parent);
-    virtual ~RoomStatus();
+    virtual ~RoomStatus() override;
 
     friend class GlobalChat;
 
@@ -92,18 +92,39 @@ private:
     int m_feedback = -1;
 };
 
+
+class RoomListModel: public QAbstractListModel{
+  Q_OBJECT
+public:
+
+  RoomListModel(GlobalChat* owner);
+  QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+  int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+  QHash<int, QByteArray> roleNames() const override;
+
+  QList<RoomStatus*> rooms(){ return m_rooms;}
+  void clear();
+  void insertRoom(RoomStatus* room);
+  void sortRooms();
+
+  Q_INVOKABLE int indexOf(RoomStatus* room) {return m_rooms.indexOf(room);}
+
+private:
+  RoomStatus* m_selected;
+  QList<RoomStatus*> m_rooms;
+};
+
 class GlobalChat: public ContentPage {
     Q_OBJECT
 
-    Q_PROPERTY(QQmlListProperty<expleague::RoomStatus> rooms READ rooms NOTIFY roomsChanged)
-    Q_PROPERTY(int openCount READ openCount NOTIFY openCountChanged)
+  Q_PROPERTY(int openCount READ openCount NOTIFY openCountChanged)
+  Q_PROPERTY(RoomListModel* roomsModel READ roomsModel CONSTANT)
 public:
     static QString ID;
 
-    QQmlListProperty<RoomStatus> rooms() const { return QQmlListProperty<RoomStatus>(const_cast<GlobalChat*>(this), const_cast<QList<RoomStatus*>&>(m_rooms)); }
-
     QString title() const { return tr("Админка Лиги"); }
     AdminContext* owner() const { return m_owner; }
+    RoomListModel* roomsModel(){ return m_rooms_model;}
 
     Q_INVOKABLE void enter(RoomStatus* room);
     RoomStatus* state(const QString& id) const;
@@ -120,19 +141,21 @@ public:
 
 private slots:
     void onConnectionChanged();
-    void onRoomsChanged();
+    void onRoomOfferChanged();
     void onRoomStatusChanged(expleague::Task::Status);
 
 protected:
-    void interconnect();
+    void interconnect() override;
     void restore(const QString& id);
 
 private:
     AdminContext* m_owner = 0;
-    QList<RoomStatus*> m_rooms;
     RoomStatus* m_focus = 0;
     int m_open = 0;
+    RoomListModel* m_rooms_model;
 };
+
+
 }
 
 QML_DECLARE_TYPE(expleague::RoomStatus)

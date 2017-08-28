@@ -126,7 +126,7 @@ void Download::setStatus(Status status) {
   emit statusChanged();
 }
 
-DownloadManager::DownloadManager(QObject* parent):QAbstractListModel(parent){
+DownloadManager::DownloadManager(QObject* parent): QAbstractListModel(parent){
   PersistentPropertyHolder holder("downloads");
   QList<int> ids;
   holder.visitKeys("", [&ids](const QString& id){

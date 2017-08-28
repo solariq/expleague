@@ -15,11 +15,11 @@ public:
 public:
     explicit AdminContext(doSearch* parent);
 
-    QString title() const;
-    QString icon() const;
+    QString title() const override;
+    QString icon() const override;
 
 protected:
-    void interconnect();
+    void interconnect() override;
 
 private:
     GlobalChat* m_chat = 0;

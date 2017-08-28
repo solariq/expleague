@@ -46,7 +46,7 @@ private:
     friend class doSearch;
 
 protected:
-    void interconnect();
+    void interconnect() override;
 
 private:
     QList<PageVisit*> m_story;

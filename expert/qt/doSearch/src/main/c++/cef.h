@@ -3,7 +3,7 @@
 
 #include <functional>
 
-#if _MSC_VER && !__INTEL_COMPILER
+#if _MSC_VER
 #pragma warning (push, 0)
 #else
 #pragma GCC diagnostic push

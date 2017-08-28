@@ -244,7 +244,7 @@ public:
 
   Q_INVOKABLE void executeJS(const QString& sctript);
 
-  void startDrag(QMimeData* data);
+  void startDrag(QDrag* drag);
 
   void download(const QUrl& url, const QString& name);
 
@@ -466,7 +466,7 @@ IMPLEMENT_REFCOUNTING(CefRequestHandler)
 private:
   CefItem* const m_owner;
   bool m_redirect_enable = true;
-  bool m_enable;
+  bool m_enable = false;
   bool m_allow_link_trans = false;
   friend class CefItem;
 };
