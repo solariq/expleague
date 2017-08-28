@@ -192,7 +192,7 @@ Item {
                         contentY = r.y+r.height-height;
                 }
 
-                TextEdit {
+                TextArea {
                     id: edit
                     width: scroll.width - 8
                     height: Math.max(scroll.height - 8, implicitHeight)
@@ -202,6 +202,7 @@ Item {
                     onCursorRectangleChanged: scroll.ensureVisible(cursorRectangle)
                     renderType: Text.NativeRendering
                     font.pointSize: 14
+
 
                     Keys.onPressed: {
                         if (event.key === Qt.Key_V && (event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) != 0) {

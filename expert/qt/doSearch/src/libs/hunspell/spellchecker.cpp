@@ -51,15 +51,14 @@ SpellChecker::SpellChecker() :
 
             QString language = it.fileName().remove(".dic");
             language.truncate(5); // just language and country code
-            QFile* tempDic = QTemporaryFile::createNativeFile(it.filePath());
-            QFile* tempAff = QTemporaryFile::createNativeFile(dictPath.path() + "/" + language + ".aff");
-            tempFiles.append(tempDic);
-            tempFiles.append(tempAff);
+            QTemporaryFile* tempDic = QTemporaryFile::createNativeFile(it.filePath());
+            QTemporaryFile* tempAff = QTemporaryFile::createNativeFile(dictPath.path() + "/" + language + ".aff");
             if (hunspellChecker)
                 hunspellChecker->add_dic(crossPlatformFileName(tempDic->fileName()).data());
             else
-                hunspellChecker = new Hunspell(crossPlatformFileName(tempAff->fileName()).data()
-                                               ,crossPlatformFileName(tempDic->fileName()).data());
+                hunspellChecker = new Hunspell(crossPlatformFileName(tempAff->fileName()).data() ,crossPlatformFileName(tempDic->fileName()).data());
+            tempDic->remove();
+            tempAff->remove();
         }
     }
     else qDebug() << "No dictionaries folder found in resources!";

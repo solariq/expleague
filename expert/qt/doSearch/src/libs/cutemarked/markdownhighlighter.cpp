@@ -61,41 +61,42 @@ void MarkdownHighlighter::setYamlHeaderSupportEnabled(bool enabled)
 
 void MarkdownHighlighter::highlightBlock(const QString& textBlock)
 {
-    // cut YAML headers
-    pmh_element **elements;
-    pmh_markdown_to_elements(textBlock.toUtf8().data(), pmh_EXT_NONE, &elements);
+  if (spellingCheckEnabled) {
+    checkSpelling(textBlock);
+  }
+  // cut YAML headers
+  pmh_element **elements;
+  pmh_markdown_to_elements(textBlock.toUtf8().data(), pmh_EXT_NONE, &elements);
 
-    for (int i = 0; i < highlightingStyles.size(); i++) {
-        HighlightingStyle style = highlightingStyles.at(i);
-        pmh_element *elem_cursor = elements[style.type];
-        while (elem_cursor != NULL) {
-            unsigned long pos = elem_cursor->pos;
-            unsigned long end = elem_cursor->end;
+  for (int i = 0; i < highlightingStyles.size(); i++) {
+    HighlightingStyle style = highlightingStyles.at(i);
+    pmh_element *elem_cursor = elements[style.type];
+    while (elem_cursor != NULL) {
+      unsigned long pos = elem_cursor->pos;
+      unsigned long end = elem_cursor->end;
 
-            QTextCharFormat format = style.format;
-            if (/*_makeLinksClickable
-                &&*/ (elem_cursor->type == pmh_LINK
-                    || elem_cursor->type == pmh_AUTO_LINK_URL
-                    || elem_cursor->type == pmh_AUTO_LINK_EMAIL
-                    || elem_cursor->type == pmh_REFERENCE)
-                && elem_cursor->address != NULL)
-            {
-                QString address(elem_cursor->address);
-                if (elem_cursor->type == pmh_AUTO_LINK_EMAIL && !address.startsWith("mailto:"))
-                    address = "mailto:" + address;
-                format.setAnchor(true);
-                format.setAnchorHref(address);
-                format.setToolTip(address);
-            }
-            setFormat(pos, end - pos, format);
-            elem_cursor = elem_cursor->next;
-        }
+      QTextCharFormat format = style.format;
+      if (/*_makeLinksClickable
+                    &&*/ (elem_cursor->type == pmh_LINK
+                          || elem_cursor->type == pmh_AUTO_LINK_URL
+                          || elem_cursor->type == pmh_AUTO_LINK_EMAIL
+                          || elem_cursor->type == pmh_REFERENCE)
+          && elem_cursor->address != NULL)
+      {
+        QString address(elem_cursor->address);
+        if (elem_cursor->type == pmh_AUTO_LINK_EMAIL && !address.startsWith("mailto:"))
+          address = "mailto:" + address;
+        format.setAnchor(true);
+        format.setAnchorHref(address);
+        format.setToolTip(address);
+      }
+      setFormat(pos, end - pos, format);
+      elem_cursor = elem_cursor->next;
     }
+  }
 
-    pmh_free_elements(elements);
-    if (spellingCheckEnabled) {
-        checkSpelling(textBlock);
-    }
+  pmh_free_elements(elements);
+
 }
 
 void MarkdownHighlighter::checkSpelling(const QString &textBlock) {
