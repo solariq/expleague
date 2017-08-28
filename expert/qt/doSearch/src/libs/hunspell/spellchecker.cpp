@@ -28,6 +28,15 @@ using hunspell::SpellChecker;
 
 #include "datalocation.h"
 
+QByteArray crossPlatformFileName(QString path){
+#ifdef Q_OS_WIN32
+  QTextCodec* codec = QTextCodec::codecForName("System");
+  return codec->fromUnicode(path);
+#else
+  return (QStandardPaths::writableLocation(path).toLatin1();
+#endif
+}
+
 SpellChecker::SpellChecker() :
     hunspellChecker(0), textCodec(0)
 {
@@ -47,9 +56,10 @@ SpellChecker::SpellChecker() :
             tempFiles.append(tempDic);
             tempFiles.append(tempAff);
             if (hunspellChecker)
-                hunspellChecker->add_dic(tempDic->fileName().toLatin1().data());
+                hunspellChecker->add_dic(crossPlatformFileName(tempDic->fileName()).data());
             else
-                hunspellChecker = new Hunspell(tempAff->fileName().toLatin1().data(), tempDic->fileName().toLatin1().data());
+                hunspellChecker = new Hunspell(crossPlatformFileName(tempAff->fileName()).data()
+                                               ,crossPlatformFileName(tempDic->fileName()).data());
         }
     }
     else qDebug() << "No dictionaries folder found in resources!";
