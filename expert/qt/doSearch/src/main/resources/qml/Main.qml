@@ -14,15 +14,15 @@ import "."
 
 ApplicationWindow {
     id: self
-    //    onActiveFocusItemChanged: {
-    //        var item = activeFocusItem
-    //        console.log("active focus changed on")
-    //        while(item){
-    //            console.log("---",item)
-    //            item = item.parent
-    //        }
-    //        console.log("---------------")
-    //    }
+        onActiveFocusItemChanged: {
+            var item = activeFocusItem
+            console.log("active focus changed on")
+            while(item){
+                console.log("---",item)
+                item = item.parent
+            }
+            console.log("---------------")
+        }
     property QtObject activeDialog
     property alias omnibox: omnibox
     //property alias webProfileRef: webProfile

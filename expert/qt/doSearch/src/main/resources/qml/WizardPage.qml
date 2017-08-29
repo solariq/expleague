@@ -13,7 +13,7 @@ Item {
     anchors.fill: parent
     Item {
         anchors.fill: parent
-        anchors.leftMargin: 100
+        anchors.leftMargin: 20
         anchors.rightMargin: 20
         anchors.topMargin: 20
         anchors.bottomMargin: 20

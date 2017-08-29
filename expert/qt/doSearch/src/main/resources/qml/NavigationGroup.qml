@@ -216,6 +216,7 @@ Item {
                     height: parent.height
                     visible:  self.closedPages.length > 0
                     enabled: !opened
+                    focusPolicy : Qt.NoFocus
 
                     background: Rectangle {
                         Layout.fillHeight: true
@@ -340,7 +341,7 @@ Item {
                 id: popup
                 clip: true
                 modal: false
-                focus: true
+                focus: false
                 padding: 2
                 closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 

@@ -12,6 +12,7 @@
 #include "../profile.h"
 
 #include "pages/editor.h"
+#include "pages/globalchat.h"
 
 namespace expleague {
 
@@ -60,6 +61,9 @@ QList<PageVisit*> History::last(int depth) const {
         if (qobject_cast<Context*>(m_story[i]->page()))
             continue;
         if (qobject_cast<MarkdownEditorPage*>(m_story[i]->page()))
+            continue;
+        if (qobject_cast<GlobalChat*>(m_story[i]->page()) &&
+            !(League::instance()->connection() && League::instance()->role() == League::ADMIN))
             continue;
 
         Context* context = m_story[i]->context();

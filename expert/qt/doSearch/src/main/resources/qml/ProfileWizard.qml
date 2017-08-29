@@ -3,7 +3,6 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
-//import QtWebEngine 1.2
 
 import ExpLeague 1.0
 
@@ -67,7 +66,7 @@ Window {
                         text: qsTr("Отмена")
                         onClicked: {
                             registerDialog.close()
-                            registerDialog.destroy()
+//                            registerDialog.destroy()
                         }
                         KeyNavigation.tab: finish
                     }
@@ -79,7 +78,7 @@ Window {
                         onClicked: {
                             root.league.profile = builder.result
                             registerDialog.close()
-                            registerDialog.destroy()
+//                            registerDialog.destroy()
                         }
                     }
                 }
@@ -162,7 +161,7 @@ Window {
                         model: ListModel {
                             ListElement {
                                 key: qsTr("ВКонтакте");
-                                value: "https://oauth.vk.com/authorize?client_id=5270684&display=popup&scope=offline,wall&response_type=token&lang=ru&v=5.45&state=IntellijIdeaRulezzz&redirect_uri=https://oauth.vk.com/blank.html"
+                                value: "https://oauth.vk.com/authorize?client_id=5270684&display=mobile&scope=offline,wall&response_type=token&lang=ru&v=5.45&state=IntellijIdeaRulezzz&redirect_uri=https://oauth.vk.com/blank.html"
                             }
                         }
                         KeyNavigation.tab: cookiesOff
