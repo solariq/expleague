@@ -9,7 +9,9 @@ import com.expleague.xmpp.stanza.Message;
 public abstract class IntervalVisitor<T> extends EarlyStopVisitor<T> {
   private final String startMessageId;
   private final String stopMessageId;
+
   private boolean started = false;
+  private boolean stopped = false;
 
   protected IntervalVisitor(String startMessageId, String stopMessageId) {
     this.startMessageId = startMessageId;
@@ -18,12 +20,16 @@ public abstract class IntervalVisitor<T> extends EarlyStopVisitor<T> {
 
   @Override
   protected boolean check(Message message) {
+    if (stopped) {
+      done();
+      return false;
+    }
+
     if (!started && message.id().equals(startMessageId)) {
       started = true;
     }
     else if (started && message.id().equals(stopMessageId)) {
-      started = false;
-      super.done();
+      stopped = true;
     }
     return started;
   }

@@ -10,13 +10,12 @@ import com.expleague.server.agents.GlobalChatAgent;
 import com.expleague.server.agents.XMPP;
 import com.expleague.xmpp.JID;
 import com.expleague.xmpp.stanza.Message;
+import org.jetbrains.annotations.NotNull;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -24,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * Date: 21.08.2017
  */
 public abstract class BaseDumpReportHandler extends CsvReportHandler {
-  private final SortedMap<String, String[]> sortedRows = new TreeMap<>();
+  private final List<Row> rows = new ArrayList<>();
 
   protected void startProcessing(long start, long end) {
     try {
@@ -58,12 +57,36 @@ public abstract class BaseDumpReportHandler extends CsvReportHandler {
 
   @Override
   protected void row(String... row) {
-    sortedRows.put(row[0], row);
+    rows.add(new Row(row[0], row));
   }
 
   @Override
   protected String build() {
-    sortedRows.values().forEach(strings -> super.row(strings));
+    Collections.sort(rows);
+    rows.forEach(row -> super.row(row.values()));
     return super.build();
+  }
+
+  private static class Row implements Comparable<Row> {
+    private final String key;
+    private final String[] values;
+
+    private Row(String key, String[] values) {
+      this.key = key;
+      this.values = values;
+    }
+
+    public String key() {
+      return key;
+    }
+
+    public String[] values() {
+      return values;
+    }
+
+    @Override
+    public int compareTo(@NotNull Row o) {
+      return key.compareTo(o.key());
+    }
   }
 }

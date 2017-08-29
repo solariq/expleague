@@ -4,11 +4,16 @@ import com.expleague.model.Offer;
 import com.expleague.server.admin.reports.dump.BaseDumpReportHandler;
 import com.expleague.server.admin.reports.dump.DumpVisitor;
 import com.expleague.server.admin.reports.dump.quality_monitoring.visitors.OfferVisitor;
+import com.expleague.server.admin.reports.dump.quality_monitoring.visitors.StatusVisitor;
 import com.expleague.server.admin.reports.dump.visitors.OrdersVisitor;
 import com.expleague.server.admin.reports.dump.quality_monitoring.visitors.ClientOrdersVisitor;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.stanza.Message;
 
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,7 +27,7 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
   @ActorMethod
   public void report(ReportRequest reportRequest) {
     this.reportRequest = reportRequest;
-    headers("ts", "topic");
+    headers("ts", "room", "status", "topic");
     startProcessing(reportRequest.start(), reportRequest.end());
     sender().tell(build(), self());
   }
@@ -32,17 +37,39 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
     final OrdersVisitor ordersVisitor = new ClientOrdersVisitor(reportRequest.clientId());
     dump.forEach(ordersVisitor::visit);
 
-    final List<OrdersVisitor.OrderInterval> intervals = ordersVisitor.result();
-    final List<DumpVisitor<Offer>> offerDumpVisitors = intervals
+    final List<OrdersVisitor.Order> orders = ordersVisitor.result();
+    final List<List<DumpVisitor>> intervalVisitors = orders
         .stream()
-        .map(orderInterval -> new OfferVisitor(orderInterval.firstMessageId(), orderInterval.lastMessageId()))
+        .filter(order -> order.ts() > reportRequest.start() && order.ts() < reportRequest.end())
+        .map(order -> Arrays.asList(
+            (DumpVisitor) new OfferVisitor(order.firstMessageId(), order.lastMessageId()),
+            new StatusVisitor(order.firstMessageId(), order.lastMessageId())
+        ))
         .collect(Collectors.toList());
-    dump.forEach(message -> offerDumpVisitors.forEach(offerDumpVisitor -> offerDumpVisitor.visit(message)));
 
-    offerDumpVisitors.forEach(offerDumpVisitor -> {
-      final Offer offer = offerDumpVisitor.result();
-      final long ts = (long) (offer.started() * 1000);
-      row(Long.toString(ts), offer.topic());
+    final Format format = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+    dump.forEach(message -> intervalVisitors.forEach(interval -> interval.forEach(visitor -> visitor.visit(message))));
+    intervalVisitors.forEach(visitors -> {
+      Message offerMessage = null;
+      StatusVisitor.OrderStatus shortAnswer = null;
+      for (DumpVisitor visitor : visitors) {
+        if (visitor instanceof OfferVisitor)
+          offerMessage = ((OfferVisitor) visitor).result();
+        else if (visitor instanceof StatusVisitor)
+          shortAnswer = ((StatusVisitor) visitor).result();
+      }
+      {
+        assert offerMessage != null;
+        assert shortAnswer != null;
+      }
+
+      final Offer offer = offerMessage.get(Offer.class);
+      row(
+          format.format(new Date(offerMessage.ts())),
+          roomId,
+          Integer.toString(shortAnswer.index()),
+          offer.topic()
+      );
     });
   }
 
