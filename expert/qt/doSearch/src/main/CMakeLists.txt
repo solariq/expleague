@@ -97,7 +97,7 @@ elseif(OS_WINDOWS)
     file(GLOB_RECURSE doSearch_sources "./c++/*.cpp")
     set(ICON_NAME "doSearch.ico")
     set(ICON_PATH "resources/${ICON_NAME}")
-    add_executable(doSearch ${doSearch_sources} ${ICON_PATH} ${RESOURCES} "doSearch_resource.rc")
+    add_executable(doSearch WIN32 ${doSearch_sources} ${ICON_PATH} ${RESOURCES} "doSearch_resource.rc")
 
     set_target_properties(doSearch PROPERTIES LINK_FLAGS "/DEBUG")
     set_target_properties(doSearch PROPERTIES COMPILER_FLAGS "${CMAKE_CXX_FLAGS_DEBUG} /Wall")
@@ -223,11 +223,11 @@ endif()
 #include(BundleUtilities)
 #fixup_bundle(doSearch "" "")
 
-#add_executable(tests ./test/main_test.cpp ./test/util/pholder_test.cpp ./c++/util/pholder.cpp ./c++/util/leveldb.cpp)
-#target_link_libraries(tests
-#    leveldb
-#    Qt5::Core
-#    Qt5::Test
-#    )
+add_executable(tests ./test/main_test.cpp ./test/util/pholder_test.cpp ./c++/util/pholder.cpp ./c++/util/leveldb.cpp)
+target_link_libraries(tests
+    leveldb
+    Qt5::Core
+    Qt5::Test
+    )
 
 

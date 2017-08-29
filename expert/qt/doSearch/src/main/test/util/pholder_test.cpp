@@ -11,15 +11,23 @@ void PersistentPropertyHolderTest::readWrite_data(){
     QTest::newRow("string") << "some" << "page" << QVariant(QString("data"));
     QTest::newRow("int") << "some" << "page" << QVariant(25);
     QTest::newRow("double") << "some" << "page" << QVariant(2.17);
-    QTest::newRow("list") << "some" << "page" << QVariant(QVariantList({"first", "second", "third"}));
-    QTest::newRow("intlist") << "some" << "page" << QVariant(QList<QVariant>({1, 2, 3}));
-    QTest::newRow("mixedlist") << "some" << "page" << QVariant(QList<QVariant>({1, "two", 3.0}));
-    QVariant v = QVariantHash({{"one",1},{"two",2}});
+    QTest::newRow("list") << "some" << "page" << QVariant(QVariantList{"first", "second", "third"});
+    QTest::newRow("intlist") << "some" << "page" << QVariant(QList<QVariant>{1, 2, 3});
+    QTest::newRow("mixedlist") << "some" << "page" << QVariant(QList<QVariant>{1, "two", 3.0});
+    QVariant v = QVariantHash{{"one",1},{"two",2}};
     QTest::newRow("hash") << "some" << "page" << v;
-    v = QVariantList({QVariantHash({{"one",1},{"two",2}}),QVariantHash({{"one",1},{"two",2}})});
+    v = QVariantList{QVariantHash{{"one",1},{"two",2}},QVariantHash{{"one",1},{"two",2}}};
     QTest::newRow("list of hashes") << "some" << "page" << v;
-    v = QVariantList({QVariantList({"first", "second", "third"}),QVariantList({"first", "second", "third"})});
+    v = QVariantList{QVariantList{"first", "second", "third"},QVariantList{"first", "second", "third"}};
     QTest::newRow("list of lists") << "some" << "page" << v;
+    v = QVariantHash({
+                       {"list1", QVariantList{"first", "second", "third"}},
+                       {"hash1", QVariantHash{{"one",1},{"two",2}}},
+                       {"list2", QVariantList{"1", "2", "3"}},
+                       {"hash2", QVariantHash{{"one", QVariantList{"1", "2", "3"}},{"two", QVariantList{"10", "20", "30"}}}},
+                       {"string", "str"}
+                     });
+    QTest::newRow("super complex variant") << "some" << "page" << v;
 }
 
 void PersistentPropertyHolderTest::readWrite(){

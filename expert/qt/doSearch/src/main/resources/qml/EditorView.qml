@@ -202,7 +202,7 @@ Item {
                     onCursorRectangleChanged: scroll.ensureVisible(cursorRectangle)
                     renderType: Text.NativeRendering
                     font.pointSize: 14
-
+                    selectionColor: "steelBlue"
 
                     Keys.onPressed: {
                         if (event.key === Qt.Key_V && (event.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) != 0) {
