@@ -29,7 +29,7 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
   @ActorMethod
   public void report(ReportRequest reportRequest) {
     this.reportRequest = reportRequest;
-    headers("ts", "room", "status", "topic", "continue", "location", "urgency");
+    headers("ts", "room", "status", "topic", "continue", "location", "urgency", "client");
     startProcessing(reportRequest.start(), reportRequest.end());
     sender().tell(build(), self());
   }
@@ -77,7 +77,8 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
           offer.topic(),
           continueText,
           offer.location() == null ? "" : offer.location().latitude() + " ; " + offer.location().longitude(),
-          offer.urgency() == null ? "" : offer.urgency().name()
+          offer.urgency() == null ? "" : offer.urgency().name(),
+          offer.client() == null ? offerMessage.from().local() : offer.client().local()
       );
     });
   }
