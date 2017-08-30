@@ -8,12 +8,18 @@ import com.expleague.xmpp.stanza.Message;
  * Date: 22.08.2017
  */
 public abstract class DumpVisitor<T> {
-  public abstract T result();
+  private boolean done = false;
 
   public void visit(Message message) {
-    if (check(message))
+    if (!done && check(message))
       process(message);
   }
+
+  protected void done() {
+    this.done = true;
+  }
+
+  public abstract T result();
 
   protected abstract void process(Message message);
 

@@ -1,17 +1,15 @@
 package com.expleague.server.admin.reports.dump.quality_monitoring.visitors;
 
 import com.expleague.model.Answer;
-import com.expleague.model.Offer;
 import com.expleague.model.Operations;
-import com.expleague.server.admin.reports.dump.visitors.IntervalVisitor;
+import com.expleague.server.admin.reports.dump.visitors.SpecifiedOrderVisitor;
 import com.expleague.xmpp.stanza.Message;
 
 /**
  * User: Artem
  * Date: 29.08.2017
  */
-public class StatusVisitor extends IntervalVisitor<StatusVisitor.OrderStatus> {
-  private String owner = null;
+public class StatusVisitor extends SpecifiedOrderVisitor<StatusVisitor.OrderStatus> {
   private boolean started = false;
   private StatusVisitor.OrderStatus status = OrderStatus.IN_PROGRESS;
 
@@ -26,14 +24,8 @@ public class StatusVisitor extends IntervalVisitor<StatusVisitor.OrderStatus> {
 
   @Override
   protected void process(Message message) {
-    if (message.has(Offer.class)) {
-      final Offer offer = message.get(Offer.class);
-      if (offer.client() == null)
-        owner = message.from().local();
-      else
-        owner = offer.client().local();
-    }
-    else if (message.has(Operations.Start.class)) {
+    super.process(message);
+    if (message.has(Operations.Start.class)) {
       started = true;
     }
     else if (message.has(Answer.class)) {
@@ -43,7 +35,7 @@ public class StatusVisitor extends IntervalVisitor<StatusVisitor.OrderStatus> {
         status = OrderStatus.DONE;
       done();
     }
-    else if (message.has(Operations.Cancel.class) && (started || message.from().local().equals(owner))) {
+    else if (message.has(Operations.Cancel.class) && (started || message.from().local().equals(owner()))) {
       status = OrderStatus.CANCEL;
       done();
     }

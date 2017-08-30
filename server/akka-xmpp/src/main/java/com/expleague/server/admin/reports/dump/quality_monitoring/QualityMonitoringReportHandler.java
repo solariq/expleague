@@ -3,10 +3,12 @@ package com.expleague.server.admin.reports.dump.quality_monitoring;
 import com.expleague.model.Offer;
 import com.expleague.server.admin.reports.dump.BaseDumpReportHandler;
 import com.expleague.server.admin.reports.dump.DumpVisitor;
+import com.expleague.server.admin.reports.dump.quality_monitoring.visitors.ContinueVisitor;
 import com.expleague.server.admin.reports.dump.quality_monitoring.visitors.OfferVisitor;
 import com.expleague.server.admin.reports.dump.quality_monitoring.visitors.StatusVisitor;
-import com.expleague.server.admin.reports.dump.visitors.OrdersVisitor;
-import com.expleague.server.admin.reports.dump.quality_monitoring.visitors.ClientOrdersVisitor;
+import com.expleague.server.admin.reports.dump.visitors.OrdersSearchVisitor;
+import com.expleague.server.admin.reports.dump.quality_monitoring.visitors.ClientOrdersSearchVisitor;
+import com.expleague.server.admin.reports.dump.visitors.RoomVisitor;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.stanza.Message;
 
@@ -27,23 +29,24 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
   @ActorMethod
   public void report(ReportRequest reportRequest) {
     this.reportRequest = reportRequest;
-    headers("ts", "room", "status", "topic");
+    headers("ts", "room", "status", "topic", "continue");
     startProcessing(reportRequest.start(), reportRequest.end());
     sender().tell(build(), self());
   }
 
   @Override
   protected void process(String roomId, List<Message> dump) {
-    final OrdersVisitor ordersVisitor = new ClientOrdersVisitor(reportRequest.clientId());
-    dump.forEach(ordersVisitor::visit);
+    final OrdersSearchVisitor ordersSearchVisitor = new ClientOrdersSearchVisitor(reportRequest.clientId());
+    dump.forEach(ordersSearchVisitor::visit);
 
-    final List<OrdersVisitor.Order> orders = ordersVisitor.result();
-    final List<List<DumpVisitor>> intervalVisitors = orders
+    final List<OrdersSearchVisitor.Order> orders = ordersSearchVisitor.result();
+    final List<List<RoomVisitor<?>>> intervalVisitors = orders
         .stream()
         .filter(order -> order.ts() > reportRequest.start() && order.ts() < reportRequest.end())
         .map(order -> Arrays.asList(
-            (DumpVisitor) new OfferVisitor(order.firstMessageId(), order.lastMessageId()),
-            new StatusVisitor(order.firstMessageId(), order.lastMessageId())
+            new OfferVisitor(order.firstMessageId(), order.lastMessageId()),
+            new StatusVisitor(order.firstMessageId(), order.lastMessageId()),
+            new ContinueVisitor(order.firstMessageId())
         ))
         .collect(Collectors.toList());
 
@@ -52,11 +55,14 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
     intervalVisitors.forEach(visitors -> {
       Message offerMessage = null;
       StatusVisitor.OrderStatus shortAnswer = null;
+      String continueText = "";
       for (DumpVisitor visitor : visitors) {
         if (visitor instanceof OfferVisitor)
           offerMessage = ((OfferVisitor) visitor).result();
         else if (visitor instanceof StatusVisitor)
           shortAnswer = ((StatusVisitor) visitor).result();
+        else if (visitor instanceof ContinueVisitor)
+          continueText = ((ContinueVisitor) visitor).result();
       }
       {
         assert offerMessage != null;
@@ -68,7 +74,8 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
           format.format(new Date(offerMessage.ts())),
           roomId,
           Integer.toString(shortAnswer.index()),
-          offer.topic()
+          offer.topic(),
+          continueText
       );
     });
   }

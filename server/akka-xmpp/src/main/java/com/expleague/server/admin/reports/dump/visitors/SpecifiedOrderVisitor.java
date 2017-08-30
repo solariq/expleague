@@ -6,14 +6,14 @@ import com.expleague.xmpp.stanza.Message;
  * User: Artem
  * Date: 23.08.2017
  */
-public abstract class IntervalVisitor<T> extends EarlyStopVisitor<T> {
+public abstract class SpecifiedOrderVisitor<T> extends RoomVisitor<T> {
   private final String startMessageId;
   private final String stopMessageId;
 
   private boolean started = false;
   private boolean stopped = false;
 
-  protected IntervalVisitor(String startMessageId, String stopMessageId) {
+  protected SpecifiedOrderVisitor(String startMessageId, String stopMessageId) {
     this.startMessageId = startMessageId;
     this.stopMessageId = stopMessageId;
   }

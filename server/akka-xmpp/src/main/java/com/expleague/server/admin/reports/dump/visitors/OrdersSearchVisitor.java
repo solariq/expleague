@@ -13,7 +13,7 @@ import java.util.List;
  * User: Artem
  * Date: 22.08.2017
  */
-public class OrdersVisitor extends DumpVisitor<List<OrdersVisitor.Order>> {
+public class OrdersSearchVisitor extends DumpVisitor<List<OrdersSearchVisitor.Order>> {
   private final List<Order> result = new ArrayList<>();
   private Order currentInterval = null;
   private String lastMessageId = null;

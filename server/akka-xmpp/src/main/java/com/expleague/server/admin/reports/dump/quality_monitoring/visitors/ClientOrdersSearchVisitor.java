@@ -1,19 +1,19 @@
 package com.expleague.server.admin.reports.dump.quality_monitoring.visitors;
 
 import com.expleague.model.Offer;
-import com.expleague.server.admin.reports.dump.visitors.OrdersVisitor;
+import com.expleague.server.admin.reports.dump.visitors.OrdersSearchVisitor;
 import com.expleague.xmpp.stanza.Message;
 
 /**
  * User: Artem
  * Date: 22.08.2017
  */
-public class ClientOrdersVisitor extends OrdersVisitor {
+public class ClientOrdersSearchVisitor extends OrdersSearchVisitor {
   private final String client;
   private boolean checked = false;
   private boolean clientMatch = false;
 
-  public ClientOrdersVisitor(String client) {
+  public ClientOrdersSearchVisitor(String client) {
     this.client = client;
     if (client == null) {
       checked = true;
