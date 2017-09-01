@@ -3,11 +3,8 @@ package com.expleague.server.admin.reports.dump.quality_monitoring;
 import com.expleague.model.Offer;
 import com.expleague.server.admin.reports.dump.BaseDumpReportHandler;
 import com.expleague.server.admin.reports.dump.DumpVisitor;
-import com.expleague.server.admin.reports.dump.quality_monitoring.visitors.ContinueVisitor;
-import com.expleague.server.admin.reports.dump.quality_monitoring.visitors.OfferVisitor;
-import com.expleague.server.admin.reports.dump.quality_monitoring.visitors.StatusVisitor;
+import com.expleague.server.admin.reports.dump.quality_monitoring.visitors.*;
 import com.expleague.server.admin.reports.dump.visitors.OrdersSearchVisitor;
-import com.expleague.server.admin.reports.dump.quality_monitoring.visitors.ClientOrdersSearchVisitor;
 import com.expleague.server.admin.reports.dump.visitors.RoomVisitor;
 import com.expleague.util.akka.ActorMethod;
 import com.expleague.xmpp.stanza.Message;
@@ -29,7 +26,7 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
   @ActorMethod
   public void report(ReportRequest reportRequest) {
     this.reportRequest = reportRequest;
-    headers("ts", "room", "status", "topic", "continue", "location", "urgency", "client");
+    headers("ts", "room", "status", "topic", "continue", "location", "urgency", "client", "score", "score comment");
     startProcessing(reportRequest.start(), reportRequest.end());
     sender().tell(build(), self());
   }
@@ -46,7 +43,8 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
         .map(order -> Arrays.asList(
             new OfferVisitor(order.firstMessageId(), order.lastMessageId()),
             new StatusVisitor(order.firstMessageId(), order.lastMessageId()),
-            new ContinueVisitor(order.firstMessageId())
+            new ContinueVisitor(order.firstMessageId()),
+            new FeedbackVisitor(order.firstMessageId(), order.lastMessageId())
         ))
         .collect(Collectors.toList());
 
@@ -56,6 +54,7 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
       Message offerMessage = null;
       StatusVisitor.OrderStatus shortAnswer = null;
       String continueText = "";
+      FeedbackVisitor.FeedbackResult feedbackResult = null;
       for (DumpVisitor visitor : visitors) {
         if (visitor instanceof OfferVisitor)
           offerMessage = ((OfferVisitor) visitor).result();
@@ -63,10 +62,13 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
           shortAnswer = ((StatusVisitor) visitor).result();
         else if (visitor instanceof ContinueVisitor)
           continueText = ((ContinueVisitor) visitor).result();
+        else if (visitor instanceof FeedbackVisitor)
+          feedbackResult = ((FeedbackVisitor) visitor).result();
       }
       {
         assert offerMessage != null;
         assert shortAnswer != null;
+        assert feedbackResult != null;
       }
 
       final Offer offer = offerMessage.get(Offer.class);
@@ -78,7 +80,9 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
           continueText,
           offer.location() == null ? "" : offer.location().latitude() + " ; " + offer.location().longitude(),
           offer.urgency() == null ? "" : offer.urgency().name(),
-          offer.client() == null ? offerMessage.from().local() : offer.client().local()
+          offer.client() == null ? offerMessage.from().local() : offer.client().local(),
+          feedbackResult.stars() == FeedbackVisitor.NO_SCORE ? "" : Integer.toString(feedbackResult.stars()),
+          feedbackResult.comment()
       );
     });
   }
