@@ -26,7 +26,7 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
   @ActorMethod
   public void report(ReportRequest reportRequest) {
     this.reportRequest = reportRequest;
-    headers("ts", "room", "status", "topic", "continue", "location", "urgency", "client", "score", "score comment");
+    headers("ts", "room", "status", "topic", "continue", "location", "urgency", "client", "score", "score comment", "start dialogue");
     startProcessing(reportRequest.start(), reportRequest.end());
     sender().tell(build(), self());
   }
@@ -44,7 +44,8 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
             new OfferVisitor(order.firstMessageId(), order.lastMessageId()),
             new StatusVisitor(order.firstMessageId(), order.lastMessageId()),
             new ContinueVisitor(order.firstMessageId()),
-            new FeedbackVisitor(order.firstMessageId(), order.lastMessageId())
+            new FeedbackVisitor(order.firstMessageId(), order.lastMessageId()),
+            new StartDialogueVisitor(order.firstMessageId(), order.lastMessageId())
         ))
         .collect(Collectors.toList());
 
@@ -55,6 +56,7 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
       StatusVisitor.OrderStatus shortAnswer = null;
       String continueText = "";
       FeedbackVisitor.FeedbackResult feedbackResult = null;
+      long startDialogueTs = StartDialogueVisitor.NO_DIALOGUE;
       for (DumpVisitor visitor : visitors) {
         if (visitor instanceof OfferVisitor)
           offerMessage = ((OfferVisitor) visitor).result();
@@ -64,6 +66,8 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
           continueText = ((ContinueVisitor) visitor).result();
         else if (visitor instanceof FeedbackVisitor)
           feedbackResult = ((FeedbackVisitor) visitor).result();
+        else if (visitor instanceof StartDialogueVisitor)
+          startDialogueTs = ((StartDialogueVisitor) visitor).result();
       }
       {
         assert offerMessage != null;
@@ -82,7 +86,8 @@ public class QualityMonitoringReportHandler extends BaseDumpReportHandler {
           offer.urgency() == null ? "" : offer.urgency().name(),
           offer.client() == null ? offerMessage.from().local() : offer.client().local(),
           feedbackResult.stars() == FeedbackVisitor.NO_SCORE ? "" : Integer.toString(feedbackResult.stars()),
-          feedbackResult.comment()
+          feedbackResult.comment(),
+          startDialogueTs == StartDialogueVisitor.NO_DIALOGUE ? "" : format.format(new Date(startDialogueTs))
       );
     });
   }
