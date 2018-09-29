@@ -35,7 +35,7 @@ import java.util.stream.Stream;
  * Date: 14.12.15
  * Time: 21:59
  */
-public class XMPP extends ActorAdapter<UntypedActor> {
+public class XMPP extends ActorAdapter<AbstractActor> {
   public static final String XMPP_ACTOR_PATH = "/user/xmpp";
   private static final JID myJid = JID.parse(ExpLeagueServer.config().domain());
 

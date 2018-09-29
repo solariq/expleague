@@ -537,7 +537,7 @@ public class RoomAgent extends PersistentActorAdapter {
   protected void replay() {
     log.fine("Replaying room: " + jid());
     mode = ProcessMode.REPLAY;
-    context().become(o -> {
+    context().become(actor.receiveBuilder().match(Object.class, o -> {
       final boolean success;
       if (o instanceof DeleteMessagesSuccess) {
         success = true;
@@ -567,7 +567,7 @@ public class RoomAgent extends PersistentActorAdapter {
       self().tell(new Awake(), self());
       if (replayRequester != null)
         replayRequester.tell(new Replay(success), self());
-    });
+    }).build());
     deleteMessages();
   }
 

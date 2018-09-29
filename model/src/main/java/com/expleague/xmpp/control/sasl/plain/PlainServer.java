@@ -1,12 +1,11 @@
 package com.expleague.xmpp.control.sasl.plain;
 
-import com.google.common.base.Charsets;
-
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.SaslException;
+import java.nio.charset.StandardCharsets;
 
 public class PlainServer extends AbstractSaslServer {
   protected String authorizedId;
@@ -90,7 +89,7 @@ public class PlainServer extends AbstractSaslServer {
       nextNul = nextNul(message, startPos, true);
       if (nextNul > 0) {
         length = length(nextNul, message.length, startPos);
-        authorizationId = new String(message, startPos, length, Charsets.UTF_8);
+        authorizationId = new String(message, startPos, length, StandardCharsets.UTF_8);
         startPos += length + 1;
       } else {
         startPos++;
@@ -99,7 +98,7 @@ public class PlainServer extends AbstractSaslServer {
       // Find the authentication ID
       nextNul = nextNul(message, startPos, true);
       length = length(nextNul, message.length, startPos);
-      authenticationId = new String(message, startPos, length, Charsets.UTF_8);
+      authenticationId = new String(message, startPos, length, StandardCharsets.UTF_8);
       startPos += length + 1;
 
       // Find the password
@@ -110,7 +109,7 @@ public class PlainServer extends AbstractSaslServer {
       }
 
       length = length(nextNul, message.length, startPos);
-      password = new String(message, startPos, length, Charsets.UTF_8);
+      password = new String(message, startPos, length, StandardCharsets.UTF_8);
       startPos += length + 1;
 
       if (authorizationId == null) {

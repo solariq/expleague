@@ -1,5 +1,6 @@
 package com.expleague.server.services;
 
+import akka.actor.AbstractActor;
 import akka.actor.UntypedActor;
 import com.expleague.server.agents.ExpLeagueOrder;
 import com.expleague.server.agents.LaborExchange;
@@ -15,7 +16,7 @@ import java.util.stream.Stream;
  * Experts League
  * Created by solar on 14/04/16.
  */
-public class RestoreService extends ActorAdapter<UntypedActor> {
+public class RestoreService extends ActorAdapter<AbstractActor> {
   @ActorMethod
   public void invoke(Iq<RestoreQuery> restoreIq) {
     final RestoreQuery answer = restoreIq.get();

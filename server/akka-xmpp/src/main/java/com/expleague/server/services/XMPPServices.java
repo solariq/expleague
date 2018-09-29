@@ -16,7 +16,7 @@ import java.util.Map;
  * Date: 15.12.15
  * Time: 13:20
  */
-public class XMPPServices extends ActorAdapter<UntypedActor> {
+public class XMPPServices extends ActorAdapter<AbstractActor> {
   @ActorMethod
   public void invoke(Iq<?> iq) {
     final String ns = iq.serviceNS();

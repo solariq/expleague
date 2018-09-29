@@ -1,12 +1,13 @@
 package com.expleague.util.akka;
 
 import akka.actor.Props;
+import akka.persistence.AbstractPersistentActor;
 import akka.persistence.UntypedPersistentActor;
 
 /**
  * @author vpdelta
  */
-public class PersistentActorContainer extends UntypedPersistentActor {
+public class PersistentActorContainer extends AbstractPersistentActor {
   private final ActorInvokeDispatcher<PersistentActorAdapter> dispatcher;
 
   public static Props props(
@@ -32,12 +33,10 @@ public class PersistentActorContainer extends UntypedPersistentActor {
     super.postStop();
   }
 
-  @Override
   public void onReceiveRecover(final Object msg) throws Exception {
     getAdapterInstance().onReceiveRecover(msg);
   }
 
-  @Override
   public void onReceiveCommand(final Object message) throws Exception {
     if (ActorFailureChecker.checkIfFailure(getAdapterInstance().getClass(), self().path().name(), message)) {
       return;
@@ -55,5 +54,15 @@ public class PersistentActorContainer extends UntypedPersistentActor {
 
   private PersistentActorAdapter getAdapterInstance() {
     return dispatcher.getDispatchSequence().get(0).getInstance();
+  }
+
+  @Override
+  public Receive createReceiveRecover() {
+    return receiveBuilder().match(Object.class, this::onReceiveRecover).build();
+  }
+
+  @Override
+  public Receive createReceive() {
+    return receiveBuilder().match(Object.class, this::onReceiveCommand).build();
   }
 }

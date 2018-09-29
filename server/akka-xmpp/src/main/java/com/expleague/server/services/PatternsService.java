@@ -1,5 +1,6 @@
 package com.expleague.server.services;
 
+import akka.actor.AbstractActor;
 import akka.actor.UntypedActor;
 import com.expleague.model.Pattern;
 import com.expleague.server.dao.PatternsRepository;
@@ -16,7 +17,7 @@ import java.util.stream.Stream;
  * Experts League
  * Created by solar on 28/03/16.
  */
-public class PatternsService extends ActorAdapter<UntypedActor> {
+public class PatternsService extends ActorAdapter<AbstractActor> {
   @ActorMethod
   public void invoke(Iq<PatternsQuery> rosterIq) {
     try (final Stream<Pattern> all = PatternsRepository.instance().all()) {

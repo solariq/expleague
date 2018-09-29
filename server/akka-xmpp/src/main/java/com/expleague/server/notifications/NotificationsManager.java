@@ -1,5 +1,6 @@
 package com.expleague.server.notifications;
 
+import akka.actor.AbstractActor;
 import akka.actor.ActorContext;
 import akka.actor.UntypedActor;
 import akka.util.Timeout;
@@ -34,7 +35,7 @@ import java.util.stream.Stream;
  * Experts League
  * Created by solar on 01/02/16.
  */
-public class NotificationsManager extends ActorAdapter<UntypedActor> {
+public class NotificationsManager extends ActorAdapter<AbstractActor> {
   private static final Logger log = Logger.getLogger(NotificationsManager.class.getName());
   public static final TimeZone TIME_ZONE = TimeZone.getTimeZone("UTC/Greenwich");
   private static final String NOTIFICATIONS_ACTOR_PATH = "/user/notifications";

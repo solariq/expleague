@@ -1,14 +1,15 @@
 package com.expleague.server;
 
+import akka.actor.AbstractActor;
 import akka.actor.ActorSystem;
 import akka.actor.PoisonPill;
 import akka.actor.UntypedActor;
+import akka.http.javadsl.ConnectHttp;
 import akka.http.javadsl.Http;
 import akka.http.javadsl.IncomingConnection;
 import akka.http.javadsl.ServerBinding;
 import akka.http.javadsl.model.*;
-import akka.japi.Option;
-import akka.japi.function.Function;
+import akka.http.javadsl.settings.ServerSettings;
 import akka.pattern.Patterns;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
@@ -18,7 +19,6 @@ import akka.stream.javadsl.StreamConverters;
 import akka.util.Timeout;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -28,12 +28,17 @@ import com.spbsu.commons.io.StreamTools;
 import org.apache.commons.fileupload.MultipartStream;
 import org.apache.commons.fileupload.ParameterParser;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import scala.compat.java8.FutureConverters;
 import scala.concurrent.Future;
-import scala.concurrent.duration.Duration;
+
+import java.time.Duration;
 
 import java.io.File;
 import java.io.InputStream;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,7 +48,7 @@ import java.util.logging.Logger;
  * Date: 24.11.15
  * Time: 17:42
  */
-public class ImageStorage extends ActorAdapter<UntypedActor> {
+public class ImageStorage extends ActorAdapter<AbstractActor> {
   private static final Logger log = Logger.getLogger(ImageStorage.class.getName());
   private static final String BUCKET_NAME = "tbts-image-storage-main-chunk";
   final AmazonS3Client s3Client;
@@ -61,7 +66,9 @@ public class ImageStorage extends ActorAdapter<UntypedActor> {
   @Override
   public void preStart() throws Exception {
     materializer = ActorMaterializer.create(context());
-    final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("0.0.0.0", 8067, materializer);
+    final ConnectHttp connectHttp = ConnectHttp.toHost("0.0.0.0", 8067);
+    final ServerSettings serverSettings = ServerSettings.create(context().system());
+    final Source<IncomingConnection, CompletionStage<ServerBinding>> serverSource = Http.get(context().system()).bind(connectHttp, serverSettings);
     serverSource.to(Sink.actorRef(self(), PoisonPill.getInstance())).run(materializer);
   }
 
@@ -71,10 +78,9 @@ public class ImageStorage extends ActorAdapter<UntypedActor> {
       final IncomingConnection connection = (IncomingConnection) o;
 
       log.fine("Accepted new connection from " + connection.remoteAddress());
-      connection.handleWithAsyncHandler((Function<HttpRequest, Future<HttpResponse>>) httpRequest -> {
-        final Future ask = (Future) Patterns.ask(context().actorOf(props(RequestHandler.class, s3Client)), httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
+      connection.handleWithAsyncHandler(httpRequest -> {
         //noinspection unchecked
-        return (Future<HttpResponse>)ask;
+        return FutureConverters.<HttpResponse>toJava((Future)Patterns.ask(context().actorOf(props(RequestHandler.class, s3Client)), httpRequest, Timeout.apply(10, TimeUnit.MINUTES)));
       }, materializer);
     }
     else unhandled(o);
@@ -85,7 +91,7 @@ public class ImageStorage extends ActorAdapter<UntypedActor> {
     system.actorOf(props(ImageStorage.class));
   }
 
-  private static class RequestHandler extends ActorAdapter<UntypedActor> {
+  private static class RequestHandler extends ActorAdapter<AbstractActor> {
     private final AmazonS3Client s3Client;
 
     public RequestHandler(AmazonS3Client s3Client) {
@@ -115,7 +121,7 @@ public class ImageStorage extends ActorAdapter<UntypedActor> {
         if (image != null) {
           final String contentType = image.getObjectMetadata().getContentType();
           final byte[] contents = StreamTools.readByteStream(image.getObjectContent());
-          final Option<MediaType> lookup = MediaTypes.lookup(contentType.split("/")[0], contentType.split("/")[1]);
+          final Optional<MediaType> lookup = MediaTypes.lookup(contentType.split("/")[0], contentType.split("/")[1]);
           response = HttpResponse.create().withEntity(ContentTypes.create((MediaType.Binary)lookup.get()), contents);
         }
         else
@@ -126,7 +132,7 @@ public class ImageStorage extends ActorAdapter<UntypedActor> {
         final ActorMaterializer materializer = ActorMaterializer.create(context());
         final RequestEntity entity = request.entity();
         MediaType.Multipart mediaType = (MediaType.Multipart) entity.getContentType().mediaType();
-        final InputStream is = entity.getDataBytes().runWith(StreamConverters.asInputStream(Duration.apply(10, TimeUnit.MINUTES)), materializer);
+        final InputStream is = entity.getDataBytes().runWith(StreamConverters.asInputStream(Duration.of(10, ChronoUnit.MINUTES)), materializer);
         final String boundary = mediaType.toRange().getParams().get("boundary");
         final MultipartStream multipartStream = new MultipartStream(is, boundary.getBytes(), 4096, null);
 

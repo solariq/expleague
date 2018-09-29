@@ -1,15 +1,15 @@
 package com.expleague.server;
 
+import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
+import akka.http.javadsl.ConnectHttp;
 import akka.http.javadsl.Http;
 import akka.http.javadsl.IncomingConnection;
 import akka.http.javadsl.ServerBinding;
 import akka.http.javadsl.model.*;
-import akka.http.javadsl.model.headers.AccessControlAllowHeaders;
-import akka.http.javadsl.model.headers.AccessControlAllowMethods;
-import akka.http.javadsl.model.headers.AccessControlAllowOrigin;
-import akka.http.javadsl.model.headers.HttpOriginRange;
+import akka.http.javadsl.model.headers.*;
+import akka.http.javadsl.settings.ServerSettings;
 import akka.japi.function.Function;
 import akka.japi.function.Predicate;
 import akka.japi.function.Procedure;
@@ -32,6 +32,7 @@ import scala.concurrent.Future;
 import javax.xml.bind.Unmarshaller;
 import java.io.PipedInputStream;
 import java.util.List;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,7 +42,7 @@ import java.util.logging.Logger;
  * Date: 24.12.15
  * Time: 14:47
  */
-public class BOSHServer extends ActorAdapter<UntypedActor> {
+public class BOSHServer extends ActorAdapter<AbstractActor> {
   private static final Logger log = Logger.getLogger(BOSHServer.class.getName());
   private Materializer materializer;
   @Override
@@ -49,12 +50,12 @@ public class BOSHServer extends ActorAdapter<UntypedActor> {
     final ActorMaterializerSettings settings = ActorMaterializerSettings.create(context().system())
         .withSupervisionStrategy((Function<Throwable, Supervision.Directive>) param -> {
           log.log(Level.SEVERE, "Exception in the BOSH protocol flow", param);
-          return Supervision.stop();
+          return (Supervision.Directive) Supervision.stop();
         })
         .withDebugLogging(true)
         .withInputBuffer(1 << 6, 1 << 7);
     materializer = ActorMaterializer.create(settings, context());
-    final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("localhost", 5280, materializer);
+    final Source<IncomingConnection, CompletionStage<ServerBinding>> serverSource = Http.get(context().system()).bind(ConnectHttp.toHost("localhost", 5280), ServerSettings.create(context().system()));
 //    final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("192.168.1.3", 5280, materializer);
     serverSource.to(Sink.foreach(new ProcessConnection())).run(materializer);
   }
@@ -73,7 +74,6 @@ public class BOSHServer extends ActorAdapter<UntypedActor> {
       }).map(request -> {
         if (request.method() == HttpMethods.OPTIONS)
           return HttpResponse.create()
-              .addHeader(AccessControlAllowOrigin.create(HttpOriginRange.ALL))
               .addHeader(AccessControlAllowMethods.create(HttpMethods.OPTIONS, HttpMethods.POST, HttpMethods.GET))
               .addHeader(AccessControlAllowHeaders.create("Content-Type"))
               .withStatus(204);
@@ -81,7 +81,6 @@ public class BOSHServer extends ActorAdapter<UntypedActor> {
           return HttpResponse.create().withStatus(404);
 
         HttpResponse response = HttpResponse.create();
-        response = response.addHeader(AccessControlAllowOrigin.create(HttpOriginRange.ALL));
         try {
           PipedInputStream pis = new PipedInputStream();
           final ActorRef pipe = context().actorOf(props(StreamPipe.class, pis));

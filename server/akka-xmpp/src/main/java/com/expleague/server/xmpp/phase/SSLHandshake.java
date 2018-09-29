@@ -1,5 +1,6 @@
 package com.expleague.server.xmpp.phase;
 
+import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.PoisonPill;
 import akka.actor.UntypedActor;
@@ -24,7 +25,7 @@ import java.util.logging.Logger;
  * Date: 12.12.15
  * Time: 21:17
  */
-public class SSLHandshake extends ActorAdapter<UntypedActor> {
+public class SSLHandshake extends ActorAdapter<AbstractActor> {
   private static final Logger log = Logger.getLogger(SSLHandshake.class.getName());
   private final SSLEngine sslEngine;
   private final ActorRef connection;

@@ -1,7 +1,7 @@
 package com.expleague.util.akka;
 
+import akka.actor.AbstractActor;
 import akka.actor.Props;
-import akka.actor.UntypedActor;
 import akka.persistence.RecoveryCompleted;
 
 /**
@@ -9,7 +9,7 @@ import akka.persistence.RecoveryCompleted;
  * Date: 17.02.2017
  * Time: 17:37
  */
-public class FakePersistentActorContainer extends UntypedActor {
+public class FakePersistentActorContainer extends AbstractActor {
   private final ActorInvokeDispatcher<PersistentActorAdapter> dispatcher;
 
   public static Props props(final Class<? extends ActorAdapter> adapter, final Object... args) {
@@ -41,6 +41,10 @@ public class FakePersistentActorContainer extends UntypedActor {
   }
 
   @Override
+  public Receive createReceive() {
+    return receiveBuilder().match(Object.class, this::onReceive).build();
+  }
+
   public void onReceive(final Object message) throws Exception {
     if (ActorFailureChecker.checkIfFailure(getAdapterInstance().getClass(), self().path().name(), message)) {
       return;

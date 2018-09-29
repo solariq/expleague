@@ -1,7 +1,6 @@
 package com.expleague.server.answers;
 
 import akka.http.javadsl.model.*;
-import akka.japi.Option;
 import com.expleague.util.akka.ActorMethod;
 import com.spbsu.commons.io.StreamTools;
 import com.vladsch.flexmark.html.HtmlRenderer;
@@ -10,6 +9,7 @@ import com.vladsch.flexmark.parser.Parser;
 import javax.jcr.*;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Optional;
 
 /**
  * Experts League
@@ -25,13 +25,13 @@ public class GetAnswerHandler extends WebHandler {
   @ActorMethod
   public void onRequest(final HttpRequest request) {
     final Query query = request.getUri().query();
-    final Option<String> optId = query.get("id");
-    if (optId.isEmpty()) {
+    final Optional<String> optId = query.get("id");
+    if (!optId.isPresent()) {
       reply(HttpResponse.create().withStatus(404));
       return;
     }
     final String id = optId.get();
-    final boolean showMd = query.get("md").isDefined() && Boolean.parseBoolean(query.get("md").get());
+    final boolean showMd = query.get("md").isPresent() && Boolean.parseBoolean(query.get("md").get());
     try {
       final String result;
       final String title;

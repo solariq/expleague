@@ -53,7 +53,7 @@ import java.util.logging.Logger;
  * Time: 19:50
  */
 @SuppressWarnings("unused")
-public class XMPPClientConnection extends ActorAdapter<UntypedActor> {
+public class XMPPClientConnection extends ActorAdapter<AbstractActor> {
   private static final Logger log = Logger.getLogger(XMPPClientConnection.class.getName());
   private static boolean unitTestEnabled = false;
 

@@ -141,8 +141,12 @@ public class ActorSystemTestCase extends JUnitIOCapture {
     }
   }
 
-  public static class ActorFinder extends UntypedActor {
+  public static class ActorFinder extends AbstractActor {
     @Override
+    public Receive createReceive() {
+      return receiveBuilder().match(Object.class, this::onReceive).build();
+    }
+
     public void onReceive(final Object o) throws Exception {
       final ActorSelection actorSelection = context().actorSelection((String) o);
       final Timeout timeout = new Timeout(1, TimeUnit.SECONDS);
@@ -151,14 +155,18 @@ public class ActorSystemTestCase extends JUnitIOCapture {
     }
   }
 
-  public static class Registrator extends UntypedActor {
+  public static class Registrator extends AbstractActor {
     @Override
+    public Receive createReceive() {
+      return receiveBuilder().match(Object.class, this::onReceive).build();
+    }
+
     public void onReceive(final Object o) throws Exception {
       sender().tell(XMPP.register((JID) o, context()), self());
     }
   }
 
-  public static class UntypedActorMock extends UntypedActor {
+  public static class UntypedActorMock extends AbstractActor {
     private final RuntimeUtils.InvokeDispatcher dispatcher;
     private final ActorAdapter actorMock;
 
@@ -173,6 +181,10 @@ public class ActorSystemTestCase extends JUnitIOCapture {
     }
 
     @Override
+    public Receive createReceive() {
+      return receiveBuilder().match(Object.class, this::onReceive).build();
+    }
+
     public void onReceive(final Object message) throws Exception {
       MessageCapture.instance().capture(sender(), self(), message);
 

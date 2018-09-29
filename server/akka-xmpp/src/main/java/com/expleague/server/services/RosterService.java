@@ -1,9 +1,6 @@
 package com.expleague.server.services;
 
-import akka.actor.AbstractFSM;
-import akka.actor.ActorRef;
-import akka.actor.Props;
-import akka.actor.UntypedActor;
+import akka.actor.*;
 import com.expleague.server.Roster;
 import com.expleague.server.XMPPUser;
 import com.expleague.server.agents.LaborExchange;
@@ -28,7 +25,7 @@ import static com.expleague.xmpp.control.roster.RosterQuery.RosterItem.Subscript
  * Date: 15.12.15
  * Time: 13:54
  */
-public class RosterService extends ActorAdapter<UntypedActor> {
+public class RosterService extends ActorAdapter<AbstractActor> {
   @ActorMethod
   public void invoke(Iq<RosterQuery> rosterIq) {
     final JID from = rosterIq.from();

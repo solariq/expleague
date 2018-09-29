@@ -12,7 +12,7 @@ import com.expleague.xmpp.stanza.Presence;
 import com.spbsu.commons.util.Pair;
 import org.jetbrains.annotations.Nullable;
 import scala.Option;
-import scala.collection.JavaConversions;
+import scala.collection.JavaConverters;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  * Date: 17.12.15
  * Time: 15:18
  */
-public class LaborExchange extends ActorAdapter<UntypedActor> {
+public class LaborExchange extends ActorAdapter<AbstractActor> {
   private static final Logger log = Logger.getLogger(LaborExchange.class.getName());
 
   public static final String EXPERTS_ACTOR_NAME = "experts";
@@ -58,7 +58,7 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
 
   @ActorMethod
   public void invoke(ActorRef expertAgent) {
-    JavaConversions.asJavaCollection(context().children()).stream()
+    JavaConverters.asJavaCollection(context().children()).stream()
       .filter(LaborExchange::isBrokerActorRef)
       .forEach(ref -> ref.forward(expertAgent, context()));
   }
@@ -141,7 +141,7 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
    * Date: 19.12.15
    * Time: 17:32
    */
-  public static class Experts extends ActorAdapter<UntypedActor> {
+  public static class Experts extends ActorAdapter<AbstractActor> {
     @ActorMethod
     public void invoke(JID jid) {
       sender().tell(findOrAllocate(jid), self());
@@ -150,7 +150,7 @@ public class LaborExchange extends ActorAdapter<UntypedActor> {
     @ActorMethod
     public void invoke(ActorRef actor) {
       log.fine("Experts department received request from broker");
-      JavaConversions.asJavaCollection(context().children()).forEach(
+      JavaConverters.asJavaCollection(context().children()).forEach(
           expert -> {
             log.finest("Forwarding offer to " + Experts.jid(expert));
             expert.forward(actor, context());

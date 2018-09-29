@@ -1,16 +1,16 @@
 package com.expleague.server.admin;
 
+import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.PoisonPill;
-import akka.actor.UntypedActor;
+import akka.http.javadsl.ConnectHttp;
 import akka.http.javadsl.Http;
 import akka.http.javadsl.IncomingConnection;
 import akka.http.javadsl.ServerBinding;
 import akka.http.javadsl.model.*;
 import akka.http.javadsl.model.headers.ContentDisposition;
 import akka.http.javadsl.model.headers.ContentDispositionTypes;
-import akka.japi.Option;
-import akka.japi.function.Function;
+import akka.http.javadsl.settings.ServerSettings;
 import akka.pattern.Patterns;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
@@ -53,6 +53,7 @@ import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import scala.compat.java8.FutureConverters;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
@@ -62,6 +63,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -70,7 +72,7 @@ import java.util.stream.Stream;
 /**
  * @author vpdelta
  */
-public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
+public class ExpLeagueAdminService extends ActorAdapter<AbstractActor> {
   private static final Logger log = Logger.getLogger(ExpLeagueAdminService.class.getName());
 
   private final static ObjectMapper mapper = new DefaultJsonMapper();
@@ -86,7 +88,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
   public void preStart() throws Exception {
     materializer = ActorMaterializer.create(context());
     final int port = config.getInt("port");
-    final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("0.0.0.0", port, materializer);
+    final Source<IncomingConnection, CompletionStage<ServerBinding>> serverSource = Http.get(context().system()).bind(ConnectHttp.toHost("0.0.0.0", port), ServerSettings.create(context().system()));
     serverSource.to(Sink.actorRef(self(), PoisonPill.getInstance())).run(materializer);
     log.fine("Started on port: " + port);
   }
@@ -96,16 +98,16 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
     if (o instanceof IncomingConnection) {
       final IncomingConnection connection = (IncomingConnection) o;
       log.fine("Accepted new connection from " + connection.remoteAddress());
-      connection.handleWithAsyncHandler((Function<HttpRequest, Future<HttpResponse>>) httpRequest -> {
+      connection.handleWithAsyncHandler(httpRequest -> {
         final Future ask = Patterns.ask(context().actorOf(props(Handler.class)), httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
         //noinspection unchecked
-        return (Future<HttpResponse>) ask;
+        return FutureConverters.toJava((Future<HttpResponse>) ask);
       }, materializer);
     }
     else unhandled(o);
   }
 
-  public static class Handler extends ActorAdapter<UntypedActor> {
+  public static class Handler extends ActorAdapter<AbstractActor> {
     @ActorMethod
     public void onReceive(final HttpRequest request) throws Exception {
       final String path = request.getUri().path();
@@ -133,8 +135,8 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
             }
           }
           else if ("/replay".equals(path)) {
-            final Option<String> room = request.getUri().query().get("room");
-            if (!room.isEmpty()) {
+            final Optional<String> room = request.getUri().query().get("room");
+            if (room.isPresent()) {
               board.replay(room.get(), context());
               response = HttpResponse.create().withStatus(200).withEntity("Replayed room " + room.get());
             }
@@ -182,7 +184,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
             }
           }
           else if (path.startsWith("/dump/")) {
-            final Timeout timeout = new Timeout(Duration.create(Long.parseLong(request.getUri().query().get("timeout").getOrElse("2")), TimeUnit.SECONDS));
+            final Timeout timeout = new Timeout(Duration.create(Long.parseLong(request.getUri().query().get("timeout").orElse("2")), TimeUnit.SECONDS));
             final JID jid = JID.parse(path.substring("/dump/".length()));
             final Future<Object> ask = Patterns.ask(XMPP.register(jid, context()), new RoomAgent.DumpRequest(), timeout);
             //noinspection unchecked
@@ -191,7 +193,7 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
             response = getJsonResponse("messages", messages);
           }
           else if (path.startsWith("/xml-dump/")) {
-            final Timeout timeout = new Timeout(Duration.create(Long.parseLong(request.getUri().query().get("timeout").getOrElse("2")), TimeUnit.SECONDS));
+            final Timeout timeout = new Timeout(Duration.create(Long.parseLong(request.getUri().query().get("timeout").orElse("2")), TimeUnit.SECONDS));
             final JID jid = JID.parse(path.substring("/xml-dump/".length()));
             final Future<Object> ask = Patterns.ask(XMPP.register(jid, context()), new RoomAgent.DumpRequest(), timeout);
             //noinspection unchecked
@@ -229,17 +231,17 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
             response = getJsonResponse("charts", prepareKpiCharts(board));
           }
           else if ("/report-experts".equals(path)) {
-            final Option<String> startParam = request.getUri().query().get("start");
-            final Option<String> endParam = request.getUri().query().get("end");
-            final Option<String> expertIdParam = request.getUri().query().get("expert");
-            if (!startParam.isDefined() || !endParam.isDefined()) {
+            final Optional<String> startParam = request.getUri().query().get("start");
+            final Optional<String> endParam = request.getUri().query().get("end");
+            final Optional<String> expertIdParam = request.getUri().query().get("expert");
+            if (!startParam.isPresent() || !endParam.isPresent()) {
               response = HttpResponse.create().withStatus(400).withEntity("Parameters are not defined");
             }
             else {
               final SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
               final long start = formatter.parse(startParam.get()).getTime();
               final long end = formatter.parse(endParam.get()).getTime();
-              final String expertId = expertIdParam.isDefined() ? expertIdParam.get() : null;
+              final String expertId = expertIdParam.orElse(null);
 
               final ActorRef handler = context().actorOf(ActorAdapter.props(ExpertWorkReportHandler.class));
               final Timeout timeout = Timeout.apply(Duration.create(2, TimeUnit.HOURS));
@@ -249,18 +251,18 @@ public class ExpLeagueAdminService extends ActorAdapter<UntypedActor> {
             }
           }
           else if ("/report-quality".equals(path)) {
-            final Option<String> startParam = request.getUri().query().get("start");
-            final Option<String> endParam = request.getUri().query().get("end");
-            final Option<String> clientIdParam = request.getUri().query().get("client");
+            final Optional<String> startParam = request.getUri().query().get("start");
+            final Optional<String> endParam = request.getUri().query().get("end");
+            final Optional<String> clientIdParam = request.getUri().query().get("client");
 
-            if (!startParam.isDefined() || !endParam.isDefined()) {
+            if (!startParam.isPresent() || !endParam.isPresent()) {
               response = HttpResponse.create().withStatus(400).withEntity("Parameters are not defined");
             }
             else {
               final SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
               final long start = formatter.parse(startParam.get()).getTime();
               final long end = formatter.parse(endParam.get()).getTime();
-              final String clientId = clientIdParam.isDefined() ? clientIdParam.get() : null;
+              final String clientId = clientIdParam.orElse(null);
 
               final ActorRef handler = context().actorOf(ActorAdapter.props(QualityMonitoringReportHandler.class));
               final Timeout timeout = Timeout.apply(Duration.create(2, TimeUnit.HOURS));

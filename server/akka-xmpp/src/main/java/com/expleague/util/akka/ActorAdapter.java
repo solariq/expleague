@@ -6,7 +6,7 @@ import com.spbsu.commons.func.Action;
 /**
  * @author vpdelta
  */
-public abstract class ActorAdapter<A extends UntypedActor> {
+public abstract class ActorAdapter<A extends AbstractActor> {
   private static boolean unitTestEnabled = false;
   
   protected A actor;
@@ -45,14 +45,14 @@ public abstract class ActorAdapter<A extends UntypedActor> {
   }
 
   protected void stash() {
-    if (actor instanceof UntypedActorWithStash) {
-      ((UntypedActorWithStash)actor).stash();
+    if (actor instanceof AbstractActorWithStash) {
+      ((AbstractActorWithStash)actor).stash();
     }
   }
 
   protected void unstashAll() {
-    if (actor instanceof UntypedActorWithStash) {
-      ((UntypedActorWithStash) actor).stash();
+    if (actor instanceof AbstractActorWithStash) {
+      ((AbstractActorWithStash) actor).stash();
     }
   }
 
@@ -72,7 +72,7 @@ public abstract class ActorAdapter<A extends UntypedActor> {
     return getActor().sender();
   }
 
-  public UntypedActorContext context() {
+  public AbstractActor.ActorContext context() {
     return getActor().getContext();
   }
 

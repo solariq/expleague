@@ -1,5 +1,6 @@
 package com.expleague.server.xmpp.phase;
 
+import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import akka.io.TcpMessage;
@@ -17,7 +18,7 @@ import java.util.logging.Logger;
  * Date: 08.12.15
  * Time: 17:15
  */
-public abstract class XMPPPhase extends ActorAdapter<UntypedActor> {
+public abstract class XMPPPhase extends ActorAdapter<AbstractActor> {
   private static final Logger log = Logger.getLogger(XMPPPhase.class.getName());
   private final ActorRef connection;
 

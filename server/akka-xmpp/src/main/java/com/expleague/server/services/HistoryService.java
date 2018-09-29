@@ -1,5 +1,6 @@
 package com.expleague.server.services;
 
+import akka.actor.AbstractActor;
 import akka.actor.UntypedActor;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
@@ -25,7 +26,7 @@ import java.util.logging.Logger;
  * Experts League
  * Created by solar on 13.02.17.
  */
-public class HistoryService extends ActorAdapter<UntypedActor> {
+public class HistoryService extends ActorAdapter<AbstractActor> {
   private static final Logger log = Logger.getLogger(HistoryService.class.getName());
   @ActorMethod
   public void invoke(Iq<UserHistoryQuery> iq) {

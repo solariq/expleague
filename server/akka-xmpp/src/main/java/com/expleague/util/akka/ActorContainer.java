@@ -1,12 +1,13 @@
 package com.expleague.util.akka;
 
+import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 
 /**
  * @author vpdelta
  */
-public class ActorContainer extends UntypedActor {
+public class ActorContainer extends AbstractActor {
   private final ActorInvokeDispatcher<ActorAdapter> dispatcher;
 
   public static Props props(
@@ -33,6 +34,10 @@ public class ActorContainer extends UntypedActor {
   }
 
   @Override
+  public Receive createReceive() {
+    return receiveBuilder().match(Object.class, this::onReceive).build();
+  }
+
   public void onReceive(final Object message) throws Exception {
     if (ActorFailureChecker.checkIfFailure(getAdapterInstance().getClass(), self().path().name(), message)) {
       return;

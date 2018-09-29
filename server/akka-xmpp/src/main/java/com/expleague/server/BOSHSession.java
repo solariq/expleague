@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  * Date: 24.12.15
  * Time: 19:56
  */
-public class BOSHSession extends ActorAdapter<UntypedActor> {
+public class BOSHSession extends ActorAdapter<AbstractActor> {
   private static final Logger log = Logger.getLogger(BOSHSession.class.getName());
   private ActorRef businesLogic;
   private String id;

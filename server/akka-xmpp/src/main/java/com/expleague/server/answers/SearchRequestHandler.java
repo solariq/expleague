@@ -34,7 +34,7 @@ public class SearchRequestHandler extends WebHandler {
   public void onRequest(final HttpRequest request) throws Exception {
     final Uri uri = request.getUri();
 
-    final String text = uri.query().get("text").getOrElse("");
+    final String text = uri.query().get("text").orElse("");
     if (text.isEmpty()) {
       reply(HttpResponse.create().withEntity(
           MediaTypes.TEXT_HTML.toContentType(HttpCharsets.UTF_8),
@@ -42,7 +42,7 @@ public class SearchRequestHandler extends WebHandler {
       return;
     }
 
-    final int offset = Integer.parseInt(uri.query().get("startIndex").getOrElse("0"));
+    final int offset = Integer.parseInt(uri.query().get("startIndex").orElse("0"));
     final int limit = config != null ? config.getInt("results-per-page") : 10;
     try {
       final QueryManager manager = session.getWorkspace().getQueryManager();

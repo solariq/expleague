@@ -1,14 +1,14 @@
 package com.expleague.server.answers;
 
+import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.PoisonPill;
-import akka.actor.UntypedActor;
-import akka.dispatch.Futures;
+import akka.http.javadsl.ConnectHttp;
 import akka.http.javadsl.Http;
 import akka.http.javadsl.IncomingConnection;
 import akka.http.javadsl.ServerBinding;
 import akka.http.javadsl.model.*;
-import akka.japi.function.Function;
+import akka.http.javadsl.settings.ServerSettings;
 import akka.pattern.Patterns;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
@@ -27,12 +27,15 @@ import com.spbsu.commons.math.MathTools;
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import scala.compat.java8.FutureConverters;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
 import javax.jcr.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,7 +44,7 @@ import java.util.logging.Logger;
  * Experts League
  * Created by solar on 17.04.17.
  */
-public class RepositoryService extends ActorAdapter<UntypedActor> {
+public class RepositoryService extends ActorAdapter<AbstractActor> {
   private static final Logger log = Logger.getLogger(RepositoryService.class.getName());
   public static final String ID = "repository";
   private Materializer materializer;
@@ -64,7 +67,7 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
 //    super.preStart();
     materializer = ActorMaterializer.create(context());
 
-    final Source<IncomingConnection, Future<ServerBinding>> serverSource = Http.get(context().system()).bind("0.0.0.0", 8033, materializer);
+    final Source<IncomingConnection, CompletionStage<ServerBinding>> serverSource = Http.get(context().system()).bind(ConnectHttp.toHost("0.0.0.0", 8033), ServerSettings.create(context().system()));
     serverSource.to(Sink.actorRef(self(), PoisonPill.getInstance())).run(materializer);
     if (!ExpLeagueServer.config().unitTest()) {
       writeSession = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
@@ -84,9 +87,9 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
   @ActorMethod
   public void onConnection(IncomingConnection connection) {
     log.fine("Accepted new connection from " + connection.remoteAddress());
-    connection.handleWithAsyncHandler((Function<HttpRequest, Future<HttpResponse>>) httpRequest -> {
+    connection.handleWithAsyncHandler(httpRequest -> {
       if (readSession == null)
-        return Futures.successful(HttpResponse.create().withStatus(404));
+        return CompletableFuture.completedFuture(HttpResponse.create().withStatus(404));
       final Uri uri = httpRequest.getUri();
       final ActorRef handler;
       if (uri.path().endsWith("/search")) {
@@ -98,21 +101,21 @@ public class RepositoryService extends ActorAdapter<UntypedActor> {
       else if (uri.path().startsWith("/static")) {
         final File file = new File("search/static", uri.path().substring(uri.path().indexOf("static") + 7));
         if (file.isFile()) {
-          return Futures.successful(HttpResponse.create().withStatus(200).withEntity(HttpEntities.create(getContentType(file), file)));
+          return CompletableFuture.completedFuture(HttpResponse.create().withStatus(200).withEntity(HttpEntities.create(getContentType(file), file)));
         }
         else {
-          return Futures.successful(HttpResponse.create().withStatus(404).withEntity("File not found"));
+          return CompletableFuture.completedFuture(HttpResponse.create().withStatus(404).withEntity("File not found"));
         }
       }
       else if (uri.path().equals("/")) {
         final File file = new File("search/static/index.html");
-        return Futures.successful(HttpResponse.create().withStatus(200).withEntity(HttpEntities.create(ContentTypes.TEXT_HTML_UTF8, file)));
+        return CompletableFuture.completedFuture(HttpResponse.create().withStatus(200).withEntity(HttpEntities.create(ContentTypes.TEXT_HTML_UTF8, file)));
       }
-      else return Futures.successful(HttpResponse.create().withStatus(404));
+      else return CompletableFuture.completedFuture(HttpResponse.create().withStatus(404));
 
       final Future ask = Patterns.ask(handler, httpRequest, Timeout.apply(Duration.create(10, TimeUnit.MINUTES)));
       //noinspection unchecked
-      return (Future<HttpResponse>) ask;
+      return FutureConverters.toJava(ask);
     }, materializer);
 
   }

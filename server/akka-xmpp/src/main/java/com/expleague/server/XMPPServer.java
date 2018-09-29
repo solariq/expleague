@@ -1,5 +1,6 @@
 package com.expleague.server;
 
+import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import akka.io.Tcp;
@@ -18,7 +19,7 @@ import java.util.logging.Logger;
  * Date: 24.12.15
  * Time: 14:47
  */
-public class XMPPServer extends ActorAdapter<UntypedActor> {
+public class XMPPServer extends ActorAdapter<AbstractActor> {
   private static final Logger log = Logger.getLogger(XMPPServer.class.getName());
   @Override
   public void preStart() throws Exception {
