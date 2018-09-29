@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.expleague:commons:test-jar:tests:1.4.1">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/expleague/commons/1.4.1/commons-1.4.1-tests.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/expleague/commons/1.4.1/commons-1.4.1-test-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/expleague/commons/1.4.1/commons-1.4.1-test-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
